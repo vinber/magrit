@@ -1,0 +1,65 @@
+body {
+    margin:  0;
+    font-family: "Helvetica Neue", Helvetica;
+}
+
+#title {
+    font-size:25px;
+    margin:  10px;
+    color:#2a83ba;
+}
+
+#abstract {
+    font-size:14px;
+    color:#ad9696;
+    margin:10px;
+    
+}
+
+#note {
+    color:#5c87ac;
+    text-align:center;
+    padding:10px;
+    background-color:#dce8ea;
+}
+
+.small{font-size:11px;}
+
+#map {
+    margin:  10;  
+}
+
+a:link {color: #1f4581;font-weight: bold;text-decoration: none;}
+a:hover {color: #e256a1;text-decoration: none;}
+a:visited {color: #1f4581;text-decoration: none;}
+a:active {color: #1f4581;text-decoration: none;}
+
+ul{
+list-style-type: square;
+margin : 0px;
+
+}
+
+div.img {
+    margin: 10px 0px 0px 10px;
+    border: 1px solid #ccc;
+    float: left;
+    width: 180px;
+}
+
+div.img:hover {
+    border: 1px solid #777;
+}
+
+div.img img {
+    width: 100%;
+    height: 150px;
+
+}
+
+div.desc {
+    padding: 10px;
+    font-size:14px;
+    text-align: center;
+    color:#5c87ac;
+}

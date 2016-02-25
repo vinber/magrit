@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <meta name="description" content="">
+     <meta name="author" content="">
+     <title>Result display</title>
+     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.js"></script>
+
+     <style>
+       #map{ height: 100% }
+     </style>
+ </head>
+
+ <body>
+     <div><h3>Stewart example</h3></div>
+    <div id="map">
+    </div>
+    <div id="raw_result">
+          <b><i>Raw result :</b></i>
+          {{ content }}
+    </div>
+  <script>
+  // initialize the map
+
+  var m = L.map('map').setView([51.344, 30.103], 5);
+
+  // load a tile layer
+  L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+    {
+      attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+      maxZoom: 18,
+      minZoom: 3
+    }).addTo(m);
+
+    var result = JSON.parse({{ content }});
+
+    var geojsonLayer = new L.GeoJSON(result);
+    m.addLayer(geojsonLayer);
+
+  </script>
+ </body>
+ </html>

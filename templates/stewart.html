@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <meta name="description" content="">
+     <meta name="author" content="">
+ 
+     <title>Stewart example</title>
+ </head>
+ <body>
+      <h3>Stewart example</h3>
+      {% from "_formhelpers.html" import render_field %}
+      <form method="POST" action="" class="stewart" enctype="multipart/form-data">
+        <dl>
+        {{ render_field(form.point_layer, class="point_layer") }}
+        {{ render_field(form.mask_layer, class="mask_layer") }}
+        {{ render_field(form.var_name, class="var_name") }}
+        {{ render_field(form.span, class="span") }}
+        {{ render_field(form.beta, class="beta") }}
+        {{ render_field(form.type_fun, class="type_fun") }}
+        {{ render_field(form.resolution, class="resolution") }}
+        </dl>
+        <p>
+        <button class="btn btn-lg btn-primary btn-block" id="button">Run command</button>
+        </form>
+ </body>
+ </html>
