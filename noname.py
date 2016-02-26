@@ -16,16 +16,16 @@ from flask import (
     Flask, request, session, g, redirect, url_for,
     abort, render_template, send_from_directory, Response)
 from werkzeug import secure_filename
-from wtforms import (FieldList, Form, FormField, IntegerField, RadioField,
+from wtforms import (FloatField, FieldList, Form, FormField, IntegerField, RadioField,
     SelectField, StringField, TextAreaField, validators)
 from flask_wtf.file import FileAllowed, FileRequired, FileField
 from rclient import rClient
 #from rpy2_executor import Rpy2_evaluator, rpy2_result
 from rclient_load_balance import *
 from rpy2_session_console_client import client_Rpy, launch_queue
-from flows_class import flows_routine, guess_separator
+from rpy2_function import *
 
-app_real_path = '/home/mz/p2/noname'
+app_real_path = '/home/mz/code/noname'
 
 UPLOAD_FOLDER = 'tmp/users_uploads'
 EXPORT_FOLDER = 'tmp/exp'
@@ -42,16 +42,16 @@ app = Flask("noname")
 app.config.from_object("noname")
 app.secret_key = ''.join([bytes([randint(65,122)]).decode() for _ in range(25)])
 
-def init_R_workers():
-    r_process = prepare_worker(4)
-    context = zmq.Context()
-    g2.context = context
-    g2.broker = threading.Thread(target=launch_broker, args=(context, r_process, None))
-    g2.broker.start()
-
-def init_Rpy2_console_broker():
-    g2.thread_q = threading.Thread(target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
-    g2.thread_q.start()
+#def init_R_workers():
+#    r_process = prepare_worker(4)
+#    context = zmq.Context()
+#    g2.context = context
+#    g2.broker = threading.Thread(target=launch_broker, args=(context, r_process, None))
+#    g2.broker.start()
+#
+#def init_Rpy2_console_broker():
+#    g2.thread_q = threading.Thread(target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
+#    g2.thread_q.start()
 
 #def connect_db():
 #    conn = sqlite3.connect(app.config['DATABASE'])
@@ -85,7 +85,8 @@ def teardown_request(exception):
 #
 @app.route('/')
 def index():
-    return render_template('index.html')
+    date = ''
+    return render_template('index.html', date = date)
 
 def find_port():
     while True:
@@ -266,16 +267,16 @@ def Rrapp(pattern):
 #        content = err
 #    return content
 
-@app.route('/show/<table_name>')
-def show_table(table_name):
-    trans_rule = str.maketrans('', '', '()')
-    db = get_db()
-    try:
-        cur = db.execute('SELECT * FROM {};'.format(table_name))
-        result = '<br>'.join([str(i).replace(',', '|') for i in cur.fetchall()])
-    except Exception as err:
-        result = err
-    return '<html><body><div>'+result.translate(trans_rule)+'</div></body></html>'
+#@app.route('/show/<table_name>')
+#def show_table(table_name):
+#    trans_rule = str.maketrans('', '', '()')
+#    db = get_db()
+#    try:
+#        cur = db.execute('SELECT * FROM {};'.format(table_name))
+#        result = '<br>'.join([str(i).replace(',', '|') for i in cur.fetchall()])
+#    except Exception as err:
+#        result = err
+#    return '<html><body><div>'+result.translate(trans_rule)+'</div></body></html>'
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -417,6 +418,9 @@ def upload_file():                              # ... and not a set of file (lik
     else:
         return page.format('')
 
+##########################################################
+#### Qucik views to wrap "flows" functionnalities :
+
 class FlowsAnalysisForm(Form):
 #    colname = SelectField('Column names....')
     field_i = SelectField(choices=[])
@@ -427,7 +431,7 @@ class FlowsForm(Form):
     table = FileField('', [FileAllowed(['csv', 'xls', 'tsv', 'txt'], 'JSON Geoms only!')])
     next_field = FieldList(FormField(FlowsAnalysisForm), '')
 
-@app.route('/R/wrapped/flows_int', methods=['GET', 'POST'])
+@app.route('/R/wrapped/flows/int', methods=['GET', 'POST'])
 def flows_int():    
     flows_form = FlowsForm(request.form)
     if request.method == 'POST' and flows_form.validate():
@@ -457,6 +461,9 @@ def flows_int():
     else:
         return render_template("flows_int.html", form = flows_form)
 
+##########################################################
+#### Qucik views to wrap "SpatialPosition" functionnalities :
+
 class StewartForm(Form):
     point_layer = FileField('Observation point layer')
                             #,[FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
@@ -468,7 +475,7 @@ class StewartForm(Form):
     type_fun = RadioField(choices=[('exponential', 'Exponential'), ('pareto', 'Pareto')])
     resolution = IntegerField('Resolution (meter)',  [validators.NumberRange(min=0, max=100000)])
 
-@app.route('/R/wrapped/stewart', methods=['GET', 'POST'])
+@app.route('/R/wrapped/SpatialPosition/stewart', methods=['GET', 'POST'])
 def stewart_page():
     # Todo : try to build a rpy2 class holding the main utility function 
     # in order to compute in one call the values requested
@@ -503,6 +510,49 @@ def stewart_page():
         return render_template('display_result.html', content=content)
     return render_template('stewart.html', form=stewart_form)
 
+##########################################################
+#### Qucik views to wrap "MTA" functionnalities :
+
+class MTA_form_global(Form):
+    json_df = TextAreaField('The jsonified data.frame')
+    var1 = StringField('First variable name')
+    var2 = StringField('Second variable name')
+    ref = FloatField('The reference ratio (optionnal)')
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+
+@app.route('/R/wrapped/MTA/globalDev', methods=['GET', 'POST'])
+def MTA_globalDev():
+    gbd_form = MTA_form(request.form)
+    if request.method == 'POST':
+        form_data = gbd_form.data
+        return mta_json.global_dev(
+            form_data['json_df'], form_data['var1'],
+            form_data['var2'], form_data['ref'], form_data['type_fun'])
+
+    else:
+        return render_template('MTA_dev.html', form=gbd_form,
+                               title='MTA Global Dev. Example')
+
+class MTA_form_medium(Form):
+    json_df = TextAreaField('The jsonified data.frame')
+    var1 = StringField('First variable name')
+    var2 = StringField('Second variable name')
+    key = FloatField('Name of the column containg the aggregation key')
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+
+@app.route('/R/wrapped/MTA/mediumDev', methods=['GET', 'POST'])
+def MTA_mediumDev():
+    meddev_form = MTA_form_medium(request.form)
+    if request.method == 'POST':
+        form_data = meddev_form.data
+        return mta_json.global_dev(
+            form_data['json_df'], form_data['var1'],
+            form_data['var2'], form_data['key'], form_data['type_fun'])
+
+    else:
+        return render_template('MTA_dev.html', form=meddev_form,
+                               title='MTA Medium Dev. Example')
+
 @app.route('/display/<content>')
 def display_result(content):
     return render_template('display_result.html', content=content)
@@ -517,6 +567,20 @@ def display_result(content):
 
 
 if __name__ == '__main__':
+    def init_R_workers():
+        r_process = prepare_worker(4)
+        context = zmq.Context()
+        g2.context = context
+        g2.broker = threading.Thread(target=launch_broker, args=(context, r_process, None))
+        g2.broker.start()
+
+    def init_Rpy2_console_broker():
+        g2.thread_q = threading.Thread(target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
+        g2.thread_q.start()
+
+    init_R_workers()
+    init_Rpy2_console_broker()
+
     if len(sys.argv) > 1:
         port = sys.argv[1]
     else:

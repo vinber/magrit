@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+Basicly trying to do here the same things as in the "noname.py" file but
+using aiohttp framework instead of Flask
+(same urls, same jinja2 templating system,
+same services provided and roughly the same variable/function/etc. names)
 @author: mz
 """
 import os
@@ -19,13 +23,17 @@ import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware, SimpleCookieStorage
 from rclient import rClient
 from rpy2_executor import Rpy2_evaluator, rpy2_result
-from wtforms import Form, TextAreaField, validators
+from rpy2_function import *
+from rclient_load_balance import *
+from wtforms import (FileField, IntegerField,
+    Form, TextAreaField, validators, StringField, FloatField,
+    RadioField)
 
-def url_for(endpoint, filename, **kwargs):
-    namesp = {}
+app_real_path = '/home/mz/code/noname'
 
 class g2:
     DATABASE = 'tmp/db.db'
+    UPLOAD_FOLDER = 'tmp/users_uploads'
     keys_mapping = {}
 
 def connect_db():
@@ -75,19 +83,6 @@ def r_handler(request):
         r.disconnect()
     return web.Response(body=message.encode())
 
-#@asyncio.coroutine
-#def rpy2_handler(request):
-#    pattern = request.match_info['rpy2_pattern']
-#    port = "5555"
-#    context = zmq.Context()
-#    socket = context.socket(zmq.REQ)
-#    socket.connect("tcp://localhost:%s" % port)
-#    socket.send(pattern.encode())
-#    message = socket.recv()
-#    message = str(message).replace('\n', '<br>')
-#    return web.Response(body=message.encode())
-
-
 @asyncio.coroutine
 def db_reader(request):
     table_name = request.match_info['table_name']
@@ -100,7 +95,7 @@ def db_reader(request):
         result = str(err)
     return web.Response(body=('<div>'+result.translate(trans_rule)+'</div>').encode())
 
-@aiohttp_jinja2.template('index.html')
+@aiohttp_jinja2.template('templates/index.html')
 @asyncio.coroutine
 def handler(request):
     session = yield from get_session(request)
@@ -202,8 +197,8 @@ class RstatementForm(Form):
                           default=u'R.Version()')
 
 class R_console(web.View):
-    R_form = RstatementForm()
-    content = ''
+#    R_form = RstatementForm()
+#    content = ''
 
     @aiohttp_jinja2.template('templates/R_form_persist2.html')
     @asyncio.coroutine
@@ -232,7 +227,8 @@ class R_console(web.View):
                 g2.keys_mapping[key] = port, r.process.pid
             message = r.rEval(rcommande.replace('\r', '').encode())
             content = message.decode()
-            return web.Response(text=json.dumps({'Result': content}))
+            return web.Response(text=json.dumps({'Result': content,
+                                                 'Status': 'OK'}))
 
 @aiohttp_jinja2.template('templates/R_form_persist.html')
 @asyncio.coroutine
@@ -251,26 +247,25 @@ def rpy2_display_persist(request):
         rpy2_result.clear()
         return context
 
-@asyncio.coroutine
-def load_table(request):
-    try:
-        table = request.match_info['table']
-        table = table.split('\\n')
-        db = get_db()
-        for line in table:
-            db.execute('INSERT INTO entries (a, b, c, d) values (?, ?, ?, ?)', 
-                       tuple(map(float, line.split(','))))
-        db.commit()
-        content = "Data successfully loaded"
-    except Exception as err:
-        content = str(err)
-    return web.Response(text=content)
+#@asyncio.coroutine
+#def load_table(request):
+#    try:
+#        table = request.match_info['table']
+#        table = table.split('\\n')
+#        db = get_db()
+#        for line in table:
+#            db.execute('INSERT INTO entries (a, b, c, d) values (?, ?, ?, ?)', 
+#                       tuple(map(float, line.split(','))))
+#        db.commit()
+#        content = "Data successfully loaded"
+#    except Exception as err:
+#        content = str(err)
+#    return web.Response(text=content)
 
-@aiohttp_jinja2.template('templates/zmq_websocket.html')
 @asyncio.coroutine
-def zmq_testpage():
+def R_console_redirect(request):
+    response = web
     return
-
 
 #@asyncio.coroutine  # Currently only accepting a single file
 #def upload_file():                              # ... and not a set of file (like required for uploading a Shapefile)
@@ -299,26 +294,150 @@ def zmq_testpage():
 #    else:
 #        return web.Response(body=page.encode())
 
+
+##########################################################
+#### Qucik views to wrap "SpatialPosition" functionnalities :
+
+class StewartForm(Form):
+    point_layer = FileField('Observation point layer')
+                            #,[FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
+    mask_layer = FileField('Mask (contour) layer')
+    #, [FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
+    var_name = StringField('Variable name')
+    span = IntegerField('Span (meter)',  [validators.NumberRange(min=0, max=100000)])
+    beta = IntegerField('Beta', [validators.NumberRange(min=0, max=5)])
+    type_fun = RadioField(choices=[('exponential', 'Exponential'), ('pareto', 'Pareto')])
+    resolution = IntegerField('Resolution (meter)',  [validators.NumberRange(min=0, max=100000)])
+
+
+class StewartPage(web.View):
+    @aiohttp_jinja2.template('templates/stewart.html')
+    @asyncio.coroutine
+    def get(self):
+        stewart_form = StewartForm()
+        return {'form': stewart_form, 'content': ''}
+
+    @aiohttp_jinja2.template('templates/display_result.html')
+    @asyncio.coroutine
+    def post(self):
+        posted_data = yield from self.request.post()
+        stewart_form = StewartForm(posted_data)
+        if stewart_form.validate():
+            filenames = []
+            for file_ph in ('point_layer', 'mask_layer'):
+                file_to_upload = self.request.POST[file_ph]
+                if file_to_upload:
+                    with open(os.path.join(app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1]), 'wb') as f:
+                        f.write(file_to_upload[2].read())
+                    filenames.append(file_to_upload[1])
+                else:
+                    filenames.append('NULL')
+            form_data = stewart_form.data
+            key = find_port()
+            pt_name = os.path.join(app_real_path, g2.UPLOAD_FOLDER, filenames[0])
+            if filenames[1]:
+                mask_name = os.path.join(app_real_path, g2.UPLOAD_FOLDER, filenames[1])
+            else:
+                mask_name = 'NULL'
+            r_command = (
+                "stewart_to_json('{}', {}, {}, '{}',"
+                                "'{}', {}, {}, {}, {}, '{}')".format(
+                    pt_name, 'NULL', 'NULL', form_data['var_name'],
+                    form_data['type_fun'], form_data['span'], form_data['beta'],
+                    form_data['resolution'], 'FALSE', mask_name)
+                )
+#            print(r_command)
+            content = R_client_return(url_client, r_command, g2.context, key)
+            print('content : ', content)
+        return {'content': content}
+
+##########################################################
+#### Qucik views to wrap "MTA" functionnalities :
+
+class MTA_form_global(Form):
+    json_df = TextAreaField('The jsonified data.frame')
+    var1 = StringField('First variable name')
+    var2 = StringField('Second variable name')
+    ref = FloatField('The reference ratio (optionnal)')
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+
+class MTA_globalDev(web.View):
+    @asyncio.coroutine
+    @aiohttp_jinja2.template('templates/MTA_dev.html')
+    def get(self):
+        gbd_form = MTA_form_global()
+        return {'form': gbd_form, 'title': 'MTA Global Dev. Example'}
+
+    @asyncio.coroutine
+    def post(self):
+        posted_data = yield from self.request.post()
+        gbd_form = MTA_form_global(posted_data) # Using the prepared WTForm allow to fetch the value with the good datatype
+        form_data = gbd_form.data
+        result = mta_json.global_dev(
+            form_data['json_df'], form_data['var1'],
+            form_data['var2'], form_data['ref'], form_data['type_fun'])
+        return web.Response(text=result)
+#        result = mta_json.global_dev(
+#            posted_data['json_df'], posted_data['var1'],
+#            posted_data['var2'], posted_data['ref'], posted_data['type_fun'])
+#        return web.Response(text=result)
+
+class MTA_form_medium(Form):
+    json_df = TextAreaField('The jsonified data.frame')
+    var1 = StringField('First variable name')
+    var2 = StringField('Second variable name')
+    key = FloatField('Name of the column containg the aggregation key')
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+
+class MTA_mediumDev(web.View):
+    @asyncio.coroutine
+    @aiohttp_jinja2.template('templates/MTA_dev.html')
+    def get(self):
+        meddev_form = MTA_form_medium()
+        return {'form': meddev_form, 'title': 'MTA Medium Dev. Example'}
+
+    @asyncio.coroutine
+    def post(self):
+        posted_data = yield from self.request.post()
+        meddev_form = MTA_form_medium(posted_data)
+        form_data = meddev_form.data
+        result = mta_json.global_dev(
+            form_data['json_df'], form_data['var1'],
+            form_data['var2'], form_data['key'], form_data['type_fun'])
+        return web.Response(text=result)
+
+
+@asyncio.coroutine
+def init_R_workers(loop):
+    g2.r_process = prepare_worker(4)
+    g2.context = zmq.Context()
+    broker = yield from launch_broker(g2.context, g2.r_process, None)
+    return broker
+
 @asyncio.coroutine
 def init(loop):
     app = web.Application(middlewares=[session_middleware(
         SimpleCookieStorage())])
     aiohttp_debugtoolbar.setup(app)
-    aiohttp_jinja2.setup(app,
-        loader=jinja2.FileSystemLoader('.'))
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('.'))
     app.router.add_route('GET', '/', handler)
-    app.router.add_route('GET', '/show/{table_name}', db_reader)
-    app.router.add_route('GET', '/zmq_testpage', zmq_testpage)
+#    app.router.add_route('GET', '/show/{table_name}', db_reader)
     app.router.add_route('*', '/Rr', rdisplay)
-    app.router.add_route('GET', '/load_entries/{table}', load_table)
+#    app.router.add_route('GET', '/load_entries/{table}', load_table)
     app.router.add_route('*', '/RrPersist/{key}', rdisplay_persist)
     app.router.add_route('GET', '/Rr/{pattern}', r_handler)
     app.router.add_route('*', '/Rpy2_single', rpy2_display_persist)
     app.router.add_route('POST', '/RrCommande', r_post_handler)
+    app.router.add_route('GET', '/R_console', R_console_redirect)
+    app.router.add_route('GET', '/R_console/', R_console_redirect)
     app.router.add_route('*', '/R_console/{key}', R_console)
 #    app.router.add_route('GET', '/R/{rpy2_pattern}', rpy2_handler)
+    app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
+    app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
+    app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 9999)
+#    rworkers = yield from loop.create_task(init_R_workers())
     return srv
 
 if __name__ == '__main__':
@@ -328,8 +447,21 @@ if __name__ == '__main__':
         except Exception as err:
             print(err)
             sys.exit()
+
+    if not hasattr(g2, 'context'):
+        def init_R_workers():
+            r_process = prepare_worker(4)
+            context = zmq.Context()
+            g2.context = context
+            g2.broker = threading.Thread(target=launch_broker, args=(context, r_process, None))
+            g2.broker.start()
+        init_R_workers()
+        ## Todo : find a better way to lauch the broker
+        # and to initialize the R workers (using asyncio-related methods
+        # instead of launching a thread)
     loop = asyncio.get_event_loop()
     srv = loop.run_until_complete(init(loop))
+
     print('serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()

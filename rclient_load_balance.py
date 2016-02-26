@@ -54,7 +54,7 @@ def R_client_return(client_url, expression, context, i):
     return reply.decode()
 
 def prepare_worker(nb_worker):
-    os.chdir('/home/mz/p2/noname')
+    os.chdir('/home/mz/code/noname')
     # Start the R worker :
     r_process = [
         Popen(['Rscript', '--vanilla', 'R/R_worker_class.R', '{}'.format(i)])
