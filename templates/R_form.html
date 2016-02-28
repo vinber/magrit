@@ -10,8 +10,8 @@
      <link rel="icon" href="../../favicon.ico">
  
      <title>FormulaiR</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.js"></script>
-   <script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.js"></script>
+    <script>
     $(document).ready(function() {
         $('button').click(function(e) {
             e.preventDefault();
@@ -32,11 +32,9 @@
    </script>
    <!-- {# 
    <script src="{{ url_for('static', filename='js/jquery-1.12.0.js') }}"></script>
-   <script src="{{ url_for('static', filename='js/R_form2.js') }}"> </script>
    #}
    -->
  </head>
-
  <body>
      <div class="container">
          <form class="form-signin" action="" method="post" role="form">
@@ -45,7 +43,6 @@
              <button class="btn btn-lg btn-primary btn-block" id="button">Run command</button>
          </form>
      </div><br><br><br>
-	 <div id='content'>
-	</div>
+     <div id='content'></div>
  </body>
  </html>

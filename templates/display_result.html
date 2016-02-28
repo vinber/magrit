@@ -7,41 +7,37 @@
      <meta name="description" content="">
      <meta name="author" content="">
      <title>Result display</title>
-     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
-     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.js"></script>
 
      <style>
-       #map{ height: 100% }
+       #map { height: 320px; }
      </style>
  </head>
 
  <body>
-     <div><h3>Stewart example</h3></div>
-    <div id="map">
-    </div>
-    <div id="raw_result">
-          <b><i>Raw result :</b></i>
-          {{ content }}
-    </div>
-  <script>
-  // initialize the map
+    <div><h3>Example</h3></div>
+    <div id="map"></div>
+    <b><i>Raw result :</b></i>
+    <div id="raw_result">{{ content }}</div>
+      <script>
+	map = new L.Map('map');
+	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+	var osm = new L.TileLayer(osmUrl, {minZoom: 5, maxZoom: 14, attribution: osmAttrib});		
 
-  var m = L.map('map').setView([51.344, 30.103], 5);
+	map.setView(new L.LatLng(51.3, 0.7),9);
+	map.addLayer(osm);
+      var result = document.getElementById('raw_result').innerHTML;
 
-  // load a tile layer
-  L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
-    {
-      attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
-      maxZoom: 18,
-      minZoom: 3
-    }).addTo(m);
-
-    var result = JSON.parse({{ content }});
-
-    var geojsonLayer = new L.GeoJSON(result);
-    m.addLayer(geojsonLayer);
-
-  </script>
+      var myStyle = {
+          "color": "#ff7800",
+          "weight": 5,
+          "opacity": 0.75
+      };
+      var geojsonLayer = new L.GeoJSON(JSON.parse(result));
+      map.addLayer(geojsonLayer, {style: myStyle});
+      </script>
  </body>
  </html>

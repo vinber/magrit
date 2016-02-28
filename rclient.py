@@ -61,8 +61,8 @@ class rClient:
         self.process.kill()
         self.process.wait()
         self.socket.close()
-        if self.key:
-            g2.keys_mapping.pop(self.key)
+#        if self.key:
+#            g2.keys_mapping.pop(self.key)
 
 
 class rClient_pushpull:
@@ -121,7 +121,7 @@ import zmq.asyncio
 
 class rClient_async:
     """Class for connecting with R zmq.asyncio socket (REQ/REP pattern)"""
-    def __init__(self, port, init, ctx, key=None, pid=None):
+    def __init__(self, port, init, ctx=None, key=None, pid=None):
         if init:
             self.process = Popen([
                 'Rscript',
@@ -133,10 +133,12 @@ class rClient_async:
         else:
             raise AttributeError('Something wrong happened, the client have '
                                  'to be initialised or have a pid')
-        self.ctx = ctx
+        if not ctx:
+            self.ctx = zmq.asyncio.Context()
+        else:
+            self.ctx = ctx
         self.socket = self.ctx.socket(zmq.REQ)
         self.socket.connect('ipc:///tmp/feeds/'+str(port))
-        self.key = key
 
     @asyncio.coroutine
     def rEval(self, command):
@@ -149,8 +151,6 @@ class rClient_async:
         yield from self.socket.send(command)
         yield from self.socket.recv()
         try:
-            if self.key:
-                g2.keys_mapping.pop(self.key)
             print('Exited session from {}'.format(self.key or self))
             self.process.kill()
             self.process.wait()
@@ -162,8 +162,8 @@ class rClient_async:
         self.process.kill()
         self.process.wait()
         self.socket.close()
-        if self.key:
-            g2.keys_mapping.pop(self.key)
+#        if self.key:
+#            g2.keys_mapping.pop(self.key)
 
 
 if __name__ == '__main__':  # Quick and dirty tests ...

@@ -49,9 +49,9 @@
         <h3>Index page</h3><br>
         <br><br><br><b>Some tests :</b><br><br>
         - Try a remote R console <i>( -> ØMQ -> R instance)</i>: <a href="/R_console">here</a><br><br>
-        - Try another remote R console <i>(-> ØMQ -> rpy2 process)</i>: <a href="/Rpy2_console">here</a><br><br>
-        - eval R commands directly in the url <i>( -> ØMQ -> R instance)</i>: <a href="/Rr">like this</a><br><br> 
-        - eval R commands directly in the url <i>( -> Rpy2 high-level interface)</i>: <a href="/">like that</a><br><br>
+        - Try another remote R console, allowing to display plot<i>(-> ØMQ -> rpy2 process)</i>: <a href="/Rpy2_console">here</a><br><br>
+        - eval R commands directly in the url with data persistence <i>( -> ØMQ -> R instance)</i>: <a href="/Rr/key:73421&R.Version()">like this</a><br><br> 
+        - Basic evaluation of R statements: <a href="/Rr">like this</a><br><br> 
         - Try one of the wrapped RIATE-lab functionnality:<br>
             <ul>
               <li><a href="/R/wrapped/SpatialPosition/stewart">Stewart potentials</a> (In/Out GeoJSON)</li>
@@ -61,7 +61,8 @@
               <li>Milk</li>
               <li><a href="/R/wrapped/MTA/globalDev">Global Deviation</a> (In/Out json arrays)</li>
               <li><a href="/R/wrapped/MTA/mediumDev">Medium Deviation</a> (In/Out json arrays)</li>
-              <li><a href="/upload">Test and display your layer (GeoJSON, TopoJSON, Shapefile)</a></li>
+              <li><a href="/R/wrapped/MTA/mediumDev">Local Deviation</a> (In/Out GeoJSON)</li>
+              <li><a href="/upload">Upload and display your layer + some infos (GeoJSON, TopoJSON, Shapefile and .csv/.tsv)</a></li>
             </ul> 
    </div><div>{{date}}</div><br><br><br>
   <div class="w3-container">

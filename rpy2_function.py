@@ -6,19 +6,19 @@ in order accept and output JSON-like objects from a python environnement
 
 @author: mz
 """
-import rpy2.rinterface as rinterface
+#import rpy2.rinterface as rinterface
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from pandas.rpy import common as com
+from collections import OrderedDict
+import numpy as np
 import pandas as pd
 try:
     import ujson as json
 except:
     import json
 #from functools import wraps
-import numpy as np
 #from random import randint, choice
-from collections import OrderedDict
 #import os
 #from helpers import guess_seperator
 
@@ -144,11 +144,10 @@ class spatialposition_json:
             contLines, sp.CRS(latlong_string)))
         return result[0]
 
-# df.reset_index(drop=False).to_json(orient='records')
 
 class mta_json:
     """
-    Wrapp some function from "MTA" R package in order to output JSON array
+    Wrap some function from "MTA" R package in order to output JSON arrays.
     """
     def global_dev(x, var1, var2, ref = None, type_dev = 'rel'):
         """
@@ -178,8 +177,10 @@ class mta_json:
         -------
         > df_json[:400]
         '[
-          {"id":"AT111","birth_2008":272,"death_2008":445.0,"gdppps1999":509,"gdppps2008":641,"pop1999":39148.91,"pop2008":37452},
-          {"id":"AT112","birth_2008":1195,"death_2008":1480.0,"gdppps1999":2262,"gdppps2008":3272,"pop1999":137469.46,"pop2008":146383}
+          {"id":"AT111","birth_2008":272,"death_2008":445.0,"gdppps1999":509,
+               "gdppps2008":641,"pop1999":39148.91,"pop2008":37452},
+          {"id":"AT112","birth_2008":1195,"death_2008":1480.0,"gdppps1999":2262,
+               "gdppps2008":3272,"pop1999":137469.46,"pop2008":146383}
           ... ]
         > mta_json.global_dev(df_json, 'pop1999', 'pop2008', None, 'abs')
         '[108.3791,97.3681,106.6248,102.6098,100.8494,101.4324,103.475,101.203,
@@ -218,10 +219,39 @@ class mta_json:
             The JSON representation (1 dim. array) of the deviation computed
 
         """
-        assert ref in {"abs", "rel"}
         x = rjsonlite.fromJSON(x)
         return rjsonlite.toJSON(rMTA.mediumDev(x, var1, var2, key, type_dev))[0]
 
+    def local_dev(gdf, var1, var2, order=None, type_dev='rel'):
+        """
+        Parameter
+        ---------
+
+        gdf : GeoJSON string,
+            GeoJSON representation of the polygons layers
+            (including relevant attributes)
+        var1 : string,
+            A column name
+        var2 : string,
+            A column name
+        order : integer or float, default None
+            The order of contiguity
+        type_dev : {'rel', 'abs'}, default 'rel'
+            The type of deviation
+
+        Return
+        ------
+
+        localDev : JSON array,
+            The JSON representation (1 dim. array) of the deviation computed
+
+        """
+        spdf = r_geojsonio.geojson_read(gdf, what='sp')
+        
+        return rjsonlite.toJSON(
+            rMTA.localDev(spdf, spdf.do_slot('data'),
+                          var1=var1, var2=var2,
+                          order=order, type=type_dev))[0]
 
 class flows_json:
     """
@@ -328,7 +358,7 @@ class flows_json:
             flowSel : JSON array
                 The selected flows as JSON array
         """
-        mat = com.convert_to_r_matrix(pd.DataFrame(data=json.loads(res), dtype=float))
+        mat = com.convert_to_r_matrix(pd.DataFrame(data=json.loads(mat), dtype=float))
         res = r_flows.firstflows(mat, method=method,
                                  ties_method=ties_method, k=k)
         return rjsonlite.toJSON(res)[0]

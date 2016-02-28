@@ -7,8 +7,9 @@ with the client through ZMQ, trying to emulate a R console.
 from collections import deque
 import rpy2.rinterface as rinterface
 import os
+import gc
 import zmq
-import json
+import ujson as json
 import sys
 
 class Rpy2_worker:
@@ -63,15 +64,14 @@ class Rpy2_worker:
                     print('CLOSE_OK')
                     break
                 try:
-                    print(request.decode())
-                    result_r = self.r(request.decode()) # Todo : qq chose pour reprendre l'écoute en cas d'erreur
-                    print(result_r)
+#                    print('Worker received  ', request.decode())
+                    result_r = self.r(request.decode())
+#                    print("Result of eval : ", result_r)
                 except Exception as err:
                     result = str(err)
 #                    print(status)
-                print('here')
                 if self.last_modified_graphics != os.stat('/tmp/r_output.svg').st_mtime:
-                    grdevices.dev_off() # Flush the graphical output ?
+                    grdevices.dev_off() # Flush the graphical output first
                     with open("/tmp/r_output.svg", "r") as f:
                         print('There is a graphical output...Returning it in '
                               'the console field')
@@ -81,14 +81,13 @@ class Rpy2_worker:
                     status = 'OK - No console output'
                 elif len(self.console_output) > 0 and 'rpy2' in str(type(result_r)):
                     status = 'OK'
-                    result = ' '.join([self.console_output.popleft() for i in range(len(self.console_output))])
+                    result = ' '.join([result]+[self.console_output.popleft() for i in range(len(self.console_output))])
                 else:
                     status = 'Something went wrong...'
-                print('bp')
                 response = json.dumps({'Result': result,
-                                       'Status': status})
-                print(response)
-                self.socket.send_multipart([header, b'', response.encode()])
+                                       'Status': status}).encode()
+#                print(response)
+                self.socket.send_multipart([header, b'', response])
         except zmq.ContextTerminated as err:
             print(err)
         except KeyboardInterrupt as err:

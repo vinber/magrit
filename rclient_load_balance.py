@@ -8,8 +8,7 @@ computations to be done in a R environnement (workers / backend-side).
 """
 from psutil import Popen, signal
 from collections import deque
-#from random import choice
-import ujson as json
+#import ujson as json
 import threading
 import time
 import zmq
@@ -31,7 +30,6 @@ if not os.path.isdir('/tmp/feeds'):
 
 def R_client_thread(client_url, expression, context, i):
     """Basic client sending a request (REQ) to a ROUTER (the broker)"""
-#    eval_methods = ('reval', 'eval_fork')
     socket = context.socket(zmq.REQ)
     socket.connect(client_url)
     socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
@@ -43,7 +41,6 @@ def R_client_thread(client_url, expression, context, i):
 
 def R_client_return(client_url, expression, context, i):
     """Basic client sending a request (REQ) to a ROUTER (the broker)"""
-#    eval_methods = ('reval', 'eval_fork')
     socket = context.socket(zmq.REQ)
     socket.connect(client_url)
     socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
@@ -134,25 +131,6 @@ if __name__ == "__main__":
         result_list.clear()
         context = zmq.Context()
         # Set a bunch a expression to evaluate (less or more coslty) :
-#        expressions = [
-#            'R.Version()', "b<-log1p(seq(1, 200))", "mat <- matrix(runif(400*400, min=-8, max=1379852), 400)",
-#            "a <- c(1,2,3,4)", "mat12 <- matrix(runif(72*72), 72) / 6", "d<-log1p(seq(7, 250))",
-#            "mat12 <- matrix(runif(90*90), 90) * matrix(runif(90*90), 90)",
-#            "d<-log1p(seq(77, 150))", "mat4 <- log10(matrix(runif(200*200), 200))",
-#            "log10(diag(matrix(123*123), 123))", "sequ <- seq(1,1000)", "ct <- Sys.time()",
-#            "abs(data.frame(log10(diag(matrix(runif(500*425), 500))) * cospi((1:500)**-0.3))) #! 0.01",
-#            "matx <- matrix(runif(200*200), 200)", "matz <- matrix(runif(555*555), 555) / 3.5",
-#            "maty <- matrix(runif(200*200), 200)", "maty <- matrix(runif(200*200), 200)",
-#            'R.Version();diag(matrix(runif(700*700), 350)) * sd(diag(matrix(runif(200*200), 200)))**-0.5',
-#            "b <- log1p(seq(1, 200))", "mat <- matrix(runif(400*400), 400)", "ttt <- Sys.time()",
-#            "a <- c(1, 2, 3, 4, 5); b <- c(6, 4, 7, 8, 9); a * 2 + 3 * b",   # << If persitance is needed a block of statements can be given separate by semi-colon
-#            "a<-c(1,2,3,4)", "mat12 <- matrix(runif(72*72), 72) / 6", "d<-log1p(seq(7, 250))",
-#            "mat12 <- matrix(runif(90*90), 90) * matrix(runif(90*90), 90)",
-#            "matc <- matrix(runif(600*600, min=-8, max=1379852), 600)**2.1"
-#            "d<-log1p(seq(77, 150))", "mat4 <- matrix(runif(200*200), 200)", "ct;ttt",
-#            "ct <- Sys.time()", "w <- data.frame(1:200 %*% matrix(runif(200*200), 200))",
-#            "matx <- matrix(runif(200*200), 200)", "std_matz <- sd(matrix(runif(200*200), 200))",
-#            "maty <- matrix(runif(200*200), 200)"]
         expressions = [
             'R.Version()', "b<-log1p(seq(1, 200))", "mat <- matrix(runif(400*400, min=-8, max=1379852), 400)",
             "a <- c(1,2,3,4)", "mat12 <- matrix(runif(72*72), 72) / 6", "d<-log1p(seq(7, 250))",
