@@ -26,6 +26,7 @@ from rclient_load_balance import *
 from rpy2_console_client import client_Rpy
 from rpy2_console_queue import launch_queue
 from rpy2_function import *
+from data_examples import geojson_example, json_example
 
 app_real_path = '/home/mz/code/noname'
 
@@ -198,7 +199,9 @@ def rpy2_console():
             g2.keys_mapping.pop(session['rpy2_session'])
             session.pop('rpy2_session')
             print('g2.keys_mapping :', g2.keys_mapping, '\nsession : ', session)
-            return json.dumps({'Status': 'Disconnected', 'Result': ''})
+            return json.dumps(
+                {'Status': 'Disconnected',
+                 'Result': "Reload the page to get a new session"})
         else:
             print('g2.keys_mapping :', g2.keys_mapping)
             message = cRpy.reval(rcommande.replace('\r', ''))
@@ -532,7 +535,7 @@ def MTA_localDev():
         return result
     else:
         return render_template('MTA_dev.html', form=locdev_form,
-                               title= 'MTA Medium Dev. Example')
+                               title= 'MTA Local Dev. Example')
     
 
 @app.route('/display/<content>')

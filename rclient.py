@@ -97,8 +97,8 @@ class rClient_pushpull:
         self.socket_send.send(command)
         self.socket_recv.recv()
         try:
-            if self.key:
-                g2.keys_mapping.pop(self.key)
+#            if self.key:
+#                g2.keys_mapping.pop(self.key)
             print('Exited session from {}'.format(self.key or self))
             self.process.kill()
             self.process.wait()
@@ -112,8 +112,8 @@ class rClient_pushpull:
         self.socket_recv.close()
         self.process.kill()
         self.process.wait()
-        if self.key:
-            g2.keys_mapping.pop(self.key)
+#        if self.key:
+#            g2.keys_mapping.pop(self.key)
 
 
 import asyncio

@@ -14,7 +14,6 @@ import fiona
 #import sqlite3
 from random import randint
 from datetime import datetime
-
 import asyncio
 import zmq.asyncio
 
@@ -31,6 +30,7 @@ from rpy2_function import *
 from rpy2_console_client import client_Rpy_async
 from rpy2_console_queue import launch_queue
 from rclient_load_balance import *
+from data_examples import geojson_example, json_example
 from wtforms import (
     FileField, IntegerField, SelectField, FieldList,
     Form, TextAreaField, validators, StringField, FloatField,
@@ -174,7 +174,8 @@ class Rpy2_console(web.View):
             session.pop('rpy2_session')
             print('g2.keys_mapping :', g2.keys_mapping)
             return web.Response(text=json.dumps(
-                {'Status': 'Disconnected', 'Result': ''}))
+                {'Status': 'Disconnected',
+                'Result': "Reload the page to get a new session"}))
         else:
             print('g2.keys_mapping :', g2.keys_mapping)
             message = yield from cRpy.reval(rcommande.replace('\r', ''))
@@ -464,11 +465,46 @@ class StewartPage(web.View):
             print('content : ', content)
         return {'content': content}
 
+class StewartPage2(web.View):
+    @aiohttp_jinja2.template('templates/stewart.html')
+    @asyncio.coroutine
+    def get(self):
+        stewart_form = StewartForm()
+        return {'form': stewart_form, 'content': ''}
+
+    @aiohttp_jinja2.template('templates/display_result.html')
+    @asyncio.coroutine
+    def post(self):
+        posted_data = yield from self.request.post()
+        stewart_form = StewartForm(posted_data)
+        if stewart_form.validate():
+            filenames = []  # Following code is probably totally insecure to deal with user inputs :
+            for file_ph in ('point_layer', 'mask_layer'):
+                file_to_upload = self.request.POST[file_ph]
+                if file_to_upload:
+                    savefile(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1]), file_to_upload[2].read())
+                    filenames.append(file_to_upload[1])
+                else:
+                    filenames.append('NULL')
+            form_data = stewart_form.data
+            key = find_port()
+            pt_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[0])
+            if filenames[1]:
+                mask_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[1])
+            else:
+                mask_name = 'NULL'
+        content = spatialposition_json.rpy2_stewart(
+            pt_name, form_data['var_name'], form_data['span'],
+            form_data['beta'], form_data['resolution'], mask_name)
+        print('content : ', content)
+        return {'content': content}
+
+
 ##########################################################
 #### Qucik views to wrap "MTA" functionnalities :
 
 class MTA_form_global(Form):
-    json_df = TextAreaField('The jsonified data.frame')
+    json_df = TextAreaField('The jsonified data.frame', default=json_example)
     var1 = StringField('First variable name')
     var2 = StringField('Second variable name')
     ref = FloatField('The reference ratio (optionnal)')
@@ -495,7 +531,7 @@ class MTA_globalDev(web.View):
 #        return web.Response(text=result)
 
 class MTA_form_medium(Form):
-    json_df = TextAreaField('The jsonified data.frame')
+    json_df = TextAreaField('The jsonified data.frame', default=json_example)
     var1 = StringField('First variable name')
     var2 = StringField('Second variable name')
     key = FloatField('Name of the column containg the aggregation key')
@@ -519,7 +555,8 @@ class MTA_mediumDev(web.View):
         return web.Response(text=result)
 
 class MTA_form_local(Form):
-    geojs = TextAreaField('GeoJSON layer with data attributes')
+    geojs = TextAreaField('GeoJSON layer with data attributes',
+                          default=geojson_example)
     var1 = StringField('First variable name')
     var2 = StringField('Second variable name')
     order = FloatField('Contiguity order (optionnal)')
@@ -530,16 +567,17 @@ class MTA_localDev(web.View):
     @aiohttp_jinja2.template('templates/MTA_dev.html')
     def get(self):
         locdev_form = MTA_form_local()
-        return {'form': locdev_form, 'title': 'MTA Medium Dev. Example'}
+        return {'form': locdev_form, 'title': 'MTA Local Dev. Example'}
 
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
         locdev_form = MTA_form_local(posted_data)
         form_data = locdev_form.data
+        key = get_key()
         result = mta_json.local_dev(
             form_data['geojs'], var1=form_data['var1'],
-            var2=form_data['var2'], order=form_data['order'], type=form_data['type_fun'])
+            var2=form_data['var2'], order=form_data['order'], type_dev=form_data['type_fun'])
         return web.Response(text=result)
     
 @asyncio.coroutine
@@ -560,8 +598,11 @@ def init(loop):
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
+    app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart2', StewartPage2)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
+    app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
+
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 9999)
     return srv
@@ -573,7 +614,7 @@ if __name__ == '__main__':
         except Exception as err:
             print(err)
             sys.exit()
-
+    
     if not hasattr(g2, 'context'):
         def init_R_workers(nb_workers):
             r_process = prepare_worker(nb_workers)

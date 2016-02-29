@@ -44,7 +44,7 @@ def R_client_return(client_url, expression, context, i):
     socket = context.socket(zmq.REQ)
     socket.connect(client_url)
     socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
-    print("Client {} send {}".format(i, expression))
+#    print("Client {} send {}".format(i, expression))
     socket.send(expression.encode())
     reply = socket.recv()
     socket.close()

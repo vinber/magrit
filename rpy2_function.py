@@ -13,6 +13,7 @@ from pandas.rpy import common as com
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
+import os
 try:
     import ujson as json
 except:
@@ -28,6 +29,7 @@ r_geojsonio = importr('geojsonio')
 rjsonlite = importr('jsonlite')
 rMTA = importr('MTA')
 sp = importr('sp')
+rgdal = importr('rgdal')
 raster = importr('raster')
 
 def guess_separator(file):
@@ -222,7 +224,7 @@ class mta_json:
         x = rjsonlite.fromJSON(x)
         return rjsonlite.toJSON(rMTA.mediumDev(x, var1, var2, key, type_dev))[0]
 
-    def local_dev(gdf, var1, var2, order=None, type_dev='rel'):
+    def local_dev(gdf, var1, var2, order=None, dist=None, type_dev='rel'):
         """
         Parameter
         ---------
@@ -235,7 +237,9 @@ class mta_json:
         var2 : string,
             A column name
         order : integer or float, default None
-            The order of contiguity
+            The order of contiguity (order OR dist should be set)
+        dist : integer or float, default None
+            The distance defining the contiguity (order OR dist should be set)
         type_dev : {'rel', 'abs'}, default 'rel'
             The type of deviation
 
@@ -246,12 +250,22 @@ class mta_json:
             The JSON representation (1 dim. array) of the deviation computed
 
         """
-        spdf = r_geojsonio.geojson_read(gdf, what='sp')
-        
+#        filename = '/tmp/{}.geojson'.format(abs(hash(tmp_key)))
+#        print(filename)
+#        with open(filename, 'w') as f:
+#            f.write(gdf)
+#        spdf = r_geojsonio.geojson_read(filename, what='sp')
+        spdf = rgdal.readOGR(gdf, 'OGRGeoJSON', verbose=False)
+        if not order and not dist:
+            return json.dumps({'Result': 'Error'})
+        if order is None or order == "NULL" or order == "":
+            order = robjects.NULL
+        if dist is None or dist == "NULL" or dist == "":
+            dist = robjects.NULL
+#        os.remove(filename)
         return rjsonlite.toJSON(
-            rMTA.localDev(spdf, spdf.do_slot('data'),
-                          var1=var1, var2=var2,
-                          order=order, type=type_dev))[0]
+            rMTA.localDev(spdf, spdf.do_slot('data'), var1=var1, var2=var2,
+                          order=order, dist=dist, type=type_dev))[0]
 
 class flows_json:
     """

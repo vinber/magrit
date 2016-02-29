@@ -65,10 +65,7 @@ class Rpy2_Queue(object):
         client_addr, empty, request = msg
         assert empty == b""
         # If the client address is in the worker queue, its worker is connected
-        assert client_addr in self.workers
-
         self.backend.send_multipart([client_addr, b'', client_addr, b'', request])
-
         # Pop the worker out of the list on the request of the client
         if request == b'CLOSE':
             self.workers.remove(client_addr)

@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Feb 28 00:18:29 2016
-
-@author: mz
-"""
-
-# -*- coding: utf-8 -*-
-"""
 R client (through Rpy2) trying to be used in a background for a WebPage
 providing a R interactive console.
 @author: mz
@@ -37,7 +30,7 @@ class client_Rpy_async:
             os.chdir('/home/mz/code/noname')
             # Start the R worker :
             self.worker_process = Popen(['python3', 'rpy2_console_worker.py', '{}'.format(i)])
-            time.sleep(0.2)
+            time.sleep(0.4)
         else:
             self.worker_process = Process(worker_pid)
         if not ctx:
@@ -76,7 +69,7 @@ class client_Rpy:
             os.chdir('/home/mz/code/noname')
             # Start the R worker :
             self.worker_process = Popen(['python3', 'rpy2_console_worker.py', '{}'.format(i)])
-            time.sleep(0.2)
+            time.sleep(0.4)
         else:
             self.worker_process = Process(worker_pid)
         self.context = zmq.Context.instance()
@@ -97,5 +90,5 @@ class client_Rpy:
         self.worker_process.terminate()
 #        self.worker_process.wait()
         self.socket.close()
-#        self.context.term()
+        self.context.term()
 #        sys.exit(0)
