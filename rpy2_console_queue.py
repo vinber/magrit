@@ -42,7 +42,7 @@ class Rpy2_Queue(object):
 
         self.backend = ZMQStream(backend)
         self.frontend = ZMQStream(frontend)
-        print('rpy2 broker for console sessions in ON')
+        print('rpy2 broker for console sessions is ON')
         self.backend.on_recv(self.handle_backend)
         self.loop = IOLoop.instance()
 

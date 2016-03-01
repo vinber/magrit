@@ -30,7 +30,7 @@ from rpy2_function import *
 from rpy2_console_client import client_Rpy_async
 from rpy2_console_queue import launch_queue
 from rclient_load_balance import *
-from data_examples import geojson_example, json_example
+from data_examples import geojson_example, json_example, json_example2
 from wtforms import (
     FileField, IntegerField, SelectField, FieldList,
     Form, TextAreaField, validators, StringField, FloatField,
@@ -42,6 +42,7 @@ class g2:
     UPLOAD_FOLDER = 'tmp/users_uploads'
     app_real_path = '/home/mz/code/noname'
     keys_mapping = {}
+    session_map = {}
 
 def find_port():
     while True:
@@ -49,10 +50,10 @@ def find_port():
         if port not in g2.keys_mapping.values():
             return port
 
-def get_key():
+def get_key(var=g2.keys_mapping):
     while True:
         k = ''.join([bytes([randint(65,122)]).decode() for _ in range(25)])
-        if k not in g2.keys_mapping:
+        if k not in var:
             return k
 
 @aiohttp_jinja2.template('templates/index.html')
@@ -438,77 +439,77 @@ class StewartPage(web.View):
     def post(self):
         posted_data = yield from self.request.post()
         stewart_form = StewartForm(posted_data)
-        if stewart_form.validate():
-            filenames = []  # Following code is probably totally insecure to deal with user inputs :
-            for file_ph in ('point_layer', 'mask_layer'):
-                file_to_upload = self.request.POST[file_ph]
-                if file_to_upload:
-                    savefile(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1]), file_to_upload[2].read())
-                    filenames.append(file_to_upload[1])
-                else:
-                    filenames.append('NULL')
-            form_data = stewart_form.data
-            key = find_port()
-            pt_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[0])
-            if filenames[1]:
-                mask_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[1])
+        if not stewart_form.validate():
+            return web.Response(text="Invalid input fields")
+
+        filenames = {}  # Following code is probably totally insecure to deal with user inputs :
+        for file_ph in ('point_layer', 'mask_layer'):
+            file_to_upload = self.request.POST[file_ph]
+            if file_to_upload:
+                filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1])
+                savefile(filepath, file_to_upload[2].read())
+                filenames[file_ph] = filepath
             else:
-                mask_name = 'NULL'
-            r_command = (
-                "stewart_to_json('{}', {}, {}, '{}', '{}', {}, {}, {}, {}, '{}')"
-                .format(pt_name, 'NULL', 'NULL', form_data['var_name'],
-                        form_data['type_fun'], form_data['span'],
-                        form_data['beta'], form_data['resolution'],
-                        'FALSE', mask_name))
-
-            content = R_client_return(url_client, r_command, g2.context, key)
-            print('content : ', content)
-        return {'content': content}
-
-class StewartPage2(web.View):
-    @aiohttp_jinja2.template('templates/stewart.html')
-    @asyncio.coroutine
-    def get(self):
-        stewart_form = StewartForm()
-        return {'form': stewart_form, 'content': ''}
-
-    @aiohttp_jinja2.template('templates/display_result.html')
-    @asyncio.coroutine
-    def post(self):
-        posted_data = yield from self.request.post()
-        stewart_form = StewartForm(posted_data)
-        if stewart_form.validate():
-            filenames = []  # Following code is probably totally insecure to deal with user inputs :
-            for file_ph in ('point_layer', 'mask_layer'):
-                file_to_upload = self.request.POST[file_ph]
-                if file_to_upload:
-                    savefile(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1]), file_to_upload[2].read())
-                    filenames.append(file_to_upload[1])
-                else:
-                    filenames.append('NULL')
-            form_data = stewart_form.data
-            key = find_port()
-            pt_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[0])
-            if filenames[1]:
-                mask_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[1])
-            else:
-                mask_name = 'NULL'
-        content = spatialposition_json.rpy2_stewart(
-            pt_name, form_data['var_name'], form_data['span'],
-            form_data['beta'], form_data['resolution'], mask_name)
+                filenames[file_ph] = 'NULL'
+        form_data = stewart_form.data
+        id_ = yield from is_known_user(self.request)
+        commande = (b'stewart_to_json(knownpts_json, unknownpts_json, '
+                                    b'matdist, varname, typefct, span, '
+                                    b'beta, resolution, longlat, mask_json)')
+        data = json.dumps({
+            'knownpts_json': filenames['point_layer'],
+            'unknownpts_json': None,
+            'matdist': None,
+            'varname': form_data['var_name'],
+            'typefct': form_data['type_fun'],
+            'span': form_data['span'],
+            'beta': form_data['beta'],
+            'resolution': form_data['resolution'],
+            'longlat': False,
+            'mask_json': filenames['mask_layer']
+            }).encode()
+        content = R_client_fuw(url_client, commande, data, g2.context, id_)
         print('content : ', content)
-        return {'content': content}
+        return {'content': content.decode()}
+#        key = find_port()
+#        pt_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[0])
+#        if filenames[1]:
+#            mask_name = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filenames[1])
+#        else:
+#            mask_name = 'NULL'
+#        r_command = (
+#            "stewart_to_json('{}', {}, {}, '{}', '{}', {}, {}, {}, {}, '{}')"
+#            .format(pt_name, 'NULL', 'NULL', form_data['var_name'],
+#                    form_data['type_fun'], form_data['span'],
+#                    form_data['beta'], form_data['resolution'],
+#                    'FALSE', mask_name))
+#        content = R_client_return(url_client, r_command, g2.context, key)
 
 
 ##########################################################
 #### Qucik views to wrap "MTA" functionnalities :
 
+@asyncio.coroutine
+def is_known_user(request):
+    session = yield from get_session(request)
+    if 'R_user' in session and session['R_user'] in g2.session_map:
+        id_ = session['R_user']
+        g2.session_map[id_].append(time.time())
+        print(session['R_user'], ' is a kwown user')
+    else:
+        id_ = get_key(g2.session_map)
+        session['R_user'] = id_
+        g2.session_map[id_] = [time.time()]
+        print(session['R_user'], ' is a new user')
+    return id_
+
 class MTA_form_global(Form):
     json_df = TextAreaField('The jsonified data.frame', default=json_example)
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    ref = FloatField('The reference ratio (optionnal)')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+    var1 = StringField('First variable name', [validators.Required()])
+    var2 = StringField('Second variable name', [validators.Required()])
+    ref = FloatField('The reference ratio (optionnal)', [validators.Optional()])
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')],
+                          validators=[validators.Required()], default='rel')
 
 class MTA_globalDev(web.View):
     @asyncio.coroutine
@@ -521,21 +522,31 @@ class MTA_globalDev(web.View):
     def post(self):
         posted_data = yield from self.request.post()
         gbd_form = MTA_form_global(posted_data) # Using the prepared WTForm allow to fetch the value with the good datatype
+        if not gbd_form.validate():
+            return web.Response(text="Invalid input fields")        
         form_data = gbd_form.data
-        result = mta_json.global_dev(
-            form_data['json_df'], form_data['var1'],
-            form_data['var2'], form_data['ref'], form_data['type_fun'])
-        return web.Response(text=result)
-#        result = mta_json.global_dev(posted_data['json_df'], posted_data['var1'],
-#            posted_data['var2'], posted_data['ref'], posted_data['type_fun'])
-#        return web.Response(text=result)
+        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
+        data = json.dumps({
+            'x': form_data['json_df'], 'var1': form_data['var1'],
+            'var2': form_data['var2'], 'ref': form_data['ref'],
+            'type_dev': form_data['type_fun']
+            })
+        id_ = yield from is_known_user(self.request)
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return web.Response(text=content.decode())
+
 
 class MTA_form_medium(Form):
-    json_df = TextAreaField('The jsonified data.frame', default=json_example)
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    key = FloatField('Name of the column containg the aggregation key')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+    json_df = TextAreaField('The jsonified data.frame',
+                            validators=[validators.Required()],
+                            default=json_example2)
+    var1 = StringField('First variable name', [validators.Required()])
+    var2 = StringField('Second variable name', [validators.Required()])
+    key = StringField('Name of the column containg the aggregation key',
+                      [validators.Required()])
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')],
+                          default='rel',
+                          validators=[validators.Required()])
 
 class MTA_mediumDev(web.View):
     @asyncio.coroutine
@@ -548,19 +559,29 @@ class MTA_mediumDev(web.View):
     def post(self):
         posted_data = yield from self.request.post()
         meddev_form = MTA_form_medium(posted_data)
+        if not meddev_form.validate():
+            return web.Response(text="Invalid input fields")
         form_data = meddev_form.data
-        result = mta_json.global_dev(
-            form_data['json_df'], form_data['var1'],
-            form_data['var2'], form_data['key'], form_data['type_fun'])
-        return web.Response(text=result)
+        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
+        data = json.dumps({
+            'x': form_data['json_df'].replace('\n', '').replace('\r', ''),
+            'var1': form_data['var1'], 'var2': form_data['var2'],
+            'key': form_data['key'], 'type_dev': form_data['type_fun']})
+        id_ = yield from is_known_user(self.request)
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return web.Response(text=content.decode())
+
 
 class MTA_form_local(Form):
     geojs = TextAreaField('GeoJSON layer with data attributes',
+                          validators=[validators.Required()],
                           default=geojson_example)
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    order = FloatField('Contiguity order (optionnal)')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
+    var1 = StringField('First variable name', [validators.Required()])
+    var2 = StringField('Second variable name', [validators.Required()])
+    order = FloatField('Contiguity order (optionnal)', [validators.Optional()])
+    distance = FloatField('The distance defining the contiguity (optionnal)', [validators.Optional()])
+    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')],
+                          default='rel', validators=[validators.Required()])
 
 class MTA_localDev(web.View):
     @asyncio.coroutine
@@ -573,12 +594,32 @@ class MTA_localDev(web.View):
     def post(self):
         posted_data = yield from self.request.post()
         locdev_form = MTA_form_local(posted_data)
+        if not locdev_form.validate():
+            return web.Response(text="Invalid input fields")
         form_data = locdev_form.data
-        key = get_key()
-        result = mta_json.local_dev(
-            form_data['geojs'], var1=form_data['var1'],
-            var2=form_data['var2'], order=form_data['order'], type_dev=form_data['type_fun'])
-        return web.Response(text=result)
+        if not form_data['distance'] and not form_data['order']:
+            return web.Response(text="Invalid input fields"
+                                     "(Order or Distance have to be set)")
+        id_ = yield from is_known_user(self.request)
+        commande = b'mta_localdev(spdf_geojs, var1, var2, order, dist, type_dev)'
+#        file_path = '/tmp/{}_localDev.geojson'.format(abs(hash(id_)))
+#        with open(file_path, 'w') as f:
+#            f.write(form_data['geojs'])
+        data = json.dumps({
+            'spdf_geojs': form_data['geojs'],
+            'var1': form_data['var1'],
+            'var2': form_data['var2'],
+            'order': form_data['order'],
+            'dist': form_data['distance'],
+            'type_dev': form_data['type_fun']})
+        id_ = yield from is_known_user(self.request)
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return web.Response(text=content.decode())
+
+#        result = mta_json.local_dev(
+#            form_data['geojs'], var1=form_data['var1'],
+#            var2=form_data['var2'], order=form_data['order'], type_dev=form_data['type_fun'])
+#        return web.Response(text=result)
     
 @asyncio.coroutine
 def init(loop):
@@ -598,7 +639,7 @@ def init(loop):
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
-    app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart2', StewartPage2)
+#    app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart2', StewartPage2)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)

@@ -50,6 +50,17 @@ def R_client_return(client_url, expression, context, i):
     socket.close()
     return reply.decode()
 
+def R_client_fuw(client_url, request, data, context, i):
+    """Basic client sending a request (REQ) to a ROUTER (the broker)"""
+    socket = context.socket(zmq.REQ)
+    socket.connect(client_url)
+    socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
+    socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+35))
+    socket.send_multipart([request, b'', data])
+    reply = socket.recv()
+    socket.close()
+    return reply
+
 def prepare_worker(nb_worker):
     os.chdir('/home/mz/code/noname')
     # Start the R worker :
@@ -108,15 +119,17 @@ def launch_broker(context, r_process, nb_clients):
         if available_workers > 0:
             if (frontend in socks and socks[frontend] == zmq.POLLIN):
 
-                client_addr, empty, request = frontend.recv_multipart()
-                assert empty == b""
+                client_addr, empty, request, empty2, data = \
+                    frontend.recv_multipart()
+                assert empty == b"" and empty2 == b''
 
                 #  Dequeue and drop the next worker address
                 available_workers += -1
                 worker_id = workers_list.popleft()
 
                 backend.send_multipart([worker_id, b"",
-                                        client_addr, b"", request])
+                                        client_addr, b"",
+                                        request, b"", data])
 
 #        # As there is neither support for CTRL+C nor a real eventloop in this test:
 #        if nb_clients < 1: break
