@@ -4,29 +4,28 @@
 """
 import os
 import sys
-#import sqlite3
 import fiona
 import pandas as pd
 import ujson as json
-
+#import sqlite3
+#from contextlib import closing
 from random import randint
 from datetime import datetime
-#from contextlib import closing
 
 #Todo : Some clean-up in the import + use Session and cookies
 from flask import (
     Flask, request, session, g, redirect, url_for,
-    abort, render_template, send_from_directory, Response)
+    render_template, send_from_directory, Response)
 from werkzeug import secure_filename
-from wtforms import (FloatField, FieldList, Form, FormField, IntegerField, RadioField,
-    SelectField, StringField, TextAreaField, validators)
-from flask_wtf.file import FileAllowed, FileRequired, FileField
+from flask_wtf.file import FileAllowed, FileField
 from rclient import rClient
 from rclient_load_balance import *
 from rpy2_console_client import client_Rpy
 from rpy2_console_queue import launch_queue
-from rpy2_function import *
-from data_examples import geojson_example, json_example
+#from rpy2_function import *
+from FormsWT import (
+    MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
+    RstatementForm, FlowsForm)
 
 app_real_path = '/home/mz/code/noname'
 
@@ -129,13 +128,6 @@ def Rrapp_prez_commande():
 ### The rpy2 version is currently the only able to display the plot
 ### eventually requested.
 #####################################################
-
-class RstatementForm(Form):
-    rcommande = TextAreaField('R console',
-                          [validators.Length(min=1, max=4000),
-                           validators.DataRequired(True)],
-                          default=u'R.Version()')
-
 
 @app.route('/R_console')
 @app.route('/R_console/', methods=['GET', 'POST'])
@@ -384,16 +376,6 @@ def upload_file():
 ##########################################################
 #### Qucik views to wrap "flows" functionnalities :
 
-class FlowsAnalysisForm(Form):
-#    colname = SelectField('Column names....')
-    field_i = SelectField(choices=[])
-    field_j = SelectField(choices=[])
-    field_fij = SelectField(choices=[])
-
-class FlowsForm(Form):
-    table = FileField('', [FileAllowed(['csv', 'xls', 'tsv', 'txt'], 'JSON Geoms only!')])
-    next_field = FieldList(FormField(FlowsAnalysisForm), '')
-
 @app.route('/R/wrapped/flows/int', methods=['GET', 'POST'])
 def flows_int():    
     flows_form = FlowsForm(request.form)
@@ -426,23 +408,9 @@ def flows_int():
 ##########################################################
 #### Qucik views to wrap "SpatialPosition" functionnalities :
 
-class StewartForm(Form):
-    point_layer = FileField('Observation point layer')
-                            #,[FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
-    mask_layer = FileField('Mask (contour) layer')
-    #, [FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
-    var_name = StringField('Variable name')
-    span = IntegerField('Span (meter)',  [validators.NumberRange(min=0, max=100000)])
-    beta = IntegerField('Beta', [validators.NumberRange(min=0, max=5)])
-    type_fun = RadioField(choices=[('exponential', 'Exponential'), ('pareto', 'Pareto')])
-    resolution = IntegerField('Resolution (meter)',  [validators.NumberRange(min=0, max=100000)])
-
 @app.route('/R/wrapped/SpatialPosition/stewart', methods=['GET', 'POST'])
 def stewart_page():
-    # Todo : try to build a rpy2 class holding the main utility function 
-    # in order to compute in one call the values requested
-    # and communicate via a ZMQ socket with them :
-    stewart_form = StewartForm(request.form)
+    stewart_form = SpatialPos_Form(request.form)
     if request.method == 'POST' and stewart_form.validate():
         filenames = []
         for file_ph in ('point_layer', 'mask_layer'):
@@ -470,58 +438,54 @@ def stewart_page():
         print(r_command)
         content = R_client_return(url_client, r_command, g2.context, key)
         return render_template('display_result.html', content=content)
-    return render_template('stewart.html', form=stewart_form)
+    return render_template('sPosition.html',
+                           form=stewart_form,
+                           title='Stewart Example')
 
 ##########################################################
 #### Qucik views to wrap "MTA" functionnalities :
 
-class MTA_form_global(Form):
-    json_df = TextAreaField('The jsonified data.frame')
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    ref = FloatField('The reference ratio (optionnal)')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
-
 @app.route('/R/wrapped/MTA/globalDev', methods=['GET', 'POST'])
 def MTA_globalDev():
-    gbd_form = MTA_form(request.form)
+    gbd_form = MTA_form_global(request.form)
     if request.method == 'POST':
+        if not gbd_form.validate():
+            return 'Invalid input fields'      
         form_data = gbd_form.data
-        return mta_json.global_dev(
-            form_data['json_df'], form_data['var1'],
-            form_data['var2'], form_data['ref'], form_data['type_fun'])
+        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
+        data = json.dumps({
+            'x': form_data['json_df'], 'var1': form_data['var1'],
+            'var2': form_data['var2'], 'ref': form_data['ref'],
+            'type_dev': form_data['type_fun']
+            })    
+        id_ = randint(1, 99999)  # id_ = is_known_user(session)
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return content.decode()
 
     else:
         return render_template('MTA_dev.html', form=gbd_form,
                                title='MTA Global Dev. Example')
 
-class MTA_form_medium(Form):
-    json_df = TextAreaField('The jsonified data.frame')
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    key = FloatField('Name of the column containg the aggregation key')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
 
 @app.route('/R/wrapped/MTA/mediumDev', methods=['GET', 'POST'])
 def MTA_mediumDev():
     meddev_form = MTA_form_medium(request.form)
     if request.method == 'POST':
+        if not meddev_form.validate():
+            return "Invalid input fields"
         form_data = meddev_form.data
-        return mta_json.global_dev(
-            form_data['json_df'], form_data['var1'],
-            form_data['var2'], form_data['key'], form_data['type_fun'])
+        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
+        data = json.dumps({
+            'x': form_data['json_df'].replace('\n', '').replace('\r', ''),
+            'var1': form_data['var1'], 'var2': form_data['var2'],
+            'key': form_data['key'], 'type_dev': form_data['type_fun']})
+        id_ = randint(1, 99999)  # id_ = is_known_user(session)
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return content.decode()
 
     else:
         return render_template('MTA_dev.html', form=meddev_form,
                                title='MTA Medium Dev. Example')
-
-
-class MTA_form_local(Form):
-    geojs = TextAreaField('GeoJSON layer with data attributes')
-    var1 = StringField('First variable name')
-    var2 = StringField('Second variable name')
-    order = FloatField('Contiguity order (optionnal)')
-    type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')])
 
 
 @app.route('/R/wrapped/MTA/localDev', methods=['GET', 'POST'])
@@ -529,22 +493,34 @@ def MTA_localDev():
     locdev_form = MTA_form_local(request.form)
     if request.method == 'POST':
         form_data = locdev_form.data
-        result = mta_json.local_dev(
-            form_data['geojs'], var1=form_data['var1'],
-            var2=form_data['var2'], order=form_data['order'], type=form_data['type_fun'])
-        return result
+        if not locdev_form.validate():
+            return "Invalid input fields"
+        if not form_data['distance'] and not form_data['order']:
+            return "Invalid input fields (Order or Distance have to be set)"
+        id_ = randint(1, 99999)  # id_ = is_known_user(session)
+        commande = b'mta_localdev(spdf_geojs, var1, var2, order, dist, type_dev)'
+        data = json.dumps({
+            'spdf_geojs': form_data['geojs'],
+            'var1': form_data['var1'],
+            'var2': form_data['var2'],
+            'order': form_data['order'],
+            'dist': form_data['distance'],
+            'type_dev': form_data['type_fun']})
+        content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
+        return content.decode()
+
     else:
         return render_template('MTA_dev.html', form=locdev_form,
                                title= 'MTA Local Dev. Example')
-    
 
+    
 @app.route('/display/<content>')
 def display_result(content):
     return render_template('display_result.html', content=content)
 
 if __name__ == '__main__':
-    def init_R_workers():
-        r_process = prepare_worker(4)
+    def init_R_workers(nb_workers):
+        r_process = prepare_worker(nb_workers)
         context = zmq.Context()
         g2.context = context
         g2.broker = threading.Thread(target=launch_broker, args=(context, r_process, None))
@@ -554,7 +530,7 @@ if __name__ == '__main__':
         g2.thread_q = threading.Thread(target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
         g2.thread_q.start()
 
-    init_R_workers()
+    init_R_workers(2)
     init_Rpy2_console_broker()
 
     if len(sys.argv) > 1:

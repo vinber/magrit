@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 29 16:03:02 2016
-
 @author: mz
 """
 
