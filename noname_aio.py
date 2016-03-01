@@ -10,6 +10,8 @@ import os
 import sys
 import ujson as json
 import time
+import numpy as np
+import pandas as pd
 import fiona
 #import sqlite3
 from random import randint
@@ -30,6 +32,7 @@ from rpy2_console_client import client_Rpy_async
 from rpy2_console_queue import launch_queue
 from rclient_load_balance import *
 #from rpy2_function import *
+from helpers import guess_separator
 from FormsWT import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
     RstatementForm, FlowsForm)
@@ -368,26 +371,32 @@ class FlowsPage(web.View):
     def post(self):
         posted_data = yield from self.request.post()
         flows_form = FlowsForm(posted_data)
-        file_to_upload = posted_data.get('table')
-        filename = file_to_upload[1]
-        savefile(filename, file_to_upload[2].read())
-        try:
-            real_path = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
-            sep = guess_separator(real_path)
-            df = pd.read_csv(real_path, sep=sep)
-            headers = list(df.columns)
-            if 'Unnamed: 0' in headers[0]:
-                headers = headers[1:]
-            headers_fields = list(zip(headers, headers))
-            suite = flows_form.next_field.append_entry()
-            suite.field_i.choices = headers_fields
-            suite.field_j.choices = headers_fields
-            suite.field_fij.choices = headers_fields
-            content = '<div>' + df.head(15).to_html().replace('\n', '') + '</div>'
-        except Exception as err:
-            print(err)
-            content = str(err)
-        return {'form': flows_form, 'content': content}
+        form_data = flows_form.data
+        print(form_data)
+        if not 'next_field' in form_data:
+            file_to_upload = posted_data.get('table')
+            filename = file_to_upload[1]
+            savefile(filename, file_to_upload[2].read())
+            try:
+                real_path = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                sep = guess_separator(real_path)
+                df = pd.read_csv(real_path, sep=sep)
+                headers = list(df.columns)
+                print('Before : ', headers)
+                if 'Unnamed: 0' in headers[0]:
+                    headers = headers[1:]
+                headers_fields = list(zip(headers, headers))
+                suite = flows_form.next_field.append_entry()
+                suite.field_i.choices = headers_fields
+                suite.field_j.choices = headers_fields
+                suite.field_fij.choices = headers_fields
+                content = '<div>' + df.head(15).to_html().replace('\n', '') + '</div>'
+            except Exception as err:
+                print(err)
+                content = str(err)
+            return {'form': flows_form, 'content': content}
+        else:
+            return {'form': flows_form, 'content': "Foooo" + content}
 
 ##########################################################
 #### Qucik views to wrap "SpatialPosition" functionnalities :

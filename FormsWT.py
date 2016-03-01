@@ -69,6 +69,6 @@ class FlowsAnalysisForm(Form):
 
 
 class FlowsForm(Form):
-    table = FileField('JSON representation of the table...')
+    table = FileField('.csv or .xls table')
     next_field = FieldList(FormField(FlowsAnalysisForm),
                            'Columns to use for later analysis')

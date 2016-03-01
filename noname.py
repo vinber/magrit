@@ -5,6 +5,7 @@
 import os
 import sys
 import fiona
+import numpy as np
 import pandas as pd
 import ujson as json
 #import sqlite3
@@ -23,6 +24,7 @@ from rclient_load_balance import *
 from rpy2_console_client import client_Rpy
 from rpy2_console_queue import launch_queue
 #from rpy2_function import *
+from helpers import guess_separator
 from FormsWT import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
     RstatementForm, FlowsForm)
