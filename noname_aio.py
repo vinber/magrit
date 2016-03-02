@@ -25,6 +25,7 @@ from aiohttp import web
 import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware  #, SimpleCookieStorage
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
+from collections import OrderedDict
 
 # TODO : some clean-up in the R and rpy2 clients used
 from rclient import rClient_async
@@ -41,9 +42,10 @@ from FormsWT import (
 class g2:
     DATABASE = 'tmp/db.db'
     UPLOAD_FOLDER = 'tmp/users_uploads'
-    app_real_path = '/home/mz/code/noname'
+    app_real_path = '/home/mz/code/noname-stuff'
     keys_mapping = {}
     session_map = {}
+    table_map = {}
 
 def find_port():
     while True:
@@ -234,8 +236,12 @@ def clear_r_session(request):
 ##########################################################
 
 def savefile(path, raw_data):
-    with open(path, 'wb') as f:
-        f.write(raw_data)
+    if '.shp' in path or '.dbf' in path:
+        with open(path, 'wb') as f:
+            f.write(raw_data)
+    else:
+        with open(path, 'w') as f:
+            f.write(raw_data.decode())
 
 class UploadFile(web.View):
     """
@@ -244,18 +250,12 @@ class UploadFile(web.View):
     Mixing types and multi-upload (except the necessary one for Shapefile) are
     not allowed.
     """
-    page = """
-            <title>Upload new File</title>
-            <h1>Upload new File</h1>
-            <form action="upload" method="post" enctype=multipart/form-data>
-              <p><input type="file" multiple="" name=file[]>
-                 <input type=submit value=Upload>
-            </form>{}
-            """
+    @aiohttp_jinja2.template('templates/upload_srv.html')
     @asyncio.coroutine
     def get(self):
-        return web.Response(body=self.page.format('').encode())
+        return {'content_d': '', 'raw_result': ''}
 
+    @aiohttp_jinja2.template('templates/upload_srv.html')
     @asyncio.coroutine
     def post(self):
         filenames = []
@@ -264,7 +264,7 @@ class UploadFile(web.View):
         files_to_upload = posted_data.getall('file[]')
         alert = self.validate_upload_set(files_to_upload)
         if alert:
-            return web.Response(body=self.page.format(alert).encode())
+            return {'content_d': alert, 'raw_result': ''}
         for file in files_to_upload:
             if file:
                 filename = file[1]
@@ -273,14 +273,15 @@ class UploadFile(web.View):
             else:
                 continue
         if len(filenames) > 0:
-            content = self.uploaded_file_summary(filename)
-            return web.Response(body=content.encode())
+            content, raw_result = self.uploaded_file_summary(filename)
+            return {'content_d': content, 'raw_result': raw_result}
         else:
-            return web.Response(body=self.page.format(alert).encode())
+            return {'content_d': alert, 'raw_result': ''}
 
     @staticmethod
     def uploaded_file_summary(filename):
         infos, file = '', None
+        raw_result = ''
         trans_rule = str.maketrans('', '', '[()]')
         basename, ext = filename.split('.')
         if ext in ('shp', 'dbf', 'shx'):
@@ -304,6 +305,7 @@ class UploadFile(web.View):
                  rec['type'] for rec in datajs['objects'][lyr]['geometries'])
                 for lyr in layers])
             crs = "EPSG:4326"
+            raw_result = datajs
         elif ext in ('json', 'geojson'):
             file = fiona.open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename))
             format_file = 'GeoJSON'
@@ -314,6 +316,8 @@ class UploadFile(web.View):
             else:
                 crs = file.crs
             type_geom = file.schema['geometry']
+            with open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename), 'r') as f:
+                raw_result = f.read()
         elif ext in ('csv', 'txt', 'tsv'):
             layers, format_file = basename, ext
             filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
@@ -334,7 +338,7 @@ class UploadFile(web.View):
                 """.format(format_file, layers, nb_features, type_geom, crs)
         else:
             infos = "Something unexpected append"
-        return '<div>'+infos.translate(trans_rule).replace('\n', '<br>')+'</div>'
+        return '<div>'+infos.translate(trans_rule).replace('\n', '<br>')+'</div>', raw_result
 
     @staticmethod
     def validate_upload_set(files_to_upload):
@@ -370,15 +374,18 @@ class FlowsPage(web.View):
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
+        id_ = yield from is_known_user(self.request)
         flows_form = FlowsForm(posted_data)
         form_data = flows_form.data
         print(form_data)
-        if not 'next_field' in form_data:
+        if not id_ in g2.table_map:
+            id_ = yield from is_known_user(self.request)
             file_to_upload = posted_data.get('table')
-            filename = file_to_upload[1]
-            savefile(filename, file_to_upload[2].read())
+            filename = 'table_' + str(abs(hash(id_)))
+            real_path = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+            savefile(real_path, file_to_upload[2].read())
             try:
-                real_path = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                g2.table_map[id_] = real_path
                 sep = guess_separator(real_path)
                 df = pd.read_csv(real_path, sep=sep)
                 headers = list(df.columns)
@@ -396,7 +403,41 @@ class FlowsPage(web.View):
                 content = str(err)
             return {'form': flows_form, 'content': content}
         else:
-            return {'form': flows_form, 'content': "Foooo" + content}
+            nform = form_data['next_field'][0]
+            commande = (b"prepflows_json(mat, i, j, fij, "
+                        b"remove_diag, direct_stat)")
+            id_ = yield from is_known_user(self.request)
+            filename = g2.table_map[id_]
+            print(filename)
+            data = json.dumps({
+                'mat': filename,
+                'i': nform['field_i'],
+                'j': nform['field_j'],
+                'fij': nform['field_fij'],
+                'remove_diag': False,
+                'direct_stat': {
+                    "direct_stat": True, "output": 'none', "verbose": True}
+                }).encode()
+            content = R_client_fuw(url_client, commande, data, g2.context, id_)
+            res = json.loads(content.decode())
+#            summary = OrderedDict([
+#                ("matdim", res['summary'][0]),
+#                ("nblinks", res['summary'][1]),
+#                ("density", res['summary'][2]),
+#                ("connectcomp", res['summary'][3]),
+#                ("connectcompx", res['summary'][4]),
+#                ("sumflows", res['summary'][5]),
+#                ("min", res['summary'][6]),
+#                ("Q1", res['summary'][7]),
+#                ("median", res['summary'][8]),
+#                ("Q3", res['summary'][9]),
+#                ("max", res['summary'][10]),
+#                ("mean", res['summary'][11]),
+#                ("sd", res['summary'][12])
+#                ])
+            summary = '<br>'.join([i for i in res['summary']])
+            return {'form': flows_form,
+                    'content': "Summary and raw data :<br>" + summary}
 
 ##########################################################
 #### Qucik views to wrap "SpatialPosition" functionnalities :
@@ -630,6 +671,11 @@ class MTA_localDev(web.View):
         content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
         return web.Response(text=content.decode())
 
+@aiohttp_jinja2.template('templates/index2.html')
+@asyncio.coroutine
+def up_client(request):
+    return {}
+
 @asyncio.coroutine
 def init(loop):
     app = web.Application(middlewares=[session_middleware(
@@ -637,6 +683,7 @@ def init(loop):
     aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('.'))
     app.router.add_route('GET', '/', handler)
+    app.router.add_route('GET', '/upload_client', up_client)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_route('*', '/Rr', rdisplay)
     app.router.add_route('GET', '/Rr/{pattern}', r_handler)
@@ -653,6 +700,7 @@ def init(loop):
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
+    app.router.add_static('/static/', path='static', name='static')
 
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 9999)

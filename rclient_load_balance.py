@@ -67,7 +67,7 @@ def prepare_worker(nb_worker):
     r_process = [
         Popen(['Rscript', '--vanilla', 'R/R_worker_class.R', '{}'.format(i)])
         for i in range(nb_worker)]
-    time.sleep(0.5)
+    time.sleep(0.4)
     return r_process
 
 

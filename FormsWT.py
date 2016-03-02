@@ -67,7 +67,7 @@ class FlowsAnalysisForm(Form):
     field_j = SelectField('Flows destinations (i) :', choices=[])
     field_fij = SelectField('Flow intensity (Fij) :', choices=[])
 
-
+    
 class FlowsForm(Form):
     table = FileField('.csv or .xls table')
     next_field = FieldList(FormField(FlowsAnalysisForm),
