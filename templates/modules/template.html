@@ -1,0 +1,128 @@
+<script src="../../static/js/d3.v3.min.js"></script>
+<script src="../../static/js/topojson.v1.min.js"></script>
+<script src="../../static/js/queue.v1.min.js"></script>
+<script src="../../static/js/noname.js"></script>
+<script src="../../static/js/jquery-2.2.1.min.js"></script>
+<script src="../../static/js/jquery-ui.min.js"></script>
+
+<link href="../../static/css/style.css" rel="stylesheet" type="text/css" >
+
+
+   
+<body> 
+<div id="header"></div>
+<div id="menu"></div>
+<div id='move'></div>
+<div id="map"></div>
+<div id="legend"></div>
+
+</body>    
+
+
+<script>
+    
+
+   
+// HEADER
+getHeader("#header","Build a choropleth map",0.1);
+
+// MENU
+$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
+
+    
+var accordion = d3.select("#menu").append("div").attr("id","accordion");
+accordion.append("h3").html("Import your data"); 
+var section1 =  d3.select("#accordion").append("div").attr("id","section1");
+accordion.append("h3").html("Configure your map"); 
+var section2 =  d3.select("#accordion").append("div").attr("id","section2");
+accordion.append("h3").html("Options"); 
+var section3 =  d3.select("#accordion").append("div").attr("id","section3");
+section1.append("p").html("xx x x x x x")
+section2.append("label").html("coucou")
+section2.append("input").attr("type", "range")
+section2.append("input").attr("type", "checkbox")
+section2.append("input").attr("type", "radio")
+section2.append("input").attr("type", "textarea")
+section2.append("input").attr("type","color")
+
+$(function(){
+    var A = parseInt($('#menu').width(), 10),
+        B = parseInt($('#map').width(), 10),
+        Z = parseInt($('#move').width(), 10),
+        minw = parseInt((A + B + Z) * 10 / 100, 10),
+        offset = $('body').offset(),
+        splitter = function(event, ui){
+            var aw = parseInt(ui.position.left),
+                bw = A + B - aw;
+            //set widths and information...
+            $('#menu').css({width : aw});
+            $('#map').css({width : bw});
+            $("svg").width(bw);
+            
+        };
+    $('#move').draggable({
+        axis : 'x',
+        containment : [
+            offset.left + minw,
+            offset.top,
+            offset.left + A + B - minw,
+            offset.top + $('body').height()
+            ],
+        drag : splitter
+    });
+
+});
+
+
+// MAP
+//var map = d3.select("#map").append("div").html("coucou")
+
+
+
+
+var svg = d3.select("#map").append("svg");
+    
+var path = d3.geo.path().projection(null);
+var width = $("svg").parent().width();
+var height = $("svg").parent().height();      
+svg.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox","0 0 " + width + " " + height);   
+svg.attr("width", width).attr("height", height).attr("class","grad");
+    
+
+    
+ var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+ radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
+ radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
+
+// Files to load    
+    queue()
+    .defer(d3.json, "../../database/topojson_proj/nuts2013.topojson")
+    .await(ready);
+    
+    
+    function ready(error, nuts) {
+  if (error) throw error;
+    
+// ***** Bottom layers *****
+    
+    // background
+    svg.append("g").attr("id", " bg").append("rect")
+        .style("fill", "url(#radial-gradient)")
+        .attr("width", "100%")
+        .attr("height", "100%")
+    // layer
+     svg.append("g").attr("id", "layer")
+     
+        .selectAll(".subunit")
+        .data(topojson.feature(nuts, nuts.objects.nuts0).features)
+        .enter().append("path")
+        .attr("d", path)
+         .style("fill", "#CCCCCC")
+     .attr("width", "100%")
+
+} 
+
+
+</script>
+
+
