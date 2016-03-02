@@ -144,8 +144,7 @@ if __name__ == '__main__':
 ##        self.backend.on_recv(self.handle_backend)
 ##        self.loop = IOLoop.instance()
 #
-#    
-#
+
 #    @asyncio.coroutine
 #    def handle_backend(self, msg):
 #        # Queue worker address for routing clients/workers:
@@ -175,37 +174,3 @@ if __name__ == '__main__':
 #        if request == b'CLOSE':
 #            self.workers.remove(client_addr)
 #            return
-
-
-#class client_Rpy:
-#    """
-#    Basic request-reply ZMQ client sending R expression to evaluate
-#    by a Rpy2 worker and receiving json response (console output / status)
-#    """
-#    def __init__(self, client_url, i, init=True, worker_pid=None):
-#        if init:
-#            self.worker_process = prepare_worker(i)
-#        else:
-#            self.worker_process = Process(worker_pid)
-#        time.sleep(0.2)
-#        self.context = zmq.Context.instance()
-#        self.socket = self.context.socket(zmq.REQ)
-#
-#        self.socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
-#        self.socket.connect(client_url)
-#        self.i = i
-#
-#    def reval(self, expression):
-#        self.socket.send(expression.encode())
-##        print("{} send {}".format(self.i, expression))
-#        self.reply = self.socket.recv()
-#        return self.reply
-#
-#    def disconnect_close(self):
-#        self.socket.send(b'CLOSE')
-#        time.sleep(0.3)
-#        self.worker_process.terminate()
-##        self.worker_process.wait()
-#        self.socket.close()
-##        self.context.term()
-##        sys.exit(0)

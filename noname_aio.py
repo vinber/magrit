@@ -25,13 +25,15 @@ import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware  #, SimpleCookieStorage
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-# TODO : some clean-up in the R and rpy2 clients used
-from rpy2_console.rpy2_console_client import client_Rpy_async
-from rpy2_console.rpy2_console_queue import launch_queue
+# Just for the R console page based on rpy2 :
+from r_py.rpy2_console_client import client_Rpy_async
+from r_py.rpy2_console_queue import launch_queue
 
-from rclient import rClient_async
-from rclient_load_balance import *
+# For the other actions involving R :
+from r_py.rclient import rClient_async
+from r_py.rclient_load_balance import *
 
+# Used for the page generation with jinja2 and wtforms:
 from helpers.misc import guess_separator
 from helpers.forms import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
@@ -60,6 +62,11 @@ def get_key(var=g2.keys_mapping):
 @aiohttp_jinja2.template('templates/index.html')
 @asyncio.coroutine
 def handler(request):
+    return {}
+
+@aiohttp_jinja2.template('templates/index2.html')
+@asyncio.coroutine
+def handler2(request):
     session = yield from get_session(request)
     try:
         date = 'Last visit : {}'.format(
@@ -674,6 +681,11 @@ class MTA_localDev(web.View):
 def up_client(request):
     return {}
 
+@aiohttp_jinja2.template('templates/modules/template.html')
+@asyncio.coroutine
+def modules_handler(request):
+    return {}
+
 @asyncio.coroutine
 def init(loop):
     app = web.Application(middlewares=[session_middleware(
@@ -681,6 +693,7 @@ def init(loop):
     aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('.'))
     app.router.add_route('GET', '/', handler)
+    app.router.add_route('GET', '/index2', handler2)
     app.router.add_route('GET', '/upload_client', up_client)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_route('*', '/Rr', rdisplay)
@@ -698,6 +711,7 @@ def init(loop):
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
+    app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
 
     srv = yield from loop.create_server(
@@ -743,78 +757,3 @@ if __name__ == '__main__':
         loop.run_forever()
     except KeyboardInterrupt:
         pass
-
-#def connect_db():
-#    conn = sqlite3.connect(g.DATABASE)
-#    g2.sqlite_db = conn
-#    return conn
-#
-#def get_db():
-#    if not hasattr(g, 'sqlite_db'):
-#        g2.sqlite_db = connect_db()
-#    return g2.sqlite_db
-#
-#@asyncio.coroutine
-#def db_reader(request):
-#    table_name = request.match_info['table_name']
-#    trans_rule = str.maketrans('', '', '()')
-#    db = get_db()
-#    try:
-#        cur = db.execute('SELECT * FROM {};'.format(table_name))
-#        result = '<br>'.join([str(i).replace(',', '|') for i in cur.fetchall()])
-#    except Exception as err:
-#        result = str(err)
-#    return web.Response(body=('<div>'+result.translate(trans_rule)+'</div>').encode())
-#
-#@asyncio.coroutine
-#def load_table(request):
-#    try:
-#        table = request.match_info['table']
-#        table = table.split('\\n')
-#        db = get_db()
-#        for line in table:
-#            db.execute('INSERT INTO entries (a, b, c, d) values (?, ?, ?, ?)', 
-#                       tuple(map(float, line.split(','))))
-#        db.commit()
-#        content = "Data successfully loaded"
-#    except Exception as err:
-#        content = str(err)
-#    return web.Response(text=content)
-
-#class rdisplay_persist(web.View):
-#    @aiohttp_jinja2.template('templates/R_form_persist.html')
-#    @asyncio.coroutine
-#    def get(self):
-#        return {'key': self.request.match_info['key'], 'content': 'None'}
-#
-#    @asyncio.coroutine
-#    def post(self):
-#        key = self.request.match_info['key']
-#        rcommande = yield from self.request.post()
-#        if key in g2.keys_mapping:
-#            port, pid = g2.keys_mapping[key]
-#            r = rClient(port, init=False, key=key, pid=pid)
-#        else:
-#            port = find_port()
-#            r = rClient(port, init=True, key=key)
-#            g2.keys_mapping[key] = port, r.process.pid
-#        print(rcommande['rcommande'])
-#        rcommande = rcommande['rcommande'].replace(';', '\n').splitlines()
-#        rcommande = ';'.join([i for i in rcommande if i])
-#        message = r.rEval(rcommande.replace('\r', '').encode())
-#        if 'Now exiting R' in message.decode():
-#            r.manual_disconnect()
-#        return web.Response(text=json.dumps({'Output': message.decode()}))
-
-#@asyncio.coroutine
-#def rdisplay_commande(request):
-#    rcommande = yield from request.post()
-#    port = find_port()
-#    r = rClient(port, init=True)
-#    message = r.rEval(rcommande['rcommande'].encode())
-#    r.disconnect()
-#    return web.Response(text=json.dumps(
-#        {'status':'OK - Singleton execution / No session',
-#         'Commande':rcommande['rcommande'],
-#         'Result': message.decode()}
-#         ), content_type='application/json')

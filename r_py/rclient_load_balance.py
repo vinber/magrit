@@ -62,7 +62,6 @@ def R_client_fuw(client_url, request, data, context, i):
     return reply
 
 def prepare_worker(nb_worker):
-    os.chdir('/home/mz/code/noname-stuff')
     # Start the R worker :
     r_process = [
         Popen(['Rscript', '--vanilla', 'R/R_worker_class.R', '{}'.format(i)])

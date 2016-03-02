@@ -49,7 +49,6 @@ class Rpy2_worker:
 
     def listen(self):
         try:
-#            self.last_modified_graphics = os.stat('/tmp/r_output.svg').st_mtime
             grdevices = self.importr('grDevices')
             grdevices.svg(file='/tmp/r_output.svg')
             if not os.path.exists('/tmp/r_output.svg'):
@@ -102,83 +101,3 @@ if __name__ == '__main__':
     assert len(sys.argv) == 2
     rpw = Rpy2_worker(sys.argv[1], "ipc:///tmp/feeds/rpy2_workers")
     rpw.listen()
-
-#import rpy2.rinterface as rinterface
-#from collections import deque
-
-
-#class Rpy2_worker:
-#    """
-#    Rpy2 worker trying to emulate an interactive R console
-#    """
-#    def __init__(self, port, env='.GlobalEnv'):
-#        import rpy2.robjects as robjects
-#        self.r = robjects.r
-#        self.context = zmq.Context.instance()
-#        self.socket = self.context.socket(zmq.REP)
-##        self.socket.setsockopt_string(zmq.IDENTITY, '{}'.format(ident))
-#        self.socket.connect("ipc:///tmp/rp"+str(port))
-#        self.console_output = []
-#        try:
-#            self.rversion = self.r('R.version.string')[0]
-#            print("Worker {} initialized on {}".format(port, self.rversion))
-##            self.capture_R_output()
-#        except Exception as err:
-#            raise err(
-#                "Something wrong happened while initializing the Rpy2 executor")
-#            return -1
-#
-##    def fun_output(self, x):
-##        self.console_output.append(x)
-##
-##    def capture_R_output(self):
-##        rinterface.set_writeconsole(self.fun_output)
-##
-##    def uncapture_R_output(self):
-##        rinterface.set_writeconsole(rinterface.consolePrint)
-#
-#    def listen(self):
-#        try:
-#            while True:
-#                request = self.socket.recv()
-#                print('Received ', request.decode())
-#                if b'CLOSE' in request:
-#                    self.socket.send(b'OK')
-#                    self.socket.close()
-#    #                    self.context
-#                    sys.exit()
-#                try:
-#                    print(request.decode())
-#                    result = self.reval(request.decode())
-#                    print(result)
-#                except self.rinterface.RRuntimeError as err:
-#                    status = "Rpy2 intercepted error : " + str(err)
-#                    print(status)
-#    
-#                if len(self.console_output) == 0 and 'rpy2' in str(type(result)):
-#                    status = 'OK - No console output'
-#                elif len(self.console_output) > 0 and 'rpy2' in str(type(result)):
-#                    status = 'OK'
-#                    result = ' '.join([self.console_output.popleft() for i in range(len(self.console_output))])
-#                else:
-#                    status = 'Something went wrong...'
-#                response = json.dumps({'Result': result,
-#                                       'Status': status})
-#                print(response)
-#                self.socket.send(response)
-#        except zmq.ContextTerminated:
-#            return
-#        except KeyboardInterrupt:
-#            self.socket.close()
-#            return
-#
-##    def send_console_output(self):
-##        pass
-##
-##    def listen_expression(self):
-##        pass
-#
-#if __name__ == '__main__':
-#    assert len(sys.argv) == 2
-#    rp = Rpy2_worker(sys.argv[1])
-#    rp.listen()

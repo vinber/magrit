@@ -27,9 +27,8 @@ class client_Rpy_async:
     """
     def __init__(self, client_url, i, ctx=None, init=True, worker_pid=None):
         if init:
-            os.chdir('/home/mz/code/noname')
             # Start the R worker :
-            self.worker_process = Popen(['python3', 'rpy2_console_worker.py', '{}'.format(i)])
+            self.worker_process = Popen(['python3', 'r_py/rpy2_console_worker.py', '{}'.format(i)])
             time.sleep(0.4)
         else:
             self.worker_process = Process(worker_pid)
@@ -66,9 +65,8 @@ class client_Rpy:
     """
     def __init__(self, client_url, i, init=True, worker_pid=None):
         if init:
-            os.chdir('/home/mz/code/noname')
             # Start the R worker :
-            self.worker_process = Popen(['python3', 'rpy2_console_worker.py', '{}'.format(i)])
+            self.worker_process = Popen(['python3', 'r_py/rpy2_console_worker.py', '{}'.format(i)])
             time.sleep(0.4)
         else:
             self.worker_process = Process(worker_pid)

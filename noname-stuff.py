@@ -13,18 +13,20 @@ import ujson as json
 from random import randint
 from datetime import datetime
 
-#Todo : Some clean-up in the import + use Session and cookies
 from flask import (
     Flask, request, session, g, redirect, url_for,
     render_template, send_from_directory, Response)
 from werkzeug import secure_filename
 
-from rclient import rClient
-from rclient_load_balance import *
+# Just for the R console page based on rpy2 :
+from r_py.rpy2_console_client import client_Rpy
+from r_py.rpy2_console_queue import launch_queue
 
-from rpy2_console.rpy2_console_client import client_Rpy
-from rpy2_console.rpy2_console_queue import launch_queue
+# For the other actions involving R :
+from r_py.rclient import rClient
+from r_py.rclient_load_balance import *
 
+# Used for the page generation with jinja2 and wtforms:
 from helpers.misc import guess_separator
 from helpers.forms import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
@@ -230,15 +232,24 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+@app.route('/index')
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+@app.route('/index2')
+def index2():
     date = ''
     if 'last_visit' in session:
         date = 'Last visit : {}'.format(
             datetime.fromtimestamp(
                 session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
     session['last_visit'] = time.time()
-    return render_template('index.html', date = date)
+    return render_template('index2.html', date = date)
+
+@app.route('/modules/<path:path>')
+def serve_data(path):
+    return send_from_directory('template/modules', path)
 
 @app.route('/database/<path:path>')
 def serve_data(path):
@@ -531,92 +542,3 @@ if __name__ == '__main__':
     else:
         port = 7979
     app.run(debug=True, port=port, host='0.0.0.0')
-
-#def connect_db():
-#    conn = sqlite3.connect(app.config['DATABASE'])
-#    return conn
-#
-#def init_db():
-#    with closing(connect_db()) as db:
-#        with app.open_resource('schema.sql', mode='r') as f:
-#            db.cursor().executescript(f.read())
-#        db.commit()
-
-#def get_db():
-#    if not hasattr(g, 'sqlite_db'):
-#        g.sqlite_db = connect_db()
-#    return g.sqlite_db
-
-#@app.route('/load_entries/<table>')
-#def load_table(table):
-#    try:
-#        table = table.split('\\n')
-#        db = get_db()
-#        for line in table:
-#            db.execute('INSERT INTO entries (a, b, c, d) values (?, ?, ?, ?)', 
-#                       tuple(map(float, line.split(','))))
-#        db.commit()
-#        content = "Data successfully loaded"
-#    except Exception as err:
-#        content = err
-#    return content
-
-#@app.route('/show/<table_name>')
-#def show_table(table_name):
-#    trans_rule = str.maketrans('', '', '()')
-#    db = get_db()
-#    try:
-#        cur = db.execute('SELECT * FROM {};'.format(table_name))
-#        result = '<br>'.join([str(i).replace(',', '|') for i in cur.fetchall()])
-#    except Exception as err:
-#        result = err
-#    return '<html><body><div>'+result.translate(trans_rule)+'</div></body></html>'
-
-#def export(filename):
-#    if 'shp' in filename[-5:]:
-#        # Doing something for packing (ziping)
-#        # the 3/4 mandatory files (shp, shx, dbf + prj)
-#        basename = filename[:-4]
-#        filename = basename + '.zip'
-#        zipf = zipfile.ZipFile(
-#            '{}/{}.zip'.format(app.config['UPLOAD_FOLDER'], basename), 'w')
-#        zip_batch_files('tmp', basename, zipf)
-#        zipf.close()
-#        return send_from_directory(app.config['UPLOAD_FOLDER'],
-#                               "{}.zip".format(basename))
-#    else:
-#        return send_from_directory(app.config['UPLOAD_FOLDER'],
-#                                   filename)
-#
-#def zip_batch_files(path, name, ziph):
-#    # ziph is zipfile handle
-#    for root, dirs, files in os.walk(path):
-#        for file in files:
-#            if name in file:
-#                ziph.write(os.path.join(root, file))
-
-#@app.route('/RrPersist/<key>', methods=['GET', 'POST'])
-#def Rapp_prez_persist(key):
-#    content = ''
-#    if request.method == 'POST':
-#        rcommande = request.form['rcommande'];
-#        referer = request.headers['Referer']
-#        key = referer[referer.find('key')+4:]
-#        if key in g2.keys_mapping:
-#            port, pid = g2.keys_mapping[key]
-#            r = rClient(port, init=False, key=key, pid=pid)
-#        else:
-#            port = find_port()
-#            r = rClient(port, init=True, key=key)
-#            g2.keys_mapping[key] = port, r.process.pid
-#        message = r.rEval(rcommande.replace('\r', '').encode())
-#        content = message.decode()
-#        return render_template('R_form_persist.html',
-#                                   key=key, content=content)
-#
-#    if request.method == 'GET':
-#        if len(g2.keys_mapping) > 100:
-#            return '<html><b>Too many sessions/users ....</b><html>'.encode()
-#        else:
-#            return render_template('R_form_persist.html',
-#                                   key=key, content=content)
