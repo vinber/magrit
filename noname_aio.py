@@ -17,6 +17,7 @@ from random import randint
 from datetime import datetime
 import asyncio
 import zmq.asyncio
+from subprocess import Popen, PIPE
 
 import jinja2
 import aiohttp_jinja2
@@ -59,6 +60,11 @@ def get_key(var=g2.keys_mapping):
         if k not in var:
             return k
 
+def get_name(length=25):
+    return ''.join([bytes([choice(
+        list(range(48,57))+list(range(65,90))+list(range(97,122)))]).decode()
+        for i in range(length)])
+
 @aiohttp_jinja2.template('templates/index.html')
 @asyncio.coroutine
 def handler(request):
@@ -76,60 +82,6 @@ def handler2(request):
         date = str(err)
     session['last_visit'] = time.time()
     return {'date': date}
-
-#####################################################
-#####################################################
-### Some functions to allow to execute R statements
-### ... in a basic form or directly in the url
-### ... with or without persistence
-
-@asyncio.coroutine
-def r_handler(request):
-    pattern = request.match_info['pattern']
-    if len(g2.keys_mapping) > 1500:
-        return web.Response(
-            body='<html><b>Too many sessions/users ....</b><html>'.encode())
-    if 'key' in pattern:
-        key, pattern = pattern[4:].split('&')
-        if key in g2.keys_mapping:
-            port, pid = g2.keys_mapping[key]
-            r = rClient(port, init=False, key=key, pid=pid)
-            custom_message = '<br><br>Current session :  {}'.format(key)
-        else:
-            port = find_port()
-            r = rClient(port, init=True, key=key)
-            g2.keys_mapping[key] = port, r.process.pid
-            custom_message = '<br><br>New keyed session :  {}'.format(key)
-    else:
-        key = None
-        port = find_port()
-        r = rClient(port, init=True)
-        custom_message = '<br><br>One shot R session!'
-    message = r.rEval(pattern.encode())
-    message = ''.join(['<html><body>',
-                       str(message).replace('\n', '<br>'),
-                       custom_message,
-                       '</body></html>'])
-    if not key:
-        r.disconnect()
-    return web.Response(body=message.encode())
-
-@aiohttp_jinja2.template('templates/R_form.html')
-@asyncio.coroutine
-def rdisplay(request):
-    return {}
-
-@asyncio.coroutine
-def r_post_handler(request):
-    rcommande = yield from request.post()
-    port = find_port()
-    r = rClient(port, init=True)
-    message = r.rEval(rcommande['rcommande'].encode())
-    r.disconnect()
-    return web.json_response({'status':'OK - Stand-alone session without persistence',
-                              'Commande':rcommande['rcommande'],
-                              'Result': message.decode()})
-
 
 #####################################################
 ### Some views to make two poor R consoles
@@ -221,6 +173,7 @@ class R_console(web.View):
             return web.Response(text=json.dumps({'Result': content,
                                                  'Status': 'OK'}))
 
+@asyncio.coroutine
 def clear_r_session(request):
     session = yield from get_session(request)
     posted_data = yield from request.post()
@@ -239,14 +192,24 @@ def clear_r_session(request):
 #### ... a geo layer uploaded by the user and display
 #### ... some informations.
 ##########################################################
+#### These functions are currently totaly insecure
 
 def savefile(path, raw_data):
-    if '.shp' in path or '.dbf' in path:
+    # Todo : insert some data validation tests
+    if '.shp' in path or '.dbf' in path or '.shx' in path:
         with open(path, 'wb') as f:
             f.write(raw_data)
     else:
         with open(path, 'w') as f:
             f.write(raw_data.decode())
+
+def shp_to_geojson(filepath):
+    # Todo : Rewrite using asyncio.subprocess methods
+    print("Here i am with ", filepath)
+    process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
+          "/dev/stdout", filepath], stdout=PIPE)
+    stdout, _ = process.communicate()
+    return stdout.decode()
 
 class UploadFile(web.View):
     """
@@ -300,6 +263,7 @@ class UploadFile(web.View):
                 crs = file.crs
             type_geom = file.schema['geometry']
             infos = repr(file.schema)
+            raw_result = shp_to_geojson(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, basename+'.shp'))
         elif ext in ('topojson'):
             file = open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename))
             datajs = json.loads(file.read())
@@ -366,7 +330,7 @@ class UploadFile(web.View):
         return alert
 
 ##########################################################
-#### Qucik views to wrap "flows" functionnalities :
+#### Quick views to wrap "flows" functionnalities :
 
 class FlowsPage(web.View):
     @aiohttp_jinja2.template('templates/flows_int.html')
@@ -425,21 +389,6 @@ class FlowsPage(web.View):
                 }).encode()
             content = R_client_fuw(url_client, commande, data, g2.context, id_)
             res = json.loads(content.decode())
-#            summary = OrderedDict([
-#                ("matdim", res['summary'][0]),
-#                ("nblinks", res['summary'][1]),
-#                ("density", res['summary'][2]),
-#                ("connectcomp", res['summary'][3]),
-#                ("connectcompx", res['summary'][4]),
-#                ("sumflows", res['summary'][5]),
-#                ("min", res['summary'][6]),
-#                ("Q1", res['summary'][7]),
-#                ("median", res['summary'][8]),
-#                ("Q3", res['summary'][9]),
-#                ("max", res['summary'][10]),
-#                ("mean", res['summary'][11]),
-#                ("sd", res['summary'][12])
-#                ])
             summary = '<br>'.join([i for i in res['summary']])
             return {'form': flows_form,
                     'content': "Summary and raw data :<br>" + summary}
@@ -686,6 +635,19 @@ def up_client(request):
 def modules_handler(request):
     return {}
 
+# Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
+# handle file to convert posted client-side
+#@asyncio.coroutine
+#def convert_dist_layer(request):
+#    formatIn = yield from request.match_info['formatIn']
+#    formatOut = yield from request.match_info['formatOut']
+#    print(formatIn, formatOut)
+#    if not formatIn.lower() in ('shp', 'geojson'):
+#        return
+#    if not formatOut.lower() in ('topojson', 'geojson'):
+#        return
+#    print(formatIn, formatOut)
+
 @asyncio.coroutine
 def init(loop):
     app = web.Application(middlewares=[session_middleware(
@@ -696,9 +658,6 @@ def init(loop):
     app.router.add_route('GET', '/index2', handler2)
     app.router.add_route('GET', '/upload_client', up_client)
     app.router.add_route('*', '/upload', UploadFile)
-    app.router.add_route('*', '/Rr', rdisplay)
-    app.router.add_route('GET', '/Rr/{pattern}', r_handler)
-    app.router.add_route('POST', '/RrCommande', r_post_handler)
     app.router.add_route('*', '/R_console', R_console)
     app.router.add_route('*', '/R_console/', R_console)
     app.router.add_route('*', '/Rpy2_console', Rpy2_console)
@@ -713,6 +672,7 @@ def init(loop):
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
     app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
+    app.router.add_static('/database/', path='database', name='database')
 
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 9999)

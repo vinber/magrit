@@ -5,7 +5,6 @@
 import os
 import sys
 import fiona
-import numpy as np
 import pandas as pd
 import ujson as json
 #import sqlite3
@@ -39,7 +38,7 @@ EXPORT_FOLDER = 'tmp/exp'
 MAX_CONTENT_LENGTH = 4 * 1024 ** 2
 ALLOWED_EXTENSIONS = set(['csv', 'geojson', 'topojson', 'txt', 'tsv',
                           'shp', 'dbf', 'shx', 'prj', 'cpg', 'json'])
-#DATABASE = 'tmp/db.db'
+
 DEBUG = True
 
 class g2:
@@ -55,15 +54,11 @@ def before_request():
         init_R_workers()
     if not hasattr(g2, 'thread_q'):
         init_Rpy2_console_broker()
-#    g.db = connect_db()
+
 
 @app.teardown_request
 def teardown_request(exception):
     pass
-#    db = getattr(g, 'db', None)
-#    if db is not None:
-#        db.close()
-#
 
 def find_port():
     while True:
@@ -77,54 +72,6 @@ def get_key():
         if k not in g2.keys_mapping:
             return k
 
-
-#####################################################
-#####################################################
-### Some functions to allow to execute R statements
-### ... in a basic form or directly in the url
-### ... with or without persistence
-
-@app.route('/Rr/<pattern>')
-def Rrapp(pattern):
-    if len(g2.keys_mapping) > 100:
-        return '<html><b>Too many sessions/users ....</b><html>'.encode()
-    if 'key' in pattern:
-        key, pattern = pattern[4:].split('&')
-        if key in g2.keys_mapping:
-            port, pid = g2.keys_mapping[key]
-            r = rClient(port, init=False, key=key, pid=pid)
-            custom_message = '<br><br>Current session :  {}'.format(key)
-        else:
-            port = find_port()
-            r = rClient(port, init=True, key=key)
-            g2.keys_mapping[key] = port, r.process.pid
-            custom_message = '<br><br>New keyed session :  {}'.format(key)
-    else:
-        key = None
-        port = find_port()
-        r = rClient(port, init=True)
-        custom_message = '<br><br>Stand_alone session!'
-    message = r.rEval(pattern.encode())
-    message = '<html>'+str(message).replace('\n','<br>')+custom_message+'</html>'
-    if not key:
-        r.disconnect()
-    return message.encode()
-
-@app.route('/Rr', methods=['GET'])
-def Rrapp_prez():
-    if request.method == 'GET':
-        return render_template('R_form.html')
-
-@app.route('/RrCommande', methods=['POST'])
-def Rrapp_prez_commande():
-    rcommande = request.form['rcommande'];
-    port = find_port()
-    r = rClient(port, init=True)
-    message = r.rEval(rcommande.encode())
-    r.disconnect()
-    return json.dumps({'status': 'OK - One shot R session / No session',
-                       'Commande': rcommande,
-                       'Result': message.decode().replace('\n', '<br>')})
 
 #####################################################
 ### Some views to make two poor R consoles
