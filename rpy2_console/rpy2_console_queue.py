@@ -11,7 +11,7 @@ import sys
 import os
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
-from rpy2_console_client import client_Rpy
+from .rpy2_console_client import client_Rpy
 
 if not os.path.isdir('/tmp/feeds'):
     try:

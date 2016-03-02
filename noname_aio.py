@@ -10,7 +10,6 @@ import os
 import sys
 import ujson as json
 import time
-import numpy as np
 import pandas as pd
 import fiona
 #import sqlite3
@@ -25,19 +24,18 @@ from aiohttp import web
 import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware  #, SimpleCookieStorage
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
-from collections import OrderedDict
 
 # TODO : some clean-up in the R and rpy2 clients used
+from rpy2_console.rpy2_console_client import client_Rpy_async
+from rpy2_console.rpy2_console_queue import launch_queue
+
 from rclient import rClient_async
-from rpy2_console_client import client_Rpy_async
-from rpy2_console_queue import launch_queue
 from rclient_load_balance import *
-#from rpy2_function import *
-from helpers import guess_separator
-from FormsWT import (
+
+from helpers.misc import guess_separator
+from helpers.forms import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
     RstatementForm, FlowsForm)
-
 
 class g2:
     DATABASE = 'tmp/db.db'

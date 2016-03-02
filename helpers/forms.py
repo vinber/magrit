@@ -6,7 +6,7 @@ from wtforms import (
     FileField, IntegerField, SelectField, FieldList,
     Form, TextAreaField, validators, StringField, FloatField,
     RadioField, FormField)
-from data_examples import json_example, json_example2, geojson_example
+from .data_examples import json_example, json_example2, geojson_example
 
 
 class RstatementForm(Form):

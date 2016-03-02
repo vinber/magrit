@@ -18,14 +18,15 @@ from flask import (
     Flask, request, session, g, redirect, url_for,
     render_template, send_from_directory, Response)
 from werkzeug import secure_filename
-from flask_wtf.file import FileAllowed, FileField
+
 from rclient import rClient
 from rclient_load_balance import *
-from rpy2_console_client import client_Rpy
-from rpy2_console_queue import launch_queue
-#from rpy2_function import *
-from helpers import guess_separator
-from FormsWT import (
+
+from rpy2_console.rpy2_console_client import client_Rpy
+from rpy2_console.rpy2_console_queue import launch_queue
+
+from helpers.misc import guess_separator
+from helpers.forms import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
     RstatementForm, FlowsForm)
 

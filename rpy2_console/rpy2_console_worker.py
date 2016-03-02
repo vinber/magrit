@@ -7,7 +7,6 @@ with the client through ZMQ, trying to emulate a R console.
 from collections import deque
 import rpy2.rinterface as rinterface
 import os
-import gc
 import zmq
 import ujson as json
 import sys
