@@ -1,3 +1,6 @@
+###################################
+# SpatialPosition functions
+###################################
 break_val_stewart <- function(x, typec = "equal", nclass = 5){
   if (typec == "equal"){ bks <- seq(cellStats(x, min), cellStats(x, max), length.out = nclass+1)}
   else if (typec == "quantile"){ bks <- quantile (x, probs = seq(0,1, by = 1/nclass))} 
@@ -39,6 +42,14 @@ huff_to_json <- function(
   return(NULL)
 }
 
+reilly_to_json <- function(){
+  return(NA)
+}
+
+###################################
+# MTA functions
+###################################
+
 mta_globaldev <- function(x, var1, var2, ref, type_dev){
   x <- jsonlite::fromJSON(x)
   return(jsonlite::toJSON(MTA::globalDev(x, var1, var2, ref, type_dev)))
@@ -55,4 +66,22 @@ mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type
                        var1 = var1, var2 = var2,
                        order = order, dist = dist, type = type_dev)
   return(jsonlite::toJSON(res))
+}
+
+###################################
+# flows functions
+###################################
+
+prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE){
+  mat <- jsonlite::fromJSON(mat)
+  myflows <- flows::prepflows(mat, i, j, fij)
+  if(remove_diag) diag(myflows) <- 0
+  if(direct_stat == FALSE){
+    return(jsonlite::toJSON(myflows))
+  } else {
+    mystats <- flows::statmat(myflows,
+                              output = direct_stat$output,
+                              verbose = direct_stat$verbose)
+    return(jsonlite::toJSON(mystats))
+  }
 }
