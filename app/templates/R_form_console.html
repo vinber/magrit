@@ -20,7 +20,7 @@
                     data: $('form').serialize(),
                     type: 'POST',
                     success: function(response) {
-                        var parsed = JSON.parse(response)
+                        var parsed = JSON.parse(response);
                         document.getElementById("content").innerHTML = parsed.Result;
                         document.getElementById("status").innerHTML = parsed.Status;
                     },

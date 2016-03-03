@@ -13,8 +13,10 @@ import time
 import pandas as pd
 import fiona
 
-from random import randint
+from zipfile import ZipFile
+from random import randint, choice
 from datetime import datetime
+from base64 import b64decode
 import asyncio
 import zmq.asyncio
 from subprocess import Popen, PIPE
@@ -120,9 +122,9 @@ class Rpy2_console(web.View):
             g2.keys_mapping[key] = port, cRpy.worker_process.pid
             session['rpy2_session'] = key
         if rcommande == "CLOSE":
-            print('before')
+#            print('before')
             yield from cRpy.disconnect_close()
-            print('after')
+#            print('after')
             g2.keys_mapping.pop(session['rpy2_session'])
             session.pop('rpy2_session')
             print('g2.keys_mapping :', g2.keys_mapping)
@@ -202,11 +204,22 @@ def savefile(path, raw_data):
         with open(path, 'w') as f:
             f.write(raw_data.decode())
 
-def shp_to_geojson(filepath):
+def shp_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
-    print("Here i am with ", filepath)
-    process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
-          "/dev/stdout", filepath], stdout=PIPE)
+#    print("Here i am with ", filepath)
+    if to_latlong:
+        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
+              "/dev/stdout", filepath], stdout=PIPE)
+    else:
+        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+              "/dev/stdout", filepath], stdout=PIPE)
+    stdout, _ = process.communicate()
+    return stdout.decode()
+
+def geojson_to_topojson(filepath):
+    # Todo : Rewrite using asyncio.subprocess methods
+#    print("Here i am with ", filepath)
+    process = Popen(["topojson", "--width", "1000", "--height", "1000", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
 
@@ -227,7 +240,7 @@ class UploadFile(web.View):
     def post(self):
         filenames = []
         posted_data = yield from self.request.post()
-        print(posted_data)
+#        print(posted_data)
         files_to_upload = posted_data.getall('file[]')
         alert = self.validate_upload_set(files_to_upload)
         if alert:
@@ -640,19 +653,41 @@ class MTA_localDev(web.View):
         content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
         return web.Response(text=content.decode())
 
-@aiohttp_jinja2.template('up_client.html')
-@asyncio.coroutine
-def up_client(request):
-    return {}
-
-@asyncio.coroutine
-def do_nothing(request):
-    posted_data = yield from request.post()
-    print(posted_data)
-    return web.Response(text=json.dumps(True))
 
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
-# handle file to convert posted client-side
+# to easily handle file types send by the front-side ?
+@asyncio.coroutine
+def convert(request):
+    posted_data = yield from request.post()
+    datatype, data = posted_data.getall('file[]')
+    name = get_name(length=32)
+    filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, name)
+    if 'zip' in datatype:
+        with open(filepath+'archive', 'wb') as f:
+            f.write(b64decode(data))
+        with ZipFile(filepath+'archive') as myzip:
+            list_files = myzip.namelist()
+            list_files = ['/tmp/' + i for i in list_files]
+            myzip.extractall(path='/tmp')
+            res = shp_to_geojson(os.path.join([i for i in list_files if 'shp' in i][0]), to_latlong=False)
+            filepath2 = '/tmp/'+get_name()
+            with open(filepath2, 'w') as f:
+                f.write(res)
+            result = geojson_to_topojson(filepath2)
+        os.remove(filepath+'archive')
+        os.remove(filepath2)
+        for file in list_files:
+            os.remove(file)
+    elif 'octet-stream;base64' in datatype:
+        print(datatype)
+        with open(filepath, 'w') as f:
+            f.write(b64decode(data).decode())
+        result = geojson_to_topojson(filepath)
+        os.remove(filepath)
+
+    return web.Response(text=result)
+
+
 #@asyncio.coroutine
 #def convert_dist_layer(request):
 #    formatIn = yield from request.match_info['formatIn']
@@ -672,14 +707,13 @@ def init(loop):
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index2', handler2)
-    app.router.add_route('GET', '/upload_client', up_client)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_route('*', '/R_console', R_console)
     app.router.add_route('*', '/R_console/', R_console)
     app.router.add_route('*', '/Rpy2_console', Rpy2_console)
     app.router.add_route('*', '/Rpy2_console/', Rpy2_console)
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
-    app.router.add_route('POST', '/null_route', do_nothing)
+    app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/huff', HuffPage)

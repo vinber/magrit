@@ -25,14 +25,12 @@
 
 
 <script>
-   
 // HEADER
 getHeader("#header","Build a choropleth map",0.1);
 
 // MENU
 $(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
 
-    
 var accordion = d3.select("#menu").append("div").attr("id","accordion");
 accordion.append("h3").html("Import your data"); 
 var section1 =  d3.select("#accordion").append("div").attr("id","section1");
@@ -40,7 +38,7 @@ accordion.append("h3").html("Configure your map");
 var section2 =  d3.select("#accordion").append("div").attr("id","section2");
 accordion.append("h3").html("Options"); 
 var section3 =  d3.select("#accordion").append("div").attr("id","section3");
-section1.append("p").html("xx x x x x x")
+section1.append("p").html("Drop a GeoJSON or a TopoJSON here")
 section2.append("label").html("coucou")
 section2.append("input").attr("type", "range")
 section2.append("input").attr("type", "checkbox")
@@ -61,7 +59,6 @@ $(function(){
             $('#menu').css({width : aw});
             $('#map').css({width : bw});
             $("svg").width(bw);
-            
         };
     $('#move').draggable({
         axis : 'x',
@@ -76,105 +73,166 @@ $(function(){
 
 });
 
-
 // MAP
-//var map = d3.select("#map").append("div").html("coucou")
-
-
-
-
 var svg = d3.select("#map").append("svg");
-    
 var path = d3.geo.path().projection(null);
 var width = $("svg").parent().width();
 var height = $("svg").parent().height();      
 svg.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox","0 0 " + width + " " + height);   
 svg.attr("width", width).attr("height", height).attr("class","grad");
-    
 
-    
- var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
- radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
- radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
+var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
+radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
 
-// Files to load    
-    queue()
-    .defer(d3.json, "../../database/topojson_proj/nuts2013.topojson")
-    .await(ready);
-    
-    
-    function ready(error, nuts) {
-  if (error) throw error;
-    
-// ***** Bottom layers *****
-    
-    // background
-    svg.append("g").attr("id", " bg").append("rect")
-        .style("fill", "url(#radial-gradient)")
-        .attr("width", "100%")
-        .attr("height", "100%")
-    // layer
-     svg.append("g").attr("id", "layer")
-     
-        .selectAll(".subunit")
-        .data(topojson.feature(nuts, nuts.objects.nuts0).features)
-        .enter().append("path")
-        .attr("d", path)
-         .style("fill", "#CCCCCC")
-     .attr("width", "100%")
+// background
+svg.append("g").attr("id", " bg").append("rect")
+    .style("fill", "url(#radial-gradient)")
+    .attr("width", "100%")
+    .attr("height", "100%")
 
-} 
+
+// Dropzone for uploading users layers :
 $(function(){
-    d3.select('svg')
-      .on('dragover', handleDragOver)
-      .on('drop', handleFileSelect)
-      ;
-
-    function readGeojson(file, cb) {
-      var reader = new FileReader;
-      reader.onload = function(e) {
-        cb(e.target.result, file);
-      };
-      reader.readAsText(file);
-    };
-    
-    function draw(content, file) {
-      var json = JSON.parse(content)
-        , what = json.features;
-      features = svg.selectAll('path');
-      features.data(countries.features = countries.features.concat(what))
-        .enter().append('svg:path')
-          .attr('id', function(d) { return d.id; })
-          .attr('d', clip)
-        .append('svg:title')
-          .text(function(d) { return d.properties.name; });
-      features = svg.selectAll('path');
-      refresh();
-    };
-
-    function handleFileSelect() {
-      var event = d3.event
-         , files = event.dataTransfer.files
-         , about = []
-         , shape = null;
-      event.preventDefaults();
-      event.stopPropagation();
-      console.log(event);
-      for (var i = 0, file; file = files[i]; i++){
-        readGeojson(file, draw);
-      }
-    };
-
-    function handleDragOver() {
-      var ev = d3.event;
-      console.log(ev);
-      ev.stopPropagation();
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = 'copy'; 
-    };
-
-
+    $('#section1').css({"border" : "3px dashed blue",
+                        "color": "black",
+                        "font-size": "16px",
+                        "font-weight": "bold"});
 });
+
+
+// Some jQuery functions to handle drag-and-drop events :
+    $(document).on('dragenter', '#section1', function() {
+                $(this).css('border', '4px dashed red');
+                return false;
+    });
+    $(document).on('dragover', '#section1', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).css('border', '4px dashed red');
+                return false;
+    });
+    $(document).on('dragleave', '#section1', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).css('border', '4px dashed #BBBBBB');
+                return false;
+    });
+    $(document).on('drop', '#section1', function(e) {
+                if(e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length){
+                           var files = e.originalEvent.dataTransfer.files;
+                           if(!(e.originalEvent.dataTransfer.files.length == 1)){
+                                alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
+                                console.log(files);
+                                var filenames = [];
+                                for(i=0; i < files.length; i++){filenames[i] = files[i].name;}
+                                var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+                                e.preventDefault();e.stopPropagation();
+                                console.log(filenames);
+                                console.log(result);
+                                $(this).css('border', '4px dashed #BBBBBB');
+                            }
+                           else if(strContains(files[0].name.toLowerCase(), 'topojson')){
+                                       e.preventDefault();e.stopPropagation();
+                                       $(this).css('border', '3px dashed green');
+                                       // Most direct way to add a layer :
+                                       handle_TopoJSON_files(files);
+                           }
+                           else if(strContains(files[0].name.toLowerCase(), 'geojson')){
+                                       e.preventDefault();e.stopPropagation();
+                                       $(this).css('border', '3px dashed green');
+                                       // Send the file to the server for conversion :
+                                       handle_single_file(files);
+                           }
+                           else if(strContains(files[0].type.toLowerCase(), 'application/zip')){
+                                e.preventDefault();e.stopPropagation();
+                                handle_single_file(files);
+                                alert('Do something with zip folder');
+                                console.log(files);
+                            }
+                            else { alert('Invalid datasource (No JSON/zip/Shapefile detected)');}
+                }
+                else {
+                           $(this).css('border', '4px dashed #BBBBBB');
+                }
+                return false;
+    });
+
+
+// Some helpers 'cause JS isn't my first language :
+
+    function strContains(string1, substring){
+        return string1.indexOf(substring) >= 0;
+    };
+
+    function strArraysContains(ArrString1, ArrSubstrings){
+        var result = [];
+        for(i=0; i < ArrString1.length; i++){
+            for(j=0; j < ArrSubstrings.length; j++){
+                if(strContains(ArrString1[i], ArrSubstrings[j])){
+                result[result.length] = ArrSubstrings[j]
+                }
+            }
+        }
+        return result;
+    };
+
+// Now some functions to handle the droped-file :
+// - By trying directly to add it :
+    function handle_TopoJSON_files(files) {
+                var f = files[0];
+                var reader = new FileReader();
+                reader.onload = function(){
+                    var text = reader.result;
+                    console.log(text);
+                    add_layer_fun(text);
+                    }
+                reader.readAsText(f);
+
+    };
+
+// - By sending it to the server for conversion :
+    function handle_single_file(files) {
+                var file = files[0]
+                var reader = new FileReader();
+                reader.onload = handleReaderLoad;
+                reader.readAsDataURL(file);
+    };
+
+    function handleReaderLoad(evt) {
+                var dtype =  evt.target.result.split(',')[0];
+                var data =  evt.target.result.split(',')[1];
+                $.ajax({
+                           type: 'POST',
+                           url: '/convert_to_topojson', 
+                           data: {file: [dtype, data]},
+                           success: function(data) {add_layer_fun(data) ;}
+                });
+    };
+
+// Add the TopoJSON to the 'svg' element :
+    function add_layer_fun(text){
+        parsedJSON = JSON.parse(text);
+        var layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
+
+        // Loop over the layers to add them all ?
+        // Probably better open an alert asking to the user which one to load ?
+        for(i=0; i < layers_names.length; i++){
+            d3.select("svg").append("g").attr("id", "layer"+i)
+                            .selectAll(".subunit")
+                            .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
+                            .enter().append("path")
+                            .attr("d", path)
+                            .style("stroke", "red")
+                            .style("stroke-opacity", .4)
+                            .style("fill", "beige")
+                            .style("fill-opacity", .5)
+                            .attr("height", "100%")
+                            .attr("width", "100%");
+        }
+        alert('end');
+    };
+
 </script>
 </html>
 
