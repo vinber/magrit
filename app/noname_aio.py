@@ -12,7 +12,7 @@ import ujson as json
 import time
 import pandas as pd
 import fiona
-#import sqlite3
+
 from random import randint
 from datetime import datetime
 import asyncio
@@ -23,7 +23,7 @@ import jinja2
 import aiohttp_jinja2
 from aiohttp import web
 import aiohttp_debugtoolbar
-from aiohttp_session import get_session, session_middleware  #, SimpleCookieStorage
+from aiohttp_session import get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 # Just for the R console page based on rpy2 :
@@ -65,12 +65,12 @@ def get_name(length=25):
         list(range(48,57))+list(range(65,90))+list(range(97,122)))]).decode()
         for i in range(length)])
 
-@aiohttp_jinja2.template('templates/index.html')
+@aiohttp_jinja2.template('index.html')
 @asyncio.coroutine
 def handler(request):
     return {}
 
-@aiohttp_jinja2.template('templates/index2.html')
+@aiohttp_jinja2.template('index2.html')
 @asyncio.coroutine
 def handler2(request):
     session = yield from get_session(request)
@@ -93,10 +93,10 @@ def handler2(request):
 
 class Rpy2_console(web.View):
     """
-    Using a client written with zmq.asyncio package (but a boker using regular
+    Using a client written with zmq.asyncio package (but a broker using regular
     pyzmq implementation)
     """
-    @aiohttp_jinja2.template('templates/R_form_persist2.html')
+    @aiohttp_jinja2.template('R_form_console.html')
     @asyncio.coroutine
     def get(self):
         R_form = RstatementForm()
@@ -108,7 +108,6 @@ class Rpy2_console(web.View):
         posted_data = yield from self.request.post()
         session = yield from get_session(self.request)
         rcommande = posted_data['rcommande']
-#        print('g2.keys_mapping :', g2.keys_mapping)
         if 'rpy2_session' in session and session['rpy2_session'] in g2.keys_mapping:
             port, pid = g2.keys_mapping[session['rpy2_session']]
             cRpy = client_Rpy_async("ipc:///tmp/feeds/rpy2_clients", port,
@@ -136,7 +135,7 @@ class Rpy2_console(web.View):
             return web.Response(text=message.decode())
 
 class R_console(web.View):
-    @aiohttp_jinja2.template('templates/R_form_persist2.html')
+    @aiohttp_jinja2.template('R_form_console.html')
     @asyncio.coroutine
     def get(self):
 
@@ -218,12 +217,12 @@ class UploadFile(web.View):
     Mixing types and multi-upload (except the necessary one for Shapefile) are
     not allowed.
     """
-    @aiohttp_jinja2.template('templates/upload_srv.html')
+    @aiohttp_jinja2.template('upload_srv.html')
     @asyncio.coroutine
     def get(self):
         return {'content_d': '', 'raw_result': ''}
 
-    @aiohttp_jinja2.template('templates/upload_srv.html')
+    @aiohttp_jinja2.template('upload_srv.html')
     @asyncio.coroutine
     def post(self):
         filenames = []
@@ -236,7 +235,14 @@ class UploadFile(web.View):
         for file in files_to_upload:
             if file:
                 filename = file[1]
-                savefile(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename), file[2].read())
+                if not isinstance(file[2], str):
+                    savefile(os.path.join(g2.app_real_path,
+                                          g2.UPLOAD_FOLDER,
+                                          filename), file[2].read())
+                else: 
+                    savefile(os.path.join(g2.app_real_path,
+                                          g2.UPLOAD_FOLDER,
+                                          filename), file[2].encode())
                 filenames.append(filename)
             else:
                 continue
@@ -252,8 +258,15 @@ class UploadFile(web.View):
         raw_result = ''
         trans_rule = str.maketrans('', '', '[()]')
         basename, ext = filename.split('.')
+        # Todo : handle files (like geojson) droped without extensions
+#        try:
+#            basename, ext = filename.split('.')
+#        except ValueError:
+#            basename = filename
+#            ext = guess_type(...)
         if ext in ('shp', 'dbf', 'shx'):
-            file = fiona.open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, basename+'.shp'))
+            filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, basename+'.shp')
+            file = fiona.open(filepath)
             format_file = 'ESRI Shapefile'
             layers = basename
             nb_features = len(file)
@@ -263,9 +276,10 @@ class UploadFile(web.View):
                 crs = file.crs
             type_geom = file.schema['geometry']
             infos = repr(file.schema)
-            raw_result = shp_to_geojson(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, basename+'.shp'))
+            raw_result = shp_to_geojson(filepath)
         elif ext in ('topojson'):
-            file = open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename))
+            filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+            file = open(filepath)
             datajs = json.loads(file.read())
             format_file = datajs['type']
             layers = [i for i in datajs['objects'].keys()]
@@ -276,7 +290,8 @@ class UploadFile(web.View):
             crs = "EPSG:4326"
             raw_result = datajs
         elif ext in ('json', 'geojson'):
-            file = fiona.open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename))
+            filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+            file = fiona.open(filepath)
             format_file = 'GeoJSON'
             layers = basename
             nb_features = len(file)
@@ -285,7 +300,7 @@ class UploadFile(web.View):
             else:
                 crs = file.crs
             type_geom = file.schema['geometry']
-            with open(os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename), 'r') as f:
+            with open(filepath, 'r') as f:
                 raw_result = f.read()
         elif ext in ('csv', 'txt', 'tsv'):
             layers, format_file = basename, ext
@@ -320,7 +335,7 @@ class UploadFile(web.View):
         elif len(files_to_upload) < 3 \
                 and any(['shp' in file[1] or 'dbf' in file[1] for file in files_to_upload]):
             alert = """<script>
-                alert("Associated files (.dbf and .shx) have to be provided with the Shapefile")
+                alert("Associated files (.dbf, .shx and .prj) have to be provided with the Shapefile")
                 </script>"""
         elif any(['shp' in file[1] or 'dbf' in file[1] for file in files_to_upload]) \
                 and any(['json' in file[1] or 'csv' in file[1] for file in files_to_upload]):
@@ -333,13 +348,13 @@ class UploadFile(web.View):
 #### Quick views to wrap "flows" functionnalities :
 
 class FlowsPage(web.View):
-    @aiohttp_jinja2.template('templates/flows_int.html')
+    @aiohttp_jinja2.template('flows_int.html')
     @asyncio.coroutine
     def get(self):
         flows_form = FlowsForm()
         return {'form': flows_form}
 
-    @aiohttp_jinja2.template('templates/flows_int.html')
+    @aiohttp_jinja2.template('flows_int.html')
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
@@ -397,13 +412,13 @@ class FlowsPage(web.View):
 #### Qucik views to wrap "SpatialPosition" functionnalities :
 
 class StewartPage(web.View):
-    @aiohttp_jinja2.template('templates/sPosition.html')
+    @aiohttp_jinja2.template('sPosition.html')
     @asyncio.coroutine
     def get(self):
         stewart_form = SpatialPos_Form()
         return {'form': stewart_form, 'content': '', 'title' : 'Stewart Example'}
 
-    @aiohttp_jinja2.template('templates/display_result.html')
+    @aiohttp_jinja2.template('display_result.html')
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
@@ -442,13 +457,13 @@ class StewartPage(web.View):
         return {'content': content.decode(), 'title': 'Stewart Result'}
 
 class HuffPage(web.View):
-    @aiohttp_jinja2.template('templates/sPosition.html')
+    @aiohttp_jinja2.template('sPosition.html')
     @asyncio.coroutine
     def get(self):
         hform = SpatialPos_Form()
         return {'form': hform, 'content': '', 'title' : 'Huff Example'}
 
-    @aiohttp_jinja2.template('templates/display_result.html')
+    @aiohttp_jinja2.template('display_result.html')
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
@@ -487,13 +502,13 @@ class HuffPage(web.View):
         return {'content': content.decode(), 'title': 'Huff Result'}
 
 class ReillyPage(web.View):
-    @aiohttp_jinja2.template('templates/sPosition.html')
+    @aiohttp_jinja2.template('sPosition.html')
     @asyncio.coroutine
     def get(self):
         hform = SpatialPos_Form()
         return {'form': hform, 'content': '', 'title' : 'Reilly Example'}
 
-    @aiohttp_jinja2.template('templates/display_result.html')
+    @aiohttp_jinja2.template('display_result.html')
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
@@ -550,7 +565,7 @@ def is_known_user(request):
 
 class MTA_globalDev(web.View):
     @asyncio.coroutine
-    @aiohttp_jinja2.template('templates/MTA_dev.html')
+    @aiohttp_jinja2.template('MTA_dev.html')
     def get(self):
         gbd_form = MTA_form_global()
         return {'form': gbd_form, 'title': 'MTA Global Dev. Example'}
@@ -574,7 +589,7 @@ class MTA_globalDev(web.View):
 
 class MTA_mediumDev(web.View):
     @asyncio.coroutine
-    @aiohttp_jinja2.template('templates/MTA_dev.html')
+    @aiohttp_jinja2.template('MTA_dev.html')
     def get(self):
         meddev_form = MTA_form_medium()
         return {'form': meddev_form, 'title': 'MTA Medium Dev. Example'}
@@ -597,7 +612,7 @@ class MTA_mediumDev(web.View):
 
 class MTA_localDev(web.View):
     @asyncio.coroutine
-    @aiohttp_jinja2.template('templates/MTA_dev.html')
+    @aiohttp_jinja2.template('MTA_dev.html')
     def get(self):
         locdev_form = MTA_form_local()
         return {'form': locdev_form, 'title': 'MTA Local Dev. Example'}
@@ -625,15 +640,16 @@ class MTA_localDev(web.View):
         content = R_client_fuw(url_client, commande, data.encode(), g2.context, id_)
         return web.Response(text=content.decode())
 
-@aiohttp_jinja2.template('templates/index2.html')
+@aiohttp_jinja2.template('up_client.html')
 @asyncio.coroutine
 def up_client(request):
     return {}
 
-@aiohttp_jinja2.template('templates/modules/template.html')
 @asyncio.coroutine
-def modules_handler(request):
-    return {}
+def do_nothing(request):
+    posted_data = yield from request.post()
+    print(posted_data)
+    return web.Response(text=json.dumps(True))
 
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
 # handle file to convert posted client-side
@@ -653,7 +669,7 @@ def init(loop):
     app = web.Application(middlewares=[session_middleware(
         EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
     aiohttp_debugtoolbar.setup(app)
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('.'))
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index2', handler2)
     app.router.add_route('GET', '/upload_client', up_client)
@@ -663,6 +679,7 @@ def init(loop):
     app.router.add_route('*', '/Rpy2_console', Rpy2_console)
     app.router.add_route('*', '/Rpy2_console/', Rpy2_console)
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
+    app.router.add_route('POST', '/null_route', do_nothing)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/huff', HuffPage)
@@ -672,7 +689,7 @@ def init(loop):
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
     app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
-    app.router.add_static('/database/', path='database', name='database')
+    app.router.add_static('/database/', path='../database', name='database')
 
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 9999)

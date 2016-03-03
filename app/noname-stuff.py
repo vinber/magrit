@@ -113,7 +113,7 @@ def R_console():
         if len(g2.keys_mapping) > 100:
             return '<html><b>Too many sessions/users ....</b><html>'.encode()
         else:
-            return render_template('R_form_persist2.html',
+            return render_template('R_form_console.html',
                                    form=R_form)
 
 
@@ -155,7 +155,7 @@ def rpy2_console():
         if len(g2.keys_mapping) > 100:
             return '<html><b>Too many sessions/users ....</b><html>'.encode()
         else:
-            return render_template('R_form_persist2.html',
+            return render_template('R_form_console.html',
                                    form=R_form,
                                    content=content)
 
@@ -463,7 +463,7 @@ def MTA_localDev():
 
 @app.route('/upload_client')
 def up_client():
-    return render_template('index2.html')
+    return render_template('up_client.html')
 
 @app.route('/display/<content>')
 def display_result(content):

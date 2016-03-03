@@ -18,6 +18,7 @@ if not os.path.isdir('/tmp/feeds'):
         print(err)
         sys.exit()
 
+
 class rClient:
     """Class for connecting with R zmq socket (REQ/REP pattern)"""
     def __init__(self, port, init, key=None, pid=None):
@@ -61,8 +62,6 @@ class rClient:
         self.process.kill()
         self.process.wait()
         self.socket.close()
-#        if self.key:
-#            g2.keys_mapping.pop(self.key)
 
 
 class rClient_pushpull:
@@ -97,8 +96,6 @@ class rClient_pushpull:
         self.socket_send.send(command)
         self.socket_recv.recv()
         try:
-#            if self.key:
-#                g2.keys_mapping.pop(self.key)
             print('Exited session from {}'.format(self.key or self))
             self.process.kill()
             self.process.wait()
@@ -112,8 +109,6 @@ class rClient_pushpull:
         self.socket_recv.close()
         self.process.kill()
         self.process.wait()
-#        if self.key:
-#            g2.keys_mapping.pop(self.key)
 
 
 import asyncio
@@ -162,8 +157,6 @@ class rClient_async:
         self.process.kill()
         self.process.wait()
         self.socket.close()
-#        if self.key:
-#            g2.keys_mapping.pop(self.key)
 
 
 if __name__ == '__main__':  # Quick and dirty tests ...

@@ -1,0 +1,86 @@
+<html>
+
+<head>
+<title>Test upload</title>
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="description" content="">
+   <meta name="author" content="">
+   <style>
+    #dropfile{
+    width: 350px;
+    height: 50px;
+    border: 4px dashed #BBBBBB;
+    line-height: 35px;
+    text-align: center;
+    }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.js"></script>
+   <title>Upload page</title>
+ </head>
+
+ <body>
+   <div id="map"></div><br>
+    <div id="dropfile">Drop a GeoJSON / TopoJSON here</div><br><br>
+    Raw result :<br><br><div id="raw_result"></div>
+    <script>
+    $(document).on('dragenter', '#dropfile', function() {
+                $(this).css('border', '3px dashed red');
+                return false;
+    });
+     
+    $(document).on('dragover', '#dropfile', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).css('border', '3px dashed red');
+                return false;
+    });
+     
+    $(document).on('dragleave', '#dropfile', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).css('border', '3px dashed #BBBBBB');
+                return false;
+    });
+    $(document).on('drop', '#dropfile', function(e) {
+                if(e.originalEvent.dataTransfer){
+                           if(e.originalEvent.dataTransfer.files.length) {
+                                       // Stop the propagation of the event
+                                       e.preventDefault();
+                                       e.stopPropagation();
+                                       $(this).css('border', '3px dashed green');
+                                       // Main function to upload
+                                       handle_files(e.originalEvent.dataTransfer.files);
+                           }  
+                }
+                else {
+                           $(this).css('border', '3px dashed #BBBBBB');
+                }
+                return false;
+    });
+
+    function handle_files(files) {
+                var f = files[0] ;
+                console.log(f.type)
+                var reader = new FileReader();
+     
+                // When the file is loaded,
+                // run handleReaderLoad function
+                reader.onload = handleReaderLoad;
+     
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);            
+    }
+
+    function handleReaderLoad(evt) {
+                var pic = {};
+                pic.foo = evt.target.result.split(',')[0];
+                pic.file = evt.target.result.split(',')[1];
+                var str = jQuery.param(pic);
+                document.getElementById("raw_result").innerHTML = str;
+                alert('Here I am');
+    }
+</script>
+</body>
+</html>
