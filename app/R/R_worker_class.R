@@ -15,7 +15,6 @@ make_env <- function(lock = FALSE){
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
   preparedEnv$break_val_stewart <- break_val_stewart
   preparedEnv$stewart_to_json <- stewart_to_json
-  preparedEnv$huff_to_json <- huff_to_json
   preparedEnv$reilly_to_json <- reilly_to_json
   preparedEnv$mta_globaldev <- mta_globaldev
   preparedEnv$mta_mediumdev <- mta_mediumdev

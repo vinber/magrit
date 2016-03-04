@@ -10,6 +10,7 @@
     <script src="../../static/js/noname.js"></script>
     <script src="../../static/js/jquery-2.2.1.min.js"></script>
     <script src="../../static/js/jquery-ui.min.js"></script>
+    <script src="../../static/js/jszip.min.js"></script>
     
     <link href="../../static/css/style.css" rel="stylesheet" type="text/css" >
 
@@ -131,8 +132,10 @@ $(function(){
                                 e.preventDefault();e.stopPropagation();
                                 console.log(filenames);
                                 console.log(result);
-                                console.alert("But as you have provided all the files ('.shp', '.dbf', '.shx', '.prj'), I will be nice and take them")
-                                // Todo : zip the files and send them for conversion
+                                if(result.length == 4){
+                                    alert('But as you have provided all the files (.shp, .dbf, .shx, .prj), I will be nice and take them');
+                                    handle_shapefiles(files);
+                                    }
                                 $(this).css('border', '4px dashed #BBBBBB');
                             }
                            else if(strContains(files[0].name.toLowerCase(), 'topojson')){
@@ -192,6 +195,33 @@ $(function(){
                     }
                 reader.readAsText(f);
 
+    };
+
+// - By ziping the zipfile to send them to the server :
+// Currently not working
+    function handle_shapefiles(files){
+        var datas = new Object;
+        for(var i=0; i < files.length; i++){
+            var reader = new FileReader();
+            reader.onloadend = function(evt){
+                if (evt.target.readyState == FileReader.DONE) {
+                    datas[i] = evt.target.result;
+                    }
+                };
+            reader.readAsDataURL(files[i]);
+        }
+        var ziped = new JSZip();
+        for(i=0; i < files.length; i++){
+            ziped.file(files[i].name, datas[i], {"base64":true});
+            }
+        content = ziped.generate({type:"base64"});
+        console.log(content);
+        $.ajax({
+                type: 'POST',
+                url: '/convert_to_topojson', 
+                data: {file: ['data:application/zip;base64', content]},
+                success: function(data) {add_layer_fun(data) ;}
+            });
     };
 
 // - By sending it to the server for conversion :

@@ -9,7 +9,7 @@ break_val_stewart <- function(x, typec = "equal", nclass = 5){
 }
 
 stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
-                            span, beta, resolution, mask_json = NULL){
+                            span, beta, resolution=NULL, mask_json = NULL){
 
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
@@ -34,19 +34,6 @@ stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
 
   # Always return the result in latitude-longitude for the moment :
   return(geojsonio::geojson_json(spTransform(result, CRS(latlong_string))))
-}
-
-huff_to_json <- function(
-  knownpts_json, unknownpts_json = NULL, matdist = NULL, varname,
-  typefct = "exponential", span, beta, resolution, longlat = FALSE,
-  mask_json){
-  knownpts_layer <- geojson_read(knownpts_json, method='local')
-  mask_layer <- geojson_read(mask_json, method='local')
-  catchHuff <- huff(knownpts, varname = varname, typefct = typefct,
-                    span = span, beta = beta, longlat = longlat,
-                    mask = mask_layer)
-  rasterCatch <- rasterHuff(catchHuff, mask = mask_layer)
-  return(NULL)
 }
 
 reilly_to_json <- function(){
@@ -80,15 +67,15 @@ mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type
 ###################################
 
 prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE){
-  mat <- jsonlite::fromJSON(mat)
+  mat <- read.csv(mat)
   myflows <- flows::prepflows(mat, i, j, fij)
   if(remove_diag) diag(myflows) <- 0
-  if(direct_stat == FALSE){
+  if(direct_stat$direct_stat == FALSE){
     return(jsonlite::toJSON(myflows))
   } else {
-    mystats <- flows::statmat(myflows,
+    summary <- capture.output(flows::statmat(myflows,
                               output = direct_stat$output,
-                              verbose = direct_stat$verbose)
-    return(jsonlite::toJSON(mystats))
+                              verbose = direct_stat$verbose))
+    return(jsonlite::toJSON(summary))
   }
 }
