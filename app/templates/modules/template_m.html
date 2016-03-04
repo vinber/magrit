@@ -93,6 +93,7 @@ svg.append("g").attr("id", " bg").append("rect")
 
 
 // Dropzone for uploading users layers :
+
 $(function(){
     $('#section1').css({"border" : "3px dashed blue",
                         "color": "black",
@@ -130,6 +131,8 @@ $(function(){
                                 e.preventDefault();e.stopPropagation();
                                 console.log(filenames);
                                 console.log(result);
+                                console.alert("But as you have provided all the files ('.shp', '.dbf', '.shx', '.prj'), I will be nice and take them")
+                                // Todo : zip the files and send them for conversion
                                 $(this).css('border', '4px dashed #BBBBBB');
                             }
                            else if(strContains(files[0].name.toLowerCase(), 'topojson')){
@@ -170,14 +173,14 @@ $(function(){
         for(i=0; i < ArrString1.length; i++){
             for(j=0; j < ArrSubstrings.length; j++){
                 if(strContains(ArrString1[i], ArrSubstrings[j])){
-                result[result.length] = ArrSubstrings[j]
+                result[result.length] = ArrSubstrings[j];
                 }
             }
         }
         return result;
     };
 
-// Now some functions to handle the droped-file :
+// Now some functions to handle the dropped-file(s) :
 // - By trying directly to add it :
     function handle_TopoJSON_files(files) {
                 var f = files[0];

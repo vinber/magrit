@@ -450,19 +450,16 @@ class StewartPage(web.View):
                 filenames[file_ph] = 'NULL'
         form_data = stewart_form.data
         id_ = yield from is_known_user(self.request)
-        commande = (b'stewart_to_json(knownpts_json, unknownpts_json, '
-                                    b'matdist, varname, typefct, span, '
-                                    b'beta, resolution, longlat, mask_json)')
+        commande = (b'stewart_to_json(knownpts_json, '
+                                    b'varname, typefct, span, '
+                                    b'beta, resolution, mask_json)')
         data = json.dumps({
             'knownpts_json': filenames['point_layer'],
-            'unknownpts_json': None,
-            'matdist': None,
             'varname': form_data['var_name'],
             'typefct': form_data['type_fun'],
             'span': form_data['span'],
             'beta': form_data['beta'],
             'resolution': form_data['resolution'],
-            'longlat': False,
             'mask_json': filenames['mask_layer']
             }).encode()
         content = R_client_fuw(url_client, commande, data, g2.context, id_)
@@ -563,16 +560,16 @@ class ReillyPage(web.View):
 #### Qucik views to wrap "MTA" functionnalities :
 
 @asyncio.coroutine
-def is_known_user(request):
+def is_known_user(request, ref=g2.session_map):
     session = yield from get_session(request)
-    if 'R_user' in session and session['R_user'] in g2.session_map:
+    if 'R_user' in session and session['R_user'] in ref:
         id_ = session['R_user']
-        g2.session_map[id_].append(time.time())
+        ref[id_].append(time.time())
         print(session['R_user'], ' is a kwown user')
     else:
-        id_ = get_key(g2.session_map)
+        id_ = get_key(ref)
         session['R_user'] = id_
-        g2.session_map[id_] = [time.time()]
+        ref[id_] = [time.time()]
         print(session['R_user'], ' is a new user')
     return id_
 
@@ -676,28 +673,17 @@ def convert(request):
             result = geojson_to_topojson(filepath2)
         os.remove(filepath+'archive')
         os.remove(filepath2)
-        for file in list_files:
-            os.remove(file)
+        [os.remove(file) for file in list_files]
+
     elif 'octet-stream;base64' in datatype:
         print(datatype)
         with open(filepath, 'w') as f:
             f.write(b64decode(data).decode())
         result = geojson_to_topojson(filepath)
         os.remove(filepath)
-
+    else:
+        result = json.dumps({'Result': 'Incorrect datatype'})
     return web.Response(text=result)
-
-
-#@asyncio.coroutine
-#def convert_dist_layer(request):
-#    formatIn = yield from request.match_info['formatIn']
-#    formatOut = yield from request.match_info['formatOut']
-#    print(formatIn, formatOut)
-#    if not formatIn.lower() in ('shp', 'geojson'):
-#        return
-#    if not formatOut.lower() in ('topojson', 'geojson'):
-#        return
-#    print(formatIn, formatOut)
 
 @asyncio.coroutine
 def init(loop):

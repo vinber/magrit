@@ -8,25 +8,32 @@ break_val_stewart <- function(x, typec = "equal", nclass = 5){
   return(invisible(unique(bks)))
 }
 
-stewart_to_json <- function(knownpts_json, unknownpts_json = NULL,
-                            matdist = NULL, varname,
-                            typefct = "exponential",
-                            span, beta, resolution,
-                            longlat = FALSE, mask_json){
+stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
+                            span, beta, resolution, mask_json = NULL){
+
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
+
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp')
-  mask_layer <- geojsonio::geojson_read(mask_json, what='sp')
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
-  if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
-  pot <- SpatialPosition::stewart(knownpts_layer, varname = varname,
-                 typefct = typefct, span = span, resolution=resolution,
-                 beta = beta, longlat=longlat, mask = mask_layer)
-  print('foo')
-  rasterAccessibility <- SpatialPosition::rasterStewart(x = pot, mask = mask_layer)
-  breakValues <- break_val_stewart(rasterAccessibility, typec = "equal", nclass = 5)
-  contLines <- SpatialPosition::contourStewart(x = rasterAccessibility, breaks = breakValues)
-  return(geojsonio::geojson_json(spTransform(contLines, CRS(latlong_string))))
+
+  if(is.null(mask_json)){
+    mask_layer <- NULL
+  } else{
+    mask_layer <- geojsonio::geojson_read(mask_json, what='sp')
+    if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
+  }
+
+  result <- SpatialPosition::quickStewart(spdf = knownpts_layer,
+                                          df = knownpts_layer@data,
+                                          var = varname,
+                                          typefct = typefct,
+                                          span=span, beta=beta,
+                                          resolution = resolution,
+                                          mask = mask_layer)
+
+  # Always return the result in latitude-longitude for the moment :
+  return(geojsonio::geojson_json(spTransform(result, CRS(latlong_string))))
 }
 
 huff_to_json <- function(
