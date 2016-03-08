@@ -17,19 +17,29 @@ class RstatementForm(Form):
 
 
 class SpatialPos_Form(Form):
-    point_layer = FileField('Observation point layer')
+    point_layer = FileField('Observation point layer',
+                            [validators.Required()])
                             #,[FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
-    mask_layer = FileField('Mask (contour) layer')
+    mask_layer = FileField('Mask (contour) layer (Optional)',
+                           [validators.Optional()])
     #, [FileAllowed(['geojson', 'topojson'], 'JSON Geoms only!')])
-    var_name = StringField('Variable name')
-    span = IntegerField('Span (meter)',  [validators.NumberRange(min=0, max=100000)])
+    var_name = StringField('Variable name', [validators.Required()])
+    span = IntegerField('Span (meter)', [validators.Required(),
+                            validators.NumberRange(min=0, max=100000)])
     beta = IntegerField('Beta', [validators.NumberRange(min=0, max=5)])
-    type_fun = RadioField(choices=[('exponential', 'Exponential'), ('pareto', 'Pareto')])
-    resolution = IntegerField('Resolution (meter)',  [validators.NumberRange(min=0, max=100000)])
-
+    type_fun = RadioField(choices=[('exponential', 'Exponential'), ('pareto', 'Pareto')],
+                          validators=[validators.Required()])
+    resolution = IntegerField('Resolution (meters - Optional)', 
+                              [validators.NumberRange(min=0, max=100000),
+                               validators.Optional()])
+    nclass = IntegerField('The targeted number of class (Optional)',
+                          [validators.Optional(),
+                           validators.NumberRange(min=0, max=100000)])
 
 class MTA_form_global(Form):
-    json_df = TextAreaField('The jsonified data.frame', default=json_example)
+    json_df = TextAreaField('The jsonified data.frame',
+                            validators=[validators.Required()],
+                            default=json_example)
     var1 = StringField('First variable name', [validators.Required()])
     var2 = StringField('Second variable name', [validators.Required()])
     ref = FloatField('The reference ratio (optionnal)', [validators.Optional()])
@@ -46,8 +56,7 @@ class MTA_form_medium(Form):
     key = StringField('Name of the column containg the aggregation key',
                       [validators.Required()])
     type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')],
-                          default='rel',
-                          validators=[validators.Required()])
+                          default='rel', validators=[validators.Required()])
 
 
 class MTA_form_local(Form):
@@ -57,7 +66,8 @@ class MTA_form_local(Form):
     var1 = StringField('First variable name', [validators.Required()])
     var2 = StringField('Second variable name', [validators.Required()])
     order = FloatField('Contiguity order (optionnal)', [validators.Optional()])
-    distance = FloatField('The distance defining the contiguity (optionnal)', [validators.Optional()])
+    distance = FloatField('The distance defining the contiguity (optionnal)',
+                          [validators.Optional()])
     type_fun = RadioField(choices=[('rel', 'Relative'), ('abs', 'Absolute')],
                           default='rel', validators=[validators.Required()])
 

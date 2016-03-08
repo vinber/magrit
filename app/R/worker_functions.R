@@ -1,15 +1,8 @@
 ###################################
 # SpatialPosition functions
 ###################################
-break_val_stewart <- function(x, typec = "equal", nclass = 5){
-  if (typec == "equal"){ bks <- seq(cellStats(x, min), cellStats(x, max), length.out = nclass+1)}
-  else if (typec == "quantile"){ bks <- quantile (x, probs = seq(0,1, by = 1/nclass))} 
-  else {stop('Enter a proper discretisation type: "equal" or "quantile"')}
-  return(invisible(unique(bks)))
-}
-
 stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
-                            span, beta, resolution=NULL, mask_json = NULL){
+                            span, beta, nclass=8, resolution=NULL, mask_json = NULL){
 
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
@@ -24,16 +17,19 @@ stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
   }
 
-  result <- SpatialPosition::quickStewart(spdf = knownpts_layer,
+  res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                           df = knownpts_layer@data,
                                           var = varname,
                                           typefct = typefct,
                                           span=span, beta=beta,
                                           resolution = resolution,
-                                          mask = mask_layer)
+                                          mask = mask_layer,
+                                          nclass = nclass)
 
   # Always return the result in latitude-longitude for the moment :
-  return(geojsonio::geojson_json(spTransform(result, CRS(latlong_string))))
+  result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',
+         jsonlite::toJSON(unique(res_poly@data$mean)), '}')
+  return(result)
 }
 
 reilly_to_json <- function(){

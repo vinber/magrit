@@ -90,14 +90,12 @@
 
     function handleReaderLoad(evt) {
                 var data = {};
-                var filetype = evt.target.result.split(',')[0];
+                data.filetype = evt.target.result.split(',')[0];
                 data.file = evt.target.result.split(',')[1];
-     
-                var str_data = jQuery.param(data);
-     
+                
                 $.ajax({
                            type: 'POST',
-                           data: {file: [0,filetype,str_data]},
+                           data: {file: [0, data.filetype, data.file]},
                            success: function(data) {
                                        console.log(data) ;
                            }

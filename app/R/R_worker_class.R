@@ -13,7 +13,6 @@ load <- function(){
 make_env <- function(lock = FALSE){
   source('R/worker_functions.R')
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
-  preparedEnv$break_val_stewart <- break_val_stewart
   preparedEnv$stewart_to_json <- stewart_to_json
   preparedEnv$reilly_to_json <- reilly_to_json
   preparedEnv$mta_globaldev <- mta_globaldev
@@ -41,6 +40,7 @@ R_Worker_fuw <- R6::R6Class(
       socket <<- zmq.socket(ctx, .pbd_env$ZMQ.ST$REQ)
       zmq.setsockopt(socket, .pbd_env$ZMQ.SO$IDENTITY, self$identifiant)
       zmq.setsockopt(socket, .pbd_env$ZMQ.SO$RCVBUF, 60000000L)
+      zmq.setsockopt(socket, .pbd_env$ZMQ.SO$SNDBUF, 60000000L)
       zmq.connect(socket, self$worker_url)
       zmq.send(socket, charToRaw("READY"))
       print(paste0("Worker ", self$identifiant, " is ON"))

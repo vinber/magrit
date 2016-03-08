@@ -56,6 +56,7 @@ def R_client_fuw(client_url, request, data, context, i):
     socket.connect(client_url)
     socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
     socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+35))
+    socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
     socket.send_multipart([request, b'', data])
     reply = socket.recv()
     socket.close()

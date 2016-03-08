@@ -23,7 +23,7 @@ from subprocess import Popen, PIPE
 
 import jinja2
 import aiohttp_jinja2
-from aiohttp import web
+from aiohttp import web, web_reqrep
 import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
@@ -41,6 +41,8 @@ from helpers.misc import guess_separator
 from helpers.forms import (
     MTA_form_global, MTA_form_medium, MTA_form_local, SpatialPos_Form,
     RstatementForm, FlowsForm)
+
+from pytopojson import topo_to_geo
 
 class g2:
     DATABASE = 'tmp/db.db'
@@ -234,7 +236,9 @@ def shp_to_geojson(filepath, to_latlong=True):
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port when possible to avoid writing a temporary file
-    process = Popen(["topojson", "--width", "1000", "--height", "1000", filepath], stdout=PIPE)
+    process = Popen(["topojson", "--width", "1000",
+                     "--height", "1000", "--cartesian",
+                     filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
 
@@ -256,23 +260,38 @@ class UploadFile(web.View):
         filenames = []
         posted_data = yield from self.request.post()
         files_to_upload = posted_data.getall('file[]')
-        alert = self.validate_upload_set(files_to_upload)
-        if alert:
-            return {'content_d': alert, 'raw_result': ''}
-        for file in files_to_upload:
-            if file:
-                filename = file[1]
-                if not isinstance(file[2], str):
-                    savefile(os.path.join(g2.app_real_path,
+        if isinstance(files_to_upload[0], web_reqrep.FileField):
+            alert = self.validate_upload_set(files_to_upload)
+            if alert:
+                return {'content_d': alert, 'raw_result': ''}
+            for file in files_to_upload:
+                if file and file[0]:
+                    filename = file[1]
+                    if not isinstance(file[2], str):
+                        savefile(os.path.join(g2.app_real_path,
+                                              g2.UPLOAD_FOLDER,
+                                              filename), file[2].read())
+                    else: 
+                        savefile(os.path.join(g2.app_real_path,
+                                              g2.UPLOAD_FOLDER,
+                                              filename), file[2].encode())
+                    filenames.append(filename)
+                else:
+                    continue
+        elif files_to_upload[0] == '0':  # Data are coming from the drag and drop zone
+            raw_buff = b64decode(files_to_upload[2])
+            try:
+                loaded = json.loads(raw_buff)
+                if 'type' in loaded and loaded['type'] == 'Topology':
+                    ext = '.topojson'
+                elif 'features' in loaded and 'type' in loaded:
+                    ext = '.geojson'
+                filename = 'tmp_{}{}'.format(get_name(), ext)
+            finally:
+                savefile(os.path.join(g2.app_real_path,
                                           g2.UPLOAD_FOLDER,
-                                          filename), file[2].read())
-                else: 
-                    savefile(os.path.join(g2.app_real_path,
-                                          g2.UPLOAD_FOLDER,
-                                          filename), file[2].encode())
+                                          filename), raw_buff)
                 filenames.append(filename)
-            else:
-                continue
         if len(filenames) > 0:
             try:
                 content, raw_result = self.uploaded_file_summary(filename)
@@ -281,7 +300,7 @@ class UploadFile(web.View):
                 raw_result = ''
             return {'content_d': content, 'raw_result': raw_result}
         else:
-            return {'content_d': alert, 'raw_result': ''}
+            return {'content_d': 'Unexpected error', 'raw_result': ''}
 
     @staticmethod
     def uploaded_file_summary(filename):
@@ -317,7 +336,7 @@ class UploadFile(web.View):
                  rec['type'] for rec in datajs['objects'][lyr]['geometries'])
                 for lyr in layers])
             crs = "EPSG:4326"
-            raw_result = datajs
+            raw_result = topo_to_geo(datajs)
         elif ext in ('json', 'geojson'):
             filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
             file = fiona.open(filepath)
@@ -377,13 +396,13 @@ class UploadFile(web.View):
 #### Quick views to wrap "flows" functionnalities :
 
 class FlowsPage(web.View):
-    @aiohttp_jinja2.template('flows_int.html')
+    @aiohttp_jinja2.template('default_page_form.html')
     @asyncio.coroutine
     def get(self):
         flows_form = FlowsForm()
-        return {'form': flows_form}
+        return {'form': flows_form, 'title': 'Flows page example'}
 
-    @aiohttp_jinja2.template('flows_int.html')
+    @aiohttp_jinja2.template('default_page_form.html')
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
@@ -413,7 +432,8 @@ class FlowsPage(web.View):
             except Exception as err:
                 print(err)
                 content = str(err)
-            return {'form': flows_form, 'content': content}
+            return {'form': flows_form, 'content': content,
+                    'title': 'Flows page example'}
         else:
             nform = form_data['next_field'][0]
             commande = (b"prepflows_json(mat, i, j, fij, "
@@ -435,13 +455,14 @@ class FlowsPage(web.View):
             res = json.loads(content.decode())
             summary = '<br>'.join([i for i in res])
             return {'form': flows_form,
-                    'content': "<b>Summary:</b><br>" + summary}
+                    'content': "<b>Summary:</b><br>" + summary,
+                    'title': 'Flows page example'}
 
 ##########################################################
 #### Qucik views to wrap "SpatialPosition" functionnalities :
 
 class StewartPage(web.View):
-    @aiohttp_jinja2.template('sPosition.html')
+    @aiohttp_jinja2.template('default_page_form.html.html')
     @asyncio.coroutine
     def get(self):
         stewart_form = SpatialPos_Form()
@@ -467,64 +488,68 @@ class StewartPage(web.View):
         form_data = stewart_form.data
         id_ = yield from is_known_user(self.request)
         commande = (b'stewart_to_json(knownpts_json, varname, typefct, span, '
-                    b'beta, resolution, mask_json)')
+                    b'beta, nclass, resolution, mask_json)')
         data = json.dumps({
             'knownpts_json': filenames['point_layer'],
             'varname': form_data['var_name'],
             'typefct': form_data['type_fun'],
             'span': form_data['span'],
             'beta': form_data['beta'],
+            'nclass': form_data['nclass'],
             'resolution': form_data['resolution'],
             'mask_json': filenames['mask_layer']
             }).encode()
+#        print(data['nlcass'], data['resolution'])
         content = R_client_fuw(url_client, commande, data, g2.context, id_)
-        print('content : ', content)
-        return {'content': content.decode(), 'title': 'Stewart Result'}
+        content = json.loads(content.decode())
+        return {'content': json.dumps(content['geojson']),
+                'breaks': content['breaks'],
+                'title': 'Stewart Result'}
 
-class ReillyPage(web.View):
-    @aiohttp_jinja2.template('sPosition.html')
-    @asyncio.coroutine
-    def get(self):
-        hform = SpatialPos_Form()
-        return {'form': hform, 'content': '', 'title' : 'Reilly Example'}
-
-    @aiohttp_jinja2.template('display_result.html')
-    @asyncio.coroutine
-    def post(self):
-        posted_data = yield from self.request.post()
-        hform = SpatialPos_Form(posted_data)
-        if not hform.validate():
-            return web.Response(text="Invalid input fields")
-
-        filenames = {}  # Following code is probably totally insecure to deal with user inputs :
-        for file_ph in ('point_layer', 'mask_layer'):
-            file_to_upload = self.request.POST[file_ph]
-            if file_to_upload:
-                filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1])
-                savefile(filepath, file_to_upload[2].read())
-                filenames[file_ph] = filepath
-            else:
-                filenames[file_ph] = 'NULL'
-        form_data = hform.data
-        id_ = yield from is_known_user(self.request)
-        commande = (b'reilly_to_json(knownpts_json, unknownpts_json, '
-                                    b'matdist, varname, typefct, span, '
-                                    b'beta, resolution, longlat, mask_json)')
-        data = json.dumps({
-            'knownpts_json': filenames['point_layer'],
-            'unknownpts_json': None,
-            'matdist': None,
-            'varname': form_data['var_name'],
-            'typefct': form_data['type_fun'],
-            'span': form_data['span'],
-            'beta': form_data['beta'],
-            'resolution': form_data['resolution'],
-            'longlat': False,
-            'mask_json': filenames['mask_layer']
-            }).encode()
-        content = R_client_fuw(url_client, commande, data, g2.context, id_)
-        print('content : ', content)
-        return {'content': content.decode(), 'title': 'Reilly Result'}
+#class ReillyPage(web.View):
+#    @aiohttp_jinja2.template('sPosition.html')
+#    @asyncio.coroutine
+#    def get(self):
+#        hform = SpatialPos_Form()
+#        return {'form': hform, 'content': '', 'title' : 'Reilly Example'}
+#
+#    @aiohttp_jinja2.template('display_result.html')
+#    @asyncio.coroutine
+#    def post(self):
+#        posted_data = yield from self.request.post()
+#        hform = SpatialPos_Form(posted_data)
+#        if not hform.validate():
+#            return web.Response(text="Invalid input fields")
+#
+#        filenames = {}  # Following code is probably totally insecure to deal with user inputs :
+#        for file_ph in ('point_layer', 'mask_layer'):
+#            file_to_upload = self.request.POST[file_ph]
+#            if file_to_upload:
+#                filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1])
+#                savefile(filepath, file_to_upload[2].read())
+#                filenames[file_ph] = filepath
+#            else:
+#                filenames[file_ph] = 'NULL'
+#        form_data = hform.data
+#        id_ = yield from is_known_user(self.request)
+#        commande = (b'reilly_to_json(knownpts_json, unknownpts_json, '
+#                                    b'matdist, varname, typefct, span, '
+#                                    b'beta, resolution, longlat, mask_json)')
+#        data = json.dumps({
+#            'knownpts_json': filenames['point_layer'],
+#            'unknownpts_json': None,
+#            'matdist': None,
+#            'varname': form_data['var_name'],
+#            'typefct': form_data['type_fun'],
+#            'span': form_data['span'],
+#            'beta': form_data['beta'],
+#            'resolution': form_data['resolution'],
+#            'longlat': False,
+#            'mask_json': filenames['mask_layer']
+#            }).encode()
+#        content = R_client_fuw(url_client, commande, data, g2.context, id_)
+#        print('content : ', content)
+#        return {'content': content.decode(), 'title': 'Reilly Result'}
 
 ##########################################################
 #### Qucik views to wrap "MTA" functionnalities :
@@ -658,7 +683,7 @@ def init(loop):
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
-    app.router.add_route('*', '/R/wrapped/SpatialPosition/reilly', ReillyPage)
+#    app.router.add_route('*', '/R/wrapped/SpatialPosition/reilly', ReillyPage)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
