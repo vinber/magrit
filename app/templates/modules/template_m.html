@@ -167,7 +167,6 @@ $(document).ready(function() {
                 if(e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length){
                            var files = e.originalEvent.dataTransfer.files;
                            if(!(e.originalEvent.dataTransfer.files.length == 1)){
-                                alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
                                 console.log(files);
                                 var filenames = [];
                                 for(i=0; i < files.length; i++){filenames[i] = files[i].name;}
@@ -176,10 +175,12 @@ $(document).ready(function() {
                                 console.log(filenames);
                                 console.log(result);
                                 if(result.length == 4){
-                                    alert('But as you have provided all the files (.shp, .dbf, .shx, .prj), I will be nice and take them');
-                                    handle_shapefiles(files);
-                                    }
-                                $(this).css('border', '4px dashed #BBBBBB');
+                                    alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading the Shapefile');
+                                    handle_shapefiles2(files);
+                                }else {
+                                    alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
+                                    $(this).css('border', '4px dashed #BBBBBB');
+                                }
                             }
                            else if(strContains(files[0].name.toLowerCase(), 'topojson')){
                                        e.preventDefault();e.stopPropagation();
@@ -199,7 +200,7 @@ $(document).ready(function() {
                                 alert('Do something with zip folder');
                                 console.log(files);
                             }
-                            else { alert('Invalid datasource (No JSON/zip/Shapefile detected)');}
+                            else { alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');}
                 }
                 else {
                            $(this).css('border', '4px dashed #BBBBBB');
@@ -212,7 +213,8 @@ $(document).ready(function() {
 ////////////////////////////////////////////////////////////////////////
 
 // Now some functions to handle the dropped-file(s) :
-// - By trying directly to add it :
+// - By trying directly to add it if it's a TopoJSON :
+
     function handle_TopoJSON_files(files) {
                 var f = files[0];
                 var reader = new FileReader();
@@ -227,8 +229,10 @@ $(document).ready(function() {
 
 // - By ziping the zipfile to send them to the server :
 // Currently not working
+
     function handle_shapefiles(files){
         var datas = new Object;
+        var formData = new FormData();
         for(var i=0; i < files.length; i++){
             var reader = new FileReader();
             reader.onloadend = function(evt){
@@ -248,11 +252,13 @@ $(document).ready(function() {
                 type: 'POST',
                 url: '/convert_to_topojson', 
                 data: {file: ['data:application/zip;base64', content]},
-                success: function(data) {add_layer_fun(data) ;}
+                success: function(data) {add_layer_fun(data) ;},
+                error: function(x){console.log(x);}
             });
     };
 
-// - By sending it to the server for conversion :
+// - By sending it to the server for conversion (GeoJSON to TopoJSON)
+
     function handle_single_file(files) {
                 var file = files[0]
                 var reader = new FileReader();
@@ -272,6 +278,7 @@ $(document).ready(function() {
     };
 
 // Add the TopoJSON to the 'svg' element :
+
     function add_layer_fun(text){
         parsedJSON = JSON.parse(text);
         var layers_names = Object.getOwnPropertyNames(parsedJSON.objects);

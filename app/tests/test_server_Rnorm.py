@@ -3,6 +3,7 @@
 Make many (non concurrent) requests to a local noname webapp instance in order
 to see if all requests are served
 """
+from collections import deque
 import requests
 import time
 
@@ -10,6 +11,7 @@ url_templ = 'http://localhost:9999/R/rnorm/'
 HEADERS = {"Content-Type": 'x-www-form-urlencoded'}
 
 def test_regular(nb_request):
+    time.sleep(1)
     my_res_list, my_err_list = [], []
     st = time.time()
     for i in range(nb_request):
@@ -30,6 +32,7 @@ import aiohttp
 import asyncio
 
 def test_async(nb_request, nb_concurrent):
+    time.sleep(1)
     st = time.time()
     urls = [url_templ+'n={}&mean=100'.format(i * 10 if i < 150 else 20 + i)
             for i in range(nb_request)]
@@ -44,7 +47,7 @@ class ResponseFetcher:
         self.urls = urls
         self.concurrent_requests = concurrent_requests
         self.headers = headers
-        self.results = []
+        self.results = deque()
 
     def run(self, clean_older=False):
         if clean_older:
@@ -60,7 +63,9 @@ class ResponseFetcher:
         with (yield from semaphore):
             response = yield from aiohttp.request(
                 'GET', url, connector=aiohttp.TCPConnector(
-                    share_cookies=True, verify_ssl=False),
+                    share_cookies=False, verify_ssl=False),
                 headers=self.headers)
             body = yield from response.text()
-            self.results.append(body)
+            if len(self.results > 1000):
+                _ = self.results.popleft()
+                self.results.append(body)

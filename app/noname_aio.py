@@ -37,8 +37,8 @@ from r_py.rpy2_console_queue import launch_queue
 
 # For the other actions involving R :
 from r_py.rclient import rClient_async
-from r_py.rclient_load_balance_async import (
-    launch_async_broker, R_client_fuw_async, url_client, prepare_worker)
+from r_py.rclient_load_balance_auto_scale import (
+    start_queue, R_client_fuw_async, url_client)
 
 # Used for the page generation with jinja2 and wtforms:
 from helpers.misc import guess_separator
@@ -771,14 +771,9 @@ if __name__ == '__main__':
     # The mutable mapping it provides will be used to store (safely ?)
     # some global variables :
     app_glob = web.Application()
-
-    def init_R_workers(nb_workers):
-        r_process = prepare_worker(nb_workers)
-        app_glob['broker'] = threading.Thread(
-            target=launch_async_broker, args=(len(r_process), None))
-        app_glob['broker'].start()
-    ## Todo : find a better way to launch the broker
-    init_R_workers(2)
+    app_glob['broker'] = threading.Thread(
+        target=start_queue, args=(None, ))
+    app_glob['broker'].start()
 
 #    if not 'thread_q' in app_glob:
     def init_Rpy2_console_broker():
