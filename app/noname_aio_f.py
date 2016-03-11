@@ -401,9 +401,7 @@ class UploadFile(web.View):
                 """.format(format_file, layers, nb_features, type_geom, crs)
         else:
             infos = "Something unexpected append"
-        return ''.join(['<div>',
-                        infos.translate(trans_rule).replace('\n', '<br>'),
-                        '</div>']), raw_result
+        return '<div>'+infos.translate(trans_rule).replace('\n', '<br>')+'</div>', raw_result
 
     @staticmethod
     def validate_upload_set(files_to_upload):
@@ -466,9 +464,7 @@ class FlowsPage(web.View):
                 suite.field_i.choices = headers_fields
                 suite.field_j.choices = headers_fields
                 suite.field_fij.choices = headers_fields
-                content = ''.join(['<div>',
-                                   df.head(15).to_html().replace('\n', ''),
-                                   '</div>'])
+                content = '<div>' + df.head(15).to_html().replace('\n', '') + '</div>'
             except Exception as err:
                 print(err)
                 content = str(err)
@@ -548,6 +544,51 @@ class StewartPage(web.View):
         return {'content': json.dumps(content['geojson']),
                 'breaks': content['breaks'],
                 'title': 'Stewart Result'}
+
+#class ReillyPage(web.View):
+#    @aiohttp_jinja2.template('sPosition.html')
+#    @asyncio.coroutine
+#    def get(self):
+#        hform = SpatialPos_Form()
+#        return {'form': hform, 'content': '', 'title' : 'Reilly Example'}
+#
+#    @aiohttp_jinja2.template('display_result.html')
+#    @asyncio.coroutine
+#    def post(self):
+#        posted_data = yield from self.request.post()
+#        hform = SpatialPos_Form(posted_data)
+#        if not hform.validate():
+#            return web.Response(text="Invalid input fields")
+#
+#        filenames = {}  # Following code is probably totally insecure to deal with user inputs :
+#        for file_ph in ('point_layer', 'mask_layer'):
+#            file_to_upload = self.request.POST[file_ph]
+#            if file_to_upload:
+#                filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1])
+#                savefile(filepath, file_to_upload[2].read())
+#                filenames[file_ph] = filepath
+#            else:
+#                filenames[file_ph] = 'NULL'
+#        form_data = hform.data
+#        id_ = yield from is_known_user(self.request)
+#        commande = (b'reilly_to_json(knownpts_json, unknownpts_json, '
+#                                    b'matdist, varname, typefct, span, '
+#                                    b'beta, resolution, longlat, mask_json)')
+#        data = json.dumps({
+#            'knownpts_json': filenames['point_layer'],
+#            'unknownpts_json': None,
+#            'matdist': None,
+#            'varname': form_data['var_name'],
+#            'typefct': form_data['type_fun'],
+#            'span': form_data['span'],
+#            'beta': form_data['beta'],
+#            'resolution': form_data['resolution'],
+#            'longlat': False,
+#            'mask_json': filenames['mask_layer']
+#            }).encode()
+#        content = R_client_fuw(url_client, commande, data, g2.context, id_)
+#        print('content : ', content)
+#        return {'content': content.decode(), 'title': 'Reilly Result'}
 
 ##########################################################
 #### Qucik views to wrap "MTA" functionnalities :
@@ -702,101 +743,58 @@ class R_commande(web.View):
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
 
-    def post(self):
-        function = self.request.match_info['function']
-        params = yield from self.request.post()
-        print(function)
-        print(type(params))
-        params = [i for i in params.split('&')]
-        commande = [function, '(']
-        data = {}
-        for param in params:
-            p = param.split('=')
-            if len(p) < 2:
-                continue
-            commande.extend([p[0], '=', p[0], ','])
-            try:
-                data[p[0]] = float(p[1])
-            except:
-                data[p[0]] = p[1]
-        commande.pop()
-        commande.append(')')
-        commande = ''.join(commande).encode()
-        id_ = yield from is_known_user(self.request)
-        print(data)
-        data = json.dumps(data).encode()
-        content = yield from R_client_fuw_async(
-            url_client, commande, data, app_glob['async_ctx'], id_)
-        return web.Response(text=content.decode())
 
-
-@asyncio.coroutine
-def init(loop):
-    app = web.Application(middlewares=[session_middleware(
-        EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
+app = web.Application(middlewares=[session_middleware(
+    EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
 #    aiohttp_debugtoolbar.setup(app)
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
-    app.router.add_route('GET', '/', handler)
-    app.router.add_route('GET', '/index2', handler2)
-    app.router.add_route('*', '/upload', UploadFile)
-    app.router.add_route('GET', '/R/{function}/{params}', R_commande)
-    app.router.add_route('POST', '/R/{function}', R_commande)
-    app.router.add_route('*', '/R_console', R_console)
-    app.router.add_route('*', '/R_console/', R_console)
-    app.router.add_route('*', '/Rpy2_console', Rpy2_console)
-    app.router.add_route('*', '/Rpy2_console/', Rpy2_console)
-    app.router.add_route('POST', '/clear_R_session', clear_r_session)
-    app.router.add_route('POST', '/convert_to_topojson', convert)
-    app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
-    app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
+aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
+app.router.add_route('GET', '/', handler)
+app.router.add_route('GET', '/index2', handler2)
+app.router.add_route('*', '/upload', UploadFile)
+app.router.add_route('*', '/R/{function}/{params}', R_commande)
+app.router.add_route('*', '/R_console', R_console)
+app.router.add_route('*', '/R_console/', R_console)
+app.router.add_route('*', '/Rpy2_console', Rpy2_console)
+app.router.add_route('*', '/Rpy2_console/', Rpy2_console)
+app.router.add_route('POST', '/clear_R_session', clear_r_session)
+app.router.add_route('POST', '/convert_to_topojson', convert)
+app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
+app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
 #    app.router.add_route('*', '/R/wrapped/SpatialPosition/reilly', ReillyPage)
-    app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
-    app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
-    app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
-    app.router.add_static('/modules/', path='templates/modules', name='modules')
-    app.router.add_static('/static/', path='static', name='static')
-    app.router.add_static('/database/', path='../database', name='database')
+app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
+app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
+app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
+app.router.add_static('/modules/', path='templates/modules', name='modules')
+app.router.add_static('/static/', path='static', name='static')
+app.router.add_static('/database/', path='../database', name='database')
 
-    srv = yield from loop.create_server(
-        app.make_handler(), '0.0.0.0', 9999)
-    return srv
+if not os.path.isdir('/tmp/feeds'):
+    try:
+        os.mkdir('/tmp/feeds')
+    except Exception as err:
+        print(err)
+        sys.exit()
+# The mutable mapping it provides will be used to store (safely ?)
+# some global variables :
+app_glob = web.Application()
 
-if __name__ == '__main__':
-    if not os.path.isdir('/tmp/feeds'):
-        try:
-            os.mkdir('/tmp/feeds')
-        except Exception as err:
-            print(err)
-            sys.exit()
-    # The mutable mapping it provides will be used to store (safely ?)
-    # some global variables :
-    app_glob = web.Application()
-
-    def init_R_workers(nb_workers):
-        r_process = prepare_worker(nb_workers)
-        app_glob['broker'] = threading.Thread(
-            target=launch_async_broker, args=(len(r_process), None))
-        app_glob['broker'].start()
-    ## Todo : find a better way to launch the broker
-    init_R_workers(2)
+def init_R_workers(nb_workers):
+    r_process = prepare_worker(nb_workers)
+    app['broker'] = threading.Thread(
+        target=launch_async_broker, args=(len(r_process), None))
+    app['broker'].start()
+## Todo : find a better way to launch the broker
+init_R_workers(2)
 
 #    if not 'thread_q' in app_glob:
-    def init_Rpy2_console_broker():
-        app_glob['thread_q'] = threading.Thread(
-            target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
-        app_glob['thread_q'].start()
-    # Todo : refactor this ugly launcher of the broker (and refactor the broker itself!)
-    init_Rpy2_console_broker()
+def init_Rpy2_console_broker():
+    app['thread_q'] = threading.Thread(
+        target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
+    app['thread_q'].start()
+# Todo : refactor this ugly launcher of the broker (and refactor the broker itself!)
+init_Rpy2_console_broker()
 
-    # In order to get an async zmq context object for the clients without using the zmq event loop:
-    zmq.asyncio.install()
-    app_glob['async_ctx'] = zmq.asyncio.Context(3) # It will be use to launch the rClient_async object
+# In order to get an async zmq context object for the clients without using the zmq event loop:
+zmq.asyncio.install()
+app['async_ctx'] = zmq.asyncio.Context(3) # It will be use to launch the rClient_async object
 
-    loop = asyncio.get_event_loop()
-    srv = loop.run_until_complete(init(loop))
-
-    print(pp, 'serving on', srv.sockets[0].getsockname())
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass

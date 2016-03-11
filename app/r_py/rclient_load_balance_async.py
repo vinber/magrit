@@ -55,7 +55,7 @@ def run_async_broker(loop, nb_r_process):
         socks = dict(socks)
 
         # poll on backend (msg/reply from workers) :
-        if (backend in socks and socks[backend] == zmq.POLLIN):
+        if backend in socks and socks[backend] == zmq.POLLIN:
             message = yield from backend.recv_multipart()
             assert available_workers <= NBR_WORKERS
             worker_addr = message[0]
@@ -74,7 +74,7 @@ def run_async_broker(loop, nb_r_process):
 
         # poll on frontend (client request) only if workers are available :
         if available_workers > 0:
-            if (frontend in socks and socks[frontend] == zmq.POLLIN):
+            if frontend in socks and socks[frontend] == zmq.POLLIN:
                 client_addr, empty, request, empty2, data = \
                     yield from frontend.recv_multipart()
                 assert empty == b"" and empty2 == b''

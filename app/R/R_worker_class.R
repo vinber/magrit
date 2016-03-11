@@ -5,13 +5,14 @@ load <- function(){
   require(sp, quietly = TRUE)
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
+  require(stats, quietly = TRUE)
 }
 
 # ToDo : find a better way to prepare an environment or at least
 # prepare the environnement once, save it and load it when launching
 # the script instead of reevaluate 'make_env'
 make_env <- function(lock = FALSE){
-  source('R/worker_functions.R')
+  source('/home/mz/code/noname-stuff/app/R/worker_functions.R')
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
   preparedEnv$stewart_to_json <- stewart_to_json
   preparedEnv$reilly_to_json <- reilly_to_json
@@ -19,6 +20,7 @@ make_env <- function(lock = FALSE){
   preparedEnv$mta_mediumdev <- mta_mediumdev
   preparedEnv$mta_localdev <- mta_localdev
   preparedEnv$prepflows_json <- prepflows_json
+  preparedEnv$rnorm <- rnorm
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }
@@ -48,7 +50,7 @@ R_Worker_fuw <- R6::R6Class(
     
     do = function(request, data){
       if(grepl('CLOSE', request) | grepl('exitR', request)){
-        out <- "Now exiting R\n"
+        out <- paste(Sys.getpid(), "Now exiting R\n")
       } else {
         # Each expression (or batch of chained expressions)
         # should be computed in his own environnement
