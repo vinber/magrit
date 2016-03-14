@@ -47,7 +47,7 @@ class ResponseFetcher:
         self.urls = urls
         self.concurrent_requests = concurrent_requests
         self.headers = headers
-        self.results = deque()
+        self.results = deque(maxlen=1000)
 
     def run(self, clean_older=False):
         if clean_older:
@@ -66,6 +66,4 @@ class ResponseFetcher:
                     share_cookies=False, verify_ssl=False),
                 headers=self.headers)
             body = yield from response.text()
-            if len(self.results > 1000):
-                _ = self.results.popleft()
-                self.results.append(body)
+            self.results.append(body)
