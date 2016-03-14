@@ -27,8 +27,9 @@ from subprocess import Popen, PIPE
 import jinja2
 import aiohttp_jinja2
 from aiohttp import web, web_reqrep
+#import aioredis
 #import aiohttp_debugtoolbar
-from aiohttp_session import get_session, session_middleware
+from aiohttp_session import get_session, session_middleware  #, redis_storage
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 # Just for the R console page based on rpy2 :
@@ -37,8 +38,7 @@ from r_py.rpy2_console_queue import launch_queue
 
 # For the other actions involving R :
 from r_py.rclient import rClient_async
-from r_py.rclient_load_balance_auto_scale import (
-    start_queue, R_client_fuw_async, url_client)
+from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 
 # Used for the page generation with jinja2 and wtforms:
 from helpers.misc import guess_separator
@@ -52,26 +52,14 @@ from pytopojson import topo_to_geo
 
 pp = '(aiohttp_app) '
 
-class g2:
-    """
-    Global holder object for various informations
-    Aimed to be remplaced by something better
-    """
-    UPLOAD_FOLDER = 'tmp/users_uploads'
-    app_real_path = '/home/mz/code/noname-stuff'
-    keys_mapping = {}
-    session_map = {}
-    table_map = {}
-
-
 def find_port():
     while True:
         port = randint(10000, 20000)
-        if port not in g2.keys_mapping.values():
+        if port not in app_glob['keys_mapping'].values():
             return port
 
 
-def get_key(var=g2.keys_mapping):
+def get_key(var):
     """Find and return an available key (ie. which is not in 'var')"""
     while True:
         k = ''.join([bytes([randint(65, 122)]).decode() for _ in range(25)])
@@ -112,7 +100,7 @@ def handler2(request):
 
 
 @asyncio.coroutine
-def is_known_user(request, ref=g2.session_map):
+def is_known_user(request, ref):
     session = yield from get_session(request)
     if 'R_user' in session and session['R_user'] in ref:
         id_ = session['R_user']
@@ -151,30 +139,30 @@ class Rpy2_console(web.View):
         posted_data = yield from self.request.post()
         sess = yield from get_session(self.request)
         rcommande = posted_data['rcommande']
-        if 'rpy2_session' in sess and sess['rpy2_session'] in g2.keys_mapping:
-            port, pid = g2.keys_mapping[sess['rpy2_session']]
+        if 'rpy2_session' in sess and sess['rpy2_session'] in app_glob['keys_mapping']:
+            port, pid = app_glob['keys_mapping'][sess['rpy2_session']]
             cRpy = client_Rpy_async("ipc:///tmp/feeds/rpy2_clients", port,
                                     ctx=app_glob['async_ctx'],
                                     init=False, worker_pid=pid)
         else:
-            key = get_key()
+            key = get_key(app_glob['keys_mapping'])
             port = find_port()
             cRpy = client_Rpy_async("ipc:///tmp/feeds/rpy2_clients", port,
                                     ctx=app_glob['async_ctx'])
-            g2.keys_mapping[key] = port, cRpy.worker_process.pid
+            app_glob['keys_mapping'][key] = port, cRpy.worker_process.pid
             sess['rpy2_session'] = key
         if rcommande == "CLOSE":
 #            print('before')
             yield from cRpy.disconnect_close()
 #            print('after')
-            g2.keys_mapping.pop(sess['rpy2_session'])
+            app_glob['keys_mapping'].pop(sess['rpy2_session'])
             sess.pop('rpy2_session')
-            print('g2.keys_mapping :', g2.keys_mapping)
+            print('app_glob.keys_mapping :', app_glob['keys_mapping'])
             return web.Response(text=json.dumps(
                 {'Status': 'Disconnected',
                  'Result': "Reload the page to get a new session"}))
         else:
-            print('g2.keys_mapping :', g2.keys_mapping)
+            print('app_glob.keys_mapping :', app_glob['keys_mapping'])
             message = yield from cRpy.reval(rcommande.replace('\r', ''))
             return web.Response(text=message.decode())
 
@@ -193,24 +181,24 @@ class R_console(web.View):
         if R_form.validate():
             rcommande = yield from self.request.post()
             rcommande = rcommande['rcommande']
-            print(g2.keys_mapping)
+            print(app_glob['keys_mapping'])
             sess = yield from get_session(self.request)
-            if 'R_session' in sess and sess['R_session'] in g2.keys_mapping:
+            if 'R_session' in sess and sess['R_session'] in app_glob['keys_mapping']:
                 key = sess['R_session']
-                port, pid = g2.keys_mapping[key]
+                port, pid = app_glob['keys_mapping'][key]
                 r = rClient_async(port, ctx=app_glob['async_ctx'],
                                   init=False, key=key, pid=pid)
             else:
                 port = find_port()
-                key = get_key()
+                key = get_key(app_glob['keys_mapping'])
                 r = rClient_async(port, ctx=app_glob['async_ctx'],
                                   init=True, key=key)
-                g2.keys_mapping[key] = port, r.process.pid
+                app_glob['keys_mapping'][key] = port, r.process.pid
                 sess['R_session'] = key
             message = yield from r.rEval(rcommande.replace('\r', '').encode())
             content = message.decode()
             if "exiting R" in content:
-                g2.keys_mapping.pop(sess['R_session'])
+                app_glob['keys_mapping'].pop(sess['R_session'])
                 r.manual_disconnect()
                 sess.pop('R_session')
                 content += " - Reload the page to get a new session"
@@ -223,10 +211,10 @@ def clear_r_session(request):
     posted_data = yield from request.post()
     print('session : ', session, '\nposted_data : ', posted_data)
     if 'rpy2_session' in posted_data:
-        g2.keys_mapping.pop(session['rpy2_session'])
+        app_glob['keys_mapping'].pop(session['rpy2_session'])
         session.pop('rpy2_session')
     elif 'R_session' in posted_data:
-        g2.keys_mapping.pop(session['R_session'])
+        app_glob['keys_mapping'].pop(session['R_session'])
         session.pop('R_session')
     return web.Response(text=json.dumps({'Status': 'Done'}))
 
@@ -247,7 +235,7 @@ def savefile(path, raw_data):
         with open(path, 'w') as f:
             f.write(raw_data.decode())
 
-def shp_to_geojson(filepath, to_latlong=True):
+def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
 #    print("Here i am with ", filepath)
     if to_latlong:
@@ -262,8 +250,7 @@ def shp_to_geojson(filepath, to_latlong=True):
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--width", "1000",
-                     "--height", "1000", "--cartesian",
+    process = Popen(["topojson", "--spherical",
                      filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
@@ -294,12 +281,12 @@ class UploadFile(web.View):
                 if file and file[0]:
                     filename = file[1]
                     if not isinstance(file[2], str):
-                        savefile(os.path.join(g2.app_real_path,
-                                              g2.UPLOAD_FOLDER,
+                        savefile(os.path.join(app_glob['app_real_path'],
+                                              app_glob['UPLOAD_FOLDER'],
                                               filename), file[2].read())
                     else:
-                        savefile(os.path.join(g2.app_real_path,
-                                              g2.UPLOAD_FOLDER,
+                        savefile(os.path.join(app_glob['app_real_path'],
+                                              app_glob['UPLOAD_FOLDER'],
                                               filename), file[2].encode())
                     filenames.append(filename)
                 else:
@@ -314,8 +301,8 @@ class UploadFile(web.View):
                     ext = '.geojson'
                 filename = 'tmp_{}{}'.format(get_name(), ext)
             finally:
-                savefile(os.path.join(g2.app_real_path,
-                                      g2.UPLOAD_FOLDER,
+                savefile(os.path.join(app_glob['app_real_path'],
+                                      app_glob['UPLOAD_FOLDER'],
                                       filename), raw_buff)
                 filenames.append(filename)
         if len(filenames) > 0:
@@ -340,7 +327,7 @@ class UploadFile(web.View):
             ext = 'geojson'
         if ext in ('shp', 'dbf', 'shx'):
             filepath = os.path.join(
-                g2.app_real_path, g2.UPLOAD_FOLDER, basename+'.shp')
+                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], basename+'.shp')
             file = fiona.open(filepath)
             format_file = 'ESRI Shapefile'
             layers = basename
@@ -351,10 +338,10 @@ class UploadFile(web.View):
                 crs = file.crs
             type_geom = file.schema['geometry']
             infos = repr(file.schema)
-            raw_result = shp_to_geojson(filepath)
+            raw_result = ogr_to_geojson(filepath)
         elif ext in 'topojson':
             filepath = os.path.join(
-                g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
             file = open(filepath)
             datajs = json.loads(file.read())
             format_file = datajs['type']
@@ -368,7 +355,7 @@ class UploadFile(web.View):
             raw_result = topo_to_geo(datajs)
         elif ext in ('json', 'geojson'):
             filepath = \
-                os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
             file = fiona.open(filepath)
             format_file = 'GeoJSON'
             layers = basename
@@ -383,7 +370,7 @@ class UploadFile(web.View):
         elif ext in ('csv', 'txt', 'tsv'):
             layers, format_file = basename, ext
             filepath = \
-                os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
             sep = guess_separator(filepath)
             file = pd.read_csv(filepath, sep=sep)
             infos = str(file.info())
@@ -443,18 +430,18 @@ class FlowsPage(web.View):
     @asyncio.coroutine
     def post(self):
         posted_data = yield from self.request.post()
-        id_ = yield from is_known_user(self.request, ref=g2.table_map)
+        id_ = yield from is_known_user(self.request, ref=app_glob['table_map'])
         flows_form = FlowsForm(posted_data)
         form_data = flows_form.data
         print(form_data)
-        if not g2.table_map[id_][1]:
+        if not app_glob['table_map'][id_][1]:
             file_to_upload = posted_data.get('table')
             filename = 'table_' + str(abs(hash(id_)))
             real_path = \
-                os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, filename)
+                os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
             savefile(real_path, file_to_upload[2].read())
             try:
-                g2.table_map[id_][1] = real_path
+                app_glob['table_map'][id_][1] = real_path
                 sep = guess_separator(real_path)
                 df = pd.read_csv(real_path, sep=sep)
                 headers = list(df.columns)
@@ -478,7 +465,7 @@ class FlowsPage(web.View):
             nform = form_data['next_field'][0]
             commande = (b"prepflows_json(mat, i, j, fij, "
                         b"remove_diag, direct_stat)")
-            filename = g2.table_map[id_][1]
+            filename = app_glob['table_map'][id_][1]
             print(pp, filename)
             data = json.dumps({
                 'mat': filename,
@@ -522,13 +509,13 @@ class StewartPage(web.View):
             file_to_upload = self.request.POST[file_ph]
             if file_to_upload:
                 filepath = os.path.join(
-                    g2.app_real_path, g2.UPLOAD_FOLDER, file_to_upload[1])
+                    app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], file_to_upload[1])
                 savefile(filepath, file_to_upload[2].read())
                 filenames[file_ph] = filepath
             else:
                 filenames[file_ph] = 'NULL'
         form_data = stewart_form.data
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         commande = (b'stewart_to_json(knownpts_json, varname, typefct, span, '
                     b'beta, nclass, resolution, mask_json)')
         data = json.dumps({
@@ -574,7 +561,7 @@ class MTA_globalDev(web.View):
             'var2': form_data['var2'], 'ref': form_data['ref'],
             'type_dev': form_data['type_fun']
             }).encode()
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         content = yield from R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
@@ -599,7 +586,7 @@ class MTA_mediumDev(web.View):
             'var1': form_data['var1'], 'var2': form_data['var2'],
             'key': form_data['key'], 'type_dev': form_data['type_fun']
             }).encode()
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         content = yield from R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
@@ -630,7 +617,7 @@ class MTA_localDev(web.View):
             'order': form_data['order'],
             'dist': form_data['distance'],
             'type_dev': form_data['type_fun']}).encode()
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         content = yield from R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         # Todo : Convert the result to TopoJSON
@@ -642,20 +629,19 @@ class MTA_localDev(web.View):
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
-    datatype, data = posted_data.getall('file[]')
-    name = get_name(length=32)
-    filepath = os.path.join(g2.app_real_path, g2.UPLOAD_FOLDER, name)
+    datatype, name, data = posted_data.getall('file[]')
+    filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
     if 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
             f.write(b64decode(data))
         with ZipFile(filepath+'archive') as myzip:
             list_files = myzip.namelist()
             list_files = ['/tmp/' + i for i in list_files]
+            shp_path = [i for i in list_files if 'shp' in i][0]
+            layer_name = shp_path.split(os.path.sep)[2]
             myzip.extractall(path='/tmp')
-            res = shp_to_geojson(
-                os.path.join([i for i in list_files if 'shp' in i][0]),
-                to_latlong=False)
-            filepath2 = '/tmp/'+get_name()
+            res = ogr_to_geojson(shp_path, to_latlong=True)
+            filepath2 = '/tmp/' + layer_name.replace('.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = geojson_to_topojson(filepath2)
@@ -664,13 +650,18 @@ def convert(request):
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream;base64' in datatype:
-        print(datatype)
         with open(filepath, 'w') as f:
             f.write(b64decode(data).decode())
+        with open(filepath, 'r') as f:
+            geojson = json.loads(f.read())
+        if "crs" in geojson:
+            res = ogr_to_geojson(filepath, to_latlong=True)
         result = geojson_to_topojson(filepath)
+        if len(result) == 0 and not 'crs' in geojson:
+            result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
         os.remove(filepath)
     else:
-        result = json.dumps({'Result': 'Incorrect datatype'})
+        result = json.dumps({'Error': 'Incorrect datatype'})
     return web.Response(text=result)
 
 class R_commande(web.View):
@@ -695,7 +686,7 @@ class R_commande(web.View):
         commande.pop()
         commande.append(')')
         commande = ''.join(commande).encode()
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         print(data)
         data = json.dumps(data).encode()
         content = yield from R_client_fuw_async(
@@ -722,7 +713,7 @@ class R_commande(web.View):
         commande.pop()
         commande.append(')')
         commande = ''.join(commande).encode()
-        id_ = yield from is_known_user(self.request)
+        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
         print(data)
         data = json.dumps(data).encode()
         content = yield from R_client_fuw_async(
@@ -732,6 +723,10 @@ class R_commande(web.View):
 
 @asyncio.coroutine
 def init(loop):
+    # Todo : Use server-side cookie storage with redis:
+#    redis = yield from aioredis.create_poll(('localhost', 6379))
+#    storage = redis_storage.RedisStorage(redis)
+#    app = web.Application(middlewares=[session_middleware(storage)])
     app = web.Application(middlewares=[session_middleware(
         EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
 #    aiohttp_debugtoolbar.setup(app)
@@ -770,13 +765,14 @@ if __name__ == '__main__':
             sys.exit()
     # The mutable mapping it provides will be used to store (safely ?)
     # some global variables :
+    # Todo : create only one web.Application object instead of app + app_glob
     app_glob = web.Application()
-    app_glob['broker'] = threading.Thread(
-        target=start_queue, args=(None, ))
-    app_glob['broker'].start()
+    app_glob['broker'] = Popen([sys.executable, 'r_py/rclient_load_balance_auto_scale.py'])
+    # Todo : keeping trace that the queue has been launched to avoid relaunching 
+    # if other instance of the app are deployed (like behind nginx)
+    #  + doing something to nicely close the queue when shutting down the main app
 
-#    if not 'thread_q' in app_glob:
-    def init_Rpy2_console_broker():
+    def init_Rpy2_console_broker():  # Todo : Idem (or use asyncio run_in_executor or something like thaht)
         app_glob['thread_q'] = threading.Thread(
             target=launch_queue, args=("ipc:///tmp/feeds/rpy2_clients", ))
         app_glob['thread_q'].start()
@@ -786,7 +782,13 @@ if __name__ == '__main__':
     # In order to get an async zmq context object for the clients without using the zmq event loop:
     zmq.asyncio.install()
     app_glob['async_ctx'] = zmq.asyncio.Context(3) # It will be use to launch the rClient_async object
-
+    # Some other global objects to hold various informations
+    # (Aimed to be remplaced by something better)
+    app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
+    app_glob['app_real_path'] = '/home/mz/code/noname-stuff'
+    app_glob['keys_mapping'] = {}
+    app_glob['session_map'] = {}
+    app_glob['table_map'] = {}
     loop = asyncio.get_event_loop()
     srv = loop.run_until_complete(init(loop))
 

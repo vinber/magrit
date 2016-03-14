@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <script src="/static/js/d3.v3.min.js"></script>
+    <script src="/static/js/topojson.v1.min.js"></script>
+    <script src="/static/js/d3.geo.projection.js"></script>
+    <script src="/static/js/polyhedron.js"></script>
+    <script src="/static/js/jquery-2.2.1.min.js"></script>
+    <script src="/static/js/shp.min.js"></script>
+    <link href="/static/css/style.css" rel="stylesheet" type="text/css" >  
+    <script src="../../static/js/dropzone.js"></script>
+    <style> 
+        #countrieslayer { stroke : #ffffff ; stroke-width: 0.5px; stroke-linecap: round ; fill: #6f9fa3;  }
+        #menu { float: left; width: 150px;font-family:Georgia,serif; color:#41403f; font-size: 12px; margin : 10px;}
+        #map { float: left; border-style: solid; width:900px; height:798px; margin-right : 300px}
+        .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
+    </style>
+     </head>
+<body>
+	<div class="note" id ="note">
+	All sources are available on <a href ="https://github.com/neocarto/d3carto" target="_blank">Github</a>. 
+	Go to the <a href="../index.php">Gallery</a>. 
+	<span class="small">CC (BY) N. Lambert (<a href ="http://neocarto.hypotheses.org/" target ="_blank">neocarto</a>).</span> 
+	</div>
+
+	<div id ="title"><ul><li>Projections, zooms, ... (draft)</li></ul></div>
+	<div id ="abstract">This example shows how to deal with map projections, scales, rotation, ...</div>
+      <div id = "menu"></div>
+  	<div id = "map"></div>
+</body>
+
+
+<script>
+// voir : http://bl.ocks.org/mbostock/3711652 
+// voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
+
+    var w = 900 ;
+    var h = 798;  
+
+    var graticule = d3.geo.graticule();
+
+    var proj = d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290]);
+        
+    var path = d3.geo.path().projection(proj);
+    var t = proj.translate(); 
+    var s = proj.scale() ;
+    
+    var map = d3.select("#map").append("svg:svg")
+        .attr("width", w)
+        .attr("height", h)
+        .call(d3.behavior.zoom().on("zoom", redraw));
+    map.append("path")
+       .datum(graticule)
+       .attr("class", "graticule")
+       .attr("d", path);
+
+    var countries = map.append("g").attr("id","countrieslayer");
+
+    d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
+
+    countries.selectAll('path').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path');
+    map.selectAll("path").attr("d", path);  
+
+});
+        
+    function redraw() {
+      sc = d3.event.scale;
+      tr  = d3.event.translate;
+      var tx = t[0] * d3.event.scale + d3.event.translate[0];
+      var ty = t[1] * d3.event.scale + d3.event.translate[1];
+      proj.translate([tx, ty]);
+      proj.scale(s * d3.event.scale);
+      map.selectAll("path").attr("d", path);
+      return [sc, tr];
+      //return tr;
+
+    }
+
+    
+    function reproj(sc, tr) {
+    if(typeof sc == 'undefined'){sc = 1;}
+    if(typeof tr == 'undefined'){tr = [0,0];}
+    var tx = t[0] * sc + tr[0];
+      var ty = t[1] * sc + tr[1];
+      proj.translate([tx, ty]);
+      proj.scale(s * sc);
+      map.selectAll("path").attr("d", path);
+    }
+    
+    
+// MENU
+var menu =  d3.select("#menu");
+menu.append("div").html("<br>Rotate");
+menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
+var p = menu.append("select").attr("id","form_projection")
+    d3.json("/static/json/projections.json", function(json) {
+       json.forEach(function(d) {
+            p.append("option").text(d.name).attr("value",d.projection);
+           });   
+    });
+
+// ACTIONS
+
+d3.select("#form_rotate").on("input", function() { 
+        var layers = d3.selectAll("svg");
+        layers.transition()
+            .duration(10)
+            .attr("transform", "rotate(" + this.value + ","+ w / 2 +","+  h / 2 +")");
+    });
+
+    
+p.on("change", function() {
+    proj = eval(this.value);
+    path = d3.geo.path().projection(proj);
+    t = proj.translate(); // the projection's default translation
+    s = proj.scale()
+    reproj() ;
+    
+});   
+
+
+////////////
+
+var section1 =  d3.select("#menu").append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project here").attr("id","section1");
+dv = section1.append("p").attr("id", "submit_form");
+myform = dv.append("form").attr("action", "upload").attr("method", "post").attr("enctype", "multipart/form-data");
+myform.append("input").attr("type", "file").attr("multiple", "").attr("name", "file[]");
+myform.append("input").attr("type", "submit").attr("value", "Upload file(s)").attr("id", "upload_button");
+
+$(function(){
+    $('#section1').css({"border" : "3px dashed blue",
+                        "color": "black",
+                        "font-size": "16px",
+                        "font-weight": "bold"});
+});
+
+var layers_manager = d3.select("#menu").append("div").attr("id", "layer_menu").html("<b>Current layers</b>");
+
+</script>   
+</html>
+

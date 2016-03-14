@@ -20,7 +20,6 @@ def R_client_fuw_async(client_url, request, data, context, i):
     socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+40))
     socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
     socket.setsockopt(zmq.LINGER, 0)
-    socket.setsockopt(zmq.HWM, 1)
     yield from socket.send_multipart([request, b'', data])
     reply = yield from socket.recv()
     socket.close()
@@ -218,3 +217,6 @@ def test():
         threads.append(t)
 
     [t.join() for t in threads]
+
+if __name__ == "__main__":
+    start_queue()

@@ -1,0 +1,12 @@
+[
+	{"name": "azimuthalEqualArea", "projection":  "d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},  
+	{"name": "orthographic", "projection":  "d3.geo.orthographic().scale(975).translate([150, 1000])"},
+	{"name": "mercator", "projection":  "d3.geo.mercator()"},
+	{"name": "stereographic", "projection":  "d3.geo.stereographic()"},
+	{"name": "Sinusoidal", "projection": "d3.geo.sinusoidal()"},
+	{"name": "Natural Earth", "projection": "d3.geo.naturalEarth()"},
+	{"name": "polyhedron butterfly", "projection": "d3.geo.polyhedron.butterfly()"}
+ ]
+
+    
+
