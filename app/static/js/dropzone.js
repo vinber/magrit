@@ -110,7 +110,7 @@ $(document).ready(function() {
     function handle_TopoJSON_files(files) {
                 var f = files[0];
                 var reader = new FileReader();
-                reader.onload = function(){
+                reader.onloadend = function(){
                     var text = reader.result;
                     console.log(text);
                     add_layer_fun(text);
@@ -171,10 +171,8 @@ $(document).ready(function() {
                 };
                 reader.readAsDataURL(file);
     };
-
-
+/*
 // Add the TopoJSON to the 'svg' element :
-
     function add_layer_fun(text){
         parsedJSON = JSON.parse(text);
         if(parsedJSON.Error){
@@ -182,7 +180,7 @@ $(document).ready(function() {
             return;
         }
         var layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
-
+        console.log(Object.getOwnPropertyNames(parsedJSON));
         // Loop over the layers to add them all ?
         // Probably better open an alert asking to the user which one to load ?
         for(i=0; i < layers_names.length; i++){
@@ -200,6 +198,66 @@ $(document).ready(function() {
             d3.select("#layer_menu").append('p').html('<a href>- ' + layers_names[i]+"</a>");
             var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
             console.log(bounds);
+        }
+        alert('Layer successfully added to the canvas');
+        var FooText = function() {
+            this.layer_name = layers_names[i];
+        }
+        text = FooText();
+        layers_fl.add(text, "layer_name");
+    };
+*/
+// Add the TopoJSON to the 'svg' element :
+
+    function add_layer_fun(text){
+        parsedJSON = JSON.parse(text);
+        if(parsedJSON.Error){
+            alert(parsedJSON.Error);
+            return;
+        }
+        var layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
+
+        // Loop over the layers to add them all ?
+        // Probably better open an alert asking to the user which one to load ?
+        for(i=0; i < layers_names.length; i++){
+            d3.select("#map").select("svg").select("#user_layer").append("g").attr("id", "layer"+i)
+                            .selectAll(".subunit")
+                            .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
+                            .enter().append("path")
+                            .attr("d", path)
+                            .style("stroke", "red")
+                            .style("stroke-opacity", .4)
+                            .style("fill", function(){
+                                    if(!strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')) return("beige");
+                                    else return(null);
+                                })
+                            .style("fill-opacity", function(){
+                                    if(!strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')) return(0.5);
+                                    else return(0);
+                                })
+                            .attr("height", "100%")
+                            .attr("width", "100%");
+            d3.select("#layer_menu").append('p').html('<a href>- ' + layers_names[i]+"</a>");
+            try {
+                //var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
+                var centroid = d3.geo.centroid(parsedJSON.objects[layers_names[i]]);
+                //console.log(bounds);
+                console.log(centroid);
+            } catch(err){
+                console.log(err);
+                //var centroid = d3.geo.centroid(parsedJSON.arcs);
+            }
+            var LayerName = new Object();
+            if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')){
+                LayerName.Polygon = layers_names[i];
+                layers_fl.add(LayerName, "Polygon");
+            } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')){
+                LayerName.Line = layers_names[i];
+                layers_fl.add(LayerName, "Line");
+            } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')){
+                LayerName.Point = layers_names[i];
+                layers_fl.add(LayerName, "Point");
+            }
         }
         alert('Layer successfully added to the canvas');
     };

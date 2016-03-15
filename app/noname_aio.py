@@ -686,7 +686,8 @@ class R_commande(web.View):
         commande.pop()
         commande.append(')')
         commande = ''.join(commande).encode()
-        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
+        id_ = yield from is_known_user(
+            self.request, ref=app_glob['session_map'])
         print(data)
         data = json.dumps(data).encode()
         content = yield from R_client_fuw_async(
@@ -722,7 +723,7 @@ class R_commande(web.View):
 
 
 @asyncio.coroutine
-def init(loop):
+def init(loop, port=9999):
     # Todo : Use server-side cookie storage with redis:
 #    redis = yield from aioredis.create_poll(('localhost', 6379))
 #    storage = redis_storage.RedisStorage(redis)
@@ -744,7 +745,6 @@ def init(loop):
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
-#    app.router.add_route('*', '/R/wrapped/SpatialPosition/reilly', ReillyPage)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
@@ -753,7 +753,7 @@ def init(loop):
     app.router.add_static('/database/', path='../database', name='database')
 
     srv = yield from loop.create_server(
-        app.make_handler(), '0.0.0.0', 9999)
+        app.make_handler(), '0.0.0.0', port)
     return srv
 
 if __name__ == '__main__':
@@ -763,14 +763,29 @@ if __name__ == '__main__':
         except Exception as err:
             print(err)
             sys.exit()
-    # The mutable mapping it provides will be used to store (safely ?)
+
+    if len(sys.argv) == 2:
+        port = int(sys.argv[1])
+        nb_r_workers = '4'
+    elif len(sys.argv) == 3:
+        port = int(sys.argv[1])
+        nb_r_workers = sys.argv[2]
+        if not nb_r_workers.isnumeric():
+            sys.exit()
+    else:
+        port = 9999
+        nb_r_workers = '4'
+
+    # The mutable mapping it provided by web.Application will be used to store (safely ?)
     # some global variables :
     # Todo : create only one web.Application object instead of app + app_glob
     app_glob = web.Application()
-    app_glob['broker'] = Popen([sys.executable, 'r_py/rclient_load_balance_auto_scale.py'])
-    # Todo : keeping trace that the queue has been launched to avoid relaunching 
-    # if other instance of the app are deployed (like behind nginx)
-    #  + doing something to nicely close the queue when shutting down the main app
+    if not nb_r_workers == '0':
+        # To be set to '0' when launching other instance of the noname app
+        # as they all can use the same worker queue
+        app_glob['broker'] = Popen([
+            sys.executable,'r_py/rclient_load_balance_auto_scale.py', nb_r_workers
+            ])
 
     def init_Rpy2_console_broker():  # Todo : Idem (or use asyncio run_in_executor or something like thaht)
         app_glob['thread_q'] = threading.Thread(
@@ -790,7 +805,7 @@ if __name__ == '__main__':
     app_glob['session_map'] = {}
     app_glob['table_map'] = {}
     loop = asyncio.get_event_loop()
-    srv = loop.run_until_complete(init(loop))
+    srv = loop.run_until_complete(init(loop, port))
 
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:

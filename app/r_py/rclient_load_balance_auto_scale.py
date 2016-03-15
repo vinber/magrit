@@ -42,8 +42,7 @@ class SelfManagingWorkerQueue:
         self.r_process = {}
         self.init_nb = init_R_process
         self.max_workers = max_workers
-        self.idle = 0
-        self.waiting_clients = 0
+
         # Start the R workers :
         if start_broker:
             self.start_broker(init_R_process)
@@ -149,12 +148,10 @@ class SelfManagingWorkerQueue:
                 # on the frontside, so lets start some new workers
                     self.launch_r_worker(1)
                     print('(async_broker) lauching a new R worker...')
-                    self.waiting_clients = 0
 
             if not socks:
 #                print("(async_broker) Availables workers : {}/{}".format(self.available, len(self.r_process)))
                 if self.available >= self.init_nb + 1:
-                    self.waiting_clients = 0
                     # Almost all workers have been started and are idle,
                     # so go back to the initial number of workers: 
                     print('(async_broker) killing a R worker...')
@@ -172,9 +169,9 @@ class SelfManagingWorkerQueue:
         print('(async_broker) exiting...')
         return 0
 
-def start_queue(*args):
-    Q = SelfManagingWorkerQueue(4, True, 12)
-    # Pensez a changer la limite du nombre de descripteurs de fichiers et du
+def start_queue(nb_process=4, max_process=12):
+    Q = SelfManagingWorkerQueue(nb_process, True, max_process)
+    # Penser a changer la limite du nombre de descripteurs de fichiers et du
     # nombre de fichiers ouverts pour l'utitilisateur qui execute ce programme
     # ... Changement dans /etc/security/limits.conf et dans /etc/sysctl.conf
 
@@ -199,7 +196,6 @@ def test():
         socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+40))
         socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
         socket.setsockopt(zmq.LINGER, 0)
-        socket.setsockopt(zmq.HWM, 1)
         socket.send_multipart([request, b'', data])
         reply = socket.recv()
         socket.close()
@@ -219,4 +215,9 @@ def test():
     [t.join() for t in threads]
 
 if __name__ == "__main__":
-    start_queue()
+    if len(sys.argv) == 3:
+        start_queue(int(sys.argv[1]), int(sys.argv[2]))
+    elif len(sys.argv) == 2:
+        start_queue(int(sys.argv[1]))
+    else:
+        start_queue()
