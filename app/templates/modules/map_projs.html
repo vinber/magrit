@@ -16,20 +16,13 @@
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style> 
         #bg_layer { stroke : #ffffff ; stroke-width: 0.5px; stroke-linecap: round ; fill: #6f9fa3;  }
-        #menu { float: left; width: 150px;font-family:Georgia,serif; color:#41403f; font-size: 12px; margin : 10px;}
+        #menu { float: left; width: 150px;font-family:Georgia,serif; color:#41403f; font-size: 12px; margin: 6px;}
         #map { float: left; border-style: solid; width:900px; height:798px; margin-right : 300px}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
     </style>
   </head>
 <body>
-	<div class="note" id ="note">
-	All sources are available on <a href ="https://github.com/neocarto/d3carto" target="_blank">Github</a>. 
-	Go to the <a href="../index.php">Gallery</a>. 
-	<span class="small">CC (BY) N. Lambert (<a href ="http://neocarto.hypotheses.org/" target ="_blank">neocarto</a>).</span> 
-	</div>
-
 	<div id ="title"><ul><li>Projections, zooms, ... (draft)</li></ul></div>
-	<div id ="abstract">This example shows how to deal with map projections, scales, rotation, ...</div>
       <div id = "menu"></div>
   	<div id = "map"></div>
     </body>
@@ -96,8 +89,8 @@
     
 // MENU
 var menu =  d3.select("#menu");
-menu.append("div").html("<br>Rotate");
-menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
+//menu.append("div").html("<br>Rotate");
+//menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
 var p = menu.append("select").attr("id","form_projection")
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
@@ -105,14 +98,12 @@ var p = menu.append("select").attr("id","form_projection")
            });   
     });
 
-// ACTIONS
-
-d3.select("#form_rotate").on("input", function() { 
-        var layers = d3.selectAll("svg");
-        layers.transition()
-            .duration(10)
-            .attr("transform", "rotate(" + this.value + ","+ w / 2 +","+  h / 2 +")");
-    });
+function rotate_global(angle){
+    d3.selectAll("svg")
+      .transition()
+      .duration(10)
+      .attr("transform", "rotate(" + angle + ","+ w / 2 +","+  h / 2 +")");
+};
 
 function rotate_orthographic(){
     d3.select("svg").on("mousedown", function(){
@@ -148,13 +139,13 @@ p.on("change", function() {
 // Used for the sphere rotation when orthographic projection is enabled :
 //////////////////////////////////////////////////////////////////////////////
 
-    var λ = d3.scale.linear()
-        .domain([0, w])
-        .range([-180, 180]);
-    
-    var φ = d3.scale.linear()
-        .domain([0, h])
-        .range([90, -90]);
+var λ = d3.scale.linear()
+    .domain([0, w])
+    .range([-180, 180]);
+
+var φ = d3.scale.linear()
+    .domain([0, h])
+    .range([90, -90]);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -179,27 +170,56 @@ $(function(){
 //////////////////////////////////////////////////////////////////////////////
 
 gui = new dat.GUI();
+
+// The 3 folders of the menu :
+
 layers_fl = gui.addFolder("Current layers");
 map_options = gui.addFolder("Map options");
-var FizzyText = function() {
-  this.Background = true;
-  this.Graticule = true;
-  this.Title = 'Map title';
-  this.displayTitle = false;
-  this.simplification = 0;
+export_option = gui.addFolder("Export options");
+
+// The mandatory objects to prepare the fields :
+
+var FillLayersMenu = {add: function(){add_layer()}};
+var FillExportMenu = {
+    "Export": function(){ handle_export(); },
+    "Print": function(){ console.log('Save trees!')},
+    "Twitt": function(){ console.log('Twitter, seriously..')},
+    };
+
+var FillMapMenu = {
+  Background: true,
+  Color: "#6f9fa3",
+  Graticule: true,
+  Title: 'Map title',
+  displayTitle: false,
+  simplification: 0,
+  rotation: 0
 };
 
-var map_menu = new FizzyText();
-map_options.add(map_menu, "Background").onChange(function(){handle_bg()});
-map_options.add(map_menu, "Graticule").onChange(function(){handle_graticule()});
-map_options.add(map_menu, "Title");
-map_options.add(map_menu, "displayTitle").name("Display title").onChange(function(){handle_title(map_menu.Title)});
-map_options.add(map_menu, "simplification", 0, 100);
+// Now lets fill and binds these fields :
+
+layers_fl.add(FillLayersMenu, "add").name("Add a new layer");
+
+map_options.add(FillMapMenu, "Background").onChange(function(){handle_bg()});
+map_options.addColor(FillMapMenu, "Color").name("Background color").onChange(function(){handle_bg_color(FillMapMenu.Color)});
+map_options.add(FillMapMenu, "Graticule").onChange(function(){handle_graticule()});
+map_options.add(FillMapMenu, "Title");
+map_options.add(FillMapMenu, "displayTitle").name("Display title").onChange(function(){handle_title(FillMapMenu.Title)});
+map_options.add(FillMapMenu, "simplification", 0, 100);
+map_options.add(FillMapMenu, "rotation", 0, 360).name("Canvas rotation").onChange(function(){rotate_global(FillMapMenu.rotation)});
+
+export_option.add(FillExportMenu,'Export').name("Export your map (svg/png)");
+export_option.add(FillExportMenu,'Print').name("Print your map");
+export_option.add(FillExportMenu,'Twitt').name("Share on twitter...");
+
+$(document).ready(function() {
+    d3.select("body").select("div.dg.main.a").style("width", "350px")
+});
 
 //////////////////////////////////////////////////////////////////////////////
 // Some tests to control layer visibility (ie. svg order ?) :
 //////////////////////////////////////////////////////////////////////////////
-
+ //  Currently not working
 /*
 d3.selectAll("#user_layer").on("mouseover", function(){
         console.log('foo');
@@ -215,12 +235,36 @@ d3.selectAll("#user_layer").on("mouseout", function(d){
 // Some callback functions related to the menu :
 //////////////////////////////////////////////////////////////////////////////
 
+function handle_export(){
+    null;
+}
+
+function add_layer(){
+    var input = $(document.createElement('input'));
+    input.attr("type", "file");
+    input.on('change', prepareUpload);
+    var res = [];
+    function prepareUpload(event){
+        files = event.target.files;
+        if(strContains(files[0].name, 'topojson')){
+            handle_TopoJSON_files(files);
+        } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
+                            || strContains(files[0].name, 'zip'))){
+            handle_single_file(files);
+        }
+    };
+    input.trigger('click');
+}
 
 function handle_bg(){
     var active = bg_layer.active ? false : true,
         new_opacity = active ? 0 : 1;
     d3.selectAll("#bg_layer").style("opacity", new_opacity);
     bg_layer.active = active;
+}
+
+function handle_bg_color(color){
+    d3.selectAll("#bg_layer").style("fill", color);
 }
 
 function handle_graticule(){
