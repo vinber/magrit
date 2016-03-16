@@ -4,16 +4,10 @@
 
 .dg.main .close-button {
     background-color: #ccc;
-    width: 350px;
 }
  
 .dg.main .close-button:hover {
     background-color: #ddd;
-    width: 350px;
-}
-
-.dg.main {
-    width: 350px;
 }
 
 .dg {

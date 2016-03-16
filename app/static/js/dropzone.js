@@ -159,7 +159,7 @@ function handle_single_file(files) {
         var reader = new FileReader();
         reader.onload = function handleReaderLoad(evt) {
             var dtype =  evt.target.result.split(',')[0];
-            var data =  evt.target.result.split(',')[1];
+            var data =  evt.target.result.split(',')[1];  // TODO : display an indeterminate progress bar while waiting for server reply
             $.ajax({
                        type: 'POST',
                        url: '/convert_to_topojson', 
@@ -240,9 +240,11 @@ function add_layer_fun(text){
         d3.select("#layer_menu")
               .append('p').html('<a href>- ' + layers_names[i]+"</a>");
         try {
-            //var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
+            var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
             var centroid = d3.geo.centroid(parsedJSON.objects[layers_names[i]]);
-            //console.log(bounds);
+            console.log(bounds);
+            console.log(proj.convert(bounds));
+            console.log(proj.convert(centroid));
             console.log(centroid);
         } catch(err){
             console.log(err);

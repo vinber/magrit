@@ -15,14 +15,14 @@
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style> 
-        #bg_layer { stroke : #ffffff ; stroke-width: 0.5px; stroke-linecap: round ; fill: #6f9fa3;  }
-        #menu { float: left; width: 150px;font-family:Georgia,serif; color:#41403f; font-size: 12px; margin: 6px;}
-        #map { float: left; border-style: solid; width:900px; height:798px; margin-right : 300px}
+        #bg_layer { stroke : #ffffff ; stroke-width: 0.5px; stroke-linecap: round ; fill: #6f9fa3; }
+        #menu {font-family:Georgia,serif; color:#41403f; font-size: 12px;}
+        #map { border-style: solid; width:700px; height:620px;}
+        #section1 { height: 110px; margin: 2px}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
     </style>
   </head>
 <body>
-	<div id ="title"><ul><li>Projections, zooms, ... (draft)</li></ul></div>
       <div id = "menu"></div>
   	<div id = "map"></div>
     </body>
@@ -30,16 +30,19 @@
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
 
-    var w = 900 ;
-    var h = 798;  
+    var w = 700;
+    var h = 620;  
 
     var graticule = d3.geo.graticule();
-    var proj = d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290]);
-        
+    // var proj = d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290]);
+    var proj = d3.geo.mercator().scale(100).translate([375, 320]);
     var path = d3.geo.path().projection(proj);
     var t = proj.translate(); 
     var s = proj.scale() ;
-    
+
+    var x_center_proj = proj.center()[0];
+    var y_center_proj = proj.center()[1];
+
     var map = d3.select("#map").append("svg")
         .attr("width", w)
         .attr("height", h)
@@ -62,7 +65,7 @@
 
     map.selectAll("path").attr("d", path);  
 
-});
+    });
         
     function redraw() {
       sc = d3.event.scale;
@@ -86,17 +89,63 @@
       map.selectAll("path").attr("d", path);
     }
     
-    
+//////////////////////////////////////////////////////////////////////////////
 // MENU
+//////////////////////////////////////////////////////////////////////////////
+
 var menu =  d3.select("#menu");
+
 //menu.append("div").html("<br>Rotate");
 //menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
-var p = menu.append("select").attr("id","form_projection")
+
+// Drag and drop zone integration :
+
+var section1 =  d3.select("#menu").append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project here").attr("id","section1");
+dv = section1.append("p").attr("id", "submit_form");
+myform = dv.append("form").attr("action", "upload").attr("method", "post").attr("enctype", "multipart/form-data");
+myform.append("input").attr("type", "file").attr("multiple", "").attr("name", "file[]");
+myform.append("input").attr("type", "submit").attr("value", "Upload file(s)").attr("id", "upload_button");
+
+$(function(){
+    $('#section1').css({"border" : "3px dashed blue",
+                        "color": "black",
+                        "font-size": "16px",
+                        "font-weight": "bold"});
+});
+
+var section2 =  d3.select("#menu").append("p").html("<br><b><u>Canvas properties</u></b><br>").attr("id","section2");
+var dv2 = section2.append("span").attr("class", "form-item");
+dv2.append('label-item').html("<br><b>Width</b>").style("padding", "7px");
+dv2.append("input").attr("id", "input-width").attr("type", "number").attr("value", w).on("change", function(){canvas_mod_size([this.value,null])})
+dv2.append('label-item').html("<br><b>Height</b>").style("padding", "6px");
+dv2.append("input").attr("id", "input-height").attr("type", "number").attr("value", h).on("change", function(){canvas_mod_size([null,this.value])})
+
+dv2.append("p").html("<b>Projection</b>");
+var p = dv2.append("select").attr("id","form_projection")
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             p.append("option").text(d.name).attr("value",d.projection);
            });   
     });
+
+dv2.append("p").html("Projection center (latitude-longitude)")
+
+x_center_field = dv2.append("input")
+                        .attr("id", "input-proj-center-x")
+                        .attr("type", "number")
+                        .attr("step", "any")
+                        .attr("value", x_center_proj)
+                        .on("change", function(){handle_proj_center_button([this.value,null])})
+y_center_field = dv2.append("input")
+                        .attr("id", "input-proj-center-y")
+                        .attr("type", "number")
+                        .attr("step", "any")
+                        .attr("value", y_center_proj)
+                        .on("change", function(){handle_proj_center_button([this.value,null])})
+
+//////////////////////////////////////////////////////////////////////////////
+// Rotation functions :
+//////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
     d3.selectAll("svg")
@@ -128,7 +177,17 @@ p.on("change", function() {
     reproj() ;
     if(strContains(this.value, 'orthographic')){
         rotate_orthographic();
+        document.getElementById('input-proj-center-x').disabled = true;
+        document.getElementById('input-proj-center-y').disabled = true;
+    } else if (strContains(this.value, 'mercator') || strContains(this.value, 'boggs')
+                 || strContains(this.value, 'baker') || strContains(this.value, 'craster')
+                 || strContains(this.value, 'ckert') || strContains(this.value, 'ckert')
+                 || strContains(this.value, 'romley')){
+        document.getElementById('input-proj-center-x').disabled = false;
+        document.getElementById('input-proj-center-y').disabled = true;
     } else {
+        document.getElementById('input-proj-center-x').disabled = false;
+        document.getElementById('input-proj-center-y').disabled = false;
         d3.select("svg").on("mousedown", null)
                         .on("mousemove", null)
                         .on("mouseup", null);
@@ -147,23 +206,6 @@ var φ = d3.scale.linear()
     .domain([0, h])
     .range([90, -90]);
 
-
-//////////////////////////////////////////////////////////////////////////////
-// Drag and drop zone integration :
-//////////////////////////////////////////////////////////////////////////////
-
-var section1 =  d3.select("#menu").append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project here").attr("id","section1");
-dv = section1.append("p").attr("id", "submit_form");
-myform = dv.append("form").attr("action", "upload").attr("method", "post").attr("enctype", "multipart/form-data");
-myform.append("input").attr("type", "file").attr("multiple", "").attr("name", "file[]");
-myform.append("input").attr("type", "submit").attr("value", "Upload file(s)").attr("id", "upload_button");
-
-$(function(){
-    $('#section1').css({"border" : "3px dashed blue",
-                        "color": "black",
-                        "font-size": "16px",
-                        "font-weight": "bold"});
-});
 
 //////////////////////////////////////////////////////////////////////////////
 // Some statements to add a basic dynamic menu :
@@ -193,7 +235,8 @@ var FillMapMenu = {
   Title: 'Map title',
   displayTitle: false,
   simplification: 0,
-  rotation: 0
+  rotation: 0,
+  projCenter: function(){handle_proj_center_click()}
 };
 
 // Now lets fill and binds these fields :
@@ -207,13 +250,18 @@ map_options.add(FillMapMenu, "Title");
 map_options.add(FillMapMenu, "displayTitle").name("Display title").onChange(function(){handle_title(FillMapMenu.Title)});
 map_options.add(FillMapMenu, "simplification", 0, 100);
 map_options.add(FillMapMenu, "rotation", 0, 360).name("Canvas rotation").onChange(function(){rotate_global(FillMapMenu.rotation)});
+map_options.add(FillMapMenu, "projCenter").name("Choose the projection center...")
 
 export_option.add(FillExportMenu,'Export').name("Export your map (svg/png)");
 export_option.add(FillExportMenu,'Print').name("Print your map");
 export_option.add(FillExportMenu,'Twitt').name("Share on twitter...");
 
 $(document).ready(function() {
-    d3.select("body").select("div.dg.main.a").style("width", "350px")
+    d3.select("body").select("div.dg.main.a")
+                        .style("width", "350px")
+                        .style("position", "initial")
+                        //.style("margin-top", "53px")
+                        .style("float", "left");
 });
 
 //////////////////////////////////////////////////////////////////////////////
@@ -236,7 +284,21 @@ d3.selectAll("#user_layer").on("mouseout", function(d){
 //////////////////////////////////////////////////////////////////////////////
 
 function handle_export(){
-    null;
+    var svg = document.getElementById("map");
+   
+    var source = (new XMLSerializer).serializeToString(svg);
+    
+    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    var url = "data:image/svg+xml;charset=utf-8,"+btoa(source);
+    console.log(url);
+    convBase64ToFile(url);
 }
 
 function add_layer(){
@@ -277,7 +339,7 @@ function handle_graticule(){
 function handle_title(txt){
     var active = title.active ? false : true;
     if(active) title = d3.select("svg")
-                         .append("text").attr('id', 'title')
+                         .append("text").attr("id", "title")
                          .attr("x", w/2 - txt.length)
                          .attr("y", h/10)
                          .attr("class", "legend")
@@ -287,8 +349,80 @@ function handle_title(txt){
                          .text(txt);
     if(!active) title = d3.selectAll("#title.legend").remove();
     title.active = active;
-    console.log(txt);
 }
+
+
+function handle_proj_center_click(){
+    map.on('click', function(d){
+        var coords = d3.mouse(this);
+        var coords_latlong = proj.invert(coords)
+        console.log(coords_latlong);
+        current_rotation = proj.rotate()
+        proj.rotate([coords[0] - w/2, current_rotation[1], current_rotation[2]]);
+        map.selectAll("path").attr("d", path);
+        map.on('click', null);
+    })
+}
+
+
+function handle_proj_center_button(param){
+    current_rotation = proj.rotate()
+    if(param[0]){
+        proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
+        map.selectAll("path").attr("d", path);
+    }
+    if(param[1]){
+        proj.rotate([current_rotation[0], param[1] - h/2, current_rotation[2]]);
+        map.selectAll("path").attr("d", path);
+    }
+}
+
+
+function canvas_mod_size(param){
+    if(param[0]){
+        w = param[0];
+        console.log([w, h]);
+        map.attr("width", w)
+                .attr("height", h)
+                .call(d3.behavior.zoom().on("zoom", redraw));
+        d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
+    };
+
+    if(param[1]){
+        h = param[1];
+        console.log([w, h]);
+        map.attr("width", w)
+            .attr("height", h)
+            .call(d3.behavior.zoom().on("zoom", redraw));
+        d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
+
+    }
+}
+
+function zoomed() {
+  proj.translate(d3.event.translate).scale(d3.event.scale);
+  map.selectAll("path").attr("d", path);
+}
+
+// Straight from http://stackoverflow.com/a/28294262 : 
+
+function convBase64ToFile(strBase64) {
+    var tmp = strBase64.split(",");
+    var prefix = tmp[0];
+    var contentType = prefix.split(/[:;]+/)[1];
+    var byteCharacters = atob(tmp[1]);
+
+    var byteNumbers = new Array(byteCharacters.length);
+    for (var i = 0; i < byteCharacters.length; i++) {
+         byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    var byteArray = new Uint8Array(byteNumbers);
+    var blob = new Blob([byteArray], {type: contentType});
+    var blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, "popup","width=1000,height=500,scrollbars=1,resizable=no," +
+    "toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0");
+}
+
 
 </script>
 </body>

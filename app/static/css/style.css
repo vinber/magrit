@@ -24,23 +24,24 @@ body {
     /*box-sizing: border-box; */ 
     text-align:center;
 }
-#menu, #map, #move {
-    padding:0px;
+#menu, #move {
+    padding: 20px;
     position: absolute;
     height : calc(100% - 30px);
     
 }
 #menu {
-    padding:10px;
-   left: 0;
-    width: 20%;
+    padding: 0px;
+    float: right;
+    position: static;
+    width: 350px;
     background-color: #f5f5f5;
 
 }
 #map {
-    padding:0px;  
-    right: 0;
-    width: 79%;
+    padding: 0px;
+    margin: auto;
+    margin-top:100px;
     background-color: white;
 
 
