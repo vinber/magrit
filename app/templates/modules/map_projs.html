@@ -9,20 +9,27 @@
     <script  src="/static/js/d3.geo.projection.js"></script>
     <script  src="/static/js/polyhedron.js"></script>
     <script  src="/static/js/jquery-2.2.1.min.js"></script>
+    <script  src="/static/js/jquery-ui.min.js"></script>
     <script  src="/static/js/shp.min.js"></script>
+    <script  src="/static/js/jscolor.js"></script>
     <script  src="/static/js/dropzone.js"></script>
+    <script  src="/static/js/layers_handler.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js" type="text/javascript"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
-    <style> 
-        #bg_layer { stroke : #ffffff ; stroke-width: 0.5px; stroke-linecap: round ; fill: #6f9fa3; }
+    <style>
+        #bg_layer {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #6f9fa3;}
         #menu {font-family:Georgia,serif; color:#41403f; font-size: 12px;}
         #map { border-style: solid; width:700px; height:620px;}
-        #section1 { height: 110px; margin: 2px}
+        #section1 { height: 110px; margin: 2px; font-size: 12px; font-weight: bold, color: black}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
+        #sortable { list-style-type: none; margin: 0; padding: 0; width: 80%; font-weight: bold; color: white}
+        #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: grey}
+        .ui-state-highlight {line-height: 12px; background: red}
     </style>
   </head>
 <body>
+      <div id = "header">M.A.R.S</div>
       <div id = "menu"></div>
   	<div id = "map"></div>
     </body>
@@ -32,6 +39,8 @@
 
     var w = 700;
     var h = 620;  
+
+    var title = 0;
 
     var graticule = d3.geo.graticule();
     // var proj = d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290]);
@@ -93,55 +102,101 @@
 // MENU
 //////////////////////////////////////////////////////////////////////////////
 
-var menu =  d3.select("#menu");
+$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
 
-//menu.append("div").html("<br>Rotate");
-//menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
+  $(function() {
+    $( "#sortable" ).sortable({
+      placeholder: "ui-state-highlight",
+      update: function(a){
+        var desired_order = [],
+            actual_order = [],
+            user_layers = d3.select("#user_layer").node();
+        
+        for(var i=0; i < a.target.childNodes.length; i++){
+            desired_order[i] = a.target.childNodes[i].innerText.split(' - ')[1]
+            actual_order[i] = user_layers.children[i].id;
+            }
+        actual_order = actual_order.reverse()
+        console.log("Desired order : " + desired_order);
+        console.log("Acutal order : " + actual_order);
 
-// Drag and drop zone integration :
+        }
+    });
+    $( "#sortable" ).disableSelection();
+  });
 
-var section1 =  d3.select("#menu").append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project here").attr("id","section1");
+var accordion = d3.select("#menu").append("div").attr("id","accordion");
+
+accordion.append("h3").html("Import your data");
+var section1 =  d3.select("#accordion").append("div").attr("id","section1");
+
+accordion.append("h3").html("Canvas properties");
+var section2 =  d3.select("#accordion").append("div").attr("id","section2");
+
+accordion.append("h3").html("Data manager");
+var section3 =  d3.select("#accordion").append("div").attr("id","section3");
+
+
+section1.append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project on the canvas or add manually a layer...");
 dv = section1.append("p").attr("id", "submit_form");
 myform = dv.append("form").attr("action", "upload").attr("method", "post").attr("enctype", "multipart/form-data");
 myform.append("input").attr("type", "file").attr("multiple", "").attr("name", "file[]");
 myform.append("input").attr("type", "submit").attr("value", "Upload file(s)").attr("id", "upload_button");
+//section2.append("input").attr("type", "range")
+//section2.append("input").attr("type", "checkbox")
+//section2.append("input").attr("type", "radio")
+//section2.append("input").attr("type", "textarea")
+//section2.append("input").attr("type","color")
 
-$(function(){
-    $('#section1').css({"border" : "3px dashed blue",
-                        "color": "black",
-                        "font-size": "16px",
-                        "font-weight": "bold"});
-});
 
-var section2 =  d3.select("#menu").append("p").html("<br><b><u>Canvas properties</u></b><br>").attr("id","section2");
-var dv2 = section2.append("span").attr("class", "form-item");
-dv2.append('label-item').html("<br><b>Width</b>").style("padding", "7px");
+var dv2 = section2.append("p").attr("class", "form-item");
+dv2.append("label-item").html("<b>Display graticule</b>");
+dv2.append("input").attr("type", "checkbox").attr("checked", "checked").on("change", function(){handle_graticule()});
+dv2.append('label-item').html("<br><b>Canvas width (px)</b>").style("padding", "7px");
 dv2.append("input").attr("id", "input-width").attr("type", "number").attr("value", w).on("change", function(){canvas_mod_size([this.value,null])})
-dv2.append('label-item').html("<br><b>Height</b>").style("padding", "6px");
+dv2.append('label-item').html("<br><b>Canvas height (px)</b>").style("padding", "6px");
 dv2.append("input").attr("id", "input-height").attr("type", "number").attr("value", h).on("change", function(){canvas_mod_size([null,this.value])})
-
-dv2.append("p").html("<b>Projection</b>");
-var p = dv2.append("select").attr("id","form_projection")
+dv2.append('label-item').html("<br><b>Projection </b>").style("padding", "6px");
+var p = dv2.append("select").attr("id","form_projection").style("align", "center");
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             p.append("option").text(d.name).attr("value",d.projection);
            });   
     });
 
-dv2.append("p").html("Projection center (latitude-longitude)")
+section2.append("div").html("Canvas rotation")
+section2.append("input")
+        .attr("type", "range")
+        .attr("id","form_rotate")
+        .attr("value",0).attr("min",0)
+        .attr("max",360).attr("step",1)
+        .on("input", function(){rotate_global(this.value)});
 
-x_center_field = dv2.append("input")
-                        .attr("id", "input-proj-center-x")
-                        .attr("type", "number")
-                        .attr("step", "any")
-                        .attr("value", x_center_proj)
-                        .on("change", function(){handle_proj_center_button([this.value,null])})
-y_center_field = dv2.append("input")
-                        .attr("id", "input-proj-center-y")
-                        .attr("type", "number")
-                        .attr("step", "any")
-                        .attr("value", y_center_proj)
-                        .on("change", function(){handle_proj_center_button([this.value,null])})
+
+section2.append("div").html("Projection center (λ-axis rotation)")
+section2.append("input")
+        .attr("type", "range")
+        .attr("id","form_projection_center")
+        .attr("value", 0).attr("min", 0)
+        .attr("max", 360).attr("step", 0.5)
+        .on("input", function(){handle_proj_center_button([this.value, null, null])});
+
+
+section2.append("p")
+        .append("input")
+        .attr("type", "button")
+        .attr("class", "zoom_button")
+        .attr("value", "+");
+section2.append("p")
+        .append("input")
+        .attr("type", "button")
+        .attr("class", "zoom_button")
+        .attr("value", "-");
+
+var layer_list = section3.append("ul").attr("id", "sortable");
+// Faire des items avec 3 petites icones
+// (pour supprimer la couche, pour modifier son style / controler sa visibilité et obtenir des infos genre nb d'entités, etc..) ?
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Rotation functions :
@@ -153,6 +208,7 @@ function rotate_global(angle){
       .duration(10)
       .attr("transform", "rotate(" + angle + ","+ w / 2 +","+  h / 2 +")");
 };
+
 
 function rotate_orthographic(){
     d3.select("svg").on("mousedown", function(){
@@ -216,12 +272,15 @@ gui = new dat.GUI();
 // The 3 folders of the menu :
 
 layers_fl = gui.addFolder("Current layers");
-map_options = gui.addFolder("Map options");
+map_options = gui.addFolder("More canvas properties");
 export_option = gui.addFolder("Export options");
 
 // The mandatory objects to prepare the fields :
 
-var FillLayersMenu = {add: function(){add_layer()}};
+var FillLayersMenu = {
+    add: function(){add_layer()},
+    add_sample: function(){add_sample_layer()}
+};
 var FillExportMenu = {
     "Export": function(){ handle_export(); },
     "Print": function(){ console.log('Save trees!')},
@@ -234,23 +293,28 @@ var FillMapMenu = {
   Graticule: true,
   Title: 'Map title',
   displayTitle: false,
-  simplification: 0,
+  Simplification: 0,
   rotation: 0,
-  projCenter: function(){handle_proj_center_click()}
+  projCenterX: x_center_proj,
+  rotation_y: y_center_proj,
+  inclinaison: 0
+ // projCenter: function(){handle_proj_center_click()}
 };
 
 // Now lets fill and binds these fields :
 
-layers_fl.add(FillLayersMenu, "add").name("Add a new layer");
 
 map_options.add(FillMapMenu, "Background").onChange(function(){handle_bg()});
 map_options.addColor(FillMapMenu, "Color").name("Background color").onChange(function(){handle_bg_color(FillMapMenu.Color)});
-map_options.add(FillMapMenu, "Graticule").onChange(function(){handle_graticule()});
+//map_options.add(FillMapMenu, "Graticule").onChange(function(){handle_graticule()});
 map_options.add(FillMapMenu, "Title");
 map_options.add(FillMapMenu, "displayTitle").name("Display title").onChange(function(){handle_title(FillMapMenu.Title)});
-map_options.add(FillMapMenu, "simplification", 0, 100);
+map_options.add(FillMapMenu, "Simplification", 0, 100);
 map_options.add(FillMapMenu, "rotation", 0, 360).name("Canvas rotation").onChange(function(){rotate_global(FillMapMenu.rotation)});
-map_options.add(FillMapMenu, "projCenter").name("Choose the projection center...")
+//map_options.add(FillMapMenu, "projCenterX", 0, 360).name("Projection center (λ-axis rotation)").onChange(function(){handle_proj_center_button([FillMapMenu.projCenterX, null, null])});
+// map_options.add(FillMapMenu, "projCenter").name("Choose the projection center...");
+map_options.add(FillMapMenu, "rotation_y", 0, 3600).name("φ-axis rotation").onChange(function(){handle_proj_center_button([null, FillMapMenu.rotation_y/10, null])});
+map_options.add(FillMapMenu, "inclinaison", 0, 3600).name("γ-axis rotation").onChange(function(){handle_proj_center_button([null, null, FillMapMenu.inclinaison/10])})
 
 export_option.add(FillExportMenu,'Export').name("Export your map (svg/png)");
 export_option.add(FillExportMenu,'Print').name("Print your map");
@@ -258,32 +322,17 @@ export_option.add(FillExportMenu,'Twitt').name("Share on twitter...");
 
 $(document).ready(function() {
     d3.select("body").select("div.dg.main.a")
-                        .style("width", "350px")
-                        .style("position", "initial")
-                        //.style("margin-top", "53px")
-                        .style("float", "left");
+                        .style("width", "410px")
+                        .style("margin-top", "30px")
+                        .style("float", "right");
 });
 
-//////////////////////////////////////////////////////////////////////////////
-// Some tests to control layer visibility (ie. svg order ?) :
-//////////////////////////////////////////////////////////////////////////////
- //  Currently not working
-/*
-d3.selectAll("#user_layer").on("mouseover", function(){
-        console.log('foo');
-        this.parentNode.appendChild(this);
-    });
-d3.selectAll("#user_layer").on("mouseout", function(d){
-        var nextSibling = d3.select("#layer-"+(d+1)).node();
-        this.parentNode.insertBefore(this, nextSibling);
-    });
-*/
 
 //////////////////////////////////////////////////////////////////////////////
 // Some callback functions related to the menu :
 //////////////////////////////////////////////////////////////////////////////
 
-function handle_export(){
+function handle_export(){  // Not working as expect right now
     var svg = document.getElementById("map");
    
     var source = (new XMLSerializer).serializeToString(svg);
@@ -316,6 +365,12 @@ function add_layer(){
         }
     };
     input.trigger('click');
+}
+
+function add_sample_layer(){
+ console.log(this);
+  // TODO: proposer des couches type découpage pays monde + zone en eau + maillage européen plus fin par exemple
+  // 
 }
 
 function handle_bg(){
@@ -366,13 +421,18 @@ function handle_proj_center_click(){
 
 
 function handle_proj_center_button(param){
-    current_rotation = proj.rotate()
+    current_rotation = proj.rotate();
+    console.log(current_rotation);
     if(param[0]){
         proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
         map.selectAll("path").attr("d", path);
     }
     if(param[1]){
         proj.rotate([current_rotation[0], param[1] - h/2, current_rotation[2]]);
+        map.selectAll("path").attr("d", path);
+    }
+    if(param[2]){
+        proj.rotate([current_rotation[0], current_rotation[1], param[2] - h/2]);
         map.selectAll("path").attr("d", path);
     }
 }
@@ -404,6 +464,7 @@ function zoomed() {
   map.selectAll("path").attr("d", path);
 }
 
+
 // Straight from http://stackoverflow.com/a/28294262 : 
 
 function convBase64ToFile(strBase64) {
@@ -422,6 +483,7 @@ function convBase64ToFile(strBase64) {
     window.open(blobUrl, "popup","width=1000,height=500,scrollbars=1,resizable=no," +
     "toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0");
 }
+
 
 
 </script>

@@ -1,8 +1,8 @@
 [
 	{
 	"img" : "empty.png",
-	"desc" : "Example 1",
-	"link" 	: "modules/template.html"
+	"desc" : "Example 1 - Data Import",
+	"link" 	: "modules/map_projs.html"
 	},
 	{
 	"img" : "empty.png",

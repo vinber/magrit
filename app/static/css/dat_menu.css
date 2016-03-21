@@ -72,6 +72,18 @@
     border-left: 3px solid #ae2351;
 }
 
+.dg .cr.function .property-name {
+    width: 100%;
+}
+
 .dg .cr.string {
     border-left: 3px solid #1e9ad3;
+}
+
+.dg .c {
+    width: 40%;
+}
+
+.dg .property-name {
+    width: 60%;
 }

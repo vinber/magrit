@@ -629,7 +629,12 @@ class MTA_localDev(web.View):
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
-    datatype, name, data = posted_data.getall('file[]')
+    try:
+        datatype, name, data = posted_data.getall('file[]')
+    except Exception as err:
+        print("posted data :\n", posted_data)
+        print("err\n", err)
+        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
     filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
     if 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
@@ -724,7 +729,9 @@ class R_commande(web.View):
 
 @asyncio.coroutine
 def init(loop, port=9999):
-    # Todo : Use server-side cookie storage with redis:
+    # Todo : 
+    # - Use server-side cookie storage with redis
+    # - Store client map parameters (preference, zoom, legend, etc.) on demand
 #    redis = yield from aioredis.create_poll(('localhost', 6379))
 #    storage = redis_storage.RedisStorage(redis)
 #    app = web.Application(middlewares=[session_middleware(storage)])
@@ -776,7 +783,7 @@ if __name__ == '__main__':
         port = 9999
         nb_r_workers = '4'
 
-    # The mutable mapping it provided by web.Application will be used to store (safely ?)
+    # The mutable mapping provided by web.Application will be used to store (safely ?)
     # some global variables :
     # Todo : create only one web.Application object instead of app + app_glob
     app_glob = web.Application()
