@@ -6,6 +6,9 @@ load <- function(){
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
   require(stats, quietly = TRUE)
+  require(rredis, quietly = TRUE)
+  rredis::redisConnect(host = "localhost", port = 6379)
+  rredis::redisSelect(1)
 }
 
 # ToDo : find a better way to prepare an environment or at least
@@ -21,6 +24,7 @@ make_env <- function(lock = FALSE){
   preparedEnv$mta_localdev <- mta_localdev
   preparedEnv$prepflows_json <- prepflows_json
   preparedEnv$rnorm <- rnorm
+  preparedEnv$redisGet <- rredis::redisGet
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }

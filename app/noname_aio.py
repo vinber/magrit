@@ -63,7 +63,8 @@ def find_port():
 def get_key(var):
     """Find and return an available key (ie. which is not in 'var')"""
     while True:
-        k = ''.join([bytes([randint(65, 122)]).decode() for _ in range(25)])
+        k = (b''.join([bytes([choice(list(range(48, 58))+list(range(97, 123)))])
+                    for i in range(25)])).decode()
         if k not in var:
             return k
 
@@ -74,9 +75,9 @@ def get_name(length=25):
     with some external soft used ( R / ogr2ogr / topojson / etc.)
     Aimed to be remplaced by something better
     """
-    return ''.join([bytes([choice(list(range(48, 57))
-                                  + list(range(65, 90))
-                                  + list(range(97, 122)))]).decode()
+    return ''.join([bytes([choice(list(range(48, 58))
+                                  + list(range(65, 91))
+                                  + list(range(97, 123)))]).decode()
                     for i in range(length)])
 
 
@@ -641,73 +642,67 @@ class MTA_localDev(web.View):
 @asyncio.coroutine
 def cache_input_topojson(request):
     posted_data = yield from request.post()
-    session = yield from get_session(request)
+    session_redis = yield from get_session(request)
 
     try:
-        data = posted_data.getall('file[]')[0]
+        name, data = posted_data.getall('file[]')
+        hashed_input = sha512(data.encode()).hexdigest() # Todo : compute the hash on client side to avoid re-sending the data
         print('Here i am')
     except Exception as err:
         print("posted data :\n", posted_data)
         print("err\n", err)
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
-    print(session.keys())
-    if not 'app_user' in session:
+    if not 'app_user' in session_redis:
         user_id = get_key(app_glob['app_users'])
         app_glob['app_users'].add(user_id)
-        session['app_user'] = user_id
-        session['input_data'] = []
-        session['converted'] = {}
-        hashed_input = sha512(data.encode()).hexdigest()
-
+        session_redis['app_user'] = user_id
+        session_redis['converted'] = {}
+        f_name = '_'.join([user_id, name])
 #        print('I stored the input TopojSON as GEOJSON for later computations')
 #        session['converted'] = topojson_to_geojson(data)
     else:
-        user_id = session['app_user']
-        hashed_input = sha512(data.encode()).hexdigest()
-        if hashed_input in session['converted']:
+        user_id = session_redis['app_user']
+        f_name = '_'.join([user_id, name])
+        if hashed_input in session_redis['converted']:
             print("The TopoJSON was already cached !")
             return web.Response()
 
-    session['input_data'].append(hashed_input)
-    session['converted'] = data
+    session_redis['converted'][hashed_input] = True
+    yield from app_glob['redis_conn'].execute('set', f_name, data)
     print('Caching the TopoJSON')
     return web.Response()
-#            session['converted'] = topojson_to_geojson(data)
-#            print('I stored the input TopojSON as GEOJSON for later computations')
+
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
 # to easily handle file types send by the front-side ?
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
-    session = yield from get_session(request)
 
     try:
         datatype, name, data = posted_data.getall('file[]')
+        hashed_input = sha512(data.encode()).hexdigest()
+
     except Exception as err:
         print("posted data :\n", posted_data)
         print("err\n", err)
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
-    print(session.keys())
-    if not 'app_user' in session:
+    session_redis = yield from get_session(request)
+    if not 'app_user' in session_redis:
         user_id = get_key(app_glob['app_users'])
         app_glob['app_users'].add(user_id)
-        session['app_user'] = user_id
-        session['input_data'] = []
-        session['converted'] = {}
-        hashed_input = sha512(data.encode()).hexdigest()
-
+        session_redis['app_user'] = user_id
+        session_redis['converted'] = {}
+        f_name = '_'.join([user_id, name])
     else:
-        user_id = session['app_user']
-        hashed_input = sha512(data.encode()).hexdigest()
-        if hashed_input in session['converted']:
-            result = session['converted'][hashed_input]
-            print("I used the cached result!!\n")
-            if result:
-                return web.Response(text=result)
+        user_id = session_redis['app_user']
+        f_name = '_'.join([user_id, name])
+        if hashed_input in session_redis['converted']:
+            result = yield from app_glob['redis_conn'].execute('get', f_name)
+            print("Used cached result")
+            return web.Response(text=result.decode())
 
-    session['input_data'].append(hashed_input)
     filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
     if 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
@@ -723,27 +718,40 @@ def convert(request):
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = geojson_to_topojson(filepath2)
-            session['converted'][hashed_input] = result
+            session_redis['converted'][hashed_input] = True
+            yield from app_glob['redis_conn'].execute('set', f_name, result)
+#            session['converted'][f_name] = json.loads(result)
+#            print(type(session['converted'][f_name]))
         os.remove(filepath+'archive')
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream;base64' in datatype:
-        with open(filepath, 'w') as f:
-            f.write(b64decode(data).decode())
-        with open(filepath, 'r') as f:
-            geojson = json.loads(f.read())
-        if "crs" in geojson:
+        data = b64decode(data).decode()
+        if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
+            crs = True
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(data)
             res = ogr_to_geojson(filepath, to_latlong=True)
+            print("Transform coordinates from GeoJSON")
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(res)
+        else:
+            crs = False
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(data)
+
         result = geojson_to_topojson(filepath)
-        if len(result) == 0 and not 'crs' in geojson:
+        if len(result) == 0 and not crs:
             result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
         else:
-            session['converted'][hashed_input] = result
+            session_redis['converted'][hashed_input] = True
+            yield from app_glob['redis_conn'].execute('set', f_name, result)
         os.remove(filepath)
+
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
-    
+
     return web.Response(text=result)
 
 class R_commande(web.View):
@@ -751,26 +759,15 @@ class R_commande(web.View):
     def get(self):
         function = self.request.match_info['function']
         params = self.request.match_info['params']
-        print(function)
-        print(type(params))
-        params = [i for i in params.split('&')]
-        commande = [function, '(']
-        data = {}
-        for param in params:
-            p = param.split('=')
-            if len(p) < 2:
-                continue
-            commande.extend([p[0], '=', p[0], ','])
-            try:
-                data[p[0]] = float(p[1])
-            except:
-                data[p[0]] = p[1]
-        commande.pop()
-        commande.append(')')
-        commande = ''.join(commande).encode()
+        data = dict([(_.split('=')[0], try_float(_.split('=')[1])) for _ in params.split('&')])
+        commande = ''.join(
+            [function,
+             '(',
+             ','.join(['='.join([param,param]) for param in data]),
+             ')']
+            ).encode()
         id_ = yield from is_known_user(
             self.request, ref=app_glob['session_map'])
-        print(data)
         data = json.dumps(data).encode()
         content = yield from R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
@@ -779,38 +776,32 @@ class R_commande(web.View):
     def post(self):
         function = self.request.match_info['function']
         params = yield from self.request.post()
-        print(function)
-        print(type(params))
-        params = [i for i in params.split('&')]
-        commande = [function, '(']
-        data = {}
-        for param in params:
-            p = param.split('=')
-            if len(p) < 2:
-                continue
-            commande.extend([p[0], '=', p[0], ','])
-            try:
-                data[p[0]] = float(p[1])
-            except:
-                data[p[0]] = p[1]
-        commande.pop()
-        commande.append(')')
-        commande = ''.join(commande).encode()
+        commande = ''.join([
+            function,
+            '(',
+            ','.join(['='.join([param,param]) for param in params]),
+            ')']).encode()
+        data = {k:try_float(v) for k,v in params.items()}
         id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
-        print(data)
         data = json.dumps(data).encode()
         content = yield from R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
 
+def try_float(val):
+    try:
+        return float(val)
+    except ValueError:
+        return val
 
 @asyncio.coroutine
 def init(loop, port=9999):
     # Todo : 
     # - Use server-side cookie storage with redis
     # - Store client map parameters (preference, zoom, legend, etc.) on demand
-    redis = yield from aioredis.create_pool(('localhost', 6379))
-    storage = redis_storage.RedisStorage(redis)
+    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0)
+    redis_conn = yield from aioredis.create_connection(('localhost', 6379), db=1)
+    storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
@@ -837,7 +828,7 @@ def init(loop, port=9999):
 
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', port)
-    return srv
+    return srv, redis_conn
 
 if __name__ == '__main__':
     if not os.path.isdir('/tmp/feeds'):
@@ -889,7 +880,8 @@ if __name__ == '__main__':
     app_glob['table_map'] = {}
     app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
-    srv = loop.run_until_complete(init(loop, port))
+    srv, redis_conn = loop.run_until_complete(init(loop, port))
+    app_glob['redis_conn'] = redis_conn
 
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:

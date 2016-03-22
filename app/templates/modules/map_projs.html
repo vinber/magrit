@@ -274,16 +274,12 @@ gui = new dat.GUI();
 
 // The 3 folders of the menu :
 
-layers_fl = gui.addFolder("Current layers");
 map_options = gui.addFolder("More canvas properties");
 export_option = gui.addFolder("Export options");
 
 // The mandatory objects to prepare the fields :
 
-var FillLayersMenu = {
-    add: function(){add_layer()},
-    add_sample: function(){add_sample_layer()}
-};
+
 var FillExportMenu = {
     "Export": function(){ handle_export(); },
     "Print": function(){ console.log('Save trees!')},

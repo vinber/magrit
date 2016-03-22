@@ -77,57 +77,57 @@ $(document).on('dragleave', 'svg', function(e) {
             return false;
 });
 $(document).on('drop', 'svg', function(e) {
-    if(e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length){
-           var files = e.originalEvent.dataTransfer.files;
-           if(!(e.originalEvent.dataTransfer.files.length == 1)){
-                console.log(files);
-                var filenames = [];
-                for(i=0; i < files.length; i++){filenames[i] = files[i].name;}
-                var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-                e.preventDefault();e.stopPropagation();
-                console.log(filenames);
-                console.log(result);
-                if(result.length == 4){
-                    $(this).css('border', '3px dashed red');
-                    alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
-                    $(this).css('border', '');
-                    handle_shapefiles(files);
-                }else {
-                    $(this).css('border', '3px dashed red');
-                    alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
-                    $(this).css('border', '');
-                }
-            }
-           else if(strContains(files[0].name.toLowerCase(), 'topojson')){
-                   e.preventDefault();e.stopPropagation();
-                   $(this).css('border', '');
-                   // Most direct way to add a layer :
-                   handle_TopoJSON_files(files);
-           }
-           else if(strContains(files[0].name.toLowerCase(), 'geojson') 
-                    || strContains(files[0].type.toLowerCase(), 'application/zip')){
-                   e.preventDefault();e.stopPropagation();
-                   $(this).css('border', '');
-                   // Send the file to the server for conversion :
-                   handle_single_file(files);
-           }
-          else if(strContains(files[0].name.toLowerCase(), '.csv') || strContains(files[0].name.toLowerCase(), '.xls')
-                    || strContains(files[0].name.toLowerCase(), '.tsv') || strContains(files[0].name.toLowerCase(), 'txt')) {
-                alert('Dataset provided');
-                e.preventDefault();e.stopPropagation();
-                $(this).css('border', '');
-                handle_dataset(files);
-           }
-          else {
+ //   if(e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length){
+       var files = e.originalEvent.dataTransfer.files;
+       if(!(e.originalEvent.dataTransfer.files.length == 1)){
+            console.log(files);
+            var filenames = [];
+            for(i=0; i < files.length; i++){filenames[i] = files[i].name;}
+            var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+            e.preventDefault();e.stopPropagation();
+            console.log(filenames);
+            console.log(result);
+            if(result.length == 4){
                 $(this).css('border', '3px dashed red');
-                alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
+                alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                $(this).css('border', '');
+                handle_shapefiles(files);
+            }else {
+                $(this).css('border', '3px dashed red');
+                alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
                 $(this).css('border', '');
             }
-    } else {
+        }
+       else if(strContains(files[0].name.toLowerCase(), 'topojson')){
+               e.preventDefault();e.stopPropagation();
+               $(this).css('border', '');
+               // Most direct way to add a layer :
+               handle_TopoJSON_files(files);
+       }
+       else if(strContains(files[0].name.toLowerCase(), 'geojson') 
+                || strContains(files[0].type.toLowerCase(), 'application/zip')){
+               e.preventDefault();e.stopPropagation();
+               $(this).css('border', '');
+               // Send the file to the server for conversion :
+               handle_single_file(files);
+       }
+      else if(strContains(files[0].name.toLowerCase(), '.csv') || strContains(files[0].name.toLowerCase(), '.xls')
+                || strContains(files[0].name.toLowerCase(), '.tsv') || strContains(files[0].name.toLowerCase(), 'txt')) {
+            alert('Dataset provided');
+            e.preventDefault();e.stopPropagation();
+            $(this).css('border', '');
+            handle_dataset(files);
+       }
+      else {
+            $(this).css('border', '3px dashed red');
+            alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
+            $(this).css('border', '');
+        }
+/*    } else {
         $(this).css('border', '3px dashed red');
         alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         $(this).css('border', '');    }
-    return false;
+    return false;*/
 });
 
 ////////////////////////////////////////////////////////////////////////
@@ -138,22 +138,22 @@ $(document).on('drop', 'svg', function(e) {
 // - By trying directly to add it if it's a TopoJSON :
 
 function handle_TopoJSON_files(files) {
-            var f = files[0];
-            var reader = new FileReader();
-            reader.onloadend = function(){
-                var text = reader.result;
-                console.log(text);
-                add_layer_fun(text);
-                $.ajax({
-                           type: 'POST',
-                           url: '/cache_topojson', 
-                           data: {file: [text]},
-                           success: function(data) {add_layer_fun(data);}
-                });
+    var f = files[0],
+        name = files[0].name,
+        reader = new FileReader();
+    reader.onloadend = function(){
+        var text = reader.result;
+        console.log(text);
+        add_layer_fun(text);
+        $.ajax({
+                   type: 'POST',
+                   url: '/cache_topojson', 
+                   data: {file: [name, text]},
+                   success: function(data) {add_layer_fun(data);}
+        });
 
-                }
-            reader.readAsText(f);
-
+        }
+    reader.readAsText(f);
 };
 
 function handle_dataset(files){
@@ -209,8 +209,9 @@ function handle_single_file(files) {
         var file = files[0];
         var reader = new FileReader();
         reader.onload = function handleReaderLoad(evt) {
-            var dtype =  evt.target.result.split(',')[0];
-            var data =  evt.target.result.split(',')[1];  // TODO : display an indeterminate progress bar while waiting for server reply
+            var data = evt.target.result.split(',');
+            var dtype = data[0];  // TODO : display an indeterminate progress bar while waiting for server reply
+            data = data[1];
             $.ajax({
                        type: 'POST',
                        url: '/convert_to_topojson', 
@@ -259,27 +260,25 @@ function add_layer_fun(text){
             var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
             var centroid = d3.geo.centroid(parsedJSON.objects[layers_names[i]]);
             console.log(bounds);
-            console.log(proj.convert(bounds));
             console.log(centroid);
-            console.log(proj.convert(centroid));
         } catch(err){
             console.log(err);
             //var centroid = d3.geo.centroid(parsedJSON.arcs);
         }
-        var LayerName = new Object();
+        //var LayerName = new Object();
             
         if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')){
             layer_list.append("li").attr("class", "ui-state-default").html("Polygon - " + layers_names[i])
-            LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
-            layers_fl.add(LayerName, layers_names[i]).name("Polygon - " + layers_names[i]);  // layers_fl is a "folder" in the menu made with dat.gui
+            //LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
+            //layers_fl.add(LayerName, layers_names[i]).name("Polygon - " + layers_names[i]);  // layers_fl is a "folder" in the menu made with dat.gui
         } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')){
             layer_list.append("li").attr("class", "ui-state-default").html("Line - " + layers_names[i])
-            LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
-            layers_fl.add(LayerName, layers_names[i]).name("Line - " + layers_names[i]); 
+            //LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
+            //layers_fl.add(LayerName, layers_names[i]).name("Line - " + layers_names[i]); 
         } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')){
             layer_list.append("li").attr("class", "ui-state-default").html("Point - " + layers_names[i])
-            LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
-            layers_fl.add(LayerName, layers_names[i]).name("Point - " + layers_names[i]); 
+            //LayerName[layers_names[i]] = function(){handle_click_layer(Object.getOwnPropertyNames(LayerName))};
+            //layers_fl.add(LayerName, layers_names[i]).name("Point - " + layers_names[i]); 
         }
     }
     alert('Layer successfully added to the canvas');
