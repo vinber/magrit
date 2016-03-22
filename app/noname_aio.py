@@ -19,6 +19,7 @@ from zipfile import ZipFile
 from random import randint, choice
 from datetime import datetime
 from base64 import b64decode
+from hashlib import sha512
 import asyncio
 import zmq.asyncio
 from subprocess import Popen, PIPE
@@ -27,9 +28,9 @@ from subprocess import Popen, PIPE
 import jinja2
 import aiohttp_jinja2
 from aiohttp import web, web_reqrep
-#import aioredis
+import aioredis
 #import aiohttp_debugtoolbar
-from aiohttp_session import get_session, session_middleware  #, redis_storage
+from aiohttp_session import get_session, session_middleware, redis_storage
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 # Just for the R console page based on rpy2 :
@@ -48,7 +49,7 @@ from helpers.forms import (
 
 # For testing purpose only, in order to make the topojson translation staying
 # in a python environnement :
-from pytopojson import topo_to_geo
+#from pytopojson import topo_to_geo
 
 pp = '(aiohttp_app) '
 
@@ -254,6 +255,20 @@ def geojson_to_topojson(filepath):
                      filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
+
+def topojson_to_geojson(filepath):
+    layers_name = json.parse(data)['objects'].keys()
+    layers_name = [''.join([i, '.json'] for i in layers_name)]
+    folder_name = os.path.join('/tmp', get_name())
+    os.mkdir(folder_name)
+    process = Popen(['topojson-geojson', filepath, '-o', folder_name])
+    result = []
+    for lyr in layers_name:
+        with open(os.path.join(folder_name, layers_name),
+                  'r', encoding='utf-8') as f:
+            result.append(f.read())
+    os.removedirs(folder_name)
+    return result
 
 class UploadFile(web.View):
     """
@@ -623,18 +638,76 @@ class MTA_localDev(web.View):
         # Todo : Convert the result to TopoJSON
         return web.Response(text=content.decode())
 
+@asyncio.coroutine
+def cache_input_topojson(request):
+    posted_data = yield from request.post()
+    session = yield from get_session(request)
 
+    try:
+        data = posted_data.getall('file[]')[0]
+        print('Here i am')
+    except Exception as err:
+        print("posted data :\n", posted_data)
+        print("err\n", err)
+        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+
+    print(session.keys())
+    if not 'app_user' in session:
+        user_id = get_key(app_glob['app_users'])
+        app_glob['app_users'].add(user_id)
+        session['app_user'] = user_id
+        session['input_data'] = []
+        session['converted'] = {}
+        hashed_input = sha512(data.encode()).hexdigest()
+
+#        print('I stored the input TopojSON as GEOJSON for later computations')
+#        session['converted'] = topojson_to_geojson(data)
+    else:
+        user_id = session['app_user']
+        hashed_input = sha512(data.encode()).hexdigest()
+        if hashed_input in session['converted']:
+            print("The TopoJSON was already cached !")
+            return web.Response()
+
+    session['input_data'].append(hashed_input)
+    session['converted'] = data
+    print('Caching the TopoJSON')
+    return web.Response()
+#            session['converted'] = topojson_to_geojson(data)
+#            print('I stored the input TopojSON as GEOJSON for later computations')
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
 # to easily handle file types send by the front-side ?
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
+    session = yield from get_session(request)
+
     try:
         datatype, name, data = posted_data.getall('file[]')
     except Exception as err:
         print("posted data :\n", posted_data)
         print("err\n", err)
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+
+    print(session.keys())
+    if not 'app_user' in session:
+        user_id = get_key(app_glob['app_users'])
+        app_glob['app_users'].add(user_id)
+        session['app_user'] = user_id
+        session['input_data'] = []
+        session['converted'] = {}
+        hashed_input = sha512(data.encode()).hexdigest()
+
+    else:
+        user_id = session['app_user']
+        hashed_input = sha512(data.encode()).hexdigest()
+        if hashed_input in session['converted']:
+            result = session['converted'][hashed_input]
+            print("I used the cached result!!\n")
+            if result:
+                return web.Response(text=result)
+
+    session['input_data'].append(hashed_input)
     filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
     if 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
@@ -650,6 +723,7 @@ def convert(request):
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = geojson_to_topojson(filepath2)
+            session['converted'][hashed_input] = result
         os.remove(filepath+'archive')
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
@@ -664,9 +738,12 @@ def convert(request):
         result = geojson_to_topojson(filepath)
         if len(result) == 0 and not 'crs' in geojson:
             result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
+        else:
+            session['converted'][hashed_input] = result
         os.remove(filepath)
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
+    
     return web.Response(text=result)
 
 class R_commande(web.View):
@@ -732,11 +809,9 @@ def init(loop, port=9999):
     # Todo : 
     # - Use server-side cookie storage with redis
     # - Store client map parameters (preference, zoom, legend, etc.) on demand
-#    redis = yield from aioredis.create_poll(('localhost', 6379))
-#    storage = redis_storage.RedisStorage(redis)
-#    app = web.Application(middlewares=[session_middleware(storage)])
-    app = web.Application(middlewares=[session_middleware(
-        EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
+    redis = yield from aioredis.create_pool(('localhost', 6379))
+    storage = redis_storage.RedisStorage(redis)
+    app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
@@ -750,6 +825,7 @@ def init(loop, port=9999):
     app.router.add_route('*', '/Rpy2_console/', Rpy2_console)
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
     app.router.add_route('POST', '/convert_to_topojson', convert)
+    app.router.add_route('POST', '/cache_topojson', cache_input_topojson)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
@@ -811,6 +887,7 @@ if __name__ == '__main__':
     app_glob['keys_mapping'] = {}
     app_glob['session_map'] = {}
     app_glob['table_map'] = {}
+    app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
     srv = loop.run_until_complete(init(loop, port))
 

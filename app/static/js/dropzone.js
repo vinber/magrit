@@ -21,6 +21,10 @@ $(document).ready(function() {
 
             handle_single_file(files);
         }
+        else if(strContains(files[0].name.toLowerCase(), '.csv') || strContains(files[0].name.toLowerCase(), '.xls')
+                    || strContains(files[0].name.toLowerCase(), '.tsv') || strContains(files[0].name.toLowerCase(), 'txt')) {
+            handle_dataset(files)
+        }
         else if(files.length >= 4){
             var filenames = [];
             for (i=0; i<files.length; i++) filenames[i] = files[i].name;
@@ -100,19 +104,21 @@ $(document).on('drop', 'svg', function(e) {
                    // Most direct way to add a layer :
                    handle_TopoJSON_files(files);
            }
-           else if(strContains(files[0].name.toLowerCase(), 'geojson')){
+           else if(strContains(files[0].name.toLowerCase(), 'geojson') 
+                    || strContains(files[0].type.toLowerCase(), 'application/zip')){
                    e.preventDefault();e.stopPropagation();
                    $(this).css('border', '');
                    // Send the file to the server for conversion :
                    handle_single_file(files);
            }
-           else if(strContains(files[0].type.toLowerCase(), 'application/zip')){
-                e.preventDefault();
-                e.stopPropagation();
+          else if(strContains(files[0].name.toLowerCase(), '.csv') || strContains(files[0].name.toLowerCase(), '.xls')
+                    || strContains(files[0].name.toLowerCase(), '.tsv') || strContains(files[0].name.toLowerCase(), 'txt')) {
+                alert('Dataset provided');
+                e.preventDefault();e.stopPropagation();
                 $(this).css('border', '');
-                handle_single_file(files);
-                console.log(files);
-           } else {
+                handle_dataset(files);
+           }
+          else {
                 $(this).css('border', '3px dashed red');
                 alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
                 $(this).css('border', '');
@@ -138,10 +144,30 @@ function handle_TopoJSON_files(files) {
                 var text = reader.result;
                 console.log(text);
                 add_layer_fun(text);
+                $.ajax({
+                           type: 'POST',
+                           url: '/cache_topojson', 
+                           data: {file: [text]},
+                           success: function(data) {add_layer_fun(data);}
+                });
+
                 }
             reader.readAsText(f);
 
 };
+
+function handle_dataset(files){
+  for (i = 0, f = files[i]; i != files.length; ++i) {
+    var reader = new FileReader();
+    var name = f.name;
+    reader.onload = function(e) {
+      var data = e.target.result;
+      var workbook = XLSX.read(data, {type: 'binary'});
+      console.log(workbook)
+    };
+    reader.readAsBinaryString(f);
+  }
+}
 
 // - By ziping the zipfile to send them to the server :
 // Currently not working
