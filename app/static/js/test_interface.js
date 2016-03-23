@@ -181,10 +181,6 @@ function handle_shapefiles(files){
             if (evt.target.readyState == FileReader.DONE) {
                 datas.push(evt.target.result);
                 ziped.file(file.name, datas[i]);
-                //var dtype =  evt.target.result.split(',')[0];
-                //var data =  evt.target.result.split(',')[1];
-                //console.log(datas);
-                //datas.push(data);
                 }
             };
         reader.readAsArrayBuffer(file);
@@ -234,9 +230,7 @@ function add_layer_fun(text){
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(i=0; i < layers_names.length; i++){
-        d3.select("#map")
-              .select("svg")
-              .select("#user_layer").append("g").attr("id", layers_names[i])
+        map.append("g").attr("id", layers_names[i])
               .selectAll(".subunit")
               .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
               .enter().append("path")
@@ -264,14 +258,24 @@ function add_layer_fun(text){
             console.log(err);
         }
         //var LayerName = new Object();
+        layers_listed = layer_list.node()
         if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')){
-            layer_list.append("li").attr("class", "ui-state-default").html("Polygon - " + layers_names[i]);
+            li = document.createElement("li");
+            li.setAttribute("class", "ui-state-default");
+            li.innerHTML = "Polygon - " + layers_names[i];
+            layers_listed.insertBefore(li, layers_listed.childNodes[0])
             type = "Polygon";
         } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')){
-            layer_list.append("li").attr("class", "ui-state-default").html("Line - " + layers_names[i])
+            li = document.createElement("li");
+            li.setAttribute("class", "ui-state-default");
+            li.innerHTML = "Line - " + layers_names[i];
+            layers_listed.insertBefore(li, layers_listed.childNodes[0])
             type = "Line";
         } else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')){
-            layer_list.append("li").attr("class", "ui-state-default").html("Point - " + layers_names[i])
+            li = document.createElement("li");
+            li.setAttribute("class", "ui-state-default");
+            li.innerHTML = "Point - " + layers_names[i];
+            layers_listed.insertBefore(li, layers_listed.childNodes[0])
             type = "Point";
         }
         d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");

@@ -1,14 +1,15 @@
 aiohttp == 0.21.2
-aiohttp_debugtoolbar == 0.1.1
 aiohttp_jinja2 == 0.7.0
 aiohttp_session == 0.4.0
+aioredis == 0.2.5
 Fiona == 1.6.3
 Flask == 0.10.1
 Jinja2 == 2.8
 pandas == 0.16.2
+requests == 2.4.3
 rpy2 == 2.7.8
 ujson == 1.33
 Werkzeug == 0.11.3
 WTForms == 2.1
-psutil == 4.0.0
+psutil == 4.1.0
 pyzmq == 15.2.0

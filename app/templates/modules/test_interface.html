@@ -14,14 +14,11 @@
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
     <script window.jQuery || document.write('<script src="/static/js/jquery-2.2.1.min.js">\x3C/script>')</script>
     <script  src="/static/js/jquery-ui.min.js"></script>
-    <script  src="/static/js/xlsx.core.min.js"></script>
-    <script  src="/static/js/shp.min.js"></script>
-    <script  src="/static/js/dropzone.js"></script>
-    <script  src="/static/js/layers_handler.js"></script>
+    <script  src="/static/js/test_interface.js"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style>
-        #bg_layer {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #343642;}
+        #Simplified_land_polygons {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #343642;}
         #menu {font-family:Georgia,serif; color:#41403f; font-size: 12px;}
         #map { border-style: solid; width:700px; height:620px;}
         #section1 { height: 110px; margin: 2px; font-size: 12px; font-weight: bold, color: black}
@@ -62,17 +59,17 @@
         .attr("height", h)
         .call(zoom);
 
-    var background = map.append("g").attr("id","bg_layer");
+    var background = map.append("g").attr("id","Simplified_land_polygons");
 
-    var info = map.append("div").attr("class", "info");
+    //var info = map.append("div").attr("class", "info");
 
-    map.append("g").attr("id", "graticule")
+    map.append("g").attr("id", "Graticule")
                    .append("path")
                    .attr("class", "graticule")
                    .datum(graticule)
                    .attr("d", path);
    
-    map.append("g").attr("id", "user_layer");
+    //map.append("g").attr("id", "user_layer");
     d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
         background.selectAll('path')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
@@ -113,17 +110,26 @@ $(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
     $( "#sortable" ).sortable({
       placeholder: "ui-state-highlight",
       update: function(a){
+        console.log(a.target)
         var desired_order = [],
             actual_order = [],
-            user_layers = d3.select("#user_layer").node();
+            layers = d3.selectAll("svg").node();
         
         for(var i=0; i < a.target.childNodes.length; i++){
-            desired_order[i] = a.target.childNodes[i].innerText.split(' - ')[1]
-            actual_order[i] = user_layers.children[i].id;
+            var n = a.target.childNodes[i].innerHTML.split(' - ')
+            desired_order[i] = n[n.length - 1]
+            actual_order[i] = layers.children[i].id;
             }
-        actual_order = actual_order.reverse()
         console.log("Desired order : " + desired_order);
-        console.log("Acutal order : " + actual_order);
+        console.log("Acutal order : " + actual_order.reverse());
+        for(var i = 0; i< desired_order.length; i++){
+            console.log(desired_order[i-1]);console.log(desired_order[i-2]);
+            //if(!desired_order[i-1] != actual_order.reverse()[i-1]) {
+            lyr1 = d3.select("#"+desired_order[i]).node()
+            lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node()
+            layers.insertBefore(lyr2, lyr1);
+            //}
+        }
         }
     });
     $( "#sortable" ).disableSelection();
@@ -158,9 +164,9 @@ var p = dv2.append("select").attr("id","form_foobar").style("align", "center").o
 p.append("option").text("Foo").attr("value","Foo");
 p.append("option").text("Bar").attr("value","Bar");
 
-var layer_list = section3.append("div").append("ul").attr("id", "sortable");
+var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 layer_list.append("li").attr("class", "ui-state-default").html("Graticule")
-layer_list.append("li").attr("class", "ui-state-default").html("Simplified land polygons")
+layer_list.append("li").attr("class", "ui-state-default").html("Simplified_land_polygons")
 
 var dv4 = section4.append("p").attr("class", "form-item");
 //dv4.append("label-item").html("<b>Display graticule</b>");
