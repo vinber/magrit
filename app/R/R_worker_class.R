@@ -24,7 +24,10 @@ make_env <- function(lock = FALSE){
   preparedEnv$mta_localdev <- mta_localdev
   preparedEnv$prepflows_json <- prepflows_json
   preparedEnv$rnorm <- rnorm
+  preparedEnv$runif <- runif
+  preparedEnv$runif <- rbinom
   preparedEnv$redisGet <- rredis::redisGet
+  preparedEnv$redisCmd <- rredis::redisCmd
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }

@@ -642,8 +642,6 @@ class MTA_localDev(web.View):
 @asyncio.coroutine
 def cache_input_topojson(request):
     posted_data = yield from request.post()
-    session_redis = yield from get_session(request)
-
     try:
         name, data = posted_data.getall('file[]')
         hashed_input = sha512(data.encode()).hexdigest() # Todo : compute the hash on client side to avoid re-sending the data
@@ -653,6 +651,7 @@ def cache_input_topojson(request):
         print("err\n", err)
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
+    session_redis = yield from get_session(request)
     if not 'app_user' in session_redis:
         user_id = get_key(app_glob['app_users'])
         app_glob['app_users'].add(user_id)
@@ -669,7 +668,7 @@ def cache_input_topojson(request):
             return web.Response()
 
     session_redis['converted'][hashed_input] = True
-    yield from app_glob['redis_conn'].execute('set', f_name, data)
+    yield from app_glob['redis_conn'].set(f_name, data)
     print('Caching the TopoJSON')
     return web.Response()
 
@@ -699,7 +698,7 @@ def convert(request):
         user_id = session_redis['app_user']
         f_name = '_'.join([user_id, name])
         if hashed_input in session_redis['converted']:
-            result = yield from app_glob['redis_conn'].execute('get', f_name)
+            result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
             return web.Response(text=result.decode())
 
@@ -719,7 +718,7 @@ def convert(request):
                 f.write(res)
             result = geojson_to_topojson(filepath2)
             session_redis['converted'][hashed_input] = True
-            yield from app_glob['redis_conn'].execute('set', f_name, result)
+            yield from app_glob['redis_conn'].set(f_name, result)
 #            session['converted'][f_name] = json.loads(result)
 #            print(type(session['converted'][f_name]))
         os.remove(filepath+'archive')
@@ -746,7 +745,7 @@ def convert(request):
             result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
         else:
             session_redis['converted'][hashed_input] = True
-            yield from app_glob['redis_conn'].execute('set', f_name, result)
+            yield from app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath)
 
     else:
@@ -800,7 +799,7 @@ def init(loop, port=9999):
     # - Use server-side cookie storage with redis
     # - Store client map parameters (preference, zoom, legend, etc.) on demand
     redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0)
-    redis_conn = yield from aioredis.create_connection(('localhost', 6379), db=1)
+    redis_conn = yield from aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)

@@ -75,23 +75,3 @@ prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE)
     return(jsonlite::toJSON(summary))
   }
 }
-
-# prepflows_persist_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE, save=TRUE){
-#   mat <- read.csv(mat)
-#   myflows <- flows::prepflows(mat, i, j, fij)
-#   if(remove_diag) diag(myflows) <- 0
-#   if(direct_stat$direct_stat == FALSE){
-#     return(jsonlite::toJSON(myflows))
-#   } else {
-#     summary <- capture.output(flows::statmat(myflows,
-#                                              output = direct_stat$output,
-#                                              verbose = direct_stat$verbose))
-#     # Todo : store the prepared table in mongo db to reload it if needed
-#     # ... and return the id of the document
-#     if(save==TRUE){
-#       result = list(summary = summary,
-#                     id_doc = foo)
-#     }
-#     else{return(jsonlite::toJSON(summary))}
-#   }
-# }

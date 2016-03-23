@@ -149,9 +149,8 @@ function handle_TopoJSON_files(files) {
                    type: 'POST',
                    url: '/cache_topojson', 
                    data: {file: [name, text]},
-                   success: function(data) {add_layer_fun(data);}
+                   success: function() {}
         });
-
         }
     reader.readAsText(f);
 };
