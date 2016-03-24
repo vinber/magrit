@@ -13,7 +13,7 @@ from zipfile import ZipFile
 from random import randint, choice
 from datetime import datetime
 from base64 import b64decode
-from hashlib import sha512
+#from hashlib import sha512
 import asyncio
 from subprocess import Popen, PIPE
 
@@ -209,7 +209,8 @@ class UploadFile(web.View):
                 rec['type'] for rec in datajs['objects'][lyr]['geometries'])
                                     for lyr in layers])
             crs = "EPSG:4326"
-            raw_result = topo_to_geo(datajs)
+#            raw_result = topo_to_geo(datajs)
+            raw_result = json.dumps(datajs)
         elif ext in ('json', 'geojson'):
             filepath = \
                 os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
@@ -279,7 +280,7 @@ def convert(request):
 
     try:
         datatype, name, data = posted_data.getall('file[]')
-        hashed_input = sha512(data.encode()).hexdigest()
+#        hashed_input = sha512(data.encode()).hexdigest()
 
     except Exception as err:
         print("posted data :\n", posted_data)
