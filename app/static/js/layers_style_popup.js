@@ -1,12 +1,11 @@
 function handle_click_layer(layer_name){
     console.log(layer_name);
-    var popid = layer_name
-            ,modal = createModalBox(popid);
+    var popid = layer_name,
+        modal = createModalBox(popid);
 //    modalback.className = 'active';
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;
-    //qs('#showanswer').innerHTML = 'waiting for response...';
    return center(modal);
 };
 
@@ -34,16 +33,17 @@ function createModalBox(modalid, html){
      nwBox.id = modalid;
      nwBox.className = 'popup';
      nwBox.innerHTML = ['<!DOCTYPE html>',
-                        '<b>Layer formating options</b><br>',
-                        'Layer name : <p style="font: 15px courrier bold; display:inline;">', modalid, '<br>',
-                        '<p><input id="fill_color_lyr" type="color" value="', fill_prev, '">Fill color</button>',
-                        '<p><input id="border_color_lyr" type="color" value="', stroke_prev, '">Border color</button>',
+                        '<p style="font:16px bold;text-align:center">Layer formating options</p><br>',
+                        'Layer name : <p style="font: 14px courrier bold; display:inline;">', modalid, '<br>',
+                        '<p>Fill color&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+                        '<input id="fill_color_lyr" type="color" value="', fill_prev, '"></button>',
+                        '<p>Border color&nbsp;&nbsp;<input id="border_color_lyr" type="color" value="', stroke_prev, '"></button>',
                         '<p>Layer opacity <input id="opacity", step="0.01" max="1" min="0" type="range" value="', opacity, '"></input>',
                         '<p>Border opacity <input id="border_opacity", step="0.01" max="1" min="0" type="range" value="',border_opacity, '"></input>',
                         '<p>Border width (px)<input id="border_width" type="number" step="0.5" min="0.0" max="15" value="', stroke_width,'"></input>',
-                        '<br><br><br><b>Exit:</b>',
-                        '<p><button id="yes">Apply changes</button>',
-                        '&nbsp;<button id="no">Rollback changes</button></p>'].join('');
+                        '<br><br><br><p style="text-align:center;font: bold">Satisfied by new style ?</p>',
+                        '<p><button id="yes">Close and apply</button>',
+                        '&nbsp;<button id="no">Close and rollback</button></p>'].join('');
 
      (document.body || document.documentElement).appendChild(nwBox);
      (document.body || document.documentElement).appendChild(bg);
@@ -89,8 +89,8 @@ function viewport(){
     
 function center(el){
   var dims = viewport()
-     ,l = Math.floor((0.40*dims.width))
-     ,h = Math.floor((0.25*dims.height));
+     ,l = Math.floor((0.75*dims.width))
+     ,h = Math.floor((0.20*dims.height));
   el.style.left= l+'px';
   el.style.top =  h+'px';
   return true;

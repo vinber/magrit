@@ -93,7 +93,7 @@ def ogr_to_geojson(filepath, to_latlong=True):
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--spherical",
+    process = Popen(["topojson", "--spherical", "--bbox", "true",
                      filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()

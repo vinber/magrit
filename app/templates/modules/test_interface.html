@@ -15,7 +15,7 @@
     <script window.jQuery || document.write('<script src="/static/js/jquery-2.2.1.min.js">\x3C/script>')</script>
     <script  src="/static/js/jquery-ui.min.js"></script>
     <script  src="/static/js/test_interface.js"></script>
-    <script  src="/static/js/layers_handler.js"></script>
+    <script  src="/static/js/layers_style_popup.js"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style>
@@ -34,81 +34,85 @@
       <div id = "header">M.A.R.S</div>
       <div id = "menu"></div>
   	<div id = "map"></div>
+      <a id="downloadAnchorElem" style="display:none"></a>
     </body>
     <script>
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
 
-    var w = 700;
-    var h = 620;  
-    var title = 0;
+var w = 700,
+    h = 620,
+    title = 0;
 
-    var graticule = d3.geo.graticule();
-    
-    var proj = d3.geo.mercator().scale(100).translate([375, 320]);
-    var path = d3.geo.path().projection(proj);
+var graticule = d3.geo.graticule(),
+    proj = d3.geo.mercator().scale(100).translate([375, 320]),
+    path = d3.geo.path().projection(proj),
+    t = proj.translate(),
+    s = proj.scale(),
+    zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
 
-    var t = proj.translate(); 
-    var s = proj.scale() ;
+var x_center_proj = proj.center()[0],
+    y_center_proj = proj.center()[1],
+    current_proj_name = "mercator";
 
-    var x_center_proj = proj.center()[0];
-    var y_center_proj = proj.center()[1];
-    var current_proj_name;
-    var zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
+var map = d3.select("#map").append("svg")
+    .attr("width", w)
+    .attr("height", h)
+    .call(zoom);
 
-    var map = d3.select("#map").append("svg")
-        .attr("width", w)
-        .attr("height", h)
-        .call(zoom);
+var background = map.append("g").attr("id","Simplified_land_polygons");
 
-    var background = map.append("g").attr("id","Simplified_land_polygons");
+var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
+    button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
+    button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">';
 
-    var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>'
-    var button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>'
-    var button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">'
+// These triggers are in a function as they need to be called on each layer add
+var binds_layers_buttons = function(){
+    d3.selectAll(".trash_button").on("click", remove_layer);
+    d3.selectAll(".active_button").on("change", handle_active_layer);
+    d3.selectAll(".style_button").on("click", function(){
+            handle_click_layer(this.parentElement.innerHTML.split(" <butt")[0])
+            });
+}
 
-
-    //var info = map.append("div").attr("class", "info");
-
-    map.append("g").attr("id", "Graticule")
-                   .append("path")
-                   .attr("class", "graticule")
-                   .datum(graticule)
-                   .attr("d", path);
+map.append("g").attr("id", "Graticule")
+               .append("path")
+               .attr("class", "graticule")
+               .datum(graticule)
+               .attr("d", path);
    
-    //map.append("g").attr("id", "user_layer");
-    d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
-        background.selectAll('path')
-                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-                  .enter()
-                  .append('path');
-        map.selectAll("path").attr("d", path);  
-    });
-        
-    function redraw() {
-      sc = d3.event.scale;
-      tr  = d3.event.translate;
-      var tx = t[0] * d3.event.scale + d3.event.translate[0];
-      var ty = t[1] * d3.event.scale + d3.event.translate[1];
-      proj.translate([tx, ty]);
-      proj.scale(s * d3.event.scale);
-      map.selectAll("path").attr("d", path);
-      return [sc, tr];
-      //return tr;
-    }
+d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
+    background.selectAll('path')
+              .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+              .enter()
+              .append('path');
+    map.selectAll("path").attr("d", path);  
+});
+    
+function redraw() {
+  sc = d3.event.scale;
+  tr  = d3.event.translate;
+  var tx = t[0] * d3.event.scale + d3.event.translate[0];
+  var ty = t[1] * d3.event.scale + d3.event.translate[1];
+  proj.translate([tx, ty]);
+  proj.scale(s * d3.event.scale);
+  map.selectAll("path").attr("d", path);
+  return [sc, tr];
+  //return tr;
+}
 
-    function reproj() {
-      if(typeof sc == 'undefined'){sc = 1;}
-      if(typeof tr == 'undefined'){tr = [0,0];}
-      var tx = t[0] * sc + tr[0];
-      var ty = t[1] * sc + tr[1];
-      proj.translate([tx, ty]);
-      proj.scale(s * sc);
-      map.selectAll("path").attr("d", path);
-    }
+function reproj() {
+  if(typeof sc == 'undefined'){sc = 1;}
+  if(typeof tr == 'undefined'){tr = [0,0];}
+  var tx = t[0] * sc + tr[0];
+  var ty = t[1] * sc + tr[1];
+  proj.translate([tx, ty]);
+  proj.scale(s * sc);
+  map.selectAll("path").attr("d", path);
+}
     
 //////////////////////////////////////////////////////////////////////////////
-// MENU
+// Set-up the menu :
 //////////////////////////////////////////////////////////////////////////////
 
 $(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
@@ -154,12 +158,15 @@ accordion.append("h3").html("Map Layout - Canvas tweaks");
 var section4 =  d3.select("#accordion").append("div").attr("id","section4");
 
 
-section1.append("p").html("Drop a GeoJSON, TopoJSON or ziped shapefile project on the canvas or add manually a layer...");
 dv1 = section1.append("div")
-dv1.append("input").attr("type", "button").attr("value", "Browse and add...").on("click", add_layer)
-dv1.append("p").attr("id", "input_geom").html("User geometry : <b><i>None</i></b>");
-dv1.append("p").attr("id", "datag").html("User data : <b><i>No</i></b>");
+            .style("text-align", "center")
+            .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...");
 
+dv1.append("input").attr("type", "button")
+                   .attr("value", "Browse and add...")
+                   .on("click", add_layer);
+dv1.append("p").attr("id", "input_geom").html("User geometry : <b><i>None</i></b>");
+dv1.append("p").attr("id", "datag").html("User data : <b><i>No</i></b>").style("margin-bottom", "5px");
 
 section2.append("p").html("Functionnality (stewart potential, local deviation, prop symbol, etc.) options came here");
 var dv2 = section2.append("p").attr("class", "form-item");
@@ -171,8 +178,14 @@ p.append("option").text("Bar").attr("value","Bar");
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 layer_list.append("li").attr("class", "ui-state-default Graticule").html("Graticule"+ button_style + button_trash + button_active)
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").html("Simplified_land_polygons"+ button_style + button_trash + button_active)
-dv3 = section3.append("div").append("p").html("Drop new layout layers or browse locally to add one<br>(GeoJSON, TopoJSON and ziped Shapefile project)<br>");
-dv3.append("input").attr("type", "button").attr("value", "Browse and add...").on("click", add_layer)
+dv3 = section3.append("div")
+                .append("p")
+                .style("text-align", "center")
+                .html("Drop new layout layers here or browse locally to add one<br>(GeoJSON, TopoJSON and ziped Shapefile project)<br>");
+dv3.append("input")
+    .attr("type", "button")
+    .attr("value", "Browse and add...")
+    .on("click", add_layer)
 
 
 var dv4 = section4.append("p").attr("class", "form-item");
@@ -206,15 +219,19 @@ section4.append("input")
 
 // Zoom in & Zoom out buttons :
 
-dv_button = section4.append("div").attr("position", "relative");
-dv_button.append("input")
-        .attr("type", "button")
-        .attr("class", "zoom_button")
-        .attr("value", "-")
-        .attr("id", "zoom_out")
-        .attr("position", "relative")
-        .attr("left", "40%");
-dv_button.append("input")
+//dv_button = section4.append("div").attr("position", "relative");
+var lm = d3.select("#map")
+            .append("div")
+            .attr("class", "light-menu")
+            .style({position: "absolute",top: "2px", left: "2px"});
+lm.append("input")
+    .attr("type", "button")
+    .attr("class", "zoom_button")
+    .attr("value", "-")
+    .attr("id", "zoom_out")
+    .attr("position", "relative")
+    .attr("left", "40%");
+lm.append("input")
         .attr("type", "button")
         .attr("class", "zoom_button")
         .attr("value", "+")
@@ -224,16 +241,19 @@ dv_button.append("input")
 
 b = '<button type="submit" class="" style="border-color:transparent;color:transparent"><img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/></button>'
 section4.append("p").html(b + 'Save your preferences...').on("click", save_map_template)
+section4.append("p").html(b + 'Load a preference JSON...').on("click", load_map_template)
+
 
 // Trigger actions when buttons are clicked :
 
 d3.selectAll(".zoom_button").on("click", zoomClick);
-d3.selectAll(".style_button").on("click", function(){handle_click_layer(this.parentElement.innerText)});
-d3.selectAll(".trash_button").on("click", remove_layer);
+binds_layers_buttons();
+
 
 ////////////////
 // To sort:
 ////////////////
+
 
 var trim = function(s){
     return s.replace(/^\s+|\s+$/,'');
@@ -241,7 +261,7 @@ var trim = function(s){
 
 function remove_layer(){
      var name;
-     var name_split = this.parentElement.innerText.split(' - ');
+     var name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
      if(name_split.length == 2) name = name_split[1];
      else if(name_split.length > 2) console.log('Oups..');
      else name = name_split[0];
@@ -250,9 +270,15 @@ function remove_layer(){
      d3.select("#sortable").select('.'+name).node().remove();
 }
 
+function load_map_template(){
+    alert("Not implemented!");
+}
+
 function save_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
-        layers_style = new Object();
+        layers_style = [];
+
+    var svg = d3.selectAll("svg").node();
 
     map_config.projection = current_proj_name;
     map_config.scale = proj.scale();
@@ -261,21 +287,27 @@ function save_map_template(){   //  ... or maintain up-to-date a global Object()
     map_config.div_width = w;
     map_config.div_height = h;
     map_config.rotation = d3.select("svg").attr('transform') ? d3.select("svg").attr('transform').split('rotate(')[1].split('),')[0] : "0";
-    map_config.n_layers = d3.selectAll("svg").node().childElementCount;
+    map_config.n_layers = svg.childElementCount;
 
     for(var i=0; i < map_config.n_layers; i++){
-        lyr_name = foo;
-        layers_style[i].layer_name = lyr_name;
-        
-        layers_style[i].cache_url = bar;
-        layers_style[i].stroke = d3.select() 
+        layers_style[i] = new Object();
+        layers_style[i].layer_name = svg.childNodes[i].id;
+        g_lyr_name = "#"+ layers_style[i].layer_name;
+        layers_style[i].cache_url = "";
+        layers_style[i].stroke = d3.select(g_lyr_name).selectAll("path").style("stroke");
+        layers_style[i].stroke_opacity = d3.select(g_lyr_name).selectAll("path").style("stroke-opacity");
+        layers_style[i].stroke_width = d3.select(g_lyr_name).selectAll("path").style("stroke-width");
+        layers_style[i].fill = d3.select(g_lyr_name).selectAll("path").style("fill");
+        layers_style[i].fill_opacity = d3.select(g_lyr_name).selectAll("path").style("fill-opacity");
     }
 
-    foo = {"map_config": map_config,
-           "layers": layers_style};
-    console.log(foo); // Todo : offer to download preference as JSON file + periodicaly cache them on server
+    var foo = {"map_config": map_config, "layers": layers_style.reverse()};
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(foo));
+    var dlAnchorElem = document.getElementById('downloadAnchorElem');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "noname_properties.json");
+    dlAnchorElem.click();
 }
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Zooming functions (from http://bl.ocks.org/linssen/7352810)
@@ -463,22 +495,16 @@ function add_sample_layer(){
   // TODO: proposer des couches type découpage pays monde + zone en eau + maillage européen plus fin par exemple
 }
 
-function handle_bg(){
-    var active = bg_layer.active ? false : true,
-        new_opacity = active ? 0 : 1;
-    d3.selectAll("#bg_layer").style("opacity", new_opacity);
-    bg_layer.active = active;
-}
-
-function handle_bg_color(color){
-    d3.selectAll("#bg_layer").style("fill", color);
-}
-
-function handle_graticule(){
-    var active = graticule.active ? false : true,
-        new_opacity = active ? 0 : 1;
-    d3.select("#graticule").style("opacity", new_opacity);
-    graticule.active = active;
+function handle_active_layer(){
+     var name;
+     var name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
+     if(name_split.length == 2) name = name_split[1];
+     else if(name_split.length > 2) console.log('Oups..');
+     else name = name_split[0];
+     var g_lyr_name = "#"+trim(name);
+     fill_value = this.checked ? 1 : 0;
+     console.log(name); console.log(fill_value)
+     d3.selectAll(g_lyr_name).style("opacity", fill_value);
 }
 
 function handle_title(txt){

@@ -272,8 +272,12 @@ function add_layer_fun(text){
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add) d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
     }
-    d3.selectAll(".style_button").on("click", function(){handle_click_layer(this.parentElement.innerText)});
+    binds_layers_buttons();
+    /*
+    d3.selectAll(".style_button").on("click", function(){handle_click_layer(this.parentElement.innerHTML.split(" <butt")[0])});
     d3.selectAll(".trash_button").on("click", remove_layer);
+    d3.selectAll(".active_button").on("change", handle_active_layer)
+    */
     alert('Layer successfully added to the canvas');
 };
 

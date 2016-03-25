@@ -184,11 +184,14 @@ label
     background: transparent;
     margin-left: 2px;
     border-color: transparent;
+    padding: 0px;
 }
 
 .trash_button, .active_button {
     background: transparent;
     border-color: transparent;
+    padding: 0px;
+    margin: 0px;
 }
 
 .popup.active {
