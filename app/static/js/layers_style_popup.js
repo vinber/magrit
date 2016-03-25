@@ -17,9 +17,12 @@ function createModalBox(modalid, html){
      var nwBox = document.createElement('div');
      var bg = document.createElement('div');
      var modalid_split = modalid.split(' - ');
+
      if(modalid_split.length == 2) modalid = modalid_split[1];
      else if(modalid_split.length > 2) console.log('Oups..');
+
      var g_lyr_name = "#"+trim(modalid);
+
      var opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
      var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
      if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)

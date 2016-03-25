@@ -1,5 +1,4 @@
 TODO list:
-- /!\ add a confirmation alert when cliking on the trash icon
 - /!\ link user dataset to user geoms (allowing to select the field on which operate the join)
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)

@@ -219,14 +219,17 @@ function handle_single_file(files) {
 // Add the TopoJSON to the 'svg' element :
 
 function add_layer_fun(text){
-    parsedJSON = JSON.parse(text);
-    console.log(parsedJSON)
+    var parsedJSON = JSON.parse(text),
+        bounds = [];
+
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
         return;
     }
-    var layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
-    var type;
+
+    var type = "",
+        layers_names = Object.getOwnPropertyNames(parsedJSON.objects)
+
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(i=0; i < layers_names.length; i++){
@@ -239,30 +242,20 @@ function add_layer_fun(text){
               .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
               .enter().append("path")
               .attr("d", path)
+              .style("stroke-linecap", "round")
               .style("stroke", "red")
               .style("stroke-opacity", .4)
-              .style("fill", function(){
-                  if(type != 'Line') return("beige");
-                  else return(null); // Some conditional styling (to avoid weird effect with linestring)
-                  })
-              .style("fill-opacity", function(){
-                  if(type != 'Line') return(0.5);
-                  else return(0);
-                  })
+              .style("fill", function(){if(type != 'Line') return("beige");
+                                        else return(null);})
+              .style("fill-opacity", function(){if(type != 'Line') return(0.5);
+                                                else return(0);})
               .attr("height", "100%")
               .attr("width", "100%");
         d3.select("#layer_menu")
               .append('p').html('<a href>- ' + layers_names[i]+"</a>");
-        try {
-            var bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);
-            var centroid = d3.geo.centroid(parsedJSON.objects[layers_names[i]]);
-            console.log(bounds);
-            console.log(centroid);
-        } catch(err){
-            console.log(err);
-            console.log(path.bounds(parsedJSON.arcs));
-            console.log(path.centroid(parsedJSON.arcs));
-        }
+
+        try {bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);}
+        catch(err){ console.log(err); }
 
         class_name = target_layer_on_add ? "ui-state-default sortable_target " + layers_names[i] : "ui-state-default " + layers_names[i]
         layers_listed = layer_list.node()
@@ -273,13 +266,42 @@ function add_layer_fun(text){
         if(target_layer_on_add) d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
     }
     binds_layers_buttons();
-    /*
-    d3.selectAll(".style_button").on("click", function(){handle_click_layer(this.parentElement.innerHTML.split(" <butt")[0])});
-    d3.selectAll(".trash_button").on("click", remove_layer);
-    d3.selectAll(".active_button").on("change", handle_active_layer)
-    */
+
+    if(parsedJSON.bbox) center_zoom_map(parsedJSON.bbox);
+    else if(bounds) center_zoom_map([bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]]);
+    else alert("The topojson was provided without bbox information");
+
     alert('Layer successfully added to the canvas');
 };
+
+function center_zoom_map(bbox){
+    console.log(bbox);
+    var xmin= bbox[0],
+        xmax= bbox[1],
+        ymin= bbox[2],
+        ymax= bbox[3];
+
+    var top_left = proj([xmin, ymax]),
+        bottom_right = proj([xmax, ymin]),
+        ctr = [bottom_right[0] - top_left[0], top_left[1] - bottom_right[1]];
+
+    var current_trans = proj.translate(),
+        current_scale = proj.scale(),
+        new_scale = Math.max((bottom_right[0] - top_left[0]) / w, (top_left[1] - bottom_right[1]) / h),
+        trans = [Math.abs(t[0] - new_scale * ctr[0]),
+                 Math.abs(t[1] - new_scale * ctr[1])];
+    new_scale = new_scale * s;
+    console.log([proj.scale(), proj.center()[0], proj.center()[1], proj.translate()[0], proj.translate()[1]]);
+    proj.translate([ctr[0]+new_scale, ctr[1]*new_scale])
+    /*proj.scale(new_scale*s)
+        .translate(trans);*/
+    console.log([new_scale, ctr[0], ctr[1], trans[0], trans[1]]);
+/*
+    proj.center([(bottom_right[0]+top_left[0])/w*2,
+                 (bottom_right[1]+top_left[1])/h*2]);
+    proj.translate([w/2, h/2]);
+*/
+}
 
 // Some helpers
 
