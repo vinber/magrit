@@ -1,0 +1,23 @@
+[
+	{"name": "mercator", "projection":  "d3.geo.mercator().scale(100).translate([375, 320])"},
+	{"name": "azimuthalEqualArea", "projection":  "d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},  
+	{"name": "orthographic", "projection":  "d3.geo.orthographic().scale(475).translate([480, 480]).clipAngle(90)"},
+	{"name": "Sinusoidal", "projection": "d3.geo.sinusoidal()"},
+	{"name": "Natural Earth", "projection": "d3.geo.naturalEarth()"},
+	{"name": "polyhedron butterfly", "projection": "d3.geo.polyhedron.butterfly()"},
+	{"name": "Baker", "projection": "d3.geo.baker().scale(100)"},
+	{"name": "Boggs", "projection": "d3.geo.boggs()"},
+	{"name": "Bonne", "projection": "d3.geo.bonne().scale(120)"},
+	{"name": "Bromley", "projection": "d3.geo.bromley()"},
+	{"name": "Collignon", "projection": "d3.geo.collignon().scale(93)"},
+	{"name": "Craster Parabolic", "projection": "d3.geo.craster()"},
+	{"name": "Eckert I", "projection": "d3.geo.eckert1().scale(165)"},
+	{"name": "Eckert II", "projection": "d3.geo.eckert2().scale(165)"},
+	{"name": "Eckert III", "projection": "d3.geo.eckert3().scale(180)"},
+	{"name": "Eckert IV", "projection": "d3.geo.eckert4().scale(180)"},
+	{"name": "Eckert V", "projection": "d3.geo.eckert5().scale(170)"},
+	{"name": "Eckert VI", "projection": "d3.geo.eckert6().scale(170)"}
+ ]
+
+    
+

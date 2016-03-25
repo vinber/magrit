@@ -469,6 +469,86 @@ def up_client():
 def display_result(content):
     return render_template('display_result.html', content=content)
 
+#@app.route('/convert_to_topojson', methods=['POST'])
+#def convert(request):
+#    posted_data = request.data
+#
+#    try:
+#        datatype, name, data = posted_data.getall('file[]')
+#        hashed_input = sha512(data.encode()).hexdigest()
+#
+#    except Exception as err:
+#        print("posted data :\n", posted_data)
+#        print("err\n", err)
+#        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+#
+#    session_redis = yield from get_session(request)
+#    if not 'app_user' in session_redis:
+#        user_id = get_key(app_glob['app_users'])
+#        app_glob['app_users'].add(user_id)
+#        session_redis['app_user'] = user_id
+#        session_redis['converted'] = {}
+#        f_name = '_'.join([user_id, name])
+#    else:
+#        user_id = session_redis['app_user']
+#        f_name = '_'.join([user_id, name])
+#        if hashed_input in session_redis['converted']:
+#            result = yield from app_glob['redis_conn'].get(f_name)
+#            print("Used cached result")
+#            return web.Response(text=result.decode())
+#
+#    filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
+#    if 'zip' in datatype:
+#        with open(filepath+'archive', 'wb') as f:
+#            f.write(b64decode(data))
+#        with ZipFile(filepath+'archive') as myzip:
+#            list_files = myzip.namelist()
+#            list_files = ['/tmp/' + i for i in list_files]
+#            shp_path = [i for i in list_files if 'shp' in i][0]
+#            layer_name = shp_path.split(os.path.sep)[2]
+#            myzip.extractall(path='/tmp')
+#            res = ogr_to_geojson(shp_path, to_latlong=True)
+#            filepath2 = '/tmp/' + layer_name.replace('.shp', '.geojson')
+#            with open(filepath2, 'w') as f:
+#                f.write(res)
+#            result = geojson_to_topojson(filepath2)
+#            session_redis['converted'][hashed_input] = True
+#            yield from app_glob['redis_conn'].set(f_name, result)
+##            session['converted'][f_name] = json.loads(result)
+##            print(type(session['converted'][f_name]))
+#        os.remove(filepath+'archive')
+#        os.remove(filepath2)
+#        [os.remove(file) for file in list_files]
+#
+#    elif 'octet-stream;base64' in datatype:
+#        data = b64decode(data).decode()
+#        if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
+#            crs = True
+#            with open(filepath, 'w', encoding='utf-8') as f:
+#                f.write(data)
+#            res = ogr_to_geojson(filepath, to_latlong=True)
+#            print("Transform coordinates from GeoJSON")
+#            with open(filepath, 'w', encoding='utf-8') as f:
+#                f.write(res)
+#        else:
+#            crs = False
+#            with open(filepath, 'w', encoding='utf-8') as f:
+#                f.write(data)
+#
+#        result = geojson_to_topojson(filepath)
+#        if len(result) == 0 and not crs:
+#            result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
+#        else:
+#            session_redis['converted'][hashed_input] = True
+#            yield from app_glob['redis_conn'].set(f_name, result)
+#        os.remove(filepath)
+#
+#    else:
+#        result = json.dumps({'Error': 'Incorrect datatype'})
+#
+#    return web.Response(text=result)
+
+
 if __name__ == '__main__':
     def init_R_workers(nb_workers):
         r_process = prepare_worker(nb_workers)

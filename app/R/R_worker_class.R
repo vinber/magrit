@@ -5,6 +5,10 @@ load <- function(){
   require(sp, quietly = TRUE)
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
+  require(stats, quietly = TRUE)
+  require(rredis, quietly = TRUE)
+  rredis::redisConnect(host = "localhost", port = 6379)
+  rredis::redisSelect(1)
 }
 
 # ToDo : find a better way to prepare an environment or at least
@@ -19,6 +23,11 @@ make_env <- function(lock = FALSE){
   preparedEnv$mta_mediumdev <- mta_mediumdev
   preparedEnv$mta_localdev <- mta_localdev
   preparedEnv$prepflows_json <- prepflows_json
+  preparedEnv$rnorm <- rnorm
+  preparedEnv$runif <- runif
+  preparedEnv$runif <- rbinom
+  preparedEnv$redisGet <- rredis::redisGet
+  preparedEnv$redisCmd <- rredis::redisCmd
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }
@@ -41,6 +50,7 @@ R_Worker_fuw <- R6::R6Class(
       zmq.setsockopt(socket, .pbd_env$ZMQ.SO$IDENTITY, self$identifiant)
       zmq.setsockopt(socket, .pbd_env$ZMQ.SO$RCVBUF, 60000000L)
       zmq.setsockopt(socket, .pbd_env$ZMQ.SO$SNDBUF, 60000000L)
+      zmq.setsockopt(socket, .pbd_env$ZMQ.SO$LINGER, 0L)
       zmq.connect(socket, self$worker_url)
       zmq.send(socket, charToRaw("READY"))
       print(paste0("Worker ", self$identifiant, " is ON"))
@@ -48,7 +58,7 @@ R_Worker_fuw <- R6::R6Class(
     
     do = function(request, data){
       if(grepl('CLOSE', request) | grepl('exitR', request)){
-        out <- "Now exiting R\n"
+        out <- paste(Sys.getpid(), "Now exiting R\n")
       } else {
         # Each expression (or batch of chained expressions)
         # should be computed in his own environnement
