@@ -88,8 +88,7 @@ function viewport(){
              ,scrollTop: body.scrollTop 
              ,scrollLeft: body.scrollLeft };
 }
-         
-    
+
 function center(el){
   var dims = viewport()
      ,l = Math.floor((0.75*dims.width))

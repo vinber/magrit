@@ -115,7 +115,6 @@ def is_known_user(request, ref):
         print(session['R_user'], ' is a new user')
     return id_
 
-
 #####################################################
 ### Some views to make two poor R consoles
 ### (one using a remote R instance, the other using rpy2)
@@ -239,12 +238,13 @@ def savefile(path, raw_data):
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
-#    print("Here i am with ", filepath)
     if to_latlong:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+                         "-preserve_fid",
+                         "-t_srs", "EPSG:4326",
                          "/dev/stdout", filepath], stdout=PIPE)
     else:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
                          "/dev/stdout", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
@@ -253,7 +253,7 @@ def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--spherical", "--bbox", "true",
-                     filepath], stdout=PIPE)
+                     "-p", "--", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
 
@@ -725,7 +725,8 @@ def convert(request):
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
-    elif 'octet-stream;base64' in datatype:
+    # Firefox and opera dont seems to set the same value :
+    elif 'octet-stream;base64' in datatype or 'data:;base64' in datatype:
         data = b64decode(data).decode()
         if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
             crs = True
@@ -873,7 +874,8 @@ if __name__ == '__main__':
     # Some other global objects to hold various informations
     # (Aimed to be remplaced by something better)
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-    app_glob['app_real_path'] = '/home/mz/code/noname-stuff'
+    path = os.path.dirname(os.path.realpath(__file__))
+    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     app_glob['keys_mapping'] = {}
     app_glob['session_map'] = {}
     app_glob['table_map'] = {}

@@ -18,12 +18,12 @@
 
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/join_popup.js"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style>
         #Simplified_land_polygons {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #343642;}
         #menu {font-family:Georgia,sans-serif; color:#41403f; font-size: 12px;}
-        #map { border-style: solid; width:700px; height:620px;}
         #section1 { height: 110px; margin: 2px; font-size: 12px; color: black}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
         #sortable { list-style-type: none; margin: auto; padding: 0; width: 95%; font-weight: bold; color: white; border-radius: 8%}
@@ -41,10 +41,14 @@
     <script>
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
-
+/*
 var w = 700,
-    h = 620,
-    title = 0;
+    h = 620;
+*/
+var w = Math.round((window.innerWidth / 2.54 ) / 10)*10,
+    h = Math.round((window.innerHeight / 1.33 ) / 10)*10;
+
+var title = 0;
 
 var graticule = d3.geo.graticule(),
     proj = d3.geo.mercator().scale(100).translate([375, 320]),
@@ -57,10 +61,17 @@ var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
     current_proj_name = "mercator";
 
-var map = d3.select("#map").append("svg")
-    .attr("width", w)
-    .attr("height", h)
-    .call(zoom);
+var user_data = new Object(),
+    joined_dataset = [],
+    target_layer_on_add = false,
+    targeted_layer_added = false;
+
+var map = d3.select("#map")
+                .style("width", w+"px").style("height", h+"px")
+            .append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                .call(zoom);
 
 var background = map.append("g").attr("id","Simplified_land_polygons");
 
@@ -113,7 +124,7 @@ var section4 =  d3.select("#accordion").append("div").attr("id","section4");
 
 dv1 = section1.append("div")
             .style("text-align", "center")
-            .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...");
+            .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...<br>");
 
 dv1.append("input").attr("type", "button")
                    .attr("value", "Browse and add...")
@@ -179,7 +190,8 @@ section4.append("p").html(b + 'Load a preference JSON...').on("click", load_map_
 var lm = d3.select("#map")
             .append("div")
             .attr("class", "light-menu")
-            .style({position: "absolute",top: "2px", left: "2px"});
+            .style({position: "absolute",top: "-30px", left: "2px"});
+
 lm.append("input")
     .attr("type", "button")
     .attr("class", "zoom_button")
@@ -196,6 +208,14 @@ lm.append("input")
         .attr("position", "relative")
         .attr("left", "40%");
 
+lm.append("input")
+        .attr("type", "button")
+        .attr("class", "info_button")
+        .attr("value", "i")
+        .attr("id", "zoom_in")
+        .attr("position", "relative")
+        .attr("left", "40%");
+
 var info = lm.append("p")
               .attr("id", "info_coords")
               .style("font-size", "14px")
@@ -203,10 +223,24 @@ var info = lm.append("p")
               .style("color", "black")
               .html("");
 
+var info_features = lm.append("p")
+              .attr("id", "info_features")
+              .style("font-size", "15px")
+              .style("font-weight", "bold")
+              .style("margin-left", "5px")
+              .style("background-color", "rgba(235, 216, 158, 0.5)")
+              .style("border-radius", "2%")
+              .style("color", "black")
+              .html("");
+info_features.active = false;
+
 // Trigger actions when buttons are clicked :
+
 d3.selectAll(".zoom_button").on("click", zoomClick);
+d3.selectAll(".info_button").on("click", displayInfoOnMove);
 d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 binds_layers_buttons();
+
 
 //////////////////////////////////////////////////////////////////////////////
 // JQuery menu and progress bar related functions :
@@ -251,6 +285,36 @@ $(document).ajaxStart(function() {
 // To sort:
 ////////////////
 
+function displayInfoOnMove(){
+    var target_lyr = Object.getOwnPropertyNames(user_data);
+    if(target_lyr == 0){
+        alert("Informations are only displayed on the targeted layer");
+      }
+    else if(target_lyr > 1){
+        alert("Too many layer to handle");
+      }
+    else {
+        target_lyr = "#"+target_lyr[0];
+        if(info_features.active){
+            d3.select(target_lyr).selectAll("path").on("mouseover", null)
+            info_features.active = false;
+            info_features.node().innerHTML = ""
+            document.getElementById("map").style.cursor="";
+          }
+        else {
+            d3.select(target_lyr).selectAll("path").on("mouseover", function(d){
+                var txt_info = [this.id,
+                                JSON.stringify(user_data[target_lyr.substring(1, target_lyr.length)][(this.id).split(' ')[1]])].join(' - ');
+                info_features.node().innerHTML = txt_info;
+                });
+            d3.select(target_lyr).attr("d", path).on("mouseout", function(){
+                info_features.node().innerHTML = "";});
+            info_features.active = true;
+            document.getElementById("map").style.cursor="help";
+          }
+      }
+}
+
 function redraw() {
   sc = d3.event.scale;
   tr  = d3.event.translate;
@@ -263,36 +327,26 @@ function redraw() {
   //return tr;
 }
 
-function reproj() {
-  /*
-    if(typeof sc == 'undefined'){sc = 1;}
-    if(typeof tr == 'undefined'){tr = [0,0];}
-    var tx = t[0] * sc + tr[0];
-    var ty = t[1] * sc + tr[1];
-    proj.translate([tx, ty]);
-    proj.scale(s * sc);
-  */
+function reproj(){
   proj.translate([t[0], t[1]]);
   proj.scale(s)
   map.selectAll("path").attr("d", path);
 }
 
-var log_coordinates = function(t){
+var trim = function(s){
+    return s.replace(/^\s+|\s+$/,'');
+}
+
+function log_coordinates(t){
   var coords = proj.invert(d3.mouse(t)),
       txt = [];
-  //console.log(coords);
 
   if(coords[0]>0) txt.push("E")
   else txt.push("W")
 
   if(coords[1]>0) txt.push("N")
   else txt.push("S")
-  info.node().innerText = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
-};
-
-
-var trim = function(s){
-    return s.replace(/^\s+|\s+$/,'');
+  info.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
 };
 
 function remove_layer(){
@@ -499,7 +553,7 @@ $(document).ready(function() {
 // Some callback functions related to the menu :
 //////////////////////////////////////////////////////////////////////////////
 
-function handle_export(){  // Not working as expect right now
+function handle_export(){  // Not working as expected right now
     var svg = document.getElementById("map");
    
     var source = (new XMLSerializer).serializeToString(svg);
@@ -515,25 +569,6 @@ function handle_export(){  // Not working as expect right now
     var url = "data:image/svg+xml;charset=utf-8,"+btoa(source);
     console.log(url);
     convBase64ToFile(url);
-}
-
-function add_layer(){
-    var input = $(document.createElement('input'));
-    input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
-    input.on('change', prepareUpload);
-    var res = [];
-    function prepareUpload(event){
-        files = event.target.files;
-        if(strContains(files[0].name, 'topojson')){
-            handle_TopoJSON_files(files);
-        } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
-                            || strContains(files[0].name, 'zip'))){
-            handle_single_file(files);
-        } else if(files.length > 1){
-            alert("Layers have to be uploaded one by one")
-        }
-    };
-    input.trigger('click');
 }
 
 function add_sample_layer(){

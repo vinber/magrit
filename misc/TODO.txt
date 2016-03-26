@@ -1,14 +1,12 @@
 TODO list:
-- /!\ link user dataset to user geoms (allowing to select the field on which operate the join)
+- Partially implemented : link user dataset to user geoms (allowing to select the field on which operate the join)
+- Partially implemented : add button/events to display informations on drag over features
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
-- add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
+- /!\ add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
 - change the accordion behavior in the menu to allow more than one section to be opened at the time ?
-- add a loading bar up to the map while waiting for a response from the server (layer conversion etc.)
 - add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
-- add button/events to display informations on drag over features
 - rollback to the original header
 - better select the mouse behavior on orthgraphic projection (rotate or move but not both together)
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
-

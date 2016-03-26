@@ -10,7 +10,7 @@ import pandas as pd
 import fiona
 
 from zipfile import ZipFile
-from random import randint, choice
+from random import choice
 from datetime import datetime
 from base64 import b64decode
 #from hashlib import sha512
@@ -80,12 +80,13 @@ def savefile(path, raw_data):
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
-#    print("Here i am with ", filepath)
     if to_latlong:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+                         "-preserve_fid",
+                         "-t_srs", "EPSG:4326",
                          "/dev/stdout", filepath], stdout=PIPE)
     else:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
                          "/dev/stdout", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
@@ -94,23 +95,9 @@ def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--spherical", "--bbox", "true",
-                     filepath], stdout=PIPE)
+                     "-p", "--", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
-
-#def topojson_to_geojson(filepath):
-#    layers_name = json.parse(data)['objects'].keys()
-#    layers_name = [''.join([i, '.json'] for i in layers_name)]
-#    folder_name = os.path.join('/tmp', get_name())
-#    os.mkdir(folder_name)
-#    process = Popen(['topojson-geojson', filepath, '-o', folder_name])
-#    result = []
-#    for lyr in layers_name:
-#        with open(os.path.join(folder_name, layers_name),
-#                  'r', encoding='utf-8') as f:
-#            result.append(f.read())
-#    os.removedirs(folder_name)
-#    return result
 
 class UploadFile(web.View):
     """
@@ -280,27 +267,11 @@ def convert(request):
 
     try:
         datatype, name, data = posted_data.getall('file[]')
-#        hashed_input = sha512(data.encode()).hexdigest()
 
     except Exception as err:
         print("posted data :\n", posted_data)
         print("err\n", err)
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
-
-#    session_redis = yield from get_session(request)
-#    if not 'app_user' in session_redis:
-#        user_id = get_key(app_glob['app_users'])
-#        app_glob['app_users'].add(user_id)
-#        session_redis['app_user'] = user_id
-#        session_redis['converted'] = {}
-#        f_name = '_'.join([user_id, name])
-#    else:
-#        user_id = session_redis['app_user']
-#        f_name = '_'.join([user_id, name])
-#        if hashed_input in session_redis['converted']:
-#            result = yield from app_glob['redis_conn'].get(f_name)
-#            print("Used cached result")
-#            return web.Response(text=result.decode())
 
     filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
     if 'zip' in datatype:
@@ -317,15 +288,12 @@ def convert(request):
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = geojson_to_topojson(filepath2)
-#            session_redis['converted'][hashed_input] = True
-#            yield from app_glob['redis_conn'].set(f_name, result)
-#            session['converted'][f_name] = json.loads(result)
-#            print(type(session['converted'][f_name]))
         os.remove(filepath+'archive')
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
-    elif 'octet-stream;base64' in datatype:
+    # Firefox and opera dont seems to set the same value :
+    elif 'octet-stream;base64' in datatype or 'data:;base64' in datatype:
         data = b64decode(data).decode()
         if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
             crs = True
@@ -356,8 +324,9 @@ def init(loop, port=9999):
         EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
+    app.router.add_route('GET', '/index', handler)
     app.router.add_route('POST', '/convert_to_topojson', convert)
-    app.router.add_route('*', '/upload', UploadFile)    
+    app.router.add_route('*', '/upload', UploadFile)
     app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
@@ -367,25 +336,17 @@ def init(loop, port=9999):
     return srv
 
 if __name__ == '__main__':
-
-
     if len(sys.argv) == 2:
         port = int(sys.argv[1])
-
     else:
         port = 9999
 
-
-    # The mutable mapping provided by web.Application will be used to store (safely ?)
-    # some global variables :
-    # Todo : create only one web.Application object instead of app + app_glob
     app_glob = web.Application()
 
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-    app_glob['app_real_path'] = '/home/mz/code/noname-stuff'
+    path = os.path.dirname(os.path.realpath(__file__))
+    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     app_glob['keys_mapping'] = {}
-    app_glob['session_map'] = {}
-    app_glob['table_map'] = {}
     app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
     srv = loop.run_until_complete(init(loop, port))
