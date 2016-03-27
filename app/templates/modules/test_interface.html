@@ -241,6 +241,8 @@ d3.selectAll(".info_button").on("click", displayInfoOnMove);
 d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 binds_layers_buttons();
 
+// Trigger a periodical call to a function sending current map preference to the server :
+setInterval(sendPreferences, 300000);
 
 //////////////////////////////////////////////////////////////////////////////
 // JQuery menu and progress bar related functions :
@@ -273,7 +275,6 @@ $(function() {
 });
 
 $(document).ajaxStart(function() {
-
         d3.select("#map").append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
                          .attr("id", "progressbar").node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/2) + 'px"/><br>Loading layer ...';
@@ -368,7 +369,7 @@ function load_map_template(){
     alert("Not implemented!");
 }
 
-function save_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
+function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
         layers_style = [];
 
@@ -395,12 +396,27 @@ function save_map_template(){   //  ... or maintain up-to-date a global Object()
         layers_style[i].fill_opacity = d3.select(g_lyr_name).selectAll("path").style("fill-opacity");
     }
 
-    var foo = {"map_config": map_config, "layers": layers_style.reverse()};
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(foo));
+    return JSON.stringify({"map_config": map_config, "layers": layers_style.reverse()})
+}
+
+function save_map_template(){
+    json_params = get_map_template();
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "noname_properties.json");
     dlAnchorElem.click();
+}
+
+function sendPreferences(){
+    json_params = get_map_template();
+    $.ajax({
+       type: 'POST',
+       url: '/save_user_pref', 
+       data: json_params,
+       global: false, 
+       success: function(d) {console.log(d);}
+    }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
 }
 
 //////////////////////////////////////////////////////////////////////////////

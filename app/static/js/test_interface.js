@@ -27,9 +27,8 @@ function add_layer(d){
             var res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             if(res.length >= 4){
                 var ajaxData = new FormData();
-                alert('I am gonna handle this...');
                 ajaxData.append("action", "submit_form");
-                $.each($("input[type=file]"), function(i, obj) {
+                $.each(input, function(i, obj) {
                     $.each(obj.files, function(j, file){
                         ajaxData.append('file['+j+']', file);
                         console.log(file);
@@ -37,13 +36,15 @@ function add_layer(d){
                 });
                 console.log(ajaxData);
                  $.ajax({
+                    processData: false,
+                    contentType: false,
+                    cache: false,
                     url: '/convert_to_topojson',
                     data: ajaxData,
                     type: 'POST',
                     success: function(data) {add_layer_fun(data);},
                     error: function(error) {console.log(error); }
                     });
-                console.log($(e.target)); console.log(files); console.log(this);
                 }
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
@@ -51,8 +52,6 @@ function add_layer(d){
         }
     };
     input.trigger('click');
-
-    // handle_join();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -93,13 +92,28 @@ $(document).on('drop', '#section1,#section3', function(e) {
             $(this).css('border', '3px dashed red');
             alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
             $(this).css('border', '');
-            handle_shapefiles(files);
-        }else {
-            $(this).css('border', '3px dashed red');
-            alert('ShapeFiles have to be updated in a Zip Folder (containing the 4 mandatory files : .shp, .dbf, .prj and .shx)');
-            $(this).css('border', '');
+            var ajaxData = new FormData();
+            ajaxData.append("action", "submit_form");
+                $.each(files, function(j, file){
+                    ajaxData.append('file['+j+']', file);
+                    console.log(file);
+                });
+                console.log(ajaxData);
+                 $.ajax({
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    url: '/convert_to_topojson',
+                    data: ajaxData,
+                    type: 'POST',
+                    success: function(data) {add_layer_fun(data);},
+                    error: function(error) {console.log(error); }
+                    });
+                }
+            else {
+                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+              }
         }
-    }
    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
            e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
@@ -135,8 +149,6 @@ $(document).on('drop', '#section1,#section3', function(e) {
         alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         $(this).css('border', '');
     }
-
-  // handle_join();
 });
 
 ////////////////////////////////////////////////////////////////////////
@@ -156,9 +168,9 @@ function handle_TopoJSON_files(files) {
         add_layer_fun(text);
         /*$.ajax({
                    type: 'POST',
-                   url: '/cache_topojson', 
-                   data: {file: [name, text]},
-                   success: function() {}
+                   url: '/cache_topojson',
+                   global: false,
+                   data: {file: [name, text]}
         });*/
         }
     reader.readAsText(f);
@@ -180,37 +192,6 @@ function handle_dataset(files){
   if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
   else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
 }
-
-// - By ziping the zipfile to send them to the server :
-// Currently not working
-function handle_shapefiles(files){
-    var datas = [];
-    var ziped = new JSZip();
-    var formData = new FormData();
-    for(var i=0; i < files.length; i++){
-        var reader = new FileReader();
-        var file = files[i];
-        reader.onloadend = function(evt){
-            if (evt.target.readyState == FileReader.DONE) {
-                datas.push(evt.target.result);
-                ziped.file(file.name, datas[i]);
-                }
-            };
-        reader.readAsArrayBuffer(file);
-    }
-    console.log(datas);
-       
-    var content = ziped.generate({type: "base64"});
-    console.log(content);
-    $.ajax({
-            type: 'POST',
-            url: '/convert_to_topojson', 
-            data: {file: ['data:application/zip;base64', files[0].name.split('.')[0]+'.zip', content]},
-            success: function(data) {add_layer_fun(data) ;},
-            error: function(x){console.log(x);}
-        });
-};
-
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {

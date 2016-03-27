@@ -262,19 +262,48 @@ class UploadFile(web.View):
         return alert
 
 @asyncio.coroutine
+def user_pref(request):
+    posted_data = yield from request.post()
+    # session = yield from get_session(request)
+    # session['map_pref'] = posted_data
+    return web.Response(text=json.dumps({'Info': "I don't do anything with it rigth now!"}))
+
+@asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
 
-    try:
-        datatype, name, data = posted_data.getall('file[]')
+    # If a shapefile is provided as multiple files (.shp, .dbf, .shx, and .prj are expected), not ziped :
+    if "action" in posted_data and not "file[]" in posted_data:
+        list_files = []
+        for i in range(len(posted_data) - 1):
+            field = posted_data.getall('file[{}]'.format(i))[0]
+            print(type(field), field)
+            file_name = ''.join(['/tmp/', field[1]])
+            list_files.append(file_name)
+            savefile(file_name, field[2].read())
+        shp_path = [i for i in list_files if 'shp' in i][0]
+        name = shp_path.split(os.path.sep)[2]
+        datatype = "shp"
 
-    except Exception as err:
-        print("posted data :\n", posted_data)
-        print("err\n", err)
-        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+    else:
+        try:
+            datatype, name, data = posted_data.getall('file[]')
+            filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
+        except Exception as err:
+            print("posted data :\n", posted_data)
+            print("err\n", err)
+            return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
-    filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
-    if 'zip' in datatype:
+    if "shp" in datatype:
+        res = ogr_to_geojson(shp_path, to_latlong=True)
+        filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
+        with open(filepath2, 'w') as f:
+            f.write(res)
+        result = geojson_to_topojson(filepath2)
+        os.remove(filepath2)
+        [os.remove(file) for file in list_files]
+
+    elif 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
             f.write(b64decode(data))
         with ZipFile(filepath+'archive') as myzip:
@@ -326,6 +355,7 @@ def init(loop, port=9999):
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
     app.router.add_route('POST', '/convert_to_topojson', convert)
+    app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')

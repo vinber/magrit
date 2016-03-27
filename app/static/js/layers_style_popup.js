@@ -57,6 +57,7 @@ function createModalBox(modalid, html){
      d3.select('#border_width').on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke-width", this.value+"px")});
 
      qs('#yes').onclick=function(){
+         sendPreferences();
          deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
