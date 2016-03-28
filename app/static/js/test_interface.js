@@ -23,7 +23,7 @@ function add_layer(d){
         }
         else if(files.length >= 4){
             var filenames = [];
-            for (i=0; i<files.length; i++) filenames[i] = files[i].name;
+            for (var i=0; i<files.length; i++) filenames[i] = files[i].name;
             var res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             if(res.length >= 4){
                 var ajaxData = new FormData();
@@ -31,10 +31,8 @@ function add_layer(d){
                 $.each(input, function(i, obj) {
                     $.each(obj.files, function(j, file){
                         ajaxData.append('file['+j+']', file);
-                        console.log(file);
                     });
                 });
-                console.log(ajaxData);
                  $.ajax({
                     processData: false,
                     contentType: false,
@@ -49,6 +47,8 @@ function add_layer(d){
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
                 }
+        } else {
+            alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         }
     };
     input.trigger('click');
@@ -81,13 +81,10 @@ $(document).on('drop', '#section1,#section3', function(e) {
    if(this.id === "section1") target_layer_on_add = true;
 
    if(!(e.originalEvent.dataTransfer.files.length == 1)){
-        console.log(files);
         var filenames = [];
-        for(i=0; i < files.length; i++){filenames[i] = files[i].name;}
+        for(var i=0; i < files.length; i++){filenames[i] = files[i].name;}
         var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
         e.preventDefault();e.stopPropagation();
-        console.log(filenames);
-        console.log(result);
         if(result.length == 4){
             $(this).css('border', '3px dashed red');
             alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
@@ -96,9 +93,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
             ajaxData.append("action", "submit_form");
                 $.each(files, function(j, file){
                     ajaxData.append('file['+j+']', file);
-                    console.log(file);
                 });
-                console.log(ajaxData);
                  $.ajax({
                     processData: false,
                     contentType: false,
@@ -164,7 +159,6 @@ function handle_TopoJSON_files(files) {
         reader = new FileReader();
     reader.onloadend = function(){
         var text = reader.result;
-        console.log(text);
         add_layer_fun(text);
         /*$.ajax({
                    type: 'POST',
@@ -177,7 +171,8 @@ function handle_TopoJSON_files(files) {
 };
 
 function handle_dataset(files){
-  for (i = 0, f = files[i]; i != files.length; ++i) {
+  for(var i = 0; i != files.length; ++i) {
+    var f = files[i];
     var reader = new FileReader();
     var name = f.name;
     reader.onload = function(e) {
@@ -187,10 +182,12 @@ function handle_dataset(files){
     reader.readAsText(f);
   }
   // TODO : do something if their is already a geometry layer to join them :
-  // if(targeted_layer_added) ....
   var txt = d3.select('#datag').html();
   if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
   else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
+
+  var join_button = d3.select("#datag").append("p").append("button").attr("id", "join_button").html("Valid the join").on("click", handle_join);
+  if(!targeted_layer_added) join_button.node().disabled = true;
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
@@ -199,7 +196,7 @@ function handle_single_file(files) {
         var reader = new FileReader();
         reader.onload = function handleReaderLoad(evt) {
             var data = evt.target.result.split(',');
-            var dtype = data[0];  // TODO : display an indeterminate progress bar while waiting for server reply
+            var dtype = data[0];
             data = data[1];
             $.ajax({
                        type: 'POST',
@@ -228,7 +225,7 @@ function add_layer_fun(text){
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
-    for(i=0; i < layers_names.length; i++){
+    for(var i=0; i < layers_names.length; i++){
         if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')) type = 'Point';
         else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')) type = 'Line';
         else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')) type = 'Polygon';
@@ -236,10 +233,7 @@ function add_layer_fun(text){
         if(parsedJSON.objects[layers_names[i]].geometries[0].properties && target_layer_on_add){
             user_data[layers_names[i]] = [];
             data_to_load = true;
-          }
-        else{
-            data_to_load = false;
-          }
+          } else { data_to_load = false; }
 
         map.append("g").attr("id", layers_names[i])
               .attr("class", function(d) {
@@ -284,6 +278,7 @@ function add_layer_fun(text){
              d3.select('#datag').html("User data : <b>Yes - Provided with geometries - "+nb_field+" field(s)</b>")
          }
     }
+    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("join_button").node().disabled = false; }
     binds_layers_buttons();
     /*
     // Only zoom on the added layer if its the "targeted" one
