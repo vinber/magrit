@@ -46,7 +46,7 @@ function valid_join_on(layer_name, field1, field2){
             }
         } else if(typeof join_values2[0] === "number" && typeof join_values1[0] === "string"){
             for(var i=0, len=join_values1.length; i<len; i++){
-                val = join_values1.indexOf(String(join_values2[i]));
+                val = join_values2.indexOf(Number(join_values1[i]));
                 if(val != -1) { field_join_map.push(val); }
                 else { break };
             }

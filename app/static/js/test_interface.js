@@ -3,10 +3,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 function add_layer(d){
-    var input = $(document.createElement('input'));
+    var input = $(document.createElement('input')),
+        res = [];
+
     input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
     input.on('change', prepareUpload);
-    var res = [];
 
     if(this.parentNode.parentNode.id === "section1") target_layer_on_add = true;
 
@@ -79,12 +80,13 @@ $(document).on('drop', '#section1,#section3', function(e) {
    var files = e.originalEvent.dataTransfer.files;
 
    if(this.id === "section1") target_layer_on_add = true;
+   e.preventDefault();e.stopPropagation();
 
    if(!(e.originalEvent.dataTransfer.files.length == 1)){
         var filenames = [];
         for(var i=0; i < files.length; i++){filenames[i] = files[i].name;}
         var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-        e.preventDefault();e.stopPropagation();
+
         if(result.length == 4){
             $(this).css('border', '3px dashed red');
             alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
@@ -110,7 +112,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
               }
         }
    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
-           e.preventDefault();e.stopPropagation();
+           //e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
 
            if(target_layer_on_add && targeted_layer_added){
@@ -122,7 +124,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
    }
    else if(strContains(files[0].name.toLowerCase(), 'geojson') 
             || strContains(files[0].type.toLowerCase(), 'application/zip')){
-           e.preventDefault();e.stopPropagation();
+           //e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
 
            if(target_layer_on_add && targeted_layer_added){
@@ -156,32 +158,41 @@ $(document).on('drop', '#section1,#section3', function(e) {
 function handle_TopoJSON_files(files) {
     var f = files[0],
         name = files[0].name,
-        reader = new FileReader();
+        reader = new FileReader(),
+        ajaxData = new FormData();
+    /*
+    ajaxData.append('file[]', file);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        cache: false,
+        global: false
+        url: '/cache_topojson',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) { console.log(error); }
+    }); */
+
     reader.onloadend = function(){
         var text = reader.result;
         add_layer_fun(text);
-        /*$.ajax({
-                   type: 'POST',
-                   url: '/cache_topojson',
-                   global: false,
-                   data: {file: [name, text]}
-        });*/
         }
     reader.readAsText(f);
 };
 
 function handle_dataset(files){
   for(var i = 0; i != files.length; ++i) {
-    var f = files[i];
-    var reader = new FileReader();
-    var name = f.name;
+    var f = files[i],
+        reader = new FileReader(),
+        name = f.name;
     reader.onload = function(e) {
       var data = e.target.result;
       joined_dataset.push(d3.csv.parse(data))
     };
     reader.readAsText(f);
   }
-  // TODO : do something if their is already a geometry layer to join them :
+  // TODO : check if there is x / y / lat /long fields to add this as a geom layers
+
   var txt = d3.select('#datag').html();
   if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
   else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
@@ -192,20 +203,21 @@ function handle_dataset(files){
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {
-        var file = files[0];
-        var reader = new FileReader();
-        reader.onload = function handleReaderLoad(evt) {
-            var data = evt.target.result.split(',');
-            var dtype = data[0];
-            data = data[1];
-            $.ajax({
-                       type: 'POST',
-                       url: '/convert_to_topojson', 
-                       data: {file: [dtype, file.name, data]},
-                       success: function(data) {add_layer_fun(data);}
-            });
-        };
-        reader.readAsDataURL(file);
+    var ajaxData = new FormData();
+    ajaxData.append("action", "single_file");
+    $.each(files, function(j, file){
+        ajaxData.append('file[]', file);
+    });
+    $.ajax({
+        processData: false,
+        contentType: false,
+        cache: false,
+        url: '/convert_to_topojson',
+        data: ajaxData,
+        type: 'POST',
+        success: function(data) {add_layer_fun(data);},
+        error: function(error) {console.log(error);}
+    });
 };
 
 // Add the TopoJSON to the 'svg' element :
@@ -233,7 +245,7 @@ function add_layer_fun(text){
         if(parsedJSON.objects[layers_names[i]].geometries[0].properties && target_layer_on_add){
             user_data[layers_names[i]] = [];
             data_to_load = true;
-          } else { data_to_load = false; }
+        } else { data_to_load = false; }
 
         map.append("g").attr("id", layers_names[i])
               .attr("class", function(d) {
@@ -272,11 +284,11 @@ function add_layer_fun(text){
         if(target_layer_on_add){
             d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
-          }
+        }
         if(data_to_load){
              var nb_field = Object.getOwnPropertyNames(user_data[layers_names[i]][0]).length
              d3.select('#datag').html("User data : <b>Yes - Provided with geometries - "+nb_field+" field(s)</b>")
-         }
+        }
     }
     if(target_layer_on_add && joined_dataset.length != 0){ d3.select("join_button").node().disabled = false; }
     binds_layers_buttons();
@@ -333,8 +345,8 @@ function strContains(string1, substring){
 
 function strArraysContains(ArrString1, ArrSubstrings){
     var result = [];
-    for(i=0; i < ArrString1.length; i++){
-        for(j=0; j < ArrSubstrings.length; j++){
+    for(var i=0; i < ArrString1.length; i++){
+        for(var j=0; j < ArrSubstrings.length; j++){
             if(strContains(ArrString1[i], ArrSubstrings[j])){
             result[result.length] = ArrSubstrings[j];
             }

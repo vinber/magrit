@@ -31,7 +31,6 @@ from aiohttp import web, web_reqrep
 import aioredis
 #import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware, redis_storage
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 # Just for the R console page based on rpy2 :
 from r_py.rpy2_console_client import client_Rpy_async
@@ -709,10 +708,13 @@ def convert(request):
         datatype = "shp"
 
     # If there is a single file (geojson or zip) to handle :
-    else:
+    elif "action" in posted_data and "file[]" in posted_data:
         try:
-            datatype, name, data = posted_data.getall('file[]')
-            hashed_input = sha512(data.encode()).hexdigest()
+            field = posted_data.get('file[]')
+            name = field[1]
+            data = field[2].read()
+            datatype = field[3]
+            hashed_input = sha512(data).hexdigest()
             filepath = os.path.join(
                 app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
         except Exception as err:
@@ -727,13 +729,16 @@ def convert(request):
         session_redis['app_user'] = user_id
         session_redis['converted'] = {}
         f_name = '_'.join([user_id, name])
+        print(f_name, hashed_input)
     else:
         user_id = session_redis['app_user']
         f_name = '_'.join([user_id, name])
+        print(f_name, hashed_input)
         if hashed_input in session_redis['converted']:
             result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
             return web.Response(text=result.decode())
+        print(session_redis['converted'])
 
     if "shp" in datatype:
         res = ogr_to_geojson(shp_path, to_latlong=True)
@@ -748,7 +753,7 @@ def convert(request):
 
     elif 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
-            f.write(b64decode(data))
+            f.write(data)
         with ZipFile(filepath+'archive') as myzip:
             list_files = myzip.namelist()
             list_files = ['/tmp/' + i for i in list_files]
@@ -762,15 +767,12 @@ def convert(request):
             result = geojson_to_topojson(filepath2)
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-#            session['converted'][f_name] = json.loads(result)
-#            print(type(session['converted'][f_name]))
         os.remove(filepath+'archive')
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
-    # Firefox and opera dont seems to set the same value :
-    elif 'octet-stream;base64' in datatype or 'data:;base64' in datatype:
-        data = b64decode(data).decode()
+    elif 'octet-stream' in datatype:
+        data = data.decode()
         if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
             crs = True
             with open(filepath, 'w', encoding='utf-8') as f:
@@ -842,7 +844,7 @@ def init(loop, port=9999):
     # Todo : 
     # - Use server-side cookie storage with redis
     # - Store client map parameters (preference, zoom, legend, etc.) on demand
-    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0)
+    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
     redis_conn = yield from aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
@@ -893,7 +895,7 @@ if __name__ == '__main__':
             sys.exit()
     else:
         port = 9999
-        nb_r_workers = '4'
+        nb_r_workers = '2'
 
     # The mutable mapping provided by web.Application will be used to store (safely ?)
     # some global variables :
