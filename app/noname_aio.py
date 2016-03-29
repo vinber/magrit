@@ -729,16 +729,13 @@ def convert(request):
         session_redis['app_user'] = user_id
         session_redis['converted'] = {}
         f_name = '_'.join([user_id, name])
-        print(f_name, hashed_input)
     else:
         user_id = session_redis['app_user']
         f_name = '_'.join([user_id, name])
-        print(f_name, hashed_input)
         if hashed_input in session_redis['converted']:
             result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
             return web.Response(text=result.decode())
-        print(session_redis['converted'])
 
     if "shp" in datatype:
         res = ogr_to_geojson(shp_path, to_latlong=True)

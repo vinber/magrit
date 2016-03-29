@@ -277,7 +277,6 @@ def convert(request):
         list_files = []
         for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
-            print(type(field), field)
             file_name = ''.join(['/tmp/', field[1]])
             list_files.append(file_name)
             savefile(file_name, field[2].read())
@@ -285,10 +284,15 @@ def convert(request):
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
 
-    else:
+    # If there is a single file (geojson or zip) to handle :
+    elif "action" in posted_data and "file[]" in posted_data:
         try:
-            datatype, name, data = posted_data.getall('file[]')
-            filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
+            field = posted_data.get('file[]')
+            name = field[1]
+            data = field[2].read()
+            datatype = field[3]
+            filepath = os.path.join(
+                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
@@ -305,7 +309,7 @@ def convert(request):
 
     elif 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
-            f.write(b64decode(data))
+            f.write(data)
         with ZipFile(filepath+'archive') as myzip:
             list_files = myzip.namelist()
             list_files = ['/tmp/' + i for i in list_files]
@@ -321,9 +325,8 @@ def convert(request):
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
-    # Firefox and opera dont seems to set the same value :
-    elif 'octet-stream;base64' in datatype or 'data:;base64' in datatype:
-        data = b64decode(data).decode()
+    elif 'octet-stream' in datatype:
+        data = data.decode()
         if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
             crs = True
             with open(filepath, 'w', encoding='utf-8') as f:

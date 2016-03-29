@@ -197,8 +197,9 @@ function handle_dataset(files){
   if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
   else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
 
-  var join_button = d3.select("#datag").append("p").append("button").attr("id", "join_button").html("Valid the join").on("click", handle_join);
+  var join_button = dv1.append("p").append("button").attr("id", "join_button").html("Valid the join").on("click", handle_join);
   if(!targeted_layer_added) join_button.node().disabled = true;
+  d3.select("#section1").style("height", "185px");
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
@@ -290,7 +291,7 @@ function add_layer_fun(text){
              d3.select('#datag').html("User data : <b>Yes - Provided with geometries - "+nb_field+" field(s)</b>")
         }
     }
-    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("join_button").node().disabled = false; }
+    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
     binds_layers_buttons();
     /*
     // Only zoom on the added layer if its the "targeted" one

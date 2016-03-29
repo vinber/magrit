@@ -24,7 +24,7 @@
     <style>
         #Simplified_land_polygons {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #343642;}
         #menu {font-family:Georgia,sans-serif; color:#41403f; font-size: 12px;}
-        #section1 { height: 110px; margin: 2px; font-size: 12px; color: black}
+        #section1 { height: 135px; margin: 2px; font-size: 12px; color: black}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
         #sortable { list-style-type: none; margin: auto; padding: 0; width: 95%; font-weight: bold; color: white; border-radius: 8%}
         #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #adadad; border-radius: 8%;}
@@ -108,19 +108,22 @@ d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(e
 // Set-up the menu :
 //////////////////////////////////////////////////////////////////////////////
 
-var accordion = d3.select("#menu").append("div").attr("id","accordion");
+var accordion1 = d3.select("#menu").append("div").attr("id","accordion1").attr("class", "accordion");
+var accordion2 = d3.select("#menu").append("div").attr("id","accordion2").attr("class", "accordion");
+var accordion3 = d3.select("#menu").append("div").attr("id","accordion3").attr("class", "accordion");
+var accordion4 = d3.select("#menu").append("div").attr("id","accordion4").attr("class", "accordion");
 
-accordion.append("h3").html("Add your data");
-var section1 =  d3.select("#accordion").append("div").attr("id","section1");
+accordion1.append("h3").html("Add your data");
+var section1 =  d3.select("#accordion1").append("div").attr("id","section1");
 
-accordion.append("h3").html("Targeted functionnality");
-var section2 =  d3.select("#accordion").append("div").attr("id","section2");
+accordion2.append("h3").html("Targeted functionnality");
+var section2 =  d3.select("#accordion2").append("div").attr("id","section2");
 
-accordion.append("h3").html("Map Layout - Layers");
-var section3 =  d3.select("#accordion").append("div").attr("id","section3");
+accordion3.append("h3").html("Map Layout - Layers");
+var section3 =  d3.select("#accordion3").append("div").attr("id","section3");
 
-accordion.append("h3").html("Map Layout - Canvas tweaks");
-var section4 =  d3.select("#accordion").append("div").attr("id","section4");
+accordion4.append("h3").html("Map Layout - Canvas tweaks");
+var section4 =  d3.select("#accordion4").append("div").attr("id","section4");
 
 
 dv1 = section1.append("div")
@@ -249,7 +252,9 @@ setInterval(sendPreferences, 300000);
 // JQuery menu and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
-$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
+//$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
+$(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
+$("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
 
 $(function() {
   $( "#sortable" ).sortable({

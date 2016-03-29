@@ -4,7 +4,6 @@ TODO list:
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
 - /!\ add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
-- change the accordion behavior in the menu to allow more than one section to be opened at the time ?
 - add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
 - rollback to the original header
 - better select the mouse behavior on orthgraphic projection (rotate or move but not both together)
