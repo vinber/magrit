@@ -11,6 +11,8 @@ function add_layer(d){
 
     if(this.parentNode.parentNode.id === "section1") target_layer_on_add = true;
 
+    console.log(this.parentNode.parentNode.id);
+    
     function prepareUpload(event){
         files = event.target.files;
         if(strContains(files[0].name, 'topojson')){
@@ -109,6 +111,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
                 }
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                $(this).css('border', '');
               }
         }
    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
@@ -181,25 +184,36 @@ function handle_TopoJSON_files(files) {
 };
 
 function handle_dataset(files){
+  if(joined_dataset.length !== 0){
+    var rep = confirm("An external dataset as already been provided. Replace by this one ?");
+    if(!rep){ return; }
+  }
+
   for(var i = 0; i != files.length; ++i) {
     var f = files[i],
         reader = new FileReader(),
         name = f.name;
+
     reader.onload = function(e) {
       var data = e.target.result;
       joined_dataset.push(d3.csv.parse(data))
+      var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+          if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+            add_csv_geom(joined_dataset);
+          }
+      }
+      d3.select('#data_ext').html("External data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
+      valid_join_check_display(false);
+      if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
+      d3.select("#section1").style("height", "185px");
     };
     reader.readAsText(f);
   }
-  // TODO : check if there is x / y / lat /long fields to add this as a geom layers
+}
 
-  var txt = d3.select('#datag').html();
-  if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
-  else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
-
-  var join_button = dv1.append("p").append("button").attr("id", "join_button").html("Valid the join").on("click", handle_join);
-  if(!targeted_layer_added) join_button.node().disabled = true;
-  d3.select("#section1").style("height", "185px");
+function add_csv_geom(param){
+    null;
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
@@ -278,17 +292,17 @@ function add_layer_fun(text){
 
         class_name = target_layer_on_add ? "ui-state-default sortable_target " + layers_names[i] : "ui-state-default " + layers_names[i]
         layers_listed = layer_list.node()
-        li = document.createElement("li");
+        var li = document.createElement("li");
         li.setAttribute("class", class_name);
         li.innerHTML = type + " - " + layers_names[i] + button_style + button_trash + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
             d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
-        }
-        if(data_to_load){
-             var nb_field = Object.getOwnPropertyNames(user_data[layers_names[i]][0]).length
-             d3.select('#datag').html("User data : <b>Yes - Provided with geometries - "+nb_field+" field(s)</b>")
+            if(data_to_load){
+                 var nb_field = Object.getOwnPropertyNames(user_data[layers_names[i]][0]).length
+                 d3.select('#datag').html("Data provided with geometries : <b>Yes - "+nb_field+" field(s)</b>")
+            }
         }
     }
     if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
@@ -301,6 +315,7 @@ function add_layer_fun(text){
         else alert("The topojson was provided without bbox information");
       }
     */
+    if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
 };

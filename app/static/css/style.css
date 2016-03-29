@@ -55,6 +55,10 @@ body {
     cursor: move;
 }
 
+.user_panel{
+    text-align: left;
+    line-height: 16px;
+}
 
 h1.menu {
 	color:#2e91ce;
@@ -138,17 +142,17 @@ a {
 }
 
 a.menu {
-line-height:30px;
-color:white;
+    line-height:30px;
+    color:white;
 }
 
 p.menu {
-color:#62849b;
-font-family: 'Enriqueta', arial, serif;
-	line-height: 1.25;
-	margin: 0 0 10px;
-	font-size: 12px;
-	font-weight: bold;
+    color:#62849b;
+    font-family: 'Enriqueta', arial, serif;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 label

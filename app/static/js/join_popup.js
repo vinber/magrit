@@ -5,9 +5,11 @@ function handle_join(){
         alert("Unable to join geometries and dataset")
         return;
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        alert("The geometrie layer and the joined dataset doesn't have the same number of features");
-        return;
-    } else if(field_join_map.length!=0){
+        var rep = confirm("The geometrie layer and the joined dataset doesn't have the same number of features. Continue anyway ?");
+        if(!rep){ return; }
+    }
+
+    if(field_join_map.length!=0){
         var rep = confirm("A successful join is already selected. Forget and select a new one ?");
         if(!rep){ return; }
         else { field_join_map = []; }
@@ -24,57 +26,108 @@ function handle_join(){
     return center(modal);
 };
 
+function valid_join_check_display(val, prop){
+    if(!val){
+        d3.select("#join_section").style('text-align', 'left')
+            .html(['<img src="/static/img/Red_x.svg" alt="Non-validated join" style="width:18px;height:18px;">',
+                   'Data not joined'].join(''));
+        d3.select('#join_section').append("button").attr("id", "join_button").style('margin-left', '10%').html("Valid the join").on("click", handle_join);
+    } else {
+        d3.select("#join_section").style('text-align', 'left')
+            .html(['<img src="/static/img/Light_green_check.svg" alt="Validated join" style="width:22px;height:22px;"><b>',
+                   ' ', prop, ' matches</b>'].join(''))
+        d3.select('#join_section').append("button").attr("id", "join_button").style('margin-left', '10%').html("Valid the join").on("click", handle_join);
+    }
+}
+
 function valid_join_on(layer_name, field1, field2){
     var join_values1 = [],
         join_values2 = [],
-        val;
+        hits = 0, val;
+
+    field_join_map = [];
+
+    for(var i=0, len=joined_dataset[0].length; i<len; i++){
+        join_values2.push(joined_dataset[0][i][field2]);
+    }
+
+    var join_set2 = new Set(join_values2);
+    if(join_set2.size != join_values2.length){
+        alert("The values on which operate have to be uniques");
+        return;
+    }
 
     for(var i=0, len=user_data[layer_name].length; i<len; i++){
         join_values1.push(user_data[layer_name][i][field1]);
-        join_values2.push(joined_dataset[0][i][field2]);
+    }
+
+    var join_set1 = new Set(join_values1);
+    if(join_set1.size != join_values1.length){
+        alert("The values on which operate have to be uniques");
+        return;
     }
 
     if(join_values1===join_values2){
         for(var i=0, len=join_values1.length; i<len; i++) map_table.push(i);
     }
+
     else {
         if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(String(join_values1[i]));
-                if(val != -1) { field_join_map.push(val); }
-                else { break; }
+                if(val != -1) { field_join_map.push(val); hits++; }
+                else { field_join_map.push(undefined); }
             }
         } else if(typeof join_values2[0] === "number" && typeof join_values1[0] === "string"){
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(Number(join_values1[i]));
-                if(val != -1) { field_join_map.push(val); }
-                else { break };
+                if(val != -1) { field_join_map.push(val); hits++; }
+                else { field_join_map.push(undefined); }
             }
         } else {
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(String(join_values1[i]));
-                if(val != -1) { field_join_map.push(val); }
-                else { break };
+                if(val != -1) { field_join_map.push(val); hits++; }
+                else { field_join_map.push(undefined); }
             }
         }
     }
-    console.log(field_join_map);
-    console.log([layer_name, field1, join_values1, field2, join_values2]);
 
-    if(field_join_map.length === join_values1.length){
+    var prop = [hits, "/", join_values1.length].join("");
+    if(hits == join_values1.length){
         var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
         for(var i=0, len=join_values1.length; i<len; i++){
+            val = field_join_map[i];
             for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                 f_name = fields_name_to_add[j];
-                val = field_join_map[i];
                 user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
                 }
         }
-        alert("boom!");
+        valid_join_check_display(true, prop);
+        alert("Full join");
         return true;
+    } else if(field_join_map.length > 0){
+        var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
+        if(rep){
+            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+            var i_id = fields_name_to_add.indexOf("id");
+            if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
+            for(var i=0, len=join_values1.length; i<len; i++){
+                val = field_join_map[i];
+                for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
+                    f_name = fields_name_to_add[j];
+                    user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
+                    }
+                }
+            valid_join_check_display(true, prop);
+            return true;
+        } else {
+            field_join_map = [];
+            return false;
+        }
+
     } else {
-        field_join_map = [];
-        alert("Missed...");
+        alert("No match found...");
         return false;
     }
 }

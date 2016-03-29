@@ -837,6 +837,12 @@ def try_float(val):
         return val
 
 @asyncio.coroutine
+@aiohttp_jinja2.template('modules/test_interface.html')
+def handle_app_functionality(request):
+    return {"func" : request.match_info['function']}
+
+
+@asyncio.coroutine
 def init(loop, port=9999):
     # Todo : 
     # - Use server-side cookie storage with redis
@@ -850,6 +856,7 @@ def init(loop, port=9999):
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
     app.router.add_route('GET', '/index2', handler2)
+    app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)
     app.router.add_route('POST', '/R/{function}', R_commande)
@@ -866,7 +873,7 @@ def init(loop, port=9999):
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
     app.router.add_route('*', '/R/wrapped/MTA/mediumDev', MTA_mediumDev)
     app.router.add_route('*', '/R/wrapped/MTA/localDev', MTA_localDev)
-    app.router.add_static('/modules/', path='templates/modules', name='modules')
+#    app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
 

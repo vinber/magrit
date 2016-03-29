@@ -18,6 +18,7 @@
 
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/functions.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
@@ -32,13 +33,17 @@
         .ui-state-highlight {line-height: 12px; background: red}
     </style>
   </head>
-<body>
-      <div id = "header">M.A.R.S</div>
-      <div id = "menu"></div>
-  	<div id = "map"></div>
+  <body>
+      <div id ="header">M.A.R.S</div>
+      <div id ="menu"></div>
+  	 <div id ="map"></div>
+      <div id="func">{{ func }}</div>
       <a id="downloadAnchorElem" style="display:none"></a>
-    </body>
     <script>
+var func = document.getElementById('func').innerHTML;
+document.getElementById('func').style.display = "none";
+
+var menu_option = get_menu_option(func);
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
 /*
@@ -116,7 +121,7 @@ var accordion4 = d3.select("#menu").append("div").attr("id","accordion4").attr("
 accordion1.append("h3").html("Add your data");
 var section1 =  d3.select("#accordion1").append("div").attr("id","section1");
 
-accordion2.append("h3").html("Targeted functionnality");
+accordion2.append("h3").html(menu_option.title);
 var section2 =  d3.select("#accordion2").append("div").attr("id","section2");
 
 accordion3.append("h3").html("Map Layout - Layers");
@@ -133,21 +138,24 @@ dv1 = section1.append("div")
 dv1.append("input").attr("type", "button")
                    .attr("value", "Browse and add...")
                    .on("click", add_layer);
-dv1.append("p").attr("id", "input_geom").html("User geometry : <b><i>None</i></b>");
-dv1.append("p").attr("id", "datag").html("User data : <b><i>No</i></b>").style("margin-bottom", "5px");
 
-section2.append("p").html("Functionnality (stewart potential, local deviation, prop symbol, etc.) options came here");
+dv1.append("p").attr("id", "input_geom").attr("class", "user_panel").style("margin-top", "5%").html("User geometry : <b><i>None</i></b>");
+dv1.append("p").attr("id", "datag").attr("class", "user_panel").html("Data provided with geometries : <b><i>No</i></b>");
+dv1.append("p").attr("id", "data_ext").attr("class", "user_panel").html("External data : <b><i>No</i></b>");
+dv1.append("p").attr("id", "join_section").html("").style("margin-bottom", "5px");
+var join_button = undefined;
+
 var dv2 = section2.append("p").attr("class", "form-item");
-dv2.append('label-item').html("<br><b>Options 1</b>").style("padding", "6px");
-var p = dv2.append("select").attr("id","form_foobar").style("align", "center").on("change", function(){alert("Error : not implemented")})
-p.append("option").text("Foo").attr("value","Foo");
-p.append("option").text("Bar").attr("value","Bar");
+dv2.append("input").attr("type", "button")
+                   .attr("id", "func_button")
+                   .attr("value", "Choose options and compute...")
+                   .on("click", popup_function);
+d3.select("#func_button").node().disabled = true;
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 layer_list.append("li").attr("class", "ui-state-default Graticule").html("Graticule"+ button_style + button_trash + button_active)
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").html("Simplified_land_polygons"+ button_style + button_trash + button_active)
 dv3 = section3.append("div")
-                .append("p")
                 .style("text-align", "center")
                 .html("Drop new layout layers here or browse locally to add one<br>(GeoJSON, TopoJSON and ziped Shapefile project)<br>");
 dv3.append("input")

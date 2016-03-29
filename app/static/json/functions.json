@@ -1,0 +1,11 @@
+menu_option = {
+    "stewart":{
+        "title":"Stewart potentials",
+        "desc":"Compute stewart potentials blabalbalba .....",
+        "fields":[["select","variable_name"],["input","span"],["input","beta"],["radio","type_function"],["input","resolution"],["input","n_class"]]
+        },
+    "test":{
+        "title":"No functionnality provided here",
+        "desc":"Really nothing.."
+        }
+}

@@ -1,13 +1,13 @@
 [
 	{
 	"img" : "empty.png",
-	"desc" : "Example 1 - Data Import",
-	"link" 	: "modules/test_interface.html"
+	"desc" : "Example 1 - Join geometry and .csv dataset",
+	"link" 	: "modules/test"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 2 - Stewart potentials",
+	"link" 	: "modules/stewart"
 	},
 	{
 	"img" : "empty.png",
