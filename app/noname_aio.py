@@ -19,7 +19,7 @@ from zipfile import ZipFile
 from random import randint, choice
 from datetime import datetime
 from base64 import b64decode
-from hashlib import sha512
+from hashlib import sha512, md5
 import asyncio
 import zmq.asyncio
 from subprocess import Popen, PIPE
@@ -31,7 +31,6 @@ from aiohttp import web, web_reqrep
 import aioredis
 #import aiohttp_debugtoolbar
 from aiohttp_session import get_session, session_middleware, redis_storage
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 # Just for the R console page based on rpy2 :
 from r_py.rpy2_console_client import client_Rpy_async
@@ -114,7 +113,6 @@ def is_known_user(request, ref):
         ref[id_] = [True, None]
         print(session['R_user'], ' is a new user')
     return id_
-
 
 #####################################################
 ### Some views to make two poor R consoles
@@ -239,12 +237,13 @@ def savefile(path, raw_data):
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
-#    print("Here i am with ", filepath)
     if to_latlong:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-t_srs", "EPSG:4326",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+                         "-preserve_fid",
+                         "-t_srs", "EPSG:4326",
                          "/dev/stdout", filepath], stdout=PIPE)
     else:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
                          "/dev/stdout", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
@@ -253,7 +252,7 @@ def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--spherical", "--bbox", "true",
-                     filepath], stdout=PIPE)
+                     "-p", "--", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     return stdout.decode()
 
@@ -672,20 +671,56 @@ def cache_input_topojson(request):
     print('Caching the TopoJSON')
     return web.Response()
 
+@asyncio.coroutine
+def user_pref(request):
+    posted_data = yield from request.post()
+    session = yield from get_session(request)
+    session['map_pref'] = dict(posted_data)
+    return web.Response(text=json.dumps({'Info': "I don't do anything with it rigth now!"}))
+
+
+def hash_md5_file(path):
+    H = md5()
+    with open(path, 'rb') as f:
+        buf = f.read(65536)
+        while len(buf) > 0:
+            H.update(buf)
+            buf = f.read(65536)
+    return H.hexdigest()
+
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
 # to easily handle file types send by the front-side ?
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
 
-    try:
-        datatype, name, data = posted_data.getall('file[]')
-        hashed_input = sha512(data.encode()).hexdigest()
+    # If a shapefile is provided as multiple files (.shp, .dbf, .shx, and .prj are expected), not ziped :
+    if "action" in posted_data and not "file[]" in posted_data:
+        list_files = []
+        for i in range(len(posted_data) - 1):
+            field = posted_data.getall('file[{}]'.format(i))[0]
+            file_name = ''.join(['/tmp/', field[1]])
+            list_files.append(file_name)
+            savefile(file_name, field[2].read())
+        shp_path = [i for i in list_files if 'shp' in i][0]
+        hashed_input = hash_md5_file(shp_path)
+        name = shp_path.split(os.path.sep)[2]
+        datatype = "shp"
 
-    except Exception as err:
-        print("posted data :\n", posted_data)
-        print("err\n", err)
-        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+    # If there is a single file (geojson or zip) to handle :
+    elif "action" in posted_data and "file[]" in posted_data:
+        try:
+            field = posted_data.get('file[]')
+            name = field[1]
+            data = field[2].read()
+            datatype = field[3]
+            hashed_input = sha512(data).hexdigest()
+            filepath = os.path.join(
+                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
+        except Exception as err:
+            print("posted data :\n", posted_data)
+            print("err\n", err)
+            return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
     session_redis = yield from get_session(request)
     if not 'app_user' in session_redis:
@@ -702,10 +737,20 @@ def convert(request):
             print("Used cached result")
             return web.Response(text=result.decode())
 
-    filepath = os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
-    if 'zip' in datatype:
+    if "shp" in datatype:
+        res = ogr_to_geojson(shp_path, to_latlong=True)
+        filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
+        with open(filepath2, 'w') as f:
+            f.write(res)
+        result = geojson_to_topojson(filepath2)
+        session_redis['converted'][hashed_input] = True
+        yield from app_glob['redis_conn'].set(f_name, result)
+        os.remove(filepath2)
+        [os.remove(file) for file in list_files]
+
+    elif 'zip' in datatype:
         with open(filepath+'archive', 'wb') as f:
-            f.write(b64decode(data))
+            f.write(data)
         with ZipFile(filepath+'archive') as myzip:
             list_files = myzip.namelist()
             list_files = ['/tmp/' + i for i in list_files]
@@ -719,14 +764,12 @@ def convert(request):
             result = geojson_to_topojson(filepath2)
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-#            session['converted'][f_name] = json.loads(result)
-#            print(type(session['converted'][f_name]))
         os.remove(filepath+'archive')
         os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
-    elif 'octet-stream;base64' in datatype:
-        data = b64decode(data).decode()
+    elif 'octet-stream' in datatype:
+        data = data.decode()
         if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
             crs = True
             with open(filepath, 'w', encoding='utf-8') as f:
@@ -798,13 +841,14 @@ def init(loop, port=9999):
     # Todo : 
     # - Use server-side cookie storage with redis
     # - Store client map parameters (preference, zoom, legend, etc.) on demand
-    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0)
+    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
     redis_conn = yield from aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
+    app.router.add_route('GET', '/index', handler)
     app.router.add_route('GET', '/index2', handler2)
     app.router.add_route('*', '/upload', UploadFile)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)
@@ -816,6 +860,7 @@ def init(loop, port=9999):
     app.router.add_route('POST', '/clear_R_session', clear_r_session)
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('POST', '/cache_topojson', cache_input_topojson)
+    app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_route('*', '/R/wrapped/flows/int', FlowsPage)
     app.router.add_route('*', '/R/wrapped/SpatialPosition/stewart', StewartPage)
     app.router.add_route('*', '/R/wrapped/MTA/globalDev', MTA_globalDev)
@@ -839,7 +884,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         port = int(sys.argv[1])
-        nb_r_workers = '4'
+        nb_r_workers = '2'
     elif len(sys.argv) == 3:
         port = int(sys.argv[1])
         nb_r_workers = sys.argv[2]
@@ -847,7 +892,7 @@ if __name__ == '__main__':
             sys.exit()
     else:
         port = 9999
-        nb_r_workers = '4'
+        nb_r_workers = '2'
 
     # The mutable mapping provided by web.Application will be used to store (safely ?)
     # some global variables :
@@ -873,7 +918,8 @@ if __name__ == '__main__':
     # Some other global objects to hold various informations
     # (Aimed to be remplaced by something better)
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-    app_glob['app_real_path'] = '/home/mz/code/noname-stuff'
+    path = os.path.dirname(os.path.realpath(__file__))
+    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     app_glob['keys_mapping'] = {}
     app_glob['session_map'] = {}
     app_glob['table_map'] = {}

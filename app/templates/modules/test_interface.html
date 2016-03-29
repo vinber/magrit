@@ -18,13 +18,13 @@
 
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/join_popup.js"></script>
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <link  href="/static/css/dat_menu.css" rel="stylesheet" type="text/css">
     <style>
         #Simplified_land_polygons {stroke : #ffffff; stroke-width: 0.5px; stroke-linecap: round; fill: #343642;}
         #menu {font-family:Georgia,sans-serif; color:#41403f; font-size: 12px;}
-        #map { border-style: solid; width:700px; height:620px;}
-        #section1 { height: 110px; margin: 2px; font-size: 12px; color: black}
+        #section1 { height: 135px; margin: 2px; font-size: 12px; color: black}
         .graticule {fill:none ; stroke: #777; stroke-width: 1px;  stroke-opacity: .5; stroke-dasharray: 5 }
         #sortable { list-style-type: none; margin: auto; padding: 0; width: 95%; font-weight: bold; color: white; border-radius: 8%}
         #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #adadad; border-radius: 8%;}
@@ -41,10 +41,14 @@
     <script>
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
-
+/*
 var w = 700,
-    h = 620,
-    title = 0;
+    h = 620;
+*/
+var w = Math.round((window.innerWidth / 2.54 ) / 10)*10,
+    h = Math.round((window.innerHeight / 1.33 ) / 10)*10;
+
+var title = 0;
 
 var graticule = d3.geo.graticule(),
     proj = d3.geo.mercator().scale(100).translate([375, 320]),
@@ -57,10 +61,18 @@ var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
     current_proj_name = "mercator";
 
-var map = d3.select("#map").append("svg")
-    .attr("width", w)
-    .attr("height", h)
-    .call(zoom);
+var user_data = new Object(),
+    joined_dataset = [],
+    field_join_map  = [],
+    target_layer_on_add = false,
+    targeted_layer_added = false;
+
+var map = d3.select("#map")
+                .style("width", w+"px").style("height", h+"px")
+            .append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                .call(zoom);
 
 var background = map.append("g").attr("id","Simplified_land_polygons");
 
@@ -96,24 +108,27 @@ d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(e
 // Set-up the menu :
 //////////////////////////////////////////////////////////////////////////////
 
-var accordion = d3.select("#menu").append("div").attr("id","accordion");
+var accordion1 = d3.select("#menu").append("div").attr("id","accordion1").attr("class", "accordion");
+var accordion2 = d3.select("#menu").append("div").attr("id","accordion2").attr("class", "accordion");
+var accordion3 = d3.select("#menu").append("div").attr("id","accordion3").attr("class", "accordion");
+var accordion4 = d3.select("#menu").append("div").attr("id","accordion4").attr("class", "accordion");
 
-accordion.append("h3").html("Add your data");
-var section1 =  d3.select("#accordion").append("div").attr("id","section1");
+accordion1.append("h3").html("Add your data");
+var section1 =  d3.select("#accordion1").append("div").attr("id","section1");
 
-accordion.append("h3").html("Targeted functionnality");
-var section2 =  d3.select("#accordion").append("div").attr("id","section2");
+accordion2.append("h3").html("Targeted functionnality");
+var section2 =  d3.select("#accordion2").append("div").attr("id","section2");
 
-accordion.append("h3").html("Map Layout - Layers");
-var section3 =  d3.select("#accordion").append("div").attr("id","section3");
+accordion3.append("h3").html("Map Layout - Layers");
+var section3 =  d3.select("#accordion3").append("div").attr("id","section3");
 
-accordion.append("h3").html("Map Layout - Canvas tweaks");
-var section4 =  d3.select("#accordion").append("div").attr("id","section4");
+accordion4.append("h3").html("Map Layout - Canvas tweaks");
+var section4 =  d3.select("#accordion4").append("div").attr("id","section4");
 
 
 dv1 = section1.append("div")
             .style("text-align", "center")
-            .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...");
+            .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...<br>");
 
 dv1.append("input").attr("type", "button")
                    .attr("value", "Browse and add...")
@@ -179,7 +194,8 @@ section4.append("p").html(b + 'Load a preference JSON...').on("click", load_map_
 var lm = d3.select("#map")
             .append("div")
             .attr("class", "light-menu")
-            .style({position: "absolute",top: "2px", left: "2px"});
+            .style({position: "absolute",top: "-30px", left: "2px"});
+
 lm.append("input")
     .attr("type", "button")
     .attr("class", "zoom_button")
@@ -196,6 +212,14 @@ lm.append("input")
         .attr("position", "relative")
         .attr("left", "40%");
 
+lm.append("input")
+        .attr("type", "button")
+        .attr("class", "info_button")
+        .attr("value", "i")
+        .attr("id", "zoom_in")
+        .attr("position", "relative")
+        .attr("left", "40%");
+
 var info = lm.append("p")
               .attr("id", "info_coords")
               .style("font-size", "14px")
@@ -203,16 +227,34 @@ var info = lm.append("p")
               .style("color", "black")
               .html("");
 
+var info_features = lm.append("p")
+              .attr("id", "info_features")
+              .style("font-size", "15px")
+              .style("font-weight", "bold")
+              .style("margin-left", "5px")
+              .style("background-color", "rgba(235, 216, 158, 0.5)")
+              .style("border-radius", "2%")
+              .style("color", "black")
+              .html("");
+info_features.active = false;
+
 // Trigger actions when buttons are clicked :
+
 d3.selectAll(".zoom_button").on("click", zoomClick);
+d3.selectAll(".info_button").on("click", displayInfoOnMove);
 d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 binds_layers_buttons();
+
+// Trigger a periodical call to a function sending current map preference to the server :
+setInterval(sendPreferences, 300000);
 
 //////////////////////////////////////////////////////////////////////////////
 // JQuery menu and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
-$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
+//$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
+$(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
+$("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
 
 $(function() {
   $( "#sortable" ).sortable({
@@ -223,12 +265,12 @@ $(function() {
           actual_order = [],
           layers = d3.selectAll("svg").node();
     
-      for(var i=0; i < a.target.childNodes.length; i++){
+      for(var i=0, len = a.target.childNodes.length; i < len; i++){
           var n = (a.target.childNodes[i].innerHTML.split(" <butt")[0]).split(" - ")
           desired_order[i] = n[n.length - 1]
           actual_order[i] = layers.children[i].id;
-          }
-      for(var i = 0; i< desired_order.length; i++){
+      }
+      for(var i = 0, len = desired_order.length; i < len; i++){
           lyr1 = d3.select("#"+desired_order[i]).node()
           lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node()
           layers.insertBefore(lyr2, lyr1);
@@ -239,7 +281,6 @@ $(function() {
 });
 
 $(document).ajaxStart(function() {
-
         d3.select("#map").append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
                          .attr("id", "progressbar").node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/2) + 'px"/><br>Loading layer ...';
@@ -250,6 +291,33 @@ $(document).ajaxStart(function() {
 ////////////////
 // To sort:
 ////////////////
+
+function displayInfoOnMove(){
+    var target_lyr = Object.getOwnPropertyNames(user_data);
+    if(target_lyr == 0){
+        alert("Informations are only displayed on the targeted layer");
+    } else if(target_lyr > 1){
+        alert("Too many layer to handle");
+    } else {
+        target_lyr = "#"+target_lyr[0];
+        if(info_features.active){
+            d3.select(target_lyr).selectAll("path").on("mouseover", null)
+            info_features.active = false;
+            info_features.node().innerHTML = ""
+            document.getElementById("map").style.cursor="";
+        } else {
+            d3.select(target_lyr).selectAll("path").on("mouseover", function(d){
+                var txt_info = [this.id,
+                                JSON.stringify(user_data[target_lyr.substring(1, target_lyr.length)][(this.id).split(' ')[1]])].join(' - ');
+                info_features.node().innerHTML = txt_info;
+                });
+            d3.select(target_lyr).attr("d", path).on("mouseout", function(){
+                info_features.node().innerHTML = "";});
+            info_features.active = true;
+            document.getElementById("map").style.cursor="help";
+        }
+    }
+}
 
 function redraw() {
   sc = d3.event.scale;
@@ -263,36 +331,26 @@ function redraw() {
   //return tr;
 }
 
-function reproj() {
-  /*
-    if(typeof sc == 'undefined'){sc = 1;}
-    if(typeof tr == 'undefined'){tr = [0,0];}
-    var tx = t[0] * sc + tr[0];
-    var ty = t[1] * sc + tr[1];
-    proj.translate([tx, ty]);
-    proj.scale(s * sc);
-  */
+function reproj(){
   proj.translate([t[0], t[1]]);
   proj.scale(s)
   map.selectAll("path").attr("d", path);
 }
 
-var log_coordinates = function(t){
+var trim = function(s){
+    return s.replace(/^\s+|\s+$/,'');
+}
+
+function log_coordinates(t){
   var coords = proj.invert(d3.mouse(t)),
       txt = [];
-  //console.log(coords);
 
   if(coords[0]>0) txt.push("E")
   else txt.push("W")
 
   if(coords[1]>0) txt.push("N")
   else txt.push("S")
-  info.node().innerText = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
-};
-
-
-var trim = function(s){
-    return s.replace(/^\s+|\s+$/,'');
+  info.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
 };
 
 function remove_layer(){
@@ -314,7 +372,7 @@ function load_map_template(){
     alert("Not implemented!");
 }
 
-function save_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
+function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
         layers_style = [];
 
@@ -341,12 +399,27 @@ function save_map_template(){   //  ... or maintain up-to-date a global Object()
         layers_style[i].fill_opacity = d3.select(g_lyr_name).selectAll("path").style("fill-opacity");
     }
 
-    var foo = {"map_config": map_config, "layers": layers_style.reverse()};
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(foo));
+    return JSON.stringify({"map_config": map_config, "layers": layers_style.reverse()})
+}
+
+function save_map_template(){
+    json_params = get_map_template();
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "noname_properties.json");
     dlAnchorElem.click();
+}
+
+function sendPreferences(){
+    json_params = get_map_template();
+    $.ajax({
+       type: 'POST',
+       url: '/save_user_pref', 
+       data: json_params,
+       global: false, 
+       success: function(d) {console.log(d);}
+    }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -499,7 +572,7 @@ $(document).ready(function() {
 // Some callback functions related to the menu :
 //////////////////////////////////////////////////////////////////////////////
 
-function handle_export(){  // Not working as expect right now
+function handle_export(){  // Not working as expected right now
     var svg = document.getElementById("map");
    
     var source = (new XMLSerializer).serializeToString(svg);
@@ -515,25 +588,6 @@ function handle_export(){  // Not working as expect right now
     var url = "data:image/svg+xml;charset=utf-8,"+btoa(source);
     console.log(url);
     convBase64ToFile(url);
-}
-
-function add_layer(){
-    var input = $(document.createElement('input'));
-    input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
-    input.on('change', prepareUpload);
-    var res = [];
-    function prepareUpload(event){
-        files = event.target.files;
-        if(strContains(files[0].name, 'topojson')){
-            handle_TopoJSON_files(files);
-        } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
-                            || strContains(files[0].name, 'zip'))){
-            handle_single_file(files);
-        } else if(files.length > 1){
-            alert("Layers have to be uploaded one by one")
-        }
-    };
-    input.trigger('click');
 }
 
 function add_sample_layer(){
