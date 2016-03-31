@@ -6,34 +6,31 @@ stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
 
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
-
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp')
+  if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
 
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
     mask_layer <- geojsonio::geojson_read(mask_json, what='sp')
+    if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
   }
 
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
-                                          df = knownpts_layer@data,
-                                          var = varname,
-                                          typefct = typefct,
-                                          span=span, beta=beta,
-                                          resolution = resolution,
-                                          mask = mask_layer,
-                                          nclass = nclass)
+                                            df = knownpts_layer@data,
+                                            var = varname,
+                                            typefct = typefct,
+                                            span=span, beta=beta,
+                                            resolution = resolution,
+                                            mask = mask_layer,
+                                            nclass = nclass)
 
   # Always return the result in latitude-longitude for the moment :
   result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',
          jsonlite::toJSON(unique(res_poly@data$mean)), '}')
   return(result)
-}
-
-reilly_to_json <- function(){
-  return(NA)
 }
 
 ###################################

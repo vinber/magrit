@@ -2,6 +2,40 @@
 """
 @author: mz
 """
+from hashlib import md5
+from random import choice
+
+
+def try_float(val):
+    try:
+        return float(val)
+    except ValueError:
+        return val
+
+def savefile(path, raw_data):
+    if '.shp' in path or '.dbf' in path or '.shx' in path:
+        with open(path, 'wb') as f:
+            f.write(raw_data)
+    else:
+        with open(path, 'w') as f:
+            f.write(raw_data.decode())
+
+def hash_md5_file(path):
+    H = md5()
+    with open(path, 'rb') as f:
+        buf = f.read(65536)
+        while len(buf) > 0:
+            H.update(buf)
+            buf = f.read(65536)
+    return H.hexdigest()
+
+def get_key(var):
+    """Find and return an available key (ie. which is not in 'var')"""
+    while True:
+        k = (b''.join([bytes([choice(list(range(48, 58))+list(range(97, 123)))])
+                    for i in range(25)])).decode()
+        if k not in var:
+            return k
 
 def guess_separator(file):
     """

@@ -206,7 +206,7 @@ function handle_dataset(files){
       d3.select('#data_ext').html("External data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
       valid_join_check_display(false);
       if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-      d3.select("#section1").style("height", "185px");
+      d3.select("#section1").style("height", "200px");
     };
     reader.readAsText(f);
   }
@@ -253,20 +253,24 @@ function add_layer_fun(text){
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
-        if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')) type = 'Point';
-        else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')) type = 'Line';
-        else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')) type = 'Polygon';
+        var lyr_name = layers_names[i];
+        if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
+        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
+        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
 
-        if(parsedJSON.objects[layers_names[i]].geometries[0].properties && target_layer_on_add){
-            user_data[layers_names[i]] = [];
+        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
+            user_data[lyr_name] = [];
             data_to_load = true;
         } else { data_to_load = false; }
 
-        map.append("g").attr("id", layers_names[i])
+        current_layers[lyr_name] = {"type": type,
+                                 "n_features": parsedJSON.objects[lyr_name].geometries.length}
+
+        map.append("g").attr("id", lyr_name)
               .attr("class", function(d) {
                 return data_to_load ? "targeted_layer" : null;})
               .selectAll(".subunit")
-              .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
+              .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
               .attr("d", path)
               .attr("id", function(d) {
@@ -285,22 +289,24 @@ function add_layer_fun(text){
               .attr("width", "100%");
 
         d3.select("#layer_menu")
-              .append('p').html('<a href>- ' + layers_names[i]+"</a>");
+              .append('p').html('<a href>- ' + lyr_name+"</a>");
 
         //try {bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);}
         //catch(err){ console.log(err); }
 
-        class_name = target_layer_on_add ? "ui-state-default sortable_target " + layers_names[i] : "ui-state-default " + layers_names[i]
+        class_name = target_layer_on_add ? "ui-state-default sortable_target " + lyr_name : "ui-state-default " + lyr_name
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = type + " - " + layers_names[i] + button_style + button_trash + button_active;
+        li.innerHTML = type + " - " + lyr_name + button_style + button_trash + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
-            d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
+            current_layers[lyr_name].targeted = true;
+            targeted_topojson = parsedJSON;
+            d3.select('#input_geom').html("User geometry : <b>"+lyr_name+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
             if(data_to_load){
-                 var nb_field = Object.getOwnPropertyNames(user_data[layers_names[i]][0]).length
+                 var nb_field = Object.getOwnPropertyNames(user_data[lyr_name][0]).length
                  d3.select('#datag').html("Data provided with geometries : <b>Yes - "+nb_field+" field(s)</b>")
             }
         }

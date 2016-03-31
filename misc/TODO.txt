@@ -1,13 +1,11 @@
 TODO list:
-- Testing the join operation
+- More testing on the join operation
 - Find a nice window for selecting options
 - Do more data validation (client and/or server side) to avoid weird user-uploads
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
 - /!\ add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
 - add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
-- rollback to the original header
-- better select the mouse behavior on orthgraphic projection (rotate or move but not both together)
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
-- avoid sending data (zip & geojson) as dataurl as it might be a bottleneck ?
+- implement some kinds of unit tests / tests suite (using python bindings for selenium?)

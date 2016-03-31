@@ -13,15 +13,16 @@ var qs = function(str){
     return document.querySelector(str);
 };
 
-function createModalBox(modalid, html){
+function createModalBox(layer_name){
      var nwBox = document.createElement('div');
      var bg = document.createElement('div');
-     var modalid_split = modalid.split(' - ');
+     var layer_name_split = layer_name.split(' - ');
 
-     if(modalid_split.length == 2) modalid = modalid_split[1];
-     else if(modalid_split.length > 2) console.log('Oups..');
+     if(layer_name_split.length == 2) layer_name = layer_name_split[1];
+     else if(layer_name_split.length > 2) console.log('Oups..');
 
-     var g_lyr_name = "#"+trim(modalid);
+     var type = current_layers[layer_name].type;
+     var g_lyr_name = "#"+trim(layer_name);
 
      var opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
      var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
@@ -30,31 +31,41 @@ function createModalBox(modalid, html){
      if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
      var border_opacity = d3.select(g_lyr_name).selectAll("path").style('stroke-opacity');
      var stroke_width = d3.select(g_lyr_name).selectAll("path").style('stroke-width');
-     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0,stroke_width.length-2);
+     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
      bg.className = 'overlay';
-     nwBox.id = modalid;
+     nwBox.id = layer_name + "_style_popup";
      nwBox.className = 'popup';
-     nwBox.innerHTML = ['<!DOCTYPE html>',
-                        '<p style="font:16px bold;text-align:center">Layer formating options</p><br>',
-                        'Layer name : <p style="font: 14px courrier bold; display:inline;">', modalid, '<br>',
-                        '<p>Fill color&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-                        '<input id="fill_color_lyr" type="color" value="', fill_prev, '"></button>',
-                        '<p>Border color&nbsp;&nbsp;<input id="border_color_lyr" type="color" value="', stroke_prev, '"></button>',
-                        '<p>Layer opacity <input id="opacity", step="0.01" max="1" min="0" type="range" value="', opacity, '"></input>',
-                        '<p>Border opacity <input id="border_opacity", step="0.01" max="1" min="0" type="range" value="',border_opacity, '"></input>',
-                        '<p>Border width (px)<input id="border_width" type="number" step="0.5" min="0.0" max="15" value="', stroke_width,'"></input>',
-                        '<br><br><br><p style="text-align:center;font: bold">Satisfied by new style ?</p>',
-                        '<p><button id="yes">Close and apply</button>',
-                        '&nbsp;<button id="no">Close and rollback</button></p>'].join('');
-
+     nwBox.innerHTML = "";
      (document.body || document.documentElement).appendChild(nwBox);
      (document.body || document.documentElement).appendChild(bg);
-     d3.select('#opacity').on('change', function(){d3.select(g_lyr_name).selectAll("path").style('fill-opacity', this.value)});
-     d3.select('#border_opacity').on('change', function(){d3.select(g_lyr_name).selectAll("path").style('stroke-opacity', this.value)});
-     d3.select('#fill_color_lyr').on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
-     d3.select('#border_color_lyr').on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke", this.value)});
-     d3.select('#border_width').on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke-width", this.value+"px")});
+     popup = d3.select(["#", layer_name, "_style_popup"].join(''));
+     popup.append('h4').style({"font-size": "16px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
+     popup.append("p").html(['<br>Layer name : <b>', layer_name,'</b><br>',
+                             'Geometry type : <b><i>', type, '</b></i>'].join(''));
+
+     if(type !== 'Line'){
+         popup.append('p').html('Fill color<br>')
+                          .insert('input').attr('type', 'color').attr("value", fill_prev)
+                          .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
+         popup.append('p').html('Fill opacity<br>')
+                          .insert('input').attr('type', 'range')
+                          .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
+                          .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('fill-opacity', this.value)});
+     }
+
+     popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
+                      .insert('input').attr('type', 'color').attr("value", stroke_prev)
+                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke", this.value)});
+     popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
+                      .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
+                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('stroke-opacity', this.value)});
+     popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
+                      .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke-width", this.value+"px")});
+
+     popup.append('button').attr('id', 'yes').text('Apply')
+     popup.append('button').attr('id', 'no').text('Close without saving');
 
      qs('#yes').onclick=function(){
          sendPreferences();
@@ -73,9 +84,9 @@ function createModalBox(modalid, html){
 }
 
 function deactivate(forpopup){
-    for(var i=0; i<forpopup.length; i++){
-     var elem = forpopup[i];
-     elem.remove();
+    for(var i=0; i < forpopup.length; i++){
+        var elem = forpopup[i];
+        elem.remove();
     }
 }
          
@@ -91,10 +102,9 @@ function viewport(){
 }
 
 function center(el){
-  var dims = viewport()
-     ,l = Math.floor((0.75*dims.width))
-     ,h = Math.floor((0.20*dims.height));
-  el.style.left= l+'px';
+  var dims = viewport(),
+      h = Math.floor((0.20*dims.height));
+  el.style.right= '0px';
   el.style.top =  h+'px';
   return true;
 }

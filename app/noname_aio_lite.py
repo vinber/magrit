@@ -5,14 +5,9 @@
 import os
 import sys
 import ujson as json
-import time
-import pandas as pd
-import fiona
 
 from zipfile import ZipFile
 from random import choice
-from datetime import datetime
-from base64 import b64decode
 #from hashlib import sha512
 import asyncio
 from subprocess import Popen, PIPE
@@ -20,22 +15,13 @@ from subprocess import Popen, PIPE
 # Web related stuff :
 import jinja2
 import aiohttp_jinja2
-from aiohttp import web, web_reqrep
+from aiohttp import web
 from aiohttp_session import get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-# Used for the page generation with jinja2 and wtforms:
-from helpers.misc import guess_separator
+from helpers.misc import savefile
 
 pp = '(aiohttp_app) '
-
-def get_key(var):
-    """Find and return an available key (ie. which is not in 'var')"""
-    while True:
-        k = (b''.join([bytes([choice(list(range(48, 58))+list(range(97, 123)))])
-                    for i in range(25)])).decode()
-        if k not in var:
-            return k
 
 
 def get_name(length=25):
@@ -53,30 +39,6 @@ def get_name(length=25):
 @aiohttp_jinja2.template('index.html')
 @asyncio.coroutine
 def handler(request): return {}
-
-
-@aiohttp_jinja2.template('index2.html')
-@asyncio.coroutine
-def handler2(request):
-    session = yield from get_session(request)
-    try:
-        date = 'Last visit : {}'.format(
-            datetime.fromtimestamp(
-                session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
-    except Exception as err:
-        date = str(err)
-    session['last_visit'] = time.time()
-    return {'date': date}
-
-
-def savefile(path, raw_data):
-    # Todo : insert some data validation tests
-    if '.shp' in path or '.dbf' in path or '.shx' in path:
-        with open(path, 'wb') as f:
-            f.write(raw_data)
-    else:
-        with open(path, 'w') as f:
-            f.write(raw_data.decode())
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
@@ -99,174 +61,20 @@ def geojson_to_topojson(filepath):
     stdout, _ = process.communicate()
     return stdout.decode()
 
-class UploadFile(web.View):
-    """
-    It accepts single files (geojson, topojson, csv, tsv, txt,
-            or the 3 mandatory files for a Shapefile layer : .shp, .shx, .dbf).
-    Mixing types and multi-upload (except the necessary one for Shapefile) are
-    not allowed.
-    """
-    @aiohttp_jinja2.template('upload_srv.html')
-    @asyncio.coroutine
-    def get(self):
-        return {'content_d': '', 'raw_result': ''}
-
-    @aiohttp_jinja2.template('upload_srv.html')
-    @asyncio.coroutine
-    def post(self):
-        filenames = []
-        posted_data = yield from self.request.post()
-        files_to_upload = posted_data.getall('file[]')
-        if isinstance(files_to_upload[0], web_reqrep.FileField):
-            alert = self.validate_upload_set(files_to_upload)
-            if alert:
-                return {'content_d': alert, 'raw_result': ''}
-            for file in files_to_upload:
-                if file and file[0]:
-                    filename = file[1]
-                    if not isinstance(file[2], str):
-                        savefile(os.path.join(app_glob['app_real_path'],
-                                              app_glob['UPLOAD_FOLDER'],
-                                              filename), file[2].read())
-                    else:
-                        savefile(os.path.join(app_glob['app_real_path'],
-                                              app_glob['UPLOAD_FOLDER'],
-                                              filename), file[2].encode())
-                    filenames.append(filename)
-                else:
-                    continue
-        elif files_to_upload[0] == '0':  # Data are coming from the drag and drop zone
-            raw_buff = b64decode(files_to_upload[2])
-            try:
-                loaded = json.loads(raw_buff)
-                if 'type' in loaded and loaded['type'] == 'Topology':
-                    ext = '.topojson'
-                elif 'features' in loaded and 'type' in loaded:
-                    ext = '.geojson'
-                filename = 'tmp_{}{}'.format(get_name(), ext)
-            finally:
-                savefile(os.path.join(app_glob['app_real_path'],
-                                      app_glob['UPLOAD_FOLDER'],
-                                      filename), raw_buff)
-                filenames.append(filename)
-        if len(filenames) > 0:
-            try:
-                content, raw_result = self.uploaded_file_summary(filename)
-            except Exception as err:
-                content = 'Something wrong appened :\n{}'.format(err)
-                raw_result = ''
-            return {'content_d': content, 'raw_result': raw_result}
-        else:
-            return {'content_d': 'Unexpected error', 'raw_result': ''}
-
-    @staticmethod
-    def uploaded_file_summary(filename):
-        infos, file = '', None
-        raw_result = ''
-        trans_rule = str.maketrans('', '', '[()]')
-        try:
-            basename, ext = filename.split('.')
-        except ValueError:
-            basename = filename
-            ext = 'geojson'
-        if ext in ('shp', 'dbf', 'shx'):
-            filepath = os.path.join(
-                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], basename+'.shp')
-            file = fiona.open(filepath)
-            format_file = 'ESRI Shapefile'
-            layers = basename
-            nb_features = len(file)
-            if 'init' in file.crs:
-                crs = file.crs['init']
-            else:
-                crs = file.crs
-            type_geom = file.schema['geometry']
-            infos = repr(file.schema)
-            raw_result = ogr_to_geojson(filepath)
-        elif ext in 'topojson':
-            filepath = os.path.join(
-                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
-            file = open(filepath)
-            datajs = json.loads(file.read())
-            format_file = datajs['type']
-            layers = [i for i in datajs['objects'].keys()]
-            nb_features = \
-                [len(datajs['objects'][lyr]['geometries']) for lyr in layers]
-            type_geom = set.union(*[set(
-                rec['type'] for rec in datajs['objects'][lyr]['geometries'])
-                                    for lyr in layers])
-            crs = "EPSG:4326"
-#            raw_result = topo_to_geo(datajs)
-            raw_result = json.dumps(datajs)
-        elif ext in ('json', 'geojson'):
-            filepath = \
-                os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
-            file = fiona.open(filepath)
-            format_file = 'GeoJSON'
-            layers = basename
-            nb_features = len(file)
-            if 'init' in file.crs:
-                crs = file.crs['init']
-            else:
-                crs = file.crs
-            type_geom = file.schema['geometry']
-            with open(filepath, 'r') as f:
-                raw_result = f.read()
-        elif ext in ('csv', 'txt', 'tsv'):
-            layers, format_file = basename, ext
-            filepath = \
-                os.path.join(app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], filename)
-            sep = guess_separator(filepath)
-            file = pd.read_csv(filepath, sep=sep)
-            infos = str(file.info())
-            crs, type_geom, nb_features = \
-                'NA', 'NA', "{} rows x {} columns".format(*file.shape)
-        if not isinstance(file, pd.DataFrame):
-            try:
-                file.close()
-            except Exception as err: print(err)
-        if file is not None:  # Because "The truth value of a DataFrame is ambiguous"
-            infos = infos + """<br><b>Format:</b><br>{}<br><b>Layers:</b><br>{}
-                               <br><b>Nb features:</b><br>{}
-                               <br><b>Geometrie Type(s):</b><br>{}
-                               <br><b>Coordinate system:</b><br>{}
-                """.format(format_file, layers, nb_features, type_geom, crs)
-        else:
-            infos = "Something unexpected append"
-        return ''.join(['<div>',
-                        infos.translate(trans_rule).replace('\n', '<br>'),
-                        '</div>']), raw_result
-
-    @staticmethod
-    def validate_upload_set(files_to_upload):
-        alert = ""
-        if len(files_to_upload) > 1 \
-                and not any(['shp' in file[1] or 'dbf' in file[1]
-                             for file in files_to_upload]):
-            alert = """<script>
-                alert("Layers have to be uploaded one by one")
-                </script>"""
-        elif len(files_to_upload) < 3 \
-                and any(['shp' in file[1] or 'dbf' in file[1]
-                         for file in files_to_upload]):
-            alert = ("<script>"
-                     "alert('Associated files (.dbf, .shx and .prj) have "
-                     "to be provided with the Shapefile')</script>")
-        elif any(['shp' in file[1] or 'dbf' in file[1]
-                  for file in files_to_upload]) and \
-                any(['json' in file[1] or 'csv' in file[1]
-                     for file in files_to_upload]):
-            alert = """<script>
-                alert("Layers have to be uploaded one by one")
-                </script>"""
-        return alert
-
 @asyncio.coroutine
 def user_pref(request):
     posted_data = yield from request.post()
     # session = yield from get_session(request)
     # session['map_pref'] = posted_data
     return web.Response(text=json.dumps({'Info': "I don't do anything with it rigth now!"}))
+
+@asyncio.coroutine
+def cache_input_topojson(request):
+    posted_data = yield from request.post()
+    # session = yield from get_session(request)
+    # session['map_pref'] = posted_data
+    return web.Response(text=json.dumps({'Info': "I don't do anything with it rigth now!"}))
+
 
 @asyncio.coroutine
 def convert(request):
@@ -351,15 +159,21 @@ def convert(request):
     return web.Response(text=result)
 
 @asyncio.coroutine
+@aiohttp_jinja2.template('modules/test_interface.html')
+def handle_app_functionality(request):
+    return {"func" : request.match_info['function']}
+
+@asyncio.coroutine
 def init(loop, port=9999):
     app = web.Application(middlewares=[session_middleware(
         EncryptedCookieStorage(b'aWM\\PcrlZwfrMW^varyDtKIeMkNnkgQv'))])
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
+    app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('POST', '/save_user_pref', user_pref)
-    app.router.add_route('*', '/upload', UploadFile)
+    app.router.add_route('POST', '/cache_topojson', cache_input_topojson)
     app.router.add_static('/modules/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')

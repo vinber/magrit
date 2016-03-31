@@ -6,7 +6,7 @@ function get_menu_option(func){
             "fields":[["select","Variable name", "self.name"],
                       ["input","Span (meters)"],
                       ["input","Beta"],
-                      ["list","Function type", ["Pareto", "Exponential"]],
+                      ["list","Function type",["Pareto", "Exponential"]],
                       ["input","Resolution (meters)"],
                       ["input","Number of class (opt.)"]]
             },
@@ -22,17 +22,8 @@ function get_menu_option(func){
     return menu_option[func] || {}
 }
 
-
-
 function popup_function(){
     var layer_name = Object.getOwnPropertyNames(user_data);
-
-/*  var dia = document.createElement("div")
-    dia.id = "dialog";
-    dia.innerHTML = "fOO";
-    document.body.appendChild(dia);
-    $( "#dialog" ).dialog();
-*/
 
     if(!(layer_name.length === 1)){
         alert("You shouldn't be able to arrive here")
@@ -42,7 +33,7 @@ function popup_function(){
     layer_name = layer_name[0];
 
     var popid = layer_name,
-        modal = createFuncOptionsBox(popid);
+        modal = createFuncOptionsBox_Stewart(popid);
 
     modal.className += ' active';
     modal.style.position = 'fixed'
@@ -98,6 +89,63 @@ function createFuncOptionsBox(modalid){
 
      qs('#yes').onclick=function(){
          deactivate([nwBox, bg]);
+     }
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+}
+
+function createFuncOptionsBox_Stewart(layer){
+     var nwBox = document.createElement('div'),
+         bg = document.createElement('div'),
+         g_lyr_name = "#"+trim(layer),
+         fields = Object.getOwnPropertyNames(user_data[layer][0]);
+
+     bg.className = 'overlay';
+     nwBox.id = [layer, '_popup'].join('');
+     nwBox.className = 'popup';
+
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", layer, '_popup'].join(''));
+    dialog_content.append('h3').html('Stewart potentials');
+    var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+    var span = dialog_content.append('p').html('Span :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1).html('Span');
+    var beta = dialog_content.append('p').html('Beta :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 10).attr("step", 0.1).html('Beta');
+    var resolution = dialog_content.append('p').html('Resolution :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1).html('Resolution');
+    var func_selec = dialog_content.append('p').html('Function type :').insert('select').attr('class', 'params');
+    ['Exponential', 'Pareto'].forEach(function(fun_name){func_selec.append("option").text(fun_name).attr("value", fun_name);});
+    dialog_content.append('button').attr('id', 'yes').text('Compute')
+    dialog_content.append('button').attr('id', 'no').text('Close');
+
+     qs('#yes').onclick=function(){
+        console.log([field_selec.node().value, span.node().value, beta.node().value, func_selec.node().value, resolution.node().value]);
+        var formToSend = new FormData();
+        var field_values = new Object();
+        field_values[field_selec] = [];
+        for(var i=0, lng = user_data[layer].length; i<lng; i++){ field_values[field_selec][i].push(user_data[layer][i][field_selec]); }
+        formToSend.append("json", JSON.stringify({
+            "topojson": targeted_topojson,
+            "var_name": field_selec.node().value,
+            "span": span.node().value,
+            "beta": beta.node().value,
+            "type_fun": func_selec.node().value,
+            "resolution": resolution.node().value}))
+        $.ajax({
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: '/R_compute/stewart',
+            data: formToSend,
+            type: 'POST',
+            error: function(error) { console.log(error); },
+            success: function(data){ console.log(data) ; }
+        });
+
+        deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
          deactivate([nwBox, bg]);

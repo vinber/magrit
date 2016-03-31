@@ -69,9 +69,7 @@ function valid_join_on(layer_name, field1, field2){
 
     if(join_values1===join_values2){
         for(var i=0, len=join_values1.length; i<len; i++) map_table.push(i);
-    }
-
-    else {
+    } else {
         if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(String(join_values1[i]));
@@ -100,6 +98,7 @@ function valid_join_on(layer_name, field1, field2){
             val = field_join_map[i];
             for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                 f_name = fields_name_to_add[j];
+                targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
                 user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
                 }
         }
@@ -116,6 +115,7 @@ function valid_join_on(layer_name, field1, field2){
                 val = field_join_map[i];
                 for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                     f_name = fields_name_to_add[j];
+                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = val ? joined_dataset[0][val][f_name] : null;
                     user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
                     }
                 }
