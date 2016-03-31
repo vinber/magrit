@@ -23,9 +23,8 @@ stewart_to_json <- function(knownpts_json, varname, typefct = "exponential",
                                             var = varname,
                                             typefct = typefct,
                                             span=span, beta=beta,
-                                            resolution = resolution,
-                                            mask = mask_layer,
-                                            nclass = nclass)
+                                            resolution=resolution,
+                                            mask = mask_layer)
 
   # Always return the result in latitude-longitude for the moment :
   result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',

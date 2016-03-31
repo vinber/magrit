@@ -3,6 +3,7 @@ function get_menu_option(func){
         "stewart":{
             "title":"Stewart potentials",
             "desc":"Compute stewart potentials...",
+            "popup_factory": "createFuncOptionsBox_Stewart",
             "fields":[["select","Variable name", "self.name"],
                       ["input","Span (meters)"],
                       ["input","Beta"],
@@ -16,10 +17,11 @@ function get_menu_option(func){
             },
         "prop_symbol":{
             "title":"Proportional symbols",
+            "popup_factory": "createFuncOptionsBox_PropSymbol",
             "desc":"....."
             }
     };
-    return menu_option[func] || {}
+    return menu_option[func.toLowerCase()] || {}
 }
 
 function popup_function(){
@@ -32,8 +34,8 @@ function popup_function(){
 
     layer_name = layer_name[0];
 
-    var popid = layer_name,
-        modal = createFuncOptionsBox_Stewart(popid);
+    var modal = eval([
+        get_menu_option(func).popup_factory, "(\"", layer_name, "\")"].join(''));
 
     modal.className += ' active';
     modal.style.position = 'fixed'
@@ -41,60 +43,6 @@ function popup_function(){
     return center(modal);
 };
 
-function createFuncOptionsBox(modalid){
-     var nwBox = document.createElement('div'),
-         bg = document.createElement('div'),
-         g_lyr_name = "#"+trim(modalid);
-
-     var geom_layer_fields = Object.getOwnPropertyNames(user_data[modalid][0]),
-         ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
-
-     bg.className = 'overlay';
-     nwBox.id = modalid;
-     nwBox.className = 'popup';
-     var in_html = ['<!DOCTYPE html>',
-                        '<p style="font:16px bold;text-align:center">', menu_option.title, '</p><br>',
-                        '<p><b>', menu_option.desc, '</b></p>'];
-
-/*
-    if(menu_option.fields){
-        for(var i=0, len = menu_option.fields.length; i < len; i++){
-            var curr_field = menu_option.fields[i];
-            var elem = dv2.append('p').html(curr_field[1]);
-        
-            if(curr_field[0] === "list"){
-                elem.html(elem.html() + "<br>");
-                for(var j=0, lengt = curr_field[2].length; j < lengt; j++){
-                    elem.append("input")
-                        .attr("id","form_"+curr_field[1])
-                        .attr("value", curr_field[2][j])
-                        .attr("name", curr_field[2][j])
-                        .attr("type", "radio").style("align", "center");
-                    elem.append("p").html(curr_field[2][j]).style("display", "inline");
-                    }
-            } else  {
-                var p = elem.append(curr_field[0]).attr("id","form_"+curr_field[1]).style("align", "center").on("change", function(){alert("Error : not implemented")})
-            }
-        }
-    }
-*/
-
-    in_html = in_html.concat(['<p><button id="yes">Compute</button>',
-                              '&nbsp;<button id="no">Cancel</button></p>'])
-    console.log(in_html);
-    nwBox.innerHTML = Array.prototype.join.call(in_html, '');
-
-     (document.body || document.documentElement).appendChild(nwBox);
-     (document.body || document.documentElement).appendChild(bg);
-
-     qs('#yes').onclick=function(){
-         deactivate([nwBox, bg]);
-     }
-     qs('#no').onclick=function(){
-         deactivate([nwBox, bg]);
-     }
-     return nwBox;
-}
 
 function createFuncOptionsBox_Stewart(layer){
      var nwBox = document.createElement('div'),
@@ -113,20 +61,16 @@ function createFuncOptionsBox_Stewart(layer){
     dialog_content.append('h3').html('Stewart potentials');
     var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
-    var span = dialog_content.append('p').html('Span :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1).html('Span');
-    var beta = dialog_content.append('p').html('Beta :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 10).attr("step", 0.1).html('Beta');
-    var resolution = dialog_content.append('p').html('Resolution :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1).html('Resolution');
+    var span = dialog_content.append('p').html('Span :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1);
+    var beta = dialog_content.append('p').html('Beta :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 10).attr("step", 0.1);
+    var resolution = dialog_content.append('p').html('Resolution :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 0).attr("min", 0).attr("max", 100000).attr("step", 0.1);
     var func_selec = dialog_content.append('p').html('Function type :').insert('select').attr('class', 'params');
     ['Exponential', 'Pareto'].forEach(function(fun_name){func_selec.append("option").text(fun_name).attr("value", fun_name);});
     dialog_content.append('button').attr('id', 'yes').text('Compute')
     dialog_content.append('button').attr('id', 'no').text('Close');
-
      qs('#yes').onclick=function(){
         console.log([field_selec.node().value, span.node().value, beta.node().value, func_selec.node().value, resolution.node().value]);
         var formToSend = new FormData();
-        var field_values = new Object();
-        field_values[field_selec] = [];
-        for(var i=0, lng = user_data[layer].length; i<lng; i++){ field_values[field_selec][i].push(user_data[layer][i][field_selec]); }
         formToSend.append("json", JSON.stringify({
             "topojson": targeted_topojson,
             "var_name": field_selec.node().value,
@@ -142,9 +86,53 @@ function createFuncOptionsBox_Stewart(layer){
             data: formToSend,
             type: 'POST',
             error: function(error) { console.log(error); },
-            success: function(data){ console.log(data) ; }
+            success: function(data){ add_layer_fun(data) ; }
         });
 
+        deactivate([nwBox, bg]);
+     }
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+}
+
+
+function createFuncOptionsBox_PropSymbol(layer){
+     var nwBox = document.createElement('div'),
+         bg = document.createElement('div'),
+         g_lyr_name = "#"+trim(layer),
+         fields = Object.getOwnPropertyNames(user_data[layer][0]),
+         ref_size_val = undefined;
+
+     bg.className = 'overlay';
+     nwBox.id = [layer, '_popup'].join('');
+     nwBox.className = 'popup';
+
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", layer, '_popup'].join(''));
+    dialog_content.append('h3').html('Proportional symbols');
+    var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+    var max_size = dialog_content.append('p').html('Max. size (px)')
+                                 .insert('input').attr('type', 'range')
+                                 .attr('class', 'params').attr('value', 0)
+                                 .attr("min", 0).attr("max", 1000).attr("step", 0.1);
+
+    var ref_size = dialog_content.append('p').html('Reference (fixed) size (px) :')
+                                 .insert('input').attr('type', 'number')
+                                 .attr('class', 'params').attr('value', ref_size_val)
+                                 .attr("min", 0).attr("max", 1500).attr("step", 0.1);
+
+    var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
+    ['Circle', 'Square'].forEach(function(symb_name){symb_selec.append("option").text(symb_name).attr("value", symb_name);});
+
+    dialog_content.append('button').attr('id', 'yes').text('Compute')
+    dialog_content.append('button').attr('id', 'no').text('Close');
+
+     qs('#yes').onclick=function(){
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){

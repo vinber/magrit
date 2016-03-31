@@ -38,7 +38,6 @@ body {
     font-family:Georgia,sans-serif;
     color:#41403f;
     font-size: 12px;
-    height: calc(100% - 40px);
 }
 
 #map {
@@ -76,7 +75,6 @@ a.logo {
     top : 0px;
     height:30px;
     padding:0px;
-    margin:0 0 0 10;
     vertical-align:middle;
     color : #ffffff;
     line-height:30px;	
@@ -107,7 +105,6 @@ a.logo {
 .item-menu {
    	height:30px;
 	padding:0px;
-	margin:0 20 0 0;
 	vertical-align:middle;
 	float:right;
 }
@@ -158,7 +155,7 @@ label
 }
 
 #section1 { 
-    height: 180px;
+    height: 225px;
     margin: 2px;
     font-size: 12px;
     color: black
@@ -171,7 +168,7 @@ label
     z-index: 0;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.33);
 }
 
 .zoom_button,.info_button,.hand_button {
@@ -266,4 +263,13 @@ label
     padding-right: 20px;
     padding-left: 20px;
     color:black;
+}
+
+.ui-dialog-titlebar {
+    padding: .1em .4em;
+    background: rgb(153, 168, 196) none repeat scroll 0% 0%;
+}
+
+#dialog,.ui-dialog-title,.ui-button-text {
+    font-size:0.8em;
 }

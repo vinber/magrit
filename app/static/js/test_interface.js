@@ -206,7 +206,7 @@ function handle_dataset(files){
       d3.select('#data_ext').html("External data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
       valid_join_check_display(false);
       if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-      d3.select("#section1").style("height", "200px");
+      d3.select("#section1").style("height", "265px");
     };
     reader.readAsText(f);
   }
@@ -250,6 +250,14 @@ function add_layer_fun(text){
     var type = "", data_to_load = undefined,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
+    layers_names.forEach(function(l_name, j){
+        if(!parsedJSON.objects[l_name].geometries[0].id){
+            for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
+                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){ 
+                tgt[i].id = i;
+                }
+        }
+    });
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
@@ -264,7 +272,7 @@ function add_layer_fun(text){
         } else { data_to_load = false; }
 
         current_layers[lyr_name] = {"type": type,
-                                 "n_features": parsedJSON.objects[lyr_name].geometries.length}
+                                    "n_features": parsedJSON.objects[lyr_name].geometries.length}
 
         map.append("g").attr("id", lyr_name)
               .attr("class", function(d) {
@@ -274,10 +282,9 @@ function add_layer_fun(text){
               .enter().append("path")
               .attr("d", path)
               .attr("id", function(d) {
-                if(data_to_load){
-                    user_data[layers_names[i]].push(d.properties);
-                    }
-                return "item " + d.id;})
+                    if(data_to_load){ user_data[layers_names[i]].push(d.properties); }
+                    return "item " + d.id;
+                })
               .style("stroke-linecap", "round")
               .style("stroke", "red")
               .style("stroke-opacity", .4)

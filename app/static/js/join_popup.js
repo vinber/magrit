@@ -4,22 +4,22 @@ function handle_join(){
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
         alert("Unable to join geometries and dataset")
         return;
+    } else if(field_join_map.length != 0){
+        make_confirm_dialog("A successful join is already selected. Forget and select a new one ?", "Ok", "Cancel", "").then(function(confirmed){
+            if(confirmed){
+                field_join_map = [];
+                make_box(layer_name[0]);
+                }
+            });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        var rep = confirm("The geometrie layer and the joined dataset doesn't have the same number of features. Continue anyway ?");
-        if(!rep){ return; }
+        make_confirm_dialog("The geometrie layer and the joined dataset doesn't have the same number of features. Continue anyway ?", "Ok", "Cancel", "").then(function(confirmed){
+            if(confirmed){ make_box(layer_name[0]); }
+        });
     }
+}
 
-    if(field_join_map.length!=0){
-        var rep = confirm("A successful join is already selected. Forget and select a new one ?");
-        if(!rep){ return; }
-        else { field_join_map = []; }
-    }
-
-    layer_name = layer_name[0];
-
-    var popid = layer_name,
-        modal = createJoinBox(popid);
-
+function make_box(name){
+    var modal = createJoinBox(name);
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;

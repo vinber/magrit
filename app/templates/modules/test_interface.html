@@ -14,15 +14,16 @@
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
     <script window.jQuery || document.write('<script src="/static/js/jquery-2.2.1.min.js">\x3C/script>')</script>
     <script  src="/static/js/jquery-ui.min.js"></script>
-
+    <script  src="/static/js/q.js"></script>
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/functions.js"></script>
     <script  src="/static/js/join_popup.js"></script>
+    <link rel="stylesheet" href="/static/css/jquery-ui.mod.css">
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <style>
         #sortable { list-style-type: none; margin: auto; padding: 0; width: 95%; font-weight: bold; color: white; border-radius: 10%}
-        #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #adadad; border-radius: 10%;}
+        #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #adadad; border-radius: 10%; color: white}
         #sortable li.sortable_target { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #ede425; color: black; border-radius: 10%;}
         .ui-state-highlight {line-height: 12px; background: red}
     </style>
@@ -56,7 +57,7 @@ var graticule = d3.geo.graticule(),
     path = d3.geo.path().projection(proj),
     t = proj.translate(),
     s = proj.scale(),
-    zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 28]).on("zoom", redraw);
+    zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 45]).on("zoom", redraw);
 
 var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
@@ -202,7 +203,7 @@ section5.append("input")
         .attr("max", 360).attr("step", 0.5)
         .on("input", function(){handle_proj_center_button([this.value, null, null])});
 
-b = '<button type="submit" class="" style="border-color:transparent;color:transparent"><img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/></button>'
+b = '<button type="submit" class="" style="border-color:transparent;color:transparent;background-color:transparent;"><img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/></button>'
 section4.append("p").html(b + "Save your preferences...").on("click", save_map_template)
 section4.append("p").html(b + "Load a preference JSON...").on("click", load_map_template)
 
@@ -262,7 +263,12 @@ const_options.append("button").attr("class", "const_buttons")
               .attr("title", "Export / Load your map preferences")
               .html('<img src="/static/img/High-contrast-system-run.svg" width="24" height="24" alt="export_load_preferences"/>')
               .style("margin-top", "none")
-              .on("click", function(){alert('Export / load your preferences!');});
+              .on("click", function(){
+                  var a = make_confirm_dialog("Not implemented").then(function(confirmed){
+                if(confirmed)return true;else return false});
+                    if(a){console.log(a);console.log('ok');}
+                    else{console.log(a);console.log('no')}
+            });
 
 const_options.append("button").attr("class", "const_buttons")
               .attr("title", "Help")
@@ -280,14 +286,46 @@ binds_layers_buttons();
 // Trigger a periodical call to a function sending current map preference to the server :
 setInterval(sendPreferences, 300000);
 
-//////////////////////////////////////////////////////////////////////////////
+
+function make_confirm_dialog(txt, text_ok, text_cancel, title){
+    text_ok = text_ok || "Ok";
+    text_cancel = text_cancel || "Cancel";
+    title = title || "Confirm ...";
+    var deferred = Q.defer();
+    d3.select("body").append("div").attr("id", "dialog").attr("title", title).text(txt);
+    var res = undefined;
+    $( "#dialog" ).dialog({
+        modal:true,
+        buttons:[{
+            text: text_ok,
+            click: function(){
+                    deferred.resolve(true);
+                    $(this).dialog("close");
+                    }
+                },
+           {
+            text: text_cancel,
+            click: function(){
+                $(this).dialog("close");
+                $(this).remove();}
+           }],
+        close: function(event, ui){
+                $(this).dialog("destroy").remove();
+                if(deferred.promise.isPending()){
+                    deferred.resolve(false);
+                }
+            }
+      });
+    return deferred.promise;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // JQuery menu and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
-//$(function() { $( "#accordion" ).accordion({ heightStyle: "#map" }); });
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
-
+ 
 $(function() {
   $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
@@ -313,11 +351,18 @@ $(function() {
 });
 
 $(document).ajaxStart(function() {
-        d3.select("#map").append("div")
+        var bg = document.createElement('div');
+        console.log(this);
+        bg.className = 'overlay';
+        var prog_bar = d3.select("#map").append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
-                         .attr("id", "progressbar").node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/2) + 'px"/><br>Loading layer ...';
+                         .attr("id", "progressbar")
+        prog_bar.node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>Loading layer ...';
+        prog_bar.node().style.zIndex = 2;
+        (document.body || document.documentElement).appendChild(bg);
     }).ajaxSuccess(function() {
         d3.select("#progressbar").node().remove();
+        d3.select(".overlay").node().remove();
     });
 
 ////////////////
@@ -385,24 +430,26 @@ function log_coordinates(t){
 };
 
 function remove_layer(){
-     var name;
-     var name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
-     if(name_split.length == 2) name = name_split[1];
-     else if(name_split.length > 2) console.log('Oups..');
-     else name = name_split[0];
+    var name;
+    var name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
+    if(name_split.length == 2) name = name_split[1];
+    else if(name_split.length > 2) console.log('Oups..');
+    else name = name_split[0];
 
-     var confirm_remove = confirm("Remove layer '" + name + "' ?");
-     if(confirm_remove){
-         var g_lyr_name = "#"+trim(name);
-         d3.select(g_lyr_name).node().remove();
-         d3.select("#sortable").select('.'+name).node().remove();
-         // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
-         if(current_layers[name].targeted){
-             d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
-             d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
-         }
-         delete current_layers[name];
+    var txt_dialog = "Remove layer '" + name + "' ?";
+    make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
+        if(confirmed){
+             var g_lyr_name = "#"+trim(name);
+             d3.select(g_lyr_name).node().remove();
+             d3.select("#sortable").select('.'+name).node().remove();
+             // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
+             if(current_layers[name].targeted){
+                 d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
+                 d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
+             }
+             delete current_layers[name];
         }
+    });
 }
 
 function load_map_template(){
@@ -735,7 +782,7 @@ function canvas_mod_size(param){
             .call(zoom);
         d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
         // Change also the position of displayed coordinates when height of map is changed :
-        info.style({"font-size": "14px", "margin-top": (h+10)+"px",
+        info.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
                       "margin-left":"5px", "color":"black"})
     }
 }

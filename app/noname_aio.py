@@ -315,18 +315,17 @@ def R_compute(request):
     print(posted_data)
     
     filenames = {'point_layer': ''.join(['/tmp/', get_name(), '.geojson']),
-                 'mask_layer': None }
+                 'mask_layer': None , 'result': None}
     savefile(filenames['point_layer'], json.dumps(topo_to_geo(posted_data['topojson'])).encode())
     print(function)
     commande = (b'stewart_to_json(knownpts_json, varname, typefct, span, '
-                b'beta, nclass, resolution, mask_json)')
+                b'beta, resolution, mask_json)')
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
         'varname': posted_data['var_name'],
         'typefct': posted_data['type_fun'].lower(),
         'span': float(posted_data['span']),
         'beta': float(posted_data['beta']),
-        'nclass': float(posted_data['nclass']) if 'nclass' in posted_data else 8,
         'resolution': float(posted_data['resolution']),
         'mask_json': filenames['mask_layer']
         }).encode()
@@ -338,8 +337,13 @@ def R_compute(request):
         url_client, commande, data, app_glob['async_ctx'], id_)
     print(content)
     content = json.loads(content.decode())
-    content = json.dumps({"foo": "bar"})
-    return web.Response(text=content)
+    filenames['result'] = ''.join(["/tmp/", get_name(), ".geojson"])
+    print(content['breaks'], filenames['result'])
+    savefile(filenames['result'], content['geojson'])
+#    content = ogr_to_geojson(filenames['result'], to_latlong=True)
+    res = geojson_to_topojson(filenames['result'])
+    print(res)
+    return web.Response(text=res)
 
 @asyncio.coroutine
 def init(loop, port=9999):
