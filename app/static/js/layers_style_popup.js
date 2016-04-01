@@ -9,10 +9,6 @@ function handle_click_layer(layer_name){
    return center(modal);
 };
 
-var qs = function(str){
-    return document.querySelector(str);
-};
-
 function createModalBox(layer_name){
      var nwBox = document.createElement('div');
      var bg = document.createElement('div');

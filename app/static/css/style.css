@@ -273,3 +273,26 @@ label
 #dialog,.ui-dialog-title,.ui-button-text {
     font-size:0.8em;
 }
+
+#sortable li {
+    margin: 5px 0 5px 0;
+    padding: 5px;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: bold;
+    background: #adadad;
+    border-radius: 10%;
+    color: white
+}
+
+#sortable li.sortable_target {
+    margin: 5px 0 5px 0;
+    border: 2px solid;
+    padding: 5px;
+    font-size: 12px;
+    line-height: 12px;
+    background: #ede425;
+    color: black;
+    border-radius: 10%;
+}
+

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Try to clean the previous verion...
-
 @author: mz
 """
 import os
@@ -347,9 +345,6 @@ def R_compute(request):
 
 @asyncio.coroutine
 def init(loop, port=9999):
-    # Todo : 
-    # - Use server-side cookie storage with redis
-    # - Store client map parameters (preference, zoom, legend, etc.) on demand
     redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
     redis_conn = yield from aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)

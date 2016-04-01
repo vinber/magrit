@@ -6,25 +6,25 @@
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> MARS - {{ func }}</title>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.js"></script>
-    <script d3.version || document.write('<script src="/static/js/d3.js">\x3C/script>')</script>
+    <script d3.version || document.write('<script src="/static/js/lib/d3.js">\x3C/script>')</script>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
-    <script topojson.version || document.write('<script src="/static/js/topojson.v1.min.js">\x3C/script>')</script>
-    <script  src="/static/js/d3.geo.projection.js"></script>
-    <script  src="/static/js/polyhedron.js"></script>
+    <script topojson.version || document.write('<script src="/static/js/lib/topojson.v1.min.js">\x3C/script>')</script>
+    <script  src="/static/js/lib/d3.geo.projection.js"></script>
+    <script  src="/static/js/lib/polyhedron.js"></script>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
-    <script window.jQuery || document.write('<script src="/static/js/jquery-2.2.1.min.js">\x3C/script>')</script>
-    <script  src="/static/js/jquery-ui.min.js"></script>
-    <script  src="/static/js/q.js"></script>
+    <script window.jQuery || document.write('<script src="/static/js/lib/jquery-2.2.1.min.js">\x3C/script>')</script>
+    <script  src="/static/js/lib/jquery-ui.min.js"></script>
+    <script src="/static/js/lib/geostats.min.js"></script>
+    <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/discretization_panel.js"></script>
     <script  src="/static/js/functions.js"></script>
     <script  src="/static/js/join_popup.js"></script>
-    <link rel="stylesheet" href="/static/css/jquery-ui.mod.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <style>
-        #sortable { list-style-type: none; margin: auto; padding: 0; width: 95%; font-weight: bold; color: white; border-radius: 10%}
-        #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #adadad; border-radius: 10%; color: white}
-        #sortable li.sortable_target { margin: 0 5px 5px 5px; padding: 5px; font-size: 12px; line-height: 12px; background: #ede425; color: black; border-radius: 10%;}
+        #sortable {list-style-type: none; margin: auto; padding: 0; width: 100%; color: white; border-radius: 10%}
         .ui-state-highlight {line-height: 12px; background: red}
     </style>
   </head>
@@ -148,7 +148,7 @@ dv1.append('p').html('<i>Add sample data...</i>').on('click', function(){add_sam
 
 dv1.append("p").attr("id", "input_geom").attr("class", "user_panel").style("margin-top", "5%").html("User geometry : <b><i>None</i></b>");
 dv1.append("p").attr("id", "datag").attr("class", "user_panel").html("Data provided with geometries : <b><i>No</i></b>");
-dv1.append("p").attr("id", "data_ext").attr("class", "user_panel").html("External data : <b><i>No</i></b>");
+dv1.append("p").attr("id", "data_ext").attr("class", "user_panel").html("Additional data : <b><i>No</i></b>");
 dv1.append("p").attr("id", "join_section").html("").style("margin-bottom", "5px");
 var join_button = undefined;
 
@@ -276,6 +276,11 @@ const_options.append("button").attr("class", "const_buttons")
               .style("margin-top", "none")
               .on("click", function(){alert('Emergency help!');});
 
+var info_features = d3.select("body").append("div")
+              .attr("id", "info_features")
+              .html("");
+info_features.active = false;
+
 // Trigger actions when buttons are clicked :
 
 d3.selectAll(".zoom_button").on("click", zoomClick);
@@ -286,38 +291,6 @@ binds_layers_buttons();
 // Trigger a periodical call to a function sending current map preference to the server :
 setInterval(sendPreferences, 300000);
 
-
-function make_confirm_dialog(txt, text_ok, text_cancel, title){
-    text_ok = text_ok || "Ok";
-    text_cancel = text_cancel || "Cancel";
-    title = title || "Confirm ...";
-    var deferred = Q.defer();
-    d3.select("body").append("div").attr("id", "dialog").attr("title", title).text(txt);
-    var res = undefined;
-    $( "#dialog" ).dialog({
-        modal:true,
-        buttons:[{
-            text: text_ok,
-            click: function(){
-                    deferred.resolve(true);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: text_cancel,
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-      });
-    return deferred.promise;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // JQuery menu and progress bar related functions :
@@ -368,10 +341,7 @@ $(document).ajaxStart(function() {
 ////////////////
 // To sort:
 ////////////////
-var info_features = d3.select("body").append("div")
-              .attr("id", "info_features")
-              .html("");
-info_features.active = false;
+
 function displayInfoOnMove(){
     var target_lyr = Object.getOwnPropertyNames(user_data);
     if(target_lyr == 0){
@@ -415,7 +385,43 @@ function reproj(){
 
 var trim = function(s){
     return s.replace(/^\s+|\s+$/,'');
-}
+};
+
+var qs = function(str){
+    return document.querySelector(str);
+};
+
+var make_confirm_dialog = function(txt, text_ok, text_cancel, title){
+    text_ok = text_ok || "Ok";
+    text_cancel = text_cancel || "Cancel";
+    title = title || "Confirm ...";
+    var deferred = Q.defer();
+    d3.select("body").append("div").attr("id", "dialog").attr("title", title).text(txt);
+    var res = undefined;
+    $( "#dialog" ).dialog({
+        modal:true,
+        buttons:[{
+            text: text_ok,
+            click: function(){
+                    deferred.resolve(true);
+                    $(this).dialog("close");
+                    }
+                },
+           {
+            text: text_cancel,
+            click: function(){
+                $(this).dialog("close");
+                $(this).remove();}
+           }],
+        close: function(event, ui){
+                $(this).dialog("destroy").remove();
+                if(deferred.promise.isPending()){
+                    deferred.resolve(false);
+                }
+            }
+      });
+    return deferred.promise;
+};
 
 function log_coordinates(t){
   var coords = proj.invert(d3.mouse(t)),
@@ -446,6 +452,7 @@ function remove_layer(){
              if(current_layers[name].targeted){
                  d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
                  d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
+                 delete user_data[name];
              }
              delete current_layers[name];
         }

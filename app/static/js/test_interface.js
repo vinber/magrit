@@ -185,7 +185,7 @@ function handle_TopoJSON_files(files) {
 
 function handle_dataset(files){
   if(joined_dataset.length !== 0){
-    var rep = confirm("An external dataset as already been provided. Replace by this one ?");
+    var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
     if(!rep){ return; }
   }
 
@@ -203,7 +203,7 @@ function handle_dataset(files){
             add_csv_geom(joined_dataset);
           }
       }
-      d3.select('#data_ext').html("External data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
+      d3.select('#data_ext').html("Additional data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
       valid_join_check_display(false);
       if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
       d3.select("#section1").style("height", "265px");

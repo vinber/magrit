@@ -18,8 +18,13 @@ function get_menu_option(func){
         "prop_symbol":{
             "title":"Proportional symbols",
             "popup_factory": "createFuncOptionsBox_PropSymbol",
-            "desc":"....."
-            }
+            "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data"
+            },
+        "choropleth":{
+            "title":"Choropleth map",
+            "popup_factory": "createFuncOptionsBox_Choropleth",
+            "desc":"Render a choropleth map on a numerical field of your data"
+            },
     };
     return menu_option[func.toLowerCase()] || {}
 }
@@ -103,7 +108,8 @@ function createFuncOptionsBox_PropSymbol(layer){
          bg = document.createElement('div'),
          g_lyr_name = "#"+trim(layer),
          fields = Object.getOwnPropertyNames(user_data[layer][0]),
-         ref_size_val = undefined;
+         ref_size_val = undefined,
+         selected_disc = undefined;
 
      bg.className = 'overlay';
      nwBox.id = [layer, '_popup'].join('');
@@ -116,15 +122,34 @@ function createFuncOptionsBox_PropSymbol(layer){
     dialog_content.append('h3').html('Proportional symbols');
     var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+
+    var discretization = dialog_content.append('div').attr("id", "discretization").style('border', "solid 2px black")
+                                                    .html('<b><i>Discretization</i></b>')
+                                                    .insert("p").html("Type")
+                                                    .insert("select").attr("class", "params")
+                                                    .on("change", function(){});
+    ["Jenks", "Q4", "Q6", "Equal interval", "Standard deviation", "Geometric progression"].forEach(function(name){
+        discretization.append("option").text(name).attr("value", name);
+    });
+    var nb_class = d3.select("#discretization").insert('p').html("Number of class")
+                                                .append("input")
+                                                .attr("type", "number")
+                                                .attr({min: 0, max: 20, value: 6, step:1})
+
+    d3.select("#discretization").insert('p').html("")
+                                .append("button").html("Display and arrange class")
+                                .on("click", function(){
+                                    display_discretization(layer, field_selec.node().value, nb_class.node().value, discretization.node().value)});
+
     var max_size = dialog_content.append('p').html('Max. size (px)')
                                  .insert('input').attr('type', 'range')
-                                 .attr('class', 'params').attr('value', 0)
-                                 .attr("min", 0).attr("max", 1000).attr("step", 0.1);
+                                 .attr('class', 'params')
+                                 .attr({min: 0, max: 1000, value: 0, step:0.1});
 
     var ref_size = dialog_content.append('p').html('Reference (fixed) size (px) :')
                                  .insert('input').attr('type', 'number')
                                  .attr('class', 'params').attr('value', ref_size_val)
-                                 .attr("min", 0).attr("max", 1500).attr("step", 0.1);
+                                 .attr({min: 0, max: 1500, value: ref_size_val, step:0.1});
 
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
     ['Circle', 'Square'].forEach(function(symb_name){symb_selec.append("option").text(symb_name).attr("value", symb_name);});
@@ -140,4 +165,3 @@ function createFuncOptionsBox_PropSymbol(layer){
      }
      return nwBox;
 }
-
