@@ -296,3 +296,11 @@ label
     border-radius: 10%;
 }
 
+#svg_ref_histo .axis label{
+    font-size: 10px;
+}
+
+.axis line, .axis path{
+    fill: none;
+    stroke: black;
+}

@@ -361,7 +361,7 @@ def init(loop, port=9999):
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('POST', '/cache_topojson', cache_input_topojson)
     app.router.add_route('POST', '/save_user_pref', user_pref)
-#    app.router.add_static('/modules/', path='templates/modules', name='modules')
+    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
 
