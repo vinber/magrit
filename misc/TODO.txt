@@ -1,6 +1,5 @@
 TODO list:
 - More testing on the join operation
-- Find a nice window for selecting options
 - Do more data validation (client and/or server side) to avoid weird user-uploads
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
