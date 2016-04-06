@@ -5,6 +5,7 @@
 	{"name": "Sinusoidal", "projection": "d3.geo.sinusoidal()"},
 	{"name": "Natural Earth", "projection": "d3.geo.naturalEarth()"},
 	{"name": "polyhedron butterfly", "projection": "d3.geo.polyhedron.butterfly()"},
+	{"name": "Armadillo", "projection": "d3.geo.armadillo()"},
 	{"name": "Baker", "projection": "d3.geo.baker().scale(100)"},
 	{"name": "Boggs", "projection": "d3.geo.boggs()"},
 	{"name": "Bonne", "projection": "d3.geo.bonne().scale(120)"},

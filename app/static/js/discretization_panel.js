@@ -1,7 +1,7 @@
 var display_discretization = function(layer_name, field_name, nb_class, type){
-
-    var func_switch = function(name){
-        var obj = {
+    var func_switch = {
+        to: function(name){return this.target[name];},
+        target: {
             "Jenks": "serie.getJenks(nb_class)",
             "Equal interval": "serie.getEqInterval(nb_class)",
             "Standard deviation": "serie.getStdDeviation(nb_class)",
@@ -9,22 +9,139 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
             "Q6": "getBreaksQ6(values)"
         }
-        return obj[name];
     }
+
+    var make_sequ_button = function(){
+        d3.select("#color_div").selectAll('.color_params').remove();
+        d3.select("#color_div").selectAll('.color_txt').remove();
+        d3.select("#color_div").selectAll('.central_class').remove();
+        var sequential_color_select = d3.select("#color_div")
+                                .insert("p").attr("class", "color_txt").html("Color palette ")
+                                .insert("select").attr("class", "color_params")
+                                .on("change", function(){
+                                    redisplay.draw()
+                                });
+    
+        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
+         'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
+         'Greens', 'Greys', 'Oranges', 'Purples', 'Reds',
+         'Set1', 'Pastel1'].forEach(function(name){
+            sequential_color_select.append("option").text(name).attr("value", name)
+        });
+    };
+    
+    var make_diverg_button = function(){
+        d3.select("#color_div").selectAll('.color_params').remove();
+        d3.select("#color_div").selectAll('.color_txt').remove();
+
+        d3.select("#color_div")
+            .insert('p')
+                .attr("class", "central_class")
+                .html("Central class : ")
+            .insert("input").attr({
+                type: "number", class: "central_class", id: "centr_class",
+                min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
+                })
+            .on("change", function(){redisplay.draw();});
+
+
+        var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
+                         'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
+                         'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
+        var left_color_select = d3.select("#color_div")
+                                .insert("p")
+                                    .attr("class", "color_txt")
+                                    .style("display", "inline")
+                                    .html("Left-side color ramp ")
+                                .insert("select").attr("class", "color_params_left")
+                                .on("change", function(){
+                                    redisplay.draw()
+                                });
+        var right_color_select = d3.select("#color_div")
+                                .insert("p")
+                                    .style({display: "inline", "margin-left": "70px"})
+                                    .attr("class", "color_txt")
+                                    .html("Right-side color ramp ")
+                                .insert("select").attr("class", "color_params_right")
+                                .on("change", function(){
+                                    redisplay.draw()
+                                });
+        pal_names.forEach(function(name){
+            left_color_select.append("option").text(name).attr("value", name);
+            right_color_select.append("option").text(name).attr("value", name)
+        });
+        document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
+    };
+
+    var make_box_histo_option = function(){
+        var histo_options = newBox.append('div').attr("id", "histo_options");
+
+        var a = histo_options.append("p").style("margin", 0);
+        var b = histo_options.append("p").style("margin", 0);
+        var c = histo_options.append("p").style("margin", 0);
+
+        a.insert("input")
+            .attr({type: "checkbox", value: "mean"})
+            .on("change", function(){
+                    if(line_mean.classed("active")){
+                        line_mean.style("stroke-width", 0)
+                        txt_mean.style("fill", "none")
+                        line_mean.classed("active", false)
+                    } else {
+                        line_mean.style("stroke-width", 2)
+                        txt_mean.style("fill", "red")
+                        line_mean.classed("active", true)
+                    }
+                });
+
+        b.insert("input")
+            .attr({type: "checkbox", value: "median"})
+            .on("change", function(){
+                    if(line_median.classed("active")){
+                        line_median.style("stroke-width", 0)
+                        txt_median.style("fill", "none")
+                        line_median.classed("active", false)
+                    } else {
+                        line_median.style("stroke-width", 2)
+                        txt_median.style("fill", "blue")
+                        line_median.classed("active", true)
+                    }
+                });
+
+        c.insert("input")
+            .attr({type: "checkbox", value: "std"})
+            .on("change", function(){
+                    if(line_std_left.classed("active")){
+                        line_std_left.style("stroke-width", 0)
+                        line_std_left.classed("active", false)
+                        line_std_right.style("stroke-width", 0)
+                        line_std_right.classed("active", false)
+                    } else {
+                        line_std_left.style("stroke-width", 2)
+                        line_std_left.classed("active", true)
+                        line_std_right.style("stroke-width", 2)
+                        line_std_right.classed("active", true)
+                    }
+                })
+        a.append("label_it_inline").attr("class", "label_it_inline").html("Display mean<br>");
+        b.append("label_it_inline").attr("class", "label_it_inline").html("Display median<br>");
+        c.append("label_it_inline").attr("class", "label_it_inline").html("Display standard deviation<br>");
+    };
 
     var display_ref_histo = function(){
         var svg_h = h/7.75,
             svg_w = w/4.75,
-            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length));
+            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length))+1;
 
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
+        nb_bins = nb_bins > values.length ? nb_bins : values.length;
 
-        var margin = {top: 5, right: 10, bottom: 15, left: 10},
+        var margin = {top: 5, right: 7.5, bottom: 12.5, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
          
-        var ref_histo = newBox.append('div').style({position: "absolute", top: "45px", right: "45px"});
-        ref_histo.append('p').style({"text-align": "center", "margin": "0px"}).html('<i>Distribution histogram</i>');
+        var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
+        ref_histo.append('p').style({"text-align": "center"}).html('<i>Distribution reference histogram</i>');
 
         var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
             .attr("width", svg_w + margin.left + margin.right)
@@ -52,7 +169,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         bar.append("rect")
             .attr("x", 1)
-            .attr("width", x(data[0].dx) - 1)
+            .attr("width", x(data[0].dx)+0.5)
             .attr("height", function(d) { return height - y(d.y); })
             .style({fill: "beige", stroke: "black", "stroke-width": "0.5px"});
 
@@ -66,7 +183,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         svg_ref_histo.append("g")
             .attr("class", "y axis")
-            .attr("transform", "translate(0, -20)")
+            .attr("transform", "translate(0, -" + (margin.top+margin.bottom) +")")
             .call(d3.svg.axis()
                 .scale(y)
                 .ticks(5)
@@ -94,131 +211,171 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 */
     }
 
-    var redisplay = function(old_nb_class){
-        serie = new geostats(values);
-        breaks = []
-        values = serie.sorted()
-        var val = func_switch(type);
-        if(type === "Q6"){
-            var tmp = eval(val);
-            var stock_class = tmp.stock_class;
-            breaks = tmp.breaks;
-        } else {
-            breaks = eval(val);
-            var ir = serie.getInnerRanges();
-            if(!ir){
-                nb_class = old_nb_class;
-                return false;
+    var redisplay = {
+        compute: function(old_nb_class){
+            serie = new geostats(values);
+            breaks = []
+            values = serie.sorted()
+            var val = func_switch.to(type);
+            if(type === "Q6"){
+                var tmp = eval(val);
+                var stock_class = tmp.stock_class;
+                breaks = tmp.breaks;
+            } else {
+                breaks = eval(val);
+                var ir = serie.getInnerRanges();
+                if(!ir){
+                    nb_class = old_nb_class;
+                    return false;
+                }
+        
+                ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
+                var stock_class = [], bounds = [], _min = undefined, _max = undefined;
+                for(var j=0, len_j=ir.length; j < len_j; j++){
+                    bounds[j] = ir[j];
+                    _min=values.lastIndexOf(bounds[j][0]);
+                    _max=values.lastIndexOf(bounds[j][1]);
+                    stock_class.push(_max - _min);
+                }
             }
     
-            ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
-            var stock_class = [], bounds = [], _min = undefined, _max = undefined;
-            for(var j=0, len_j=ir.length; j < len_j; j++){
-                bounds[j] = ir[j];
-                _min=values.lastIndexOf(bounds[j][0]);
-                _max=values.lastIndexOf(bounds[j][1]);
-                stock_class.push(_max - _min);
+            // In order to avoid class limit falling out the serie limits with Std class :
+            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+            bins = [];
+            for(var i = 0, len = stock_class.length, offset=0; i < len; i++){
+                bin = {};
+                bin.val = stock_class[i] + 1;
+    //            bin.offset = bounds[i][0];
+    //            bin.width = bounds[i][1] - offset;
+    //            offset = bounds[i+1] ? bin.offset + bin.width + (bounds[i+1][0] - bounds[i][1]) : bin.offset + bin.width;
+                bin.offset = breaks[i];
+                bin.width = breaks[i+1] - breaks[i];
+                bin.height = bin.val;
+                bins[i] = bin;
             }
-        }
-        console.log(["Breaks val", breaks]);
-        console.log(["Stock class", stock_class]);
+            return true;
+        },
+        draw: function(){
+                // Clean-up previously made histogram :
+            d3.select("#svg_discretization").selectAll(".bar").remove();
+            d3.select("#svg_discretization").selectAll(".text_bar").remove();
+            d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
-        // In order to avoid class limit falling out the serie limits with Std class :
-        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+            var col_scheme = d3.select('.color_params_left').node() ? "Diverging" : "Sequential";
 
-        // Clean-up previously made histograms :
-        d3.select("#svg_discretization").selectAll(".bar").remove();
-        d3.select("#svg_discretization").selectAll(".text_bar").remove();
-        d3.select("#svg_discretization").selectAll(".y.axis").remove();
+            if(col_scheme === "Sequential"){
+                var selected_palette = d3.select('.color_params').node().value;
+                color_array = getColorBrewerArray(nb_class, selected_palette);
+            } else if(col_scheme === "Diverging"){
+                var left_palette = d3.select('.color_params_left').node().value,
+                    right_palette = d3.select('.color_params_right').node().value,
+                    ctl_class_value = d3.select('#centr_class').node().value,
+                    class_right = nb_class - ctl_class_value;
+                color_array = [];
+                if(ctl_class_value <= class_right){
+                    right_pal = getColorBrewerArray(class_right, right_palette);
+                    left_pal = getColorBrewerArray(class_right, left_palette);
+                    left_pal = left_pal.slice(0, ctl_class_value)
+                    //console.log([left_pal, right_pal, color_array]);
+                } else {
+                    right_pal = getColorBrewerArray(ctl_class_value, right_palette);
+                    left_pal = getColorBrewerArray(ctl_class_value, left_palette);
+                    right_pal = right_pal.slice(0, ctl_class_value);
+                    //console.log([left_pal, right_pal, color_array]);
+                }
+                left_pal = left_pal.reverse()
+                color_array = left_pal.concat(right_pal);
+            }
 
-        var x = d3.scale.linear()
-            .domain([0, serie.max()])
-            .range([0, svg_w]);
+            for(var i=0, len = bins.length; i<len; ++i){
+                bins[i].color = color_array[i];
+            }
 
-        var y = d3.scale.linear()
-            .domain([serie.min(), serie.max()])
-            .range([svg_h, 0]);
+            var x = d3.scale.linear()
+                .range([0, svg_w]);
+    
+            var y = d3.scale.linear()
+                .range([svg_h, 0]);
+    
+            x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
+            y.domain([0, d3.max(bins.map(function(d) { return d.height + 5; }))]);
+    
+            var bar = svg_histo.selectAll(".bar")
+                .data(bins)
+              .enter().append("rect")
+                .attr("class", "bar")
+                .attr("transform", "translate(0, -20)")
+                .style("fill", function(d){return d.color;})
+                .style({"opacity": 0.5, "stroke-opacity":1})
+                .attr("x", function(d){ return x(d.offset);})
+                .attr("width", function(d){ return x(d.width) - 1;})
+                .attr("y", function(d){ return y(d.height);})
+                .attr("height", function(d){ return height + 20 - y(d.height);}) // 20 to compensate the [, -20] translate on the y axis
+    
+            svg_histo.selectAll(".txt_bar")
+                .data(bins)
+              .enter().append("text")
+                .attr("dy", ".75em")
+                .attr("y", function(d){
+                    var tmp = y(d.height)+5;
+                    if(tmp < height - 12) return tmp;
+                    else return height - 12})
+                .attr("x", function(d){return x(d.offset + d.width /2)})
+                .attr("text-anchor", "middle")
+                .attr("class", "text_bar")
+                .style("color", "black")
+                .text(function(d) { return formatCount(d.val); });
+    
+            svg_histo.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(0, -20)")
+                .call(d3.svg.axis()
+                    .scale(y)
+                    .ticks(5)
+                    .orient("left"));
 
-        var bins = [];
-        for(var i = 0, len = stock_class.length, offset=0; i < len; i++){
-            bin = {};
-            bin.val = stock_class[i] + 1;
-//            bin.offset = bounds[i][0];
-//            bin.width = bounds[i][1] - offset;
-//            offset = bounds[i+1] ? bin.offset + bin.width + (bounds[i+1][0] - bounds[i][1]) : bin.offset + bin.width;
-            bin.offset = breaks[i];
-            bin.width = breaks[i+1] - breaks[i];
-            bin.height = stock_class[i];
-            bins[i] = bin;
-        }
-
-        x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
-        y.domain([0, d3.max(bins.map(function(d) { return d.height; }))]);
-
-        var bar = svg_histo.selectAll(".bar")
-            .data(bins)
-          .enter().append("rect")
-            .attr("class", "bar")
-            .style("fill", function(d){return Colors.random();})
-            .style({"opacity": 0.5, "stroke-opacity":1})
-            .attr("x", function(d){ return x(d.offset);})
-            .attr("width", function(d){ return x(d.width) - 1;})
-            .attr("y", function(d){ return y(d.height);})
-            .attr("height", function(d){ return height - y(d.height);})
-
-        svg_histo.selectAll(".txt_bar")
-            .data(bins)
-          .enter().append("text")
-            .attr("dy", ".75em")
-            .attr("y", function(d){
-                var tmp = y(d.height)+5;
-                if(tmp < 90) return tmp;
-                else return 90})
-            .attr("x", function(d){return x(d.offset + d.width /2)})
-            .attr("text-anchor", "middle")
-            .attr("class", "text_bar")
-            .style("color", "black")
-            .text(function(d) { return formatCount(d.val); });
-
-        svg_histo.append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(0, -20)")
-            .call(d3.svg.axis()
-                .scale(y)
-                .ticks(5)
-                .orient("left"));
-
-        var resume = ["<b><i>Summary</b></i><br><br>",  (serie.info()).split("-").join("<br>").split(']').join("]<br>"),
-                      "<br><br><b><i>Current break values</i></b> : <br><b>", breaks.join(', '), " <b>"].join('')
-        summary.html(resume);
-        return true;
+            //user_defined_breaks.html(breaks.join(', '))
+           try{d3.select('#break_vals').node().remove();}catch(e){};
+           var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
+            for(var i=0, len = breaks.length; i < len; ++i){
+                var min_allowed = (i === 0) ? serie.min() : breaks[i-1],
+                    max_allowed = (i === len) ? serie.max() : breaks[i+1]
+                f_class.insert("p").insert("input").attr({type: "number", value: breaks[i], min: min_allowed, max: max_allowed})
+            }
+            return true;
+        },
     };
+
+    //////////////////////////////////////////////////////////////////////////
 
     var formatCount = d3.format(",.0f");
 
     var newBox = d3.select("body").append("div")
                      .style({"font-size":"12px"})
                      .attr("id", "discretiz_charts")
-                     .attr("title", layer_name);
+                     .attr("title", "Discretization panel - " + layer_name);
 
-    var values = [],
+    var values = [], color_array = [],
         nb_values = user_data[layer_name].length;
 
     for(var i=0; i<nb_values; i++){values.push(Number(user_data[layer_name][i][field_name]));}
 
     var serie = new geostats(values),
-        breaks = [];
+        breaks = [], stock_class = [],
+        bins = [],
+        max_nb_class = 22 < serie.pop() ? 22 : serie.pop();
 
     values = serie.sorted();
     serie.setPrecision(4);
+    var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression"];
+    if(!serie._hasZeroValue() && !serie._hasZeroValue()){
+        available_functions.push("Geometric progression");
+        func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
+    }
 
-    newBox.append('h2')
-            .style("text-align", "center")
-            .html("Discretization panel");
-
-    var discretization = newBox.append('div').style("margin-top", "60px")
+    var discretization = newBox.append('div').style({"margin-top": "30px", "padding-top": "10px"})
                                 .attr("id", "discretization_panel")
-                                .insert("p").html("<br>Type ")
+                                .insert("p").html("Type ")
                                 .insert("select").attr("class", "params")
                                 .on("change", function(){
                                     type = this.value;
@@ -227,13 +384,16 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                         txt_nb_class.html(6 + " class");
                                          d3.select("#nb_class_range").node().value = 6;
                                     }
-                                    redisplay(nb_class);
+                                    redisplay.compute(nb_class);
+                                    redisplay.draw();
                                     });
 
-    ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6"].forEach(function(name){
+    available_functions.forEach(function(name){
         discretization.append("option").text(name).attr("value", name);
     });
+
     discretization.node().value = type;
+    make_box_histo_option();
     display_ref_histo();
 
     var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
@@ -242,7 +402,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                             .style("display", "inline")
                             .attr("id", "nb_class_range")
                             .attr("type", "range")
-                            .attr({min: 2, max: 20, value: nb_class, step:1})
+                            .attr({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 var old_nb_class = nb_class;
                                 if(type === "Q6"){
@@ -251,31 +411,90 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                 }
                                 nb_class = this.value;
                                 txt_nb_class.html(nb_class+" class");
-                                var ret_val = redisplay(old_nb_class);
+                                var ret_val = redisplay.compute(old_nb_class);
                                 if(!ret_val){
                                     this.value = old_nb_class;
                                     txt_nb_class.html(old_nb_class+" class");
+                                } else {
+                                    redisplay.draw();
+                                    var ctl_class = document.getElementById("centr_class");
+                                    if(ctl_class){
+                                        ctl_class.max = nb_class;
+                                        if(ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
                                     }
-                                });
+                                }
+                            });
 
     var svg_h = h/5,
         svg_w = w - (w/8),
-        margin = {top: 10, right: 30, bottom: 7.5, left: 30},
+        margin = {top: 15, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
   
-    var svg_histo = newBox.append('div').style("margin-top", "20px")
+    var svg_histo = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
         .attr("height", svg_h + margin.top + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var summary = newBox.append('p').attr("id", "summary").html("");
-
     var x = d3.scale.linear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
+    var line_mean = svg_histo.append("line")
+        .attr("class", "line_mean")
+        .attr("x1", x(serie.mean()))
+        .attr("y1", 0-margin.top/10)
+        .attr("x2", x(serie.mean()))
+        .attr("y2", svg_h - margin.top)
+        .style({"stroke-width": 0, stroke: "red", fill: "none"})
+        .classed("active", false);
+
+    var txt_mean = svg_histo.append("text")
+        .attr("y", -15)
+        .attr("dy", "0.75em")
+        .attr("x", x(serie.mean()))
+        .style("fill", "none")
+        .attr("text-anchor", "middle")
+        .text("Mean");
+
+    var line_median = svg_histo.append("line")
+        .attr("class", "line_med")
+        .attr("x1", x(serie.median()))
+        .attr("y1", 0-margin.top/10)
+        .attr("x2", x(serie.median()))
+        .attr("y2", svg_h - margin.top)
+        .style({"stroke-width": 0, stroke: "blue", fill: "none"})
+        .classed("active", false);
+
+    var txt_median = svg_histo.append("text")
+        .attr("y", -15)
+        .attr("dy", "0.75em")
+        .attr("x", x(serie.median()))
+        .style("fill", "none")
+        .attr("text-anchor", "middle")
+        .text("Median");
+
+    var line_std_left = svg_histo.append("line")
+        .attr("class", "lines_std")
+        .attr("x1", x(serie.mean() - serie.stddev()))
+        .attr("y1", 0-margin.top/10)
+        .attr("x2", x(serie.mean() - serie.stddev()))
+        .attr("y2", svg_h - margin.top)
+        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .classed("active", false);
+
+    var line_std_right = svg_histo.append("line")
+        .attr("class", "lines_std")
+        .attr("x1", x(serie.mean() + serie.stddev()))
+        .attr("y1", 0-margin.top/10)
+        .attr("x2", x(serie.mean() + serie.stddev()))
+        .attr("y2", svg_h - margin.top)
+        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .classed("active", false);
+
+
+    // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -283,7 +502,51 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .scale(x)
         .orient("bottom"));
 
-    redisplay();
+    var accordion_colors = newBox.append("div").attr({id: "accordion_colors", class: "accordion"});
+    accordion_colors.append("h3").html("<b>Color scheme</b>");
+    var color_scheme =  d3.select("#accordion_colors")
+                            .append("div").attr("id", "color_div")
+                            .append("form_action");
+
+//    var color_scheme = newBox.append("div")
+//                        .attr("id", "color_div").html("<b>Color scheme : </b><br>")
+//                        .append("form_action");
+
+    ["Sequential", "Diverging"].forEach(function(el){
+        color_scheme.insert("label").style("margin", "20px").html(el)
+                    .insert('input').attr({
+                        type: "radio", name: "color_scheme", value: el, id: "button_"+el})
+                     .on("change", function(){
+                        if(this.value === "Sequential"){
+                            make_sequ_button();
+                            redisplay.draw();
+                        }
+                        else if(this.value === "Diverging"){
+                            make_diverg_button();
+                            redisplay.draw();
+                        }
+                      });
+    });
+
+    document.getElementById("button_Sequential").checked = true;
+
+    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion"});
+    accordion_summ.append("h3").html("<b>Summary</b>");
+    var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
+
+    var accordion_breaks = newBox.append("div").attr({id: "accordion_breaks_vals", class: "accordion"});
+    accordion_breaks.append("h3").html("<b>Current break values</b>");
+    var user_defined_breaks =  d3.select("#accordion_breaks_vals").append("div").attr("id","user_breaks");
+
+    $(".accordion").accordion({collapsible: true, active: false, heightStyle: "content" });
+    $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
+    //var summary = newBox.append('p').attr("id", "summary").html("");
+    //var user_defined_breaks = newBox.append("div").html("<b>Current break values :</b>");
+
+    make_sequ_button();
+    redisplay.compute();
+    redisplay.draw();
+
     var deferred = Q.defer();
     $("#discretiz_charts").dialog({
         modal:true,
@@ -293,7 +556,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         buttons:[{
             text: "Confirm",
             click: function(){
-                    deferred.resolve([nb_class, type, breaks]);
+                    var colors_map = [];
+                    for(var j=0; j<user_data[layer_name].length; ++j){
+                        var idx = serie.getClass(+user_data[layer_name][j][field_name])
+                        //console.log([user_data[layer_name][j][field_name], serie])
+                        colors_map.push(color_array[idx])
+                    }
+                    deferred.resolve([nb_class, type, breaks, color_array, colors_map]);
                     $(this).dialog("close");
                     }
                 },
@@ -329,58 +598,3 @@ function getBreaksQ6(serie){
         stock_class
         };
 }
-
-Colors = {};
-Colors.names = {
-    aqua: "#00ffff",
-    azure: "#f0ffff",
-    beige: "#f5f5dc",
-    black: "#000000",
-    blue: "#0000ff",
-    brown: "#a52a2a",
-    cyan: "#00ffff",
-    darkblue: "#00008b",
-    darkcyan: "#008b8b",
-    darkgrey: "#a9a9a9",
-    darkgreen: "#006400",
-    darkkhaki: "#bdb76b",
-    darkmagenta: "#8b008b",
-    darkolivegreen: "#556b2f",
-    darkorange: "#ff8c00",
-    darkorchid: "#9932cc",
-    darkred: "#8b0000",
-    darksalmon: "#e9967a",
-    darkviolet: "#9400d3",
-    fuchsia: "#ff00ff",
-    gold: "#ffd700",
-    green: "#008000",
-    indigo: "#4b0082",
-    khaki: "#f0e68c",
-    lightblue: "#add8e6",
-    lightcyan: "#e0ffff",
-    lightgreen: "#90ee90",
-    lightgrey: "#d3d3d3",
-    lightpink: "#ffb6c1",
-    lightyellow: "#ffffe0",
-    lime: "#00ff00",
-    magenta: "#ff00ff",
-    maroon: "#800000",
-    navy: "#000080",
-    olive: "#808000",
-    orange: "#ffa500",
-    pink: "#ffc0cb",
-    purple: "#800080",
-    violet: "#800080",
-    red: "#ff0000",
-    silver: "#c0c0c0",
-    white: "#ffffff",
-    yellow: "#ffff00"
-};
-Colors.random = function() {
-    var result;
-    var count = 0;
-    for (var prop in this.names)
-        if (Math.random() < 1/++count)
-           result = prop;
-    return result;
-};

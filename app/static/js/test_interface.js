@@ -11,7 +11,7 @@ function add_layer(d){
 
     if(this.parentNode.parentNode.id === "section1") target_layer_on_add = true;
 
-    console.log(this.parentNode.parentNode.id);
+    //console.log(this.parentNode.parentNode.id);
     
     function prepareUpload(event){
         files = event.target.files;
@@ -206,7 +206,7 @@ function handle_dataset(files){
       d3.select('#data_ext').html("Additional data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
       valid_join_check_display(false);
       if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-      d3.select("#section1").style("height", "265px");
+      d3.select("#section1").style("height", "285px");
     };
     reader.readAsText(f);
   }
@@ -283,7 +283,7 @@ function add_layer_fun(text){
               .attr("d", path)
               .attr("id", function(d) {
                     if(data_to_load){ user_data[layers_names[i]].push(d.properties); }
-                    return "item " + d.id;
+                    return "feature_" + d.id;
                 })
               .style("stroke-linecap", "round")
               .style("stroke", "red")

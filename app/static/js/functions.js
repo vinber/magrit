@@ -102,14 +102,103 @@ function createFuncOptionsBox_Stewart(layer){
      return nwBox;
 }
 
+//////////////////////////////////////
+//////////////////////////////////////
+///TODO : only propose numericals fields (+ test if missing values ?)
+//////////////////////////////////////
+function createFuncOptionsBox_Choropleth(layer){
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        g_lyr_name = "#"+trim(layer),
+        //fields = Object.getOwnPropertyNames(user_data[layer][0]),
+        // only retrieve the name of numericals fields :
+        fields = type_col(layer, "number");
+        ref_size_val = undefined,
+        selected_disc = undefined;
+
+    if(fields.length === 0){
+        alert("The targeted layer doesn't seems to contain any numerical field");
+        return;
+    }
+
+     bg.className = 'overlay';
+     nwBox.id = [layer, '_popup'].join('');
+     nwBox.className = 'popup';
+
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", layer, '_popup'].join(''));
+    dialog_content.append('h3').html('Choropleth map');
+    var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+
+//    var discretization = dialog_content.append('div').attr("id", "discretization").style('border', "solid 2px black")
+//                                                    .html('<b><i>Discretization</i></b>')
+//                                                    .insert("p").html("Type")
+//                                                    .insert("select").attr("class", "params")
+//                                                    .on("change", function(){});
+//    ["Quantiles", "Q6", "Equal interval", "Standard deviation", "Jenks"].forEach(function(name){
+//        discretization.append("option").text(name).attr("value", name);
+//    });
+//    var nb_class = d3.select("#discretization").insert('p').html("Number of class")
+//                                                .append("input")
+//                                                .attr("type", "number")
+//                                                .attr({min: 0, max: 20, value: 6, step:1})
+//
+    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+    var rendering_params = new Object();
+    dialog_content.insert('p').style("margin", "auto").html("")
+                .append("button").html("Display and arrange class")
+                .on("click", function(){
+                    display_discretization(layer, field_selec.node().value, opt_nb_class, "Quantiles")
+                        .then(function(confirmed){
+                            if(confirmed){
+                                console.log(confirmed);
+                                rendering_params = {
+                                        nb_class: confirmed[0], type: confirmed[1],
+                                        breaks: confirmed[2], colors:confirmed[3],
+                                        colorsByFeature: confirmed[4]
+                                    }
+                            }
+                        });
+                });
+
+    dialog_content.append('button').attr('id', 'yes').text('Render')
+    dialog_content.append('button').attr('id', 'no').text('Close');
+
+     qs('#yes').onclick=function(){
+        deactivate([nwBox, bg]);
+        if(rendering_params){
+            d3.select("#" + layer).selectAll("path").style("fill", function(d){
+                return rendering_params['colorsByFeature'][d.id]
+            });
+            d3.select("#" + layer).selectAll("path").style("stroke", function(d){
+                return rendering_params['colorsByFeature'][d.id]
+            });
+        }
+     }
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+}
+
 
 function createFuncOptionsBox_PropSymbol(layer){
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
          g_lyr_name = "#"+trim(layer),
-         fields = Object.getOwnPropertyNames(user_data[layer][0]),
-         ref_size_val = undefined,
-         selected_disc = undefined;
+        //fields = Object.getOwnPropertyNames(user_data[layer][0]),
+        // only retrieve the name of numericals fields :
+        fields = type_col(layer, "number");
+        ref_size_val = undefined,
+        selected_disc = undefined;
+
+    if(fields.length === 0){
+        alert("The targeted layer doesn't seems to contain any numerical field");
+        return;
+    }
 
      bg.className = 'overlay';
      nwBox.id = [layer, '_popup'].join('');
@@ -164,4 +253,38 @@ function createFuncOptionsBox_PropSymbol(layer){
          deactivate([nwBox, bg]);
      }
      return nwBox;
+}
+
+var type_col = function(layer_name, target){
+    var fields = Object.getOwnPropertyNames(user_data[layer_name][0]),
+        deepth_test = 4,
+        result = new Object(),
+        field = undefined,
+        tmp_type = undefined;
+    
+    for(var j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        result[field] = []
+        for(var i=0; i < deepth_test; ++i){
+            tmp_type = typeof user_data[layer_name][i][field];
+            if(tmp_type === "string" && !isNaN(Number(user_data[layer_name][i][field]))) tmp_type = "number"
+            result[fields[j]].push(tmp_type)
+        }
+    }
+    for(var j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        if(result[field].every(function(ft){return ft === "number";}))
+            result[field] = "number"
+        else
+            result[field] = "string"
+    }
+    if(target){
+        var res = [];
+        for(var k in result)
+            if(result[k] === target)
+                res.push(k)
+        return res
+    } else {
+        return result;
+    }
 }

@@ -1,7 +1,7 @@
 [
 	{
 	"img" : "empty.png",
-	"desc" : "Example 1 - Join geometry and .csv dataset",
+	"desc" : "Example 1 - Join geom and dataset",
 	"link" 	: "modules/test"
 	},
 	{
@@ -11,13 +11,13 @@
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 3 - Choropleth map",
+	"link" 	: "modules/choropleth"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 4 - Prop. symbols map",
+	"link" 	:  "modules/prop_symbol"
 	},
 	{
 	"img" : "empty.png",

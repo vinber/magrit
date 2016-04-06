@@ -4,7 +4,7 @@
     <meta  content="text/html; charset=utf-8"  http-equiv="content-type">
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
-    <title> MARS - {{ func }}</title>
+    <title> MAPOLOGIC - {{ func }}</title>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.js"></script>
     <script d3.version || document.write('<script src="/static/js/lib/d3.js">\x3C/script>')</script>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
@@ -14,14 +14,18 @@
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
     <script window.jQuery || document.write('<script src="/static/js/lib/jquery-2.2.1.min.js">\x3C/script>')</script>
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
-    <script src="/static/js/lib/geostats.min.js"></script>
+    <script  src="/static/js/lib/geostats.min.js"></script>
+    <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
+    <script  src="/static/js/colors_helpers.js"></script>
     <script  src="/static/js/functions.js"></script>
     <script  src="/static/js/join_popup.js"></script>
+    <script  src="/static/js/colors_helpers.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="/static/css/discretization.css" rel="stylesheet" type="text/css" >
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <style>
         #sortable {list-style-type: none; margin: auto; padding: 0; width: 100%; color: white; border-radius: 10%}
@@ -30,7 +34,7 @@
   </head>
   <body>
       <div id ="header">
-        <p style="display:inline; margin-left:10px;"><i>M.A.R.S</i></p>
+        <p style="display:inline; margin-left:10px;"><i>MAPOLOGIC</i></p>
         <p class="header_options"><a href="https://github.com/riatelab/noname-stuff/">Sources</a>    <a href="">Documentation</a></p></div>
       <div id ="menu"></div>
   	 <div id ="map"></div>
@@ -138,7 +142,6 @@ var section5 =  d3.select("#accordion5").append("div").attr("id","section5");
 
 dv1 = section1.append("div")
             .style("text-align", "center")
-            .style("margin", "3%")
             .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...<br>");
 
 dv1.append("input").attr("type", "button")
@@ -325,7 +328,7 @@ $(function() {
 
 $(document).ajaxStart(function() {
         var bg = document.createElement('div');
-        console.log(this);
+        //console.log(this);
         bg.className = 'overlay';
         var prog_bar = d3.select("#map").append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
@@ -347,7 +350,7 @@ function displayInfoOnMove(){
     if(target_lyr == 0){
         alert("Informations are only displayed on the targeted layer");
     } else if(target_lyr > 1){
-        alert("Too many layer to handle");
+        alert("Too many layers to handle");
     } else {
         target_lyr = "#"+target_lyr[0];
         if(info_features.active){

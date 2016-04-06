@@ -61,5 +61,12 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-#Personal folder to ignore
+#R non-useful files :
+.Rhistory
+Rplots.pdf
+
+# Temporary folder to ignore :
 tmp/
+
+# Other project related but non-useful stuffs :
+noname_aio_heavy_last.py
