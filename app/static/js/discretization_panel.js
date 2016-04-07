@@ -221,6 +221,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 var tmp = eval(val);
                 var stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
+                serie.setClassManually(breaks);
             } else {
                 breaks = eval(val);
                 var ir = serie.getInnerRanges();
@@ -353,7 +354,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var newBox = d3.select("body").append("div")
                      .style({"font-size":"12px"})
                      .attr("id", "discretiz_charts")
-                     .attr("title", "Discretization panel - " + layer_name);
+                     .attr("title", ["Discretization panel - ", layer_name, " - ", field_name].join(''));
 
     var values = [], color_array = [],
         nb_values = user_data[layer_name].length;
@@ -427,7 +428,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     var svg_h = h/5,
         svg_w = w - (w/8),
-        margin = {top: 15, right: 30, bottom: 7.5, left: 30},
+        margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
   
     var svg_histo = newBox.append('div')
@@ -444,14 +445,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_mean = svg_histo.append("line")
         .attr("class", "line_mean")
         .attr("x1", x(serie.mean()))
-        .attr("y1", 0-margin.top/10)
+        .attr("y1", 0-margin.top/6)
         .attr("x2", x(serie.mean()))
         .attr("y2", svg_h - margin.top)
         .style({"stroke-width": 0, stroke: "red", fill: "none"})
         .classed("active", false);
 
     var txt_mean = svg_histo.append("text")
-        .attr("y", -15)
+        .attr("y", -17.5)
         .attr("dy", "0.75em")
         .attr("x", x(serie.mean()))
         .style("fill", "none")
@@ -461,14 +462,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_median = svg_histo.append("line")
         .attr("class", "line_med")
         .attr("x1", x(serie.median()))
-        .attr("y1", 0-margin.top/10)
+        .attr("y1", 0-margin.top/6)
         .attr("x2", x(serie.median()))
         .attr("y2", svg_h - margin.top)
         .style({"stroke-width": 0, stroke: "blue", fill: "none"})
         .classed("active", false);
 
     var txt_median = svg_histo.append("text")
-        .attr("y", -15)
+        .attr("y", -17.5)
         .attr("dy", "0.75em")
         .attr("x", x(serie.median()))
         .style("fill", "none")
@@ -478,7 +479,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_std_left = svg_histo.append("line")
         .attr("class", "lines_std")
         .attr("x1", x(serie.mean() - serie.stddev()))
-        .attr("y1", 0-margin.top/10)
+        .attr("y1", 0-margin.top/6)
         .attr("x2", x(serie.mean() - serie.stddev()))
         .attr("y2", svg_h - margin.top)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})
@@ -487,7 +488,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_std_right = svg_histo.append("line")
         .attr("class", "lines_std")
         .attr("x1", x(serie.mean() + serie.stddev()))
-        .attr("y1", 0-margin.top/10)
+        .attr("y1", 0-margin.top/8)
         .attr("x2", x(serie.mean() + serie.stddev()))
         .attr("y2", svg_h - margin.top)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})
@@ -559,7 +560,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     var colors_map = [];
                     for(var j=0; j<user_data[layer_name].length; ++j){
                         var idx = serie.getClass(+user_data[layer_name][j][field_name])
-                        //console.log([user_data[layer_name][j][field_name], serie])
+//                        console.log([user_data[layer_name][j][field_name], serie, idx, color_array])
                         colors_map.push(color_array[idx])
                     }
                     deferred.resolve([nb_class, type, breaks, color_array, colors_map]);

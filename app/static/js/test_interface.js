@@ -23,6 +23,7 @@ function add_layer(d){
         } else if(strContains(files[0].name.toLowerCase(), '.csv')
                     || strContains(files[0].name.toLowerCase(), '.tsv')) {
             handle_dataset(files)
+            target_layer_on_add = false;
         }
         else if(files.length >= 4){
             var filenames = [];
@@ -143,6 +144,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
         e.preventDefault();e.stopPropagation();
         $(this).css('border', '');
         handle_dataset(files);
+        target_layer_on_add = false;
    }
   else {
         $(this).css('border', '3px dashed red');
@@ -187,6 +189,7 @@ function handle_dataset(files){
   if(joined_dataset.length !== 0){
     var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
     if(!rep){ return; }
+    else joined_dataset = [];
   }
 
   for(var i = 0; i != files.length; ++i) {
@@ -268,6 +271,7 @@ function add_layer_fun(text){
 
         if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
             user_data[lyr_name] = [];
+
             data_to_load = true;
         } else { data_to_load = false; }
 
@@ -281,9 +285,14 @@ function add_layer_fun(text){
               .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
               .attr("d", path)
-              .attr("id", function(d) {
-                    if(data_to_load){ user_data[layers_names[i]].push(d.properties); }
-                    return "feature_" + d.id;
+              .attr("id", function(d, ix) {
+                    if(data_to_load){
+                        if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
+                            d.properties["_uid"] = d.id;
+                        d.properties["pkuid"] = ix;
+                        user_data[layers_names[i]].push(d.properties);
+                    }
+                    return "feature_" + ix;
                 })
               .style("stroke-linecap", "round")
               .style("stroke", "red")
@@ -320,17 +329,9 @@ function add_layer_fun(text){
     }
     if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
     binds_layers_buttons();
-    /*
-    // Only zoom on the added layer if its the "targeted" one
-    if(target_layer_on_add) { 
-        if(parsedJSON.bbox) center_zoom_map(parsedJSON.bbox);
-        //else if(bounds) center_zoom_map([bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]]);
-        else alert("The topojson was provided without bbox information");
-      }
-    */
     if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
-    target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
+    target_layer_on_add = false;
 };
 
 function center_zoom_map(bbox){

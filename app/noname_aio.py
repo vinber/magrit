@@ -335,12 +335,15 @@ def R_compute(request):
         url_client, commande, data, app_glob['async_ctx'], id_)
     print(content)
     content = json.loads(content.decode())
-    filenames['result'] = ''.join(["/tmp/", get_name(), ".geojson"])
+    tmp_part = get_name()
+    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
     print(content['breaks'], filenames['result'])
-    savefile(filenames['result'], content['geojson'])
+    savefile(filenames['result'], json.dumps(content['geojson']).encode())
 #    content = ogr_to_geojson(filenames['result'], to_latlong=True)
     res = geojson_to_topojson(filenames['result'])
-    print(res)
+    res.replace(tmp_part, '_'.join(['StewartPotential',
+                                    posted_data['var_name'],
+                                    posted_data['span']]))
     return web.Response(text=res)
 
 @asyncio.coroutine

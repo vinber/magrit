@@ -17,6 +17,7 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
+    <script  src="/static/js/lib/datatables.js"></script>
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
@@ -26,6 +27,7 @@
     <script  src="/static/js/colors_helpers.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css" >
+    <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css" >
     <link  href="/static/css/style.css"  rel="stylesheet"  type="text/css">
     <style>
         #sortable {list-style-type: none; margin: auto; padding: 0; width: 100%; color: white; border-radius: 10%}
@@ -155,13 +157,15 @@ dv1.append("p").attr("id", "data_ext").attr("class", "user_panel").html("Additio
 dv1.append("p").attr("id", "join_section").html("").style("margin-bottom", "5px");
 var join_button = undefined;
 
-var dv2 = section2.append("p").attr("class", "form-item");
-dv2.append("input").attr("type", "button")
-                   .attr("id", "func_button")
-                   .attr("value", "Choose options and compute...")
-                   .style("margin-left", "5%")
-                   .on("click", popup_function);
-d3.select("#func_button").node().disabled = true;
+if(menu_option.text_button){
+    var dv2 = section2.append("p").attr("class", "form-item");
+    dv2.append("input").attr("type", "button")
+                       .attr("id", "func_button")
+                       .attr("value", menu_option.text_button)
+                       .style("margin-left", "5%")
+                       .on("click", popup_function);
+    d3.select("#func_button").node().disabled = true;
+}
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 layer_list.append("li").attr("class", "ui-state-default Graticule").html("Graticule"+ button_style + button_trash + button_active)
@@ -363,13 +367,14 @@ function displayInfoOnMove(){
         } else {
             d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
             d3.select(target_lyr).selectAll("path").on("mouseover", function(d){
-                var item_nb = (this.id).split(' ')[1],
+                var item_nb = Number((this.id).split('_')[1]),
                     ft = user_data[target_lyr.substring(1, target_lyr.length)][item_nb],
                     txt_info = ["<h2>Features #", item_nb, "</h2><br><i>",
                                 current_layers[target_lyr.substring(1, target_lyr.length)].type,
                                 "</i><br>"];
                 Object.getOwnPropertyNames(ft).forEach(function(el, i){
-                    txt_info.push("<br><b>"+el+"</b> : "+ft[el]);});
+                    txt_info.push("<br><b>"+el+"</b> : "+ft[el]);
+                    });
                 info_features.node().innerHTML = txt_info.join('');
             });
             d3.select(target_lyr).attr("d", path).on("mouseout", function(){
@@ -455,7 +460,12 @@ function remove_layer(){
              if(current_layers[name].targeted){
                  d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
                  d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
+                 if(d3.select("#join_button").node() != null)
+                     valid_join_check_display() //
+                 d3.select("#func_button").node().disabled = true;
+                 field_join_map = [];
                  delete user_data[name];
+                 targeted_layer_added = false;
              }
              delete current_layers[name];
         }

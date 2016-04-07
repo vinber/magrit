@@ -14,12 +14,17 @@ function createModalBox(layer_name){
      var bg = document.createElement('div');
      var layer_name_split = layer_name.split(' - ');
 
-     if(layer_name_split.length == 2) layer_name = layer_name_split[1];
+     if(layer_name_split.length == 2) layer_name = trim(layer_name_split[1]);
      else if(layer_name_split.length > 2) console.log('Oups..');
 
      var type = current_layers[layer_name].type;
-     var g_lyr_name = "#"+trim(layer_name);
-
+     if(current_layers[layer_name].rendered !== undefined){
+         rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
+         if(!rep)
+             return;
+     }
+     var g_lyr_name = "#" + layer_name;
+     console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
      var opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
      var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
      if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
@@ -69,11 +74,18 @@ function createModalBox(layer_name){
      }
      qs('#no').onclick=function(){
          deactivate([nwBox, bg]);
-         d3.select(g_lyr_name).selectAll("path").style('fill-opacity', opacity);
-         d3.select(g_lyr_name).selectAll("path").style('fill', fill_prev);
-         d3.select(g_lyr_name).selectAll("path").style('stroke', stroke_prev);
-         d3.select(g_lyr_name).selectAll("path").style('stroke-opacity', border_opacity);
-         d3.select(g_lyr_name).selectAll("path").style('stroke-width', stroke_width);
+         var layer_to_render = d3.select(g_lyr_name).selectAll("path");
+         layer_to_render.style('fill-opacity', opacity)
+                     .style('stroke-opacity', border_opacity)
+                     .style('stroke-width', stroke_width);
+         if(current_layers[layer_name].targeted === undefined)
+             layer_to_render.style('fill', fill_prev)
+                     .style('stroke', stroke_prev);
+         else
+            layer_to_render.style('fill-opacity', 0.9)
+                           .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
+                           .style('stroke-opacity', 0.9)
+                           .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
 
      }
      return nwBox;
@@ -103,13 +115,4 @@ function center(el){
   el.style.right= '0px';
   el.style.top =  h+'px';
   return true;
-}
-
-function rgb2hex(rgb){
-// From http://jsfiddle.net/mushigh/myoskaos/
- rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
- return (rgb && rgb.length === 4) ? "#" +
-  ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
-  ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
-  ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
 }

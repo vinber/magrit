@@ -1,6 +1,6 @@
 function handle_join(){
     var layer_name = Object.getOwnPropertyNames(user_data);
-
+    console.log(layer_name)
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
         alert("Unable to join geometries and dataset")
         return;
@@ -15,6 +15,8 @@ function handle_join(){
         make_confirm_dialog("The geometrie layer and the joined dataset doesn't have the same number of features. Continue anyway ?", "Ok", "Cancel", "").then(function(confirmed){
             if(confirmed){ make_box(layer_name[0]); }
         });
+    } else {
+         make_box(layer_name[0]);
     }
 }
 
@@ -91,21 +93,25 @@ function valid_join_on(layer_name, field1, field2){
         }
     }
 
-    var prop = [hits, "/", join_values1.length].join("");
+    var prop = [hits, "/", join_values1.length].join(""),
+        f_name = "";
+
     if(hits == join_values1.length){
         var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
         for(var i=0, len=join_values1.length; i<len; i++){
             val = field_join_map[i];
             for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                 f_name = fields_name_to_add[j];
-                targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
-                user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
+                if(f_name.length > 0){
+                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
+                    user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
                 }
+            }
         }
         valid_join_check_display(true, prop);
-        alert("Full join");
+        //alert("Full join");
         return true;
-    } else if(field_join_map.length > 0){
+    } else if(hits > 0){
         var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
         if(rep){
             var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
@@ -115,10 +121,12 @@ function valid_join_on(layer_name, field1, field2){
                 val = field_join_map[i];
                 for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                     f_name = fields_name_to_add[j];
-                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = val ? joined_dataset[0][val][f_name] : null;
-                    user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
+                    if(f_name.length > 0){
+                        targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = val ? joined_dataset[0][val][f_name] : null;
+                        user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
                     }
                 }
+            }
             valid_join_check_display(true, prop);
             return true;
         } else {
@@ -128,6 +136,7 @@ function valid_join_on(layer_name, field1, field2){
 
     } else {
         alert("No match found...");
+        field_join_map = [];
         return false;
     }
 }
@@ -144,15 +153,16 @@ function createJoinBox(modalid, html){
          button2 = ["<select id=button_field2>"];
 
      // Pretty ugly way to prepare the buttons:
-     for(var i=0, len=geom_layer_fields.length; i<len; i++){
+     for(var i=0, len=geom_layer_fields.length; i<len; i++)
          button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
-     }
+
      button1.push("</select>");
      button1 = button1.join('');
 
-     for(var i=0, len=ext_dataset_fields.length; i<len; i++){
-         button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
-     }
+     for(var i=0, len=ext_dataset_fields.length; i<len; i++)
+        if(ext_dataset_fields[i].length > 0)
+             button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
+
      button2.push("</select>");
      button2 = button2.join('');
 
