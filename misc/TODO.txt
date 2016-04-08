@@ -1,6 +1,8 @@
 TODO list:
 - More testing on the join operation
-- Find a nice window for selecting options
+- Check for missing values before letting the user choose the field for choropleth / stewart /etc ..
+- Propose palettes instead of single colors in the styling popup when features have been already classed
+- Let the user choose his own class (+ custom colors) in the discretization panel
 - Do more data validation (client and/or server side) to avoid weird user-uploads
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)

@@ -45,18 +45,15 @@
     <script>
 var func = document.getElementById('func').innerHTML;
 document.getElementById('func').style.display = "none";
-
 var menu_option = get_menu_option(func);
+
 // voir : http://bl.ocks.org/mbostock/3711652 
 // voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
-/*
-var w = 700,
-    h = 620;
-*/
+
 var w = Math.round((window.innerWidth / 1.73 ) / 10)*10,
     h = Math.round((window.innerHeight / 1.33 ) / 10)*10;
 
-var title = 0;
+//var title = 0;
 
 var graticule = d3.geo.graticule(),
     proj = d3.geo.mercator().scale(100).translate([375, 320]),
@@ -71,11 +68,13 @@ var x_center_proj = proj.center()[0],
 
 var user_data = new Object(),
     targeted_topojson = undefined,
+    result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
     target_layer_on_add = false,
     targeted_layer_added = false,
-    current_layers = new Object();
+    current_layers = new Object(),
+    last_params = new Object();
 
 current_layers["Graticule"] = {"type": "Line", "n_features":1}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1}
@@ -316,13 +315,13 @@ $(function() {
           layers = d3.selectAll("svg").node();
     
       for(var i=0, len = a.target.childNodes.length; i < len; i++){
-          var n = (a.target.childNodes[i].innerHTML.split(" <butt")[0]).split(" - ")
-          desired_order[i] = n[n.length - 1]
+          var n = (a.target.childNodes[i].innerHTML.split(" <butt")[0]).split(" - ");
+          desired_order[i] = n[n.length - 1];
           actual_order[i] = layers.children[i].id;
       }
       for(var i = 0, len = desired_order.length; i < len; i++){
-          lyr1 = d3.select("#"+desired_order[i]).node()
-          lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node()
+          let lyr1 = d3.select("#"+desired_order[i]).node(),
+              lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node();
           layers.insertBefore(lyr2, lyr1);
       }
      }
@@ -340,7 +339,7 @@ $(document).ajaxStart(function() {
         prog_bar.node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>Loading layer ...';
         prog_bar.node().style.zIndex = 2;
         (document.body || document.documentElement).appendChild(bg);
-    }).ajaxSuccess(function() {
+    }).ajaxComplete(function() {
         d3.select("#progressbar").node().remove();
         d3.select(".overlay").node().remove();
     });
@@ -350,34 +349,43 @@ $(document).ajaxStart(function() {
 ////////////////
 
 function displayInfoOnMove(){
-    var target_lyr = Object.getOwnPropertyNames(user_data);
-    if(target_lyr == 0){
-        alert("Informations are only displayed on the targeted layer");
+    var target_lyr = Object.getOwnPropertyNames(user_data),
+        result_lyr = Object.getOwnPropertyNames(result_data),
+        nb_layer = d3.select("svg").node().childNodes.length,
+        svg_layer = undefined,
+        top_layer = d3.select("svg").node().childNodes[nb_layer-1].id;
+    console.log([target_lyr, result_lyr, nb_layer, top_layer]);
+    if(target_lyr.length === 0 && result_lyr.length === 0){
+        alert("Informations are only displayed on the targeted layer or its result");
     } else if(target_lyr > 1){
         alert("Too many layers to handle");
-    } else {
-        target_lyr = "#"+target_lyr[0];
+    } else if(top_layer !== target_lyr[0] && top_layer !== result_lyr[0]){
+        alert("The layer to explore have to be in the top of the others");
+    }
+    else {
+        svg_layer = "#"+top_layer;
         if(info_features.active){
             d3.select(".info_button").style('box-shadow', null);
-            d3.select(target_lyr).selectAll("path").on("mouseover", null)
+            d3.select(svg_layer).selectAll("path").on("mouseover", null)
             info_features.active = false;
             info_features.node().innerHTML = ""
             info_features.style({});
             document.getElementById("map").style.cursor="";
         } else {
+            //let obj_ref = (top_layer === target_lyr[0]) ? user_data : result_data;
             d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
-            d3.select(target_lyr).selectAll("path").on("mouseover", function(d){
+            d3.select(svg_layer).selectAll("path").on("mouseover", function(d){
                 var item_nb = Number((this.id).split('_')[1]),
-                    ft = user_data[target_lyr.substring(1, target_lyr.length)][item_nb],
+                    ft = user_data[svg_layer.substring(1, svg_layer.length)] ? user_data[svg_layer.substring(1, svg_layer.length)][item_nb] : result_data[svg_layer.substring(1, svg_layer.length)][item_nb],
                     txt_info = ["<h2>Features #", item_nb, "</h2><br><i>",
-                                current_layers[target_lyr.substring(1, target_lyr.length)].type,
+                                current_layers[svg_layer.substring(1, svg_layer.length)].type,
                                 "</i><br>"];
                 Object.getOwnPropertyNames(ft).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+ft[el]);
                     });
                 info_features.node().innerHTML = txt_info.join('');
             });
-            d3.select(target_lyr).attr("d", path).on("mouseout", function(){
+            d3.select(svg_layer).attr("d", path).on("mouseout", function(){
                 info_features.node().innerHTML = "";});
             info_features.active = true;
             document.getElementById("map").style.cursor="help";

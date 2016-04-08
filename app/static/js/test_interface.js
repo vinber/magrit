@@ -4,14 +4,12 @@
 
 function add_layer(d){
     var input = $(document.createElement('input')),
-        res = [];
+        res = [], self_section = this.parentNode.parentNode.id;
 
     input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
     input.on('change', prepareUpload);
-
-    if(this.parentNode.parentNode.id === "section1") target_layer_on_add = true;
-
-    //console.log(this.parentNode.parentNode.id);
+    
+    if(self_section === "section1") target_layer_on_add = true;
     
     function prepareUpload(event){
         files = event.target.files;
@@ -20,8 +18,9 @@ function add_layer(d){
         } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
                             || strContains(files[0].name, 'zip'))){
             handle_single_file(files);
-        } else if(strContains(files[0].name.toLowerCase(), '.csv')
-                    || strContains(files[0].name.toLowerCase(), '.tsv')) {
+        } else if((strContains(files[0].name.toLowerCase(), '.csv')
+                    || strContains(files[0].name.toLowerCase(), '.tsv'))
+                    && self_section === "section1") {
             handle_dataset(files)
             target_layer_on_add = false;
         }
@@ -80,9 +79,10 @@ $(document).on('dragleave', '#section1,#section3', function(e) {
             return false;
 });
 $(document).on('drop', '#section1,#section3', function(e) {
-   var files = e.originalEvent.dataTransfer.files;
+    var files = e.originalEvent.dataTransfer.files,
+        self_section = this.id;
 
-   if(this.id === "section1") target_layer_on_add = true;
+   if(self_section === "section1") target_layer_on_add = true;
    e.preventDefault();e.stopPropagation();
 
    if(!(e.originalEvent.dataTransfer.files.length == 1)){
@@ -116,34 +116,31 @@ $(document).on('drop', '#section1,#section3', function(e) {
               }
         }
    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
-           //e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
-
-           if(target_layer_on_add && targeted_layer_added){
+           if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
-               return;
-             }
            // Most direct way to add a layer :
            else handle_TopoJSON_files(files);
    }
    else if(strContains(files[0].name.toLowerCase(), 'geojson') 
             || strContains(files[0].type.toLowerCase(), 'application/zip')){
-           //e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
 
-           if(target_layer_on_add && targeted_layer_added){
+           if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
-               return;
-             }
+
            // Send the file to the server for conversion :
            else handle_single_file(files);
    }
   else if(strContains(files[0].name.toLowerCase(), '.csv')
             || strContains(files[0].name.toLowerCase(), '.tsv')) {
-        alert('Dataset provided');
-        e.preventDefault();e.stopPropagation();
-        $(this).css('border', '');
-        handle_dataset(files);
+        if(self_section === "section1"){
+//        alert('Dataset provided');
+            $(this).css('border', '');
+            handle_dataset(files);
+        }
+        else
+            alert('Only layout layers can be added here');
         target_layer_on_add = false;
    }
   else {
@@ -240,9 +237,11 @@ function handle_single_file(files) {
 
 // Add the TopoJSON to the 'svg' element :
 
-function add_layer_fun(text){
+function add_layer_fun(text, options){
     var parsedJSON = JSON.parse(text),
-        bounds = [];
+        bounds = [],
+//        target_layer_on_add = options ? options.target_layer_on_add : false,
+        result_layer_on_add = options ? options.result_layer_on_add : false;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
@@ -271,9 +270,13 @@ function add_layer_fun(text){
 
         if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
             user_data[lyr_name] = [];
-
             data_to_load = true;
-        } else { data_to_load = false; }
+        }
+        else if(result_layer_on_add)
+            result_data[lyr_name] = []
+
+        else
+            data_to_load = false;
 
         current_layers[lyr_name] = {"type": type,
                                     "n_features": parsedJSON.objects[lyr_name].geometries.length}
@@ -290,8 +293,10 @@ function add_layer_fun(text){
                         if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
                             d.properties["_uid"] = d.id;
                         d.properties["pkuid"] = ix;
-                        user_data[layers_names[i]].push(d.properties);
-                    }
+                        user_data[lyr_name].push(d.properties);
+                    } else if(result_layer_on_add)
+                        result_data[lyr_name].push(d.properties);
+
                     return "feature_" + ix;
                 })
               .style("stroke-linecap", "round")
@@ -310,7 +315,7 @@ function add_layer_fun(text){
         //try {bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);}
         //catch(err){ console.log(err); }
 
-        class_name = target_layer_on_add ? "ui-state-default sortable_target " + lyr_name : "ui-state-default " + lyr_name
+        class_name = target_layer_on_add || result_layer_on_add ? "ui-state-default sortable_target " + lyr_name : "ui-state-default " + lyr_name
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);

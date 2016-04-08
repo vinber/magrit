@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ dont exclude lib to grab JS libs
 lib64/
 parts/
 sdist/
@@ -62,6 +62,7 @@ target/
 .ipynb_checkpoints
 
 #R non-useful files :
+.RData
 .Rhistory
 Rplots.pdf
 

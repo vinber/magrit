@@ -2,6 +2,7 @@ load <- function(){
   require(pbdZMQ, quietly = TRUE)
   require(jsonlite, quietly = TRUE)
   require(raster, quietly = TRUE)
+  require(rgeos, quietly = TRUE)
   require(sp, quietly = TRUE)
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)

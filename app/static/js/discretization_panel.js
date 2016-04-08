@@ -12,15 +12,17 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     }
 
     var make_sequ_button = function(){
-        d3.select("#color_div").selectAll('.color_params').remove();
-        d3.select("#color_div").selectAll('.color_txt').remove();
-        d3.select("#color_div").selectAll('.central_class').remove();
-        var sequential_color_select = d3.select("#color_div")
-                                .insert("p").attr("class", "color_txt").html("Color palette ")
-                                .insert("select").attr("class", "color_params")
-                                .on("change", function(){
-                                    redisplay.draw()
-                                });
+        var col_div = d3.select("#color_div");
+        col_div.selectAll('.color_params').remove();
+        col_div.selectAll('.color_txt').remove();
+        col_div.selectAll('.central_class').remove();
+        var sequential_color_select = col_div.insert("p")
+                                                .attr("class", "color_txt")
+                                                .html("Color palette ")
+                                             .insert("select")
+                                                .attr("class", "color_params")
+                                                .on("change", function(){
+                                                    redisplay.draw() });
     
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
@@ -31,19 +33,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     };
     
     var make_diverg_button = function(){
-        d3.select("#color_div").selectAll('.color_params').remove();
-        d3.select("#color_div").selectAll('.color_txt').remove();
+        var col_div = d3.select("#color_div");
+        col_div.selectAll('.color_params').remove();
+        col_div.selectAll('.color_txt').remove();
 
-        d3.select("#color_div")
-            .insert('p')
+        col_div.insert('p')
                 .attr("class", "central_class")
                 .html("Central class : ")
-            .insert("input").attr({
-                type: "number", class: "central_class", id: "centr_class",
-                min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
-                })
-            .on("change", function(){redisplay.draw();});
-
+               .insert("input").attr({
+                   type: "number", class: "central_class", id: "centr_class",
+                   min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
+                   })
+               .on("change", function(){redisplay.draw();});
 
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
@@ -54,18 +55,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                     .style("display", "inline")
                                     .html("Left-side color ramp ")
                                 .insert("select").attr("class", "color_params_left")
-                                .on("change", function(){
-                                    redisplay.draw()
-                                });
+                                .on("change", function(){ redisplay.draw() });
         var right_color_select = d3.select("#color_div")
                                 .insert("p")
                                     .style({display: "inline", "margin-left": "70px"})
                                     .attr("class", "color_txt")
                                     .html("Right-side color ramp ")
                                 .insert("select").attr("class", "color_params_right")
-                                .on("change", function(){
-                                    redisplay.draw()
-                                });
+                                .on("change", function(){ redisplay.draw() });
         pal_names.forEach(function(name){
             left_color_select.append("option").text(name).attr("value", name);
             right_color_select.append("option").text(name).attr("value", name)
@@ -188,27 +185,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .scale(y)
                 .ticks(5)
                 .orient("left"));
-
-/*
-        // Some tests to draw the kernel density estimation on the reference plot :
-        var kde = science.stats.kde();
-        kde.bandwidth(0.11);
-        kde_values = kde(values);
-        kde_values.forEach(function(el, i){el[1] = i;});
-
-        x.domain(d3.extent(kde_values, function(d) { return d[1]; }));
-        y.domain(d3.extent(kde_values, function(d) { return d[0]; }));
-        
-        kde_line_func = d3.svg.line()
-                            .x(function(d){return x(d[1])})
-                            .y(function(d){return svg_h - y(d[0])});
-
-        svg_ref_histo
-            .append("path")
-            .attr("fill", "none")
-            .attr("stroke", "blue")
-            .attr("d", kde_line_func(kde_values));
-*/
     }
 
     var redisplay = {
@@ -246,9 +222,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             for(var i = 0, len = stock_class.length, offset=0; i < len; i++){
                 bin = {};
                 bin.val = stock_class[i] + 1;
-    //            bin.offset = bounds[i][0];
-    //            bin.width = bounds[i][1] - offset;
-    //            offset = bounds[i+1] ? bin.offset + bin.width + (bounds[i+1][0] - bounds[i][1]) : bin.offset + bin.width;
                 bin.offset = breaks[i];
                 bin.width = breaks[i+1] - breaks[i];
                 bin.height = bin.val;
@@ -277,20 +250,16 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     right_pal = getColorBrewerArray(class_right, right_palette);
                     left_pal = getColorBrewerArray(class_right, left_palette);
                     left_pal = left_pal.slice(0, ctl_class_value)
-                    //console.log([left_pal, right_pal, color_array]);
                 } else {
                     right_pal = getColorBrewerArray(ctl_class_value, right_palette);
                     left_pal = getColorBrewerArray(ctl_class_value, left_palette);
                     right_pal = right_pal.slice(0, ctl_class_value);
-                    //console.log([left_pal, right_pal, color_array]);
                 }
                 left_pal = left_pal.reverse()
                 color_array = left_pal.concat(right_pal);
             }
 
-            for(var i=0, len = bins.length; i<len; ++i){
-                bins[i].color = color_array[i];
-            }
+            for(var i=0, len = bins.length; i<len; ++i){ bins[i].color = color_array[i]; }
 
             var x = d3.scale.linear()
                 .range([0, svg_w]);
@@ -319,8 +288,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("dy", ".75em")
                 .attr("y", function(d){
                     var tmp = y(d.height)+5;
-                    if(tmp < height - 12) return tmp;
-                    else return height - 12})
+                    return (tmp < height - 12) ? tmp : height - 12
+//                    if(tmp < height - 12) return tmp;
+//                    else return height - 12
+                    })
                 .attr("x", function(d){return x(d.offset + d.width /2)})
                 .attr("text-anchor", "middle")
                 .attr("class", "text_bar")
@@ -558,7 +529,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             text: "Confirm",
             click: function(){
                     var colors_map = [];
-                    for(var j=0; j<user_data[layer_name].length; ++j){
+                    for(let j=0; j<user_data[layer_name].length; ++j){
                         var idx = serie.getClass(+user_data[layer_name][j][field_name])
 //                        console.log([user_data[layer_name][j][field_name], serie, idx, color_array])
                         colors_map.push(color_array[idx])
@@ -587,7 +558,7 @@ function getBreaksQ6(serie){
     var breaks = [], tmp = 0, j = undefined,
         len_serie = serie.length, stock_class = [],
         q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5*len_serie, 0.725*len_serie, 0.95*len_serie, len_serie];
-    for(var i=0; i<7; ++i){
+    for(let i=0; i<7; ++i){
         j = Math.round(q6_class[i]) - 1
         breaks[i] = serie[j];
         stock_class.push(j - tmp)

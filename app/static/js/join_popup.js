@@ -45,7 +45,7 @@ function valid_join_check_display(val, prop){
 function valid_join_on(layer_name, field1, field2){
     var join_values1 = [],
         join_values2 = [],
-        hits = 0, val;
+        hits = 0, val = undefined;
 
     field_join_map = [];
 

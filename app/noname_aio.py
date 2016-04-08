@@ -102,21 +102,8 @@ def geojson_to_topojson(filepath):
     process = Popen(["topojson", "--spherical", "--bbox", "true",
                      "-p", "--", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
+    os.remove(filepath)
     return stdout.decode()
-
-def topojson_to_geojson(filepath):
-    layers_name = json.parse(data)['objects'].keys()
-    layers_name = [''.join([i, '.json'] for i in layers_name)]
-    folder_name = os.path.join('/tmp', get_name())
-    os.mkdir(folder_name)
-    process = Popen(['topojson-geojson', filepath, '-o', folder_name])
-    result = []
-    for lyr in layers_name:
-        with open(os.path.join(folder_name, layers_name),
-                  'r', encoding='utf-8') as f:
-            result.append(f.read())
-    os.removedirs(folder_name)
-    return result
 
 @asyncio.coroutine
 def cache_input_topojson(request):
@@ -136,12 +123,10 @@ def cache_input_topojson(request):
         app_glob['app_users'].add(user_id)
         session_redis['app_user'] = user_id
         session_redis['converted'] = {}
-        f_name = '_'.join([user_id, name])
-#        print('I stored the input TopojSON as GEOJSON for later computations')
-#        session['converted'] = topojson_to_geojson(data)
+        f_name = '_'.join([user_id, name.split('.')[0]])
     else:
         user_id = session_redis['app_user']
-        f_name = '_'.join([user_id, name])
+        f_name = '_'.join([user_id, name.split('.')[0]])
         if hashed_input in session_redis['converted']:
             print("The TopoJSON was already cached !")
             return web.Response()
@@ -198,10 +183,10 @@ def convert(request):
         app_glob['app_users'].add(user_id)
         session_redis['app_user'] = user_id
         session_redis['converted'] = {}
-        f_name = '_'.join([user_id, name])
+        f_name = '_'.join([user_id, name.split('.')[0]])
     else:
         user_id = session_redis['app_user']
-        f_name = '_'.join([user_id, name])
+        f_name = '_'.join([user_id, name.split('.')[0]])
         if hashed_input in session_redis['converted']:
             result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
@@ -215,7 +200,7 @@ def convert(request):
         result = geojson_to_topojson(filepath2)
         session_redis['converted'][hashed_input] = True
         yield from app_glob['redis_conn'].set(f_name, result)
-        os.remove(filepath2)
+#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'zip' in datatype:
@@ -235,7 +220,7 @@ def convert(request):
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath+'archive')
-        os.remove(filepath2)
+#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream' in datatype:
@@ -259,8 +244,7 @@ def convert(request):
         else:
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-        os.remove(filepath)
-
+#        os.remove(filepath)
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
 
@@ -308,43 +292,52 @@ def handle_app_functionality(request):
 @asyncio.coroutine
 def R_compute(request):
     posted_data = yield from request.post()
-    function = request.match_info['function']
+    session_redis = yield from get_session(request)
+
     posted_data = json.loads(posted_data.get("json"))
-    print(posted_data)
-    
+
+    if not 'app_user' in session_redis:
+        print('this is not good')
+    else:
+        user_id = session_redis['app_user']
+
+    if posted_data['mask_layer']:
+        f_name = '_'.join([user_id, posted_data['mask_layer']])
+        result_mask = yield from app_glob['redis_conn'].get(f_name)
+        print("Found it")
     filenames = {'point_layer': ''.join(['/tmp/', get_name(), '.geojson']),
-                 'mask_layer': None , 'result': None}
+                 'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None,
+                 'result': None}
     savefile(filenames['point_layer'], json.dumps(topo_to_geo(posted_data['topojson'])).encode())
-    print(function)
-    commande = (b'stewart_to_json(knownpts_json, varname, typefct, span, '
+    if filenames['mask_layer']:
+        savefile(filenames['mask_layer'], json.dumps(topo_to_geo(result_mask.decode())).encode())
+
+    commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
                 b'beta, resolution, mask_json)')
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
-        'varname': posted_data['var_name'],
-        'typefct': posted_data['type_fun'].lower(),
+        'var_name': posted_data['var_name'],
+        'typefct': posted_data['typefct'].lower(),
         'span': float(posted_data['span']),
         'beta': float(posted_data['beta']),
         'resolution': float(posted_data['resolution']),
         'mask_json': filenames['mask_layer']
         }).encode()
-    print(data)
+#    print(data)
     id_ = yield from is_known_user(
         request, ref=app_glob['session_map'])
     print(id_)
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
-    print(content)
+#    print(content)
     content = json.loads(content.decode())
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
     print(content['breaks'], filenames['result'])
     savefile(filenames['result'], json.dumps(content['geojson']).encode())
-#    content = ogr_to_geojson(filenames['result'], to_latlong=True)
     res = geojson_to_topojson(filenames['result'])
-    res.replace(tmp_part, '_'.join(['StewartPotential',
-                                    posted_data['var_name'],
-                                    posted_data['span']]))
-    return web.Response(text=res)
+    new_name = '_'.join(['StewartPot', posted_data['var_name']])
+    return web.Response(text='|||'.join([str(content['breaks']), new_name, res.replace(tmp_part, new_name)]))
 
 @asyncio.coroutine
 def init(loop, port=9999):

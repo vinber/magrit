@@ -2,7 +2,6 @@ function handle_click_layer(layer_name){
     console.log(layer_name);
     var popid = layer_name,
         modal = createModalBox(popid);
-//    modalback.className = 'active';
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;
@@ -20,8 +19,7 @@ function createModalBox(layer_name){
      var type = current_layers[layer_name].type;
      if(current_layers[layer_name].rendered !== undefined){
          rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
-         if(!rep)
-             return;
+         if(!rep) return;
      }
      var g_lyr_name = "#" + layer_name;
      console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
@@ -86,7 +84,6 @@ function createModalBox(layer_name){
                            .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
                            .style('stroke-opacity', 0.9)
                            .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
-
      }
      return nwBox;
 }
