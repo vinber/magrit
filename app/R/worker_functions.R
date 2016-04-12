@@ -6,7 +6,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
-  knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp')
+  knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
   print(mask_json)
@@ -15,7 +15,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
-    mask_layer <- geojsonio::geojson_read(mask_json, what='sp')
+    mask_layer <- geojsonio::geojson_read(mask_json, what='sp', stringsAsFactors = FALSE)
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
     if(!rgeos::gIsValid(mask_layer)){
@@ -28,6 +28,10 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
     }
   }
 
+  if(class(knownpts_layer@data[, var_name]) == "character"){
+    knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
+  }
+  
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
                                             var = var_name,
@@ -38,7 +42,8 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 
   # Always return the result in latitude-longitude for the moment :
   result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',
-         jsonlite::toJSON(unique(res_poly@data$min)), '}')
+                   jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))), '}')
+  print(result)
   return(result)
 }
 

@@ -21,13 +21,13 @@
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 5 - Gridded map",
+	"link" 	:  "modules/gridded"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 6 - Flows map",
+	"link" 	:  "modules/flows"
 	}
 
 ]

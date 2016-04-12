@@ -44,21 +44,14 @@ def get_name(length=25):
 @aiohttp_jinja2.template('index.html')
 @asyncio.coroutine
 def handler(request):
-    return {}
-
-
-@aiohttp_jinja2.template('index2.html')
-@asyncio.coroutine
-def handler2(request):
     session = yield from get_session(request)
-    try:
-        date = 'Last visit : {}'.format(
-            datetime.fromtimestamp(
+    if 'last_visit' in session:
+        date = 'Last visit : {}'.format(datetime.fromtimestamp(
                 session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
-    except Exception as err:
-        date = str(err)
+    else:
+        date = ''
     session['last_visit'] = time.time()
-    return {'date': date}
+    return {'last_visit': date}
 
 
 @asyncio.coroutine
@@ -329,15 +322,16 @@ def R_compute(request):
     print(id_)
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
-#    print(content)
     content = json.loads(content.decode())
+    print(content)
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
     print(content['breaks'], filenames['result'])
     savefile(filenames['result'], json.dumps(content['geojson']).encode())
     res = geojson_to_topojson(filenames['result'])
     new_name = '_'.join(['StewartPot', posted_data['var_name']])
-    return web.Response(text='|||'.join([str(content['breaks']), new_name, res.replace(tmp_part, new_name)]))
+    print('|||'.join([str(content['breaks']), new_name, res.replace(tmp_part, new_name)]))
+    return web.Response(text='|||'.join([json.dumps(content['breaks']), new_name, res.replace(tmp_part, new_name)]))
 
 @asyncio.coroutine
 def init(loop, port=9999):
@@ -349,7 +343,6 @@ def init(loop, port=9999):
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
-    app.router.add_route('GET', '/index2', handler2)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)
     app.router.add_route('POST', '/R/{function}', R_commande)

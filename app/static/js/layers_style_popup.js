@@ -1,14 +1,14 @@
 function handle_click_layer(layer_name){
     console.log(layer_name);
     var popid = layer_name,
-        modal = createModalBox(popid);
+        modal = createStyleBox(popid);
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;
    return center(modal);
 };
 
-function createModalBox(layer_name){
+function createStyleBox(layer_name){
      var nwBox = document.createElement('div');
      var bg = document.createElement('div');
      var layer_name_split = layer_name.split(' - ');
@@ -94,7 +94,7 @@ function deactivate(forpopup){
         elem.remove();
     }
 }
-         
+
 function viewport(){
     var  innerw = window.innerWidth
         ,body   = document.documentElement || document.body

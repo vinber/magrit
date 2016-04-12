@@ -20,6 +20,7 @@ function get_menu_option(func){
             },
         "choropleth":{
             "title":"Choropleth map",
+            //"popup_factory": "fillMenu_Choropleth",
             "popup_factory": "createFuncOptionsBox_Choropleth",
             "desc":"Render a choropleth map on a numerical field of your data",
             "text_button": "Choose options and render..."
@@ -27,6 +28,12 @@ function get_menu_option(func){
         "anamorphose":{
             "title":"Anamorphose map",
             "popup_factory": "createFuncOptionsBox_Anamorphose",
+            "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
+            "text_button": "Choose algo, options and render..."
+            },
+        "grid_map":{
+            "title":"Gridded map",
+            "popup_factory": "createBow_griddedMap",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "text_button": "Choose algo, options and render..."
             }
@@ -49,7 +56,7 @@ function popup_function(){
         get_menu_option(func).popup_factory, "(\"", layer_name, "\")"
             ].join(''));
 
-    if(modal.style === undefined)
+    if(modal == undefined || modal.style == undefined)
         return
     else {
         modal.className += ' active';
@@ -135,26 +142,36 @@ function createFuncOptionsBox_Stewart(layer){
             error: function(error) { console.log(error); },
             success: function(data){
                 // Todo : render the layer
-                var class_min = eval(data.split('|||')[0]),
-                    n_layer_name = data.split('|||')[1],
-                    raw_topojson = data.split('|||')[2];
-                add_layer_fun(raw_topojson, {result_layer_on_add: true});
-                col_pal = getColorBrewerArray(class_min.length, "Purples")
-                console.log([class_min, n_layer_name, col_pal]);
-                var col_map = new Map();
-                for(let i=0, i_len = class_min.length; i < i_len; ++i){
-                    let k = Math.round(class_min[i] * 100) / 100;
-                    col_map.set(k, col_pal[i])
+                {
+                    let data_split = data.split('|||');
+                    var class_lim = JSON.parse(data_split[0]),
+                        n_layer_name = data_split[1],
+                        raw_topojson = data_split[2];
+                    add_layer_fun(raw_topojson, {result_layer_on_add: true});
+                }
+                col_pal = getColorBrewerArray(class_lim.min.length, "Purples")
+                console.log([class_lim, n_layer_name, col_pal]);
+                var col_map = new Map(),
+                    colors_breaks = [];
+                for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
+                    let k = Math.round(class_lim.min[i] * 100) / 100;
+                    col_map.set(k, col_pal[i]);
+                    colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]])
                 }
                 console.log(col_map)
-                current_layers[n_layer_name].colors = col_pal.slice();
+                current_layers[n_layer_name].colors = [];
                 current_layers[n_layer_name].rendered = "Stewart";
+                current_layers[n_layer_name].colors_breaks = colors_breaks;
                 d3.select("#"+n_layer_name).selectAll("path").style("fill", function(d, i){
                                                                 let k = Math.round(d.properties.min * 100) / 100;
-                                                                return col_map.get(k); })
+                                                                    col = col_map.get(k);
+                                                                current_layers[n_layer_name].colors[i] = col;
+                                                                return col; })
                                                              .style("stroke", function(d, i){
                                                                 let k = Math.round(d.properties.min * 100) / 100;
                                                                 return col_map.get(k); })
+                makeButtonLegend(n_layer_name);
+                                        
             }
         });
         deactivate([nwBox, bg]);
@@ -249,7 +266,82 @@ function createBoxExplore(layer_name){
     return deferred.promise;
 }
 
+function fillMenu_Choropleth(layer){
+    var g_lyr_name = "#"+ layer.trim(),
+        //fields = Object.getOwnPropertyNames(user_data[layer][0]),
+        // only retrieve the name of numericals fields :
+        fields = type_col(layer, "number");
+        ref_size_val = undefined,
+        selected_disc = undefined;
 
+    if(fields.length === 0){
+        alert("The targeted layer doesn't seems to contain any numerical field");
+        return;
+    }
+
+    var dv2 = section2.append("p").attr("class", "form-item");
+    dv2.append('h3').html('Choropleth map');
+    var field_selec = dv2.append('p').html('Field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+
+    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+    var rendering_params = new Object();
+    dv2.insert('p').style("margin", "auto").html("")
+                .append("button").html("Display and arrange class")
+                .on("click", function(){
+                    display_discretization(layer, field_selec.node().value, opt_nb_class, "Quantiles")
+                        .then(function(confirmed){
+                            if(confirmed){
+                                console.log(confirmed);
+                                rendering_params = {
+                                        nb_class: confirmed[0], type: confirmed[1],
+                                        breaks: confirmed[2], colors:confirmed[3],
+                                        colorsByFeature: confirmed[4]
+                                    }
+                            }
+                        });
+                });
+
+    makeButtonLegend(layer);
+    dv2.append('button').attr('id', 'yes').text('Render')
+    qs('#yes').onclick=function(){
+        if(rendering_params){
+    // TODO : - Désactiver les possibilité d'éditons du style de la couche une fois mise en forme par choropleth/stewart/prop_symbol/etc ?
+    //        - Remonter la couche ciblée au dessus une fois qu'elle a été mise en forme
+    //        - 
+            var layer_to_render = d3.select(g_lyr_name).selectAll("path");
+            layer_to_render.style('fill-opacity', 0.9)
+                           .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
+                           .style('stroke-opacity', 0.9)
+                           .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
+            current_layers[layer].rendered = 'Choropleth';
+            current_layers[layer].colors = rendering_params['colorsByFeature'];
+            let colors_breaks = [];
+            for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
+            current_layers[layer].colors_breaks = colors_breaks;
+        }
+     }
+
+}
+
+function makeButtonLegend(layer_name){
+    var display_legend = dv2.append("p")
+                            .attr("id", "display_legend")
+                            .style({"text-align": "center", "margin-right": "5%"})
+                            .html("Display the legend")
+                            .insert('input')
+                            .attr("id", "checkbox_legend")
+                            .attr("type", "checkbox")
+                            .on("change", function(){handle_legend(layer_name);});
+}
+
+function handle_legend(layer){
+    var state = current_layers[layer].rendered;
+    if(state != undefined){
+        if(d3.selectAll("#legend_root").node()) d3.selectAll("#legend_root").remove()
+        else createLegend(layer)
+    }
+}
 
 function createFuncOptionsBox_Choropleth(layer){
     var nwBox = document.createElement('div'),
@@ -312,6 +404,10 @@ function createFuncOptionsBox_Choropleth(layer){
                            .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
             current_layers[layer].rendered = 'Choropleth';
             current_layers[layer].colors = rendering_params['colorsByFeature'];
+            let colors_breaks = [];
+            for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
+            current_layers[layer].colors_breaks = colors_breaks;
+            makeButtonLegend(layer);
         }
      }
      qs('#no').onclick=function(){
@@ -320,6 +416,85 @@ function createFuncOptionsBox_Choropleth(layer){
      return nwBox;
 }
 
+
+function createLegend(layer, title){
+    var legendTitle = title || "Legend";
+    var boxheight = 18,
+        boxwidth = 18,
+        boxgap = 4,
+        xpos = w - (w / 8),
+        ypos = 20,
+        nb_class = current_layers[layer].colors_breaks.length;
+
+//    var new_svg = d3.select('body')
+//        .append('div')
+//        .append("svg").attr("id", "svg_legend")
+//        .attr("width", 100)
+//        .attr("height", nb_class * 30 + 10);
+
+    var legend = map.insert('g').attr('id', 'legend_root')
+        .selectAll('.legend')
+      .data(current_layers[layer].colors_breaks)
+      .enter().insert('g')
+      .attr('class', function(d, i) { return "legend_" + i; });
+
+    legend.insert("g").attr("id","box_color")
+      .append('rect')
+      .attr("x", xpos + boxwidth + boxgap / 2)
+      .attr("y", function(d, i){
+        return ypos + (i * boxgap) + (i * boxheight)
+        })
+      .attr('width', boxwidth)
+      .attr('height', boxheight)
+      .style('fill', function(d) { return d[1]; })
+      .style('stroke', function(d) { return d[1]; });
+      
+    legend.insert("g").attr("id","box_text")
+      .append('text')
+      .attr("x", xpos + boxwidth * 2 + boxgap)
+      .attr("y", function(d, i){
+        return ypos + (i * boxgap) + (i+1/2) * boxheight;
+        })
+      .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+      .text(function(d) { return d[0]; });
+
+     legend.append("g").attr("id","legendtitle")
+        .append('text')
+        .text(legendTitle)
+        .attr("x", xpos + boxwidth * 2 + boxgap)
+        .attr("y", ypos - 5);
+
+    var max_x = - xpos + w / 8,
+        max_y = h - ypos;    
+
+    var drag_lgd = d3.behavior.drag()
+                .origin(function() { 
+                        var t = d3.select(this);
+                        return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                                y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+                        })
+                .on("dragstart", function(){zoom.on("zoom", null); })
+                .on("dragend", function(){ zoom.on("zoom", redraw); })
+                .on("drag", function() {
+                        let coords = d3.mouse(this), n_x = coords[0], n_y = coords[1];
+                        console.log(n_x, n_y);
+//                        if(!(max_x < n_x < 0 && 0 > n_y > max_y)) return;
+                        d3.selectAll("#legend_root").attr('transform', 'translate(' + [n_x, n_y] + ')');
+                        console.log('translate(' + [n_x, n_y] + ')')
+                        });
+//   function 
+    legend.append("svg:image")
+        .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
+        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
+        .call(drag_lgd);
+
+    legend.append("svg:image")
+        .attr({x: xpos - 10, y: ypos + 15, width: 12, height: 12, "fill-opacity" : 0.5})
+        .attr("xlink:href", "/static/img/Edit_icon.svg")
+        .on('click', function(){
+            alert("edit");
+        });
+}
 
 function createFuncOptionsBox_PropSymbol(layer){
      var nwBox = document.createElement('div'),
