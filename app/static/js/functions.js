@@ -33,9 +33,15 @@ function get_menu_option(func){
             },
         "grid_map":{
             "title":"Gridded map",
-            "popup_factory": "createBow_griddedMap",
+            "popup_factory": "createBox_griddedMap",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
-            "text_button": "Choose algo, options and render..."
+            "text_button": "Choose options and render..."
+            },
+        "flows_map":{
+            "title":"Link/FLow map",
+            "popup_factory": "createBox_FlowMap",
+            "desc": "Render a map displaying link between features with graduated sizes",
+            "text_button": "Choose options and render..."
             }
 
     };
@@ -267,9 +273,9 @@ function createBoxExplore(layer_name){
 }
 
 function fillMenu_Choropleth(layer){
-    var g_lyr_name = "#"+ layer.trim(),
-        //fields = Object.getOwnPropertyNames(user_data[layer][0]),
-        // only retrieve the name of numericals fields :
+    layer = layer.trim();
+
+    var g_lyr_name = "#"+layer,
         fields = type_col(layer, "number");
         ref_size_val = undefined,
         selected_disc = undefined;
@@ -296,36 +302,23 @@ function fillMenu_Choropleth(layer){
                                 rendering_params = {
                                         nb_class: confirmed[0], type: confirmed[1],
                                         breaks: confirmed[2], colors:confirmed[3],
-                                        colorsByFeature: confirmed[4]
+                                        colorsByFeature: confirmed[4], renderer:"Choropleth"
                                     }
                             }
                         });
                 });
-
     makeButtonLegend(layer);
     dv2.append('button').attr('id', 'yes').text('Render')
     qs('#yes').onclick=function(){
         if(rendering_params){
-    // TODO : - Désactiver les possibilité d'éditons du style de la couche une fois mise en forme par choropleth/stewart/prop_symbol/etc ?
-    //        - Remonter la couche ciblée au dessus une fois qu'elle a été mise en forme
-    //        - 
-            var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-            layer_to_render.style('fill-opacity', 0.9)
-                           .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
-                           .style('stroke-opacity', 0.9)
-                           .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
-            current_layers[layer].rendered = 'Choropleth';
-            current_layers[layer].colors = rendering_params['colorsByFeature'];
-            let colors_breaks = [];
-            for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
-            current_layers[layer].colors_breaks = colors_breaks;
+            render_choro(layer, rendering_params);
         }
      }
-
 }
 
 function makeButtonLegend(layer_name){
-    var display_legend = dv2.append("p")
+    // Todo : make the label clickable as the checkbox
+    var display_legend = dv2.insert("p")
                             .attr("id", "display_legend")
                             .style({"text-align": "center", "margin-right": "5%"})
                             .html("Display the legend")
@@ -382,7 +375,7 @@ function createFuncOptionsBox_Choropleth(layer){
                                 rendering_params = {
                                         nb_class: confirmed[0], type: confirmed[1],
                                         breaks: confirmed[2], colors:confirmed[3],
-                                        colorsByFeature: confirmed[4]
+                                        colorsByFeature: confirmed[4], renderer: "Choropleth"
                                     }
                             }
                         });
@@ -394,19 +387,7 @@ function createFuncOptionsBox_Choropleth(layer){
      qs('#yes').onclick=function(){
         deactivate([nwBox, bg]);
         if(rendering_params){
-    // TODO : - Désactiver les possibilité d'éditons du style de la couche une fois mise en forme par choropleth/stewart/prop_symbol/etc ?
-    //        - Remonter la couche ciblée au dessus une fois qu'elle a été mise en forme
-    //        - 
-            var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-            layer_to_render.style('fill-opacity', 0.9)
-                           .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
-                           .style('stroke-opacity', 0.9)
-                           .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
-            current_layers[layer].rendered = 'Choropleth';
-            current_layers[layer].colors = rendering_params['colorsByFeature'];
-            let colors_breaks = [];
-            for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
-            current_layers[layer].colors_breaks = colors_breaks;
+            render_choro(layer, rendering_params);
             makeButtonLegend(layer);
         }
      }
@@ -560,6 +541,120 @@ function createFuncOptionsBox_PropSymbol(layer){
      }
      return nwBox;
 }
+
+
+// TODO : keep trace of the previously used parameters and redisplay them when reopenning the windows
+function createBox_griddedMap(layer){
+    if(current_layers[layer].type != "Polygon"){
+        alert("Gridded maps can currently only be made from polygons");
+        return;
+    }
+
+     var nwBox = document.createElement('div'),
+         bg = document.createElement('div'),
+         g_lyr_name = "#"+trim(layer),
+         fields = type_col(layer, "number"),
+//         fields = Object.getOwnPropertyNames(user_data[layer][0]),
+         other_layers = Object.getOwnPropertyNames(current_layers),
+         tmp_idx = null;
+
+     tmp_idx = other_layers.indexOf("Graticule");
+     if(tmp_idx > -1)
+         other_layers.splice(tmp_idx, 1);
+
+     tmp_idx = other_layers.indexOf("Simplified_land_polygons");
+     if(tmp_idx > -1)
+         other_layers.splice(tmp_idx, 1);
+
+     tmp_idx = null;
+     bg.className = 'overlay';
+     nwBox.id = [layer, '_gridded_popup'].join('');
+     nwBox.className = 'popup';
+
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", layer, '_gridded_popup'].join(''));
+    dialog_content.append('h3').html('Gridded map');
+
+    var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+    var cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i>').insert('input').attr('type', 'number').attr('class', 'params').attr('value', last_params.span || 0).attr("min", 1000).attr("max", 700000).attr("step", 0.1);
+
+    dialog_content.append('button').attr('id', 'yes').text('Compute and render');
+    dialog_content.append('button').attr('id', 'no').text('Close');
+    qs('#yes').onclick=function(){
+        last_params = {
+            "var_name": field_selec.node().value,
+            "cellsize": cellsize.node().value
+            };
+        var formToSend = new FormData();
+        formToSend.append("json", JSON.stringify({
+            "topojson": targeted_topojson,
+            "var_name": field_selec.node().value,
+            "cellsize": cellsize.node().value
+            }))
+        $.ajax({
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: '/R_compute/gridded',
+            data: formToSend,
+            type: 'POST',
+            error: function(error) { console.log(error); },
+            success: function(data){
+                // Todo : render the layer
+                {
+                    let data_split = data.split('|||');
+                    var n_layer_name = data_split[0],
+                        raw_topojson = data_split[1];
+                    add_layer_fun(raw_topojson, {result_layer_on_add: true});
+                }
+                var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(result_data[n_layer_name].length));
+                current_layers[n_layer_name].rendered = "Gridded";
+                makeButtonLegend(n_layer_name);
+                var rendering_params = new Object();
+                dv2.insert('p').style("margin", "auto").html("")
+                    .append("button").html("Display and arrange class ...")
+                    .on("click", function(){
+                        display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
+                            .then(function(confirmed){
+                                if(confirmed){
+                                    console.log(confirmed);
+                                    rendering_params = {
+                                            nb_class: confirmed[0], type: confirmed[1],
+                                            breaks: confirmed[2], colors:confirmed[3],
+                                            colorsByFeature: confirmed[4], renderer: "Gridded"
+                                        }
+                                    render_choro(n_layer_name, rendering_params);
+                
+                                }
+                            });
+                        });
+            }
+        });
+        deactivate([nwBox, bg]);
+     }
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+}
+
+function render_choro(layer, rendering_params){
+    console.log(rendering_params);
+    var layer_to_render = d3.select("#"+layer).selectAll("path");
+    layer_to_render.style('fill-opacity', 0.9)
+                   .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
+                   .style('stroke-opacity', 0.9)
+                   .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
+    current_layers[layer].rendered = rendering_params['renderer'];
+    current_layers[layer].colors = rendering_params['colorsByFeature'];
+    let colors_breaks = [];
+    for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
+    current_layers[layer].colors_breaks = colors_breaks;
+}
+
 
 var sizer = function(values, max_size, fix_size, symbol_type){
     return null;

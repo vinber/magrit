@@ -461,20 +461,29 @@ function remove_layer(){
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
         if(confirmed){
-             var g_lyr_name = "#"+trim(name);
+             let g_lyr_name = "#"+trim(name);
              d3.select(g_lyr_name).node().remove();
              d3.select("#sortable").select('.'+name).node().remove();
+
              // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
              if(current_layers[name].targeted){
                  d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
                  d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
                  if(d3.select("#join_button").node() != null)
-                     valid_join_check_display() //
+                     valid_join_check_display();
                  d3.select("#func_button").node().disabled = true;
                  field_join_map = [];
                  delete user_data[name];
                  targeted_layer_added = false;
              }
+
+             // Making some clean-up regarding the result layer :
+             if(current_layers[name].rendered){
+                 d3.selectAll("#display_legend").remove()
+                 d3.selectAll("#legend_root").remove()
+                 if(result_data.hasOwnProperty(name)) delete result_data[name];
+             }
+
              delete current_layers[name];
         }
     });

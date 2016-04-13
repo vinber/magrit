@@ -1,5 +1,6 @@
 TODO list:
 - More testing on the join operation
+- Remove the "explore your dataset" as a single functionnality (in order to allow the user to browse table on every other app functionnalities (stewart, choropleth, etc))
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc ..
 - Propose palettes instead of single colors in the styling popup when features have been already classed
 - Let the user choose his own class (+ custom colors) in the discretization panel
@@ -10,4 +11,7 @@ TODO list:
 - add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
+- add a box to customize the legend (float number precision, title, etc.)
+- add some sample of data + some basemap features
+- allow to display label on renderer features ?
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)

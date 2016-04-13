@@ -8,6 +8,7 @@ load <- function(){
   require(geojsonio, quietly = TRUE)
   require(stats, quietly = TRUE)
   require(rredis, quietly = TRUE)
+  require(cartography)
   rredis::redisConnect(host = "localhost", port = 6379)
   rredis::redisSelect(1)
 }
@@ -19,6 +20,7 @@ make_env <- function(lock = FALSE){
   source('R/worker_functions.R')
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
   preparedEnv$stewart_to_json <- stewart_to_json
+  preparedEnv$make_gridded_map <- make_gridded_map
   preparedEnv$mta_globaldev <- mta_globaldev
   preparedEnv$mta_mediumdev <- mta_mediumdev
   preparedEnv$mta_localdev <- mta_localdev

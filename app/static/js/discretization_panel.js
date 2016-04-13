@@ -327,10 +327,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                      .attr("id", "discretiz_charts")
                      .attr("title", ["Discretization panel - ", layer_name, " - ", field_name].join(''));
 
-    var values = [], color_array = [],
-        nb_values = user_data[layer_name].length;
+    if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
+    else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
 
-    for(var i=0; i<nb_values; i++){values.push(Number(user_data[layer_name][i][field_name]));}
+    var values = [], color_array = [],
+        nb_values = db_data.length;
+
+
+    for(var i=0; i<nb_values; i++){values.push(Number(db_data[i][field_name]));}
 
     var serie = new geostats(values),
         breaks = [], stock_class = [],
@@ -338,7 +342,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         max_nb_class = 22 < serie.pop() ? 22 : serie.pop();
 
     values = serie.sorted();
-    serie.setPrecision(4);
+    serie.setPrecision(6);
     var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression"];
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push("Geometric progression");
@@ -529,8 +533,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             text: "Confirm",
             click: function(){
                     var colors_map = [];
-                    for(let j=0; j<user_data[layer_name].length; ++j){
-                        var idx = serie.getClass(+user_data[layer_name][j][field_name])
+                    for(let j=0; j<db_data.length; ++j){
+                        var idx = serie.getClass(+db_data[j][field_name])
 //                        console.log([user_data[layer_name][j][field_name], serie, idx, color_array])
                         colors_map.push(color_array[idx])
                     }

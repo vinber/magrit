@@ -22,12 +22,16 @@
 	{
 	"img" : "empty.png",
 	"desc" : "Example 5 - Gridded map",
-	"link" 	:  "modules/gridded"
+	"link" 	:  "modules/grid_map"
 	},
 	{
 	"img" : "empty.png",
 	"desc" : "Example 6 - Flows map",
-	"link" 	:  "modules/flows"
+	"link" 	:  "modules/flows_map"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 7",
+	"link" 	:  ""
 	}
-
 ]

@@ -9,9 +9,9 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
-  print(mask_json)
-  print(typefct)
-  print(resolution)
+  # print(mask_json)
+  # print(typefct)
+  # print(resolution)
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
@@ -44,6 +44,57 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',
                    jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))), '}')
   print(result)
+  return(result)
+}
+
+make_gridded_map <- function(layer_json_path, var_name, cellsize){
+  if(!is.numeric(cellsize)){ cellsize <- as.numeric(cellsize) }
+  
+  print(var_name)
+  print(cellsize)
+  
+  latlong_string = "+init=epsg:4326"
+  web_mercator = "+init=epsg:3857"
+  
+  print(layer_json_path)
+  
+  spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
+  
+  print(spdf@proj4string)
+
+  if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
+  if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
+
+  col_names <- colnames(spdf@data)
+
+  if(is.element("pkuid", col_names) && class(spdf@data[,"pkuid"]) == "integer"){
+    spdf@data[, "pkuid"] <- as.character(spdf@data[, "pkuid"])
+    s_id = "pkuid"
+  } else if (is.element("X_uid", col_names) && class(spdf@data[,"X_uid"]) == "integer") {
+    spdf@data[, "X_uid"] <- as.character(spdf@data[, "X_uid"])
+    s_id = "X_uid"
+  } else { s_id = "id"; }
+
+  if(class(spdf@data[, var_name]) == "character"){
+    spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
+  }
+  
+  print(s_id)
+
+  mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)
+
+  print(class(mygrid))
+
+  datagrid.df <- cartography::getGridData(x = mygrid, df = spdf@data, var = var_name, dfid = s_id)
+  datagrid.df$densitykm <- datagrid.df[, paste0(var_name, '_density')]*1000*1000
+  the_grid <- mygrid[[1]]
+
+  print(class(the_grid))
+
+  m <- match(the_grid@data[,"id"], datagrid.df[, "id_cell"])
+  the_grid@data <- data.frame(the_grid@data, datagrid.df[m, ])
+  result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(the_grid, CRS(latlong_string))),
+                   ', "additionnal_infos":null}')
   return(result)
 }
 
