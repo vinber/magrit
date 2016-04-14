@@ -268,14 +268,14 @@ function add_layer_fun(text, options){
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
 
-        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
+//        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
+        if(target_layer_on_add){
             user_data[lyr_name] = [];
             data_to_load = true;
-        }
-        else if(result_layer_on_add)
-            result_data[lyr_name] = []
-
-        else
+        } else if(result_layer_on_add){
+            result_data[lyr_name] = [];
+            data_to_load = false;
+        } else
             data_to_load = false;
 
         current_layers[lyr_name] = {"type": type,
@@ -290,10 +290,14 @@ function add_layer_fun(text, options){
               .attr("d", path)
               .attr("id", function(d, ix) {
                     if(data_to_load){
-                        if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
-                            d.properties["_uid"] = d.id;
-                        d.properties["pkuid"] = ix;
-                        user_data[lyr_name].push(d.properties);
+                        if(Object.getOwnPropertyNames(d.properties).length > 0){
+                            if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
+                                d.properties["_uid"] = d.id;
+                            d.properties["pkuid"] = ix;
+                            user_data[lyr_name].push(d.properties);
+                        } else {
+                            user_data[lyr_name].push({"id": d.id});
+                        }
                     } else if(result_layer_on_add)
                         result_data[lyr_name].push(d.properties);
 

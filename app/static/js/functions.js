@@ -347,7 +347,7 @@ function createFuncOptionsBox_Choropleth(layer){
         selected_disc = undefined;
 
     if(fields.length === 0){
-        alert("The targeted layer doesn't seems to contain any numerical field");
+        alert("The targeted layer doesn't seems to contain any numerical field or contains too many empty values");
         return;
     }
 
@@ -672,7 +672,8 @@ var type_col = function(layer_name, target){
         field = undefined,
         tmp_type = undefined;
 
-    fields.splice(fields.indexOf("pkuid"), 1);
+    if(fields.indexOf('pkuid') != -1)
+        fields.splice(fields.indexOf("pkuid"), 1);
 
     for(var j = 0, len = fields.length; j < len; ++j){
         field = fields[j];

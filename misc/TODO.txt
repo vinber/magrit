@@ -12,6 +12,8 @@ TODO list:
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
 - add a box to customize the legend (float number precision, title, etc.)
-- add some sample of data + some basemap features
-- allow to display label on renderer features ?
+- improved sample dataset
+- allow to display label on rendered features ?
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)
+- Pick a random color to fill the layer just added by the user (instead of always the same one)
+- Fix the weird behavior when trying to move the legend

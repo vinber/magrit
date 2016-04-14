@@ -119,6 +119,8 @@ function valid_join_on(layer_name, field1, field2){
             if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = field_join_map[i];
+                if(!targeted_topojson.objects[layer_name].geometries[i].hasOwnProperty('properties'))
+                    targeted_topojson.objects[layer_name].geometries[i].properties = {};
                 for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                     f_name = fields_name_to_add[j];
                     if(f_name.length > 0){

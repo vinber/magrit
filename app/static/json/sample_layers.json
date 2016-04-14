@@ -1,0 +1,12 @@
+[
+ {
+ "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
+ "nuts2": "/database/topojson/nuts2.topojson",
+ "twincities": "/database/csv/twincities.csv",
+ "nuts0": "/database/topojson/nuts0.topojson",
+ "nuts1": "/database/topojson/nuts1.topojson",
+ "world_country": "/database/topojson/simplified_land_polygons.topojson",
+ "world_cities": "/database/topojson/world_cities_extract5000.topojson",
+ "water_coverage": "/database/topojson/water.topojson"
+ }
+]

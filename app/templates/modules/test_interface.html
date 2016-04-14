@@ -60,7 +60,7 @@ var graticule = d3.geo.graticule(),
     path = d3.geo.path().projection(proj),
     t = proj.translate(),
     s = proj.scale(),
-    zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 45]).on("zoom", redraw);
+    zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 250]).on("zoom", redraw);
 
 var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
@@ -407,14 +407,17 @@ var qs = function(str){
     return document.querySelector(str);
 };
 
-var make_confirm_dialog = function(txt, text_ok, text_cancel, title){
+var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height){
+    html_content = html_content || "";
     text_ok = text_ok || "Ok";
     text_cancel = text_cancel || "Cancel";
     title = title || "Confirm ...";
+    class_box = class_box || "dialogBox";
     var deferred = Q.defer();
-    d3.select("body").append("div").attr("id", "dialog").attr("title", title).text(txt);
+    d3.select("body").append("div").attr("id", "dialog").attr("class", class_box).attr("title", title).html(html_content);
     var res = undefined;
     $( "#dialog" ).dialog({
+        width: width, height: height,
         modal:true,
         buttons:[{
             text: text_ok,
@@ -750,7 +753,68 @@ var φ = d3.scale.linear()
     .range([90, -90]);
 
 function add_sample_layer(){
-    console.log(this);
+    var dialog_res = [],
+        selec = {layout: null, target: null},
+        sample_dataset = undefined;
+
+    d3.json('/static/json/sample_layers.json', function(error, json){
+        sample_dataset = json[0];
+        });
+
+    var t_layers = [["<i>Target layer</i>",""],
+                    ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
+                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+                    ["International Twinning Agreements Betwwen Cities <i>(Tabular data)</i>", "twincities"]];
+
+    var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
+                         ["Nuts 1 (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
+                         ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+                         ["World countries simplified <i>(Polygons)</i>", "world_country"],
+                         ["World country capitals <i>(Points)</i>", "world_cities"],
+                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"]];
+
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", w/2, h-10).then(
+        function(confirmed){
+            if(confirmed){
+                //dialog_res.push(confirmed);
+                console.log(sample_dataset);
+                console.log(selec);
+                let url = undefined;
+                if(selec.target){
+                    url = sample_dataset[selec.target];
+                    d3.text(url, function(txt_layer){
+                        target_layer_on_add = true;
+                        add_layer_fun(txt_layer);
+                        target_layer_on_add = false;
+                    });
+                }
+                if(selec.layout && selec.layout.length > 0){
+                    for(let i = 0; i < selec.layout.length; ++i){
+                        url = sample_dataset[selec.layout[i]];
+                        d3.text(url, function(txt_layer){ add_layer_fun(txt_layer); })
+                    }
+                }
+            }
+        });
+
+    var box_body = d3.select(".sampleDialogBox");
+
+    if(!targeted_layer_added){
+        box_body.append('h3').html("Choose a layer to be rendered : ");
+    
+        var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
+        t_layers.forEach(function(layer_info){t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+        t_layer_selec.on("change", function(){selec.target = this.value;});
+        }
+
+    box_body.append('h3').html("Choose layer(s) to be used as layout : ")
+
+    var layout_layer_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
+    layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    layout_layer_selec.on("change", function(){
+        let elem = undefined;
+        selec.layout = [elem.value for (elem of this.selectedOptions)];
+    });
 }
 
 function handle_active_layer(){

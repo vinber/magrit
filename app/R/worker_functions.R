@@ -6,12 +6,12 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
+  additionnal_infos <- "null"
+
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
-  # print(mask_json)
-  # print(typefct)
-  # print(resolution)
+
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
@@ -19,11 +19,13 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
     if(!rgeos::gIsValid(mask_layer)){
-      print('Invalid geom mask')
+      print('Invalid geom mask - First test')
       mask_layer <- rgeos::gBuffer(mask_layer, width = 1)
+      additionnal_infos <- "Mask layer have been changed to obtain valid geometries"
       if(!rgeos::gIsValid(mask_layer)){
         mask_layer <- NULL
         print('Invalid geom mask, dropping it')
+        additionnal_infos <- "Mask not used (invalid geometry)"
       }
     }
   }
@@ -41,26 +43,20 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
                                             mask = mask_layer)
 
   # Always return the result in latitude-longitude for the moment :
-  result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),', "breaks":',
-                   jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))), '}')
-  print(result)
+  result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(res_poly, CRS(latlong_string))),',"breaks":',
+                   jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))),
+                   ',"additional_infos":', jsonlite::toJSON(additionnal_infos), '}')
   return(result)
 }
 
 make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(!is.numeric(cellsize)){ cellsize <- as.numeric(cellsize) }
   
-  print(var_name)
-  print(cellsize)
-  
   latlong_string = "+init=epsg:4326"
   web_mercator = "+init=epsg:3857"
-  
-  print(layer_json_path)
-  
+
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
   
-  print(spdf@proj4string)
 
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
@@ -78,25 +74,21 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(class(spdf@data[, var_name]) == "character"){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
-  
-  print(s_id)
 
   mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)
-
-  print(class(mygrid))
 
   datagrid.df <- cartography::getGridData(x = mygrid, df = spdf@data, var = var_name, dfid = s_id)
   datagrid.df$densitykm <- datagrid.df[, paste0(var_name, '_density')]*1000*1000
   the_grid <- mygrid[[1]]
 
-  print(class(the_grid))
-
   m <- match(the_grid@data[,"id"], datagrid.df[, "id_cell"])
   the_grid@data <- data.frame(the_grid@data, datagrid.df[m, ])
   result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(the_grid, CRS(latlong_string))),
-                   ', "additionnal_infos":null}')
+                   ', "additional_infos":null}')
   return(result)
 }
+
+# flow_map <- function(tab_data, )
 
 ###################################
 # MTA functions

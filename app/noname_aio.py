@@ -299,6 +299,15 @@ def handle_app_functionality(request):
     return {"func" : request.match_info['function']}
 
 @asyncio.coroutine
+def flow_map(posted_data, session_redis, id_, user_id):
+    posted_data = json.loads(posted_data.get("json"))
+#    content = yield from R_client_fuw_async(
+#        url_client, commande, data, app_glob['async_ctx'], id_)
+#    content = json.loads(content.decode())
+    print(posted_data)
+    return ""
+
+@asyncio.coroutine
 def carto_gridded(posted_data, session_redis, id_, user_id):
     posted_data = json.loads(posted_data.get("json"))
     filenames = {"src_layer" : ''.join(['/tmp/', get_name(), '.geojson']),
@@ -314,6 +323,8 @@ def carto_gridded(posted_data, session_redis, id_, user_id):
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
     content = json.loads(content.decode())
+    if "additional_infos" in content and len(content["additional_infos"]) > 0:
+        print("Additionnal infos:\n", content["additional_infos"])
 
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
@@ -353,7 +364,8 @@ def call_stewart(posted_data, session_redis, id_, user_id):
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
     content = json.loads(content.decode())
-
+    if "additional_infos" in content and len(content["additional_infos"]) > 0:
+        print("Additionnal infos:\n", content["additional_infos"])
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
 
