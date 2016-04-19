@@ -1,5 +1,6 @@
 TODO list:
 - More testing on the join operation
+- Change the "tooltip" / info box to a nicer one
 - Remove the "explore your dataset" as a single functionnality (in order to allow the user to browse table on every other app functionnalities (stewart, choropleth, etc))
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc ..
 - Propose palettes instead of single colors in the styling popup when features have been already classed
@@ -16,4 +17,4 @@ TODO list:
 - allow to display label on rendered features ?
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)
 - Pick a random color to fill the layer just added by the user (instead of always the same one)
-- Fix the weird behavior when trying to move the legend
+- /!\ Fix the weird behavior when trying to move the legend

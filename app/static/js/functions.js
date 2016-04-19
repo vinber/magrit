@@ -72,6 +72,102 @@ function popup_function(){
     }
 };
 
+function createBox_FlowMap(ref_layer){
+    if(joined_dataset.length < 1){
+        alert("A .csv dataset have to be provided");
+        return;
+    }
+    if(current_layers[ref_layer].type === "Line"){
+        alert("A background reference layer (point/polygon/ have to be provided");
+        return;
+    }
+
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        g_lyr_name = "#"+trim(ref_layer),
+        fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
+        ref_fields = Object.getOwnPropertyNames(user_data[ref_layer][0]);
+
+    bg.className = 'overlay';
+    nwBox.id = [ref_layer, '_link_popup'].join('');
+    nwBox.className = 'popup';
+
+    (document.body || document.documentElement).appendChild(nwBox);
+    (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", ref_layer, '_link_popup'].join(''));
+    dialog_content.append('h3').html('Flow map');
+
+    dialog_content.append('p').html('<b>Csv fields :</b>');
+
+    var field_i = dialog_content.append('p').html('<b><i> i </i></b> field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_i.append("option").text(field).attr("value", field); });
+    var field_j = dialog_content.append('p').html('<b><i> j </i></b> field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_j.append("option").text(field).attr("value", field); });
+    var field_fij = dialog_content.append('p').html('<b><i> fij </i></b> field :').insert('select').attr('class', 'params');
+    fields.forEach(function(field){ field_fij.append("option").text(field).attr("value", field); });
+
+    dialog_content.append('p').html('<b>Reference layer fields :</b>');
+    var join_field = dialog_content.append('p').html('join field :').insert('select').attr('class', 'params');
+    ref_fields.forEach(function(field){ join_field.append("option").text(field).attr("value", field); });
+
+    dialog_content.append('button').attr('id', 'yes').text('Compute');
+    dialog_content.append('button').attr('id', 'no').text('Close');
+
+     qs('#yes').onclick=function(){
+        name_join_field = join_field.node().value;
+        last_params = {
+            "field_i": field_i.node().value,
+            "field_j": field_j.node().value,
+            "field_fij": field_fij.node().value,
+            "join_field": name_join_field
+            };
+        var formToSend = new FormData();
+        if(!targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty("properties")
+            && targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty(name_join_field)){
+        for(let i=0, len=targeted_topojson.objects[ref_layer].geometries.length, obj=targeted_topojson.objects[ref_layer]; i<len; ++i){
+                obj.geometries[i].properties = new Object();
+                obj.geometries[i].properties[name_join_field] = user_data[ref_layer][i][name_join_field];
+            }
+        }
+        formToSend.append("json", JSON.stringify({
+            "topojson": targeted_topojson,
+            "csv_table": JSON.stringify(joined_dataset[0]),
+            "field_i": field_i.node().value,
+            "field_j": field_j.node().value,
+            "field_fij": field_fij.node().value,
+            "join_field": join_field.node().value
+            }))
+        $.ajax({
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: '/R_compute/links',
+            data: formToSend,
+            type: 'POST',
+            error: function(error) { console.log(error); },
+            success: function(data){
+                add_layer_fun(data, {result_layer_on_add: true});
+                var layer_to_render = d3.select("#"+"Links_").selectAll("path");
+                var fij_values = [for (ob of joined_dataset[0]) ob['fij']];
+                var prop_values = prop_sizer(fij_values, 0.5, 12);
+                console.log([fij_values, prop_values, ])
+                layer_to_render.style('fill-opacity', 0)
+                               .style('stroke-opacity', 0.75)
+                               .style("stroke-width", function(d, i){ return prop_values[i]; })
+            }
+        });
+         deactivate([nwBox, bg]);
+     }
+
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+
+}
+
+
 // TODO : keep trace of the previously used parameters and redisplay them when reopenning the windows
 function createFuncOptionsBox_Stewart(layer){
     if(current_layers[layer].type === "Line"){
@@ -244,12 +340,12 @@ function createBoxExplore(layer_name){
                         .style("font-size", "0.8em");
     box_table.append("p").style("text-align", "center").html(txt_intro.join(''))
     box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
-//    $(document).ready( function () {
+
     var myTable = $('#myTable').DataTable({
         data: user_data[layer_name],
         columns: columns_headers
     });
-//    });
+
     var deferred = Q.defer();
     $("#browse_data_box").dialog({
         modal:true,
@@ -271,6 +367,75 @@ function createBoxExplore(layer_name){
     });
     return deferred.promise;
 }
+
+
+//function createBoxExplore_bis(prop){
+//    if(prop.layer){
+//        layer_name = prop.layer;
+//        var columns_headers = [], nb_features = user_data[layer_name].length,
+//            columns_names = Object.getOwnPropertyNames(user_data[layer_name][0]),
+//            data_joined = field_join_map.length != 0 ? true : false,
+//            txt_intro = ["<b>", layer_name, "</b><br>",
+//                         nb_features, " features - ",
+//                         columns_names.length, " fields"];
+//
+//        if(data_joined){
+//            var nb_join_fields = Object.getOwnPropertyNames(joined_dataset[0][0]).length || 0;
+//            txt_intro = txt_intro.concat(["<br>(including ", nb_join_fields, " from the joined dataset)<br>"])
+//        } else {
+//            if(joined_dataset[0] != undefined)
+//                txt_intro.push("<br>(an external dataset has been provided without joining it)<br>");
+//            else
+//                txt_intro.push("<br>(no external dataset provided)<br>");
+//        }
+//        var data = user_data[layer_name];
+//
+//    } else if(prop.ext_dataset) {
+//        layer_name = "External (csv) dataset"
+//        var columns_headers = [], nb_features = joined_dataset[0].length,
+//            columns_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
+//            txt_intro = ["<b>", layer_name, "</b><br>",
+//                         nb_features, " features - ",
+//                         columns_names.length, " fields"];
+//        var data = joined_dataset[0];
+//    }
+//
+//    for(var i=0, len = columns_names.length; i<len; ++i)
+//        columns_headers.push({data: columns_names[i], title: columns_names[i]})
+//
+//    var box_table = d3.select("body").append("div")
+//                        .attr({id: "browse_data_box", title: ["Explore dataset - ", layer_name].join('')})
+//                        .style("font-size", "0.8em");
+//    box_table.append("p").style("text-align", "center").html(txt_intro.join(''))
+//    box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
+//
+//    var myTable = $('#myTable').DataTable({
+//        data: data,
+//        columns: columns_headers
+//    });
+//
+//    var deferred = Q.defer();
+//    $("#browse_data_box").dialog({
+//        modal:true,
+//        resizable: true,
+//        width: Math.round(window.innerWidth * 0.8),
+//        height:  Math.round(window.innerHeight * 0.85),
+//        buttons:[{
+//                text: "Confirm",
+//                click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+//                    },
+//               {
+//                text: "Cancel",
+//                click: function(){$(this).dialog("close");$(this).remove();}
+//               }],
+//        close: function(event, ui){
+//                $(this).dialog("destroy").remove();
+//                if(deferred.promise.isPending()) deferred.resolve(false);
+//            }
+//    });
+//    return deferred.promise;
+//}
+
 
 function fillMenu_Choropleth(layer){
     layer = layer.trim();
@@ -463,7 +628,7 @@ function createLegend(layer, title){
                         d3.selectAll("#legend_root").attr('transform', 'translate(' + [n_x, n_y] + ')');
                         console.log('translate(' + [n_x, n_y] + ')')
                         });
-//   function 
+
     legend.append("svg:image")
         .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
@@ -478,10 +643,9 @@ function createLegend(layer, title){
 }
 
 function createFuncOptionsBox_PropSymbol(layer){
-     var nwBox = document.createElement('div'),
-         bg = document.createElement('div'),
-         g_lyr_name = "#"+trim(layer),
-        // only retrieve the name of numericals fields :
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        g_lyr_name = "#"+trim(layer),
         fields = type_col(layer, "number");
 
     if(fields.length === 0){
@@ -504,7 +668,7 @@ function createFuncOptionsBox_PropSymbol(layer){
     var max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
                                  .insert('input')
                                  .attr({type: 'range', class: 'params'})
-                                 .attr({min: 0, max: 1000, value: last_params.max_size || 1, step:0.1})
+                                 .attr({min: 0, max: 333, value: last_params.max_size || 5, step:0.1})
                                  .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
     var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html('0 px');
@@ -512,7 +676,7 @@ function createFuncOptionsBox_PropSymbol(layer){
     var ref_size = dialog_content.append('p').html('Reference (fixed) size (px) :')
                                  .insert('input').attr('type', 'number')
                                  .attr('class', 'params')
-                                 .attr({min: 0, max: 1500, value: last_params.ref_size_val || 1, step:0.1});
+                                 .attr({min: 0, max: 333, value: last_params.ref_size_val || 1, step:0.1});
 
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
     ['Circle', 'Square'].forEach(function(symb_name){symb_selec.append("option").text(symb_name).attr("value", symb_name);});
@@ -522,18 +686,27 @@ function createFuncOptionsBox_PropSymbol(layer){
 
      qs('#yes').onclick=function(){
         last_params = {
-            field: field_selec.node().value, max_size: max_size.node().value,
-            ref_size: ref_size.node().value
+            field: field_selec.node().value,
+            max_size: +max_size.node().value,
+            ref_size: +ref_size.node().value
                 };
-        console.log(last_params);
+
         var values = [];
         for(let i = 0, i_len = user_data[layer].length, field = field_selec.node().value; i < i_len; ++i)
-            values.push(+user_data[layer][i][field])
-
-        var max = Math.max.apply(Math, values),
-            min = Math.min.apply(Math, values);
+            values.push(+user_data[layer][i][field]);
         
-        console.log([values, min, max])
+        var prop_values = prop_sizer(values, Number(ref_size.node().value), Number(max_size.node().value));
+
+        var layer_to_render = d3.select(g_lyr_name).selectAll("path");
+        var color = Colors.random();
+
+        layer_to_render.style('fill-opacity', 1)
+                       .style('stroke-opacity', 1)
+                       .style('stroke', color)
+                       .style('fill', color)
+                       .style("stroke-width", function(d, i){ return prop_values[i] / 2; })
+
+        console.log([values, prop_values]);
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
@@ -647,7 +820,8 @@ function render_choro(layer, rendering_params){
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
-                   .style("stroke", function(d, i){ return rendering_params['colorsByFeature'][i] });
+                   .style("stroke-width", 0.75)
+                   .style("stroke", "black");
     current_layers[layer].rendered = rendering_params['renderer'];
     current_layers[layer].colors = rendering_params['colorsByFeature'];
     let colors_breaks = [];
@@ -656,9 +830,17 @@ function render_choro(layer, rendering_params){
 }
 
 
-var sizer = function(values, max_size, fix_size, symbol_type){
-    return null;
+function prop_sizer(arr, min_size, max_size){
+    let min_values = Math.min.apply(0, arr),
+        max_values = Math.max.apply(0, arr),
+        dif_val = max_values - min_values,
+        dif_size = max_size - min_size;
+
+    return [for (i of arr) 
+          ((i/dif_val * dif_size) + min_size - dif_size/dif_val)
+        ];
 }
+
 
 var type_col = function(layer_name, target){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},

@@ -56,7 +56,6 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   web_mercator = "+init=epsg:3857"
 
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
-  
 
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
@@ -115,6 +114,15 @@ mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type
 ###################################
 # flows functions
 ###################################
+
+getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field){
+  df <- jsonlite::fromJSON(csv_table)
+  spdf <- geojsonio::geojson_read(layer_json_path, what='sp')
+  links <- cartography::getLinkLayer(spdf = spdf, df = df, spdfid = join_field, dfids = i, dfide = j)
+  links@data <- data.frame(df[match(x = paste(links@data[, i], links@data[, j]), table = paste(df[, i], df[, j])),])
+  return(paste0('{"geojson":', geojsonio::geojson_json(links),
+                ', "additional_infos":null}'))
+}
 
 prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE){
   mat <- read.csv(mat)

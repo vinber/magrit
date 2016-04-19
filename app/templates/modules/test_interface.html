@@ -763,7 +763,7 @@ function add_sample_layer(){
 
     var t_layers = [["<i>Target layer</i>",""],
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
-                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
                     ["International Twinning Agreements Betwwen Cities <i>(Tabular data)</i>", "twincities"]];
 
     var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
@@ -782,11 +782,23 @@ function add_sample_layer(){
                 let url = undefined;
                 if(selec.target){
                     url = sample_dataset[selec.target];
-                    d3.text(url, function(txt_layer){
-                        target_layer_on_add = true;
-                        add_layer_fun(txt_layer);
-                        target_layer_on_add = false;
-                    });
+                    if(selec.target === "twincities"){
+                         d3.csv("/database/csv/twincities.csv", function(error, data){
+                                joined_dataset.push(data);
+                                var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+                                d3.select('#data_ext').html("Additional data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
+                                valid_join_check_display(false);
+                                if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
+                                d3.select("#section1").style("height", "285px");
+                        });
+
+                    } else {
+                        d3.text(url, function(txt_layer){
+                            target_layer_on_add = true;
+                            add_layer_fun(txt_layer);
+                            target_layer_on_add = false;
+                        });
+                    }
                 }
                 if(selec.layout && selec.layout.length > 0){
                     for(let i = 0; i < selec.layout.length; ++i){

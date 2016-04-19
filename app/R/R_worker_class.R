@@ -21,6 +21,7 @@ make_env <- function(lock = FALSE){
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
   preparedEnv$stewart_to_json <- stewart_to_json
   preparedEnv$make_gridded_map <- make_gridded_map
+  preparedEnv$getLinkLayer_json <- getLinkLayer_json
   preparedEnv$mta_globaldev <- mta_globaldev
   preparedEnv$mta_mediumdev <- mta_mediumdev
   preparedEnv$mta_localdev <- mta_localdev

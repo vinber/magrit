@@ -263,7 +263,10 @@ function add_layer_fun(text, options){
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
-        var lyr_name = layers_names[i];
+        var random_color1 = Colors.random(),
+            random_color2 = Colors.random(),
+            lyr_name = layers_names[i];
+
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
@@ -304,9 +307,9 @@ function add_layer_fun(text, options){
                     return "feature_" + ix;
                 })
               .style("stroke-linecap", "round")
-              .style("stroke", "red")
+              .style("stroke", random_color1)
               .style("stroke-opacity", .4)
-              .style("fill", function(){if(type != 'Line') return("beige");
+              .style("fill", function(){if(type != 'Line') return(random_color2);
                                         else return(null);})
               .style("fill-opacity", function(){if(type != 'Line') return(0.5);
                                                 else return(0);})

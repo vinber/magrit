@@ -2,6 +2,7 @@
  {
  "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
  "nuts2": "/database/topojson/nuts2.topojson",
+ "nuts2_data": "/database/topojson/nuts2_data.topojson",
  "twincities": "/database/csv/twincities.csv",
  "nuts0": "/database/topojson/nuts0.topojson",
  "nuts1": "/database/topojson/nuts1.topojson",

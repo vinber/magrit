@@ -127,15 +127,12 @@ def cache_input_topojson(request):
         return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
     session_redis = yield from get_session(request)
-    if not 'app_user' in session_redis:
-        user_id = get_key(app_glob['app_users'])
-        app_glob['app_users'].add(user_id)
-        session_redis['app_user'] = user_id
-        session_redis['converted'] = {}
-        f_name = '_'.join([user_id, name.split('.')[0]])
+    user_id = get_user_id(session_redis)
+    f_name = '_'.join([user_id, name.split('.')[0]])
+
+    if not "converted" in session_redis:
+        session_redis["converted"] = {}
     else:
-        user_id = session_redis['app_user']
-        f_name = '_'.join([user_id, name.split('.')[0]])
         if hashed_input in session_redis['converted']:
             print("The TopoJSON was already cached !")
             return web.Response()
@@ -144,6 +141,16 @@ def cache_input_topojson(request):
     yield from app_glob['redis_conn'].set(f_name, data)
     print('Caching the TopoJSON')
     return web.Response()
+
+def get_user_id(session_redis):
+    if not 'app_user' in session_redis:
+        user_id = get_key(app_glob['app_users'])
+        app_glob['app_users'].add(user_id)
+        session_redis['app_user'] = user_id
+        return user_id
+    else:
+        user_id = session_redis['app_user']
+        return user_id
 
 @asyncio.coroutine
 def user_pref(request):
@@ -187,15 +194,13 @@ def convert(request):
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
     session_redis = yield from get_session(request)
-    if not 'app_user' in session_redis:
-        user_id = get_key(app_glob['app_users'])
-        app_glob['app_users'].add(user_id)
-        session_redis['app_user'] = user_id
-        session_redis['converted'] = {}
-        f_name = '_'.join([user_id, name.split('.')[0]])
+    user_id = get_user_id(session_redis)
+    
+    f_name = '_'.join([user_id, name.split('.')[0]])
+
+    if not "converted" in session_redis:
+        session_redis["converted"] = {}
     else:
-        user_id = session_redis['app_user']
-        f_name = '_'.join([user_id, name.split('.')[0]])
         if hashed_input in session_redis['converted']:
             result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
@@ -299,13 +304,32 @@ def handle_app_functionality(request):
     return {"func" : request.match_info['function']}
 
 @asyncio.coroutine
-def flow_map(posted_data, session_redis, id_, user_id):
+def links_map(posted_data, session_redis, id_, user_id):
     posted_data = json.loads(posted_data.get("json"))
-#    content = yield from R_client_fuw_async(
-#        url_client, commande, data, app_glob['async_ctx'], id_)
-#    content = json.loads(content.decode())
-    print(posted_data)
-    return ""
+    filenames = {"src_layer" : ''.join(['/tmp/', get_name(), '.geojson']),
+                 "result": None}
+    savefile(filenames['src_layer'], topojson_to_geojson(posted_data['topojson']).encode())
+    commande = b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
+    data = json.dumps({
+        "layer_json_path": filenames['src_layer'],
+        "csv_table": posted_data['csv_table'],
+        "i": posted_data["field_i"],
+        "j": posted_data["field_j"],
+        "fij": posted_data["field_fij"],
+        "join_field": posted_data["join_field"]
+        }).encode()
+
+    content = yield from R_client_fuw_async(
+        url_client, commande, data, app_glob['async_ctx'], id_)
+    content = json.loads(content.decode())
+#    print(content)
+    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
+        print("Additionnal infos:\n", content["additional_infos"])
+    tmp_part = get_name()
+    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
+    savefile(filenames['result'], json.dumps(content['geojson']).encode())
+    res = geojson_to_topojson(filenames['result'])
+    return res.replace(tmp_part, "Links_")
 
 @asyncio.coroutine
 def carto_gridded(posted_data, session_redis, id_, user_id):
@@ -323,7 +347,7 @@ def carto_gridded(posted_data, session_redis, id_, user_id):
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
     content = json.loads(content.decode())
-    if "additional_infos" in content and len(content["additional_infos"]) > 0:
+    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
         print("Additionnal infos:\n", content["additional_infos"])
 
     tmp_part = get_name()
@@ -364,7 +388,7 @@ def call_stewart(posted_data, session_redis, id_, user_id):
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], id_)
     content = json.loads(content.decode())
-    if "additional_infos" in content and len(content["additional_infos"]) > 0:
+    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
         print("Additionnal infos:\n", content["additional_infos"])
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
@@ -384,10 +408,7 @@ def R_compute(request):
     else: 
         posted_data = yield from request.post()
         session_redis = yield from get_session(request)
-        if not 'app_user' in session_redis:
-            print('this is not good')
-        else:
-            user_id = session_redis['app_user']
+        user_id = get_user_id(session_redis)
         id_ = yield from is_known_user(
             request, ref=app_glob['session_map'])
         func = app_glob['R_function'][function]
@@ -505,7 +526,7 @@ if __name__ == '__main__':
     srv, redis_conn = loop.run_until_complete(init(loop, port))
     app_glob['redis_conn'] = redis_conn
     app_glob['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
