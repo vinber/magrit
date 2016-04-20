@@ -28,8 +28,8 @@ def R_client_fuw_async(client_url, request, data, context, i):
 
 class SelfManagingWorkerQueue:
     # TODO: write some tests
-    def __init__(self, init_R_process = 2, start_broker = True,
-                 max_workers = 8, *args):
+    def __init__(self, init_R_process=2, start_broker=True,
+                 max_workers=8, *args):
         # Check the path we plan to use for zmq communications is OK :
         if not os.path.isdir('/tmp/feeds'):
             try:
@@ -79,8 +79,10 @@ class SelfManagingWorkerQueue:
                 p.kill()
                 p.wait()
                 addr = self.r_process.pop(k)
-                try: self.available_workers.remove(addr)
-                except Exception as err: print(err)
+                try:
+                    self.available_workers.remove(addr)
+                except Exception as err:
+                    print(err)
             except Exception as err:
                 print('(async_broker) {}'.format(err))
         elif which_one and isinstance(which_one, (str, bytes)):  # Kill the worker using its identity
@@ -169,11 +171,13 @@ class SelfManagingWorkerQueue:
         print('(async_broker) exiting...')
         return 0
 
+
 def start_queue(nb_process=4, max_process=12):
     Q = SelfManagingWorkerQueue(nb_process, True, max_process)
     # Penser a changer la limite du nombre de descripteurs de fichiers et du
     # nombre de fichiers ouverts pour l'utitilisateur qui execute ce programme
     # ... Changement dans /etc/security/limits.conf et dans /etc/sysctl.conf
+
 
 def test():
     # To be launched in another terminal as the SelfManagingWorkerQueue
@@ -206,13 +210,13 @@ def test():
     for i in range(3000):
         data = ujson.dumps({"x": i+1, "mean": 103-i/2}).encode()
         time.sleep(1/10000)
-        t = threading.Thread(target=R_client_fuw, args=
-             ('ipc:///tmp/feeds/clients', request, data, ctx, 'foo{}'.format(i))
-            )
+        t = threading.Thread(target=R_client_fuw,
+                             args=('ipc:///tmp/feeds/clients', request,
+                                   data, ctx, 'foo{}'.format(i)))
         t.start()
         threads.append(t)
 
-    [t.join() for t in threads]
+    [th.join() for th in threads]
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:

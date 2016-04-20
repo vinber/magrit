@@ -47,7 +47,7 @@ def handler(request):
     session = yield from get_session(request)
     if 'last_visit' in session:
         date = 'Last visit : {}'.format(datetime.fromtimestamp(
-                session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
+            session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
     else:
         date = ''
     session['last_visit'] = time.time()
@@ -89,6 +89,7 @@ def ogr_to_geojson(filepath, to_latlong=True):
     stdout, _ = process.communicate()
     return stdout.decode()
 
+
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
@@ -97,6 +98,7 @@ def geojson_to_topojson(filepath):
     stdout, _ = process.communicate()
     os.remove(filepath)
     return stdout.decode()
+
 
 def topojson_to_geojson(data):
     # Todo : Rewrite using asyncio.subprocess methods
@@ -114,12 +116,13 @@ def topojson_to_geojson(data):
     os.remove(new_path)
     return data
 
+
 @asyncio.coroutine
 def cache_input_topojson(request):
     posted_data = yield from request.post()
     try:
         name, data = posted_data.getall('file[]')
-        hashed_input = sha512(data.encode()).hexdigest() # Todo : compute the hash on client side to avoid re-sending the data
+        hashed_input = sha512(data.encode()).hexdigest()  # Todo : compute the hash on client side to avoid re-sending the data
         print('Here i am')
     except Exception as err:
         print("posted data :\n", posted_data)
@@ -130,7 +133,7 @@ def cache_input_topojson(request):
     user_id = get_user_id(session_redis)
     f_name = '_'.join([user_id, name.split('.')[0]])
 
-    if not "converted" in session_redis:
+    if "converted" not in session_redis:
         session_redis["converted"] = {}
     else:
         if hashed_input in session_redis['converted']:
@@ -142,8 +145,9 @@ def cache_input_topojson(request):
     print('Caching the TopoJSON')
     return web.Response()
 
+
 def get_user_id(session_redis):
-    if not 'app_user' in session_redis:
+    if 'app_user' not in session_redis:
         user_id = get_key(app_glob['app_users'])
         app_glob['app_users'].add(user_id)
         session_redis['app_user'] = user_id
@@ -152,12 +156,15 @@ def get_user_id(session_redis):
         user_id = session_redis['app_user']
         return user_id
 
+
 @asyncio.coroutine
 def user_pref(request):
     posted_data = yield from request.post()
     session = yield from get_session(request)
     session['map_pref'] = dict(posted_data)
-    return web.Response(text=json.dumps({'Info': "I don't do anything with it rigth now!"}))
+    return web.Response(text=json.dumps(
+        {'Info': "I don't do anything with it rigth now!"}))
+
 
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
 # to easily handle file types send by the front-side ?
@@ -239,7 +246,7 @@ def convert(request):
 
     elif 'octet-stream' in datatype:
         data = data.decode()
-        if '"crs"' in data and not '"urn:ogc:def:crs:OGC:1.3:CRS84"' in data:
+        if '"crs"' in data and '"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data:
             crs = True
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
@@ -289,7 +296,7 @@ class R_commande(web.View):
         commande = ''.join([
             function,
             '(',
-            ','.join(['='.join([param,param]) for param in params]),
+            ','.join(['='.join([param, param]) for param in params]),
             ')']).encode()
         data = {k:try_float(v) for k,v in params.items()}
         id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
@@ -298,15 +305,17 @@ class R_commande(web.View):
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
 
+
 @asyncio.coroutine
 @aiohttp_jinja2.template('modules/test_interface.html')
 def handle_app_functionality(request):
-    return {"func" : request.match_info['function']}
+    return {"func": request.match_info['function']}
+
 
 @asyncio.coroutine
-def links_map(posted_data, session_redis, id_, user_id):
+def links_map(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
-    filenames = {"src_layer" : ''.join(['/tmp/', get_name(), '.geojson']),
+    filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(posted_data['topojson']).encode())
     commande = b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
@@ -320,7 +329,7 @@ def links_map(posted_data, session_redis, id_, user_id):
         }).encode()
 
     content = yield from R_client_fuw_async(
-        url_client, commande, data, app_glob['async_ctx'], id_)
+        url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
 #    print(content)
     if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
@@ -332,7 +341,7 @@ def links_map(posted_data, session_redis, id_, user_id):
     return res.replace(tmp_part, "Links_")
 
 @asyncio.coroutine
-def carto_gridded(posted_data, session_redis, id_, user_id):
+def carto_gridded(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
     filenames = {"src_layer" : ''.join(['/tmp/', get_name(), '.geojson']),
                  "result": None}
@@ -345,7 +354,7 @@ def carto_gridded(posted_data, session_redis, id_, user_id):
         }).encode()
 
     content = yield from R_client_fuw_async(
-        url_client, commande, data, app_glob['async_ctx'], id_)
+        url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
     if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
         print("Additionnal infos:\n", content["additional_infos"])
@@ -358,13 +367,15 @@ def carto_gridded(posted_data, session_redis, id_, user_id):
 
     return '|||'.join([new_name, res.replace(tmp_part, new_name)])
 
+
 @asyncio.coroutine
-def call_mta(posted_data, session_redis, id_, user_id):
+def call_mta(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
     return ''
 
+
 @asyncio.coroutine
-def call_stewart(posted_data, session_redis, id_, user_id):
+def call_stewart(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
 
     if posted_data['mask_layer']:
@@ -391,7 +402,7 @@ def call_stewart(posted_data, session_redis, id_, user_id):
         }).encode()
 #    print(data)
     content = yield from R_client_fuw_async(
-        url_client, commande, data, app_glob['async_ctx'], id_)
+        url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
     if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
         print("Additionnal infos:\n", content["additional_infos"])
@@ -402,66 +413,27 @@ def call_stewart(posted_data, session_redis, id_, user_id):
     res = geojson_to_topojson(filenames['result'])
     new_name = '_'.join(['StewartPot', posted_data['var_name']])
 
-    return '|||'.join([json.dumps(content['breaks']), new_name, res.replace(tmp_part, new_name)])
+    return '|||'.join([json.dumps(content['breaks']),
+                       new_name,
+                       res.replace(tmp_part, new_name)])
 
 
 @asyncio.coroutine
 def R_compute(request):
     function = request.match_info['function']
     if function not in app_glob['R_function']:
-        return web.Response(text=json.dumps({"Error": "Wrong function requested"}))
-    else: 
+        return web.Response(text=json.dumps(
+            {"Error": "Wrong function requested"}))
+    else:
         posted_data = yield from request.post()
         session_redis = yield from get_session(request)
         user_id = get_user_id(session_redis)
-        id_ = yield from is_known_user(
-            request, ref=app_glob['session_map'])
+#        id_ = yield from is_known_user(
+#            request, ref=app_glob['session_map'])
         func = app_glob['R_function'][function]
-        data_response = yield from func(posted_data, session_redis, id_, user_id)
+        data_response = yield from func(posted_data, session_redis, user_id)
         return web.Response(text=data_response)
-#    posted_data = json.loads(posted_data.get("json"))
-#    if not 'app_user' in session_redis:
-#        print('this is not good')
-#    else:
-#        user_id = session_redis['app_user']
-#
-#    if posted_data['mask_layer']:
-#        f_name = '_'.join([user_id, posted_data['mask_layer']])
-#        result_mask = yield from app_glob['redis_conn'].get(f_name)
-#        print("Found it")
-#    filenames = {'point_layer': ''.join(['/tmp/', get_name(), '.geojson']),
-#                 'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None,
-#                 'result': None}
-#    savefile(filenames['point_layer'], json.dumps(topo_to_geo(posted_data['topojson'])).encode())
-#    if filenames['mask_layer']:
-#        savefile(filenames['mask_layer'], json.dumps(topo_to_geo(result_mask.decode())).encode())
-#
-#    commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
-#                b'beta, resolution, mask_json)')
-#    data = json.dumps({
-#        'knownpts_json': filenames['point_layer'],
-#        'var_name': posted_data['var_name'],
-#        'typefct': posted_data['typefct'].lower(),
-#        'span': float(posted_data['span']),
-#        'beta': float(posted_data['beta']),
-#        'resolution': float(posted_data['resolution']),
-#        'mask_json': filenames['mask_layer']
-#        }).encode()
-##    print(data)
-#    id_ = yield from is_known_user(
-#        request, ref=app_glob['session_map'])
-#    print(id_)
-#    content = yield from R_client_fuw_async(
-#        url_client, commande, data, app_glob['async_ctx'], id_)
-#    content = json.loads(content.decode())
-#    print(content)
-#    tmp_part = get_name()
-#    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
-#    print(content['breaks'], filenames['result'])
-#    savefile(filenames['result'], json.dumps(content['geojson']).encode())
-#    res = geojson_to_topojson(filenames['result'])
-#    new_name = '_'.join(['StewartPot', posted_data['var_name']])
-#    print('|||'.join([str(content['breaks']), new_name, res.replace(tmp_part, new_name)]))
+
 
 @asyncio.coroutine
 def init(loop, port=9999):
@@ -532,7 +504,7 @@ if __name__ == '__main__':
     app_glob['redis_conn'] = redis_conn
     app_glob['R_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded,
-        "links": links_map, "MTA", call_mta
+        "links": links_map, "MTA": call_mta
         }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:

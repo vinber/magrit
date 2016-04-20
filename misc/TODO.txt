@@ -1,21 +1,20 @@
 TODO list:
 - More testing on the join operation
 - Change the "tooltip" / info box to a nicer one
-- Remove the "explore your dataset" as a single functionnality (in order to allow the user to browse table on every other app functionnalities (stewart, choropleth, etc))
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc ..
 - Propose palettes instead of single colors in the styling popup when features have been already classed
-- Let the user choose his own class (+ custom colors) in the discretization panel
+- Let the user choose his own class (+ custom colors) in the discretization panel (using a text area)
 - Do more data validation (client and/or server side) to avoid weird user-uploads
 - /!\ reload preferences from the exported json
 - /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
 - /!\ add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
-- add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
+- add functionnality to zoom on a selected rectangular zone drawn on the canvas by the user (brush)
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
 - add a box to customize the legend (float number precision, title, etc.)
-- improved sample dataset
+- improved sample dataset box (make three discrete buttons to avoid current weird behavior when trying to add target layer + tabular + layout layer at the same time)
 - allow to display label on rendered features ?
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)
 - Pick a random color to fill the layer just added by the user (instead of always the same one)
 - /!\ Fix the weird behavior when trying to move the legend
-- change the zoom behavior (avoid to redraw every path ?)
+- disable the "render" button on choropleth maps until class / colors have been chosen

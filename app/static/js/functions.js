@@ -587,7 +587,7 @@ function createLegend(layer, title){
                                 y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
                         })
                 .on("dragstart", function(){zoom.on("zoom", null); })
-                .on("dragend", function(){ zoom.on("zoom", redraw); })
+                .on("dragend", function(){ zoom.on("zoom", zoom_without_redraw); })
                 .on("drag", function() {
                         let coords = d3.mouse(this), n_x = coords[0], n_y = coords[1];
                         console.log(n_x, n_y);
@@ -671,7 +671,7 @@ function createFuncOptionsBox_PropSymbol(layer){
                        .style('stroke-opacity', 1)
                        .style('stroke', color)
                        .style('fill', color)
-                       .style("stroke-width", function(d, i){ return prop_values[i] / 2; })
+                       .style("stroke-width", function(d, i){ return (prop_values[i] / 2) + "px"; })
 
         console.log([values, prop_values]);
         deactivate([nwBox, bg]);
@@ -795,6 +795,7 @@ function render_choro(layer, rendering_params){
     let colors_breaks = [];
     for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
     current_layers[layer].colors_breaks = colors_breaks;
+    zoom_without_redraw();
 }
 
 
