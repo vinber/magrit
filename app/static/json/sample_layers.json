@@ -1,11 +1,13 @@
 [
  {
- "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
+ "gpm": "/database/topojson/GrandParisMunicipalities.topojson",
+ "gpm_dataset": "/database/csv/gpm.csv",
  "nuts2": "/database/topojson/nuts2.topojson",
  "nuts2_data": "/database/topojson/nuts2_data.topojson",
  "twincities": "/database/csv/twincities.csv",
  "nuts0": "/database/topojson/nuts0.topojson",
  "nuts1": "/database/topojson/nuts1.topojson",
+ "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
  "world_country": "/database/topojson/simplified_land_polygons.topojson",
  "world_cities": "/database/topojson/world_cities_extract5000.topojson",
  "water_coverage": "/database/topojson/water.topojson"

@@ -359,6 +359,11 @@ def carto_gridded(posted_data, session_redis, id_, user_id):
     return '|||'.join([new_name, res.replace(tmp_part, new_name)])
 
 @asyncio.coroutine
+def call_mta(posted_data, session_redis, id_, user_id):
+    posted_data = json.loads(posted_data.get("json"))
+    return ''
+
+@asyncio.coroutine
 def call_stewart(posted_data, session_redis, id_, user_id):
     posted_data = json.loads(posted_data.get("json"))
 
@@ -526,7 +531,8 @@ if __name__ == '__main__':
     srv, redis_conn = loop.run_until_complete(init(loop, port))
     app_glob['redis_conn'] = redis_conn
     app_glob['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "stewart": call_stewart, "gridded": carto_gridded,
+        "links": links_map, "MTA", call_mta
         }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:

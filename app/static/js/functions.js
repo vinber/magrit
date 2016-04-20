@@ -37,6 +37,12 @@ function get_menu_option(func){
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "text_button": "Choose options and render..."
             },
+        "MTA":{
+            "title":"Multiscalar Territorial Analysis",
+            "popup_factory": "createBox_MTA",
+            "desc":"Compute and render various methods of multiscalar territorial analysis",
+            "text_button": "Choose algo, options and render..."
+            },
         "flows_map":{
             "title":"Link/FLow map",
             "popup_factory": "createBox_FlowMap",
@@ -71,6 +77,13 @@ function popup_function(){
         return center(modal);
     }
 };
+
+function createBox_MTA(layer){
+    if(Object.getOwnPropertyNames(user_data).length < 1){
+        alert("A reference layer and/or dataset have to be provided");
+        return;
+    }
+}
 
 function createBox_FlowMap(ref_layer){
     if(joined_dataset.length < 1){
@@ -314,37 +327,60 @@ function createFuncOptionsBox_Anamorphose(layer_name){
 
 }
 
-function createBoxExplore(layer_name){
-    var columns_headers = [], nb_features = user_data[layer_name].length,
-        columns_names = Object.getOwnPropertyNames(user_data[layer_name][0]),
-        data_joined = field_join_map.length != 0 ? true : false,
-        txt_intro = ["<b>", layer_name, "</b><br>",
+function createBoxExplore(){
+    var display_table = function(prop){
+        if(prop.type === "ext_dataset"){
+            var data_table = joined_dataset[0],
+                the_name = dataset_name,
+                message = "Switch to reference layer table...";
+        } else if(prop.type === "layer"){
+            var data_table = user_data[layer_name],
+                the_name = layer_name,
+                message = "Switch to external dataset table...";
+
+        }
+        nb_features = data_table.length;
+        columns_names = Object.getOwnPropertyNames(data_table[0]);
+        columns_headers = [];
+        for(var i=0, len = columns_names.length; i<len; ++i)
+            columns_headers.push({data: columns_names[i], title: columns_names[i]})
+        txt_intro = ["<b>", the_name, "</b><br>",
                      nb_features, " features - ",
                      columns_names.length, " fields"];
+        d3.selectAll('#table_intro').remove()
+        box_table.append("p").attr('id', 'table_intro').style("text-align", "center").html(txt_intro.join(''))
+        d3.selectAll('#myTable').remove()
+        d3.selectAll('#myTable_wrapper').remove();
+        box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
+        $('#myTable').DataTable({
+            data: data_table,
+            columns: columns_headers
+        });
+        if(switch_button) d3.select("#switch_button").node().innerHTML = message;
+    };
 
-    if(data_joined){
-        var nb_join_fields = Object.getOwnPropertyNames(joined_dataset[0][0]).length || 0;
-        txt_intro = txt_intro.concat(["<br>(including ", nb_join_fields, " from the joined dataset)<br>"])
-    } else {
-        if(joined_dataset[0] != undefined)
-            txt_intro.push("<br>(an external dataset has been provided without joining it)<br>");
-        else
-            txt_intro.push("<br>(no external dataset provided)<br>");
-    }
-
-    for(var i=0, len = columns_names.length; i<len; ++i)
-        columns_headers.push({data: columns_names[i], title: columns_names[i]})
+    var layer_name = Object.getOwnPropertyNames(user_data)[0];
+    var columns_headers = [],
+        nb_features = undefined,
+        columns_names = undefined,
+        current_table = undefined;
 
     var box_table = d3.select("body").append("div")
-                        .attr({id: "browse_data_box", title: ["Explore dataset - ", layer_name].join('')})
+                        .attr({id: "browse_data_box", title: "Explore dataset"})
                         .style("font-size", "0.8em");
-    box_table.append("p").style("text-align", "center").html(txt_intro.join(''))
-    box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
 
-    var myTable = $('#myTable').DataTable({
-        data: user_data[layer_name],
-        columns: columns_headers
-    });
+    if(!layer_name) current_table = "ext_dataset";
+    else current_table = "layer";
+
+    if(dataset_name != undefined && layer_name != undefined){
+        var switch_button = box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
+                let type = current_table === "layer" ? "ext_dataset" : "layer";
+                current_table = type;
+                display_table({"type": type});
+                });
+    } else { var switch_button = undefined; }
+
+    display_table({"type": current_table});
 
     var deferred = Q.defer();
     $("#browse_data_box").dialog({
@@ -367,75 +403,6 @@ function createBoxExplore(layer_name){
     });
     return deferred.promise;
 }
-
-
-//function createBoxExplore_bis(prop){
-//    if(prop.layer){
-//        layer_name = prop.layer;
-//        var columns_headers = [], nb_features = user_data[layer_name].length,
-//            columns_names = Object.getOwnPropertyNames(user_data[layer_name][0]),
-//            data_joined = field_join_map.length != 0 ? true : false,
-//            txt_intro = ["<b>", layer_name, "</b><br>",
-//                         nb_features, " features - ",
-//                         columns_names.length, " fields"];
-//
-//        if(data_joined){
-//            var nb_join_fields = Object.getOwnPropertyNames(joined_dataset[0][0]).length || 0;
-//            txt_intro = txt_intro.concat(["<br>(including ", nb_join_fields, " from the joined dataset)<br>"])
-//        } else {
-//            if(joined_dataset[0] != undefined)
-//                txt_intro.push("<br>(an external dataset has been provided without joining it)<br>");
-//            else
-//                txt_intro.push("<br>(no external dataset provided)<br>");
-//        }
-//        var data = user_data[layer_name];
-//
-//    } else if(prop.ext_dataset) {
-//        layer_name = "External (csv) dataset"
-//        var columns_headers = [], nb_features = joined_dataset[0].length,
-//            columns_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
-//            txt_intro = ["<b>", layer_name, "</b><br>",
-//                         nb_features, " features - ",
-//                         columns_names.length, " fields"];
-//        var data = joined_dataset[0];
-//    }
-//
-//    for(var i=0, len = columns_names.length; i<len; ++i)
-//        columns_headers.push({data: columns_names[i], title: columns_names[i]})
-//
-//    var box_table = d3.select("body").append("div")
-//                        .attr({id: "browse_data_box", title: ["Explore dataset - ", layer_name].join('')})
-//                        .style("font-size", "0.8em");
-//    box_table.append("p").style("text-align", "center").html(txt_intro.join(''))
-//    box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
-//
-//    var myTable = $('#myTable').DataTable({
-//        data: data,
-//        columns: columns_headers
-//    });
-//
-//    var deferred = Q.defer();
-//    $("#browse_data_box").dialog({
-//        modal:true,
-//        resizable: true,
-//        width: Math.round(window.innerWidth * 0.8),
-//        height:  Math.round(window.innerHeight * 0.85),
-//        buttons:[{
-//                text: "Confirm",
-//                click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-//                    },
-//               {
-//                text: "Cancel",
-//                click: function(){$(this).dialog("close");$(this).remove();}
-//               }],
-//        close: function(event, ui){
-//                $(this).dialog("destroy").remove();
-//                if(deferred.promise.isPending()) deferred.resolve(false);
-//            }
-//    });
-//    return deferred.promise;
-//}
-
 
 function fillMenu_Choropleth(layer){
     layer = layer.trim();
@@ -817,13 +784,14 @@ function createBox_griddedMap(layer){
 function render_choro(layer, rendering_params){
     console.log(rendering_params);
     var layer_to_render = d3.select("#"+layer).selectAll("path");
+    d3.select("#"+layer).style("stroke-width", "0.75px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
-                   .style("stroke-width", 0.75)
                    .style("stroke", "black");
     current_layers[layer].rendered = rendering_params['renderer'];
     current_layers[layer].colors = rendering_params['colorsByFeature'];
+    current_layers[layer]['stroke-width-const'] = "0.75px";
     let colors_breaks = [];
     for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
     current_layers[layer].colors_breaks = colors_breaks;
@@ -847,7 +815,8 @@ var type_col = function(layer_name, target){
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
 // ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var fields = Object.getOwnPropertyNames(user_data[layer_name][0]),
+    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data[layer_name];
+    var fields = Object.getOwnPropertyNames(table[0]),
         nb_features = current_layers[layer_name].n_features,
         deepth_test = 5 < nb_features ? 5 : nb_features,
         result = new Object(),
@@ -861,8 +830,8 @@ var type_col = function(layer_name, target){
         field = fields[j];
         result[field] = []
         for(var i=0; i < deepth_test; ++i){
-            tmp_type = typeof user_data[layer_name][i][field];
-            if(tmp_type === "string" && !isNaN(Number(user_data[layer_name][i][field]))) tmp_type = "number"
+            tmp_type = typeof table[i][field];
+            if(tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number"
             result[fields[j]].push(tmp_type)
         }
     }

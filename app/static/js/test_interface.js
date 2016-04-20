@@ -196,7 +196,9 @@ function handle_dataset(files){
 
     reader.onload = function(e) {
       var data = e.target.result;
+      dataset_name = name;
       joined_dataset.push(d3.csv.parse(data))
+//      joined_dataset[name] = d3.csv.parse(data);
       var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
       if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
           if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
@@ -207,6 +209,7 @@ function handle_dataset(files){
       valid_join_check_display(false);
       if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
       d3.select("#section1").style("height", "285px");
+      if(browse_table.node().disabled === true) browse_table.node().disabled = false;
     };
     reader.readAsText(f);
   }
@@ -282,9 +285,11 @@ function add_layer_fun(text, options){
             data_to_load = false;
 
         current_layers[lyr_name] = {"type": type,
-                                    "n_features": parsedJSON.objects[lyr_name].geometries.length}
+                                    "n_features": parsedJSON.objects[lyr_name].geometries.length,
+                                    "stroke-width-const": "0.4px"};
 
         map.append("g").attr("id", lyr_name)
+              .style("stroke-width", 0.4)
               .attr("class", function(d) {
                 return data_to_load ? "targeted_layer" : null;})
               .selectAll(".subunit")
@@ -329,6 +334,7 @@ function add_layer_fun(text, options){
         li.innerHTML = type + " - " + lyr_name + button_style + button_trash + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
+            if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             current_layers[lyr_name].targeted = true;
             targeted_topojson = parsedJSON;
             d3.select('#input_geom').html("User geometry : <b>"+lyr_name+"</b> <i>("+type+")</i>");

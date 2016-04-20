@@ -1,0 +1,151 @@
+UID,DEPCOM,LIBCOM,EPT,LIBEPT,DEP,INC,TH
+1,75101,Paris 1er Arrondissement,T1,Paris,75,635829924,11473
+2,75102,Paris 2e Arrondissement,T1,Paris,75,660063063,15711
+3,75103,Paris 3e Arrondissement,T1,Paris,75,1095591716,24044
+4,75104,Paris 4e Arrondissement,T1,Paris,75,898958278,19366
+5,75105,Paris 5e Arrondissement,T1,Paris,75,1664572969,33691
+6,75106,Paris 6e Arrondissement,T1,Paris,75,1845141188,24324
+7,75107,Paris 7e Arrondissement,T1,Paris,75,3047058345,31637
+8,75108,Paris 8e Arrondissement,T1,Paris,75,1966219568,23843
+9,75109,Paris 9e Arrondissement,T1,Paris,75,1871933851,39238
+10,75110,Paris 10e Arrondissement,T1,Paris,75,2008333478,63935
+11,75111,Paris 11e Arrondissement,T1,Paris,75,3343113210,104719
+12,75112,Paris 12e Arrondissement,T1,Paris,75,3224257645,96886
+13,75113,Paris 13e Arrondissement,T1,Paris,75,3419442638,116306
+14,75114,Paris 14e Arrondissement,T1,Paris,75,3161771328,86308
+15,75115,Paris 15e Arrondissement,T1,Paris,75,6053063480,145535
+16,75116,Paris 16e Arrondissement,T1,Paris,75,7289553005,93747
+17,75117,Paris 17e Arrondissement,T1,Paris,75,5051054498,104498
+18,75118,Paris 18e Arrondissement,T1,Paris,75,3486899427,133526
+19,75119,Paris 19e Arrondissement,T1,Paris,75,2942552772,121483
+20,75120,Paris 20e Arrondissement,T1,Paris,75,3278325424,130671
+21,91027,Athis-Mons,T12,Val de Bievres - Seine Amond - Grand Orly,91,454435072,17626
+22,91326,Juvisy-sur-Orge,T12,Val de Bievres - Seine Amond - Grand Orly,91,266915144,9618
+23,91432,Morangis,T12,Val de Bievres - Seine Amond - Grand Orly,91,218566447,7040
+24,91479,Paray-Vieille-Poste,T12,Val de Bievres - Seine Amond - Grand Orly,91,122757388,4240
+25,91589,Savigny-sur-Orge,T12,Val de Bievres - Seine Amond - Grand Orly,91,627949793,20556
+26,91687,Viry-Chatillon,T12,Val de Bievres - Seine Amond - Grand Orly,91,454935175,17646
+27,92002,Antony,T2,Sud Hauts-de-Seine,92,1334592470,32974
+28,92004,Asnieres-sur-Seine,T5,Boucle Nord 92,92,1661781923,50107
+29,92007,Bagneux,T2,Sud Hauts-de-Seine,92,503851991,22285
+30,92009,Bois-Colombes,T5,Boucle Nord 92,92,601899012,15481
+31,92012,Boulogne-Billancourt,T3,Grand Paris Sud Ouest,92,3205466641,68500
+32,92014,Bourg-la-Reine,T2,Sud Hauts-de-Seine,92,476785175,10674
+33,92019,Chatenay-Malabry,T2,Sud Hauts-de-Seine,92,581080523,17127
+34,92020,Chatillon,T2,Sud Hauts-de-Seine,92,708925667,19825
+35,92022,Chaville,T3,Grand Paris Sud Ouest,92,456904289,10953
+36,92023,Clamart,T2,Sud Hauts-de-Seine,92,1096860003,29246
+37,92024,Clichy,T5,Boucle Nord 92,92,839146523,35619
+38,92025,Colombes,T5,Boucle Nord 92,92,1369487078,46793
+39,92026,Courbevoie,T4,La Defense,92,1956573678,50038
+40,92032,Fontenay-aux-Roses,T2,Sud Hauts-de-Seine,92,445373591,12800
+41,92033,Garches,T4,La Defense,92,571165774,9685
+42,92035,La Garenne-Colombes,T4,La Defense,92,668313049,16209
+43,92036,Gennevilliers,T5,Boucle Nord 92,92,451127725,24563
+44,92040,Issy-les-Moulineaux,T3,Grand Paris Sud Ouest,92,1558476995,38720
+45,92044,Levallois-Perret,T4,La Defense,92,1627346213,36331
+46,92046,Malakoff,T2,Sud Hauts-de-Seine,92,506933349,17519
+47,92047,Marnes-la-Coquette,T3,Grand Paris Sud Ouest,92,73320806,798
+48,92048,Meudon,T3,Grand Paris Sud Ouest,92,1074868554,25088
+49,92049,Montrouge,T2,Sud Hauts-de-Seine,92,991946675,28981
+50,92050,Nanterre,T4,La Defense,92,1234654194,50035
+51,92051,Neuilly-sur-Seine,T4,La Defense,92,3022920574,33495
+52,92060,Le Plessis-Robinson,T2,Sud Hauts-de-Seine,92,584148902,15713
+53,92062,Puteaux,T4,La Defense,92,919429565,26228
+54,92063,Rueil-Malmaison,T4,La Defense,92,1965434072,41699
+55,92064,Saint-Cloud,T4,La Defense,92,985236733,15272
+56,92071,Sceaux,T2,Sud Hauts-de-Seine,92,557357085,10040
+57,92072,Sevres,T3,Grand Paris Sud Ouest,92,594936276,12259
+58,92073,Suresnes,T4,La Defense,92,1081902009,25927
+59,92075,Vanves,T3,Grand Paris Sud Ouest,92,570907133,15540
+60,92076,Vaucresson,T4,La Defense,92,319473422,4318
+61,92077,Ville-d'Avray,T3,Grand Paris Sud Ouest,92,358198247,5749
+62,92078,Villeneuve-la-Garenne,T5,Boucle Nord 92,92,258031487,12762
+63,93001,Aubervilliers,T6,Plaine Commune,93,639103745,42748
+64,93005,Aulnay-sous-Bois,T7,Territoire des aeroports,93,928784314,41949
+65,93006,Bagnolet,T8,Est Ensemble,93,412984022,20026
+66,93007,Le Blanc-Mesnil,T7,Territoire des aeroports,93,539337987,27375
+67,93008,Bobigny,T8,Est Ensemble,93,430743688,26746
+68,93010,Bondy,T8,Est Ensemble,93,536887977,27467
+69,93013,Le Bourget,T7,Territoire des aeroports,93,175938896,8670
+70,93014,Clichy-sous-Bois,T9,Grand-Paris Est,93,211696270,13580
+71,93015,Coubron,T9,Grand-Paris Est,93,82039119,2450
+72,93027,La Courneuve,T6,Plaine Commune,93,315760724,21431
+73,93029,Drancy,T7,Territoire des aeroports,93,752669315,37406
+74,93030,Dugny,T7,Territoire des aeroports,93,97066799,5326
+75,93031,Epinay-sur-Seine,T6,Plaine Commune,93,524725226,27385
+76,93032,Gagny,T9,Grand-Paris Est,93,587717518,21464
+77,93033,Gournay-sur-Marne,T9,Grand-Paris Est,93,139718446,3567
+78,93039,L'Ile-Saint-Denis,T6,Plaine Commune,93,74894004,4043
+79,93045,Les Lilas,T8,Est Ensemble,93,383073770,13330
+80,93046,Livry-Gargan,T9,Grand-Paris Est,93,611243635,23764
+81,93047,Montfermeil,T9,Grand-Paris Est,93,296692510,12863
+82,93048,Montreuil,T8,Est Ensemble,93,1419570600,63135
+83,93049,Neuilly-Plaisance,T9,Grand-Paris Est,93,346496434,11429
+84,93050,Neuilly-sur-Marne,T9,Grand-Paris Est,93,435417018,19039
+85,93051,Noisy-le-Grand,T9,Grand-Paris Est,93,937528087,35691
+86,93053,Noisy-le-Sec,T8,Est Ensemble,93,456935469,22656
+87,93055,Pantin,T8,Est Ensemble,93,637700970,32316
+88,93057,Les Pavillons-sous-Bois,T9,Grand-Paris Est,93,307726573,11957
+89,93059,Pierrefitte-sur-Seine,T6,Plaine Commune,93,258111446,14795
+90,93061,Le Pre-Saint-Gervais,T8,Est Ensemble,93,226492398,9933
+91,93062,Le Raincy,T9,Grand-Paris Est,93,325126345,7990
+92,93063,Romainville,T8,Est Ensemble,93,304306692,14740
+93,93064,Rosny-sous-Bois,T9,Grand-Paris Est,93,605351533,25496
+94,93066,Saint-Denis,T6,Plaine Commune,93,1010086356,58266
+95,93070,Saint-Ouen,T6,Plaine Commune,93,552718458,28253
+96,93071,Sevran,T7,Territoire des aeroports,93,495100813,25375
+97,93072,Stains,T6,Plaine Commune,93,296312296,18210
+98,93073,Tremblay-en-France,T7,Territoire des aeroports,93,449982568,18281
+99,93074,Vaujours,T9,Grand-Paris Est,93,96496630,3662
+100,93077,Villemomble,T9,Grand-Paris Est,93,485770088,16355
+101,93078,Villepinte,T7,Territoire des aeroports,93,387133328,17456
+102,93079,Villetaneuse,T6,Plaine Commune,93,104721636,6251
+103,94001,Ablon-sur-Seine,T12,Val de Bievres - Seine Amond - Grand Orly,94,87974035,3058
+104,94002,Alfortville,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,615898147,26410
+105,94003,Arcueil,T12,Val de Bievres - Seine Amond - Grand Orly,94,309450687,11678
+106,94004,Boissy-Saint-Leger,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,206853724,8835
+107,94011,Bonneuil-sur-Marne,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,184132997,8790
+108,94015,Bry-sur-Marne,T10,Association des Communes de l'Est Parisien,94,353623978,8792
+109,94016,Cachan,T12,Val de Bievres - Seine Amond - Grand Orly,94,465422569,15628
+110,94017,Champigny-sur-Marne,T10,Association des Communes de l'Est Parisien,94,1036219353,43426
+111,94018,Charenton-le-Pont,T10,Association des Communes de l'Est Parisien,94,662960836,17237
+112,94019,Chennevieres-sur-Marne,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,304202113,10481
+113,94021,Chevilly-Larue,T12,Val de Bievres - Seine Amond - Grand Orly,94,265568566,10473
+114,94022,Choisy-le-Roi,T12,Val de Bievres - Seine Amond - Grand Orly,94,552460874,23783
+115,94028,Creteil,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,1170056288,49490
+116,94033,Fontenay-sous-Bois,T10,Association des Communes de l'Est Parisien,94,945160235,29583
+117,94034,Fresnes,T12,Val de Bievres - Seine Amond - Grand Orly,94,382268746,13621
+118,94037,Gentilly,T12,Val de Bievres - Seine Amond - Grand Orly,94,233965342,9800
+119,94038,L'Hay-les-Roses,T12,Val de Bievres - Seine Amond - Grand Orly,94,527532207,16928
+120,94041,Ivry-sur-Seine,T12,Val de Bievres - Seine Amond - Grand Orly,94,736551560,34476
+121,94042,Joinville-le-Pont,T10,Association des Communes de l'Est Parisien,94,359219873,10389
+122,94043,Le Kremlin-Bicetre,T12,Val de Bievres - Seine Amond - Grand Orly,94,381564741,14290
+123,94044,Limeil-Brevannes,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,332973352,13002
+124,94046,Maisons-Alfort,T10,Association des Communes de l'Est Parisien,94,973503660,32166
+125,94047,Mandres-les-Roses,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,84153775,2338
+126,94048,Marolles-en-Brie,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,110297147,2293
+127,94052,Nogent-sur-Marne,T10,Association des Communes de l'Est Parisien,94,801856769,18409
+128,94053,Noiseau,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,86340543,2356
+129,94054,Orly,T12,Val de Bievres - Seine Amond - Grand Orly,94,250423531,12139
+130,94055,Ormesson-sur-Marne,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,199544447,5255
+131,94056,Perigny,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,47868340,1248
+132,94058,Le Perreux-sur-Marne,T10,Association des Communes de l'Est Parisien,94,753507555,19042
+133,94059,Le Plessis-Trevise,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,331622134,10400
+134,94060,La Queue-en-Brie,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,182163848,5950
+135,94065,Rungis,T12,Val de Bievres - Seine Amond - Grand Orly,94,117332429,3079
+136,94067,Saint-Mande,T10,Association des Communes de l'Est Parisien,94,614145820,12077
+137,94068,Saint-Maur-des-Fosses,T10,Association des Communes de l'Est Parisien,94,1807954308,43137
+138,94069,Saint-Maurice,T10,Association des Communes de l'Est Parisien,94,284501737,7821
+139,94070,Santeny,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,86983048,1788
+140,94071,Sucy-en-Brie,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,488092810,13708
+141,94073,Thiais,T12,Val de Bievres - Seine Amond - Grand Orly,94,461237716,16429
+142,94074,Valenton,T12,Val de Bievres - Seine Amond - Grand Orly,94,127564699,6812
+143,94075,Villecresnes,T11,Plaine Centrale - Haut Val-de-Marne - Plateau Briard,94,179320171,5063
+144,94076,Villejuif,T12,Val de Bievres - Seine Amond - Grand Orly,94,737162088,31452
+145,94077,Villeneuve-le-Roi,T12,Val de Bievres - Seine Amond - Grand Orly,94,268646798,11118
+146,94078,Villeneuve-Saint-Georges,T12,Val de Bievres - Seine Amond - Grand Orly,94,325830179,18078
+147,94079,Villiers-sur-Marne,T10,Association des Communes de l'Est Parisien,94,425902390,15577
+148,94080,Vincennes,T10,Association des Communes de l'Est Parisien,94,1201638108,29408
+149,94081,Vitry-sur-Seine,T12,Val de Bievres - Seine Amond - Grand Orly,94,1083954760,51294
+150,95018,Argenteuil,T5,Boucle Nord 92,95,1305826636,60187

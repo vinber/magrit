@@ -47,6 +47,9 @@ var func = document.getElementById('func').innerHTML;
 document.getElementById('func').style.display = "none";
 var menu_option = get_menu_option(func);
 
+// voir : http://bl.ocks.org/mbostock/3711652 
+// voir : http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object    
+
 var w = Math.round((window.innerWidth / 1.73 ) / 10)*10,
     h = Math.round((window.innerHeight / 1.33 ) / 10)*10;
 
@@ -56,11 +59,8 @@ var graticule = d3.geo.graticule(),
     proj = d3.geo.mercator().scale(100).translate([375, 320]),
     path = d3.geo.path().projection(proj),
     t = proj.translate(),
-    s = proj.scale();
-
-//var zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 250]).on("zoom", redraw);
-
-var zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
+    s = proj.scale(),
+    zoom = d3.behavior.zoom().scale(1).scaleExtent([0.2, 250]).on("zoom", zoomed);
 
 var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
@@ -76,10 +76,8 @@ var user_data = new Object(),
     current_layers = new Object(),
     last_params = new Object();
 
-var dataset_name = undefined;
-
-current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
+current_layers["Graticule"] = {"type": "Line", "n_features":1}
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1}
 
 var map = d3.select("#map")
                 .style("width", w+"px").style("height", h+"px")
@@ -88,7 +86,7 @@ var map = d3.select("#map")
                 .attr("height", h)
                 .call(zoom);
 
-var background = map.append("g").attr("id","Simplified_land_polygons").style('stroke-width', "0.5px");
+var background = map.append("g").attr("id","Simplified_land_polygons");
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
@@ -157,9 +155,6 @@ dv1.append("p").attr("id", "datag").attr("class", "user_panel").html("Data provi
 dv1.append("p").attr("id", "data_ext").attr("class", "user_panel").html("Additional data : <b><i>No</i></b>");
 dv1.append("p").attr("id", "join_section").html("").style("margin-bottom", "5px");
 var join_button = undefined;
-dv1.append("p").attr("id", "browse_section").html("").style("margin-bottom", "5px");
-browse_table = d3.select("#browse_section").append("button").attr("id", "browse_button").html("Explore your table(s)").on("click", createBoxExplore);
-browse_table.node().disabled = true;
 
 if(menu_option.text_button){
     var dv2 = section2.append("p").attr("class", "form-item");
@@ -475,12 +470,10 @@ function remove_layer(){
 
              // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
              if(current_layers[name].targeted){
-                 if(joined_dataset[0].length > 0) browse_table.node().disabled = true;
                  d3.select("#input_geom").html("User geometry : <b><i>None</i></b>");
                  d3.select("#datag").html("Data provided with geometries : <b><i>No</i></b>");
                  if(d3.select("#join_button").node() != null)
                      valid_join_check_display();
-                 d3.select("#browse_table_button").node().disabled = true;
                  d3.select("#func_button").node().disabled = true;
                  field_join_map = [];
                  delete user_data[name];
@@ -526,7 +519,7 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     map_config.projection_center = proj.center();
     map_config.div_width = w;
     map_config.div_height = h;
-    //map_config.rotation = d3.select("svg").attr('transform') ? d3.select("svg").attr('transform').split('rotate(')[1].split('),')[0] : "0";
+    map_config.rotation = d3.select("svg").attr('transform') ? d3.select("svg").attr('transform').split('rotate(')[1].split('),')[0] : "0";
     map_config.n_layers = svg.childElementCount;
 
     for(var i=0; i < map_config.n_layers; i++){
@@ -568,6 +561,58 @@ function sendPreferences(){
 // Zooming functions (from http://bl.ocks.org/linssen/7352810)
 //////////////////////////////////////////////////////////////////////////////
 
+/*
+/// These versions of these 3 functions are doing translation / scaling on the svg element (ie. not by recomputing each path)
+function redraw() {
+    map.attr("transform",
+        "translate(" + zoom.translate() + ")" +
+        "scale(" + zoom.scale() + ")"
+    );
+}
+
+function interpolateZoom (translate, scale) {
+    var self = this;
+    return d3.transition().duration(350).tween("zoom", function () {
+        var iTranslate = d3.interpolate(zoom.translate(), translate),
+            iScale = d3.interpolate(zoom.scale(), scale);
+        return function (t) {
+            zoom
+                .scale(iScale(t))
+                .translate(iTranslate(t));
+            redraw();
+        };
+    });
+}
+
+function zoomClick() {
+    var clicked = d3.event.target,
+        direction = 1,
+        factor = 0.2,
+        target_zoom = 1,
+        center = [w / 2, h / 2],
+        extent = zoom.scaleExtent(),
+        translate = zoom.translate(),
+        translate0 = [],
+        l = [],
+        view = {x: translate[0], y: translate[1], k: zoom.scale()};
+
+    d3.event.preventDefault();
+    direction = (this.id === 'zoom_in') ? 1 : -1;
+    target_zoom = zoom.scale() * (1 + factor * direction);
+
+    if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
+
+    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+    view.k = target_zoom;
+    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+
+    view.x += center[0] - l[0];
+    view.y += center[1] - l[1];
+
+    interpolateZoom([view.x, view.y], view.k);
+}
+*/
+
 function redraw() {
   sc = d3.event.scale;
   tr  = d3.event.translate;
@@ -589,13 +634,6 @@ function zoom_without_redraw(){
       .transition()
       .duration(10)
       .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    Object.getOwnPropertyNames(current_layers).forEach(function(d, i){
-        var g_lyr = d3.select('#'+ d);
-        var stroke_width = current_layers[d]['stroke-width-const'];
-        stroke_width = (stroke_width.split('px')[0] / d3.event.scale) + "px";
-        g_lyr.style("stroke-width", stroke_width);
-        console.log(g_lyr);
-        });
 };
 
 function interpolateZoom(translate, scale) {
@@ -762,7 +800,6 @@ function add_sample_layer(){
                     url = sample_datasets[selec.dataset];
                     d3.csv(url, function(error, data){
                         joined_dataset.push(data);
-                        dataset_name = selec.dataset;
                         var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
                         d3.select('#data_ext').html("Additional data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
                         valid_join_check_display(false);

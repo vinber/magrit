@@ -18,3 +18,4 @@ TODO list:
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)
 - Pick a random color to fill the layer just added by the user (instead of always the same one)
 - /!\ Fix the weird behavior when trying to move the legend
+- change the zoom behavior (avoid to redraw every path ?)

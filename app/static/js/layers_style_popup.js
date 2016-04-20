@@ -19,17 +19,23 @@ function createStyleBox(layer_name){
      var type = current_layers[layer_name].type;
      if(current_layers[layer_name].rendered !== undefined){
          rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
+          // Todo : do not ask this but display a choice of palette instead
          if(!rep) return;
      }
      var g_lyr_name = "#" + layer_name;
      console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
      var opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
-     var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
-     if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
+
+     if(current_layers[layer_name].colors_breaks != undefined){
+        var fill_prev = current_layers[layer_name].colors;
+     } else {
+         var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
+         if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
+     }
      var stroke_prev = d3.select(g_lyr_name).selectAll("path").style('stroke');
      if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
      var border_opacity = d3.select(g_lyr_name).selectAll("path").style('stroke-opacity');
-     var stroke_width = d3.select(g_lyr_name).selectAll("path").style('stroke-width');
+     var stroke_width = current_layers[layer_name]['stroke-width-const']
      if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
      bg.className = 'overlay';
@@ -44,14 +50,37 @@ function createStyleBox(layer_name){
                              'Geometry type : <b><i>', type, '</b></i>'].join(''));
 
      if(type !== 'Line'){
-         popup.append('p').html('Fill color<br>')
-                          .insert('input').attr('type', 'color').attr("value", fill_prev)
-                          .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
+        if(current_layers[layer_name].colors_breaks == undefined){
+             popup.append('p').html('Fill color<br>')
+                              .insert('input').attr('type', 'color').attr("value", fill_prev)
+                              .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
+         } else {
+            var fields = type_col(layer_name, "number")
+            var field_selec = dv2.append('p').html('Field :').insert('select').attr('class', 'params');
+            fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+
+             popup.append('p').style("margin", "auto").html("")
+                .append("button").html("Display and arrange class")
+                .on("click", function(){
+                    display_discretization(layer_name, field_selec.node().value, current_layers[layer_name].colors_breaks.length, "Quantiles")
+                        .then(function(confirmed){
+                            if(confirmed){
+                                console.log(confirmed);
+//                                 = {
+//                                        nb_class:rendering_params confirmed[0], type: confirmed[1],
+//                                        breaks: confirmed[2], colors:confirmed[3],
+//                                        colorsByFeature: confirmed[4], renderer:"Choropleth"
+//                                    }
+                            }
+                        });
+                });
+
+         }
          popup.append('p').html('Fill opacity<br>')
                           .insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
                           .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('fill-opacity', this.value)});
-     }
+    }
 
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
@@ -61,7 +90,7 @@ function createStyleBox(layer_name){
                       .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('stroke-opacity', this.value)});
      popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
                       .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
-                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke-width", this.value+"px")});
+                      .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
 
      popup.append('button').attr('id', 'yes').text('Apply')
      popup.append('button').attr('id', 'no').text('Close without saving');
@@ -74,8 +103,9 @@ function createStyleBox(layer_name){
          deactivate([nwBox, bg]);
          var layer_to_render = d3.select(g_lyr_name).selectAll("path");
          layer_to_render.style('fill-opacity', opacity)
-                     .style('stroke-opacity', border_opacity)
-                     .style('stroke-width', stroke_width);
+                     .style('stroke-opacity', border_opacity);
+         d3.select(g_lyr_name).style('stroke-width', stroke_width);
+         current_layers[layer_name]['stroke-width-const'] = stroke_width;
          if(current_layers[layer_name].targeted === undefined)
              layer_to_render.style('fill', fill_prev)
                      .style('stroke', stroke_prev);

@@ -238,7 +238,7 @@ label
     fill: #e0e378;
 }
 
-.graticule {
+#Graticule {
     fill:none;
     stroke: #777;
     stroke-width: 1px;
