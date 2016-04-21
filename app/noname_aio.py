@@ -120,30 +120,49 @@ def topojson_to_geojson(data):
 @asyncio.coroutine
 def cache_input_topojson(request):
     posted_data = yield from request.post()
-    try:
-        name, data = posted_data.getall('file[]')
-        hashed_input = sha512(data.encode()).hexdigest()  # Todo : compute the hash on client side to avoid re-sending the data
-        print('Here i am')
-    except Exception as err:
-        print("posted data :\n", posted_data)
-        print("err\n", err)
-        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
-
     session_redis = yield from get_session(request)
-    user_id = get_user_id(session_redis)
-    f_name = '_'.join([user_id, name.split('.')[0]])
+    params = request.match_info['params']
 
-    if "converted" not in session_redis:
-        session_redis["converted"] = {}
-    else:
-        if hashed_input in session_redis['converted']:
+    if "sample_data" in params:
+        user_id = get_user_id(session_redis)
+        name = posted_data.getall('layer_name')[0]
+        path = app_glob['db_layers'][name]
+        f_name = '_'.join([user_id, name])
+        result = yield from app_glob['redis_conn'].get(f_name)
+        if not result:
+            with open(path, "r") as f:
+                data = f.read()
+            yield from app_glob['redis_conn'].set(f_name, data)
+            print('Caching the TopoJSON')
+            return web.Response()
+        else:
             print("The TopoJSON was already cached !")
             return web.Response()
-
-    session_redis['converted'][hashed_input] = True
-    yield from app_glob['redis_conn'].set(f_name, data)
-    print('Caching the TopoJSON')
-    return web.Response()
+    else:
+        try:
+            name, data = posted_data.getall('file[]')
+            hashed_input = sha512(data.encode()).hexdigest()  # Todo : compute the hash on client side to avoid re-sending the data
+            print('Here i am')
+        except Exception as err:
+            print("posted data :\n", posted_data)
+            print("err\n", err)
+            return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
+    
+        session_redis = yield from get_session(request)
+        user_id = get_user_id(session_redis)
+        f_name = '_'.join([user_id, name.split('.')[0]])
+    
+        if "converted" not in session_redis:
+            session_redis["converted"] = {}
+        else:
+            if hashed_input in session_redis['converted']:
+                print("The TopoJSON was already cached !")
+                return web.Response()
+    
+        session_redis['converted'][hashed_input] = True
+        yield from app_glob['redis_conn'].set(f_name, data)
+        print('Caching the TopoJSON')
+        return web.Response()
 
 
 def get_user_id(session_redis):
@@ -154,6 +173,10 @@ def get_user_id(session_redis):
         return user_id
     else:
         user_id = session_redis['app_user']
+#        print("{} is a known user".format(user_id))
+        if user_id not in app_glob['app_users']:
+            app_glob['app_users'].add(user_id)
+#            print("but not in app_glob['app_users']")
         return user_id
 
 
@@ -204,10 +227,13 @@ def convert(request):
     user_id = get_user_id(session_redis)
     
     f_name = '_'.join([user_id, name.split('.')[0]])
-
+    print(f_name)
     if not "converted" in session_redis:
         session_redis["converted"] = {}
+        print('not "converted" : ',session_redis["converted"])
     else:
+        print('converted: ',session_redis["converted"])
+        print('actual hash : ', hashed_input)
         if hashed_input in session_redis['converted']:
             result = yield from app_glob['redis_conn'].get(f_name)
             print("Used cached result")
@@ -309,6 +335,8 @@ class R_commande(web.View):
 @asyncio.coroutine
 @aiohttp_jinja2.template('modules/test_interface.html')
 def handle_app_functionality(request):
+    session_redis = yield from get_session(request)
+    user_id = get_user_id(session_redis)
     return {"func": request.match_info['function']}
 
 
@@ -380,14 +408,15 @@ def call_stewart(posted_data, session_redis, user_id):
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, posted_data['mask_layer']])
+        print(f_name)
         result_mask = yield from app_glob['redis_conn'].get(f_name)
-        print("Found it")
+        print("Found it :", result_mask)
     filenames = {'point_layer': ''.join(['/tmp/', get_name(), '.geojson']),
                  'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None,
                  'result': None}
-    savefile(filenames['point_layer'], json.dumps(topo_to_geo(posted_data['topojson'])).encode())
+    savefile(filenames['point_layer'], topojson_to_geojson(posted_data['topojson']).encode())
     if filenames['mask_layer']:
-        savefile(filenames['mask_layer'], json.dumps(topo_to_geo(result_mask.decode())).encode())
+        savefile(filenames['mask_layer'], topojson_to_geojson(json.loads(result_mask.decode())).encode())
 
     commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
                 b'beta, resolution, mask_json)')
@@ -450,7 +479,7 @@ def init(loop, port=9999):
     app.router.add_route('POST', '/R/{function}', R_commande)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)
     app.router.add_route('POST', '/convert_to_topojson', convert)
-    app.router.add_route('POST', '/cache_topojson', cache_input_topojson)
+    app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
@@ -502,6 +531,9 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     srv, redis_conn = loop.run_until_complete(init(loop, port))
     app_glob['redis_conn'] = redis_conn
+    with open('static/json/sample_layers.json', 'r') as f:
+        data = f.read()
+        app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]
     app_glob['R_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded,
         "links": links_map, "MTA": call_mta

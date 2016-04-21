@@ -664,16 +664,28 @@ function createFuncOptionsBox_PropSymbol(layer){
         
         var prop_values = prop_sizer(values, Number(ref_size.node().value), Number(max_size.node().value));
 
-        var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-        var color = Colors.random();
+//        var layer_to_render = d3.select(g_lyr_name).selectAll("path");
+//        var color = Colors.random();
 
-        layer_to_render.style('fill-opacity', 1)
-                       .style('stroke-opacity', 1)
-                       .style('stroke', color)
-                       .style('fill', color)
-                       .style("stroke-width", function(d, i){ return (prop_values[i] / 2) + "px"; })
+//        layer_to_render.style('fill-opacity', 1)
+//                       .style('stroke-opacity', 1)
+//                       .style('stroke', color)
+//                       .style('fill', color)
+//                       .style("stroke-width", function(d, i){ return (prop_values[i] / 2) + "px"; })
+        var bg_color = Colors.random(),
+            stroke_color = Colors.random();
 
-        console.log([values, prop_values]);
+        var prop_symbols = map.append("g").attr("id", g_lyr_name + "_PropSymbol");
+        d3.select(g_lyr_name).selectAll("path").each(function(d, i){
+            var centr = path.centroid(d);
+            prop_symbols.append('circle')
+                .attr('cx', centr[0])
+                .attr("cy", centr[1])
+                .attr("r", 0.2 + prop_values[i])
+                .style("fill", bg_color)
+                .style("stroke", stroke_color);
+        });
+        zoom_without_redraw();
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){

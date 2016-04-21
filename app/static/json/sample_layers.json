@@ -1,6 +1,6 @@
 [
  {
- "gpm": "/database/topojson/GrandParisMunicipalities.topojson",
+ "GrandParisMunicipalities": "/database/topojson/GrandParisMunicipalities.topojson",
  "gpm_dataset": "/database/csv/gpm.csv",
  "nuts2": "/database/topojson/nuts2.topojson",
  "nuts2_data": "/database/topojson/nuts2_data.topojson",

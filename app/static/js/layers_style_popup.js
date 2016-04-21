@@ -56,7 +56,7 @@ function createStyleBox(layer_name){
                               .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
          } else {
             var fields = type_col(layer_name, "number")
-            var field_selec = dv2.append('p').html('Field :').insert('select').attr('class', 'params');
+            var field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params');
             fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
 
              popup.append('p').style("margin", "auto").html("")
@@ -95,11 +95,11 @@ function createStyleBox(layer_name){
      popup.append('button').attr('id', 'yes').text('Apply')
      popup.append('button').attr('id', 'no').text('Close without saving');
 
-     qs('#yes').onclick=function(){
-         sendPreferences();
-         deactivate([nwBox, bg]);
-     }
-     qs('#no').onclick=function(){
+    qs('#yes').onclick=function(){
+        sendPreferences();
+        deactivate([nwBox, bg]);
+    }
+    qs('#no').onclick=function(){
          deactivate([nwBox, bg]);
          var layer_to_render = d3.select(g_lyr_name).selectAll("path");
          layer_to_render.style('fill-opacity', opacity)
@@ -114,8 +114,9 @@ function createStyleBox(layer_name){
                            .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
                            .style('stroke-opacity', 0.9)
                            .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
-     }
-     return nwBox;
+    }
+    zoom_without_redraw();
+    return nwBox;
 }
 
 function deactivate(forpopup){

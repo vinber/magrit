@@ -4,8 +4,8 @@
 stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
                             span, beta, resolution=NULL, mask_json = NULL){
 
-  latlong_string = "+init=epsg:4326"
-  web_mercator = "+init=epsg:3857"
+  latlong_string <- "+init=epsg:4326"
+  web_mercator <- "+init=epsg:3857"
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)

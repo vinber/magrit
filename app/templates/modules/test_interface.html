@@ -90,15 +90,22 @@ var background = map.append("g").attr("id","Simplified_land_polygons").style('st
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
+    button_zoom_fit = ' <button type="submit" class="zoom_fit_button"><img src="/static/img/Inkscape_icons_zoom_fit_page.svg" width="18" height="18" alt="submit"/></button>',
     button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">';
 
 // These triggers are in a function as they need to be called on each layer add
 var binds_layers_buttons = function(){
     d3.selectAll(".trash_button").on("click", remove_layer);
     d3.selectAll(".active_button").on("change", handle_active_layer);
+    d3.selectAll(".zoom_fit_button").on("click", function(){
+        let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+        if(layer_name.indexOf(' - ') > -1) layer_name = layer_name.split(' - ')[1];
+        center_map(layer_name);
+        zoom_without_redraw();
+    });
     d3.selectAll(".style_button").on("click", function(){
-            handle_click_layer(this.parentElement.innerHTML.split(" <butt")[0])
-            });
+        handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+    });
 }
 
 map.append("g").attr("id", "Graticule")
@@ -170,8 +177,8 @@ if(menu_option.text_button){
 }
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
-layer_list.append("li").attr("class", "ui-state-default Graticule").html("Graticule"+ button_style + button_trash + button_active)
-layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").html("Simplified_land_polygons"+ button_style + button_trash + button_active)
+layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule")
+layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Simplified_land_polygons")
 dv3 = section3.append("div")
                 .style("text-align", "center")
                 .html("Drop new layout layers here or browse locally to add one<br>(GeoJSON, TopoJSON and ziped Shapefile project)<br>");
@@ -249,10 +256,18 @@ lm.append("input")
 lm.append("button")
         .attr("class", "hand_button")
         .attr("id", "hand_button")
-        .attr("Title", "Use the cursor to move on the map (default behavior)")
+        .attr("title", "Use the cursor to move on the map (default behavior)")
         .html('<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>')
         .style('box-shadow', 'inset 2px 2px 1px black')
         .on("click", function(){handle_click_hand();});
+
+lm.append("button")
+        .attr("class", "brush_zoom_button")
+        .attr("id", "brush_zoom_button")
+        .attr("title","Zoom on selection")
+        .classed("active", false)
+        .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>')
+        .on("click", function(){handle_click_zoom_select();});
 
 
 var info = lm.append("p")
@@ -318,7 +333,7 @@ $(function() {
           layers = d3.selectAll("svg").node();
     
       for(var i=0, len = a.target.childNodes.length; i < len; i++){
-          var n = (a.target.childNodes[i].innerHTML.split(" <butt")[0]).split(" - ");
+          var n = (a.target.childNodes[i].innerHTML.split("></div> ")[1]).split(" - ");
           desired_order[i] = n[n.length - 1];
           actual_order[i] = layers.children[i].id;
       }
@@ -459,7 +474,7 @@ function log_coordinates(t){
 
 function remove_layer(){
     var name;
-    var name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
+    var name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
     if(name_split.length == 2) name = name_split[1];
     else if(name_split.length > 2) console.log('Oups..');
     else name = name_split[0];
@@ -515,8 +530,69 @@ function handle_bg_color(color){
 
 function handle_click_hand(){
     var hb = d3.select('.hand_button');
-    if(hb.style('box-shadow') != "none"){d3.select(".hand_button").style('box-shadow', "none")}
-    else{d3.select(".hand_button").style('box-shadow', 'inset 2px 2px 1px black')}
+    if(hb.style('box-shadow') != "none"){
+        hb.style('box-shadow', "none");
+        zoom.on("zoom", null);
+    } else {
+        hb.style('box-shadow', 'inset 2px 2px 1px black');
+        zoom.on("zoom", zoom_without_redraw);
+    }
+}
+
+function handle_click_zoom_select(){
+    var hand_button = d3.select('.hand_button'),
+        zoom_sel_button = d3.select('.brush_zoom_button');
+    if(zoom_sel_button.classed("active")){
+        zoom.on("zoom", zoom_without_redraw);
+        d3.select("svg").on("zoom", zoom_without_redraw);
+        d3.select("svg").on("mousedown", zoom_without_redraw);
+        zoom_sel_button.classed("active", false);
+        zoom_sel_button.style('box-shadow', "none");
+    } else {
+        if(hand_button.style('box-shadow') != "none"){
+            hand_button.style('box-shadow', "none");
+            zoom.on("zoom", null);
+        }
+        zoom_sel_button.classed("active", true);
+        zoom_sel_button.style('box-shadow', 'inset 2px 2px 1px black');
+        d3.select("svg").on("mousedown", function(){
+            var e = this,
+                origin = d3.mouse(e),
+                rect = d3.select("svg").append("g").append("rect").attr("class", "zoom");
+            d3.select("body").classed("noselect", true);
+            origin[0] = Math.max(0, Math.min(w, origin[0]));
+            origin[1] = Math.max(0, Math.min(h, origin[1]));
+            d3.select("svg")
+                .on("mousemove.zoomRect", function() {
+                    var m = d3.mouse(e);
+                    m[0] = Math.max(0, Math.min(w, m[0]));
+                    m[1] = Math.max(0, Math.min(h, m[1]));
+                    rect.attr("x", Math.min(origin[0], m[0]))
+                    .attr("y", Math.min(origin[1], m[1]))
+                    .attr("width", Math.abs(m[0] - origin[0]))
+                    .attr("height", Math.abs(m[1] - origin[1]));
+                    })
+                .on("mouseup.zoomRect", function() {
+                    d3.select("svg").on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
+                    d3.select("body").classed("noselect", false);
+                    var m = d3.mouse(e);
+                    m[0] = Math.max(0, Math.min(w, m[0]));
+                    m[1] = Math.max(0, Math.min(h, m[1]));
+                    if (m[0] !== origin[0] && m[1] !== origin[1]) {
+                        var b = [origin, m]
+                        var s = Math.abs(.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h)),
+                            t = [-Math.abs((w - s * (b[1][0] + b[0][0])) / 2), -Math.abs((h - s * (b[1][1] + b[0][1])) / 2)];
+                        console.log(s, t);
+                        zoom.scale(s);
+                        zoom.translate(t);
+                    }
+                    rect.remove();
+                    zoom_without_redraw();
+                  }, true);
+            d3.event.stopPropagation();
+        });
+
+    }
 }
 
 
@@ -581,8 +657,8 @@ function zoom_without_redraw(){
               .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
     Object.getOwnPropertyNames(current_layers).forEach(function(d, i){
         var g_lyr = d3.select('#'+ d);
-        var stroke_width = current_layers[d]['stroke-width-const'];
-        stroke_width = (stroke_width.split('px')[0] / zoom.scale()) + "px";
+        var stroke_width = current_layers[d]['stroke-width-const'].split('px')[0] / zoom.scale();
+        stroke_width = stroke_width >= 0.0086 ? stroke_width + "px" : 0.0086 + "px"
         g_lyr.style("stroke-width", stroke_width);
         });
 };
@@ -757,6 +833,19 @@ var φ = d3.scale.linear()
     .domain([0, h])
     .range([90, -90]);
 
+function cache_sample_layer(name_layer){
+    var formToSend = new FormData();
+    formToSend.append("layer_name", name_layer)
+    $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/cache_topojson/sample_data',
+        data: formToSend,
+        type: 'POST',
+        error: function(error) { console.log(error); }
+        });
+    }
+
 function add_sample_layer(){
     var dialog_res = [],
         selec = {layout: null, target: null},
@@ -768,7 +857,7 @@ function add_sample_layer(){
 
     var target_layers = [["<i>Target layer</i>",""],
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
-                    ["Grand Paris municipalities <i>(Polygons)</i>", "gpm"],
+                    ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
                     ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"]];
 
     var tabular_datasets = [["<i>Tabular dataset</i>",""],
@@ -782,14 +871,12 @@ function add_sample_layer(){
                          ["World country capitals <i>(Points)</i>", "world_cities"],
                          ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"]];
 
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 2*w/3, h-10).then(
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 4*w/5, h-10).then(
         function(confirmed){
             if(confirmed){
-                //dialog_res.push(confirmed);
-                console.log(sample_datasets);
-                console.log(selec);
                 let url = undefined;
                 if(selec.target){
+                    cache_sample_layer(selec.target);
                     url = sample_datasets[selec.target];
                     d3.text(url, function(txt_layer){
                         target_layer_on_add = true;
@@ -800,6 +887,7 @@ function add_sample_layer(){
                 if(selec.layout && selec.layout.length > 0){
                     for(let i = 0; i < selec.layout.length; ++i){
                         url = sample_datasets[selec.layout[i]];
+                        cache_sample_layer(selec.layout[i]);
                         d3.text(url, function(txt_layer){ add_layer_fun(txt_layer); })
                     }
                 }
@@ -850,7 +938,7 @@ function add_sample_layer(){
 
 function handle_active_layer(){
     var name,
-        name_split = this.parentElement.innerHTML.split(" <butt")[0].split(' - ');
+        name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
 
     if(name_split.length == 2) name = name_split[1];
     else if(name_split.length > 2) console.log('Oups..');

@@ -324,14 +324,13 @@ function add_layer_fun(text, options){
         d3.select("#layer_menu")
               .append('p').html('<a href>- ' + lyr_name+"</a>");
 
-        //try {bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);}
-        //catch(err){ console.log(err); }
-
         class_name = target_layer_on_add || result_layer_on_add ? "ui-state-default sortable_target " + lyr_name : "ui-state-default " + lyr_name
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = type + " - " + lyr_name + button_style + button_trash + button_active;
+        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", lyr_name].join('')
+        li.innerHTML = '<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + "</div> " + type + " - " + lyr_name
+//        li.innerHTML =  type + " - " + lyr_name + button_style + button_trash + button_zoom_fit + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
@@ -346,10 +345,43 @@ function add_layer_fun(text, options){
         }
     }
     if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
-    binds_layers_buttons();
     if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
-    alert('Layer successfully added to the canvas');
+    if(target_layer_on_add || result_layer_on_add) center_map(lyr_name);
+    binds_layers_buttons();
+    zoom_without_redraw();
     target_layer_on_add = false;
+    alert('Layer successfully added to the canvas');
+};
+
+function center_map(name){
+    var bbox_layer_path = undefined;
+//    var bbox_layer_geo = undefined;
+    d3.select("#"+name).selectAll('path').each(function(d, i){
+        var bbox_path = path.bounds(d);
+        if(bbox_layer_path === undefined){
+            bbox_layer_path = bbox_path;
+        }
+        else {
+            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+        }
+//        var bbox_geo = d3.geo.bounds(d);
+//        if(bbox_layer_geo === undefined){
+//            bbox_layer_geo = bbox_geo;
+//        }
+//        else{
+//            bbox_layer_geo[0][0] = bbox_geo[0][0] < bbox_layer_geo[0][0] ? bbox_geo[0][0] : bbox_layer_geo[0][0];
+//            bbox_layer_geo[0][1] = bbox_geo[0][1] < bbox_layer_geo[0][1] ? bbox_geo[0][1] : bbox_layer_geo[0][1];
+//            bbox_layer_geo[1][0] = bbox_geo[1][0] > bbox_layer_geo[1][0] ? bbox_geo[1][0] : bbox_layer_geo[1][0];
+//            bbox_layer_geo[1][1] = bbox_geo[1][1] > bbox_layer_geo[1][1] ? bbox_geo[1][1] : bbox_layer_geo[1][1];
+//        }
+    });
+    var s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
+        t = [(w - s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+    zoom.scale(s);
+    zoom.translate(t);
 };
 
 function center_zoom_map(bbox){
