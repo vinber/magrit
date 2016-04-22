@@ -259,14 +259,6 @@ function createFuncOptionsBox_Stewart(layer){
             "resolution": resolution.node().value,
             "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
 
-//        formToSend.append("json", JSON.stringify({
-//            "topojson": targeted_topojson,
-//            "var_name": field_selec.node().value,
-//            "span": span.node().value,
-//            "beta": beta.node().value,
-//            "typefct": func_selec.node().value,
-//            "resolution": resolution.node().value,
-//            "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
         $.ajax({
             processData: false,
             contentType: false,
@@ -296,6 +288,7 @@ function createFuncOptionsBox_Stewart(layer){
                 current_layers[n_layer_name].colors = [];
                 current_layers[n_layer_name].rendered = "Stewart";
                 current_layers[n_layer_name].colors_breaks = colors_breaks;
+                current_layers[n_layer_name].rendered_field = field_selec.node().value;
                 d3.select("#"+n_layer_name).selectAll("path").style("fill", function(d, i){
                                                                 let k = Math.round(d.properties.min * 100) / 100;
                                                                     col = col_map.get(k);
@@ -453,7 +446,8 @@ function fillMenu_Choropleth(layer){
                                 rendering_params = {
                                         nb_class: confirmed[0], type: confirmed[1],
                                         breaks: confirmed[2], colors:confirmed[3],
-                                        colorsByFeature: confirmed[4], renderer:"Choropleth"
+                                        colorsByFeature: confirmed[4], renderer:"Choropleth",
+                                        rendered_field: field_selec.node().value
                                     }
                             }
                         });
@@ -491,9 +485,7 @@ function createFuncOptionsBox_Choropleth(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer.trim(),
-        //fields = Object.getOwnPropertyNames(user_data[layer][0]),
-        // only retrieve the name of numericals fields :
-        fields = type_col(layer, "number");
+        fields = type_col(layer, "number"),
         ref_size_val = undefined,
         selected_disc = undefined;
 
@@ -520,32 +512,33 @@ function createFuncOptionsBox_Choropleth(layer){
                 .append("button").html("Display and arrange class")
                 .on("click", function(){
                     display_discretization(layer, field_selec.node().value, opt_nb_class, "Quantiles")
-                        .then(function(confirmed){
-                            if(confirmed){
-                                console.log(confirmed);
-                                rendering_params = {
-                                        nb_class: confirmed[0], type: confirmed[1],
-                                        breaks: confirmed[2], colors:confirmed[3],
-                                        colorsByFeature: confirmed[4], renderer: "Choropleth"
-                                    }
-                            }
-                        });
-                });
+                        .then(function(confirmed){ if(confirmed){
+                            console.log(confirmed);
+                            dialog_content.select('#yes').attr("disabled", null);
+                            rendering_params = {
+                                nb_class: confirmed[0], type: confirmed[1],
+                                breaks: confirmed[2], colors:confirmed[3],
+                                colorsByFeature: confirmed[4], renderer: "Choropleth"
+                                }
+                            } else { return; } });
+                    });
 
-    dialog_content.append('button').attr('id', 'yes').text('Render')
-    dialog_content.append('button').attr('id', 'no').text('Close');
+    var ok_button = dialog_content.append('button')
+                        .attr('id', 'yes')
+                        .attr('disabled', true)
+                        .text('Render')
+                        .on("click", function(){
+                            deactivate([nwBox, bg]);
+                            if(rendering_params){
+                                render_choro(layer, rendering_params);
+                                makeButtonLegend(layer);
+                            }});
 
-     qs('#yes').onclick=function(){
-        deactivate([nwBox, bg]);
-        if(rendering_params){
-            render_choro(layer, rendering_params);
-            makeButtonLegend(layer);
-        }
-     }
-     qs('#no').onclick=function(){
-         deactivate([nwBox, bg]);
-     }
-     return nwBox;
+    var cancel_button = dialog_content.append('button')
+                            .attr('id', 'no')
+                            .text('Close')
+                            .on("click", function(){ deactivate([nwBox, bg]);});
+    return nwBox;
 }
 
 
@@ -676,8 +669,8 @@ function createFuncOptionsBox_PropSymbol(layer){
      qs('#yes').onclick=function(){
         last_params = {
             field: field_selec.node().value,
-            max_size: +max_size.node().value,
-            ref_size: +ref_size.node().value,
+            max_size: +max_size.node().value / zoom.scale(),
+            ref_size: +ref_size.node().value / zoom.scale(),
             symbol_shape: symb_selec.node().value,
             symbol_color: fill_color.node().value
                 };
@@ -686,37 +679,45 @@ function createFuncOptionsBox_PropSymbol(layer){
         for(let i = 0, i_len = user_data[layer].length, field = field_selec.node().value; i < i_len; ++i)
             values.push(+user_data[layer][i][field]);
         
-        var prop_values = prop_sizer(values, Number(ref_size.node().value), Number(max_size.node().value));
+        var prop_values = prop_sizer(values, Number(ref_size.node().value / zoom.scale()), Number(max_size.node().value / zoom.scale()));
 
         var bg_color = Colors.random(),
             stroke_color = Colors.random();
 
-        var prop_symbols = map.append("g").attr("id", g_lyr_name + "_PropSymbol");
-
+//        var prop_symbols = d3.select(g_lyr_name).append("div").attr("id", "PropSymbol");
+        d3.select(g_lyr_name).selectAll("circle").remove()
+        d3.select(g_lyr_name).selectAll("rect").remove()
         if(symb_selec.node().value === "Circle"){
             d3.select(g_lyr_name).selectAll("path").each(function(d, i){
                 var centr = path.centroid(d);
-                prop_symbols.append('circle')
+                d3.select(g_lyr_name).append('circle')
                     .attr('cx', centr[0])
                     .attr("cy", centr[1])
-                    .attr("r", 0.2 + prop_values[i])
+                    .attr("r", ref_size.node().value / zoom.scale() + prop_values[i])
+                    .attr("id", "PropSymbol_" + i)
                     .style("fill", fill_color.node().value)
                     .style("stroke", "black");
             });
         } else if(symb_selec.node().value === "Square"){
             d3.select(g_lyr_name).selectAll("path").each(function(d, i){
                 var centr = path.centroid(d);
-                prop_symbols.append('rect')
+                d3.select(g_lyr_name).append('rect')
                     .attr('x', centr[0])
                     .attr("y", centr[1])
-                    .attr("height", 0.1 + prop_values[i])
-                    .attr("width", 0.1 + prop_values[i])
+                    .attr("height", ref_size.node().value / zoom.scale() + prop_values[i])
+                    .attr("width", ref_size.node().value / zoom.scale() + prop_values[i])
+                    .attr("id", "PropSymbol_" + i)
                     .style("fill", fill_color.node().value)
                     .style("stroke", "black");
             });
         }
 
+        if(current_layers[layer].type === "Point")
+            d3.select(g_lyr_name).selectAll("path").style('fill-opacity', 0).style('stroke-opacity', 0);
+
         zoom_without_redraw();
+        current_layers[layer].renderer = "PropSymbol";
+        current_layers[layer].rendered_field = field_selec.node().value;
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
@@ -735,19 +736,8 @@ function createBox_griddedMap(layer){
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
          g_lyr_name = "#"+trim(layer),
-         fields = type_col(layer, "number"),
-         other_layers = Object.getOwnPropertyNames(current_layers),
-         tmp_idx = null;
+         fields = type_col(layer, "number");
 
-     tmp_idx = other_layers.indexOf("Graticule");
-     if(tmp_idx > -1)
-         other_layers.splice(tmp_idx, 1);
-
-     tmp_idx = other_layers.indexOf("Simplified_land_polygons");
-     if(tmp_idx > -1)
-         other_layers.splice(tmp_idx, 1);
-
-     tmp_idx = null;
      bg.className = 'overlay';
      nwBox.id = [layer, '_gridded_popup'].join('');
      nwBox.className = 'popup';
@@ -761,6 +751,12 @@ function createBox_griddedMap(layer){
     var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
     var cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i>').insert('input').attr('type', 'number').attr('class', 'params').attr('value', last_params.span || 0).attr("min", 1000).attr("max", 700000).attr("step", 0.1);
+
+    var col_pal = dialog_content.append('p').html('Colorramp :').insert('select').attr('class', 'params');
+    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
+    'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(d, i){
+            col_pal.append("option").text(d).attr("value", d);
+    });
 
     dialog_content.append('button').attr('id', 'yes').text('Compute and render');
     dialog_content.append('button').attr('id', 'no').text('Close');
@@ -798,23 +794,28 @@ function createBox_griddedMap(layer){
                 current_layers[n_layer_name].rendered = "Gridded";
                 makeButtonLegend(n_layer_name);
                 var rendering_params = new Object();
+                // Todo : render the returned layer with some defaults values :
+//                rendering_params = {
+//                        nb_class: opt_nb_class, type: "quantiles",
+//                        breaks: confirmed[2], colors: confirmed[3],
+//                        colorsByFeature: confirmed[4], renderer: "Gridded"
+//                    }
+//                render_choro(n_layer_name, rendering_params);
+
                 dv2.insert('p').style("margin", "auto").html("")
                     .append("button").html("Display and arrange class ...")
                     .on("click", function(){
-                        display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
-                            .then(function(confirmed){
-                                if(confirmed){
-                                    console.log(confirmed);
-                                    rendering_params = {
-                                            nb_class: confirmed[0], type: confirmed[1],
-                                            breaks: confirmed[2], colors:confirmed[3],
-                                            colorsByFeature: confirmed[4], renderer: "Gridded"
-                                        }
-                                    render_choro(n_layer_name, rendering_params);
-                
-                                }
-                            });
-                        });
+                  display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
+                    .then(function(confirmed){ if(confirmed){
+                                console.log(confirmed);
+                                rendering_params = {
+                                        nb_class: confirmed[0], type: confirmed[1],
+                                        breaks: confirmed[2], colors:confirmed[3],
+                                        colorsByFeature: confirmed[4], renderer: "Gridded"
+                                    }
+                                render_choro(n_layer_name, rendering_params);
+                            } else { return; }  });
+                    });
             }
         });
         deactivate([nwBox, bg]);
@@ -834,6 +835,7 @@ function render_choro(layer, rendering_params){
                    .style('stroke-opacity', 0.9)
                    .style("stroke", "black");
     current_layers[layer].rendered = rendering_params['renderer'];
+    current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].colors = rendering_params['colorsByFeature'];
     current_layers[layer]['stroke-width-const'] = "0.75px";
     let colors_breaks = [];

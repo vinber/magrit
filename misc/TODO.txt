@@ -18,3 +18,6 @@ TODO list:
 - Pick a random color to fill the layer just added by the user (instead of always the same one)
 - /!\ Fix the weird behavior when trying to move the legend
 - disable the "render" button on choropleth maps until class / colors have been chosen
+- Use two kind of "redraw" behaviour (with two svg elements ?), one two use with "zoom" behavior (for fast moving) and one other to use with proj.translate() (for more precise drawing on the user targeted layer) ?
+- Display the result/rendered layer with a separate color from the targeted layer (like green and yellow, etc.)
+- Allow the user to choose layout elements (arrow, etc.)

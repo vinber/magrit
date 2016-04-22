@@ -108,7 +108,7 @@ function createStyleBox(layer_name){
                      .style('stroke-opacity', border_opacity);
          d3.select(g_lyr_name).style('stroke-width', stroke_width);
          current_layers[layer_name]['stroke-width-const'] = stroke_width;
-         if(current_layers[layer_name].targeted === undefined)
+         if(current_layers[layer_name].rendered === undefined)
              layer_to_render.style('fill', fill_prev)
                      .style('stroke', stroke_prev);
          else

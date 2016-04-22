@@ -82,6 +82,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1,
 var map = d3.select("#map")
                 .style("width", w+"px").style("height", h+"px")
             .append("svg")
+                .attr("id", "svg_map")
                 .attr("width", w)
                 .attr("height", h)
                 .call(zoom);
@@ -281,7 +282,7 @@ const_options.append("button").attr("class", "const_buttons")
               .attr("title", "Export your composition")
               .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
               .style("margin-top", "none")
-              .on("click", function(){alert('Export!');});
+              .on("click", export_compo);
 
 const_options.append("button").attr("class", "const_buttons")
               .attr("title", "Export / Load your map preferences")
@@ -914,6 +915,36 @@ function edit_legend_properties(){
 
     return;
 }
+
+function export_compo(){
+    var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map", height: h, width: w});
+    targetCanvas = targetCanvas.node();
+
+    var targetSVG = document.querySelector("#svg_map"),
+        svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
+        ctx = targetCanvas.getContext('2d'),
+        img = new Image(),
+        mime_type = "image/png";
+
+    img.src = "data:image/svg+xml;base64," + btoa(svg_xml);
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0);
+    }
+
+    // Todo : ask for output format (svg / png) before conversion
+    setTimeout(function(){ 
+        var imgUrl = targetCanvas.toDataURL(mime_type),
+            dl_link = document.createElement("a");
+    
+        dl_link.download = "export.png";
+        dl_link.href = imgUrl;
+        dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
+        document.body.appendChild(dl_link);
+        dl_link.click();
+    }, 960);
+
+}
+
 
 </script>
 </body>

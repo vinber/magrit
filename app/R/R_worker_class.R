@@ -73,7 +73,7 @@ R_Worker_fuw <- R6::R6Class(
         # .. as the request is prepared server-side ?
         output <- tryCatch(
           eval(expr = parse(text = request), envir = the_env),
-          error = function(e)paste0(e$message, "\n")
+          error = function(e){ a<-paste0(e$message, "\n");print(a);}
         )
         out <- self$validateOuput(output)
       }

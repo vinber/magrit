@@ -28,7 +28,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
          'Greens', 'Greys', 'Oranges', 'Purples', 'Reds',
          'Set1', 'Pastel1'].forEach(function(name){
-            sequential_color_select.append("option").text(name).attr("value", name)
+            sequential_color_select.append("option").text(name).attr("value", name);
         });
     };
     
