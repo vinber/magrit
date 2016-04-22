@@ -136,20 +136,30 @@ function createBox_FlowMap(ref_layer){
             "join_field": name_join_field
             };
         var formToSend = new FormData();
-        if(!targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty("properties")
-            && targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty(name_join_field)){
-        for(let i=0, len=targeted_topojson.objects[ref_layer].geometries.length, obj=targeted_topojson.objects[ref_layer]; i<len; ++i){
-                obj.geometries[i].properties = new Object();
-                obj.geometries[i].properties[name_join_field] = user_data[ref_layer][i][name_join_field];
-            }
-        }
+//        if(!targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty("properties")
+//            && targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty(name_join_field)){
+//        for(let i=0, len=targeted_topojson.objects[ref_layer].geometries.length, obj=targeted_topojson.objects[ref_layer]; i<len; ++i){
+//                obj.geometries[i].properties = new Object();
+//                obj.geometries[i].properties[name_join_field] = user_data[ref_layer][i][name_join_field];
+//            }
+//        }
+//        formToSend.append("json", JSON.stringify({
+//            "topojson": ref_layer,
+//            "csv_table": JSON.stringify(joined_dataset[0]),
+//            "field_i": field_i.node().value,
+//            "field_j": field_j.node().value,
+//            "field_fij": field_fij.node().value,
+//            "join_field": join_field.node().value
+//            }))
+        join_field_to_send = new Object();
+        join_field_to_send[name_join_field] = [for (obj of user_data[ref_layer]) obj[name_join_field]];
         formToSend.append("json", JSON.stringify({
-            "topojson": targeted_topojson,
+            "topojson": ref_layer,
             "csv_table": JSON.stringify(joined_dataset[0]),
             "field_i": field_i.node().value,
             "field_j": field_j.node().value,
             "field_fij": field_fij.node().value,
-            "join_field": join_field.node().value
+            "join_field": JSON.stringify(join_field_to_send)
             }))
         $.ajax({
             processData: false,
@@ -181,7 +191,6 @@ function createBox_FlowMap(ref_layer){
 }
 
 
-// TODO : keep trace of the previously used parameters and redisplay them when reopenning the windows
 function createFuncOptionsBox_Stewart(layer){
     if(current_layers[layer].type === "Line"){
         alert("Stewart potentials can only be computed from points (or polygons, using their centroids)");
@@ -189,9 +198,8 @@ function createFuncOptionsBox_Stewart(layer){
     }
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
-         g_lyr_name = "#"+trim(layer),
+         g_lyr_name = "#"+layer.trim(),
          fields = type_col(layer, "number"),
-//         fields = Object.getOwnPropertyNames(user_data[layer][0]),
          other_layers = Object.getOwnPropertyNames(current_layers),
          tmp_idx = null;
 
@@ -239,14 +247,26 @@ function createFuncOptionsBox_Stewart(layer){
             "resolution": resolution.node().value
             };
         var formToSend = new FormData();
+        let field_n = field_selec.node().value;
+        let var_to_send = new Object;
+        var_to_send[field_n] = [for (i of user_data[layer]) +i[field_n]];
         formToSend.append("json", JSON.stringify({
-            "topojson": targeted_topojson,
-            "var_name": field_selec.node().value,
+            "topojson": layer,
+            "var_name": JSON.stringify(var_to_send),
             "span": span.node().value,
             "beta": beta.node().value,
             "typefct": func_selec.node().value,
             "resolution": resolution.node().value,
             "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
+
+//        formToSend.append("json", JSON.stringify({
+//            "topojson": targeted_topojson,
+//            "var_name": field_selec.node().value,
+//            "span": span.node().value,
+//            "beta": beta.node().value,
+//            "typefct": func_selec.node().value,
+//            "resolution": resolution.node().value,
+//            "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
         $.ajax({
             processData: false,
             contentType: false,
@@ -256,7 +276,6 @@ function createFuncOptionsBox_Stewart(layer){
             type: 'POST',
             error: function(error) { console.log(error); },
             success: function(data){
-                // Todo : render the layer
                 {
                     let data_split = data.split('|||');
                     var class_lim = JSON.parse(data_split[0]),
@@ -298,13 +317,13 @@ function createFuncOptionsBox_Stewart(layer){
 }
 
 function createFuncOptionsBox_Anamorphose(layer_name){
-    if(current_layers[layer].type === "Line"){
+    if(current_layers[layer].type !== "Polygon"){
         alert("Anamorphose can currently only be computed on polygons");
         return;
     }
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+trim(layer),
+        g_lyr_name = "#"+layer.trim(),
         fields = type_col(layer, "number");
 
      bg.className = 'overlay';
@@ -471,7 +490,7 @@ function handle_legend(layer){
 function createFuncOptionsBox_Choropleth(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+trim(layer),
+        g_lyr_name = "#"+layer.trim(),
         //fields = Object.getOwnPropertyNames(user_data[layer][0]),
         // only retrieve the name of numericals fields :
         fields = type_col(layer, "number");
@@ -612,7 +631,7 @@ function createLegend(layer, title){
 function createFuncOptionsBox_PropSymbol(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+trim(layer),
+        g_lyr_name = "#"+layer.trim(),
         fields = type_col(layer, "number");
 
     if(fields.length === 0){
@@ -648,14 +667,19 @@ function createFuncOptionsBox_PropSymbol(layer){
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
     ['Circle', 'Square'].forEach(function(symb_name){symb_selec.append("option").text(symb_name).attr("value", symb_name);});
 
-    dialog_content.append('button').attr('id', 'yes').text('Compute')
+    var fill_color = dialog_content.append('p').html('Symbol color<br>')
+              .insert('input').attr('type', 'color').attr("value", Colors.random());
+
+    dialog_content.append('button').attr('id', 'yes').text('Compute');
     dialog_content.append('button').attr('id', 'no').text('Close');
 
      qs('#yes').onclick=function(){
         last_params = {
             field: field_selec.node().value,
             max_size: +max_size.node().value,
-            ref_size: +ref_size.node().value
+            ref_size: +ref_size.node().value,
+            symbol_shape: symb_selec.node().value,
+            symbol_color: fill_color.node().value
                 };
 
         var values = [];
@@ -664,27 +688,34 @@ function createFuncOptionsBox_PropSymbol(layer){
         
         var prop_values = prop_sizer(values, Number(ref_size.node().value), Number(max_size.node().value));
 
-//        var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-//        var color = Colors.random();
-
-//        layer_to_render.style('fill-opacity', 1)
-//                       .style('stroke-opacity', 1)
-//                       .style('stroke', color)
-//                       .style('fill', color)
-//                       .style("stroke-width", function(d, i){ return (prop_values[i] / 2) + "px"; })
         var bg_color = Colors.random(),
             stroke_color = Colors.random();
 
         var prop_symbols = map.append("g").attr("id", g_lyr_name + "_PropSymbol");
-        d3.select(g_lyr_name).selectAll("path").each(function(d, i){
-            var centr = path.centroid(d);
-            prop_symbols.append('circle')
-                .attr('cx', centr[0])
-                .attr("cy", centr[1])
-                .attr("r", 0.2 + prop_values[i])
-                .style("fill", bg_color)
-                .style("stroke", stroke_color);
-        });
+
+        if(symb_selec.node().value === "Circle"){
+            d3.select(g_lyr_name).selectAll("path").each(function(d, i){
+                var centr = path.centroid(d);
+                prop_symbols.append('circle')
+                    .attr('cx', centr[0])
+                    .attr("cy", centr[1])
+                    .attr("r", 0.2 + prop_values[i])
+                    .style("fill", fill_color.node().value)
+                    .style("stroke", "black");
+            });
+        } else if(symb_selec.node().value === "Square"){
+            d3.select(g_lyr_name).selectAll("path").each(function(d, i){
+                var centr = path.centroid(d);
+                prop_symbols.append('rect')
+                    .attr('x', centr[0])
+                    .attr("y", centr[1])
+                    .attr("height", 0.1 + prop_values[i])
+                    .attr("width", 0.1 + prop_values[i])
+                    .style("fill", fill_color.node().value)
+                    .style("stroke", "black");
+            });
+        }
+
         zoom_without_redraw();
         deactivate([nwBox, bg]);
      }
@@ -695,7 +726,6 @@ function createFuncOptionsBox_PropSymbol(layer){
 }
 
 
-// TODO : keep trace of the previously used parameters and redisplay them when reopenning the windows
 function createBox_griddedMap(layer){
     if(current_layers[layer].type != "Polygon"){
         alert("Gridded maps can currently only be made from polygons");
@@ -706,7 +736,6 @@ function createBox_griddedMap(layer){
          bg = document.createElement('div'),
          g_lyr_name = "#"+trim(layer),
          fields = type_col(layer, "number"),
-//         fields = Object.getOwnPropertyNames(user_data[layer][0]),
          other_layers = Object.getOwnPropertyNames(current_layers),
          tmp_idx = null;
 
@@ -736,14 +765,18 @@ function createBox_griddedMap(layer){
     dialog_content.append('button').attr('id', 'yes').text('Compute and render');
     dialog_content.append('button').attr('id', 'no').text('Close');
     qs('#yes').onclick=function(){
+        let field_n = field_selec.node().value;
         last_params = {
-            "var_name": field_selec.node().value,
+            "var_name": field_n,
             "cellsize": cellsize.node().value
             };
         var formToSend = new FormData();
+        let var_to_send = new Object;
+        var_to_send[field_n] = [for (i of user_data[layer]) +i[field_n]];
+
         formToSend.append("json", JSON.stringify({
-            "topojson": targeted_topojson,
-            "var_name": field_selec.node().value,
+            "topojson": layer,
+            "var_name": JSON.stringify(var_to_send),
             "cellsize": cellsize.node().value
             }))
         $.ajax({
@@ -755,7 +788,6 @@ function createBox_griddedMap(layer){
             type: 'POST',
             error: function(error) { console.log(error); },
             success: function(data){
-                // Todo : render the layer
                 {
                     let data_split = data.split('|||');
                     var n_layer_name = data_split[0],
@@ -796,7 +828,7 @@ function createBox_griddedMap(layer){
 function render_choro(layer, rendering_params){
     console.log(rendering_params);
     var layer_to_render = d3.select("#"+layer).selectAll("path");
-    d3.select("#"+layer).style("stroke-width", "0.75px");
+    d3.select("#"+layer).style("stroke-width", 0.75/zoom.scale() + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)

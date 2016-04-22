@@ -1,5 +1,4 @@
 function handle_click_layer(layer_name){
-    console.log(layer_name);
     var popid = layer_name,
         modal = createStyleBox(popid);
     modal.className += ' active';
@@ -66,7 +65,10 @@ function createStyleBox(layer_name){
                         .then(function(confirmed){
                             if(confirmed){
                                 console.log(confirmed);
-//                                 = {
+                                let colorsByFeatures = confirmed[4];
+                                var layer_to_render = d3.select(g_lyr_name).selectAll("path");
+                                layer_to_render.style('fill-opacity', 0.9)
+                                               .style("fill", function(d, i){ return colorsByFeatures[i] })
 //                                        nb_class:rendering_params confirmed[0], type: confirmed[1],
 //                                        breaks: confirmed[2], colors:confirmed[3],
 //                                        colorsByFeature: confirmed[4], renderer:"Choropleth"

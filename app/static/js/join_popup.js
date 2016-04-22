@@ -103,7 +103,7 @@ function valid_join_on(layer_name, field1, field2){
             for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                 f_name = fields_name_to_add[j];
                 if(f_name.length > 0){
-                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
+//                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
                     user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
                 }
             }
@@ -119,12 +119,12 @@ function valid_join_on(layer_name, field1, field2){
             if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
             for(var i=0, len=join_values1.length; i<len; i++){
                 val = field_join_map[i];
-                if(!targeted_topojson.objects[layer_name].geometries[i].hasOwnProperty('properties'))
-                    targeted_topojson.objects[layer_name].geometries[i].properties = {};
+//                if(!targeted_topojson.objects[layer_name].geometries[i].hasOwnProperty('properties'))
+//                    targeted_topojson.objects[layer_name].geometries[i].properties = {};
                 for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
                     f_name = fields_name_to_add[j];
                     if(f_name.length > 0){
-                        targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = val ? joined_dataset[0][val][f_name] : null;
+//                        targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = val ? joined_dataset[0][val][f_name] : null;
                         user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
                     }
                 }

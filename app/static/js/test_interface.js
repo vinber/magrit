@@ -162,18 +162,17 @@ function handle_TopoJSON_files(files) {
         name = files[0].name,
         reader = new FileReader(),
         ajaxData = new FormData();
-    /*
     ajaxData.append('file[]', file);
     $.ajax({
         processData: false,
         contentType: false,
         cache: false,
-        global: false
-        url: '/cache_topojson',
+        global: false,
+        url: '/cache_topojson/user',
         data: ajaxData,
         type: 'POST',
         error: function(error) { console.log(error); }
-    }); */
+    });
 
     reader.onloadend = function(){
         var text = reader.result;
@@ -242,7 +241,6 @@ function handle_single_file(files) {
 
 function add_layer_fun(text, options){
     var parsedJSON = JSON.parse(text),
-        bounds = [],
 //        target_layer_on_add = options ? options.target_layer_on_add : false,
         result_layer_on_add = options ? options.result_layer_on_add : false;
 
@@ -251,10 +249,11 @@ function add_layer_fun(text, options){
         return;
     }
 
-    console.log(parsedJSON);
+//    console.log(parsedJSON);
     var type = "", data_to_load = undefined,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
+    // Add an ID if the input topojson is provided without :
     layers_names.forEach(function(l_name, j){
         if(!parsedJSON.objects[l_name].geometries[0].id){
             for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
@@ -263,6 +262,7 @@ function add_layer_fun(text, options){
                 }
         }
     });
+
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
@@ -329,13 +329,13 @@ function add_layer_fun(text, options){
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
         li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", lyr_name].join('')
-        li.innerHTML = '<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + "</div> " + type + " - " + lyr_name
+//        li.innerHTML = '<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + "</div> " + type + " - " + lyr_name
 //        li.innerHTML =  type + " - " + lyr_name + button_style + button_trash + button_zoom_fit + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             current_layers[lyr_name].targeted = true;
-            targeted_topojson = parsedJSON;
+//            targeted_topojson = parsedJSON;
             d3.select('#input_geom').html("User geometry : <b>"+lyr_name+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
             if(data_to_load){
@@ -384,39 +384,6 @@ function center_map(name){
     zoom.translate(t);
 };
 
-function center_zoom_map(bbox){
-    console.log(bbox);
-    var xmin= bbox[0],
-        xmax= bbox[1],
-        ymin= bbox[2],
-        ymax= bbox[3];
-
-    var bounds = [[bbox[0], bbox[2]], [bbox[1], bbox[3]]],
-        dx = bounds[1][0] - bounds[0][0],
-        dy = bounds[1][1] - bounds[0][1],
-        x = (bounds[0][0] + bounds[1][0]) / 2,
-        y = (bounds[0][1] + bounds[1][1]) / 2;
-    console.log([dx, dy, x, y, proj(dx / w, dy / h)]);
-    var scale = .9 / Math.max(proj(dx / w, dy / h)),
-        translate = proj([w / 2 - scale * x, h / 2 - scale * y]);
-    console.log(scale); console.log(translate);
-    if(proj && scale) proj.scale(scale).translate(translate);
-    /*
-    var top_left = proj([xmin, ymax]),
-        bottom_right = proj([xmax, ymin]),
-        ctr = [bottom_right[0] - top_left[0], top_left[1] - bottom_right[1]];
-
-    var current_trans = proj.translate(),
-        current_scale = proj.scale(),
-        new_scale = Math.max((bottom_right[0] - top_left[0]) / w, (top_left[1] - bottom_right[1]) / h),
-        trans = [Math.abs(t[0] - new_scale * ctr[0]),
-                 Math.abs(t[1] - new_scale * ctr[1])];
-    new_scale = new_scale * s;
-    console.log([proj.scale(), proj.center()[0], proj.center()[1], proj.translate()[0], proj.translate()[1]]);
-    proj.translate([ctr[0]+new_scale, ctr[1]*new_scale])
-    */
-}
-
 // Some helpers
 
 function strContains(string1, substring){
@@ -434,3 +401,107 @@ function strArraysContains(ArrString1, ArrSubstrings){
     }
     return result;
 };
+
+function add_sample_layer(){
+    var dialog_res = [],
+        selec = {layout: null, target: null},
+        sample_datasets = undefined;
+
+    d3.json('/static/json/sample_layers.json', function(error, json){
+        sample_datasets = json[0];
+        });
+
+    var target_layers = [["<i>Target layer</i>",""],
+                    ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
+                    ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
+                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"]];
+
+    var tabular_datasets = [["<i>Tabular dataset</i>",""],
+                    ["International Twinning Agreements Betwwen Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
+                    ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset']];
+
+    var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
+                         ["Nuts 1 (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
+                         ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+                         ["World countries simplified <i>(Polygons)</i>", "world_country"],
+                         ["World country capitals <i>(Points)</i>", "world_cities"],
+                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"]];
+
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 4*w/5, h-10).then(
+        function(confirmed){
+            if(confirmed){
+                let url = undefined;
+                if(selec.target){
+                    cache_sample_layer(selec.target);
+                    url = sample_datasets[selec.target];
+                    d3.text(url, function(txt_layer){
+                        target_layer_on_add = true;
+                        add_layer_fun(txt_layer);
+                        target_layer_on_add = false;
+                    });
+                }
+                if(selec.layout && selec.layout.length > 0){
+                    for(let i = 0; i < selec.layout.length; ++i){
+                        url = sample_datasets[selec.layout[i]];
+                        cache_sample_layer(selec.layout[i]);
+                        d3.text(url, function(txt_layer){ add_layer_fun(txt_layer); })
+                    }
+                }
+                if(selec.dataset){
+                    url = sample_datasets[selec.dataset];
+                    d3.csv(url, function(error, data){
+                        joined_dataset.push(data);
+                        dataset_name = selec.dataset;
+                        var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+                        d3.select('#data_ext').html("Additional data : <b><i>Yes ("+field_name.length+" fields)</i></b>");
+                        valid_join_check_display(false);
+                        if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
+                        d3.select("#section1").style("height", "285px");
+                    });
+                }
+            }
+        });
+
+    var box_body = d3.select(".sampleDialogBox");
+
+    var title_tgt_layer = box_body.append('h3').html("Choose a layer to be rendered : ");
+
+    var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
+    target_layers.forEach(function(layer_info){t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    t_layer_selec.on("change", function(){selec.target = this.value;});
+
+    if(targeted_layer_added){
+        title_tgt_layer.style("color", "grey").html("<i>Choose a layer to be rendered : </i>");
+        t_layer_selec.node().disabled = true;
+        }
+
+    box_body.append('h3').html("Choose a dataset to link with geometries: ");
+
+    var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
+    tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    dataset_selec.on("change", function(){selec.dataset = this.value;});
+
+    box_body.append('h3').html("Choose layer(s) to be used as layout : ");
+    box_body.append("p").style("color", "grey").html("<i>(multiple layers can be selected)</i>");
+
+    var layout_layer_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
+    layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    layout_layer_selec.on("change", function(){
+        let elem = undefined;
+        selec.layout = [elem.value for (elem of this.selectedOptions)];
+    });
+}
+
+function cache_sample_layer(name_layer){
+    var formToSend = new FormData();
+    formToSend.append("layer_name", name_layer)
+    $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/cache_topojson/sample_data',
+        data: formToSend,
+        type: 'POST',
+        error: function(error) { console.log(error); }
+        });
+    }
+
