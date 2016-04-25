@@ -530,6 +530,7 @@ function createFuncOptionsBox_Choropleth(layer){
                         .on("click", function(){
                             deactivate([nwBox, bg]);
                             if(rendering_params){
+                                rendering_params['rendered_field'] = field_selec.node().value;
                                 render_choro(layer, rendering_params);
                                 makeButtonLegend(layer);
                             }});
@@ -543,7 +544,7 @@ function createFuncOptionsBox_Choropleth(layer){
 
 
 function createLegend(layer, title){
-    var legendTitle = title || "Legend";
+    var legendTitle = title || current_layers[layer].rendered_field;
     var boxheight = 18,
         boxwidth = 18,
         boxgap = 4,
@@ -551,19 +552,13 @@ function createLegend(layer, title){
         ypos = 20,
         nb_class = current_layers[layer].colors_breaks.length;
 
-//    var new_svg = d3.select('body')
-//        .append('div')
-//        .append("svg").attr("id", "svg_legend")
-//        .attr("width", 100)
-//        .attr("height", nb_class * 30 + 10);
-
-    var legend = map.insert('g').attr('id', 'legend_root')
+    var legend = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature")
         .selectAll('.legend')
       .data(current_layers[layer].colors_breaks)
       .enter().insert('g')
-      .attr('class', function(d, i) { return "legend_" + i; });
+      .attr('class', function(d, i) { return "legend_feature legend_" + i; });
 
-    legend.insert("g").attr("id","box_color")
+    legend.insert("g").attr("id","box_color").attr("class", "legend_feature")
       .append('rect')
       .attr("x", xpos + boxwidth + boxgap / 2)
       .attr("y", function(d, i){
@@ -574,7 +569,7 @@ function createLegend(layer, title){
       .style('fill', function(d) { return d[1]; })
       .style('stroke', function(d) { return d[1]; });
       
-    legend.insert("g").attr("id","box_text")
+    legend.insert("g").attr("id","box_text").attr("class", "legend_feature")
       .append('text')
       .attr("x", xpos + boxwidth * 2 + boxgap)
       .attr("y", function(d, i){
@@ -583,37 +578,31 @@ function createLegend(layer, title){
       .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
       .text(function(d) { return d[0]; });
 
-     legend.append("g").attr("id","legendtitle")
-        .append('text')
+     legend.append("g").attr("class", "legend_feature")
+        .append('text').attr("id","legendtitle")
         .text(legendTitle)
         .attr("x", xpos + boxwidth * 2 + boxgap)
         .attr("y", ypos - 5);
 
-    var max_x = - xpos + w / 8,
-        max_y = h - ypos;    
-
     var drag_lgd = d3.behavior.drag()
-                .origin(function() { 
-                        var t = d3.select(this);
-                        return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                                y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+                .on("dragstart", function(){
+                        zoom.on("zoom", null);
                         })
-                .on("dragstart", function(){zoom.on("zoom", null); })
                 .on("dragend", function(){ zoom.on("zoom", zoom_without_redraw); })
                 .on("drag", function() {
-                        let coords = d3.mouse(this), n_x = coords[0], n_y = coords[1];
-                        console.log(n_x, n_y);
-//                        if(!(max_x < n_x < 0 && 0 > n_y > max_y)) return;
-                        d3.selectAll("#legend_root").attr('transform', 'translate(' + [n_x, n_y] + ')');
-                        console.log('translate(' + [n_x, n_y] + ')')
+                        let coords = d3.mouse(this), n_x = d3.event.x, n_y = d3.event.y, zoom_trans = zoom.translate();
+                        d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + n_x, -ypos + n_y] + ')');
+//                        console.log('translate(' + [n_x, n_y] + ')')
+//                        console.log('translate(' + [-xpos + n_x, -ypos + n_y] + ')')
                         });
 
-    legend.append("svg:image")
+    legend.append("g").attr("class", "legend_feature").attr("id", "move_legend").insert("svg:image")
         .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
+        .attr("title", "Double-click here to drag the legend")
         .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .call(drag_lgd);
+        .on("click", function(){d3.select("#legend_root").call(drag_lgd);});
 
-    legend.append("svg:image")
+    legend.append("g").attr("class", "legend_feature").insert("svg:image")
         .attr({x: xpos - 10, y: ypos + 15, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){

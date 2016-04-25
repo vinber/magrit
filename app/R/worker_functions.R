@@ -9,6 +9,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
+
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
 
@@ -34,6 +35,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
     knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
   }
   print(paste0("Layer opening + row management ", round(Sys.time()-s_t,4),"s"))
+  file.remove(knownpts_json)
   s_t <- Sys.time()
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
@@ -87,6 +89,7 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
+  file.remove(layer_json_path)
   s_t <- Sys.time()
   
   mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)

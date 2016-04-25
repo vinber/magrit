@@ -183,11 +183,14 @@ def get_user_id(session_redis):
 
 @asyncio.coroutine
 def user_pref(request):
-    posted_data = yield from request.post()
-    session = yield from get_session(request)
-    session['map_pref'] = dict(posted_data)
+    last_pref = yield from request.post()
+    session_redis = yield from get_session(request)
+    user_id = get_user_id(session_redis)
+    key = '_'.join([user_id, "lastPref"])
+    print(last_pref)
+    yield from app_glob['redis_conn'].set(key, json.dumps(last_pref['map_config']))
     return web.Response(text=json.dumps(
-        {'Info': "I don't do anything with it rigth now!"}))
+        {'Info': "Preferences saved!"}))
 
 
 # Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
@@ -338,7 +341,9 @@ class R_commande(web.View):
 def handle_app_functionality(request):
     session_redis = yield from get_session(request)
     user_id = get_user_id(session_redis)
-    return {"func": request.match_info['function']}
+    lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
+    print(lastPref)
+    return {"func": request.match_info['function'], "lastPref": lastPref}
 
 
 @asyncio.coroutine
@@ -414,7 +419,7 @@ def links_map(posted_data, session_redis, user_id):
     s_t = time.time()
     content = json.loads(content.decode())
 #    print(content)
-    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
+    if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
@@ -451,7 +456,7 @@ def carto_gridded(posted_data, session_redis, user_id):
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
     content = json.loads(content.decode())
-    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
+    if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
 #    tmp_part = get_name()
@@ -514,7 +519,7 @@ def call_stewart(posted_data, session_redis, user_id):
     content = yield from R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
-    if "additional_infos" in content and content["additional_infos"] and len(content["additional_infos"]) > 0:
+    if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = geojson_to_topojson(content['geojson_path'])

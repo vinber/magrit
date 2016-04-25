@@ -87,7 +87,7 @@ var map = d3.select("#map")
                 .attr("height", h)
                 .call(zoom);
 
-var background = map.append("g").attr("id","Simplified_land_polygons").style('stroke-width', "0.5px");
+var background = map.append("g").attr({id: "Simplified_land_polygons", class: "layer"}).style('stroke-width', "0.5px");
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
@@ -109,7 +109,7 @@ var binds_layers_buttons = function(){
     });
 }
 
-map.append("g").attr("id", "Graticule")
+map.append("g").attr({id: "Graticule", class: "layer"})
                .append("path")
                .attr("class", "graticule")
                .datum(graticule)
@@ -370,18 +370,17 @@ $(document).ajaxStart(function() {
 function displayInfoOnMove(){
     var target_lyr = Object.getOwnPropertyNames(user_data),
         result_lyr = Object.getOwnPropertyNames(result_data),
-        nb_layer = d3.select("svg").node().childNodes.length,
+        nb_layer = d3.select('svg').selectAll(".layer")[0].length,
         svg_layer = undefined,
-        top_layer = d3.select("svg").node().childNodes[nb_layer-1].id;
-    console.log([target_lyr, result_lyr, nb_layer, top_layer]);
+        top_layer = d3.select('svg').selectAll(".layer")[0][nb_layer-1].id;
+
     if(target_lyr.length === 0 && result_lyr.length === 0){
         alert("Informations are only displayed on the targeted layer or its result");
     } else if(target_lyr > 1){
         alert("Too many layers to handle");
     } else if(top_layer !== target_lyr[0] && top_layer !== result_lyr[0]){
         alert("The layer to explore have to be in the top of the others");
-    }
-    else {
+    } else {
         svg_layer = "#"+top_layer;
         if(info_features.active){
             d3.select(".info_button").style('box-shadow', null);
@@ -652,7 +651,7 @@ function sendPreferences(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    d3.select("svg").selectAll("g")
+    d3.select("svg").selectAll("g:not(.legend_feature)")
               .transition()
               .duration(30)
               .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
@@ -941,6 +940,8 @@ function export_compo(){
         dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
         document.body.appendChild(dl_link);
         dl_link.click();
+        dl_link.remove();
+        targetCanvas.remove();
     }, 960);
 
 }

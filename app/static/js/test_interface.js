@@ -291,7 +291,7 @@ function add_layer_fun(text, options){
         map.append("g").attr("id", lyr_name)
               .style("stroke-width", 0.4)
               .attr("class", function(d) {
-                return data_to_load ? "targeted_layer" : null;})
+                return data_to_load ? "targeted_layer layer" : "layer";})
               .selectAll(".subunit")
               .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
@@ -329,13 +329,10 @@ function add_layer_fun(text, options){
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
         li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", lyr_name].join('')
-//        li.innerHTML = '<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + "</div> " + type + " - " + lyr_name
-//        li.innerHTML =  type + " - " + lyr_name + button_style + button_trash + button_zoom_fit + button_active;
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             current_layers[lyr_name].targeted = true;
-//            targeted_topojson = parsedJSON;
             d3.select('#input_geom').html("User geometry : <b>"+lyr_name+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
             if(data_to_load){

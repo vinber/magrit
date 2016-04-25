@@ -1,3 +1,76 @@
+function get_color_array(col_scheme, nb_class, selected_palette){
+    var color_array = new Array;
+    if(col_scheme === "Sequential"){
+        color_array = getColorBrewerArray(nb_class, selected_palette);
+    } else if(col_scheme === "Diverging"){
+        var left_palette = selected_palette.left,
+            right_palette = selected_palette.right,
+            ctl_class_value = selected_palette.ctl_class,
+            class_right = nb_class - ctl_class_value;
+
+        if(ctl_class_value <= class_right){
+            var right_pal = getColorBrewerArray(class_right, right_palette),
+                left_pal = getColorBrewerArray(class_right, left_palette);
+            left_pal = left_pal.slice(0, ctl_class_value)
+        } else {
+            var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
+                left_pal = getColorBrewerArray(ctl_class_value, left_palette);
+            right_pal = right_pal.slice(0, ctl_class_value);
+        }
+        left_pal = left_pal.reverse()
+        color_array = left_pal.concat(right_pal);
+    }
+    return color_array;
+}
+
+function discretize_to_colors(values, method, nb_class, col_ramp_name){
+    var func_switch = {
+        to: function(name){return this.target[name];},
+        target: {
+            "Jenks": "serie.getJenks(nb_class)",
+            "Equal interval": "serie.getEqInterval(nb_class)",
+            "Standard deviation": "serie.getStdDeviation(nb_class)",
+            "Quantiles": "serie.getQuantile(nb_class)",
+            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
+            "Q6": "getBreaksQ6(values)"
+        }
+    }
+
+    var serie = new geostats(values),
+        nb_class = nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
+        col_ramp_name = col_ramp_name || "Reds",
+        breaks = new Array, stock_class = new Array, bounds = new Array,
+        rendering_params = new Object,
+        tmp, ir
+
+    values = serie.sorted()
+    var val = func_switch.to(type);
+    if(type === "Q6"){
+        tmp = eval(val);
+        stock_class = tmp.stock_class;
+        breaks = tmp.breaks;
+        serie.setClassManually(breaks);
+    } else {
+        breaks = eval(val);
+        // In order to avoid class limit falling out the serie limits with Std class :
+        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+        ir = serie.getInnerRanges();
+        if(!ir){
+            nb_class = old_nb_class;
+            return false;
+        }
+
+        ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
+        let _min = undefined, _max = undefined;
+        for(let j=0, len_j=ir.length; j < len_j; j++){
+            _min=values.lastIndexOf(ir[j][0]);
+            _max=values.lastIndexOf(ir[j][1]);
+            stock_class.push(_max - _min);
+        }
+    }
+
+}
+
 var display_discretization = function(layer_name, field_name, nb_class, type){
     var func_switch = {
         to: function(name){return this.target[name];},
@@ -247,12 +320,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     class_right = nb_class - ctl_class_value;
                 color_array = [];
                 if(ctl_class_value <= class_right){
-                    right_pal = getColorBrewerArray(class_right, right_palette);
-                    left_pal = getColorBrewerArray(class_right, left_palette);
+                    var right_pal = getColorBrewerArray(class_right, right_palette),
+                        left_pal = getColorBrewerArray(class_right, left_palette);
                     left_pal = left_pal.slice(0, ctl_class_value)
                 } else {
-                    right_pal = getColorBrewerArray(ctl_class_value, right_palette);
-                    left_pal = getColorBrewerArray(ctl_class_value, left_palette);
+                    var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
+                        left_pal = getColorBrewerArray(ctl_class_value, left_palette);
                     right_pal = right_pal.slice(0, ctl_class_value);
                 }
                 left_pal = left_pal.reverse()
