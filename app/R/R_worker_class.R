@@ -76,6 +76,7 @@ R_Worker_fuw <- R6::R6Class(
           error = function(e){ a<-paste0(e$message, "\n");print(a);}
         )
         out <- self$validateOuput(output)
+        gc()
       }
       return(out)
     },
@@ -96,6 +97,7 @@ R_Worker_fuw <- R6::R6Class(
         zmq.send.multipart(socket, msg, FALSE)
         self$histo_count <<- self$histo_count + 1
         if(result == "Now exiting R\n") break
+        gc()
       }
     },
     

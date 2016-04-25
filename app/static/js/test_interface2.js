@@ -345,8 +345,7 @@ function add_layer_fun(text, options){
     if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
     if(target_layer_on_add || result_layer_on_add) center_map(lyr_name);
     binds_layers_buttons();
-    zoom_without_redraw();
-//    redraw();
+
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
 };
@@ -509,4 +508,3 @@ function cache_sample_layer(name_layer){
         error: function(error) { console.log(error); }
         });
     }
-

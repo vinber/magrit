@@ -552,39 +552,13 @@ function createLegend(layer, title){
         ypos = 20,
         nb_class = current_layers[layer].colors_breaks.length;
 
-    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature")
-    legend_root.append("g").attr("class", "legend_feature")
-            .append('text').attr("id","legendtitle")
-            .text(legendTitle)
-            .attr("x", xpos + boxwidth * 2 + boxgap)
-            .attr("y", ypos - 5);
+    var legend = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature")
+        .selectAll('.legend')
+      .data(current_layers[layer].colors_breaks)
+      .enter().insert('g')
+      .attr('class', function(d, i) { return "legend_feature legend_" + i; });
 
-
-    legend_root.append("g").attr("class", "legend_feature").attr("id", "move_legend").insert("svg:image")
-        .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("title", "Double-click here to drag the legend")
-        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){
-            console.log(d3.event);
-            d3.select("#legend_root").call(drag_lgd);
-            console.log(d3.event);
-        });
-
-    legend_root.append("g").attr("class", "legend_feature").insert("svg:image")
-        .attr({x: xpos - 10, y: ypos + 15, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){
-            ret_val = edit_legend_properties();
-            console.log(ret_val);
-        });
-
-    var legend_elems = d3.select('#legend_root')
-                      .selectAll('.legend')
-                      .data(current_layers[layer].colors_breaks)
-                      .enter().insert('g')
-                      .attr('class', function(d, i) { return "legend_feature legend_" + i; });
-
-    legend_elems.insert("g").attr("id","box_color").attr("class", "legend_feature")
+    legend.insert("g").attr("id","box_color").attr("class", "legend_feature")
       .append('rect')
       .attr("x", xpos + boxwidth + boxgap / 2)
       .attr("y", function(d, i){
@@ -595,7 +569,7 @@ function createLegend(layer, title){
       .style('fill', function(d) { return d[1]; })
       .style('stroke', function(d) { return d[1]; });
       
-    legend_elems.insert("g").attr("id","box_text").attr("class", "legend_feature")
+    legend.insert("g").attr("id","box_text").attr("class", "legend_feature")
       .append('text')
       .attr("x", xpos + boxwidth * 2 + boxgap)
       .attr("y", function(d, i){
@@ -604,78 +578,38 @@ function createLegend(layer, title){
       .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
       .text(function(d) { return d[0]; });
 
+     legend.append("g").attr("class", "legend_feature")
+        .append('text').attr("id","legendtitle")
+        .text(legendTitle)
+        .attr("x", xpos + boxwidth * 2 + boxgap)
+        .attr("y", ypos - 5);
+
     var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){ zoom.on("zoom", null); })
-                .on("dragend", function(){ console.log(d3.event); zoom.on("zoom", zoom_without_redraw); })
+                .on("dragstart", function(){
+                        zoom.on("zoom", null);
+                        })
+                .on("dragend", function(){ zoom.on("zoom", zoom_without_redraw); })
                 .on("drag", function() {
-                    console.log(d3.event);
-                    d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
+                        let coords = d3.mouse(this), n_x = d3.event.x, n_y = d3.event.y, zoom_trans = zoom.translate();
+                        d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + n_x, -ypos + n_y] + ')');
+//                        console.log('translate(' + [n_x, n_y] + ')')
+//                        console.log('translate(' + [-xpos + n_x, -ypos + n_y] + ')')
                         });
 
-    legend_root.append("g").attr("class", "legend_feature").attr("id", "legend_bottom_note")
-        .text("")
+    legend.append("g").attr("class", "legend_feature").attr("id", "move_legend").insert("svg:image")
+        .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
+        .attr("title", "Double-click here to drag the legend")
+        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
+        .on("click", function(){d3.select("#legend_root").call(drag_lgd);});
+
+    legend.append("g").attr("class", "legend_feature").insert("svg:image")
+        .attr({x: xpos - 10, y: ypos + 15, width: 12, height: 12, "fill-opacity" : 0.5})
+        .attr("xlink:href", "/static/img/Edit_icon.svg")
+        .on('click', function(){
+            alert("edit");
+        });
 }
 
-function edit_legend_properties(){
-    var box_creator = function(){
-        let text_ok = "Ok",
-            text_cancel = "Cancel",
-            title = "Edit legend properties ...",
-            class_box = "legendDialogBox",
-            deferred = Q.defer(),
-            box_body = d3.select("body").append("div").attr("id", "dialog").attr("class", "legendDialogBox").attr("title", title),
-            title_content = d3.select("#legendtitle").node().textContent,
-            result = new Array;
-        
-        box_body.insert('p').html('Legend title<br>')
-                .insert('input').attr("value", title_content).on("change", function(){
-            d3.select("#legendtitle").node().textContent = this.value
-        });
-        box_body.insert('p').html('Variable name<br>').insert('input');
-        box_body.insert('p').html('Floating number rounding precision<br>').insert('input').on('change', function(){
-    
-    
-        });
-        box_body.insert('p').html('Additionnal note<br>').insert('input').on("keyup", function(){
-            d3.select("#legend_bottom_note").node().textContent = this.value
-        });
-
-        $( "#dialog" ).dialog({
-            modal:true,
-            buttons:[{
-                text: text_ok,
-                click: function(){
-                        deferred.resolve(true);
-                        $(this).dialog("close");
-                        box_result_receptor(true, {"obj": "foobar"});
-                        }
-                    },
-               {
-                text: text_cancel,
-                click: function(){
-                    $(this).dialog("close");
-                    $(this).remove();
-                    box_result_receptor(false);        
-                    }
-               }],
-            close: function(event, ui){
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()){
-                        deferred.resolve(false);
-                    }
-                }
-          });
-    };
-
-    var box_result_receptor = function(conf, params){
-        this.params = params;
-        console.log(params);
-        if(conf) return params
-        else return false;
-    };
-
-    box_creator().then(function(){return box_result_receptor.params;})
-};
 
 
 function createFuncOptionsBox_PropSymbol(layer){
@@ -772,7 +706,6 @@ function createFuncOptionsBox_PropSymbol(layer){
         if(current_layers[layer].type === "Point")
             d3.select(g_lyr_name).selectAll("path").style('fill-opacity', 0).style('stroke-opacity', 0);
 
-        zoom_without_redraw();
         current_layers[layer].renderer = "PropSymbol";
         current_layers[layer].rendered_field = field_selec.node().value;
         deactivate([nwBox, bg]);
@@ -883,7 +816,6 @@ function createBox_griddedMap(layer){
      return nwBox;
 }
 
-
 function render_choro(layer, rendering_params){
     console.log(rendering_params);
     var layer_to_render = d3.select("#"+layer).selectAll("path");
@@ -899,7 +831,6 @@ function render_choro(layer, rendering_params){
     let colors_breaks = [];
     for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
     current_layers[layer].colors_breaks = colors_breaks;
-    zoom_without_redraw();
 }
 
 

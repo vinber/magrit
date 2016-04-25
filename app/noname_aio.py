@@ -188,7 +188,7 @@ def user_pref(request):
     user_id = get_user_id(session_redis)
     key = '_'.join([user_id, "lastPref"])
     print(last_pref)
-    yield from app_glob['redis_conn'].set(key, json.dumps(last_pref['map_config']))
+    yield from app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
     return web.Response(text=json.dumps(
         {'Info': "Preferences saved!"}))
 
@@ -343,8 +343,16 @@ def handle_app_functionality(request):
     user_id = get_user_id(session_redis)
     lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
     print(lastPref)
-    return {"func": request.match_info['function'], "lastPref": lastPref}
+    return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
+@asyncio.coroutine
+@aiohttp_jinja2.template('modules/test_interface2.html')
+def handle_app_functionality2(request):
+    session_redis = yield from get_session(request)
+    user_id = get_user_id(session_redis)
+    lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
+    print(lastPref)
+    return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 @asyncio.coroutine
 def links_map_py(posted_data, session_redis, user_id):
@@ -545,6 +553,14 @@ def R_compute(request):
         data_response = yield from func(posted_data, session_redis, user_id)
         return web.Response(text=data_response)
 
+@asyncio.coroutine
+def handler_exists_layer(request):
+    expr = request.match_info['expr']
+    res = yield from app_glob['redis_conn'].get(expr)
+    if res:
+        return web.Response(text=res.decode())
+    else:
+        return web.Response(text="")
 
 @asyncio.coroutine
 def init(loop, port=9999):
@@ -556,7 +572,9 @@ def init(loop, port=9999):
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
+    app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
+    app.router.add_route('GET', '/modules2/{function}', handle_app_functionality2)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)
     app.router.add_route('POST', '/R/{function}', R_commande)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)

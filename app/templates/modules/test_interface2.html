@@ -18,11 +18,11 @@
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/datatables.js"></script>
-    <script  src="/static/js/test_interface.js"></script>
-    <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/test_interface2.js"></script>
+    <script  src="/static/js/layers_style_popup2.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
-    <script  src="/static/js/functions.js"></script>
+    <script  src="/static/js/functions2.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
@@ -41,7 +41,6 @@
       <div id ="menu"></div>
   	 <div id ="map"></div>
       <div id="func">{{ func }}</div>
-      <div id="user_id" style="display:none">{{ user_id }}</div>
       <a id="downloadAnchorElem" style="display:none"></a>
     <script>
 var func = document.getElementById('func').innerHTML;
@@ -57,9 +56,9 @@ var graticule = d3.geo.graticule(),
     t = proj.translate(),
     s = proj.scale();
 
-//var zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
+var zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
 
-var zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
+//var zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
 
 var x_center_proj = proj.center()[0],
     y_center_proj = proj.center()[1],
@@ -351,6 +350,7 @@ $(function() {
 
 $(document).ajaxStart(function() {
         var bg = document.createElement('div');
+        //console.log(this);
         bg.className = 'overlay';
         var prog_bar = d3.select("#map").append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
@@ -359,8 +359,8 @@ $(document).ajaxStart(function() {
         prog_bar.node().style.zIndex = 2;
         (document.body || document.documentElement).appendChild(bg);
     }).ajaxComplete(function() {
-        d3.selectAll("#progressbar").node().remove();
-        d3.selectAll(".overlay").node().remove();
+        d3.select("#progressbar").node().remove();
+        d3.select(".overlay").node().remove();
     });
 
 ////////////////
@@ -535,7 +535,7 @@ function handle_click_hand(){
         zoom.on("zoom", null);
     } else {
         hb.style('box-shadow', 'inset 2px 2px 1px black');
-        zoom.on("zoom", zoom_without_redraw);
+        zoom.on("zoom", redraw);
     }
 }
 
@@ -543,9 +543,9 @@ function handle_click_zoom_select(){
     var hand_button = d3.select('.hand_button'),
         zoom_sel_button = d3.select('.brush_zoom_button');
     if(zoom_sel_button.classed("active")){
-        zoom.on("zoom", zoom_without_redraw);
-        d3.select("svg").on("zoom", zoom_without_redraw);
-        d3.select("svg").on("mousedown", zoom_without_redraw);
+        zoom.on("zoom", redraw);
+        d3.select("svg").on("zoom", redraw);
+        d3.select("svg").on("mousedown", redraw);
         zoom_sel_button.classed("active", false);
         zoom_sel_button.style('box-shadow', "none");
     } else {
@@ -587,7 +587,7 @@ function handle_click_zoom_select(){
                         zoom.translate(t);
                     }
                     rect.remove();
-                    zoom_without_redraw();
+                    //zoom_without_redraw();
                   }, true);
             d3.event.stopPropagation();
         });
@@ -614,9 +614,9 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     for(var i=0; i < map_config.n_layers; i++){
         layers_style[i] = new Object();
         layers_style[i].layer_name = svg.childNodes[i].id;
-        g_lyr_name = "#"+ svg.childNodes[i].id;
+        g_lyr_name = "#"+ layers_style[i].layer_name;
         layers_style[i].cache_url = "";
-        //layers_style[i].stroke = d3.select(g_lyr_name).selectAll("path").style("stroke");
+        layers_style[i].stroke = d3.select(g_lyr_name).selectAll("path").style("stroke");
         layers_style[i].stroke_opacity = d3.select(g_lyr_name).selectAll("path").style("stroke-opacity");
         layers_style[i].stroke_width = d3.select(g_lyr_name).style("stroke-width");
         layers_style[i].fill = d3.select(g_lyr_name).selectAll("path").style("fill");
@@ -647,7 +647,7 @@ function sendPreferences(){
        success: function(d) {console.log(d);}
     }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
 }
-
+/*
 //////////////////////////////////////////////////////////////////////////////
 // Zooming functions (some from http://bl.ocks.org/linssen/7352810)
 //////////////////////////////////////////////////////////////////////////////
@@ -700,22 +700,21 @@ function zoomClick() {
 
     interpolateZoom([view.x, view.y], view.k);
 }
-
+*/
 
 ////
 // Old zooming functions - too use when redrawing on zooming
 /////
-/*
+
 function redraw() {
-  sc = d3.event.scale;
-  tr  = d3.event.translate;
-  var tx = t[0] * d3.event.scale + d3.event.translate[0];
-  var ty = t[1] * d3.event.scale + d3.event.translate[1];
-  proj.translate([tx, ty]);
-  proj.scale(s * d3.event.scale);
-  map.selectAll(".layer").selectAll("path").attr("d", path);
-  return [sc, tr];
-  //return tr;
+  var tx = t[0] * d3.event.scale + d3.event.translate[0],
+      ty = t[1] * d3.event.scale + d3.event.translate[1];
+
+  //interpolateZoom([tx, ty], proj.scale() * d3.event.scale)
+  d3.transition().duration(25).call(proj.translate([tx, ty]).scale(s * d3.event.scale));
+  map.selectAll(".layer").selectAll("path").transition().duration(25).attr("d", path);
+  return;
+  //return [sc, tr];
 }
 
 function interpolateZoom(translate, scale) {
@@ -753,7 +752,7 @@ function zoomClick() {
     interpolateZoom(l, target_zoom);
 }
 
-*/
+
 //////////////////////////////////////////////////////////////////////////////
 // Rotation functions :
 //////////////////////////////////////////////////////////////////////////////
@@ -887,7 +886,7 @@ function canvas_mod_size(param){
         console.log([w, h]);
         map.attr("width", w)
                 .attr("height", h)
-                .call(zoom_without_redraw);
+                .call(redraw);
         d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
     };
 
@@ -896,7 +895,7 @@ function canvas_mod_size(param){
         console.log([w, h]);
         map.attr("width", w)
             .attr("height", h)
-            .call(zoom_without_redraw);
+            .call(redraw);
         d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
         // Change also the position of displayed coordinates when height of map is changed :
         info.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
