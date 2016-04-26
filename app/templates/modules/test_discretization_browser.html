@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html  lang="en">
+  <head>
+    <meta  content="text/html; charset=utf-8"  http-equiv="content-type">
+    <script  src="/static/js/lib/d3.js"></script>
+    <script src="/static/js/lib/jquery-2.2.1.min.js"></script>
+    <script  src="/static/js/lib/jquery-ui.min.js"></script>
+    <script src="/static/js/lib/geostats.min.js"></script>
+    <script  src="/static/js/lib/q.js"></script>
+    <script  src="/static/js/discretization_panel.js"></script>
+    <script  src="/static/js/colors_helpers.js"></script>
+    <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
+    <link href="/static/css/discretization.css" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  </head>
+  <style>
+#svg_ref_histo { font-size: 9.5px; }
+.axis line, .axis path{ fill: none; stroke: black;}
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {background: white;}
+  </style>
+  <body>
+  <script>
+// Generate some random values :
+var myArray = [],
+    nb_ft = Math.round(Math.random()*1050) + 20,
+    max_val = Math.round(Math.random()*122555) / 10;
+
+for (var i = 0; i < nb_ft; i++) {
+  myArray.push(Math.random()*max_val);
+}
+
+
+// Reproduce some variables from the page in which the function is actually inserted :
+var user_data = new Object(),
+    h = 500,
+    w = 800,
+    opt_nb_class = Math.round(1 + 3.3 * Math.log10(myArray.length));
+
+user_data["Layer_name"] = [];
+for(var i=0; i < nb_ft; i++){
+    user_data["Layer_name"][i] = {"value": myArray[i]};
+}
+
+
+// Display some info :
+d3.select("body")
+    .append("div")
+    .attr("id", "mydiv")
+    .insert("p")
+    .style({"left": "20px", "right": "20px", "color": "black"})
+    .html(["<b>Array of ", nb_ft, " random reals</b> : <br><br>",
+           JSON.stringify(myArray.slice(0,10)).replace("]", ", ..."),
+           "<br><br> Recommanded number of class :  <b>", opt_nb_class, "</b>",
+           "<br><br><br><i>round( 1 + 3.3*log10(n_features) )"].join(''))
+
+
+// Display the box to test :
+display_discretization("Layer_name", "value", opt_nb_class, "Jenks").then(
+    function(confirmed){ // And the result if user confirmed :
+        if(confirmed){
+             console.log(confirmed);
+             d3.select("#mydiv").insert("p").html(["<br>User choosed ",
+                                                   confirmed[0],
+                                                   " class (with <i>",
+                                                   confirmed[1],
+                                                   "</i> discretization)<br><br>Colors are :",
+                                                   confirmed[3].join('  ')].join(''))
+            }
+        });
+    </script>
+</body>

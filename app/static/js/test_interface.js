@@ -29,23 +29,7 @@ function add_layer(d){
             for (var i=0; i<files.length; i++) filenames[i] = files[i].name;
             var res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             if(res.length >= 4){
-                var ajaxData = new FormData();
-                ajaxData.append("action", "submit_form");
-                $.each(input, function(i, obj) {
-                    $.each(obj.files, function(j, file){
-                        ajaxData.append('file['+j+']', file);
-                    });
-                });
-                 $.ajax({
-                    processData: false,
-                    contentType: false,
-                    cache: false,
-                    url: '/convert_to_topojson',
-                    data: ajaxData,
-                    type: 'POST',
-                    success: function(data) {add_layer_fun(data);},
-                    error: function(error) {console.log(error); }
-                    });
+                handle_shapefile(files);
                 }
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
@@ -94,21 +78,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
             $(this).css('border', '3px dashed red');
             alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
             $(this).css('border', '');
-            var ajaxData = new FormData();
-            ajaxData.append("action", "submit_form");
-                $.each(files, function(j, file){
-                    ajaxData.append('file['+j+']', file);
-                });
-                 $.ajax({
-                    processData: false,
-                    contentType: false,
-                    cache: false,
-                    url: '/convert_to_topojson',
-                    data: ajaxData,
-                    type: 'POST',
-                    success: function(data) {add_layer_fun(data);},
-                    error: function(error) {console.log(error); }
-                    });
+            handle_shapefile(files);
                 }
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
@@ -154,9 +124,28 @@ $(document).on('drop', '#section1,#section3', function(e) {
 // Functions to handles files according to their type
 ////////////////////////////////////////////////////////////////////////
 
-// Now some functions to handle the dropped-file(s) :
-// - By trying directly to add it if it's a TopoJSON :
+function handle_shapefile(files){
+    var ajaxData = new FormData();
+    ajaxData.append("action", "submit_form");
+    $.each(input, function(i, obj) {
+        $.each(obj.files, function(j, file){
+            ajaxData.append('file['+j+']', file);
+        });
+    });
+     $.ajax({
+        processData: false,
+        contentType: false,
+        cache: false,
+        url: '/convert_to_topojson',
+        data: ajaxData,
+        type: 'POST',
+        success: function(data) {add_layer_fun(data);},
+        error: function(error) {console.log(error); }
+        });
 
+}
+
+// - By trying directly to add it if it's a TopoJSON :
 function handle_TopoJSON_files(files) {
     var f = files[0],
         name = files[0].name,
@@ -218,13 +207,38 @@ function add_csv_geom(param){
     null;
 }
 
+function md5_h(file){
+    var md5_digest = null;
+    if(strContains(file.name, "zip") || strContains(file.name, "shp")){
+        let md5_obj = md5.create(),
+            fileReader = new FileReader();
+        fileReader.onload = function(e){
+            md5_obj.update(e.target.result);
+            };
+        fileReader.readAsArrayBuffer(file);
+        md5_digest = md5_obj.hex();
+        console.log(md5_digest);
+    } else if(strContains(file.name, "json")){
+        var fileReader = new FileReader();
+        fileReader.onload = function(e){
+            let data = e.target.result,
+                md5_obj = md5.create();
+            console.log(data);
+            md5_obj.update(data);
+            md5_digest = md5_obj.hex();
+            console.log(md5_digest);
+            };
+        fileReader.readAsText(file);
+    }
+}
+
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {
-    var ajaxData = new FormData();
+    var ajaxData = new FormData(),
+        md5_digest = md5_h(files[0]);
     ajaxData.append("action", "single_file");
-    $.each(files, function(j, file){
-        ajaxData.append('file[]', file);
-    });
+    ajaxData.append('file[]', files[0]);
+    ajaxData.append('md5', md5_digest);
     $.ajax({
         processData: false,
         contentType: false,
@@ -267,7 +281,6 @@ function add_layer_fun(text, options){
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
         var random_color1 = Colors.random(),
-            random_color2 = Colors.random(),
             lyr_name = layers_names[i];
 
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
@@ -289,9 +302,7 @@ function add_layer_fun(text, options){
                                     "stroke-width-const": "0.4px"};
 
         map.append("g").attr("id", lyr_name)
-              .style("stroke-width", 0.4)
-              .attr("class", function(d) {
-                return data_to_load ? "targeted_layer layer" : "layer";})
+              .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
               .selectAll(".subunit")
               .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
@@ -312,9 +323,10 @@ function add_layer_fun(text, options){
                     return "feature_" + ix;
                 })
               .style("stroke-linecap", "round")
-              .style("stroke", random_color1)
+              .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
+                                          else return(random_color1);})
               .style("stroke-opacity", .4)
-              .style("fill", function(){if(type != 'Line') return(random_color2);
+              .style("fill", function(){if(type != 'Line') return(random_color1);
                                         else return(null);})
               .style("fill-opacity", function(){if(type != 'Line') return(0.5);
                                                 else return(0);})
@@ -346,14 +358,14 @@ function add_layer_fun(text, options){
     if(target_layer_on_add || result_layer_on_add) center_map(lyr_name);
     binds_layers_buttons();
     zoom_without_redraw();
-//    redraw();
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
 };
 
 function center_map(name){
     var bbox_layer_path = undefined;
-//    var bbox_layer_geo = undefined;
+    if(name.endsWith("_PropSymbols"))
+        name = name.substring(0, name.length - 12);
     d3.select("#"+name).selectAll('path').each(function(d, i){
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
@@ -365,24 +377,7 @@ function center_map(name){
             bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
-//        var bbox_geo = d3.geo.bounds(d);
-//        if(bbox_layer_geo === undefined){
-//            bbox_layer_geo = bbox_geo;
-//        }
-//        else{
-//            bbox_layer_geo[0][0] = bbox_geo[0][0] < bbox_layer_geo[0][0] ? bbox_geo[0][0] : bbox_layer_geo[0][0];
-//            bbox_layer_geo[0][1] = bbox_geo[0][1] < bbox_layer_geo[0][1] ? bbox_geo[0][1] : bbox_layer_geo[0][1];
-//            bbox_layer_geo[1][0] = bbox_geo[1][0] > bbox_layer_geo[1][0] ? bbox_geo[1][0] : bbox_layer_geo[1][0];
-//            bbox_layer_geo[1][1] = bbox_geo[1][1] > bbox_layer_geo[1][1] ? bbox_geo[1][1] : bbox_layer_geo[1][1];
-//        }
     });
-    console.log(bbox_layer_path);
-//    var s = (.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h))*proj.scale(),
-//        t = [(w - s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - s* (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-//    console.log([s, t, proj.scale(), proj.translate()])
-//    proj.scale(s);
-//    proj.translate(t);
-//    map.selectAll(".layer").selectAll("path").attr("d", path)
     var s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
         t = [(w - s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     zoom.scale(s);
@@ -430,7 +425,8 @@ function add_sample_layer(){
                          ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
                          ["World countries simplified <i>(Polygons)</i>", "world_country"],
                          ["World country capitals <i>(Points)</i>", "world_cities"],
-                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"]];
+                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
+                         ["Graticule", "graticule"]];
 
     var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 4*w/5, h-10).then(
         function(confirmed){
@@ -447,9 +443,23 @@ function add_sample_layer(){
                 }
                 if(selec.layout && selec.layout.length > 0){
                     for(let i = 0; i < selec.layout.length; ++i){
-                        url = sample_datasets[selec.layout[i]];
-                        cache_sample_layer(selec.layout[i]);
-                        d3.text(url, function(txt_layer){ add_layer_fun(txt_layer); })
+                        if(selec.layout[i] === "graticule"){
+                            if(current_layers["Graticule"] != undefined)
+                                continue
+                            map.append("g").attr({id: "Graticule", class: "layer"})
+                                   .append("path")
+                                   .attr("class", "graticule")
+                                   .datum(d3.geo.graticule())
+                                   .attr("d", path);
+                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"};
+                           layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule");
+                           zoom_without_redraw();
+                           binds_layers_buttons();
+                        } else {
+                            url = sample_datasets[selec.layout[i]];
+                            cache_sample_layer(selec.layout[i]);
+                            d3.text(url, function(txt_layer){ add_layer_fun(txt_layer); })
+                        }
                     }
                 }
                 if(selec.dataset){

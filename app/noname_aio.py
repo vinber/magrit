@@ -10,7 +10,7 @@ import time
 from zipfile import ZipFile
 from random import choice
 from datetime import datetime
-from hashlib import sha512
+from hashlib import sha512, md5
 import asyncio
 import zmq.asyncio
 from subprocess import Popen, PIPE
@@ -73,9 +73,8 @@ def is_known_user(request, ref):
 
 
 ##########################################################
-#### A few functions to open (server side) a table or
-#### ... a geo layer uploaded by the user and display
-#### ... some informations.
+#### A few functions to open (server side) 
+#### ... a geo layer uploaded by the user 
 ##########################################################
 #### These functions are currently totaly insecure
 
@@ -193,8 +192,6 @@ def user_pref(request):
         {'Info': "Preferences saved!"}))
 
 
-# Todo : Create a customizable route (like /convert/{format_Input}/{format_output})
-# to easily handle file types send by the front-side ?
 @asyncio.coroutine
 def convert(request):
     posted_data = yield from request.post()
@@ -216,9 +213,13 @@ def convert(request):
     elif "action" in posted_data and "file[]" in posted_data:
         try:
             field = posted_data.get('file[]')
+            md5_h = posted_data.get('md5')
             name = field[1]
             data = field[2].read()
             datatype = field[3]
+            print("Browser computed md5 :", md5_h)
+            md5_h_py = md5(data).hexdigest()
+            print("Server computed md5 :", md5_h_py)
             hashed_input = sha512(data).hexdigest()
             filepath = os.path.join(
                 app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
@@ -449,6 +450,7 @@ def carto_gridded(posted_data, session_redis, user_id):
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
         join_topojson_new_field(ref_layer, new_field)
+
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
@@ -500,11 +502,11 @@ def call_stewart(posted_data, session_redis, user_id):
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0 and n_field_name not in point_layer['objects'][list(point_layer['objects'].keys())[0]]['geometries'][0]['properties']:
         join_topojson_new_field(point_layer, new_field)
+
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, posted_data['mask_layer']])
-#        print(f_name)
         result_mask = yield from app_glob['redis_conn'].get(f_name)
-#        print("Found it :", result_mask)
+
     tmp_part = get_name()
     filenames = {'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
                  'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None}

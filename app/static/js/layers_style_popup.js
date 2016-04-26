@@ -1,6 +1,13 @@
 function handle_click_layer(layer_name){
-    var popid = layer_name,
-        modal = createStyleBox(popid);
+     var layer_name_split = layer_name.split(' - ');
+
+     if(layer_name_split.length == 2) layer_name = layer_name_split[1].trim();
+     else if(layer_name_split.length > 2) console.log('Oups..');
+
+    if(current_layers[layer_name].renderer && strContains(current_layers[layer_name].renderer, "PropSymbol"))
+        var modal = createStyleBox_ProbSymbol(layer_name);
+    else
+        var modal = createStyleBox(layer_name);
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;
@@ -8,22 +15,19 @@ function handle_click_layer(layer_name){
 };
 
 function createStyleBox(layer_name){
-     var nwBox = document.createElement('div');
-     var bg = document.createElement('div');
-     var layer_name_split = layer_name.split(' - ');
+     var nwBox = document.createElement('div'),
+         bg = document.createElement('div'),
+         type = current_layers[layer_name].type;
 
-     if(layer_name_split.length == 2) layer_name = trim(layer_name_split[1]);
-     else if(layer_name_split.length > 2) console.log('Oups..');
-
-     var type = current_layers[layer_name].type;
      if(current_layers[layer_name].rendered !== undefined){
          rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
           // Todo : do not ask this but display a choice of palette instead
          if(!rep) return;
      }
-     var g_lyr_name = "#" + layer_name;
-     console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
-     var opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
+
+     var g_lyr_name = "#" + layer_name,
+         opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
+
 
      if(current_layers[layer_name].colors_breaks != undefined){
         var fill_prev = current_layers[layer_name].colors;
@@ -31,11 +35,15 @@ function createStyleBox(layer_name){
          var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
          if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
      }
-     var stroke_prev = d3.select(g_lyr_name).selectAll("path").style('stroke');
+
+     var stroke_prev = d3.select(g_lyr_name).selectAll("path").style('stroke'),
+         border_opacity = d3.select(g_lyr_name).selectAll("path").style('stroke-opacity'),
+         stroke_width = current_layers[layer_name]['stroke-width-const'];
+
      if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
-     var border_opacity = d3.select(g_lyr_name).selectAll("path").style('stroke-opacity');
-     var stroke_width = current_layers[layer_name]['stroke-width-const']
      if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
+
+     console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
 
      bg.className = 'overlay';
      nwBox.id = layer_name + "_style_popup";
@@ -43,7 +51,7 @@ function createStyleBox(layer_name){
      nwBox.innerHTML = "";
      (document.body || document.documentElement).appendChild(nwBox);
      (document.body || document.documentElement).appendChild(bg);
-     popup = d3.select(["#", layer_name, "_style_popup"].join(''));
+     var popup = d3.select(["#", layer_name, "_style_popup"].join(''));
      popup.append('h4').style({"font-size": "16px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
      popup.append("p").html(['<br>Layer name : <b>', layer_name,'</b><br>',
                              'Geometry type : <b><i>', type, '</b></i>'].join(''));
@@ -98,6 +106,8 @@ function createStyleBox(layer_name){
      popup.append('button').attr('id', 'no').text('Close without saving');
 
     qs('#yes').onclick=function(){
+        if(stroke_width != current_layers[layer_name]['stroke-width-const'])
+            current_layers[layer_name].fixed_stroke = true;
         sendPreferences();
         deactivate([nwBox, bg]);
     }
@@ -145,4 +155,95 @@ function center(el){
   el.style.right= '0px';
   el.style.top =  h+'px';
   return true;
+}
+
+function createStyleBox_ProbSymbol(layer_name){
+     var nwBox = document.createElement('div'),
+         bg = document.createElement('div');
+
+     var g_lyr_name = "#" + layer_name,
+         ref_layer_name = layer_name.substring(0, layer_name.length - 12),
+         type_symbol = current_layers[layer_name].symbol,
+         field_used = current_layers[layer_name].rendered_field,
+         selection = d3.select(g_lyr_name).selectAll(type_symbol);
+
+     console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
+
+     var stroke_prev = selection.style('stroke'),
+         fill_prev = selection.style("fill"),
+         opacity = selection.style('fill-opacity'),
+         border_opacity = selection.style('stroke-opacity'),
+         stroke_width = selection.style('stroke-width');
+
+     if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
+     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
+     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
+
+     var values = [];
+     for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
+         values.push(+user_data[ref_layer_name][i][field_used]);
+
+     bg.className = 'overlay';
+     nwBox.id = layer_name + "_style_popup";
+     nwBox.className = 'popup';
+     nwBox.innerHTML = "";
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+     var popup = d3.select(["#", layer_name, "_style_popup"].join(''));
+     popup.append('h4').style({"font-size": "16px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
+     popup.append("p").html(['<br>Rendered layer : <b>', ref_layer_name,'</b><br>'].join(''));
+
+     popup.append('p').html('Symbol color<br>')
+         .insert('input').attr('type', 'color').attr("value", fill_prev)
+         .on('change', function(){selection.style("fill", this.value)});
+     popup.append('p').html('Fill opacity<br>')
+                      .insert('input').attr('type', 'range')
+                      .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
+                      .on('change', function(){selection.style('fill-opacity', this.value)});
+
+     popup.append('p').html('Border color<br>')
+                      .insert('input').attr('type', 'color').attr("value", stroke_prev)
+                      .on('change', function(){selection.style("stroke", this.value)});
+     popup.append('p').html('Border opacity<br>')
+                      .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
+                      .on('change', function(){selection.style('stroke-opacity', this.value)});
+     popup.append('p').html('Border width<br>')
+                      .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+                      .on('change', function(){selection.style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
+
+     popup.append('p').html('Symbol max size<br>')
+                      .insert('input').attr("type", "range").attr({min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
+                      .on("change", function(){
+                        let prop_values = prop_sizer(values, Number(current_layers[layer_name].size[0] / zoom.scale()), Number(this.value / zoom.scale()));
+                        if(type_symbol === "circle") {
+                            for(let i=0, len = prop_values.length; i < len; i++){
+                                selection[0][i].setAttribute('r', current_layers[layer_name].size[0] / zoom.scale() + prop_values[i])
+                            }
+                        } else if(type_symbol === "rect") {
+                            for(let i=0, len = prop_values.length; i < len; i++){
+                                let sz = current_layers[layer_name].size[0] / zoom.scale() + prop_values[i];
+                                selection[0][i].setAttribute('height', sz)
+                                selection[0][i].setAttribute('width', sz)
+                            }
+                        }
+                        })
+     popup.append('button').attr('id', 'yes').text('Apply')
+     popup.append('button').attr('id', 'no').text('Close without saving');
+
+    qs('#yes').onclick=function(){
+        sendPreferences();
+        deactivate([nwBox, bg]);
+    }
+    qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+
+         selection.style('fill-opacity', opacity)
+                .style('stroke-opacity', border_opacity)
+                .style('stroke-width', stroke_width)
+                .style('fill', fill_prev)
+                .style('stroke', stroke_prev);
+         current_layers[layer_name]['stroke-width-const'] = stroke_width;
+    }
+    zoom_without_redraw();
+    return nwBox;
 }

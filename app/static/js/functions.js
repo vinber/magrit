@@ -16,7 +16,7 @@ function get_menu_option(func){
             "title":"Proportional symbols",
             "popup_factory": "createFuncOptionsBox_PropSymbol",
             "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data",
-            "text_button": "Choose options and render..."
+            "text_button": "Choose options and create..."
             },
         "choropleth":{
             "title":"Choropleth map",
@@ -276,7 +276,6 @@ function createFuncOptionsBox_Stewart(layer){
                     add_layer_fun(raw_topojson, {result_layer_on_add: true});
                 }
                 col_pal = getColorBrewerArray(class_lim.min.length, "Purples")
-                console.log([class_lim, n_layer_name, col_pal]);
                 var col_map = new Map(),
                     colors_breaks = [];
                 for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
@@ -477,7 +476,7 @@ function handle_legend(layer){
     var state = current_layers[layer].rendered;
     if(state != undefined){
         if(d3.selectAll("#legend_root").node()) d3.selectAll("#legend_root").remove()
-        else createLegend(layer)
+        else createLegend(layer, "Legend")
     }
 }
 
@@ -543,63 +542,68 @@ function createFuncOptionsBox_Choropleth(layer){
 }
 
 
-function createLegend(layer, title){
-    var legendTitle = title || current_layers[layer].rendered_field;
-    var boxheight = 18,
+function createLegend(layer, title, subtitle){
+    var title = title || "",
+        subtitle = subtitle || current_layers[layer].rendered_field,
+        boxheight = 18,
         boxwidth = 18,
         boxgap = 4,
         xpos = w - (w / 8),
-        ypos = 20,
+        ypos = 30,
+        last_pos = null,
+        y_pos2 =  ypos + boxheight,
         nb_class = current_layers[layer].colors_breaks.length;
 
-    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature")
-    legend_root.append("g").attr("class", "legend_feature")
-            .append('text').attr("id","legendtitle")
-            .text(legendTitle)
-            .attr("x", xpos + boxwidth * 2 + boxgap)
-            .attr("y", ypos - 5);
+    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature"),
+        source_info = map.insert('g').attr("class", "legend_feature source_block")
+                        .insert("text").style("font", "italic 10px Gill Sans Extrabold, sans-serif")
+                        .attr({id: "source_block", x: 10, y: h-10})
+                        .text("");
 
+    legend_root.insert('text').attr("id","legendtitle")
+            .text(title).style("font", "bold 12px 'Enriqueta', arial, serif")
+            .attr("x", xpos + boxheight * 2 + boxgap)
+            .attr("y", ypos)
+    legend_root.insert('text').attr("id","legendsubtitle")
+            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
+            .attr("x", xpos + boxheight * 2 + boxgap)
+            .attr("y", ypos + 15);
 
-    legend_root.append("g").attr("class", "legend_feature").attr("id", "move_legend").insert("svg:image")
-        .attr({x: xpos - 10, y: ypos - 10, width: 12, height: 12, "fill-opacity" : 0.5})
+    legend_root.insert("svg:image").attr("id", "move_legend")
+        .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("title", "Double-click here to drag the legend")
         .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){
-            console.log(d3.event);
-            d3.select("#legend_root").call(drag_lgd);
-            console.log(d3.event);
-        });
+        .on("click", function(){  d3.select("#legend_root").call(drag_lgd);  });
 
-    legend_root.append("g").attr("class", "legend_feature").insert("svg:image")
-        .attr({x: xpos - 10, y: ypos + 15, width: 12, height: 12, "fill-opacity" : 0.5})
+    legend_root.insert("svg:image").attr("id", "edit_legend")
+        .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){
-            ret_val = edit_legend_properties();
-            console.log(ret_val);
-        });
+        .on('click', function(){ make_legend_edit_window(); });
 
     var legend_elems = d3.select('#legend_root')
                       .selectAll('.legend')
+                      .append("g")
                       .data(current_layers[layer].colors_breaks)
                       .enter().insert('g')
-                      .attr('class', function(d, i) { return "legend_feature legend_" + i; });
+                      .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
 
-    legend_elems.insert("g").attr("id","box_color").attr("class", "legend_feature")
+    legend_elems
       .append('rect')
       .attr("x", xpos + boxwidth + boxgap / 2)
       .attr("y", function(d, i){
-        return ypos + (i * boxgap) + (i * boxheight)
+        last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
+        return last_pos;
         })
       .attr('width', boxwidth)
       .attr('height', boxheight)
       .style('fill', function(d) { return d[1]; })
       .style('stroke', function(d) { return d[1]; });
       
-    legend_elems.insert("g").attr("id","box_text").attr("class", "legend_feature")
+    legend_elems
       .append('text')
       .attr("x", xpos + boxwidth * 2 + boxgap)
       .attr("y", function(d, i){
-        return ypos + (i * boxgap) + (i+1/2) * boxheight;
+        return y_pos2 + (i * boxgap) + (i+2/3) * boxheight;
         })
       .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
       .text(function(d) { return d[0]; });
@@ -612,69 +616,90 @@ function createLegend(layer, title){
                     d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
 
-    legend_root.append("g").attr("class", "legend_feature").attr("id", "legend_bottom_note")
-        .text("")
+    legend_root.append("g").attr("class", "legend_feature")
+            .insert("text").attr("id", "legend_bottom_note")
+            .attr({x: xpos, y: last_pos + 2*boxheight})
+            .html('');
 }
 
-function edit_legend_properties(){
-    var box_creator = function(){
-        let text_ok = "Ok",
-            text_cancel = "Cancel",
-            title = "Edit legend properties ...",
-            class_box = "legendDialogBox",
-            deferred = Q.defer(),
-            box_body = d3.select("body").append("div").attr("id", "dialog").attr("class", "legendDialogBox").attr("title", title),
-            title_content = d3.select("#legendtitle").node().textContent,
-            result = new Array;
-        
-        box_body.insert('p').html('Legend title<br>')
-                .insert('input').attr("value", title_content).on("change", function(){
-            d3.select("#legendtitle").node().textContent = this.value
-        });
-        box_body.insert('p').html('Variable name<br>').insert('input');
-        box_body.insert('p').html('Floating number rounding precision<br>').insert('input').on('change', function(){
-    
-    
-        });
-        box_body.insert('p').html('Additionnal note<br>').insert('input').on("keyup", function(){
-            d3.select("#legend_bottom_note").node().textContent = this.value
-        });
+function make_legend_edit_window(name){
+    var modal = createlegendEditBox(name);
+    modal.className += ' active';
+    modal.style.position = 'fixed'
+    modal.style.zIndex = 12;
+    return center(modal);
+};
 
-        $( "#dialog" ).dialog({
-            modal:true,
-            buttons:[{
-                text: text_ok,
-                click: function(){
-                        deferred.resolve(true);
-                        $(this).dialog("close");
-                        box_result_receptor(true, {"obj": "foobar"});
-                        }
-                    },
-               {
-                text: text_cancel,
-                click: function(){
-                    $(this).dialog("close");
-                    $(this).remove();
-                    box_result_receptor(false);        
-                    }
-               }],
-            close: function(event, ui){
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()){
-                        deferred.resolve(false);
-                    }
+function createlegendEditBox(){
+    let nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        layer_name = Object.getOwnPropertyNames(result_data)[0] || Object.getOwnPropertyNames(user_data)[0],
+        rendered_field = current_layers[layer_name].rendered_field,   
+        title_content = d3.select("#legendtitle"),
+        subtitle_content = d3.select("#legendsubtitle"),
+        note_content = d3.select("#legend_bottom_note"),
+        source_content = d3.select("#source_block");
+
+    bg.className = 'overlay';
+    nwBox.id = layer_name + "_legend_popup";
+    nwBox.className = 'popup';
+    (document.body || document.documentElement).appendChild(nwBox);
+    (document.body || document.documentElement).appendChild(bg);
+   
+    let box_body = d3.select(["#", layer_name, "_legend_popup"].join(''));
+    box_body.append('p').html('Legend title<br>')
+            .insert('input')
+            .attr("value", title_content.node().textContent)
+            .on("change", function(){
+                title_content.node().textContent = this.value
+            });
+    box_body.append('p').html('Variable name<br>')
+            .insert('input')
+            .attr("value", subtitle_content.node().textContent)
+            .on("change", function(){
+                subtitle_content.node().textContent = this.value
+            });
+
+    box_body.append('p').html('Floating number rounding precision<br>')
+            .insert('input').attr({type: "range", min: 0, max: 8, step: 1, value: 1})
+            .on('change', function(){
+                let legend_boxes = d3.selectAll(".lg").select("text"),
+                    nb_float = +this.value,
+                    dec_mult = +["1", ["0" for(j of new Array(nb_float))].join('')].join('');
+
+                for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
+                    let values = breaks[i][0].split(' - ');
+                    legend_boxes[0][i].innerHTML = [Math.round(values[0] * dec_mult) / dec_mult, " - ", Math.round(values[1] * dec_mult) / dec_mult].join('');
                 }
-          });
-    };
+            });
+    box_body.insert('p').html('Additionnal note<br>')
+            .insert('input').attr("value", note_content.node().textContent)
+            .style("font-family", "12px Gill Sans Extrabold, sans-serif")
+            .on("keyup", function(){
+                note_content.node().textContent = this.value;
+            });
 
-    var box_result_receptor = function(conf, params){
-        this.params = params;
-        console.log(params);
-        if(conf) return params
-        else return false;
-    };
+    box_body.insert('p').html('Source/authors informations:<br>')
+            .insert('input').attr("value", "Rendered by MAPOLOGIC")
+            .style("font", "italic 10px Gill Sans Extrabold, sans-serif")
+            .on("keyup", function(){
+                source_content.node().textContent = this.value;
+            });
 
-    box_creator().then(function(){return box_result_receptor.params;})
+    box_body.append('button')
+            .attr('id', 'yes')
+            .text('Confirm')
+            .on("click", function(){
+                deactivate([nwBox, bg]);
+                });
+
+    box_body.append('button')
+            .attr('id', 'no')
+            .text('Close')
+            .on("click", function(){
+                deactivate([nwBox, bg]);
+            });
+    return nwBox;
 };
 
 
@@ -704,7 +729,7 @@ function createFuncOptionsBox_PropSymbol(layer){
     var max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
                                  .insert('input')
                                  .attr({type: 'range', class: 'params'})
-                                 .attr({min: 0, max: 333, value: last_params.max_size || 5, step:0.1})
+                                 .attr({min: 0.2, max: 333.0, value: +last_params.max_size || 5.0, step: 0.1})
                                  .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
     var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html('0 px');
@@ -712,10 +737,10 @@ function createFuncOptionsBox_PropSymbol(layer){
     var ref_size = dialog_content.append('p').html('Reference (fixed) size (px) :')
                                  .insert('input').attr('type', 'number')
                                  .attr('class', 'params')
-                                 .attr({min: 0, max: 333, value: last_params.ref_size_val || 1, step:0.1});
+                                 .attr({min: 0.1, max: 333.0, value: +last_params.ref_size_val || 1.0, step: 0.1});
 
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
-    ['Circle', 'Square'].forEach(function(symb_name){symb_selec.append("option").text(symb_name).attr("value", symb_name);});
+    [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
     var fill_color = dialog_content.append('p').html('Symbol color<br>')
               .insert('input').attr('type', 'color').attr("value", Colors.random());
@@ -736,45 +761,66 @@ function createFuncOptionsBox_PropSymbol(layer){
         for(let i = 0, i_len = user_data[layer].length, field = field_selec.node().value; i < i_len; ++i)
             values.push(+user_data[layer][i][field]);
         
-        var prop_values = prop_sizer(values, Number(ref_size.node().value / zoom.scale()), Number(max_size.node().value / zoom.scale()));
+        var prop_values = prop_sizer(values, Number(ref_size.node().value / zoom.scale()), Number(max_size.node().value / zoom.scale())),
+            bg_color = Colors.random(),
+            stroke_color = Colors.random(),
+            layer_to_add = layer + "_PropSymbols",
+            symbol_type = symb_selec.node().value;
 
-        var bg_color = Colors.random(),
-            stroke_color = Colors.random();
+        if(current_layers[layer_to_add]){
+            remove_layer_cleanup(layer_to_add);
+            d3.selectAll('#' + layer_to_add).remove();
+        }
 
-//        var prop_symbols = d3.select(g_lyr_name).append("div").attr("id", "PropSymbol");
-        d3.select(g_lyr_name).selectAll("circle").remove()
-        d3.select(g_lyr_name).selectAll("rect").remove()
-        if(symb_selec.node().value === "Circle"){
+        symbol_layer = map.append("g").attr("id", layer_to_add)
+                              .attr("class", "result_layer layer");
+
+        if(symbol_type === "circle"){
             d3.select(g_lyr_name).selectAll("path").each(function(d, i){
-                var centr = path.centroid(d);
-                d3.select(g_lyr_name).append('circle')
+                let centr = path.centroid(d);
+                symbol_layer.append('circle')
                     .attr('cx', centr[0])
                     .attr("cy", centr[1])
                     .attr("r", ref_size.node().value / zoom.scale() + prop_values[i])
                     .attr("id", "PropSymbol_" + i)
                     .style("fill", fill_color.node().value)
-                    .style("stroke", "black");
+                    .style("stroke", "black")
+                    .style("stroke-width", 1 / zoom.scale());
             });
-        } else if(symb_selec.node().value === "Square"){
+        } else if(symbol_type === "rect"){
             d3.select(g_lyr_name).selectAll("path").each(function(d, i){
-                var centr = path.centroid(d);
-                d3.select(g_lyr_name).append('rect')
-                    .attr('x', centr[0])
-                    .attr("y", centr[1])
-                    .attr("height", ref_size.node().value / zoom.scale() + prop_values[i])
-                    .attr("width", ref_size.node().value / zoom.scale() + prop_values[i])
+                let centr = path.centroid(d),
+                    size = ref_size.node().value / zoom.scale() + prop_values[i];
+
+                symbol_layer.append('rect')
+                    .attr('x', centr[0] - size/2)
+                    .attr("y", centr[1] - size/2)
+                    .attr("height", size)
+                    .attr("width", size)
                     .attr("id", "PropSymbol_" + i)
                     .style("fill", fill_color.node().value)
-                    .style("stroke", "black");
+                    .style("stroke", "black")
+                    .style("stroke-width", 1 / zoom.scale());
             });
         }
 
-        if(current_layers[layer].type === "Point")
-            d3.select(g_lyr_name).selectAll("path").style('fill-opacity', 0).style('stroke-opacity', 0);
+        d3.select("#layer_menu")
+              .append('p').html('<a href>- ' + layer_to_add+"</a>");
 
+        class_name = "ui-state-default " + layer_to_add
+        layers_listed = layer_list.node()
+        var li = document.createElement("li");
+        li.setAttribute("class", class_name);
+        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
+        layers_listed.insertBefore(li, layers_listed.childNodes[0])
+        current_layers[layer_to_add] = {
+            renderer: "PropSymbol", symbol: symbol_type,
+            rendered_field: field_selec.node().value,
+            size: [ref_size.node().value, max_size.node().value],
+            "stroke-width-const": "1px"
+            }
+        binds_layers_buttons();
         zoom_without_redraw();
-        current_layers[layer].renderer = "PropSymbol";
-        current_layers[layer].rendered_field = field_selec.node().value;
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
