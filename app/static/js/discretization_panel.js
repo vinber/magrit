@@ -23,7 +23,7 @@ function get_color_array(col_scheme, nb_class, selected_palette){
     return color_array;
 }
 
-function discretize_to_colors(values, method, nb_class, col_ramp_name){
+function discretize_to_colors(values, type, nb_class, col_ramp_name){
     var func_switch = {
         to: function(name){return this.target[name];},
         target: {
@@ -32,18 +32,21 @@ function discretize_to_colors(values, method, nb_class, col_ramp_name){
             "Standard deviation": "serie.getStdDeviation(nb_class)",
             "Quantiles": "serie.getQuantile(nb_class)",
             "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)"
+            "Q6": "getBreaksQ6(values)",
         }
     }
 
     var serie = new geostats(values),
+        sorted_values = serie.sorted(),
         nb_class = nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
         col_ramp_name = col_ramp_name || "Reds",
-        breaks = new Array, stock_class = new Array, bounds = new Array,
-        rendering_params = new Object,
-        tmp, ir
+        breaks = new Array(),
+        stock_class = new Array(),
+        bounds = new Array(),
+        rendering_params = new Object(),
+        colors_map = new Array(),
+        tmp, color_array, ir;
 
-    values = serie.sorted()
     var val = func_switch.to(type);
     if(type === "Q6"){
         tmp = eval(val);
@@ -63,12 +66,18 @@ function discretize_to_colors(values, method, nb_class, col_ramp_name){
         ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
         let _min = undefined, _max = undefined;
         for(let j=0, len_j=ir.length; j < len_j; j++){
-            _min=values.lastIndexOf(ir[j][0]);
-            _max=values.lastIndexOf(ir[j][1]);
+            _min=sorted_values.lastIndexOf(ir[j][0]);
+            _max=sorted_values.lastIndexOf(ir[j][1]);
             stock_class.push(_max - _min);
         }
     }
 
+    color_array = getColorBrewerArray(nb_class, col_ramp_name);
+    for(let j=0; j<values.length; ++j){
+        var idx = serie.getClass(values[i])
+        colors_map.push(color_array[idx])
+    }
+    return [nb_class, type, breaks, color_array, colors_map];
 }
 
 var display_discretization = function(layer_name, field_name, nb_class, type){
@@ -80,7 +89,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             "Standard deviation": "serie.getStdDeviation(nb_class)",
             "Quantiles": "serie.getQuantile(nb_class)",
             "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)"
+            "Q6": "getBreaksQ6(values)",
+            "user_defined": "getBreaks_userDefined(values, user_break_list)"
         }
     }
 
@@ -268,23 +278,25 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             var val = func_switch.to(type);
             if(type === "Q6"){
                 var tmp = eval(val);
-                var stock_class = tmp.stock_class;
+                stock_class = tmp.stock_class;
+                breaks = tmp.breaks;
+                serie.setClassManually(breaks);
+            } else if (type === "user_defined") {
+                var tmp = eval(val);
+                stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 serie.setClassManually(breaks);
             } else {
                 breaks = eval(val);
                 var ir = serie.getInnerRanges();
-                if(!ir){
-                    nb_class = old_nb_class;
-                    return false;
-                }
-        
-                ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
-                var stock_class = [], bounds = [], _min = undefined, _max = undefined;
+                if(!ir){ nb_class = old_nb_class; return false; }
+                ir = ir.map(function(el){let tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
+                stock_class = [];
+                let _min = undefined,
+                    _max = undefined;
                 for(var j=0, len_j=ir.length; j < len_j; j++){
-                    bounds[j] = ir[j];
-                    _min=values.lastIndexOf(bounds[j][0]);
-                    _max=values.lastIndexOf(bounds[j][1]);
+                    _min=values.lastIndexOf(ir[j][0]);
+                    _max=values.lastIndexOf(ir[j][1]);
                     stock_class.push(_max - _min);
                 }
             }
@@ -380,7 +392,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     .orient("left"));
 
             //user_defined_breaks.html(breaks.join(', '))
-           try{d3.select('#break_vals').node().remove();}catch(e){};
+           d3.selectAll('#break_vals').remove();
            var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
             for(var i=0, len = breaks.length; i < len; ++i){
                 var min_allowed = (i === 0) ? serie.min() : breaks[i-1],
@@ -411,7 +423,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     var serie = new geostats(values),
         breaks = [], stock_class = [],
-        bins = [],
+        bins = [], user_break_list = null,
         max_nb_class = 22 < serie.pop() ? 22 : serie.pop();
 
     values = serie.sorted();
@@ -431,7 +443,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                     if(type === "Q6"){
                                         nb_class = 6;
                                         txt_nb_class.html(6 + " class");
-                                         d3.select("#nb_class_range").node().value = 6;
+                                        d3.select("#nb_class_range").node().value = 6;
                                     }
                                     redisplay.compute(nb_class);
                                     redisplay.draw();
@@ -586,11 +598,22 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var accordion_breaks = newBox.append("div").attr({id: "accordion_breaks_vals", class: "accordion"});
     accordion_breaks.append("h3").html("<b>Current break values</b>");
     var user_defined_breaks =  d3.select("#accordion_breaks_vals").append("div").attr("id","user_breaks");
+    user_defined_breaks.insert("textarea").attr("id","user_breaks_area");
+    user_defined_breaks.insert("button").text("Valid")
+            .on("click", function(){
+                    let old_nb_class = nb_class;
+                    user_break_list = d3.select("#user_breaks_area").node().value;
+                    console.log(user_break_list);
+                    type = "user_defined";
+                    nb_class = user_break_list.split(' - ').length;
+                    txt_nb_class.html(nb_class + " class");
+                    d3.select("#nb_class_range").node().value = nb_class;
+                    redisplay.compute(old_nb_class);
+                    redisplay.draw();
+             });
 
     $(".accordion").accordion({collapsible: true, active: false, heightStyle: "content" });
     $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
-    //var summary = newBox.append('p').attr("id", "summary").html("");
-    //var user_defined_breaks = newBox.append("div").html("<b>Current break values :</b>");
 
     make_sequ_button();
     redisplay.compute();
@@ -644,6 +667,40 @@ function getBreaksQ6(serie){
     stock_class.shift();
     return {
         breaks: breaks,
-        stock_class
+        stock_class: stock_class
+        };
+}
+
+function getBreaks_userDefined(serie, breaks_list){
+    console.log(serie);
+    console.log(breaks_list);
+    var break_values = breaks_list.split(' - '),
+        tmp = 0,
+        j = undefined,
+        len_serie = serie.length,
+        stock_class = [];
+
+    break_values.forEach(function(el, i){ break_values[i] = +el; })
+
+//    for(let i=0; i<break_values.length; ++i){
+//        j = serie.indexOf(break_values[i])
+//        stock_class.push(j - tmp)
+//        tmp = j;
+//    }
+//    stock_class.shift();
+
+    for(let i=1; i<break_values.length; ++i){
+        let class_max = break_values[i];
+        stock_class[i-1] = 0;
+        while(serie[j] < class_max){
+            stock_class[i-1] += 1;
+            j++;
+        }
+    }
+    stock_class.shift();
+
+    return {
+        breaks: break_values,
+        stock_class: stock_class
         };
 }

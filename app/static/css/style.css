@@ -229,10 +229,8 @@ label
 }
 
 #Simplified_land_polygons {
-    stroke : #200082;
     stroke-width: 0.5px;
     stroke-linecap: round;
-    fill: #C8C8C8;
 }
 
 #Graticule {
@@ -289,6 +287,17 @@ label
     font-size: 12px;
     line-height: 2em;
     background: #ede425;
+    color: black;
+    border-radius: 10%;
+}
+
+#sortable li.sortable_result {
+    margin: 5px 0 5px 0;
+    border: 2px solid;
+    padding: 5px;
+    font-size: 12px;
+    line-height: 2em;
+    background: #87ff9a;
     color: black;
     border-radius: 10%;
 }

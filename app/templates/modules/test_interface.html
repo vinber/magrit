@@ -84,7 +84,9 @@ var map = d3.select("#map")
                 .attr("height", h)
                 .call(zoom);
 
-var background = map.append("g").attr({id: "Simplified_land_polygons", class: "layer"}).style('stroke-width', "0.5px");
+var background = map.append("g")
+                    .attr({id: "Simplified_land_polygons", class: "layer"})
+                    .style({"stroke-width": "0.5px", stroke: "#200082", fill: "#C8C8C8"});
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
@@ -273,7 +275,7 @@ lm.append("button")
 var info_coords = d3.select("#map").append("div").attr("class", "light-menu-bottom")
             .style({position:"absolute", bottom:"-40px", left:"0px"})
             .append("p").attr("id", "info_coords")
-              .style({"font-size": "14px", "margin-left":"5px", "color":"black"})
+              .style({"font-size": "14px", "margin-left":"5px", "color":"black", "z-index":-1})
               .html("");
 
 var const_options = d3.select("body").append("div").attr("id", "const_options")
@@ -506,6 +508,13 @@ function remove_layer_cleanup(name){
          field_join_map = [];
          delete user_data[name];
          targeted_layer_added = false;
+    }
+
+    if(current_layers[name].is_result){
+        d3.selectAll("#display_legend").remove();
+        d3.selectAll("#legend_root").remove();
+        d3.selectAll(".source_block").remove();
+        result_data = new Object();
     }
 
     if(joined_dataset.length == 0 && current_layers[name].targeted)
@@ -938,9 +947,13 @@ function canvas_mod_size(param){
             .attr("height", h)
             .call(zoom_without_redraw);
         d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
+
         // Change also the position of displayed coordinates when height of map is changed :
         info_coords.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
-                      "margin-left":"5px", "color":"black"})
+                      "margin-left":"5px", "color":"black"});
+
+        // And change the position of the `source` element displayed in the bottom of the map :
+        source_info.attr("x", h-10);
     }
 }
 

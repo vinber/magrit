@@ -221,10 +221,10 @@ function md5_h(file){
         fileReader.onload = function(e){
             let data = e.target.result,
                 md5_obj = md5.create();
-            console.log(data);
+//            console.log(data);
             md5_obj.update(data);
             md5_digest = md5_obj.hex();
-            console.log(md5_digest);
+//            console.log(md5_digest);
             };
         fileReader.readAsText(file);
     }
@@ -232,11 +232,11 @@ function md5_h(file){
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {
-    var ajaxData = new FormData(),
-        md5_digest = md5_h(files[0]);
+    var ajaxData = new FormData();
+    // var md5_digest = md5_h(files[0]);
     ajaxData.append("action", "single_file");
     ajaxData.append('file[]', files[0]);
-    ajaxData.append('md5', md5_digest);
+//    ajaxData.append('md5', md5_digest);
     $.ajax({
         processData: false,
         contentType: false,
@@ -262,7 +262,7 @@ function add_layer_fun(text, options){
     }
 
 //    console.log(parsedJSON);
-    var type = "", data_to_load = undefined,
+    var type = "", data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
     // Add an ID if the input topojson is provided without :
@@ -279,25 +279,26 @@ function add_layer_fun(text, options){
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
         var random_color1 = Colors.random(),
-            lyr_name = layers_names[i];
+            lyr_name = layers_names[i],
+            field_names = Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) || [];
 
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
 
 //        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
+        current_layers[lyr_name] = {"type": type,
+                                    "n_features": parsedJSON.objects[lyr_name].geometries.length,
+                                    "stroke-width-const": "0.4px"};
+    
         if(target_layer_on_add){
+            current_layers[lyr_name].targeted = true;
             user_data[lyr_name] = [];
             data_to_load = true;
         } else if(result_layer_on_add){
             result_data[lyr_name] = [];
-            data_to_load = false;
-        } else
-            data_to_load = false;
-
-        current_layers[lyr_name] = {"type": type,
-                                    "n_features": parsedJSON.objects[lyr_name].geometries.length,
-                                    "stroke-width-const": "0.4px"};
+            current_layers[lyr_name].is_result = true;
+        }
 
         map.append("g").attr("id", lyr_name)
               .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
@@ -307,7 +308,7 @@ function add_layer_fun(text, options){
               .attr("d", path)
               .attr("id", function(d, ix) {
                     if(data_to_load){
-                        if(Object.getOwnPropertyNames(d.properties).length > 0){
+                        if(field_names.length > 0){
                             if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
                                 d.properties["_uid"] = d.id;
                             d.properties["pkuid"] = ix;
@@ -334,7 +335,14 @@ function add_layer_fun(text, options){
         d3.select("#layer_menu")
               .append('p').html('<a href>- ' + lyr_name+"</a>");
 
-        class_name = target_layer_on_add || result_layer_on_add ? "ui-state-default sortable_target " + lyr_name : "ui-state-default " + lyr_name
+        let class_name = ["ui-state-default"];
+        if(target_layer_on_add)
+            class_name.push("sortable_target");
+        else if (result_layer_on_add)
+            class_name.push("sortable_result");
+        class_name.push(lyr_name);
+        class_name = class_name.join(' ');
+
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
@@ -342,7 +350,6 @@ function add_layer_fun(text, options){
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         if(target_layer_on_add){
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
-            current_layers[lyr_name].targeted = true;
             d3.select('#input_geom').html("User geometry : <b>"+lyr_name+"</b> <i>("+type+")</i>");
             targeted_layer_added = true;
             if(data_to_load){

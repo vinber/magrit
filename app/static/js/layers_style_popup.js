@@ -20,8 +20,8 @@ function createStyleBox(layer_name){
          bg = document.createElement('div'),
          type = current_layers[layer_name].type;
 
-     if(current_layers[layer_name].rendered !== undefined){
-         rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
+     if(current_layers[layer_name].renderer !== undefined){
+         rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].renderer + " method). Want to continue ?");
           // Todo : do not ask this but display a choice of palette instead
          if(!rep) return undefined;
      }
@@ -119,7 +119,7 @@ function createStyleBox(layer_name){
                      .style('stroke-opacity', border_opacity);
          d3.select(g_lyr_name).style('stroke-width', stroke_width);
          current_layers[layer_name]['stroke-width-const'] = stroke_width;
-         if(current_layers[layer_name].rendered === undefined)
+         if(current_layers[layer_name].renderer === undefined)
              selection.style('fill', fill_prev)
                      .style('stroke', stroke_prev);
          else
@@ -180,9 +180,12 @@ function createStyleBox_ProbSymbol(layer_name){
      if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
      if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-     var values = [];
-     for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-         values.push(+user_data[ref_layer_name][i][field_used]);
+    var d_values = [],
+        comp = function(a, b){return b-a};
+    for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
+        d_values.push(+user_data[ref_layer_name][i][field_used]);
+
+    d_values.sort(comp);
 
      bg.className = 'overlay';
      nwBox.id = layer_name + "_style_popup";
@@ -215,21 +218,26 @@ function createStyleBox_ProbSymbol(layer_name){
      popup.append('p').html('Symbol max size<br>')
                       .insert('input').attr("type", "range").attr({min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
                       .on("change", function(){
-                        let prop_values = prop_sizer(values, Number(current_layers[layer_name].size[0] / zoom.scale()), Number(this.value / zoom.scale()));
+                        let prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / zoom.scale()), Number(this.value / zoom.scale()));
+                        console.log(prop_values);
                         if(type_symbol === "circle") {
                             for(let i=0, len = prop_values.length; i < len; i++){
-                                selection[0][i].setAttribute('r', current_layers[layer_name].size[0] / zoom.scale() + prop_values[i])
+                                selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / zoom.scale() + prop_values[i])
                             }
                         } else if(type_symbol === "rect") {
                             for(let i=0, len = prop_values.length; i < len; i++){
-                                let sz = current_layers[layer_name].size[0] / zoom.scale() + prop_values[i];
-                                selection[0][i].setAttribute('height', sz)
-                                selection[0][i].setAttribute('width', sz)
-                                selection[0][i].setAttribute('x', selection[0][i].getAttribute("x") + sz / 2)
-                                selection[0][i].setAttribute('y', selection[0][i].getAttribute("y") + sz / 2)
+                                let sz = +current_layers[layer_name].size[0] / zoom.scale() + prop_values[i],
+                                    old_size = +selection[0][i].getAttribute('height'),
+                                    centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
+                                             +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
+
+                                selection[0][i].setAttribute('x', centr[0]);
+                                selection[0][i].setAttribute('y', centr[1]);
+                                selection[0][i].setAttribute('height', sz);
+                                selection[0][i].setAttribute('width', sz);
                             }
                         }
-                        })
+                      })
      popup.append('button').attr('id', 'yes').text('Apply')
      popup.append('button').attr('id', 'no').text('Close without saving');
 

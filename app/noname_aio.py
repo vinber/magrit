@@ -251,7 +251,7 @@ def convert(request):
         result = geojson_to_topojson(filepath2)
         session_redis['converted'][hashed_input] = True
         yield from app_glob['redis_conn'].set(f_name, result)
-        os.remove(filepath2)
+#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'zip' in datatype:
@@ -271,7 +271,7 @@ def convert(request):
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath+'archive')
-        os.remove(filepath2)
+#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream' in datatype:
@@ -295,7 +295,7 @@ def convert(request):
         else:
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-        os.remove(filepath)
+#        os.remove(filepath)
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
 

@@ -33,5 +33,10 @@
 	"img" : "empty.png",
 	"desc" : "Example 7 - Multiscalar Territorial Analysis",
 	"link" 	:  "modules/MTA"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 8 - Prop. symbols and choropleth map",
+	"link" 	:  "modules/prop_symbol_choro"
 	}
 ]
