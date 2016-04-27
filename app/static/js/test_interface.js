@@ -76,7 +76,7 @@ $(document).on('drop', '#section1,#section3', function(e) {
 
         if(result.length == 4){
             $(this).css('border', '3px dashed red');
-            alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+//            alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
             $(this).css('border', '');
             handle_shapefile(files);
                 }
@@ -127,11 +127,9 @@ $(document).on('drop', '#section1,#section3', function(e) {
 function handle_shapefile(files){
     var ajaxData = new FormData();
     ajaxData.append("action", "submit_form");
-    $.each(input, function(i, obj) {
-        $.each(obj.files, function(j, file){
-            ajaxData.append('file['+j+']', file);
-        });
-    });
+    for(let j=0; j<files.length; j++){
+        ajaxData.append('file['+j+']', files[i]);
+    }
      $.ajax({
         processData: false,
         contentType: false,
@@ -186,7 +184,7 @@ function handle_dataset(files){
       var data = e.target.result;
       dataset_name = name;
       joined_dataset.push(d3.csv.parse(data))
-//      joined_dataset[name] = d3.csv.parse(data);
+
       var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
       if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
           if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){

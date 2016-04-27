@@ -12,13 +12,17 @@ def try_float(val):
     except ValueError:
         return val
 
-def savefile(path, raw_data):
-    if '.shp' in path or '.dbf' in path or '.shx' in path:
-        with open(path, 'wb') as f:
-            f.write(raw_data)
-    else:
-        with open(path, 'w') as f:
-            f.write(raw_data.decode())
+#def savefile(path, raw_data):
+#    if '.shp' in path or '.dbf' in path or '.shx' in path:
+#        with open(path, 'wb') as f:
+#            f.write(raw_data)
+#    else:
+#        with open(path, 'w') as f:
+#            f.write(raw_data.decode())
+
+def savefile2(path, raw_data):
+    with open(path, 'wb') as f:
+        f.write(raw_data)
 
 def hash_md5_file(path):
     H = md5()

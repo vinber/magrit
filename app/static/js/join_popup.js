@@ -1,6 +1,6 @@
 function handle_join(){
     var layer_name = Object.getOwnPropertyNames(user_data);
-    console.log(layer_name)
+
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
         alert("Unable to join geometries and dataset")
         return;
@@ -45,11 +45,12 @@ function valid_join_check_display(val, prop){
 function valid_join_on(layer_name, field1, field2){
     var join_values1 = [],
         join_values2 = [],
-        hits = 0, val = undefined;
+        hits = 0,
+        val = undefined;
 
     field_join_map = [];
 
-    for(var i=0, len=joined_dataset[0].length; i<len; i++){
+    for(let i=0, len=joined_dataset[0].length; i<len; i++){
         join_values2.push(joined_dataset[0][i][field2]);
     }
 
@@ -59,7 +60,7 @@ function valid_join_on(layer_name, field1, field2){
         return;
     }
 
-    for(var i=0, len=user_data[layer_name].length; i<len; i++){
+    for(let i=0, len=user_data[layer_name].length; i<len; i++){
         join_values1.push(user_data[layer_name][i][field1]);
     }
 
@@ -70,22 +71,22 @@ function valid_join_on(layer_name, field1, field2){
     }
 
     if(join_values1===join_values2){
-        for(var i=0, len=join_values1.length; i<len; i++) map_table.push(i);
+        for(let i=0, len=join_values1.length; i<len; i++) map_table.push(i);
     } else {
         if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
-            for(var i=0, len=join_values1.length; i<len; i++){
+            for(let i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(String(join_values1[i]));
                 if(val != -1) { field_join_map.push(val); hits++; }
                 else { field_join_map.push(undefined); }
             }
         } else if(typeof join_values2[0] === "number" && typeof join_values1[0] === "string"){
-            for(var i=0, len=join_values1.length; i<len; i++){
+            for(let i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(Number(join_values1[i]));
                 if(val != -1) { field_join_map.push(val); hits++; }
                 else { field_join_map.push(undefined); }
             }
         } else {
-            for(var i=0, len=join_values1.length; i<len; i++){
+            for(let i=0, len=join_values1.length; i<len; i++){
                 val = join_values2.indexOf(String(join_values1[i]));
                 if(val != -1) { field_join_map.push(val); hits++; }
                 else { field_join_map.push(undefined); }
@@ -97,29 +98,28 @@ function valid_join_on(layer_name, field1, field2){
         f_name = "";
 
     if(hits == join_values1.length){
-        var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-        for(var i=0, len=join_values1.length; i<len; i++){
+        let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+        for(let i=0, len=join_values1.length; i<len; i++){
             val = field_join_map[i];
-            for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
+            for(let j=0, leng=fields_name_to_add.length; j<leng; j++){
                 f_name = fields_name_to_add[j];
                 if(f_name.length > 0){
-//                    targeted_topojson.objects[layer_name].geometries[i].properties[f_name] = joined_dataset[0][val][f_name];
                     user_data[layer_name][i][f_name] = joined_dataset[0][val][f_name];
                 }
             }
         }
         valid_join_check_display(true, prop);
-        //alert("Full join");
         return true;
     } else if(hits > 0){
         var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
         if(rep){
-            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-            var i_id = fields_name_to_add.indexOf("id");
+            let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
+                i_id = fields_name_to_add.indexOf("id");
+
             if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
-            for(var i=0, len=join_values1.length; i<len; i++){
+            for(let i=0, len=join_values1.length; i<len; i++){
                 val = field_join_map[i];
-                for(var j=0, leng=fields_name_to_add.length; j<leng; j++){
+                for(let j=0, leng=fields_name_to_add.length; j<leng; j++){
                     f_name = fields_name_to_add[j];
                     if(f_name.length > 0){
                         user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;

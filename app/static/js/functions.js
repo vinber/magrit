@@ -136,21 +136,6 @@ function createBox_FlowMap(ref_layer){
             "join_field": name_join_field
             };
         var formToSend = new FormData();
-//        if(!targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty("properties")
-//            && targeted_topojson.objects[ref_layer].geometries[0].hasOwnProperty(name_join_field)){
-//        for(let i=0, len=targeted_topojson.objects[ref_layer].geometries.length, obj=targeted_topojson.objects[ref_layer]; i<len; ++i){
-//                obj.geometries[i].properties = new Object();
-//                obj.geometries[i].properties[name_join_field] = user_data[ref_layer][i][name_join_field];
-//            }
-//        }
-//        formToSend.append("json", JSON.stringify({
-//            "topojson": ref_layer,
-//            "csv_table": JSON.stringify(joined_dataset[0]),
-//            "field_i": field_i.node().value,
-//            "field_j": field_j.node().value,
-//            "field_fij": field_fij.node().value,
-//            "join_field": join_field.node().value
-//            }))
         join_field_to_send = new Object();
         join_field_to_send[name_join_field] = [for (obj of user_data[ref_layer]) obj[name_join_field]];
         formToSend.append("json", JSON.stringify({

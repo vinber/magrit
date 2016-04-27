@@ -8,6 +8,7 @@ function handle_click_layer(layer_name){
         var modal = createStyleBox_ProbSymbol(layer_name);
     else
         var modal = createStyleBox(layer_name);
+        if(!modal) return;
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 1;
@@ -22,22 +23,23 @@ function createStyleBox(layer_name){
      if(current_layers[layer_name].rendered !== undefined){
          rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].rendered + " method). Want to continue ?");
           // Todo : do not ask this but display a choice of palette instead
-         if(!rep) return;
+         if(!rep) return undefined;
      }
 
      var g_lyr_name = "#" + layer_name,
-         opacity = d3.select(g_lyr_name).selectAll("path").style('fill-opacity');
+         selection = d3.select(g_lyr_name).selectAll("path"),
+         opacity = selection.style('fill-opacity');
 
 
      if(current_layers[layer_name].colors_breaks != undefined){
         var fill_prev = current_layers[layer_name].colors;
      } else {
-         var fill_prev = d3.select(g_lyr_name).selectAll("path").style('fill');
+         var fill_prev = selection.style('fill');
          if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
      }
 
-     var stroke_prev = d3.select(g_lyr_name).selectAll("path").style('stroke'),
-         border_opacity = d3.select(g_lyr_name).selectAll("path").style('stroke-opacity'),
+     var stroke_prev = selection.style('stroke'),
+         border_opacity = selection.style('stroke-opacity'),
          stroke_width = current_layers[layer_name]['stroke-width-const'];
 
      if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
@@ -74,9 +76,8 @@ function createStyleBox(layer_name){
                             if(confirmed){
                                 console.log(confirmed);
                                 let colorsByFeatures = confirmed[4];
-                                var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-                                layer_to_render.style('fill-opacity', 0.9)
-                                               .style("fill", function(d, i){ return colorsByFeatures[i] })
+                                selection.style('fill-opacity', 0.9)
+                                         .style("fill", function(d, i){ return colorsByFeatures[i] })
 //                                        nb_class:rendering_params confirmed[0], type: confirmed[1],
 //                                        breaks: confirmed[2], colors:confirmed[3],
 //                                        colorsByFeature: confirmed[4], renderer:"Choropleth"
@@ -89,15 +90,15 @@ function createStyleBox(layer_name){
          popup.append('p').html('Fill opacity<br>')
                           .insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
-                          .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('fill-opacity', this.value)});
+                          .on('change', function(){selection.style('fill-opacity', this.value)});
     }
 
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
-                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("stroke", this.value)});
+                      .on('change', function(){selection.style("stroke", this.value)});
      popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
                       .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
-                      .on('change', function(){d3.select(g_lyr_name).selectAll("path").style('stroke-opacity', this.value)});
+                      .on('change', function(){selection.style('stroke-opacity', this.value)});
      popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
                       .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
                       .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
@@ -113,19 +114,19 @@ function createStyleBox(layer_name){
     }
     qs('#no').onclick=function(){
          deactivate([nwBox, bg]);
-         var layer_to_render = d3.select(g_lyr_name).selectAll("path");
-         layer_to_render.style('fill-opacity', opacity)
+
+         selection.style('fill-opacity', opacity)
                      .style('stroke-opacity', border_opacity);
          d3.select(g_lyr_name).style('stroke-width', stroke_width);
          current_layers[layer_name]['stroke-width-const'] = stroke_width;
          if(current_layers[layer_name].rendered === undefined)
-             layer_to_render.style('fill', fill_prev)
+             selection.style('fill', fill_prev)
                      .style('stroke', stroke_prev);
          else
-            layer_to_render.style('fill-opacity', 0.9)
-                           .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
-                           .style('stroke-opacity', 0.9)
-                           .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
+            selection.style('fill-opacity', 0.9)
+                   .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
+                   .style('stroke-opacity', 0.9)
+                   .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
     }
     zoom_without_redraw();
     return nwBox;
@@ -224,6 +225,8 @@ function createStyleBox_ProbSymbol(layer_name){
                                 let sz = current_layers[layer_name].size[0] / zoom.scale() + prop_values[i];
                                 selection[0][i].setAttribute('height', sz)
                                 selection[0][i].setAttribute('width', sz)
+                                selection[0][i].setAttribute('x', selection[0][i].getAttribute("x") + sz / 2)
+                                selection[0][i].setAttribute('y', selection[0][i].getAttribute("y") + sz / 2)
                             }
                         }
                         })
@@ -239,10 +242,10 @@ function createStyleBox_ProbSymbol(layer_name){
 
          selection.style('fill-opacity', opacity)
                 .style('stroke-opacity', border_opacity)
-                .style('stroke-width', stroke_width)
+                .style('stroke-width', stroke_width + "px")
                 .style('fill', fill_prev)
                 .style('stroke', stroke_prev);
-         current_layers[layer_name]['stroke-width-const'] = stroke_width;
+         current_layers[layer_name]['stroke-width-const'] = stroke_width + "px";
     }
     zoom_without_redraw();
     return nwBox;

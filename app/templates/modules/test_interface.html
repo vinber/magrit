@@ -73,12 +73,8 @@ var user_data = new Object(),
     target_layer_on_add = false,
     targeted_layer_added = false,
     current_layers = new Object(),
-    last_params = new Object();
-
-var dataset_name = undefined;
-
-current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
+    last_params = new Object(),
+    dataset_name = undefined;
 
 var map = d3.select("#map")
                 .style("width", w+"px").style("height", h+"px")
@@ -124,6 +120,8 @@ d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(e
     map.selectAll("path").attr("d", path);  
 });
     
+current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
 
 //////////////////////////////////////////////////////////////////////////////
 // Set-up the menu :
@@ -150,7 +148,7 @@ var section4 =  d3.select("#accordion4").append("div").attr("id","section4");
 accordion5.append("h3").html("Projection options");
 var section5 =  d3.select("#accordion5").append("div").attr("id","section5");
 
-dv1 = section1.append("div")
+var dv1 = section1.append("div")
             .style("text-align", "center")
             .html("Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer...<br>");
 
@@ -230,7 +228,7 @@ section4.append("p").html(b + "Load a preference JSON...").on("click", load_map_
 var lm = d3.select("#map")
             .append("div")
             .attr("class", "light-menu")
-            .style({position:"absolute", top:"-30px", left:"2px", "z-index": -1});
+            .style({position:"absolute", top:"-31px", left:"2px"});
 
 lm.append("input")
     .attr("type", "button")
@@ -272,10 +270,10 @@ lm.append("button")
         .on("click", function(){handle_click_zoom_select();});
 
 
-var info = lm.append("p")
-              .attr("id", "info_coords")
-              .style({"font-size": "14px", "margin-top": (h+10)+"px",
-                      "margin-left":"5px", "color":"black"})
+var info_coords = d3.select("#map").append("div").attr("class", "light-menu-bottom")
+            .style({position:"absolute", bottom:"-40px", left:"0px"})
+            .append("p").attr("id", "info_coords")
+              .style({"font-size": "14px", "margin-left":"5px", "color":"black"})
               .html("");
 
 var const_options = d3.select("body").append("div").attr("id", "const_options")
@@ -329,7 +327,6 @@ $(function() {
   $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
     update: function(a){
-      console.log(a.target)
       var desired_order = [],
           actual_order = [],
           layers = d3.selectAll("svg").node();
@@ -469,17 +466,17 @@ function log_coordinates(t){
 
   if(coords[1]>0) txt.push("N")
   else txt.push("S")
-  info.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
+  info_coords.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
 };
 
 function remove_layer(){
-    var name;
-    var name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
-    if(name_split.length == 2) name = name_split[1];
-    else if(name_split.length > 2) console.log('Oups..');
-    else name = name_split[0];
+    var name,
+        name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
 
-    name = name.trim()
+    if(name_split.length == 2) name = name_split[1].trim();
+    else if(name_split.length > 2) console.log('Oups..');
+    else name = name_split[0].trim();
+
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
         if(confirmed){
@@ -598,32 +595,50 @@ function handle_click_zoom_select(){
 
 function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
-        layers_style = [];
-
-    var svg = d3.selectAll("svg").node();
+        layers_style = [],
+        layers = d3.selectAll("svg").selectAll("g:not(.legend_feature)");
 
     map_config.projection = current_proj_name;
-    map_config.scale = proj.scale();
-    map_config.translate = proj.translate();
+    map_config.projection_scale = proj.scale();
+    map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
+    map_config.zoom_translate = zoom.translate();
+    map_config.zoom_scale = zoom.scale();
     map_config.div_width = w;
     map_config.div_height = h;
-    //map_config.rotation = d3.select("svg").attr('transform') ? d3.select("svg").attr('transform').split('rotate(')[1].split('),')[0] : "0";
-    map_config.n_layers = svg.childElementCount;
-/*
-    for(var i=0; i < map_config.n_layers; i++){
+    // Todo : re-handle the rotation parameter
+    map_config.n_layers = layers[0].length;
+
+    for(let i=map_config.n_layers-1; i >= 0; --i){
+        let layer_name = layers[0][i].id;
         layers_style[i] = new Object();
-        layers_style[i].layer_name = svg.childNodes[i].id;
-        g_lyr_name = "#"+ svg.childNodes[i].id;
-        layers_style[i].cache_url = "";
-        //layers_style[i].stroke = d3.select(g_lyr_name).selectAll("path").style("stroke");
-        //layers_style[i].stroke_opacity = d3.select(g_lyr_name).selectAll("path").style("stroke-opacity");
-        //layers_style[i].stroke_width = d3.select(g_lyr_name).style("stroke-width");
-        layers_style[i].fill = d3.select(g_lyr_name).selectAll("path").style("fill");
-        layers_style[i].fill_opacity = d3.select(g_lyr_name).selectAll("path").style("fill-opacity");
+        layers_style[i].layer_name = layer_name;
+        if(layer_name.indexOf('PropSymbols') !== -1){
+            let type_symbol = current_layers[layer_name].symbol,
+                selection = d3.select("#" + layer_name).selectAll(type_symbol);
+            layers_style[i].symbol = type_symbol;
+            layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            layers_style[i].size_params = current_layers[layer_name].size;
+            layers_style[i].fill = selection.style("fill");
+            layers_style[i].fill_opacity = selection.style("fill-opacity");
+        } else {
+            layers_style[i].cache_url = [d3.select("#user_id").html(), "nuts2_data"].join('_');
+            let selection = d3.select("#" + layer_name).selectAll("path");
+            //layers_style[i].stroke = selection.style("stroke");
+            //layers_style[i].stroke_opacity = selection.style("stroke-opacity");
+            //layers_style[i].stroke_width = d3.select("#" + layer_name).style("stroke-width");
+            layers_style[i].fill_opacity = selection.style("fill-opacity");
+            if(!current_layers[layer_name].rendered || current_layers[layer_name].rendered !== "Choropleth"){
+                layers_style[i].fill = selection.style("fill");
+            } else {
+                //layers_style[i].fill = current_layer[layer_name].colors_breaks;
+                layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            }
+        }
+
+
     }
-*/
-    return JSON.stringify({"map_config": map_config, "layers": layers_style.reverse()})
+    return JSON.stringify({"map_config": map_config, "layers": layers_style})
 }
 
 function save_map_template(){
@@ -768,16 +783,26 @@ function zoomClick() {
     interpolateZoom(l, target_zoom);
 }
 
+function rotate_global(angle){
+    d3.selectAll("svg").selectAll("g:not(.legend_feature)")
+      .transition()
+      .duration(10)
+      .attr("transform", "rotate(" + angle + ","+ w / 2 +","+  h / 2 +")");
+};
+
+
 */
 //////////////////////////////////////////////////////////////////////////////
 // Rotation functions :
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
-    d3.selectAll("svg")
+    d3.selectAll("svg").selectAll("g:not(.legend_feature)")
       .transition()
       .duration(10)
-      .attr("transform", "rotate(" + angle + ","+ w / 2 +","+  h / 2 +")");
+      .attr("transform", ["rotate(", angle, ",",  w / 2, ",",  h / 2, "),",
+                          "translate(", zoom.translate()[0], ",", zoom.translate()[1], "),",
+                          "scale(", zoom.scale(), ")"].join(''));
 };
 
 /*
@@ -914,7 +939,7 @@ function canvas_mod_size(param){
             .call(zoom_without_redraw);
         d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
         // Change also the position of displayed coordinates when height of map is changed :
-        info.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
+        info_coords.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
                       "margin-left":"5px", "color":"black"})
     }
 }
@@ -932,6 +957,7 @@ function edit_legend_properties(){
 }
 
 function export_compo(){
+    // Todo : ask for output format (svg / png) before conversion / ! \
     var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map", height: h, width: w});
     targetCanvas = targetCanvas.node();
 
@@ -946,7 +972,6 @@ function export_compo(){
         ctx.drawImage(img, 0, 0);
     }
 
-    // Todo : ask for output format (svg / png) before conversion
     setTimeout(function(){ 
         var imgUrl = targetCanvas.toDataURL(mime_type),
             dl_link = document.createElement("a");
@@ -958,7 +983,7 @@ function export_compo(){
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
-    }, 960);
+    }, 760);
 
 }
 

@@ -11,7 +11,6 @@ TODO list:
 - add functionnality to zoom on a selected rectangular zone drawn on the canvas by the user (brush)
 - allow styling options (font, size, etc.) on the title ?
 - add the simplification options ?
-- add a box to customize the legend (float number precision, title, etc.)
 - improved sample dataset box (make three discrete buttons to avoid current weird behavior when trying to add target layer + tabular + layout layer at the same time)
 - allow to display label on rendered features ?
 - implement some kinds of unit tests / tests suite (using python bindings for selenium?)
@@ -21,3 +20,5 @@ TODO list:
 - Use two kind of "redraw" behaviour (with two svg elements ?), one two use with "zoom" behavior (for fast moving) and one other to use with proj.translate() (for more precise drawing on the user targeted layer) ?
 - Display the result/rendered layer with a separate color from the targeted layer (like green and yellow, etc.)
 - Allow the user to choose layout elements (arrow, etc.)
+- Sort the symbols in propSymbols in order to have the smaller upfront
+- Make the legend for propSymbols

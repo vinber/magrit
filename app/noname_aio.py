@@ -10,7 +10,7 @@ import time
 from zipfile import ZipFile
 from random import choice
 from datetime import datetime
-from hashlib import sha512, md5
+from hashlib import sha512
 import asyncio
 import zmq.asyncio
 from subprocess import Popen, PIPE
@@ -23,7 +23,7 @@ import aioredis
 from aiohttp_session import get_session, session_middleware, redis_storage
 
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
-from helpers.misc import try_float, savefile, get_key, hash_md5_file
+from helpers.misc import try_float, savefile2, get_key, hash_md5_file
 
 import pandas as pd
 from geopandas import GeoDataFrame
@@ -38,9 +38,8 @@ def get_name(length=25):
     with some external soft used ( R / ogr2ogr / topojson / etc.)
     Aimed to be remplaced by something better
     """
-    return ''.join([bytes([choice(list(range(48, 58))
-                                  + list(range(65, 91))
-                                  + list(range(97, 123)))]).decode()
+    return ''.join([bytes([choice(list(range(48, 58)) +
+                    list(range(65, 91)) + list(range(97, 123)))]).decode()
                     for i in range(length)])
 
 
@@ -186,7 +185,7 @@ def user_pref(request):
     session_redis = yield from get_session(request)
     user_id = get_user_id(session_redis)
     key = '_'.join([user_id, "lastPref"])
-    print(last_pref)
+#    print(last_pref)
     yield from app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
     return web.Response(text=json.dumps(
         {'Info': "Preferences saved!"}))
@@ -203,7 +202,7 @@ def convert(request):
             field = posted_data.getall('file[{}]'.format(i))[0]
             file_name = ''.join(['/tmp/', field[1]])
             list_files.append(file_name)
-            savefile(file_name, field[2].read())
+            savefile2(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
         hashed_input = hash_md5_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
@@ -213,13 +212,13 @@ def convert(request):
     elif "action" in posted_data and "file[]" in posted_data:
         try:
             field = posted_data.get('file[]')
-            md5_h = posted_data.get('md5')
+#            md5_h = posted_data.get('md5')
             name = field[1]
             data = field[2].read()
             datatype = field[3]
-            print("Browser computed md5 :", md5_h)
-            md5_h_py = md5(data).hexdigest()
-            print("Server computed md5 :", md5_h_py)
+#            print("Browser computed md5 :", md5_h)
+#            md5_h_py = md5(data).hexdigest()
+#            print("Server computed md5 :", md5_h_py)
             hashed_input = sha512(data).hexdigest()
             filepath = os.path.join(
                 app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
@@ -252,7 +251,7 @@ def convert(request):
         result = geojson_to_topojson(filepath2)
         session_redis['converted'][hashed_input] = True
         yield from app_glob['redis_conn'].set(f_name, result)
-#        os.remove(filepath2)
+        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'zip' in datatype:
@@ -272,7 +271,7 @@ def convert(request):
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath+'archive')
-#        os.remove(filepath2)
+        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream' in datatype:
@@ -296,7 +295,7 @@ def convert(request):
         else:
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-#        os.remove(filepath)
+        os.remove(filepath)
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
 
@@ -343,7 +342,7 @@ def handle_app_functionality(request):
     session_redis = yield from get_session(request)
     user_id = get_user_id(session_redis)
     lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
-    print(lastPref)
+#    print(lastPref)
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 @asyncio.coroutine
@@ -392,7 +391,7 @@ def links_map_py(posted_data, session_redis, user_id):
 
     tmp_part = get_name()
     filename_result = ''.join(["/tmp/", tmp_part, ".geojson"])
-    savefile(filename_result, res.encode())
+    savefile2(filename_result, res.encode())
     res = geojson_to_topojson(filename_result)
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
@@ -412,7 +411,7 @@ def links_map(posted_data, session_redis, user_id):
 
     filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
                  "result": None}
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+    savefile2(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
     commande = b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
     data = json.dumps({
         "layer_json_path": filenames['src_layer'],
@@ -432,7 +431,7 @@ def links_map(posted_data, session_redis, user_id):
         print("Additionnal infos:\n", content["additional_infos"])
     tmp_part = get_name()
     filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
-    savefile(filenames['result'], json.dumps(content['geojson']).encode())
+    savefile2(filenames['result'], json.dumps(content['geojson']).encode())
     res = geojson_to_topojson(filenames['result'])
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
@@ -454,7 +453,7 @@ def carto_gridded(posted_data, session_redis, user_id):
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+    savefile2(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
     commande = b'make_gridded_map(layer_json_path, var_name, cellsize)'
     data = json.dumps({
         "layer_json_path": filenames['src_layer'],
@@ -471,7 +470,7 @@ def carto_gridded(posted_data, session_redis, user_id):
 
 #    tmp_part = get_name()
 #    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
-#    savefile(filenames['result'], json.dumps(content['geojson']).encode())
+#    savefile2(filenames['result'], json.dumps(content['geojson']).encode())
     res = geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
@@ -510,9 +509,9 @@ def call_stewart(posted_data, session_redis, user_id):
     tmp_part = get_name()
     filenames = {'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
                  'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None}
-    savefile(filenames['point_layer'], topojson_to_geojson(point_layer).encode())
+    savefile2(filenames['point_layer'], topojson_to_geojson(point_layer).encode())
     if filenames['mask_layer']:
-        savefile(filenames['mask_layer'], topojson_to_geojson(json.loads(result_mask.decode())).encode())
+        savefile2(filenames['mask_layer'], topojson_to_geojson(json.loads(result_mask.decode())).encode())
 
     commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
                 b'beta, resolution, mask_json)')
