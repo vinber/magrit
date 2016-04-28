@@ -116,8 +116,8 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
 ###################################
 
 mta_globaldev <- function(x, var1, var2, ref, type_dev){
-  x <- jsonlite::fromJSON(x)
-  return(jsonlite::toJSON(MTA::globalDev(x, var1, var2, ref, type_dev)))
+  x <- as.data.frame(jsonlite::fromJSON(x))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::globalDev(x, var1, var2, ref, type_dev)), '}'))
 }
 
 mta_mediumdev <- function(x, var1, var2, key, type_dev){
