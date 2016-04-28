@@ -680,14 +680,7 @@ function getBreaks_userDefined(serie, breaks_list){
         len_serie = serie.length,
         stock_class = [];
 
-    break_values.forEach(function(el, i){ break_values[i] = +el; })
-
-//    for(let i=0; i<break_values.length; ++i){
-//        j = serie.indexOf(break_values[i])
-//        stock_class.push(j - tmp)
-//        tmp = j;
-//    }
-//    stock_class.shift();
+    break_values.forEach(function(el, i){ break_values[i] = +el; });
 
     for(let i=1; i<break_values.length; ++i){
         let class_max = break_values[i];

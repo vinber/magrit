@@ -301,6 +301,7 @@ def convert(request):
 
     return web.Response(text=result)
 
+
 class R_commande(web.View):
     @asyncio.coroutine
     def get(self):
@@ -396,6 +397,7 @@ def links_map_py(posted_data, session_redis, user_id):
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
 
+
 @asyncio.coroutine
 def links_map(posted_data, session_redis, user_id):
     s_t = time.time()
@@ -409,7 +411,8 @@ def links_map(posted_data, session_redis, user_id):
     if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
         join_topojson_new_field(ref_layer, new_field)
 
-    filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
+    tmp_part = get_name()
+    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
     savefile2(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
     commande = b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
@@ -426,13 +429,10 @@ def links_map(posted_data, session_redis, user_id):
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
     content = json.loads(content.decode())
-#    print(content)
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
-    tmp_part = get_name()
-    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
-    savefile2(filenames['result'], json.dumps(content['geojson']).encode())
-    res = geojson_to_topojson(filenames['result'])
+
+    res = geojson_to_topojson(content['geojson_path'])
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
 
@@ -468,18 +468,50 @@ def carto_gridded(posted_data, session_redis, user_id):
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
-#    tmp_part = get_name()
-#    filenames['result'] = ''.join(["/tmp/", tmp_part, ".geojson"])
-#    savefile2(filenames['result'], json.dumps(content['geojson']).encode())
     res = geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return '|||'.join([new_name, res.replace(tmp_part, new_name)])
 
-@asyncio.coroutine
-def call_mta(posted_data, session_redis, user_id):
-    posted_data = json.loads(posted_data.get("json"))
-    return ''
+
+#@asyncio.coroutine
+#def call_mta_simpl(posted_data, session_redis, user_id):
+#    posted_data = json.loads(posted_data.get("json"))  # method, jsonified_table, var1, var2, key/ref, type_dev
+#    
+#    if "medium" in posted_data["method"]:
+#        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
+#        data = json.dumps({
+#            "x": posted_data['table'], "var1": posted_data['var1_name'],
+#            "var2": posted_data['var2_name'], "key": posted_data["key_field_name"],
+#            "type_dev": posted_data["type_dev"]})
+#
+#    elif "global" in posted_data["method"]:
+#        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
+#        data = json.dumps({
+#            "x": posted_data['table'], "var1": posted_data['var1_name'],
+#            "var2": posted_data['var2_name'], "ref": posted_data["ref_value"],
+#            "type_dev": posted_data["type_dev"]})
+#
+#    else:
+#        return {"Error": "Unknow MTA method"}
+#
+#    content = yield from R_client_fuw_async(
+#        url_client, commande, data, app_glob['async_ctx'], user_id)
+#    return content.decode()
+#
+#
+#@asyncio.coroutine
+#def call_mta_geo(posted_data, session_redis, user_id):
+#    posted_data = json.loads(posted_data.get("json"))
+#    f_name = '_'.join([user_id, posted_data['topojson']])
+#    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = json.loads(posted_data['var_name'])
+#    n_field_name = list(new_field.keys())[0]
+#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+#        join_topojson_new_field(ref_layer, new_field)
+#    return ''
+
 
 def join_topojson_new_field(topojson, new_field):
     layer_name = list(topojson['objects'].keys())[0]
@@ -489,6 +521,7 @@ def join_topojson_new_field(topojson, new_field):
         if not 'properties' in geom:
             geom['properties'] = {}
         geom['properties'][new_field_name] = new_field[new_field_name][ix]
+
 
 @asyncio.coroutine
 def call_stewart(posted_data, session_redis, user_id):
@@ -554,6 +587,7 @@ def R_compute(request):
         data_response = yield from func(posted_data, session_redis, user_id)
         return web.Response(text=data_response)
 
+
 @asyncio.coroutine
 def handler_exists_layer(request):
     expr = request.match_info['expr']
@@ -562,6 +596,7 @@ def handler_exists_layer(request):
         return web.Response(text=res.decode())
     else:
         return web.Response(text="")
+
 
 @asyncio.coroutine
 def init(loop, port=9999):
@@ -636,9 +671,8 @@ if __name__ == '__main__':
         data = f.read()
         app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]
     app_glob['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded,
-        "links": links_map_py, "MTA": call_mta
-        }
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map_py }
+#        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()

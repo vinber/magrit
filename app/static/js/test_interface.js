@@ -302,6 +302,7 @@ function add_layer_fun(text, options){
 
         map.append("g").attr("id", lyr_name)
               .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
+              .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
               .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
@@ -321,7 +322,6 @@ function add_layer_fun(text, options){
 
                     return "feature_" + ix;
                 })
-              .style("stroke-linecap", "round")
               .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
                                           else return(random_color1);})
               .style("stroke-opacity", .4)

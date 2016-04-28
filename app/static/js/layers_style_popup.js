@@ -163,7 +163,7 @@ function createStyleBox_ProbSymbol(layer_name){
          bg = document.createElement('div');
 
      var g_lyr_name = "#" + layer_name,
-         ref_layer_name = layer_name.substring(0, layer_name.length - 12),
+         ref_layer_name = layer_name.substring(0, layer_name.indexOf("_Prop")),
          type_symbol = current_layers[layer_name].symbol,
          field_used = current_layers[layer_name].rendered_field,
          selection = d3.select(g_lyr_name).selectAll(type_symbol);

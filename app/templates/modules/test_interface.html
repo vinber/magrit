@@ -86,7 +86,7 @@ var map = d3.select("#map")
 
 var background = map.append("g")
                     .attr({id: "Simplified_land_polygons", class: "layer"})
-                    .style({"stroke-width": "0.5px", stroke: "#200082", fill: "#C8C8C8"});
+                    .style({"stroke-width": "0.5px", stroke: "#718F79", fill: "#C8C8C8"});
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
@@ -94,19 +94,7 @@ var button_style = ' <button type="submit" class="style_button"><img src="/stati
     button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">';
 
 // These triggers are in a function as they need to be called on each layer add
-var binds_layers_buttons = function(){
-    d3.selectAll(".trash_button").on("click", remove_layer);
-    d3.selectAll(".active_button").on("change", handle_active_layer);
-    d3.selectAll(".zoom_fit_button").on("click", function(){
-        let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
-        if(layer_name.indexOf(' - ') > -1) layer_name = layer_name.split(' - ')[1];
-        center_map(layer_name);
-        zoom_without_redraw();
-    });
-    d3.selectAll(".style_button").on("click", function(){
-        handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
-    });
-}
+
 
 map.append("g").attr({id: "Graticule", class: "layer"})
                .append("path")
@@ -198,12 +186,12 @@ dv4.append("p").html("Background Color<br>").insert("input").attr("type", "color
 
 var dv5 = section5.append("p").attr("class", "form-item");
 dv5.append('label-item').html("<br><b>Projection </b><br>").style("padding", "6px");
-var p = dv5.append("select").attr("id","form_projection").style("align", "center");
-    d3.json("/static/json/projections.json", function(json) {
-       json.forEach(function(d) {
-            p.append("option").text(d.name).attr("value",d.projection);
-           });   
-    });
+var p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", change_projection);
+d3.json("/static/json/projections.json", function(json) {
+   json.forEach(function(d) {
+        p.append("option").text(d.name).attr("value",d.projection);
+       });   
+});
 
 section5.append("div").html("Canvas rotation")
 section5.append("input")
@@ -256,7 +244,7 @@ lm.append("input")
         .attr("id", "info_button");
 
 lm.append("button")
-        .attr("class", "hand_button")
+        .attr("class", "hand_button active")
         .attr("id", "hand_button")
         .attr("title", "Use the cursor to move on the map (default behavior)")
         .html('<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>')
@@ -365,6 +353,20 @@ $(document).ajaxStart(function() {
 ////////////////
 // To sort:
 ////////////////
+
+function binds_layers_buttons(){
+    d3.selectAll(".trash_button").on("click", remove_layer);
+    d3.selectAll(".active_button").on("change", handle_active_layer);
+    d3.selectAll(".zoom_fit_button").on("click", function(){
+        let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+        if(layer_name.indexOf(' - ') > -1) layer_name = layer_name.split(' - ')[1];
+        center_map(layer_name);
+        zoom_without_redraw();
+    });
+    d3.selectAll(".style_button").on("click", function(){
+        handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+    });
+}
 
 function displayInfoOnMove(){
     var target_lyr = Object.getOwnPropertyNames(user_data),
@@ -492,8 +494,12 @@ function remove_layer_cleanup(name){
 
      // Making some clean-up regarding the result layer :
      if(current_layers[name].rendered !== undefined){
-         d3.selectAll("#display_legend").remove()
-         d3.selectAll("#legend_root").remove()
+         d3.selectAll("#display_legend").remove();
+         if(current_layers[name].is_result){
+             d3.selectAll("#legend_root").remove();
+             d3.selectAll("#legend_root2").remove();
+             d3.selectAll(".source_block").remove();
+        }
          if(result_data.hasOwnProperty(name)) { delete result_data[name]; }
      }
 
@@ -513,6 +519,7 @@ function remove_layer_cleanup(name){
     if(current_layers[name].is_result){
         d3.selectAll("#display_legend").remove();
         d3.selectAll("#legend_root").remove();
+        d3.selectAll("#legend_root2").remove();
         d3.selectAll(".source_block").remove();
         result_data = new Object();
     }
@@ -536,12 +543,14 @@ function handle_bg_color(color){
 
 function handle_click_hand(){
     var hb = d3.select('.hand_button');
-    if(hb.style('box-shadow') != "none"){
+    if(hb.classed("active")){
         hb.style('box-shadow', "none");
         zoom.on("zoom", null);
+        hb.classed("active", false)
     } else {
         hb.style('box-shadow', 'inset 2px 2px 1px black');
         zoom.on("zoom", zoom_without_redraw);
+        hb.classed("active", true)
     }
 }
 
@@ -831,7 +840,7 @@ function rotate_orthographic(){
 };
 */
 
-p.on("change", function() {
+function change_projection() {
     var current_proj_name = this.value.split('()')[0].split('.')[2]
 
     // Update global variables:
@@ -868,7 +877,7 @@ p.on("change", function() {
     d3.select("svg").on("mousedown", null)
                     .on("mousemove", function(){log_coordinates(this)})
                     .on("mouseup", null);
-});   
+}   
 
 //////////////////////////////////////////////////////////////////////////////
 // Used for the sphere rotation when orthographic projection is enabled :

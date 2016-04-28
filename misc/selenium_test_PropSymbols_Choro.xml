@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://192.168.56.1:9999/" />
+<title>testPropSymbolsChoro</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">testPropSymbolsChoro</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/modules/prop_symbol_choro</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#section1 &gt; div &gt; p &gt; i</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.sample_target</td>
+	<td>label=Nuts 2 (2013) European subdivisions (Polygons)</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForAlert</td>
+	<td>Layer successfully added to the canvas</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-2</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=func_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=input.params</td>
+	<td>24.2</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.9</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.8</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.7</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.6</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.5</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.4</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>//div[@id='nuts2_dataPropSymbolChoro_popup']/p[5]/select</td>
+	<td>label=act2008</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='nuts2_dataPropSymbolChoro_popup']/p[6]/button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=button_Diverging</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=yes</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-2</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=checkbox_legend</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

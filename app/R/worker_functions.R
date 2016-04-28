@@ -9,7 +9,6 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
-
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
 
@@ -35,7 +34,6 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
     knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
   }
   print(paste0("Layer opening + row management ", round(Sys.time()-s_t,4),"s"))
-  file.remove(knownpts_json)
   s_t <- Sys.time()
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
@@ -89,7 +87,6 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
-  file.remove(layer_json_path)
   s_t <- Sys.time()
   
   mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)
@@ -143,24 +140,46 @@ mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type
 getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field){
   s_t <- Sys.time()
   df <- jsonlite::fromJSON(csv_table)
-  print(paste0("Opening csv table ", round(Sys.time()-s_t,4),"s"))
-  s_t <- Sys.time()
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp')
-  print(paste0("Opening geojson ", round(Sys.time()-s_t,4),"s"))
+  print(paste0("Opening csv table & geojson ", round(Sys.time()-s_t,4),"s"))
+  
   s_t <- Sys.time()
   links <- cartography::getLinkLayer(spdf = spdf, df = df, spdfid = join_field, dfids = i, dfide = j)
   print(paste0("GetLinkLayer ", round(Sys.time()-s_t,4),"s"))
+  
   s_t <- Sys.time()
   links@data <- data.frame(df[match(x = paste(links@data[, i], links@data[, j]), table = paste(df[, i], df[, j])),])
   print(paste0("Match rows ", round(Sys.time()-s_t,4),"s"))
+
   s_t <- Sys.time()
-  tmp <- geojsonio::geojson_json(links)
-  print(paste0("Dump geojson ", round(Sys.time()-s_t,4),"s"))
-  s_t <- Sys.time()
-  result <- paste0('{"geojson":', tmp, ', "additional_infos":null}')
-  print(paste0("Paste0 geojson ", round(Sys.time()-s_t,4),"s"))
+  geojsonio::geojson_write(links, file=layer_json_path)
+  result <- paste0('{"geojson_path":"', layer_json_path,'","additional_infos":null}')
+  print(paste0("Save to Geojson ", round(Sys.time()-s_t,4),"s"))
+
   return(result)
 }
+
+# getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field){
+#   s_t <- Sys.time()
+#   df <- jsonlite::fromJSON(csv_table)
+#   print(paste0("Opening csv table ", round(Sys.time()-s_t,4),"s"))
+#   s_t <- Sys.time()
+#   spdf <- geojsonio::geojson_read(layer_json_path, what='sp')
+#   print(paste0("Opening geojson ", round(Sys.time()-s_t,4),"s"))
+#   s_t <- Sys.time()
+#   links <- cartography::getLinkLayer(spdf = spdf, df = df, spdfid = join_field, dfids = i, dfide = j)
+#   print(paste0("GetLinkLayer ", round(Sys.time()-s_t,4),"s"))
+#   s_t <- Sys.time()
+#   links@data <- data.frame(df[match(x = paste(links@data[, i], links@data[, j]), table = paste(df[, i], df[, j])),])
+#   print(paste0("Match rows ", round(Sys.time()-s_t,4),"s"))
+#   s_t <- Sys.time()
+#   tmp <- geojsonio::geojson_json(links)
+#   print(paste0("Dump geojson ", round(Sys.time()-s_t,4),"s"))
+#   s_t <- Sys.time()
+#   result <- paste0('{"geojson":', tmp, ', "additional_infos":null}')
+#   print(paste0("Paste0 geojson ", round(Sys.time()-s_t,4),"s"))
+#   return(result)
+# }
 
 prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE){
   mat <- read.csv(mat)

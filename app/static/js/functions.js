@@ -85,10 +85,71 @@ function popup_function(){
 };
 
 function createBox_MTA(layer){
-    if(Object.getOwnPropertyNames(user_data).length < 1){
-        alert("A reference layer and/or dataset have to be provided");
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        g_lyr_name = "#"+layer.trim(),
+        fields = type_col(layer, "number"),
+        MTA_methods = [["Global Deviation", "global_dev"],
+                       ["Medium deviation", "medium_dev"],
+                       ["Local deviation", "local_dev"]];
+
+    if(fields.length < 2){
+        alert("The targeted layer doesn't seems to contain enough of numerical fields (at least twice are required)");
         return;
     }
+
+     bg.className = 'overlay';
+     nwBox.id = [layer, 'MTA_popup'].join('');
+     nwBox.className = 'popup';
+
+     (document.body || document.documentElement).appendChild(nwBox);
+     (document.body || document.documentElement).appendChild(bg);
+
+    var dialog_content = d3.select(["#", layer, 'MTA_popup'].join(''));
+    dialog_content.append('h3').html('Multiscalar territorial analysis');
+    var method_selec = dialog_content.append("p").html("Analysis method").insert("select").attr("class", "params");
+    MTA_methods.forEach(function(method){ method_selec.append("option").text(method[0]).attr("value", method[1]) });
+    // TODO : (de)activate the appropriates options according to the selected method (key / ref / etc.)
+    var field1_selec = dialog_content.append("p").html("First field :").insert("select").attr("class", "params");
+    fields.forEach(function(field){ field1_selec.append("option").text(field).attr("value", field)});
+    var field2_selec = dialog_content.append("p").html("Second field :").insert("select").attr("class", "params");
+    fields.forEach(function(field){ field2_selec.append("option").text(field).attr("value", field)});
+    var field_key_agg = dialog_content.append("p").html("Aggregation key field :").insert("select").attr("class", "params");
+    fields.forEach(function(field){ field_key_agg.append("option").text(field).attr("value", field)});
+    var ref_ratio = dialog_content.append("p").html("Reference ratio :")
+                                    .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1})
+    var type_deviation = dialog_content.append("p").html("Type of deviation").insert("select").attr("class", "params");
+    [["Relative deviation", "rel"],
+     ["Absolute deviation", "abs"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])})
+
+    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+
+    var ok_button = dialog_content.append("button")
+        .attr("value", "yes")
+        .attr("disabled", true)
+        .text("Compute and render");
+
+    var cancel_button = dialog_content.append("button")
+        .attr("value", "no")
+        .text("Cancel");
+
+    ok_button.on("click", function(){
+        let table_to_send = new Object(),
+            var1_name = field1_selec.node().value,
+            var2_name = field2_selec.node().value;
+        table_to_send[var1_name] = [for (i of user_data[layer]) i[var1_name]];
+        table_to_send[var2_name] = [for (i of user_data[layer]) i[var2_name]];
+        if(!field_key_agg.node().disabled){
+            let key_name = field_key_agg.node().value;
+            table_to_send[key_name] = [for (i of user_data[layer]) i[key_name]];
+        }
+        deactivate([bg, nwBox]);
+    });
+
+    cancel_button.on("click", function(){
+        deactivate([bg, nwBox]);
+    });
+    return nwBox;
 }
 
 
@@ -146,7 +207,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
                             rendering_params = {
                                 nb_class: confirmed[0], type: confirmed[1],
                                 breaks: confirmed[2], colors: confirmed[3],
-                                colorsByFeature: confirmed[4], renderer: "PropSymbolChoro"
+                                colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
                                 }
                             console.log(rendering_params)
                             } else { return; } });
@@ -201,7 +262,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
             ]
         */
 
-        var layer_to_add = layer + "_PropSymbols",
+        var layer_to_add = layer + "_PropSymbolsChoro",
             symbol_type = symb_selec.node().value;
 
         if(current_layers[layer_to_add]){
@@ -254,7 +315,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
         for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
 
         current_layers[layer_to_add] = {
-            renderer: "PropSymbolChoro",
+            renderer: "PropSymbolsChoro",
             symbol: symbol_type,
             rendered_field: field1_selec.node().value,
             rendered_field2: field2_selec.node().value,
@@ -263,7 +324,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
             colors: rendering_params['colorsByFeature'],
             colors_breaks: colors_breaks
             }
-        makeButtonLegend(layer);
+        makeButtonLegend(layer_to_add);
         binds_layers_buttons();
         zoom_without_redraw();
         deactivate([nwBox, bg]);
@@ -646,10 +707,22 @@ function makeButtonLegend(layer_name){
 }
 
 function handle_legend(layer){
+    console.log(layer)
     var state = current_layers[layer].renderer;
+    console.log(state)
     if(state != undefined){
-        if(d3.selectAll("#legend_root").node()) d3.selectAll("#legend_root").remove()
-        else createLegend(layer, "Legend")
+        let rml = false;
+        if(d3.selectAll("#legend_root").node()){
+            d3.selectAll("#legend_root").remove();
+            d3.selectAll(".source_block").remove();
+            rml = true;
+        }
+        if(d3.selectAll("#legend_root2").node()){
+            d3.selectAll("#legend_root2").remove();
+            d3.selectAll(".source_block").remove();
+            rml = true;
+        }
+        if(!rml) createLegend(layer, "Legend")
     }
 }
 
@@ -715,75 +788,138 @@ function createFuncOptionsBox_Choropleth(layer){
 }
 
 function createLegend(layer, title, subtitle){
-    if(current_layers[layer].renderer.indexOf("PropSymbol") !== -1)
-        createLegend_symbol(layer, title, subtitle);
-    else
-        createLegend_choro(layer, title, subtitle);
-}
-
-function createLegend_symbol(layer, title, subtitle){
-    var title = title || "",
-        subtitle = subtitle || current_layers[layer].rendered_field,
-        boxheight = 18,
-        boxwidth = 18,
-        boxgap = 4,
-        xpos = w - (w / 8),
-        ypos = 30,
-        last_pos = null,
-        y_pos2 =  ypos + boxheight,
-        nb_class = current_layers[layer].colors_breaks.length;
-
-    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature"),
-        source_info = map.insert('g').attr("class", "legend_feature source_block")
+    // Common part :
+    var source_info = map.insert('g').attr("class", "legend_feature source_block")
                         .insert("text").style("font", "italic 10px Gill Sans Extrabold, sans-serif")
                         .attr({id: "source_block", x: 10, y: h-10})
-                        .text("");
+                        .text("Rendered by MAPOLOGIC");
+    // Specific parts :
+    if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
+        let field2 = current_layers[layer].rendered_field2,
+            field1 = current_layers[layer].rendered_field;
+        createLegend_choro(layer, field1, title, subtitle);
+        createLegend_symbol(layer, field2, title, subtitle);
+    }
+    else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1){
+        let field = current_layers[layer].rendered_field;
+        createLegend_symbol(layer, field, title, subtitle);
+    } else {
+        let field = current_layers[layer].rendered_field;
+        createLegend_choro(layer, field, title, subtitle);
+    }
+}
+
+function createLegend_symbol(layer, field, title, subtitle){
+    var title = title || "",
+        subtitle = subtitle || field,
+        space_elem = 18,
+        boxgap = 4,
+        xpos = 30,
+        ypos = 30,
+        y_pos2 =  ypos + space_elem,
+        ref_layer_name = layer.split("_PropSymbols")[0],
+        nb_features = user_data[ref_layer_name].length,
+        symbol_type = current_layers[layer].symbol,
+        legend_root = map.insert('g').attr('id', 'legend_root2').attr("class", "legend_feature");
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title).style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + boxheight * 2 + boxgap)
+            .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos)
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + boxheight * 2 + boxgap)
+            .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
 
     legend_root.insert("svg:image").attr("id", "move_legend")
         .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("title", "Double-click here to drag the legend")
         .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  d3.select("#legend_root").call(drag_lgd);  });
+        .on("click", function(){  legend_root.call(drag_lgd);  });
 
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ make_legend_edit_window(); });
+        .on('click', function(){ make_legend_edit_window('#legend_root2', layer); });
 
-    var legend_elems = d3.select('#legend_root')
-                      .selectAll('.legend')
-                      .append("g")
-                      .data(current_layers[layer].colors_breaks)
-                      .enter().insert('g')
-                      .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
+    let breaks_elem = [0].concat([for (i of Array.of(4,3,2,1)) Math.round((nb_features-1)/i)]),
+        ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
+        type_param = symbol_type === 'circle' ? 'r' : 'width',
+        ref_symbols_params = new Array();
+
+    for(let i of breaks_elem){
+        let ft_id = +ref_symbols[i].id.split(' ')[1].split('_')[1],
+            value = user_data[ref_layer_name][ft_id][field],
+            size = +ref_symbols[i].getAttribute(type_param) * zoom.scale();
+        ref_symbols_params.push({value:value, size:size})
+    }
+
+    var legend_elems = legend_root.selectAll('.legend')
+                                      .append("g")
+                                      .data(ref_symbols_params)
+                                      .enter().insert('g')
+                                      .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
+    let max_size = ref_symbols_params[0].size,
+        last_size = 0,
+        last_pos = y_pos2;
+
+    if(symbol_type === "circle"){
+        legend_elems
+              .append("circle")
+                  .attr("cx", xpos + space_elem + boxgap + max_size / 2)
+                  .attr("cy", function(d, i){
+                        last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                        last_size = d.size;
+                        return last_pos;
+                        })
+                  .attr('r', function(d, i){return d.size;})
+                  .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
+    } else if(symbol_type === "rect"){
+        legend_elems
+              .append("rect")
+              .attr("x", xpos + space_elem + boxgap + max_size / 2)
+              .attr("y", function(d, i){
+                        last_pos = (i * boxgap) + (d.size * 2) + last_pos + last_size;
+                        last_size = d.size;
+                        return last_pos;
+                        })
+              .attr('width', function(d, i){return d.size;})
+              .attr('height', function(d, i){return d.size;})
+              .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7})
+    }
+
+    last_pos = y_pos2; last_size = 0;
+    legend_elems.append("text")
+            .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
+            .attr("y", function(d, i){
+                        last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                        last_size = d.size;
+                        return last_pos + (i * 2/3);
+                        })
+            .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+            .text(function(d, i){return d.value;});
 
     var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){ zoom.on("zoom", null); })
-                .on("dragend", function(){ console.log(d3.event); zoom.on("zoom", zoom_without_redraw); })
+                .on("dragstart", function(){
+                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                    d3.event.sourceEvent.stopPropagation();
+                    d3.event.sourceEvent.preventDefault();
+                })
+                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
                 .on("drag", function() {
-                    console.log(d3.event);
-                    d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
+                    d3.selectAll("#legend_root2").attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attr({x: xpos, y: last_pos + 2*boxheight})
+            .attr({x: xpos, y: last_pos + 2*space_elem})
             .html('');
 }
 
 
-function createLegend_choro(layer, title, subtitle){
+function createLegend_choro(layer, field, title, subtitle){
     var title = title || "",
-        subtitle = subtitle || current_layers[layer].rendered_field,
+        subtitle = subtitle || field,
         boxheight = 18,
         boxwidth = 18,
         boxgap = 4,
@@ -793,11 +929,7 @@ function createLegend_choro(layer, title, subtitle){
         y_pos2 =  ypos + boxheight,
         nb_class = current_layers[layer].colors_breaks.length;
 
-    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature"),
-        source_info = map.insert('g').attr("class", "legend_feature source_block")
-                        .insert("text").style("font", "italic 10px Gill Sans Extrabold, sans-serif")
-                        .attr({id: "source_block", x: 10, y: h-10})
-                        .text("");
+    var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", "legend_feature");
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title).style("font", "bold 12px 'Enriqueta', arial, serif")
@@ -812,19 +944,18 @@ function createLegend_choro(layer, title, subtitle){
         .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("title", "Double-click here to drag the legend")
         .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  d3.select("#legend_root").call(drag_lgd);  });
+        .on("click", function(){  legend_root.call(drag_lgd);  });
 
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ make_legend_edit_window(); });
+        .on('click', function(){ make_legend_edit_window('#legend_root', layer); });
 
-    var legend_elems = d3.select('#legend_root')
-                      .selectAll('.legend')
-                      .append("g")
-                      .data(current_layers[layer].colors_breaks)
-                      .enter().insert('g')
-                      .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
+    var legend_elems = legend_root.selectAll('.legend')
+                                  .append("g")
+                                  .data(current_layers[layer].colors_breaks)
+                                  .enter().insert('g')
+                                  .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
 
     legend_elems
       .append('rect')
@@ -848,12 +979,15 @@ function createLegend_choro(layer, title, subtitle){
       .text(function(d) { return d[0]; });
 
     var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){ zoom.on("zoom", null); })
-                .on("dragend", function(){ console.log(d3.event); zoom.on("zoom", zoom_without_redraw); })
+                .on("dragstart", function(){
+                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                    d3.event.sourceEvent.stopPropagation();
+                    d3.event.sourceEvent.preventDefault();
+                    })
+                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
                 .on("drag", function() {
-                    console.log(d3.event);
                     d3.selectAll("#legend_root").attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                        });
+                    });
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -861,22 +995,21 @@ function createLegend_choro(layer, title, subtitle){
             .html('');
 }
 
-function make_legend_edit_window(name){
-    var modal = createlegendEditBox(name);
+function make_legend_edit_window(legend_id, layer_name){
+    var modal = createlegendEditBox(legend_id, layer_name);
     modal.className += ' active';
     modal.style.position = 'fixed'
     modal.style.zIndex = 12;
     return center(modal);
 };
 
-function createlegendEditBox(){
+function createlegendEditBox(legend_id, layer_name){
     let nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        layer_name = Object.getOwnPropertyNames(result_data)[0] || Object.getOwnPropertyNames(user_data)[0],
-        rendered_field = current_layers[layer_name].rendered_field,   
-        title_content = d3.select("#legendtitle"),
-        subtitle_content = d3.select("#legendsubtitle"),
-        note_content = d3.select("#legend_bottom_note"),
+//        layer_name = Object.getOwnPropertyNames(result_data)[0] || Object.getOwnPropertyNames(user_data)[0],
+        title_content = d3.select(legend_id).select("#legendtitle"),
+        subtitle_content = d3.select(legend_id).select("#legendsubtitle"),
+        note_content = d3.select(legend_id).select("#legend_bottom_note"),
         source_content = d3.select("#source_block");
 
     bg.className = 'overlay';
@@ -886,18 +1019,8 @@ function createlegendEditBox(){
     (document.body || document.documentElement).appendChild(bg);
    
     var box_body = d3.select(["#", layer_name, "_legend_popup"].join('')),
-        legend_boxes = d3.selectAll(".lg").select("text"),
+        legend_boxes = d3.selectAll([legend_id, ".lg"].join(' ')).select("text"),
         current_nb_dec;
-
-    {
-        let first_value = legend_boxes[0][0].__data__[0].split(" - ")[0],
-            fourth_value = legend_boxes[0][1].__data__[0].split(" - ")[1],
-            current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
-            current_nb_dec4 = fourth_value.length - fourth_value.indexOf(".") - 1;
-    
-        if(current_nb_dec4 === fourth_value.length && current_nb_dec1 === first_value.length) current_nb_dec = null;
-        else current_nb_dec = current_nb_dec4 >= current_nb_dec1 ? current_nb_dec4 : current_nb_dec1;
-    }
 
     box_body.insert('h3').html('Legend customization')
             .append('p').html('Legend title<br>')
@@ -913,24 +1036,47 @@ function createlegendEditBox(){
                 subtitle_content.node().textContent = this.value
             });
 
+
+    let first_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][0].__data__[0].split(" - ")[0] : String(legend_boxes[0][0].__data__.value),
+        fourth_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][1].__data__[0].split(" - ")[1] : String(legend_boxes[0][4].__data__.value),
+        current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
+        current_nb_dec4 = fourth_value.length - fourth_value.indexOf(".") - 1;
+
+    if(current_nb_dec4 === fourth_value.length && current_nb_dec1 === first_value.length) current_nb_dec = null;
+    else current_nb_dec = current_nb_dec4 >= current_nb_dec1 ? current_nb_dec4 : current_nb_dec1;
+
     if(current_nb_dec){
         let max_nb_decimal = current_nb_dec > 8 ? current_nb_dec : 8;
         box_body.append('p')
                     .style("display", "inline")
                     .attr("id", "precision_change_txt")
                     .html(['Floating number rounding precision<br> ', current_nb_dec, ' '].join(''));
-        box_body.append('input')
-                .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
-                .style("display", "inline")
-                .on('change', function(){
-                    let nb_float = +this.value,
-                        dec_mult = +["1", ["0" for(j of new Array(nb_float))].join('')].join('');
-                    d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-                    for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
-                        let values = breaks[i][0].split(' - ');
-                        legend_boxes[0][i].innerHTML = [Math.round(values[0] * dec_mult) / dec_mult, " - ", Math.round(values[1] * dec_mult) / dec_mult].join('');
-                    }
-                });
+        if(legend_id === "#legend_root")
+                box_body.append('input')
+                        .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                        .style("display", "inline")
+                        .on('change', function(){
+                            let nb_float = +this.value,
+                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
+                            d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
+                                let values = breaks[i][0].split(' - ');
+                                legend_boxes[0][i].innerHTML = [Math.round(values[0] * dec_mult) / dec_mult, " - ", Math.round(values[1] * dec_mult) / dec_mult].join('');
+                            }
+                        });
+        else if(legend_id === "#legend_root2")
+                box_body.append('input')
+                        .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                        .style("display", "inline")
+                        .on('change', function(){
+                            let nb_float = +this.value,
+                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
+                            d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            for(let i = 0; i < legend_boxes[0].length; i++){
+                                let value = legend_boxes[0][i].__data__.value;
+                                legend_boxes[0][i].innerHTML = String(Math.round(value * dec_mult) / dec_mult);
+                            }
+                        });
     }
 
     box_body.insert('p').html('Additionnal legend notes<br>')
@@ -1099,14 +1245,14 @@ function createFuncOptionsBox_PropSymbol(layer){
         li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[layer_to_add] = {
-            renderer: "PropSymbol", symbol: symbol_type,
+            renderer: "PropSymbols", symbol: symbol_type,
             rendered_field: field_selec.node().value,
             size: [ref_size.node().value, max_size.node().value],
             "stroke-width-const": "1px"
             }
         binds_layers_buttons();
         zoom_without_redraw();
-        makeButtonLegend(layer);
+        makeButtonLegend(layer_to_add);
         deactivate([nwBox, bg]);
      }
      qs('#no').onclick=function(){
