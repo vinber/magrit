@@ -58,10 +58,7 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
         // In order to avoid class limit falling out the serie limits with Std class :
         breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
         ir = serie.getInnerRanges();
-        if(!ir){
-            nb_class = old_nb_class;
-            return false;
-        }
+        if(!ir) return false;
 
         ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
         let _min = undefined, _max = undefined;

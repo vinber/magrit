@@ -91,7 +91,16 @@ function createStyleBox(layer_name){
                           .insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
                           .on('change', function(){selection.style('fill-opacity', this.value)});
-    }
+    } else if (type === "Line" && current_layers[layer_name].renderer == "Links"){
+        let max_val = 0,
+            previous_stroke_opacity = selection.style("stroke-opacity");
+        selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
+        popup.append('p').html('Only display flows larger than ...')
+                        .insert('input').attr({type: 'range', min: 0, max: max_val, step: 0.5})
+                        .on("change", function(){
+                        selection.each(function(d, i){selection.transition(45).style("stroke-opacity", (d.properties.fij < this.value) ? 0 : previous_stroke_opacity)})
+                        });
+     }
 
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)

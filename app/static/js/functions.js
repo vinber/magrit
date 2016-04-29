@@ -137,11 +137,14 @@ function createBox_MTA(layer){
         let table_to_send = new Object(),
             var1_name = field1_selec.node().value,
             var2_name = field2_selec.node().value;
-        table_to_send[var1_name] = [for (i of user_data[layer]) i[var1_name]];
-        table_to_send[var2_name] = [for (i of user_data[layer]) i[var2_name]];
+        //table_to_send[var1_name] = [for (i of user_data[layer]) i[var1_name]];
+        //table_to_send[var2_name] = [for (i of user_data[layer]) i[var2_name]];
+        table_to_send[var1_name] = user_data[layer].map(i => i[var1_name]);
+        table_to_send[var2_name] = user_data[layer].map(i => i[var2_name]);
         if(!field_key_agg.node().disabled){
             let key_name = field_key_agg.node().value;
-            table_to_send[key_name] = [for (i of user_data[layer]) i[key_name]];
+            table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
+            //table_to_send[key_name] = [for (i of user_data[layer]) i[key_name]];
         }
         deactivate([bg, nwBox]);
     });
@@ -385,7 +388,8 @@ function createBox_FlowMap(ref_layer){
             };
         var formToSend = new FormData();
         join_field_to_send = new Object();
-        join_field_to_send[name_join_field] = [for (obj of user_data[ref_layer]) obj[name_join_field]];
+        //join_field_to_send[name_join_field] = [for (obj of user_data[ref_layer]) obj[name_join_field]];
+        join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
         formToSend.append("json", JSON.stringify({
             "topojson": ref_layer,
             "csv_table": JSON.stringify(joined_dataset[0]),
@@ -406,9 +410,12 @@ function createBox_FlowMap(ref_layer){
                 add_layer_fun(data, {result_layer_on_add: true});
                 let new_layer_name = ["Links_", name_join_field].join(""),
                     layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
-                    fij_values = [for (ob of joined_dataset[0]) ob['fij']],
+                    fij_field_name = field_fij.node().value,
+                    fij_values = joined_dataset[0].map(obj => obj[fij_field_name]),
+                    //fij_values = [for (ob of joined_dataset[0]) ob['fij']],
                     prop_values = prop_sizer(fij_values, 0.5 / zoom.scale(), 20 / zoom.scale());
                 current_layers[new_layer_name].fixed_stroke = true;
+                current_layers[new_layer_name].renderer = "Links";
                 layer_to_render.style('fill-opacity', 0)
                                .style('stroke-opacity', 0.75)
                                .style("stroke-width", function(d, i){ return prop_values[i]; })
@@ -483,7 +490,8 @@ function createFuncOptionsBox_Stewart(layer){
         var formToSend = new FormData();
         let field_n = field_selec.node().value;
         let var_to_send = new Object;
-        var_to_send[field_n] = [for (i of user_data[layer]) +i[field_n]];
+        //var_to_send[field_n] = [for (i of user_data[layer]) +i[field_n]];
+        var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
         formToSend.append("json", JSON.stringify({
             "topojson": layer,
             "var_name": JSON.stringify(var_to_send),
@@ -842,7 +850,8 @@ function createLegend_symbol(layer, field, title, subtitle){
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ make_legend_edit_window('#legend_root2', layer); });
 
-    let breaks_elem = [0].concat([for (i of Array.of(4,3,2,1)) Math.round((nb_features-1)/i)]),
+    //let breaks_elem = [0].concat([for (i of Array.of(4,3,2,1)) Math.round((nb_features-1)/i)]),
+    let breaks_elem = [0].concat([4,3,2,1].map(i => Math.round((nb_features-1)/i))),
         ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
         type_param = symbol_type === 'circle' ? 'r' : 'width',
         ref_symbols_params = new Array();
@@ -1057,7 +1066,8 @@ function createlegendEditBox(legend_id, layer_name){
                         .style("display", "inline")
                         .on('change', function(){
                             let nb_float = +this.value,
-                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
+                                dec_mult = +["1", Array(nb_float).map(i => "0").join('')].join('');
+//                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
                             d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
                                 let values = breaks[i][0].split(' - ');
@@ -1070,7 +1080,7 @@ function createlegendEditBox(legend_id, layer_name){
                         .style("display", "inline")
                         .on('change', function(){
                             let nb_float = +this.value,
-                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
+                                dec_mult = +["1", Array(nb_float).map(i => "0").join('')].join('');
                             d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0; i < legend_boxes[0].length; i++){
                                 let value = legend_boxes[0][i].__data__.value;
@@ -1300,8 +1310,9 @@ function createBox_griddedMap(layer){
     qs('#yes').onclick=function(){
         let field_n = field_selec.node().value,
             formToSend = new FormData(),
-            var_to_send = {field_n: [for (i of user_data[layer]) +i[field_n]]};
-
+            var_to_send = new Object();
+            //var_to_send = {field_n: [for (i of user_data[layer]) +i[field_n]]};
+        var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
         last_params = {
             "var_name": field_n,
             "cellsize": cellsize.node().value
@@ -1329,7 +1340,8 @@ function createBox_griddedMap(layer){
                 }
                 
                 let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(result_data[n_layer_name].length)),
-                    d_values = [for (obj of result_data[n_layer_name]) +obj["densitykm"]];
+//                    d_values = [for (obj of result_data[n_layer_name]) +obj["densitykm"]];
+                    d_values = result_data[n_layer_name].map(obj => +obj["densitykm"]);
 
                 current_layers[n_layer_name].renderer = "Gridded";
                 makeButtonLegend(n_layer_name);
@@ -1394,22 +1406,23 @@ function prop_sizer(arr, min_size, max_size){
         dif_val = max_values - min_values,
         dif_size = max_size - min_size;
 
-    return [for (i of arr) 
-          ((i/dif_val * dif_size) + min_size - dif_size/dif_val)
-        ];
+    return arr.map(i => (i/dif_val * dif_size) + min_size - dif_size/dif_val)
+//    return [for (i of arr) 
+//          ((i/dif_val * dif_size) + min_size - dif_size/dif_val)
+//        ];
 }
 
 function prop_sizer2(arr, min_size, max_size){
-    let arr_tmp = [for (i of arr) i[1]],
+    let arr_tmp = arr.map(i => i[1]),
         min_values = Math.min.apply(0, arr_tmp),
         max_values = Math.max.apply(0, arr_tmp),
         dif_val = max_values - min_values,
         dif_size = max_size - min_size;
 
-    return [for (i of arr) 
-          [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]]
-        ];
-
+    return arr.map(i => [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]])
+//    return [for (i of arr) 
+//          [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]]
+//        ];
 }
 
 var type_col = function(layer_name, target){

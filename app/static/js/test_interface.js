@@ -508,7 +508,8 @@ function add_sample_layer(){
     layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     layout_layer_selec.on("change", function(){
         let elem = undefined;
-        selec.layout = [elem.value for (elem of this.selectedOptions)];
+        //selec.layout = [for (elem of this.selectedOptions) elem.value];
+        selec.layout = this.selectedOptions.map(elem => elem.value)
     });
 }
 

@@ -33,6 +33,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   if(class(knownpts_layer@data[, var_name]) == "character"){
     knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
   }
+  file.remove(knownpts_json)
   print(paste0("Layer opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
@@ -86,6 +87,7 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(class(spdf@data[, var_name]) == "character"){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
+  file.remove(layer_json_path)
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   
