@@ -167,8 +167,8 @@ if(menu_option.text_button){
 }
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
-layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule")
-layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Simplified_land_polygons")
+layer_list.append("li").attr("class", "ui-state-default Graticule").attr("title", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule")
+layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("title", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Simplified_land_polygons")
 dv3 = section3.append("div")
                 .style("text-align", "center")
                 .html("Drop new layout layers here or browse locally to add one<br>(GeoJSON, TopoJSON and ziped Shapefile project)<br>");
@@ -177,12 +177,20 @@ dv3.append("input")
     .attr("value", "Browse and add...")
     .on("click", add_layer)
 
+dv3.append('p').html('<i>Add sample layout layers...</i>').on('click', function(){add_layout_layers();});
+
+var src_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>'
 
 var dv4 = section4.append("p").attr("class", "form-item").style("margin-left", "5%");
 dv4.append("p").html("<b>Canvas width (px)</b><br>").insert("input").attr("id", "input-width").attr("type", "number").attr("value", w).on("change", function(){canvas_mod_size([this.value,null])})
 dv4.append("p").html("<b>Canvas height (px)</b><br>").insert("input").attr("id", "input-height").attr("type", "number").attr("value", h).on("change", function(){canvas_mod_size([null,this.value])})
-dv4.append("p").html("Map title<br>").insert("input").attr("id", "title").on("keyup", function(){handle_title(this.value);})
+dv4.append("p").style("display", "inline").html("Map title<br>").insert("input").attr("id", "title").on("keyup", function(){handle_title(this.value);})
+dv4.insert("p").style("display", "inline").style("top", "4px").html(src_button.replace('22', '16').replace("submit", "Title properties")).on("click", handle_title_properties);
 dv4.append("p").html("Background Color<br>").insert("input").attr("type", "color").attr("id", "bg_color").attr("value", "#ffffff").on("change", function(){handle_bg_color(this.value);})
+
+dv4.append("p").html(src_button + " Add layout features (arrow, scale, etc.)").on("click", add_layout_features)
+dv4.append("p").html(src_button + " Save your preferences...").on("click", load_map_template)
+dv4.append("p").html(src_button + " Load a preference JSON...").on("click", load_map_template)
 
 var dv5 = section5.append("p").attr("class", "form-item");
 dv5.append('label-item').html("<br><b>Projection </b><br>").style("padding", "6px");
@@ -208,10 +216,6 @@ section5.append("input")
         .attr("value", 0).attr("min", 0)
         .attr("max", 360).attr("step", 0.5)
         .on("input", function(){handle_proj_center_button([this.value, null, null])});
-
-b = '<button type="submit" class="" style="border-color:transparent;color:transparent;background-color:transparent;"><img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/></button>'
-section4.append("p").html(b + "Save your preferences...").on("click", save_map_template)
-section4.append("p").html(b + "Load a preference JSON...").on("click", load_map_template)
 
 // Zoom in & Zoom out buttons (on the map):
 
@@ -346,8 +350,8 @@ $(document).ajaxStart(function() {
         prog_bar.node().style.zIndex = 2;
         (document.body || document.documentElement).appendChild(bg);
     }).ajaxComplete(function() {
-        d3.selectAll("#progressbar").node().remove();
-        d3.selectAll(".overlay").node().remove();
+        d3.selectAll("#progressbar").remove();
+        d3.selectAll(".overlay").remove();
     });
 
 ////////////////
@@ -895,29 +899,82 @@ function handle_active_layer(){
     var name,
         name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
 
-    if(name_split.length == 2) name = name_split[1];
+    if(name_split.length == 2) name = name_split[1].trim();
     else if(name_split.length > 2) console.log('Oups..');
-    else name = name_split[0];
+    else name = name_split[0].trim();
 
     fill_value = this.checked ? 1 : 0;
-    d3.selectAll("#"+name.trim()).style("opacity", fill_value);
+    d3.selectAll("#"+name).style("opacity", fill_value);
 }
 
 function handle_title(txt){
     var title = d3.select("#map_title");
     if(title.node()){
-        title.style("top", h/20 + "px")
-             .style("width", w + "px").html(txt);
+        title.text(txt)
     } else {
-        d3.select("#map").append("p").attr("id", "map_title").attr("class", "legend")
-         .style("top", h/20 + "px")
-         .style("width", w + "px")
-         .style("font-family", "sans-serif")
-         .style("font-size", "20px")
-         .style("text-align", "center")
-         .style("position", "absolute")
-         .style("color", "black").html(txt)
+        map.append("g")
+             .attr("class", "legend_feature title")
+          .insert("text")
+             .attr({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
+             .style({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt)
     }
+}
+
+function handle_title_properties(){
+    var title = d3.select("#map_title");
+    if(!title.node()){
+        alert("No title to style")
+        return;
+    }
+    var title_props = {
+        size: title.style("font-size"),
+        color: title.style("color"),
+        position_x: title.attr("x"),
+        position_y: title.attr("y"),
+        font_family: title.style("font-family")
+        };
+
+    // Change the properties on the title are they are changed by the user and rollback to original properties if Cancel is clicked
+    make_confirm_dialog("", "Valid", "Cancel", "Title properties", "mapTitleitleDialogBox", 4*w/6, h-20).then(
+        function(confirmed){
+            if(!confirmed)
+                title.style("font-size", title_props.size)
+                    .style("color", title_props.color)
+                    .style("font-family", title_props.font_family)
+                    .attr("x", title_props.position_x)
+                    .attr("y", title_props.position_y);
+        });
+    var box_content = d3.select(".mapTitleitleDialogBox").append("div");
+    var available_fonts = [
+        ['Arial', 'Arial,Helvetica,sans-serif'],
+        ['Arial Black', 'Arial Black,Gadget,sans-serif'],
+        ['Comic Sans MS', 'Comic Sans MS,cursive,sans-serif'],
+        ['Impact', 'Impact,Charcoal,sans-serif'],
+        ['Georgia', 'Georgia,serif'],
+        ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
+        ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
+        ['Tahoma', 'Tahoma,Geneva,sans-serif'],
+        ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
+        ['Verdana', 'Verdana,Geneva,sans-serif']
+        ];
+    box_content.append("p").html("Font-size :<br>")
+        .insert("input").attr({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]})
+        .on("change", function(){  title.style("font-size", this.value + "px");  });
+    box_content.append("p").html("x position (% from the left side) :<br>")
+        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]})
+        .on("change", function(){  title.attr("x", this.value + "%");  });
+    box_content.append("p").html("y position (% from the top) :<br>")
+        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]})
+        .on("change", function(){  title.attr("y", this.value + "%");  });
+    box_content.append("p").html("Font color :<br>")
+        .insert("input").attr({type: "color", value: title_props.color})
+        .on("change", function(){  title.style("color", this.value);  });
+    var font_select = box_content.append("p").html("Font family")
+        .insert("select").attr("class", "params")
+        .on("change", function(){  title.style("font-family", this.value); });
+    available_fonts.forEach(function(font){ font_select.append("option").text(font[0]).attr("value", font[1]) });
+    font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
+    return;
 }
 
 
@@ -1008,7 +1065,6 @@ function export_compo(){
     }, 760);
 
 }
-
 
 </script>
 </body>

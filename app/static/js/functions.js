@@ -43,7 +43,7 @@ function get_menu_option(func){
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "text_button": "Choose options and render..."
             },
-        "MTA":{
+        "mta":{
             "title":"Multiscalar Territorial Analysis",
             "popup_factory": "createBox_MTA",
             "desc":"Compute and render various methods of multiscalar territorial analysis",
@@ -107,45 +107,113 @@ function createBox_MTA(layer){
 
     var dialog_content = d3.select(["#", layer, 'MTA_popup'].join(''));
     dialog_content.append('h3').html('Multiscalar territorial analysis');
-    var method_selec = dialog_content.append("p").html("Analysis method").insert("select").attr("class", "params");
+    var method_selec = dialog_content.append("p").html("Analysis method")
+                            .insert("select").attr("class", "params");
     MTA_methods.forEach(function(method){ method_selec.append("option").text(method[0]).attr("value", method[1]) });
     // TODO : (de)activate the appropriates options according to the selected method (key / ref / etc.)
     var field1_selec = dialog_content.append("p").html("First field :").insert("select").attr("class", "params");
     fields.forEach(function(field){ field1_selec.append("option").text(field).attr("value", field)});
     var field2_selec = dialog_content.append("p").html("Second field :").insert("select").attr("class", "params");
     fields.forEach(function(field){ field2_selec.append("option").text(field).attr("value", field)});
-    var field_key_agg = dialog_content.append("p").html("Aggregation key field :").insert("select").attr("class", "params");
+    var field_key_agg = dialog_content.append("p").html("Aggregation key field :").insert("select").attr("class", "params").attr("disabled", true);
     fields.forEach(function(field){ field_key_agg.append("option").text(field).attr("value", field)});
     var ref_ratio = dialog_content.append("p").html("Reference ratio :")
-                                    .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1})
+                                    .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1}).attr("disabled", true);
     var type_deviation = dialog_content.append("p").html("Type of deviation").insert("select").attr("class", "params");
     [["Relative deviation", "rel"],
-     ["Absolute deviation", "abs"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])})
+     ["Absolute deviation", "abs"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])});
+
+    var a = dialog_content.append('div').style("margin-bottom", "15px");
+
+    var param_global_dev = a.insert("select").attr("class", "params").attr("disabled", true).style({"background-color": "#e5e5e5", "border-color": "transparent"});
+    [["Distance defining the contiguity", "dist"],
+     ["Contiguity order", "order"]].forEach(function(param){  param_global_dev.append("option").text(param[0]).attr("value", param[1])  });
+
+    var val_param_global_dev = a.insert('input').style("width", "85px").attr({type: "number", min: 0, max:1000000, step:1}).attr("disabled", true);
 
     var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
 
-    var ok_button = dialog_content.append("button")
+    method_selec.on("change", function(){
+        if(this.value == "global_dev"){
+            ref_ratio.attr("disabled", null);
+            field_key_agg.attr("disabled", true);
+            param_global_dev.attr("disabled", true);
+            val_param_global_dev.attr("disabled", true);
+        } else if(this.value == "medium_dev"){
+            ref_ratio.attr("disabled", true);
+            field_key_agg.attr("disabled", null);
+            param_global_dev.attr("disabled", true);
+            val_param_global_dev.attr("disabled", true);
+        } else if(this.value == "local_dev"){
+            ref_ratio.attr("disabled", true);
+            field_key_agg.attr("disabled", true);
+            param_global_dev.attr("disabled", null);
+            val_param_global_dev.attr("disabled", null);
+        }
+    });
+
+    var ok_button = dialog_content.insert("button")
         .attr("value", "yes")
-        .attr("disabled", true)
+//        .attr("disabled", true)
         .text("Compute and render");
 
-    var cancel_button = dialog_content.append("button")
+    var cancel_button = dialog_content.insert("button")
         .attr("value", "no")
         .text("Cancel");
 
     ok_button.on("click", function(){
-        let table_to_send = new Object(),
+        let choosen_method = method_selec.node().value,
+            table_to_send = new Object(),
+            object_to_send = new Object(),
             var1_name = field1_selec.node().value,
-            var2_name = field2_selec.node().value;
+            var2_name = field2_selec.node().value
         //table_to_send[var1_name] = [for (i of user_data[layer]) i[var1_name]];
         //table_to_send[var2_name] = [for (i of user_data[layer]) i[var2_name]];
         table_to_send[var1_name] = user_data[layer].map(i => i[var1_name]);
         table_to_send[var2_name] = user_data[layer].map(i => i[var2_name]);
-        if(!field_key_agg.node().disabled){
+        object_to_send["method"] = choosen_method;
+        if(choosen_method == "medium_dev"){
             let key_name = field_key_agg.node().value;
             table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
+            object_to_send["key_field_name"] = key_name;
             //table_to_send[key_name] = [for (i of user_data[layer]) i[key_name]];
+        } else if(choosen_method == "global_dev"){
+            object_to_send["ref_value"] = ref_ratio.node().value;
+        } else if(choosen_method == "local_dev"){
+            let val = val_param_global_dev.node().value,
+                param_name = param_global_dev.node().value == "dist" ? "dist" : "order";
+            object_to_send[param_name] = val;
         }
+        object_to_send["table"] = table_to_send;
+        object_to_send["var1_name"] = var1_name;
+        object_to_send["var2_name"] = var2_name;
+        object_to_send["type_dev"] = type_deviation.node().value;
+        
+        var formToSend = new FormData();
+        let target_url = choosen_method == "local_dev" ? "/R_compute/MTA_geo" : "/R_compute/MTA_d";
+        formToSend.append("json", JSON.stringify(object_to_send))
+        $.ajax({
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: target_url,
+            data: formToSend,
+            type: 'POST',
+            error: function(error) { console.log(error); },
+            success: function(data){
+                if(choosen_method != "local_dev"){
+                    let result_values = JSON.parse(data);
+                    if(result_values.values){
+                        let field_name = [choosen_method, "_", var1_name, "_", var2_name].join('');
+                        for(let i=0; i<user_data[layer].length; ++i)
+                            user_data[layer][i][field_name] = result.values[i];
+                    }
+                } else {
+                    add_layer_fun(data, {result_layer_on_add: true});
+                }
+                // Todo : add the field to the existing layer if its medium / global deviation or take the new layer to add it if its local deviation
+            }
+        });
         deactivate([bg, nwBox]);
     });
 
@@ -534,12 +602,10 @@ function createFuncOptionsBox_Stewart(layer){
                                                                 let k = Math.round(d.properties.min * 100) / 100;
                                                                     col = col_map.get(k);
                                                                 current_layers[n_layer_name].colors[i] = col;
-                                                                return col; })
-                                                             .style("stroke", function(d, i){
-                                                                let k = Math.round(d.properties.min * 100) / 100;
-                                                                return col_map.get(k); })
+                                                                return col; });
                 makeButtonLegend(n_layer_name);
-                                        
+                // Todo : use the function render_choro to render the result from stewart too
+
             }
         });
         deactivate([nwBox, bg]);
@@ -612,13 +678,12 @@ function createBoxExplore(){
         if(switch_button) d3.select("#switch_button").node().innerHTML = message;
     };
 
-    var layer_name = Object.getOwnPropertyNames(user_data)[0];
-    var columns_headers = [],
+    var layer_name = Object.getOwnPropertyNames(user_data)[0],
+        columns_headers = [],
         nb_features = undefined,
         columns_names = undefined,
-        current_table = undefined;
-
-    var box_table = d3.select("body").append("div")
+        current_table = undefined,
+        box_table = d3.select("body").append("div")
                         .attr({id: "browse_data_box", title: "Explore dataset"})
                         .style("font-size", "0.8em");
 

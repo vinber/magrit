@@ -474,43 +474,42 @@ def carto_gridded(posted_data, session_redis, user_id):
     return '|||'.join([new_name, res.replace(tmp_part, new_name)])
 
 
-#@asyncio.coroutine
-#def call_mta_simpl(posted_data, session_redis, user_id):
-#    posted_data = json.loads(posted_data.get("json"))  # method, jsonified_table, var1, var2, key/ref, type_dev
-#    
-#    if "medium" in posted_data["method"]:
-#        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
-#        data = json.dumps({
-#            "x": posted_data['table'], "var1": posted_data['var1_name'],
-#            "var2": posted_data['var2_name'], "key": posted_data["key_field_name"],
-#            "type_dev": posted_data["type_dev"]})
-#
-#    elif "global" in posted_data["method"]:
-#        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
-#        data = json.dumps({
-#            "x": posted_data['table'], "var1": posted_data['var1_name'],
-#            "var2": posted_data['var2_name'], "ref": posted_data["ref_value"],
-#            "type_dev": posted_data["type_dev"]})
-#
-#    else:
-#        return {"Error": "Unknow MTA method"}
-#
-#    content = yield from R_client_fuw_async(
-#        url_client, commande, data, app_glob['async_ctx'], user_id)
-#    return content.decode()
-#
-#
-#@asyncio.coroutine
-#def call_mta_geo(posted_data, session_redis, user_id):
-#    posted_data = json.loads(posted_data.get("json"))
-#    f_name = '_'.join([user_id, posted_data['topojson']])
-#    ref_layer = yield from app_glob['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = json.loads(posted_data['var_name'])
-#    n_field_name = list(new_field.keys())[0]
-#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-#        join_topojson_new_field(ref_layer, new_field)
-#    return ''
+@asyncio.coroutine
+def call_mta_simpl(posted_data, session_redis, user_id):
+    posted_data = json.loads(posted_data.get("json"))  # method, jsonified_table, var1, var2, key/ref, type_dev
+    if "medium" in posted_data["method"]:
+        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
+        data = json.dumps({
+            "x": json.dumps(posted_data['table']).encode(), "var1": posted_data['var1_name'],
+            "var2": posted_data['var2_name'], "key": posted_data["key_field_name"],
+            "type_dev": posted_data["type_dev"]}).encode()
+
+    elif "global" in posted_data["method"]:
+        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
+        data = json.dumps({
+            "x": json.dumps(posted_data['table']).encode(), "var1": posted_data['var1_name'],
+            "var2": posted_data['var2_name'], "ref": posted_data["ref_value"],
+            "type_dev": posted_data["type_dev"]}).encode()
+
+    else:
+        return {"Error": "Unknow MTA method"}
+    print(data)
+    content = yield from R_client_fuw_async(
+        url_client, commande, data, app_glob['async_ctx'], user_id)
+    return content.decode()
+
+
+@asyncio.coroutine
+def call_mta_geo(posted_data, session_redis, user_id):
+    posted_data = json.loads(posted_data.get("json"))
+    f_name = '_'.join([user_id, posted_data['topojson']])
+    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+    ref_layer = json.loads(ref_layer.decode())
+    new_field = json.loads(posted_data['var_name'])
+    n_field_name = list(new_field.keys())[0]
+    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+        join_topojson_new_field(ref_layer, new_field)
+    return ''
 
 
 def join_topojson_new_field(topojson, new_field):
@@ -671,8 +670,8 @@ if __name__ == '__main__':
         data = f.read()
         app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]
     app_glob['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map_py }
-#        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo }
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map_py,
+        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()

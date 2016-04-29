@@ -59,19 +59,11 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
         breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
         ir = serie.getInnerRanges();
         if(!ir) return false;
-
-        ir = ir.map(function(el){var tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
-        let _min = undefined, _max = undefined;
-        for(let j=0, len_j=ir.length; j < len_j; j++){
-            _min=sorted_values.lastIndexOf(ir[j][0]);
-            _max=sorted_values.lastIndexOf(ir[j][1]);
-            stock_class.push(_max - _min);
-        }
     }
 
     color_array = getColorBrewerArray(nb_class, col_ramp_name);
-    for(let j=0; j<values.length; ++j){
-        var idx = serie.getClass(values[i])
+    for(let j=0; j<sorted_values.length; ++j){
+        var idx = serie.getClass(values[j])
         colors_map.push(color_array[idx])
     }
     return [nb_class, type, breaks, color_array, colors_map];

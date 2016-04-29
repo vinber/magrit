@@ -9,9 +9,13 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
-  if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
-  if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
 
+  if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
+  
+  geojsonio::geojson_write(knownpts_layer, file='/tmp/input_step1.geojson')
+  
+  if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
+  
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
@@ -46,7 +50,9 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   print(paste0("quickStewart ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   # Always return the result in latitude-longitude for the moment :
+  geojsonio::geojson_write(knownpts_layer, file='/tmp/input_step2.geojson')
   geojsonio::geojson_write(spTransform(res_poly, CRS(latlong_string)), file=knownpts_json)
+  geojsonio::geojson_write(spTransform(res_poly, CRS(latlong_string)), file='/tmp/res_stewart.geojson')
   result <- paste0('{"geojson_path":"', knownpts_json,'","breaks":',
                    jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))),
                    ',"additional_infos":', jsonlite::toJSON(additionnal_infos), '}')
@@ -123,8 +129,8 @@ mta_globaldev <- function(x, var1, var2, ref, type_dev){
 }
 
 mta_mediumdev <- function(x, var1, var2, key, type_dev){
-  x <- jsonlite::fromJSON(x)
-  return(jsonlite::toJSON(MTA::mediumDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)))
+  x <- as.data.frame(jsonlite::fromJSON(x))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::mediumDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
 }
 
 mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type_dev='rel'){

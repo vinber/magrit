@@ -307,3 +307,9 @@ label
     margin: auto;
     padding: 6px;
 }
+
+.button_sys_run {
+    border-color: transparent;
+    color: transparent;
+    background-color: transparent;
+}
