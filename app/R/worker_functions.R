@@ -11,9 +11,6 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
-  
-  geojsonio::geojson_write(knownpts_layer, file='/tmp/input_step1.geojson')
-  
   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
   
   if(is.null(mask_json)){
@@ -50,9 +47,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   print(paste0("quickStewart ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   # Always return the result in latitude-longitude for the moment :
-  geojsonio::geojson_write(knownpts_layer, file='/tmp/input_step2.geojson')
   geojsonio::geojson_write(spTransform(res_poly, CRS(latlong_string)), file=knownpts_json)
-  geojsonio::geojson_write(spTransform(res_poly, CRS(latlong_string)), file='/tmp/res_stewart.geojson')
   result <- paste0('{"geojson_path":"', knownpts_json,'","breaks":',
                    jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))),
                    ',"additional_infos":', jsonlite::toJSON(additionnal_infos), '}')
