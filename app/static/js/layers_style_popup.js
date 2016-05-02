@@ -85,7 +85,7 @@ function createStyleBox(layer_name){
                             }
                         });
                 });
-
+            if(current_layers[layer_name].rendered_field) field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
          }
          popup.append('p').html('Fill opacity<br>')
                           .insert('input').attr('type', 'range')

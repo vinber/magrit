@@ -15,4 +15,8 @@ TODO list:
 - Improve the "user defined" break values in the discretization panel
 - Change the stroke drawing behavior when zoom.scale() is too high / Use two kind of "redraw" behaviour (with two svg elements ?), one two use with "zoom" behavior (for fast moving) and one other to use with proj.translate() (for more precise drawing on the user targeted layer) ?
 - Extend selenium tests
-
+- Change the color and the styling icon for the targeted layer in the layer menu
+- Allow the user to display label of features on its map (based, or not on some criteria)
+- Change text like "Drop a geojson, topojson, etc.. " for nicer icons with tooltip
+- Move the graticule from layout layers to layout features (with north arrow etc)
+- Set the scale according to the targeted layer once added (instead of zooming on it)

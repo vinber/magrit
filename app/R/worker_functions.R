@@ -5,20 +5,20 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
                             span, beta, resolution=NULL, mask_json = NULL){
   s_t <- Sys.time()
   latlong_string <- "+init=epsg:4326"
-  # web_mercator <- "+init=epsg:3857"
+  web_mercator <- "+init=epsg:3857"
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
-#   if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
+  if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
 #   
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else{
     mask_layer <- geojsonio::geojson_read(mask_json, what='sp', stringsAsFactors = FALSE)
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
-#     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
+    if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
     if(!rgeos::gIsValid(mask_layer)){
       print('Invalid geom mask - First test')
       mask_layer <- rgeos::gBuffer(mask_layer, width = 1)
@@ -49,9 +49,9 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   # Always return the result in latitude-longitude for the moment :
   ###
   tmp_res_path = paste0("/tmp/res_proof", sample(1111:9999999, 1), ".geojson")
-  geojsonio::geojson_write(res_poly, file=tmp_res_path)
+  geojsonio::geojson_write(sp::spTransform(res_poly, CRS(latlong_string)), file=tmp_res_path)
   ###
-  geojsonio::geojson_write(res_poly, file=knownpts_json)
+  geojsonio::geojson_write(sp::spTransform(res_poly, CRS(latlong_string)), file=knownpts_json)
   result <- paste0('{"geojson_path":"', knownpts_json,'","breaks":',
                    jsonlite::toJSON(list(min = unique(res_poly@data$min), max = unique(res_poly@data$max))),
                    ',"additional_infos":', jsonlite::toJSON(additionnal_infos), '}')
@@ -133,12 +133,20 @@ mta_mediumdev <- function(x, var1, var2, key, type_dev){
   return(paste0('{"values":', jsonlite::toJSON(MTA::mediumDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
 }
 
-mta_localdev <- function(spdf_geojs, var1, var2, order = NULL, dist = NULL, type_dev='rel'){
-  x <- rgdal::readOGR(spdf_geojs, 'OGRGeoJSON', verbose=FALSE)
-  res <- MTA::localDev(spdf = x, x = x@data, spdfid = NULL, xid = NULL,
+mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, type_dev='rel'){
+  latlong_string <- "+init=epsg:4326"
+  web_mercator <- "+init=epsg:3857"
+  
+  spdf <- geojsonio::geojson_read(geojson_path, what='sp', stringsAsFactors = FALSE)
+  
+  if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
+  if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
+  spdf@data[,var1] <- as.numeric(spdf@data[,var1])
+  spdf@data[,var2] <- as.numeric(spdf@data[,var2])
+  res <- MTA::localDev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
                        var1 = var1, var2 = var2,
                        order = order, dist = dist, type = type_dev)
-  return(jsonlite::toJSON(res))
+  return(paste0('{"values":', jsonlite::toJSON(res), '}'))
 }
 
 ###################################

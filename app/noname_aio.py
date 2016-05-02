@@ -493,15 +493,40 @@ def call_mta_simpl(posted_data, session_redis, user_id):
 
 @asyncio.coroutine
 def call_mta_geo(posted_data, session_redis, user_id):
+    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson']])
     ref_layer = yield from app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
-    new_field = json.loads(posted_data['var_name'])
-    n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field)
-    return ''
+    
+    new_field1 = json.loads(posted_data['var1'])
+    n_field_name1= list(new_field1.keys())[0]
+    
+    new_field2 = json.loads(posted_data['var2'])
+    n_field_name2= list(new_field2.keys())[0]
+    
+    if len(new_field1[n_field_name1]) > 0 and n_field_name1 not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+        join_topojson_new_field(ref_layer, new_field1)
+
+    if len(new_field2[n_field_name2]) > 0 and n_field_name2 not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+        join_topojson_new_field(ref_layer, new_field2)
+
+    tmp_part = get_name()
+    filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
+                 "result": None}
+    savefile2(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+    commande = b'mta_localdev(geojson_path, var1, var2, order, dist, type_dev)'
+    data = json.dumps({
+        "geojson_path": filenames['src_layer'],
+        "var1": n_field_name1,
+        "var2": n_field_name2,
+        "order": posted_data["order"],
+        "dist": posted_data["dist"],
+        "type_dev": posted_data["type_dev"]}).encode()
+    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
+    content = yield from R_client_fuw_async(
+        url_client, commande, data, app_glob['async_ctx'], user_id)
+    return content.decode()
 
 
 def join_topojson_new_field(topojson, new_field):

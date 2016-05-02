@@ -276,7 +276,7 @@ label
     line-height: 2em;
     font-weight: bold;
     background: #adadad;
-    border-radius: 10%;
+    border-radius: 9%;
     color: white
 }
 
@@ -286,9 +286,9 @@ label
     padding: 5px;
     font-size: 12px;
     line-height: 2em;
-    background: #ede425;
+    background: #99a8c4;
     color: black;
-    border-radius: 10%;
+    border-radius: 9%;
 }
 
 #sortable li.sortable_result {
@@ -299,7 +299,7 @@ label
     line-height: 2em;
     background: #87ff9a;
     color: black;
-    border-radius: 10%;
+    border-radius: 9%;
 }
 
 .dataTables_wrapper .ui-widget-header{
