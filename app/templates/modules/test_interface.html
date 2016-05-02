@@ -17,7 +17,6 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
-    <script  src="/static/js/lib/md5.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/test_interface.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
@@ -52,21 +51,18 @@ var menu_option = get_menu_option(func);
 var w = Math.round((window.innerWidth / 1.73 ) / 10)*10,
     h = Math.round((window.innerHeight / 1.33 ) / 10)*10;
 
-var proj = d3.geo.mercator().scale(100).translate([375, 320]),
+var proj = d3.geo.mercator().scale(200).translate([525, 350]),
     path = d3.geo.path().projection(proj).pointRadius(1),
     t = proj.translate(),
-    s = proj.scale();
+    s = proj.scale(),
+    current_proj_name = "mercator",
+    zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
 
 //var zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
-
-var zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
-
-var x_center_proj = proj.center()[0],
-    y_center_proj = proj.center()[1],
-    current_proj_name = "mercator";
+//var x_center_proj = proj.center()[0],
+//    y_center_proj = proj.center()[1];
 
 var user_data = new Object(),
-//    targeted_topojson = undefined,
     result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
@@ -74,19 +70,16 @@ var user_data = new Object(),
     targeted_layer_added = false,
     current_layers = new Object(),
     last_params = new Object(),
-    dataset_name = undefined;
+    dataset_name = undefined,
+    map_div = d3.select("#map");
 
-var map = d3.select("#map")
-                .style("width", w+"px").style("height", h+"px")
+var map = map_div.style("width", w+"px").style("height", h+"px")
             .append("svg")
                 .attr("id", "svg_map")
                 .attr("width", w)
                 .attr("height", h)
                 .call(zoom);
 
-var background = map.append("g")
-                    .attr({id: "Simplified_land_polygons", class: "layer"})
-                    .style({"stroke-width": "0.5px", stroke: "#718F79", fill: "#C8C8C8"});
 
 var button_style = ' <button type="submit" class="style_button"><img src="/static/img/High-contrast-edit-clear.svg" width="18" height="18" alt="submit"/></button>',
     button_trash = ' <button type="submit" class="trash_button"><img src="/static/img/Trash_font_awesome.svg" width="18" height="18" alt="submit"/></button>',
@@ -95,21 +88,6 @@ var button_style = ' <button type="submit" class="style_button"><img src="/stati
 
 // These triggers are in a function as they need to be called on each layer add
 
-
-map.append("g").attr({id: "Graticule", class: "layer"})
-               .append("path")
-               .attr("class", "graticule")
-               .datum(d3.geo.graticule())
-               .attr("d", path);
-   
-d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
-    background.selectAll('path')
-              .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-              .enter()
-              .append('path');
-    map.selectAll("path").attr("d", path);  
-});
-    
 current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
 
@@ -194,12 +172,6 @@ dv4.append("p").html(src_button + " Load a preference JSON...").on("click", load
 
 var dv5 = section5.append("p").attr("class", "form-item");
 dv5.append('label-item').html("<br><b>Projection </b><br>").style("padding", "6px");
-var p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", change_projection);
-d3.json("/static/json/projections.json", function(json) {
-   json.forEach(function(d) {
-        p.append("option").text(d.name).attr("value",d.projection);
-       });   
-});
 
 section5.append("div").html("Canvas rotation")
 section5.append("input")
@@ -217,82 +189,111 @@ section5.append("input")
         .attr("max", 360).attr("step", 0.5)
         .on("input", function(){handle_proj_center_button([this.value, null, null])});
 
-// Zoom in & Zoom out buttons (on the map):
-
-var lm = d3.select("#map")
-            .append("div")
-            .attr("class", "light-menu")
-            .style({position:"absolute", top:"-31px", left:"2px"});
-
-lm.append("input")
-    .attr("type", "button")
-    .attr("class", "zoom_button")
-    .attr("value", "-")
-    .attr("title", "Zoom out")
-    .attr("id", "zoom_out");
-
-
-lm.append("input")
-        .attr("type", "button")
-        .attr("class", "zoom_button")
-        .attr("value", "+")
-        .attr("title", "Zoom in")
-        .attr("id", "zoom_in");
-
-
-lm.append("input")
-        .attr("type", "button")
-        .attr("class", "info_button")
-        .attr("value", "i")
-        .attr("title", "Display features informations")
-        .attr("id", "info_button");
-
-lm.append("button")
-        .attr("class", "hand_button active")
-        .attr("id", "hand_button")
-        .attr("title", "Use the cursor to move on the map (default behavior)")
-        .html('<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>')
-        .style('box-shadow', 'inset 2px 2px 1px black')
-        .on("click", function(){handle_click_hand();});
-
-lm.append("button")
-        .attr("class", "brush_zoom_button")
-        .attr("id", "brush_zoom_button")
-        .attr("title","Zoom on selection")
-        .classed("active", false)
-        .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>')
-        .on("click", function(){handle_click_zoom_select();});
-
-
-var info_coords = d3.select("#map").append("div").attr("class", "light-menu-bottom")
-            .style({position:"absolute", bottom:"-40px", left:"0px"})
+var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
+            .style({position:"absolute", bottom:"-40px", left:"0px", "z-index":-1})
             .append("p").attr("id", "info_coords")
-              .style({"font-size": "14px", "margin-left":"5px", "color":"black", "z-index":-1})
+              .style({"font-size": "14px", "margin-left":"5px", "color":"black"})
               .html("");
 
-var const_options = d3.select("body").append("div").attr("id", "const_options")
-const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Export your composition")
-              .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
-              .style("margin-top", "none")
-              .on("click", export_compo);
+{
+    let background = map.append("g")
+                        .attr({id: "Simplified_land_polygons", class: "layer"})
+                        .style({"stroke-width": "0.5px", stroke: "#718F79", fill: "#C8C8C8"});
 
-const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Export / Load your map preferences")
-              .html('<img src="/static/img/High-contrast-system-run.svg" width="24" height="24" alt="export_load_preferences"/>')
-              .style("margin-top", "none")
-              .on("click", function(){
-                  var a = make_confirm_dialog("Not implemented").then(function(confirmed){
-                if(confirmed)return true;else return false});
-                    if(a){console.log(a);console.log('ok');}
-                    else{console.log(a);console.log('no')}
-            });
+    map.append("g").attr({id: "Graticule", class: "layer"})
+                   .append("path")
+                   .attr("class", "graticule")
+                   .datum(d3.geo.graticule())
+                   .attr("d", path);
 
-const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Help")
-              .html('<img src="/static/img/High-contrast-help-browser.svg" width="24" height="24" alt="export_load_preferences"/>')
-              .style("margin-top", "none")
-              .on("click", function(){alert('Emergency help!');});
+
+    d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
+        background.selectAll('path')
+                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+                  .enter()
+                  .append('path');
+        map.selectAll("path").attr("d", path);  
+    });
+
+    let p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", change_projection);
+    d3.json("/static/json/projections.json", function(json) {
+       json.forEach(function(d) {
+            p.append("option").text(d.name).attr("value", d.projection);
+           });   
+    });
+
+    let const_options = d3.select("body").append("div").attr("id", "const_options")
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Export your composition")
+                  .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
+                  .style("margin-top", "none")
+                  .on("click", export_compo);
+    
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Export / Load your map preferences")
+                  .html('<img src="/static/img/High-contrast-system-run.svg" width="24" height="24" alt="export_load_preferences"/>')
+                  .style("margin-top", "none")
+                  .on("click", function(){
+                      make_confirm_dialog("Not implemented").then(function(confirmed){
+                          if(confirmed) console.log(true);else console.log(false)});
+                  });
+    
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Help")
+                  .html('<img src="/static/img/High-contrast-help-browser.svg" width="24" height="24" alt="export_load_preferences"/>')
+                  .style("margin-top", "none")
+                  .on("click", function(){alert('Emergency help!');});
+
+    // Zoom in & Zoom out buttons (on the map):
+    
+    let lm = map_div
+                .append("div")
+                .attr("class", "light-menu")
+                .style({position:"absolute", top:"-31px", left:"2px"});
+    
+    lm.append("input")
+        .attr("type", "button")
+        .attr("class", "zoom_button")
+        .attr("value", "-")
+        .attr("title", "Zoom out")
+        .attr("id", "zoom_out");
+    
+    
+    lm.append("input")
+            .attr("type", "button")
+            .attr("class", "zoom_button")
+            .attr("value", "+")
+            .attr("title", "Zoom in")
+            .attr("id", "zoom_in");
+    
+    
+    lm.append("input")
+            .attr("type", "button")
+            .attr("class", "info_button")
+            .attr("value", "i")
+            .attr("title", "Display features informations")
+            .attr("id", "info_button");
+    
+    lm.append("button")
+            .attr("class", "hand_button active")
+            .attr("id", "hand_button")
+            .attr("title", "Use the cursor to move on the map (default behavior)")
+            .html('<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>')
+            .style('box-shadow', 'inset 2px 2px 1px black')
+            .on("click", function(){handle_click_hand();});
+    
+    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
+    
+    lm.append("button")
+            .attr("class", "brush_zoom_button")
+            .attr("id", "brush_zoom_button")
+            .attr("title","Zoom on selection")
+            .classed("active", false)
+            .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="16" height="16" alt="Zoom_select"/>')
+            .on("click", function(){brush_rect()});
+
+
+}
 
 var info_features = d3.select("body").append("div")
               .attr("id", "info_features")
@@ -343,7 +344,7 @@ $(function() {
 $(document).ajaxStart(function() {
         var bg = document.createElement('div');
         bg.className = 'overlay';
-        var prog_bar = d3.select("#map").append("div")
+        var prog_bar = map_div.append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black"})
                          .attr("id", "progressbar")
         prog_bar.node().innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>Loading layer ...';
@@ -548,72 +549,82 @@ function handle_bg_color(color){
 function handle_click_hand(){
     var hb = d3.select('.hand_button');
     if(hb.classed("active")){
-        hb.style('box-shadow', "none");
+        hb.style('box-shadow', "none").classed("active", false);
         zoom.on("zoom", null);
-        hb.classed("active", false)
     } else {
-        hb.style('box-shadow', 'inset 2px 2px 1px black');
+        hb.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
         zoom.on("zoom", zoom_without_redraw);
-        hb.classed("active", true)
+        map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
     }
 }
 
 function handle_click_zoom_select(){
-    var hand_button = d3.select('.hand_button'),
-        zoom_sel_button = d3.select('.brush_zoom_button');
-    if(zoom_sel_button.classed("active")){
-        zoom.on("zoom", zoom_without_redraw);
-        d3.select("svg").on("zoom", zoom_without_redraw);
-        d3.select("svg").on("mousedown", zoom_without_redraw);
-        zoom_sel_button.classed("active", false);
-        zoom_sel_button.style('box-shadow', "none");
-    } else {
-        if(hand_button.style('box-shadow') != "none"){
-            hand_button.style('box-shadow', "none");
-            zoom.on("zoom", null);
-        }
-        zoom_sel_button.classed("active", true);
-        zoom_sel_button.style('box-shadow', 'inset 2px 2px 1px black');
-        d3.select("svg").on("mousedown", function(){
-            var e = this,
-                origin = d3.mouse(e),
-                rect = d3.select("svg").append("g").append("rect").attr("class", "zoom");
-            d3.select("body").classed("noselect", true);
-            origin[0] = Math.max(0, Math.min(w, origin[0]));
-            origin[1] = Math.max(0, Math.min(h, origin[1]));
-            d3.select("svg")
-                .on("mousemove.zoomRect", function() {
-                    var m = d3.mouse(e);
-                    m[0] = Math.max(0, Math.min(w, m[0]));
-                    m[1] = Math.max(0, Math.min(h, m[1]));
-                    rect.attr("x", Math.min(origin[0], m[0]))
-                    .attr("y", Math.min(origin[1], m[1]))
-                    .attr("width", Math.abs(m[0] - origin[0]))
-                    .attr("height", Math.abs(m[1] - origin[1]));
-                    })
-                .on("mouseup.zoomRect", function() {
-                    d3.select("svg").on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
-                    d3.select("body").classed("noselect", false);
-                    var m = d3.mouse(e);
-                    m[0] = Math.max(0, Math.min(w, m[0]));
-                    m[1] = Math.max(0, Math.min(h, m[1]));
-                    if (m[0] !== origin[0] && m[1] !== origin[1]) {
-                        var b = [origin, m]
-                        var s = Math.abs(.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h)),
-                            t = [-Math.abs((w - s * (b[1][0] + b[0][0])) / 2), -Math.abs((h - s * (b[1][1] + b[0][1])) / 2)];
-                        console.log(s, t);
-                        zoom.scale(s);
-                        zoom.translate(t);
-                    }
-                    rect.remove();
-                    zoom_without_redraw();
-                  }, true);
-            d3.event.stopPropagation();
-        });
+    var last_click_behavior;
 
+    return function(){
+        var hand_button = d3.select('.hand_button'),
+            zoom_sel_button = d3.select('.brush_zoom_button');
+        if(zoom_sel_button.classed("active")){
+            zoom_sel_button.style('box-shadow', "none").classed("active", false);
+            if(last_click_behavior == "zoom"){
+                map.on("mousedown", null);
+                zoom.on("zoom", zoom_without_redraw);
+                map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
+                hand_button.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
+            } else {
+                zoom.on("zoom", null);
+                map.on("mousedown", null)
+                    .on("mousemove.zoomRect", null)
+                    .on("mouseup.zoomRect", null);
+            }
+        } else {
+            if(hand_button.classed("active")){
+                hand_button.style('box-shadow', "none")
+                            .classed("active", false);
+                zoom.on("zoom", null);
+                last_click_behavior = "zoom";
+            } else last_click_behavior = "";
+            zoom_sel_button.classed("active", true);
+            zoom_sel_button.style('box-shadow', 'inset 2px 2px 1px black');
+            map.on("mousedown", function(){
+                var e = this,
+                    origin = d3.mouse(e),
+                    rect = d3.select("svg").append("g").append("rect").attr("class", "zoom_rect");
+                d3.select("body").classed("noselect", true);
+                origin[0] = Math.max(0, Math.min(w, origin[0]));
+                origin[1] = Math.max(0, Math.min(h, origin[1]));
+                map.on("mousemove.zoomRect", function() {
+                        var m = d3.mouse(e);
+                        m[0] = Math.max(0, Math.min(w, m[0]));
+                        m[1] = Math.max(0, Math.min(h, m[1]));
+                        rect.attr("x", Math.min(origin[0], m[0]))
+                        .attr("y", Math.min(origin[1], m[1]))
+                        .attr("width", Math.abs(m[0] - origin[0]))
+                        .attr("height", Math.abs(m[1] - origin[1]));
+                        })
+                   .on("mouseup.zoomRect", function() {
+                        map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
+                        d3.select("body").classed("noselect", false);
+                        var m = d3.mouse(e);
+                        m[0] = Math.max(0, Math.min(w, m[0]));
+                        m[1] = Math.max(0, Math.min(h, m[1]));
+                        if (m[0] !== origin[0] && m[1] !== origin[1]) {
+                            var b = [origin, m]
+                            var s = Math.abs(.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h)),
+                                t = [-Math.abs((w - s * (b[1][0] + b[0][0])) / 2), -Math.abs((h - s * (b[1][1] + b[0][1])) / 2)];
+                            console.log(s, t);
+                            zoom.scale(s);
+                            zoom.translate(t);
+                        }
+                        rect.remove();
+                        zoom_without_redraw();
+                      }, true);
+                d3.event.stopPropagation();
+            });
+    
+        }
     }
 }
-
 
 function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
@@ -646,6 +657,7 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
         } else {
             layers_style[i].cache_url = [d3.select("#user_id").html(), "nuts2_data"].join('_');
             let selection = d3.select("#" + layer_name).selectAll("path");
+            // Todo : re-handle the stroke parameter
             //layers_style[i].stroke = selection.style("stroke");
             //layers_style[i].stroke_opacity = selection.style("stroke-opacity");
             //layers_style[i].stroke_width = d3.select("#" + layer_name).style("stroke-width");
@@ -664,9 +676,9 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
 }
 
 function save_map_template(){
-    json_params = get_map_template();
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
-    var dlAnchorElem = document.getElementById('downloadAnchorElem');
+    var json_params = get_map_template(),
+        dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params),
+        dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "noname_properties.json");
     dlAnchorElem.click();
@@ -819,30 +831,14 @@ function rotate_global(angle){
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
-    d3.selectAll("svg").selectAll("g:not(.legend_feature)")
+    let ztrans = zoom.translate();
+    map.selectAll("g:not(.legend_feature)")
       .transition()
       .duration(10)
       .attr("transform", ["rotate(", angle, ",",  w / 2, ",",  h / 2, "),",
-                          "translate(", zoom.translate()[0], ",", zoom.translate()[1], "),",
+                          "translate(", ztrans[0], ",", ztrans[1], "),",
                           "scale(", zoom.scale(), ")"].join(''));
 };
-
-/*
-function rotate_orthographic(){
-    d3.select("svg").on("mousedown", function(){
-        var svg = d3.select(this).classed("active", true);
-        svg.on("mousemove", function() {
-          var p = d3.mouse(this);
-          proj.rotate([λ(p[0]), φ(p[1])]);
-          d3.selectAll("path").attr("d", path);
-        });
-        svg.on("mouseup", function(){
-            svg.classed("active", false);
-            svg.on("mousemove", null).on("mouseup", null);
-        });
-    });
-};
-*/
 
 function change_projection() {
     var current_proj_name = this.value.split('()')[0].split('.')[2]
@@ -934,15 +930,13 @@ function handle_title_properties(){
         font_family: title.style("font-family")
         };
 
-    // Change the properties on the title are they are changed by the user and rollback to original properties if Cancel is clicked
-    make_confirm_dialog("", "Valid", "Cancel", "Title properties", "mapTitleitleDialogBox", 4*w/6, h-20).then(
-        function(confirmed){
-            if(!confirmed)
-                title.style("font-size", title_props.size)
-                    .style("color", title_props.color)
-                    .style("font-family", title_props.font_family)
-                    .attr("x", title_props.position_x)
-                    .attr("y", title_props.position_y);
+    // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
+    make_confirm_dialog("", "Valid", "Cancel", "Title properties", "mapTitleitleDialogBox", 280, h-20).then(
+        function(confirmed){ if(!confirmed)
+            title.style("font-size", title_props.size)
+                .style("color", title_props.color)
+                .style("font-family", title_props.font_family)
+                .attr({x: title_props.position_x, y: title_props.position_y});
         });
     var box_content = d3.select(".mapTitleitleDialogBox").append("div");
     var available_fonts = [
@@ -958,13 +952,13 @@ function handle_title_properties(){
         ['Verdana', 'Verdana,Geneva,sans-serif']
         ];
     box_content.append("p").html("Font-size :<br>")
-        .insert("input").attr({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]})
+        .insert("input").attr({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style({width: "50px"})
         .on("change", function(){  title.style("font-size", this.value + "px");  });
     box_content.append("p").html("x position (% from the left side) :<br>")
-        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]})
+        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]}).style({width: "50px"})
         .on("change", function(){  title.attr("x", this.value + "%");  });
     box_content.append("p").html("y position (% from the top) :<br>")
-        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]})
+        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]}).style({width: "50px"})
         .on("change", function(){  title.attr("y", this.value + "%");  });
     box_content.append("p").html("Font color :<br>")
         .insert("input").attr({type: "color", value: title_props.color})
@@ -980,7 +974,7 @@ function handle_title_properties(){
 
 function handle_proj_center_button(param){
     current_rotation = proj.rotate();
-    console.log(current_rotation);
+
     if(param[0]){
         proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
         map.selectAll("path").attr("d", path);
@@ -999,59 +993,37 @@ function handle_proj_center_button(param){
 function canvas_mod_size(param){
     if(param[0]){
         w = param[0];
-        console.log([w, h]);
         map.attr("width", w)
-                .attr("height", h)
-                .call(zoom_without_redraw);
-        d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
-    };
-
+            .call(zoom_without_redraw);
+        map_div.style("width", w+"px");
+    }
     if(param[1]){
         h = param[1];
-        console.log([w, h]);
-        map.attr("width", w)
-            .attr("height", h)
+        map.attr("height", h)
             .call(zoom_without_redraw);
-        d3.select("body").select("#map").style("width", w+"px").style("height", h+"px");
+        map_div.style("height", h+"px");
 
         // Change also the position of displayed coordinates when height of map is changed :
         info_coords.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
                       "margin-left":"5px", "color":"black"});
 
         // And change the position of the `source` element displayed in the bottom of the map :
-        source_info.attr("x", h-10);
+        d3.selectAll(".source_block").select("text").attr("y", h-10)
     }
-}
-
-function edit_legend_properties(){
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Legend properties", "legendDialogBox", 4*w/6, h-20).then(
-        function(confirmed){});
-
-    var box_body = d3.select(".legendDialogBox");
-    box_body.insert('p').html('Legend title<br>').insert('input');
-    box_body.insert('p').html('Variable name<br>').insert('input');
-    box_body.insert('p').html('Floating number rounding precision<br>').insert('input');
-
-    return;
 }
 
 function export_compo(){
     // Todo : ask for output format (svg / png) before conversion / ! \
-    var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map", height: h, width: w});
-    targetCanvas = targetCanvas.node();
-
-    var targetSVG = document.querySelector("#svg_map"),
+    var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map_export", height: h, width: w}).node(),
+        targetSVG = document.querySelector("#svg_map"),
         svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
         ctx = targetCanvas.getContext('2d'),
-        img = new Image(),
-        mime_type = "image/png";
+        mime_type = "image/png",
+        img = new Image();
 
     img.src = "data:image/svg+xml;base64," + btoa(svg_xml);
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
-    }
-
-    setTimeout(function(){ 
         var imgUrl = targetCanvas.toDataURL(mime_type),
             dl_link = document.createElement("a");
     
@@ -1062,8 +1034,7 @@ function export_compo(){
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
-    }, 760);
-
+    }
 }
 
 </script>

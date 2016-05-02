@@ -171,7 +171,7 @@ label
     background: rgba(0, 0, 0, 0.33);
 }
 
-.zoom_button,.info_button,.hand_button {
+.zoom_button,.info_button,.hand_button,.brush_zoom_button {
     border-radius: 10%;
     font-size: 18px;
     font-weight: bold;
@@ -312,4 +312,19 @@ label
     border-color: transparent;
     color: transparent;
     background-color: transparent;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.zoom_rect{
+    fill: transparent;
+    stroke: black;
+    stroke-width: 0.7px;
 }

@@ -7,10 +7,7 @@ load <- function(){
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
   require(stats, quietly = TRUE)
-  require(rredis, quietly = TRUE)
   require(cartography)
-  rredis::redisConnect(host = "localhost", port = 6379)
-  rredis::redisSelect(1)
 }
 
 # ToDo : find a better way to prepare an environment or at least
@@ -29,8 +26,6 @@ make_env <- function(lock = FALSE){
   preparedEnv$rnorm <- rnorm
   preparedEnv$runif <- runif
   preparedEnv$runif <- rbinom
-  preparedEnv$redisGet <- rredis::redisGet
-  preparedEnv$redisCmd <- rredis::redisCmd
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }

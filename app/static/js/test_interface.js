@@ -92,13 +92,19 @@ $(document).on('drop', '#section1,#section3', function(e) {
            // Most direct way to add a layer :
            else handle_TopoJSON_files(files);
    }
-   else if(strContains(files[0].name.toLowerCase(), 'geojson') 
-            || strContains(files[0].type.toLowerCase(), 'application/zip')){
+//   else if(strContains(files[0].name.toLowerCase(), 'geojson')){
+//           $(this).css('border', '');
+//           if(target_layer_on_add && targeted_layer_added)
+//               alert("Only one layer can be added by this functionnality");
+//           // Most direct way to add a layer :
+//           else handle_GeoJSON_files(files);
+//    }
+   else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
+            strContains(files[0].type.toLowerCase(), 'application/zip')){
            $(this).css('border', '');
 
            if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
-
            // Send the file to the server for conversion :
            else handle_single_file(files);
    }
@@ -128,7 +134,7 @@ function handle_shapefile(files){
     var ajaxData = new FormData();
     ajaxData.append("action", "submit_form");
     for(let j=0; j<files.length; j++){
-        ajaxData.append('file['+j+']', files[i]);
+        ajaxData.append('file['+j+']', files[j]);
     }
      $.ajax({
         processData: false,
@@ -137,7 +143,7 @@ function handle_shapefile(files){
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
-        success: function(data) {add_layer_fun(data);},
+        success: function(data) {add_layer_topojson(data);},
         error: function(error) {console.log(error); }
         });
 
@@ -149,7 +155,7 @@ function handle_TopoJSON_files(files) {
         name = files[0].name,
         reader = new FileReader(),
         ajaxData = new FormData();
-    ajaxData.append('file[]', file);
+    ajaxData.append('file[]', f);
     $.ajax({
         processData: false,
         contentType: false,
@@ -163,7 +169,7 @@ function handle_TopoJSON_files(files) {
 
     reader.onloadend = function(){
         var text = reader.result;
-        add_layer_fun(text);
+        add_layer_topojson(text);
         }
     reader.readAsText(f);
 };
@@ -205,31 +211,6 @@ function add_csv_geom(param){
     null;
 }
 
-function md5_h(file){
-    var md5_digest = null;
-    if(strContains(file.name, "zip") || strContains(file.name, "shp")){
-        let md5_obj = md5.create(),
-            fileReader = new FileReader();
-        fileReader.onload = function(e){
-            md5_obj.update(e.target.result);
-            };
-        fileReader.readAsArrayBuffer(file);
-        md5_digest = md5_obj.hex();
-        console.log(md5_digest);
-    } else if(strContains(file.name, "json")){
-        var fileReader = new FileReader();
-        fileReader.onload = function(e){
-            let data = e.target.result,
-                md5_obj = md5.create();
-//            console.log(data);
-            md5_obj.update(data);
-            md5_digest = md5_obj.hex();
-//            console.log(md5_digest);
-            };
-        fileReader.readAsText(file);
-    }
-}
-
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {
     var ajaxData = new FormData();
@@ -244,16 +225,14 @@ function handle_single_file(files) {
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
-        success: function(data) {add_layer_fun(data);},
+        success: function(data) {add_layer_topojson(data);},
         error: function(error) {console.log(error);}
     });
 };
 
 // Add the TopoJSON to the 'svg' element :
-
-function add_layer_fun(text, options){
+function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
-//        target_layer_on_add = options ? options.target_layer_on_add : false,
         result_layer_on_add = options ? options.result_layer_on_add : false;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
@@ -261,7 +240,6 @@ function add_layer_fun(text, options){
         return;
     }
 
-//    console.log(parsedJSON);
     var type = "", data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
@@ -391,7 +369,6 @@ function center_map(name){
 };
 
 // Some helpers
-
 function strContains(string1, substring){
     return string1.indexOf(substring) >= 0;
 };
@@ -470,7 +447,7 @@ function add_layout_layers(){
                         else {
                             url = sample_datasets[selec.layout[i]];
                             cache_sample_layer(selec.layout[i]);
-                            d3.text(url, function(txt_layer){ console.log(txt_layer);add_layer_fun(txt_layer); })
+                            d3.text(url, function(txt_layer){ console.log(txt_layer); add_layer_topojson(txt_layer); })
                         }
                     }
                 }
@@ -519,7 +496,7 @@ function add_sample_layer(){
                     url = sample_datasets[selec.target];
                     d3.text(url, function(txt_layer){
                         target_layer_on_add = true;
-                        add_layer_fun(txt_layer);
+                        add_layer_topojson(txt_layer);
                         target_layer_on_add = false;
                     });
                 }
@@ -564,6 +541,7 @@ function cache_sample_layer(name_layer){
     $.ajax({
         processData: false,
         contentType: false,
+        global: false,
         url: '/cache_topojson/sample_data',
         data: formToSend,
         type: 'POST',
@@ -571,3 +549,138 @@ function cache_sample_layer(name_layer){
         });
     }
 
+//function md5_h(file){
+//    var md5_digest = null;
+//    if(strContains(file.name, "zip") || strContains(file.name, "shp")){
+//        let md5_obj = md5.create(),
+//            fileReader = new FileReader();
+//        fileReader.onload = function(e){
+//            md5_obj.update(e.target.result);
+//            };
+//        fileReader.readAsArrayBuffer(file);
+//        md5_digest = md5_obj.hex();
+//        console.log(md5_digest);
+//    } else if(strContains(file.name, "json")){
+//        var fileReader = new FileReader();
+//        fileReader.onload = function(e){
+//            let data = e.target.result,
+//                md5_obj = md5.create();
+////            console.log(data);
+//            md5_obj.update(data);
+//            md5_digest = md5_obj.hex();
+////            console.log(md5_digest);
+//            };
+//        fileReader.readAsText(file);
+//    }
+//}
+
+//function handle_GeoJSON_files(files) {
+//    var f = files[0],
+//        name = files[0].name,
+//        reader = new FileReader();
+//
+//    reader.onloadend = function(){
+//        var text = reader.result;
+//        add_layer_geojson(text, name);
+//        }
+//    reader.readAsText(f);
+//};
+
+//function add_layer_geojson(text, name, options){
+//    var parsedJSON = JSON.parse(text),
+//        result_layer_on_add = options ? options.result_layer_on_add : false;
+//
+//    if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+//        alert(parsedJSON.Error);
+//        return;
+//    }
+////    console.log(parsedJSON)
+//    name = name.substring(0, name.indexOf('.geo'));
+//    var type = "", data_to_load = false;
+//
+//    var random_color1 = Colors.random(),
+//        field_names = parsedJSON.features[0].properties ? Object.getOwnPropertyNames(parsedJSON.features[0].properties) : [];
+//
+//    if(parsedJSON.features[0].geometry.type.indexOf('oint') > -1) type = 'Point';
+//    else if(parsedJSON.features[0].geometry.type.indexOf('tring') > -1) type = 'Line';
+//    else if(parsedJSON.features[0].geometry.type.indexOf('olygon') > -1) type = 'Polygon';
+//
+//
+//    current_layers[name] = {"type": type,
+//                            "n_features": parsedJSON.features.length,
+//                            "stroke-width-const": "0.4px"};
+//
+//    if(target_layer_on_add){
+//        current_layers[name].targeted = true;
+//        user_data[name] = [];
+//        data_to_load = true;
+//    } else if(result_layer_on_add){
+//        result_data[name] = [];
+//        current_layers[name].is_result = true;
+//    }
+//
+//    map.append("g").attr("id", name)
+//          .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
+//          .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+//          .selectAll(".subunit")
+//          .data(parsedJSON.features)
+//          .enter().append("path")
+//          .attr("d", path)
+//          .attr("id", function(d, ix) {
+//                if(data_to_load){
+//                    if(field_names.length > 0){
+//                        if(!d.properties.hasOwnProperty('id') && !d.properties.hasOwnProperty('ID'))
+//                            d.properties["id"] = ix;
+//                        user_data[name].push(d.properties);
+//                    } else {
+//                        user_data[name].push({"id": d.id});
+//                    }
+//                } else if(result_layer_on_add)
+//                    result_data[name].push(d.properties);
+//
+//                return "feature_" + ix;
+//            })
+//          .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
+//                                      else return(random_color1);})
+//          .style("stroke-opacity", .4)
+//          .style("fill", function(){if(type != 'Line') return(random_color1);
+//                                    else return(null);})
+//          .style("fill-opacity", function(){if(type != 'Line') return(0.5);
+//                                            else return(0);})
+//          .attr("height", "100%")
+//          .attr("width", "100%");
+//
+//    d3.select("#layer_menu")
+//          .append('p').html('<a href>- ' + name+"</a>");
+//
+//    let class_name = ["ui-state-default"];
+//    if(target_layer_on_add)
+//        class_name.push("sortable_target");
+//    else if (result_layer_on_add)
+//        class_name.push("sortable_result");
+//    class_name.push(name);
+//    class_name = class_name.join(' ');
+//
+//    layers_listed = layer_list.node()
+//    var li = document.createElement("li");
+//    li.setAttribute("class", class_name);
+//    li.setAttribute("title", [name, " - ", type, " - ", parsedJSON.features.length, " features - ", field_names.length, " fields"].join(''))
+//    li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", name].join('')
+//    layers_listed.insertBefore(li, layers_listed.childNodes[0])
+//    if(target_layer_on_add){
+//        if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+//        d3.select('#input_geom').html("User geometry : <b>"+name+"</b> <i>("+type+")</i>");
+//        targeted_layer_added = true;
+//        if(data_to_load){
+//             var nb_field = Object.getOwnPropertyNames(user_data[name][0]).length
+//             d3.select('#datag').html("Data provided with geometries : <b>Yes - "+nb_field+" field(s)</b>")
+//        }
+//    }
+//    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
+//    if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
+////    if(target_layer_on_add || result_layer_on_add) center_map(name);
+//    binds_layers_buttons();
+//    zoom_without_redraw();
+//    target_layer_on_add = false;
+//    alert('Layer successfully added to the canvas');
+//};

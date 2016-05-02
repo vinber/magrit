@@ -74,8 +74,7 @@ function popup_function(){
         get_menu_option(func).popup_factory, "(\"", layer_name, "\")"
             ].join(''));
 
-    if(modal == undefined || modal.style == undefined)
-        return
+    if(modal == undefined || modal.style == undefined) return;
     else {
         modal.className += ' active';
         modal.style.position = 'fixed'
@@ -89,6 +88,7 @@ function createBox_MTA(layer){
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer.trim(),
         fields = type_col(layer, "number"),
+        nb_features = user_data[layer].length,
         MTA_methods = [["Global Deviation", "global_dev"],
                        ["Medium deviation", "medium_dev"],
                        ["Local deviation", "local_dev"]];
@@ -161,26 +161,32 @@ function createBox_MTA(layer){
         .attr("value", "no")
         .text("Cancel");
 
+    // TODO : check that fields are correctly filled before trying to prepare the query
+    // ... and only enable the "compute" button when they are
     ok_button.on("click", function(){
         let choosen_method = method_selec.node().value,
             table_to_send = new Object(),
             object_to_send = new Object(),
             var1_name = field1_selec.node().value,
-            var2_name = field2_selec.node().value
-        //table_to_send[var1_name] = [for (i of user_data[layer]) i[var1_name]];
-        //table_to_send[var2_name] = [for (i of user_data[layer]) i[var2_name]];
-        table_to_send[var1_name] = user_data[layer].map(i => i[var1_name]);
-        table_to_send[var2_name] = user_data[layer].map(i => i[var2_name]);
+            var2_name = field2_selec.node().value;
+
+//        table_to_send[var1_name] = user_data[layer].map(i => i[var1_name]);
+//        table_to_send[var2_name] = user_data[layer].map(i => i[var2_name]);
+        table_to_send[var1_name] = new Array(nb_features);
+        table_to_send[var2_name] = new Array(nb_features);
+        for(let i=0; i<nb_features; i++){
+            table_to_send[var1_name][i] = +user_data[layer][i][var1_name];
+            table_to_send[var2_name][i] = +user_data[layer][i][var2_name];
+        }
         object_to_send["method"] = choosen_method;
         if(choosen_method == "medium_dev"){
             let key_name = field_key_agg.node().value;
             table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
             object_to_send["key_field_name"] = key_name;
-            //table_to_send[key_name] = [for (i of user_data[layer]) i[key_name]];
         } else if(choosen_method == "global_dev"){
-            object_to_send["ref_value"] = ref_ratio.node().value;
+            object_to_send["ref_value"] = +ref_ratio.node().value;
         } else if(choosen_method == "local_dev"){
-            let val = val_param_global_dev.node().value,
+            let val = +val_param_global_dev.node().value,
                 param_name = param_global_dev.node().value == "dist" ? "dist" : "order";
             object_to_send[param_name] = val;
         }
@@ -190,7 +196,7 @@ function createBox_MTA(layer){
         object_to_send["type_dev"] = type_deviation.node().value;
         
         var formToSend = new FormData();
-        let target_url = choosen_method == "local_dev" ? "/R_compute/MTA_geo" : "/R_compute/MTA_d";
+        let target_url = (choosen_method == "local_dev") ? "/R_compute/MTA_geo" : "/R_compute/MTA_d";
         formToSend.append("json", JSON.stringify(object_to_send))
         $.ajax({
             processData: false,
@@ -201,17 +207,48 @@ function createBox_MTA(layer){
             type: 'POST',
             error: function(error) { console.log(error); },
             success: function(data){
+                current_layers[layer].is_result = true;
                 if(choosen_method != "local_dev"){
                     let result_values = JSON.parse(data);
                     if(result_values.values){
                         let field_name = [choosen_method, "_", var1_name, "_", var2_name].join('');
-                        for(let i=0; i<user_data[layer].length; ++i)
-                            user_data[layer][i][field_name] = result.values[i];
+                        for(let i=0; i<nb_features; ++i)
+                            user_data[layer][i][field_name] = result_values.values[i];
+
+
+                        current_layers[layer].renderer = ["MTA", choosen_method].join('_');
+                        current_layers[layer].rendered_field = field_name
+                        makeButtonLegend(layer);
+                        let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
+                        rendering_params = {
+                            nb_class: opt_nb_class,
+                            type: "Quantiles",
+                            breaks: disc_result[2],
+                            colors: disc_result[3],
+                            colorsByFeature: disc_result[4],
+                            renderer: current_layers[layer].renderer,
+                                };
+                        render_choro(layer, rendering_params);
+                
+                        dv2.insert('p').style("margin", "auto").html("")
+                            .append("button").html("Display and arrange class ...")
+                            .on("click", function(){
+                          display_discretization(layer, field_name, opt_nb_class, "Quantiles")
+                            .then(function(confirmed){ if(confirmed){
+                                    rendering_params = {
+                                            nb_class: confirmed[0], type: confirmed[1],
+                                            breaks: confirmed[2], colors:confirmed[3],
+                                            colorsByFeature: confirmed[4], renderer: ["MTA", choosen_method].join('_')
+                                        };
+                                    render_choro(layer, rendering_params);
+                                } else { return; }  });
+                            });
+
                     }
                 } else {
-                    add_layer_fun(data, {result_layer_on_add: true});
+                    add_layer_topojson(data, {result_layer_on_add: true});
+                    // Todo : render the new layer
                 }
-                // Todo : add the field to the existing layer if its medium / global deviation or take the new layer to add it if its local deviation
             }
         });
         deactivate([bg, nwBox]);
@@ -273,7 +310,6 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
                 .on("click", function(){
                     display_discretization(layer, field2_selec.node().value, opt_nb_class, "Quantiles")
                         .then(function(confirmed){ if(confirmed){
-//                            console.log(confirmed);
                             dialog_content.select('#yes').attr("disabled", null);
                             rendering_params = {
                                 nb_class: confirmed[0], type: confirmed[1],
@@ -475,7 +511,7 @@ function createBox_FlowMap(ref_layer){
             type: 'POST',
             error: function(error) { console.log(error); },
             success: function(data){
-                add_layer_fun(data, {result_layer_on_add: true});
+                add_layer_topojson(data, {result_layer_on_add: true});
                 let new_layer_name = ["Links_", name_join_field].join(""),
                     layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                     fij_field_name = field_fij.node().value,
@@ -583,7 +619,7 @@ function createFuncOptionsBox_Stewart(layer){
                     var class_lim = JSON.parse(data_split[0]),
                         n_layer_name = data_split[1],
                         raw_topojson = data_split[2];
-                    add_layer_fun(raw_topojson, {result_layer_on_add: true});
+                    add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                 }
                 col_pal = getColorBrewerArray(class_lim.min.length, "Purples")
                 var col_map = new Map(),
@@ -1196,6 +1232,7 @@ function createFuncOptionsBox_PropSymbol(layer){
         return;
     }
 
+    let nb_features = user_data[layer].length;
      bg.className = 'overlay';
      nwBox.id = [layer, '_popup'].join('');
      nwBox.className = 'popup';
@@ -1241,13 +1278,13 @@ function createFuncOptionsBox_PropSymbol(layer){
             symbol_color: fill_color.node().value
                 };
 
-        var d_values = [],
-            comp = function(a, b){return b[1]-a[1]},
+        var d_values = new Array(nb_features),
+            comp = function(a, b){ return b[1]-a[1]; },
             ref_layer_selection  = d3.select(g_lyr_name).selectAll("path");
 
-        for(let i = 0, i_len = user_data[layer].length, field = field_selec.node().value; i < i_len; ++i){
+        for(let i = 0, field = field_selec.node().value; i < nb_features; ++i){
             let centr = path.centroid(ref_layer_selection[0][i].__data__);
-            d_values.push([i, +user_data[layer][i][field], centr]);
+            d_values[i] = [i, +user_data[layer][i][field], centr];
         }
 
 //        for(let i=0, i_len = ref_layer_selection[0].length; i < i_len; i++){
@@ -1401,11 +1438,10 @@ function createBox_griddedMap(layer){
                     let data_split = data.split('|||');
                     var n_layer_name = data_split[0],
                         raw_topojson = data_split[1];
-                    add_layer_fun(raw_topojson, {result_layer_on_add: true});
+                    add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                 }
                 
                 let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(result_data[n_layer_name].length)),
-//                    d_values = [for (obj of result_data[n_layer_name]) +obj["densitykm"]];
                     d_values = result_data[n_layer_name].map(obj => +obj["densitykm"]);
 
                 current_layers[n_layer_name].renderer = "Gridded";

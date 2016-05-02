@@ -346,14 +346,6 @@ def handle_app_functionality(request):
 #    print(lastPref)
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
-@asyncio.coroutine
-@aiohttp_jinja2.template('modules/test_interface2.html')
-def handle_app_functionality2(request):
-    session_redis = yield from get_session(request)
-    user_id = get_user_id(session_redis)
-    lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
-    print(lastPref)
-    return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 @asyncio.coroutine
 def links_map_py(posted_data, session_redis, user_id):
@@ -609,7 +601,6 @@ def init(loop, port=9999):
     app.router.add_route('GET', '/index', handler)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
-    app.router.add_route('GET', '/modules2/{function}', handle_app_functionality2)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)
     app.router.add_route('POST', '/R/{function}', R_commande)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)

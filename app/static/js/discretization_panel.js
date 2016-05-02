@@ -219,7 +219,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var x = d3.scale.linear()
-            .domain([0, serie.max()])
+            .domain([serie.min(), serie.max()])
             .range([0, svg_w]);
 
         var data = d3.layout.histogram()
@@ -277,13 +277,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 serie.setClassManually(breaks);
             } else {
                 breaks = eval(val);
-                var ir = serie.getInnerRanges();
+                let ir = serie.getInnerRanges();
                 if(!ir){ nb_class = old_nb_class; return false; }
                 ir = ir.map(function(el){let tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
                 stock_class = [];
-                let _min = undefined,
-                    _max = undefined;
-                for(var j=0, len_j=ir.length; j < len_j; j++){
+                let _min = undefined, _max = undefined;
+                for(let j=0, len_j=ir.length; j < len_j; j++){
                     _min=values.lastIndexOf(ir[j][0]);
                     _max=values.lastIndexOf(ir[j][1]);
                     stock_class.push(_max - _min);
@@ -293,7 +292,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             // In order to avoid class limit falling out the serie limits with Std class :
             breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
             bins = [];
-            for(var i = 0, len = stock_class.length, offset=0; i < len; i++){
+            for(let i = 0, len = stock_class.length, offset=0; i < len; i++){
                 bin = {};
                 bin.val = stock_class[i] + 1;
                 bin.offset = breaks[i];
@@ -361,7 +360,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
               .enter().append("text")
                 .attr("dy", ".75em")
                 .attr("y", function(d){
-                    var tmp = y(d.height)+5;
+                    let tmp = y(d.height)+5;
                     return (tmp < height - 12) ? tmp : height - 12
 //                    if(tmp < height - 12) return tmp;
 //                    else return height - 12
@@ -383,8 +382,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             //user_defined_breaks.html(breaks.join(', '))
            d3.selectAll('#break_vals').remove();
            var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
-            for(var i=0, len = breaks.length; i < len; ++i){
-                var min_allowed = (i === 0) ? serie.min() : breaks[i-1],
+            for(let i=0, len = breaks.length; i < len; ++i){
+                let min_allowed = (i === 0) ? serie.min() : breaks[i-1],
                     max_allowed = (i === len) ? serie.max() : breaks[i+1]
                 f_class.insert("p").insert("input").attr({type: "number", value: breaks[i], min: min_allowed, max: max_allowed})
             }
@@ -404,11 +403,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
 
-    var values = [], color_array = [],
-        nb_values = db_data.length;
+    var color_array = new Array(),
+        nb_values = db_data.length,
+        values = new Array(nb_values); 
 
 
-    for(var i=0; i<nb_values; i++){values.push(Number(db_data[i][field_name]));}
+    for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
 
     var serie = new geostats(values),
         breaks = [], stock_class = [],
