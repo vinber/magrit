@@ -19,7 +19,7 @@ function get_menu_option(func){
             "text_button": "Choose options and create..."
             },
         "prop_symbol_choro":{
-            "title":"Proportional symbols with colored symbols using choropleth methods",
+            "title":"Proportional colored symbols",
             "popup_factory": "createFuncOptionsBox_PropSymbolChoro",
             "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
             "text_button": "Choose options and create..."
@@ -37,7 +37,7 @@ function get_menu_option(func){
             "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
             "text_button": "Choose options and create..."
             },
-        "anamorphose":{
+        "cartogram":{
             "title":"Anamorphose map",
             "popup_factory": "createFuncOptionsBox_Anamorphose",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
@@ -431,7 +431,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, "</div> ", button_type_blank["Point"]," ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0]);
         let colors_breaks = [];
         for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
@@ -687,11 +687,31 @@ function createFuncOptionsBox_Anamorphose(layer_name){
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
     var iterations = dialog_content.append('p').html('N. interations :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', last_params.iterations || 5).attr("min", 1).attr("max", 12).attr("step", 1);
     var algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params');
-    ['Dougenik & al. (1985)', 'Gastner & Newman (2004)', 'Dorling (1996)'].forEach(function(fun_name){func_selec.append("option").text(fun_name).attr("value", fun_name);});
+    [['Dorling (1996)', 'dorling'],
+     ['Dougenik & al. (1985)', 'dougenik'],
+     ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
+        func_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
 
     dialog_content.append('button').attr('id', 'yes').text('Compute')
     dialog_content.append('button').attr('id', 'no').text('Close');
+    qs('#yes').onclick=function(){
+        let algo = func_selec.node().value,
+            field_name = field_selec.node().value,
+            nb_iter = iterations.node().value;
+        if(algo === "gastner"){
+            alert('Not implemented!')
+        } else if (algo === "dougenik"){
+            let cartogram = d3.cartogram().projection(d3.geo.mercator()).value(function(d){ return d[field_name]; }),
+                new_features = cartogram(_target_layer);
+        } else if (algo === "dorling"){
 
+        }
+        deactivate([nwBox, bg]);
+    }
+    qs('#no').onclick=function(){
+        deactivate([nwBox, bg]);
+    }
+    return nwBox;
 }
 
 function createBoxExplore(){
@@ -1369,7 +1389,7 @@ function createFuncOptionsBox_PropSymbol(layer){
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[layer_to_add] = {
             renderer: "PropSymbols", symbol: symbol_type,

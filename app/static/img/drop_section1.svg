@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="drop_section1.svg">
+   sodipodi:docname="drop_section1_bis.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,15 +26,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="109.47621"
+     inkscape:cx="-37.508328"
      inkscape:cy="-91.295175"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1598"
-     inkscape:window-height="819"
+     inkscape:window-width="1920"
+     inkscape:window-height="1004"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      fit-margin-top="1"
      fit-margin-left="1"
@@ -68,19 +68,17 @@
     <path
        inkscape:connector-curvature="0"
        id="path4153"
-       d="m 165.59007,131.58725 0,5.00252 2.49874,0 2.49873,0 -4.99241,4.99242 c -2.74583,2.74583 -4.99697,4.99242 -5.00253,4.99242 -0.006,0 -2.2567,-2.24659 -5.00253,-4.99242 l -4.99241,-4.99242 2.49873,0 2.49874,0 0,-5.00252 0,-5.00253 4.99747,0 4.99747,0 0,5.00253 z"
-       style="fill-opacity:1;stroke:none;stroke-opacity:1;fill:#4d4d4d" />
-    <text
+       d="m 164.70618,120.60095 0,4.11774 2.0568,0 2.05679,0 -4.10942,4.10943 c -2.26019,2.26019 -4.11318,4.10943 -4.11776,4.10943 -0.005,0 -1.85756,-1.84924 -4.11775,-4.10943 l -4.10942,-4.10943 2.05679,0 2.0568,0 0,-4.11774 0,-4.11776 4.11358,0 4.11359,0 0,4.11776 z"
+       style="fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-opacity:1" />
+    <flowRoot
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="106.96101"
-       y="122.51677"
-       id="text4922"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         id="tspan4924"
-         x="106.96101"
-         y="122.51677"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';fill:#4d4d4d">Drop your layer...</tspan></text>
-  </g>
+       id="flowRoot4137"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion4139"><rect
+           id="rect4141"
+           width="432.34528"
+           height="197.9899"
+           x="-93.944183"
+           y="-18.708574" /></flowRegion><flowPara
+         id="flowPara4143" /></flowRoot>  </g>
 </svg>

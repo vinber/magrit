@@ -38,5 +38,10 @@
 	"img" : "empty.png",
 	"desc" : "Example 8 - Prop. symbols and choropleth map",
 	"link" 	:  "modules/prop_symbol_choro"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 9 - Cartogram map",
+	"link" 	:  "modules/cartogram"
 	}
 ]

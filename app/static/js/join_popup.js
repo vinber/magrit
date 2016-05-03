@@ -22,15 +22,15 @@ function handle_join(){
 
 function valid_join_check_display(val, prop){
     if(!val){
-        d3.select("#join_section").style('text-align', 'left')
-            .html(['<img src="/static/img/Red_x.svg" alt="Non-validated join" style="width:18px;height:18px;">',
-                   'Data not joined'].join(''));
-        d3.select('#join_section').append("button").attr("id", "join_button").style('margin-left', '10%').html("Valid the join").on("click", handle_join);
+        d3.select("#img_data_ext").attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"}).style({"width": "28px", "height": "28px"})
+        d3.select("#join_section")
+            .html([prop, 'Data not joined'].join(''));
+        d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
     } else {
-        d3.select("#join_section").style('text-align', 'left')
-            .html(['<img src="/static/img/Light_green_check.svg" alt="Validated join" style="width:22px;height:22px;"><b>',
-                   ' ', prop, ' matches</b>'].join(''))
-        d3.select('#join_section').append("button").attr("id", "join_button").style('margin-left', '10%').html("Valid the join").on("click", handle_join);
+        d3.select("#img_data_ext").attr({"src": "/static/img/qgis_relation_mod.svg", alt: "Validated join"}).style({"width": "28px", "height": "28px"})
+        d3.select("#join_section")
+            .html([' <b>', prop, ' matches</b>'].join(''))
+        d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" - <i> Change join field </i>").on("click", handle_join);
     }
 }
 
@@ -144,14 +144,14 @@ function createJoinBox(layer){
             button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
     button2.push("</select>");
 
-    inner_box = ['<div><p style="font:16px bold;text-align:center">Join option</p><br>',
-                 'Layer name : <p style="font: 14px courrier bold; display:inline;">', layer, '<br>',
+    inner_box = ['<div><p style="font:16px bold;text-align:center">Layer name : </p>',
+                 '<p style="font: 14px courrier bold; display:inline;">', layer, '<br>',
                  '<p><b><i>Select fields on which operate the join :</i></b></p>',
-                 '<p>Geometrie layer fields :', button1.join(''),
-                 '<p>External dataset fields :', button2.join(''),
+                 '<p>Geometrie layer fields :<br>', button1.join(''),
+                 '<p>External dataset fields :<br>', button2.join(''),
                  '<br><br><br><p style="text-align:center;font: bold">Join datasets ?</p></div>'].join('');
 
-    make_confirm_dialog(inner_box, "Valid", "Cancel", "Add a new field", "joinBox")
+    make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
         .then(function(confirmed){
             if(confirmed)
                 valid_join_on(layer, last_choice.field1, last_choice.field2);

@@ -155,7 +155,7 @@ label
 }
 */
 #section1 { 
-    height: 245px;
+    height: 225px;
     margin: 2px;
     font-size: 12px;
     color: black
@@ -187,16 +187,19 @@ label
     border-color:transparent;
 }
 
-.trash_button,.active_button,.zoom_fit_button,.style_button {
-    background: transparent;
-    border-color: transparent;
-    padding: 0px;
-    margin: 0px;
+.trash_button,.zoom_fit_button,.style_button,.style_target_layer {
+    margin-top: 4px;
+    margin-left: 2px;
     float: right;
-
 }
 
-.active_button { margin-top : 4px; }
+.active_button { margin:6px; float:right; }
+
+.ico_type {
+    margin-top: 4px;
+    margin-right: 4px;
+    float: left;
+}
 
 .popup.active {
     background: rgba(220, 220, 220, 0.94) none repeat scroll 0% 0%;
@@ -274,9 +277,9 @@ label
     font-size: 12px;
     line-height: 2em;
     font-weight: bold;
-    background: #adadad;
-    border-radius: 9%;
-    color: white
+    background: #f3f3f3;
+    border-radius: 4%;
+    color: black;
 }
 
 #sortable li.sortable_target {
@@ -285,8 +288,8 @@ label
     padding: 5px;
     font-size: 12px;
     line-height: 2em;
-    background: #99a8c4;
-    color: black;
+    background: #7b98ce;
+    color: white;
     border-radius: 9%;
 }
 
@@ -296,8 +299,8 @@ label
     padding: 5px;
     font-size: 12px;
     line-height: 2em;
-    background: #87ff9a;
-    color: black;
+    background: #7b98ce;
+    color: white;
     border-radius: 9%;
 }
 
@@ -305,6 +308,11 @@ label
     width: 82%;
     margin: auto;
     padding: 6px;
+}
+
+#join_button {
+    border-color: transparent;
+    background-color: transparent;
 }
 
 .button_sys_run {
@@ -326,4 +334,9 @@ label
     fill: transparent;
     stroke: black;
     stroke-width: 0.7px;
+}
+
+.qtip_layer {
+    font-size: 11.5px;
+    font-family: Comic Sans MS,cursive,sans-serif;
 }
