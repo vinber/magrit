@@ -386,7 +386,7 @@ function strArraysContains(ArrString1, ArrSubstrings){
 };
 
 function add_layout_features(){
-    var available_features = ["North arrow", "Scale"],
+    var available_features = ["North arrow", "Scale", "Graticule"],
         selected_ft = undefined;
 
     make_confirm_dialog("", "Valid", "Cancel", "Layout features to be add ...", "sampleLayoutFtDialogBox", 4*w/5, h-10).then(
@@ -398,7 +398,7 @@ function add_layout_features(){
     box_body.append("p").style("color", "grey").html("<i>(multiple features can be selected)</i>");
 
     var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: available_features.length});
-    available_features.forEach(function(ft){layout_layer_selec.append("option").html(ft[0]).attr("value", ft[1]);});
+    available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft[0]).attr("value", ft[1]);});
     layout_ft_selec.on("change", function(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
         selected_ft = selected_asArray.map(elem => elem.value);
@@ -484,7 +484,7 @@ function add_sample_layer(){
                     ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"]];
 
     var tabular_datasets = [["<i>Tabular dataset</i>",""],
-                    ["International Twinning Agreements Betwwen Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
+                    ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
                     ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset']];
 
     var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 700, 295).then(

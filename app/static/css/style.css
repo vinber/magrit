@@ -43,8 +43,8 @@ body {
 #map {
     padding: 0px;
     //margin: auto;
-    left: 400px;
-    margin-top:50px;
+    left: 375px;
+    margin-top: 40px;
     background-color: white;
     position: relative;
     border-style: solid; 
@@ -178,7 +178,6 @@ label
     width: 30px;
     height: 30px;
     text-align: center;
-    margin-top: -40px;
 }
 
 .const_buttons {
