@@ -18,7 +18,7 @@
    *    return Math.random() * 100;
    *  });
    * d3.json("path/to/topology.json", function(topology) {
-   *  var features = cartogram(topology);
+   *  var features = cartogram(topology, topology.objects.OBJECTNAME.geometries);
    *  d3.select("svg").selectAll("path")
    *    .data(features)
    *    .enter()
@@ -46,7 +46,7 @@
             while(i1<len1){
               topology.arcs[i2][i1][0] = (x += topology.arcs[i2][i1][0]);
               topology.arcs[i2][i1][1] = (y += topology.arcs[i2][i1][1]);
-              out1[i1] = projection(tf(topology.arcs[i2][i1]));
+              out1[i1] = projection === null ? tf(topology.arcs[i2][i1]) : projection(tf(topology.arcs[i2][i1]));
               i1++;
             }
             projectedArcs[i2++]=out1;
@@ -201,7 +201,7 @@
         properties: properties.call(null, geom, topology),
         geometry: {
           type: geom.type,
-          coordinates: topojson.object(topology, geom).coordinates
+          coordinates: topojson.feature(topology, geom).geometry.coordinates
         }
       };
     };
@@ -272,12 +272,14 @@
     };
   }
   function cosArctan(dx,dy){
+    if (dy===0) return 0;
     var div = dx/dy;
     return (dy>0)?
       (1/Math.sqrt(1+(div*div))):
       (-1/Math.sqrt(1+(div*div)));
   }
   function sinArctan(dx,dy){
+    if (dy===0) return 1;
     var div = dx/dy;
     return (dy>0)?
       (div/Math.sqrt(1+(div*div))):

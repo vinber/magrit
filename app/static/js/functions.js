@@ -46,7 +46,7 @@ function get_menu_option(func){
         "grid_map":{
             "title":"Gridded map",
             "popup_factory": "createBox_griddedMap",
-            "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
+            "desc":"Render a gridded map on a numerical field of your data",
             "text_button": "Choose options and render..."
             },
         "mta":{
@@ -58,7 +58,7 @@ function get_menu_option(func){
         "flows_map":{
             "title":"Link/FLow map",
             "popup_factory": "createBox_FlowMap",
-            "desc": "Render a map displaying link between features with graduated sizes",
+            "desc": "Render a map displaying links between features with graduated sizes",
             "text_button": "Choose options and render..."
             }
 
@@ -431,7 +431,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
         layers_listed = layer_list.node()
         var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, "</div> ", button_type_blank["Point"]," ", layer_to_add].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank["Point"], "</div> ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0]);
         let colors_breaks = [];
         for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
@@ -445,7 +445,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
             "stroke-width-const": "1px",
             colors: rendering_params['colorsByFeature'],
             colors_breaks: colors_breaks
-            }
+            };
         makeButtonLegend(layer_to_add);
         binds_layers_buttons();
         zoom_without_redraw();
@@ -531,7 +531,7 @@ function createBox_FlowMap(ref_layer){
                     fij_field_name = field_fij.node().value,
                     fij_values = joined_dataset[0].map(obj => obj[fij_field_name]),
                     //fij_values = [for (ob of joined_dataset[0]) ob['fij']],
-                    prop_values = prop_sizer(fij_values, 0.5 / zoom.scale(), 20 / zoom.scale());
+                    prop_values = prop_sizer_links(fij_values, 0.5 / zoom.scale(), 20 / zoom.scale());
                 current_layers[new_layer_name].fixed_stroke = true;
                 current_layers[new_layer_name].renderer = "Links";
                 layer_to_render.style('fill-opacity', 0)
@@ -664,7 +664,7 @@ function createFuncOptionsBox_Stewart(layer){
      return nwBox;
 }
 
-function createFuncOptionsBox_Anamorphose(layer_name){
+function createFuncOptionsBox_Anamorphose(layer){
     if(current_layers[layer].type !== "Polygon"){
         alert("Anamorphose can currently only be computed on polygons");
         return;
@@ -672,7 +672,8 @@ function createFuncOptionsBox_Anamorphose(layer_name){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer.trim(),
-        fields = type_col(layer, "number");
+        fields = type_col(layer, "number"),
+        random_color = Colors.random();
 
      bg.className = 'overlay';
      nwBox.id = [layer, '_anamorphose_popup'].join('');
@@ -681,7 +682,7 @@ function createFuncOptionsBox_Anamorphose(layer_name){
      (document.body || document.documentElement).appendChild(nwBox);
      (document.body || document.documentElement).appendChild(bg);
 
-    var dialog_content = d3.select(["#", layer, '_popup'].join(''));
+    var dialog_content = d3.select(["#", layer, '_anamorphose_popup'].join(''));
     dialog_content.append('h3').html('Anamorphose transformation');
     var field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params');
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
@@ -690,27 +691,46 @@ function createFuncOptionsBox_Anamorphose(layer_name){
     [['Dorling (1996)', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
      ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
-        func_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
+        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
 
-    dialog_content.append('button').attr('id', 'yes').text('Compute')
-    dialog_content.append('button').attr('id', 'no').text('Close');
-    qs('#yes').onclick=function(){
-        let algo = func_selec.node().value,
+    let ok_button = dialog_content.append('button').attr('id', 'yes').text('Compute'),
+        cancel_button = dialog_content.append('button').attr('id', 'no').text('Close').on("click", function(){  deactivate([nwBox, bg]);  });
+    ok_button.on("click", function(){
+        let algo = algo_selec.node().value,
             field_name = field_selec.node().value,
             nb_iter = iterations.node().value;
         if(algo === "gastner"){
-            alert('Not implemented!')
+            alert('Not implemented (yet!)')
         } else if (algo === "dougenik"){
-            let cartogram = d3.cartogram().projection(d3.geo.mercator()).value(function(d){ return d[field_name]; }),
-                new_features = cartogram(_target_layer);
-        } else if (algo === "dorling"){
+            let carto = d3.cartogram().projection(d3.geo.mercator()).value(function(d, i){ return +user_data[layer][i][field_name]; }),
+                geoms = _target_layer.objects[layer].geometries,
+                new_features = carto(_target_layer, geoms).features,
+                new_layer_name = layer + "_Dougenik_Cartogram";
+            console.log(geoms);
+            console.log(new_features);
+            map.append("g")
+                .attr("id", new_layer_name)
+                .attr("class", "result_layer layer")
+                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                .selectAll(".subunit")
+                .data(new_features)
+                .enter().append("path")
+                    .attr("d", path)
+                    .attr("id", function(d, ix) { return "feature_" + ix; })
+                    .style("stroke", "black")
+                    .style("stroke-opacity", .4)
+                    .style("fill", random_color)
+                    .style("fill-opacity", 0.5)
+                    .attr("height", "100%")
+                    .attr("width", "100%");
 
+
+        } else if (algo === "dorling"){
+            alert('Not implemented (yet!)')
         }
         deactivate([nwBox, bg]);
-    }
-    qs('#no').onclick=function(){
-        deactivate([nwBox, bg]);
-    }
+    });
+
     return nwBox;
 }
 
@@ -1538,29 +1558,42 @@ function render_choro(layer, rendering_params){
 
 
 function prop_sizer(arr, min_size, max_size){
-    let min_values = Math.min.apply(0, arr),
-        max_values = Math.max.apply(0, arr),
+    let min_values = Math.sqrt(Math.min.apply(0, arr)),
+        max_values = Math.sqrt(Math.max.apply(0, arr)),
         dif_val = max_values - min_values,
-        dif_size = max_size - min_size;
-
-    return arr.map(i => (i/dif_val * dif_size) + min_size - dif_size/dif_val)
+        dif_size = max_size - min_size,
+        len_arr = arr.length,
+        res = new Array(len_arr);
+    // Lets use "for" loop with pre-sized array as "map" and "forEach" seems 
+    // to be sometimes a bootleneck in some browser
+    for(let i=0; i<len_arr; ++i)
+        res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
+    return res;
+}
+//    return arr.map(i => (i/dif_val * dif_size) + min_size - dif_size/dif_val)
 //    return [for (i of arr) 
 //          ((i/dif_val * dif_size) + min_size - dif_size/dif_val)
 //        ];
-}
+//}
 
 function prop_sizer2(arr, min_size, max_size){
     let arr_tmp = arr.map(i => i[1]),
-        min_values = Math.min.apply(0, arr_tmp),
-        max_values = Math.max.apply(0, arr_tmp),
+        min_values = Math.sqrt(Math.min.apply(0, arr_tmp)),
+        max_values = Math.sqrt(Math.max.apply(0, arr_tmp)),
         dif_val = max_values - min_values,
-        dif_size = max_size - min_size;
+        dif_size = max_size - min_size,
+        arr_len = arr.length,
+        res = new Array(arr_len);
 
-    return arr.map(i => [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]])
+    for(let i=0; i<arr_len; i++)
+        res[i] = [arr[i][0], (Math.sqrt(arr[i][1])/dif_val * dif_size) + min_size - dif_size/dif_val, arr[i][2]];
+    return res;
+}
+//    return arr.map(i => [i[0], (Math.sqrt(i[1])/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]])
 //    return [for (i of arr) 
 //          [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]]
 //        ];
-}
+//}
 
 var type_col = function(layer_name, target){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},
@@ -1609,17 +1642,17 @@ function add_table_field(layer){
         if(this.value.indexOf(" ") > -1 || this.value.indexOf(".") > 1 || this.value.indexOf("/") > 1){
             this.value = ""
             alert("Unauthorized character");
+        } else {
+            chooses_handler.new_name = this.value;
         }
     };
 
-    var refresh_type_content = function(){
-            field1.node().remove();
-            operator.node().remove();
-            field2.node().remove();
-            field1 = box_content.append("select");
-            operator = box_content.append("select").on("change", refresh_subtype_content);
-            field2 = box_content.append("select");
-            if(this.value == "math_compute"){
+    var refresh_type_content = function(type){
+            field1.node().remove(); operator.node().remove(); field2.node().remove();
+            field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; });
+            operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content();});
+            field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });
+            if(type == "math_compute"){
                 math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
                 for(let k in fields_type){
                     if(fields_type[k] == "number"){
@@ -1628,7 +1661,8 @@ function add_table_field(layer){
                     }
                 }
                 d3.select("#val_opt").attr("disabled", true);
-                d3.select("#txt_opt").text("")
+                d3.select("#txt_opt").text("");
+                chooses_handler.operator = math_operation[0];
             } else {
                 string_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
                 for(let k in fields_type){
@@ -1639,11 +1673,12 @@ function add_table_field(layer){
                 }
                 d3.select("#val_opt").attr("disabled", null);
                 d3.select("#txt_opt").html("Character to join the two fields (can stay blank) :<br>");
+                chooses_handler.operator = string_operation[0];
             }
     };
 
-    var refresh_subtype_content = function(){
-        if(type_content.node().value != "string_field"){
+    var refresh_subtype_content = function(subtype){
+        if(subtype != "string_field"){
             d3.select("#val_opt").attr("disabled", true);
             d3.select("#txt_opt").text("")
         } else {
@@ -1657,17 +1692,20 @@ function add_table_field(layer){
         }
     };
 
+    var chooses_handler = {
+        field1: undefined, field2: undefined,
+        operator: undefined, type_operation: undefined,
+        opt_val: undefined, new_name: undefined
+        }
+
     var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field", "addFieldBox", w - (w/4), h - (h/6))
                 .then(function(valid){
                     if(valid){
-                        let fi1 = field1.node().value,
-                            fi2 = field2.node().value,
-                            operation = operator.node().value,
-                            type_operation = type_content.node().value,
-                            new_name_field = new_name.node().value,
-                            opt_val = input_opt.node().value;
+                        console.log(chooses_handler)
+                        let fi1 = chooses_handler.field1, fi2 = chooses_handler.field2,
+                            new_name_field = chooses_handler.new_name, operation = chooses_handler.operator;
 
-                        if(type_operation === "math_compute"){
+                        if(chooses_handler.type_operation === "math_compute"){
                             for(let i=0; i<user_data[layer].length; i++){
                                 let cmd = [+user_data[layer][i][fi1], operation, +user_data[layer][i][fi2]].join(' '),
                                     result_val = eval(cmd);
@@ -1676,7 +1714,7 @@ function add_table_field(layer){
                                 user_data[layer][i][new_name_field] = +result_val;
                             }
                         } else {
-                            console.log()
+                            let opt_val = chooses_handler.opt_val;
                             if(operation == "Truncate"){
                                 for(let i=0; i < user_data[layer].length; i++)
                                     user_data[layer][i][new_name_field] = user_data[layer][i][fi1].substring(0, opt_val);
@@ -1692,23 +1730,23 @@ function add_table_field(layer){
 
     var current_fields = Object.getOwnPropertyNames(user_data[layer]),
         box_content = d3.select(".addFieldBox").append("div"),
-        new_name = box_content.append("p").html("New field name :<br>").insert("input").on("change", check_name),
-        type_content = box_content.append("p").html("New field content :<br>")
-                                    .insert("select").on("change", refresh_type_content);
+        div1 = box_content.append("div").attr("id", "field_div1"),
+        div2 = box_content.append("div").attr("id", "field_div2"),
+        new_name = div1.append("p").html("New field name :<br>").insert("input").on("change", check_name),
+        type_content = div1.append("p").html("New field content :<br>")
+                            .insert("select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);});
     [["Computation based on two existing numerical fields", "math_compute"],
      ["Modification on a character field", "string_field"]
     ].forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
 
-    var field1 = box_content.append("select"),
-        operator = box_content.append("select").on("change", refresh_subtype_content),
-        field2 = box_content.append("select");
+    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
+        operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content(this.value);}),
+        field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });;
 
-    box_content.append("p").attr("id", "txt_opt").text("")
-    box_content.append("input").attr("id", "val_opt").attr("disabled", true);
+    div2.append("p").attr("id", "txt_opt").text("");
+    div2.append("input").attr("id", "val_opt").attr("disabled", true).on("change", function(){ chooses_handler.opt_val = this.value;});
 
-    var fields_type = type_col(layer);
-
-    var math_operation = ["+", "-", "*", "/"];
-    var string_operation = ["Concatenate", "Truncate"];
-
+    var fields_type = type_col(layer),
+        math_operation = ["+", "-", "*", "/"],
+        string_operation = ["Concatenate", "Truncate"];
 }

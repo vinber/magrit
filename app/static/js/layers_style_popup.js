@@ -1,8 +1,9 @@
 function handle_click_layer(layer_name){
-     var layer_name_split = layer_name.split(' - ');
+    var layer_name_split = layer_name.split(' - ');
 
-     if(layer_name_split.length == 2) layer_name = layer_name_split[1].trim();
-     else if(layer_name_split.length > 2) console.log('Oups..');
+    if(layer_name_split.length == 2) layer_name = layer_name_split[1].trim();
+    else if(layer_name_split.length > 2) console.log('Oups..');
+    console.log(layer_name)
 
     if(current_layers[layer_name].renderer && strContains(current_layers[layer_name].renderer, "PropSymbol"))
         var modal = createStyleBox_ProbSymbol(layer_name);

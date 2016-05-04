@@ -288,7 +288,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     stock_class.push(_max - _min);
                 }
             }
-    
+
             // In order to avoid class limit falling out the serie limits with Std class :
             breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
             bins = [];
@@ -665,7 +665,7 @@ function getBreaks_userDefined(serie, breaks_list){
     console.log(breaks_list);
     var break_values = breaks_list.split(' - '),
         tmp = 0,
-        j = undefined,
+        j = 0,
         len_serie = serie.length,
         stock_class = [];
 
