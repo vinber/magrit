@@ -255,9 +255,8 @@ function add_layer_topojson(text, options){
         }
     });
 
-    if(target_layer_on_add){
-        _target_layer = parsedJSON;
-    }
+    if(target_layer_on_add && menu_option.add_options && menu_option.add_options == "keep_file")
+        _target_layer_file = parsedJSON;
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
@@ -316,8 +315,8 @@ function add_layer_topojson(text, options){
               .attr("height", "100%")
               .attr("width", "100%");
 
-        d3.select("#layer_menu")
-              .append('p').html('<a href>- ' + lyr_name+"</a>");
+//        d3.select("#layer_menu")
+//              .append('p').html('<a href>- ' + lyr_name+"</a>");
 
         let class_name = ["ui-state-default"];
         if(target_layer_on_add)
@@ -341,7 +340,7 @@ function add_layer_topojson(text, options){
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
 

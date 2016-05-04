@@ -5,7 +5,6 @@ TODO list:
 - /!\ reload preferences from the exported json
 - /!\ fix the zoom by rectangular zone
 - add the simplification options ?
-- improved sample dataset box (make three discrete buttons to avoid current weird behavior when trying to add target layer + tabular + layout layer at the same time)
 - allow to display label on rendered features ?
 - /!\ Allow the user to choose layout elements (cardinal arrow, scale, etc.)
 - Fix confusion between layer pointed by the information cursor when layer order is modified while pointing for informations
@@ -14,7 +13,5 @@ TODO list:
 - Improve the "user defined" break values in the discretization panel
 - Extend selenium tests
 - Allow the user to display label of features on its map (based, or not on some criteria)
-- Move the graticule from layout layers to layout features (with north arrow etc)
 - Set the scale according to the targeted layer once added (instead of zooming on it)
-- Rewrite the sizer function
 - Fix the "rounding precision" input in the legendEditBox

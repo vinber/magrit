@@ -15,7 +15,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 #   
   if(is.null(mask_json)){
     mask_layer <- NULL
-  } else{
+  } else {
     mask_layer <- geojsonio::geojson_read(mask_json, what='sp', stringsAsFactors = FALSE)
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
@@ -73,7 +73,7 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
-  if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
+  if(raster::isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
 
   col_names <- colnames(spdf@data)
 
@@ -92,7 +92,8 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(class(spdf@data[, var_name]) == "character"){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
-  file.remove(layer_json_path)
+  print(layer_json_path)
+  # file.remove(layer_json_path)
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   

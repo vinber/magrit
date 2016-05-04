@@ -41,7 +41,8 @@ function get_menu_option(func){
             "title":"Anamorphose map",
             "popup_factory": "createFuncOptionsBox_Anamorphose",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
-            "text_button": "Choose algo, options and render..."
+            "text_button": "Choose algo, options and render...",
+            "add_options": "keep_file"
             },
         "grid_map":{
             "title":"Gridded map",
@@ -228,41 +229,40 @@ function createBox_MTA(layer){
             error: function(error) { console.log(error); },
             success: function(data){
                 current_layers[layer].is_result = true;
-                let result_values = JSON.parse(data);
+                let result_values = JSON.parse(data),
+                    type_dev = (type_deviation.node().value == "abs") ? "AbsoluteDeviation" : "RelativeDeviation";
                 if(result_values.values){
-                    let field_name = [choosen_method, "_", var1_name, "_", var2_name].join('');
+                    let field_name = [choosen_method, type_dev, var1_name, var2_name].join('_');
                     for(let i=0; i<nb_features; ++i)
                         user_data[layer][i][field_name] = result_values.values[i];
-
-                    current_layers[layer].renderer = ["MTA", choosen_method].join('_');
-                    current_layers[layer].rendered_field = field_name
-                    makeButtonLegend(layer);
-                    let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
-                    rendering_params = {
-                        nb_class: opt_nb_class,
-                        type: "Quantiles",
-                        breaks: disc_result[2],
-                        colors: disc_result[3],
-                        colorsByFeature: disc_result[4],
-                        renderer:  ["MTA", choosen_method].join('_'),
-                        rendered_field: field_name
+                    if(type_dev == "RelativeDeviation"){
+                        current_layers[layer].renderer = ["MTA", type_dev].join('_');
+                        current_layers[layer].rendered_field = field_name
+                        makeButtonLegend(layer);
+                        let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
+                        let rendering_params = {
+                            nb_class: opt_nb_class,
+                            type: "Quantiles",
+                            breaks: disc_result[2],
+                            colors: disc_result[3],
+                            colorsByFeature: disc_result[4],
+                            renderer:  ["MTA", choosen_method].join('_'),
+                            rendered_field: field_name
+                                };
+                        render_choro(layer, rendering_params);
+                    } else if (type_dev == "AbsoluteDeviation"){
+                        let rendering_params = {
+                            new_name: field_name,
+                            field: field_name,
+                            nb_features: nb_features,
+                            ref_layer_name: layer,
+                            symbol: "circle",
+                            max_size: 35,
+                            ref_size: 0.5,
+                            fill_color: Colors.random()
                             };
-                    render_choro(layer, rendering_params);
-            
-                    dv2.insert('p').style("margin", "auto").html("")
-                        .append("button").html("Display and arrange class ...")
-                        .on("click", function(){
-                      display_discretization(layer, field_name, opt_nb_class, "Quantiles")
-                        .then(function(confirmed){ if(confirmed){
-                                rendering_params = {
-                                        nb_class: confirmed[0], type: confirmed[1],
-                                        breaks: confirmed[2], colors:confirmed[3],
-                                        colorsByFeature: confirmed[4], renderer: ["MTA", choosen_method].join('_')
-                                    };
-                                render_choro(layer, rendering_params);
-                            } else { return; }  });
-                        });
-
+                        let ret_val = make_prop_symbols(rendering_params);
+                    }
                 }
             }
         });
@@ -280,7 +280,8 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer.trim(),
-        fields = type_col(layer, "number");
+        fields = type_col(layer, "number"),
+        nb_features = user_data[layer].length;
 
     if(fields.length < 2){
         alert("The targeted layer doesn't seems to contain enough of numerical fields (at least two are required)");
@@ -318,7 +319,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
     var field2_selec = dialog_content.append('p').html('Second field (symbol color):').insert('select').attr('class', 'params');
     fields.forEach(function(field){ field2_selec.append("option").text(field).attr("value", field); });
 
-    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_features));
 
     dialog_content.insert('p').style("margin", "auto").html("")
                 .append("button").html("Choose your discretization ...")
@@ -357,94 +358,35 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
             field_color: field2_selec.node().value
                 };
 
-        var d_values = [],
-            comp = function(a, b){return b[1]-a[1]},
-            ref_layer_selection  = d3.select(g_lyr_name).selectAll("path");
+        let rd_params = new Object();
+        rd_params.field = field1_selec.node().value;
+        rd_params.new_name = layer + "_PropSymbolsChoro";
+        rd_params.nb_features = nb_features;
+        rd_params.ref_layer_name = layer;
+        rd_params.symbol = symb_selec.node().value;
+        rd_params.max_size = +max_size.node().value;
+        rd_params.ref_size = +ref_size.node().value;
+        rd_params.fill_color = rendering_params['colorsByFeature'];
 
-        for(let i = 0, i_len = user_data[layer].length, field = field1_selec.node().value; i < i_len; ++i){
-            let centr = path.centroid(ref_layer_selection[0][i].__data__);
-            d_values.push([i, +user_data[layer][i][field], centr]);
-        }
+        let id_map = make_prop_symbols(rd_params);
 
-        d_values = prop_sizer2(d_values, Number(ref_size.node().value / zoom.scale()), Number(max_size.node().value / zoom.scale()));
+        let colors_breaks = [],
+            layer_to_add = rd_params.new_name;
 
-        for(let i = 0, i_len = d_values.length; i < i_len; ++i)
-            d_values[i].push(rendering_params['colorsByFeature'][i])
-
-        d_values.sort(comp);
-        console.log(d_values);
-        /*
-            Values have been sorted (descendant order) to have larger symbols
-            displayed under the smaller, so now d_values is an array like :
-            [
-             [id_ref_feature, value, [x_centroid, y_centroid], color],
-             [id_ref_feature, value, [x_centroid, y_centroid], color],
-             [id_ref_feature, value, [x_centroid, y_centroid], color],
-             [...]
-            ]
-        */
-
-        var layer_to_add = layer + "_PropSymbolsChoro",
-            symbol_type = symb_selec.node().value;
-
-        if(current_layers[layer_to_add]){
-            remove_layer_cleanup(layer_to_add);
-            d3.selectAll('#' + layer_to_add).remove();
-        }
-
-        symbol_layer = map.append("g").attr("id", layer_to_add)
-                              .attr("class", "result_layer layer");
-
-        if(symbol_type === "circle"){
-            for(let i = 0; i < d_values.length; i++){
-                let params = d_values[i];
-                symbol_layer.append('circle')
-                    .attr('cx', params[2][0])
-                    .attr("cy", params[2][1])
-                    .attr("r", ref_size.node().value / zoom.scale() + params[1])
-                    .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
-                    .style("fill", params[3])
-                    .style("stroke", "black")
-                    .style("stroke-width", 1 / zoom.scale());
-            }
-        } else if(symbol_type === "rect"){
-            for(let i = 0; i < d_values.length; i++){
-                let params = d_values[i],
-                    size = ref_size.node().value / zoom.scale() + params[1];
-
-                symbol_layer.append('rect')
-                    .attr('x', params[2][0] - size/2)
-                    .attr("y", params[2][1] - size/2)
-                    .attr("height", size)
-                    .attr("width", size)
-                    .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
-                    .style("fill", params[3])
-                    .style("stroke", "black")
-                    .style("stroke-width", 1 / zoom.scale());
-            };
-        }
-
-        d3.select("#layer_menu")
-              .append('p').html('<a href>- ' + layer_to_add+"</a>");
-
-        class_name = "ui-state-default sortable_result " + layer_to_add
-        layers_listed = layer_list.node()
-        var li = document.createElement("li");
-        li.setAttribute("class", class_name);
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank["Point"], "</div> ", layer_to_add].join('')
-        layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-        let colors_breaks = [];
-        for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
+        for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
+            colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]]);
 
         current_layers[layer_to_add] = {
             renderer: "PropSymbolsChoro",
-            symbol: symbol_type,
+            id_size_map: id_map,
+            symbol: rd_params.symbol,
             rendered_field: field1_selec.node().value,
             rendered_field2: field2_selec.node().value,
             size: [ref_size.node().value, max_size.node().value],
             "stroke-width-const": "1px",
             colors: rendering_params['colorsByFeature'],
-            colors_breaks: colors_breaks
+            colors_breaks: colors_breaks,
+            is_result: true
             };
         makeButtonLegend(layer_to_add);
         binds_layers_buttons();
@@ -703,8 +645,8 @@ function createFuncOptionsBox_Anamorphose(layer){
             alert('Not implemented (yet!)')
         } else if (algo === "dougenik"){
             let carto = d3.cartogram().projection(d3.geo.mercator()).value(function(d, i){ return +user_data[layer][i][field_name]; }),
-                geoms = _target_layer.objects[layer].geometries,
-                new_features = carto(_target_layer, geoms).features,
+                geoms = _target_layer_file.objects[layer].geometries,
+                new_features = carto(_target_layer_file, geoms).features,
                 new_layer_name = layer + "_Dougenik_Cartogram";
             console.log(geoms);
             console.log(new_features);
@@ -734,84 +676,95 @@ function createFuncOptionsBox_Anamorphose(layer){
     return nwBox;
 }
 
-function createBoxExplore(){
-    var display_table = function(prop){
+var createBoxExplore = {
+    display_table: function(prop){
+        let self = this,
+            add_field = d3.select("#add_field_button");
         if(prop.type === "ext_dataset"){
             var data_table = joined_dataset[0],
                 the_name = dataset_name,
                 message = "Switch to reference layer table...";
                 add_field.html("").on('click', null);
         } else if(prop.type === "layer"){
-            var data_table = user_data[layer_name],
-                the_name = layer_name,
+            var data_table = user_data[this.layer_name],
+                the_name = this.layer_name,
                 message = "Switch to external dataset table...";
-                add_field.html("Add a new field to your layer...").on('click', function(){  add_table_field(layer_name) });
+                add_field.html("Add a new field to your layer...").on('click', function(){  add_table_field(the_name, self) });
         }
-        nb_features = data_table.length;
-        columns_names = Object.getOwnPropertyNames(data_table[0]);
-        columns_headers = [];
-        for(var i=0, len = columns_names.length; i<len; ++i)
-            columns_headers.push({data: columns_names[i], title: columns_names[i]})
+        this.nb_features = data_table.length;
+        this.columns_names = Object.getOwnPropertyNames(data_table[0]);
+        this.columns_headers = [];
+        for(var i=0, col=this.columns_names, len = col.length; i<len; ++i)
+            this.columns_headers.push({data: col[i], title: col[i]})
         txt_intro = ["<b>", the_name, "</b><br>",
-                     nb_features, " features - ",
-                     columns_names.length, " fields"];
+                     this.nb_features, " features - ",
+                     this.columns_names.length, " fields"];
         d3.selectAll('#table_intro').remove()
-        box_table.append("p").attr('id', 'table_intro').style("text-align", "center").html(txt_intro.join(''))
+        this.box_table.append("p").attr('id', 'table_intro').style("text-align", "center").html(txt_intro.join(''))
         d3.selectAll('#myTable').remove()
         d3.selectAll('#myTable_wrapper').remove();
-        box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
+        this.box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
         $('#myTable').DataTable({
             data: data_table,
-            columns: columns_headers
+            columns: this.columns_headers
         });
-        if(switch_button) d3.select("#switch_button").node().innerHTML = message;
-    };
+        if(d3.select("#switch_button").node())
+            d3.select("#switch_button").node().innerHTML = message;
+    },
 
-    var layer_name = Object.getOwnPropertyNames(user_data)[0],
-        columns_headers = [],
-        nb_features = undefined,
-        columns_names = undefined,
-        current_table = undefined,
-        box_table = d3.select("body").append("div")
-                        .attr({id: "browse_data_box", title: "Explore dataset"})
-                        .style("font-size", "0.8em");
+    create: function(){
+        this.layer_name = Object.getOwnPropertyNames(user_data)[0];
+        this.columns_headers = [];
+        this.nb_features = undefined;
+        this.columns_names = undefined;
+        this.current_table = undefined,
+        this.box_table = d3.select("body").append("div")
+                            .attr({id: "browse_data_box", title: "Explore dataset"})
+                            .style("font-size", "0.8em");
+        let the_name = this.layer_name,
+            self = this;
+        if(!the_name){
+            this.current_table = "ext_dataset";
+        } else {
+            this.current_table = "layer";
+            this.box_table.append('p')
+                     .attr("id", "add_field_button")
+                     .html("Add a new field to your layer...")
+                     .on('click', function(){  add_table_field(the_name, self)  });
+        }
 
-    if(!layer_name) current_table = "ext_dataset";
-    else current_table = "layer";
-
-    if(dataset_name != undefined && layer_name != undefined){
-        var switch_button = box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
-                let type = current_table === "layer" ? "ext_dataset" : "layer";
-                current_table = type;
-                display_table({"type": type});
-                });
-    } else { var switch_button = undefined; }
-    if(layer_name != undefined){
-        var add_field = box_table.append('p').attr("id", "add_field_button").html("Add a new field to your layer...").on('click', function(){  add_table_field(layer_name) });
+        if(dataset_name != undefined && the_name != undefined)
+            this.box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
+                    let type = (current_table === "layer") ? "ext_dataset" : "layer";
+                    this.current_table = type;
+                    this.display_table({"type": type});
+                    });
+       
+        this.display_table({"type": this.current_table});
+    
+        var deferred = Q.defer();
+        $("#browse_data_box").dialog({
+            modal:true,
+            resizable: true,
+            width: Math.round(window.innerWidth * 0.8),
+            height:  Math.round(window.innerHeight * 0.85),
+            buttons:[{
+                    text: "Confirm",
+                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+                        },
+                   {
+                    text: "Cancel",
+                    click: function(){$(this).dialog("close");$(this).remove();}
+                   }],
+            close: function(event, ui){
+                    $(this).dialog("destroy").remove();
+                    if(deferred.promise.isPending()) deferred.resolve(false);
+                }
+        });
+        return deferred.promise;
     }
-    display_table({"type": current_table});
+};
 
-    var deferred = Q.defer();
-    $("#browse_data_box").dialog({
-        modal:true,
-        resizable: true,
-        width: Math.round(window.innerWidth * 0.8),
-        height:  Math.round(window.innerHeight * 0.85),
-        buttons:[{
-                text: "Confirm",
-                click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-                    },
-               {
-                text: "Cancel",
-                click: function(){$(this).dialog("close");$(this).remove();}
-               }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()) deferred.resolve(false);
-            }
-    });
-    return deferred.promise;
-}
 
 function fillMenu_Choropleth(layer){
     layer = layer.trim();
@@ -961,8 +914,8 @@ function createLegend(layer, title, subtitle){
     if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
         let field2 = current_layers[layer].rendered_field2,
             field1 = current_layers[layer].rendered_field;
-        createLegend_choro(layer, field1, "Legend", subtitle);
-        createLegend_symbol(layer, field2);
+        createLegend_choro(layer, field2, "Legend", subtitle);
+        createLegend_symbol(layer, field1);
     }
     else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1){
         let field = current_layers[layer].rendered_field;
@@ -1168,6 +1121,15 @@ function make_legend_edit_window(legend_id, layer_name){
     return center(modal);
 };
 
+let range = function(start = 0, stop, step = 1) {
+  let cur = (stop === undefined) ? 0 : start;
+  let max = (stop === undefined) ? start : stop;
+  let res = new Array();
+  for(let i = cur; step < 0 ? i > max : i < max; i += step)
+    res.push(i);
+  return res;
+}
+
 function createlegendEditBox(legend_id, layer_name){
     let nwBox = document.createElement('div'),
         bg = document.createElement('div'),
@@ -1201,7 +1163,7 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.node().textContent = this.value
             });
 
-
+    // float precision for the chorpleth legend :
     let first_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][0].__data__[0].split(" - ")[0] : String(legend_boxes[0][0].__data__.value),
         fourth_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][1].__data__[0].split(" - ")[1] : String(legend_boxes[0][4].__data__.value),
         current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
@@ -1221,13 +1183,13 @@ function createlegendEditBox(legend_id, layer_name){
                         .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
                         .style("display", "inline")
                         .on('change', function(){
-                            let nb_float = +this.value,
-                                dec_mult = +["1", Array(nb_float).map(i => "0").join('')].join('');
+                            let nb_float = this.value,
+                                dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
 //                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
-                            d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
                                 let values = breaks[i][0].split(' - ');
-                                legend_boxes[0][i].innerHTML = [Math.round(values[0] * dec_mult) / dec_mult, " - ", Math.round(values[1] * dec_mult) / dec_mult].join('');
+                                legend_boxes[0][i].innerHTML = [Math.round(+values[0] * dec_mult) / dec_mult, " - ", Math.round(+values[1] * dec_mult) / dec_mult].join('');
                             }
                         });
         else if(legend_id === "#legend_root2")
@@ -1236,11 +1198,11 @@ function createlegendEditBox(legend_id, layer_name){
                         .style("display", "inline")
                         .on('change', function(){
                             let nb_float = +this.value,
-                                dec_mult = +["1", Array(nb_float).map(i => "0").join('')].join('');
-                            d3.select(legend_id).select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                                dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
+                            d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0; i < legend_boxes[0].length; i++){
                                 let value = legend_boxes[0][i].__data__.value;
-                                legend_boxes[0][i].innerHTML = String(Math.round(value * dec_mult) / dec_mult);
+                                legend_boxes[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
                             }
                         });
     }
@@ -1333,21 +1295,47 @@ function createFuncOptionsBox_PropSymbol(layer){
             symbol_color: fill_color.node().value
                 };
 
-        var d_values = new Array(nb_features),
-            comp = function(a, b){ return b[1]-a[1]; },
-            ref_layer_selection  = d3.select(g_lyr_name).selectAll("path");
+        let rendering_params = new Object();
+        rendering_params.field = field_selec.node().value;
+        rendering_params.nb_features = nb_features;
+        rendering_params.ref_layer_name = layer;
+        rendering_params.symbol = symb_selec.node().value;
+        rendering_params.max_size = +max_size.node().value;
+        rendering_params.ref_size = +ref_size.node().value;
+        rendering_params.fill_color = fill_color.node().value;
 
-        for(let i = 0, field = field_selec.node().value; i < nb_features; ++i){
+        let ret_val = make_prop_symbols(rendering_params);
+
+        binds_layers_buttons();
+        zoom_without_redraw();
+        makeButtonLegend(layer + "_PropSymbols");
+        deactivate([nwBox, bg]);
+     }
+     qs('#no').onclick=function(){
+         deactivate([nwBox, bg]);
+     }
+     return nwBox;
+}
+
+
+function make_prop_symbols(rendering_params){
+        console.log(rendering_params);
+        let layer = rendering_params.ref_layer_name,
+            field = rendering_params.field,
+            nb_features = rendering_params.nb_features,
+            d_values = new Array(nb_features),
+            comp = function(a, b){ return b[1]-a[1]; },
+            ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+            ref_size = rendering_params.ref_size,
+            max_size = rendering_params.max_size,
+            zs = zoom.scale();
+
+        for(let i = 0; i < nb_features; ++i){
             let centr = path.centroid(ref_layer_selection[0][i].__data__);
             d_values[i] = [i, +user_data[layer][i][field], centr];
         }
 
-//        for(let i=0, i_len = ref_layer_selection[0].length; i < i_len; i++){
-//            let centr = path.centroid(ref_layer_selection[0][i].__data__);
-//            d_values[i].push(centr);
-//        }
-
-        d_values = prop_sizer2(d_values, Number(ref_size.node().value / zoom.scale()), Number(max_size.node().value / zoom.scale()));
+        d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
         d_values.sort(comp);
         /*
             Values have been sorted (descendant order) to have larger symbols
@@ -1360,17 +1348,25 @@ function createFuncOptionsBox_PropSymbol(layer){
             ]
         */
 
-        var bg_color = Colors.random(),
+        let bg_color = Colors.random(),
             stroke_color = Colors.random(),
-            layer_to_add = layer + "_PropSymbols",
-            symbol_type = symb_selec.node().value;
+            layer_to_add = rendering_params.new_name || (layer + "_PropSymbols"),
+            symbol_type = rendering_params.symbol;
+
+        if(!(rendering_params.fill_color instanceof Array)){
+            for(let i=0; i<nb_features; ++i)
+                d_values[i].push(rendering_params.fill_color);
+        } else {
+            for(let i=0; i<nb_features; ++i)
+                d_values[i].push(rendering_params.fill_color[i]);
+        }
 
         if(current_layers[layer_to_add]){
             remove_layer_cleanup(layer_to_add);
             d3.selectAll('#' + layer_to_add).remove();
         }
 
-        symbol_layer = map.append("g").attr("id", layer_to_add)
+        var symbol_layer = map.append("g").attr("id", layer_to_add)
                               .attr("class", "result_layer layer");
 
         if(symbol_type === "circle"){
@@ -1379,16 +1375,16 @@ function createFuncOptionsBox_PropSymbol(layer){
                 symbol_layer.append('circle')
                     .attr('cx', params[2][0])
                     .attr("cy", params[2][1])
-                    .attr("r", ref_size.node().value / zoom.scale() + params[1])
+                    .attr("r", ref_size / zs + params[1])
                     .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
-                    .style("fill", fill_color.node().value)
+                    .style("fill", params[3])
                     .style("stroke", "black")
-                    .style("stroke-width", 1 / zoom.scale());
+                    .style("stroke-width", 1 / zs);
             }
         } else if(symbol_type === "rect"){
             for(let i = 0; i < d_values.length; i++){
                 let params = d_values[i],
-                    size = ref_size.node().value / zoom.scale() + params[1];
+                    size = ref_size / zs + params[1];
 
                 symbol_layer.append('rect')
                     .attr('x', params[2][0] - size/2)
@@ -1396,36 +1392,31 @@ function createFuncOptionsBox_PropSymbol(layer){
                     .attr("height", size)
                     .attr("width", size)
                     .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
-                    .style("fill", fill_color.node().value)
+                    .style("fill", params[3])
                     .style("stroke", "black")
-                    .style("stroke-width", 1 / zoom.scale());
+                    .style("stroke-width", 1 / zs);
             };
         }
 
-        d3.select("#layer_menu")
-              .append('p').html('<a href>- ' + layer_to_add+"</a>");
+        let class_name = "ui-state-default sortable_result " + layer_to_add,
+            layers_listed = layer_list.node(),
+            li = document.createElement("li");
 
-        class_name = "ui-state-default sortable_result " + layer_to_add
-        layers_listed = layer_list.node()
-        var li = document.createElement("li");
         li.setAttribute("class", class_name);
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, "</div> ", "Point", " - ", layer_to_add].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[layer_to_add] = {
-            renderer: "PropSymbols", symbol: symbol_type,
-            rendered_field: field_selec.node().value,
-            size: [ref_size.node().value, max_size.node().value],
-            "stroke-width-const": "1px"
-            }
-        binds_layers_buttons();
-        zoom_without_redraw();
-        makeButtonLegend(layer_to_add);
-        deactivate([nwBox, bg]);
-     }
-     qs('#no').onclick=function(){
-         deactivate([nwBox, bg]);
-     }
-     return nwBox;
+            renderer: rendering_params.renderer || "PropSymbols",
+            symbol: symbol_type,
+            rendered_field: field,
+            size: [ref_size, max_size],
+            "stroke-width-const": "1px",
+            is_result: true
+            };
+        let ret_val = new Array(nb_features);
+        for(let i=0; i<nb_features;i++)
+            ret_val[i] = d_values[i][0]
+        return ret_val
 }
 
 
@@ -1501,31 +1492,32 @@ function createBox_griddedMap(layer){
 
                 current_layers[n_layer_name].renderer = "Gridded";
                 makeButtonLegend(n_layer_name);
-                let disc_result = discretize_to_colors(d_values, "Quantiles", opt_nb_class, col_pal.node().value);
-                rendering_params = {
-                    nb_class: opt_nb_class,
-                    type: "Quantiles",
-                    breaks: disc_result[2],
-                    colors: disc_result[3],
-                    colorsByFeature: disc_result[4],
-                    renderer: "Gridded"
-                        };
+                let disc_result = discretize_to_colors(d_values, "Quantiles", opt_nb_class, col_pal.node().value),
+                        rendering_params = {
+                            nb_class: opt_nb_class,
+                            type: "Quantiles",
+                            breaks: disc_result[2],
+                            colors: disc_result[3],
+                            colorsByFeature: disc_result[4],
+                            renderer: "Gridded",
+                            rendered_field: "densitykm"
+                                };
                 render_choro(n_layer_name, rendering_params);
                 
-                dv2.insert('p').style("margin", "auto").html("")
-                    .append("button").html("Display and arrange class ...")
-                    .on("click", function(){
-                  display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
-                    .then(function(confirmed){ if(confirmed){
-                            rendering_params = {
-                                    nb_class: confirmed[0], type: confirmed[1],
-                                    breaks: confirmed[2], colors:confirmed[3],
-                                    colorsByFeature: confirmed[4], renderer: "Gridded",
-                                    rendered_field: "densitykm"
-                                };
-                            render_choro(n_layer_name, rendering_params);
-                        } else { return; }  });
-                    });
+//                dv2.insert('p').style("margin", "auto").html("")
+//                    .append("button").html("Display and arrange class ...")
+//                    .on("click", function(){
+//                  display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
+//                    .then(function(confirmed){ if(confirmed){
+//                            rendering_params = {
+//                                    nb_class: confirmed[0], type: confirmed[1],
+//                                    breaks: confirmed[2], colors:confirmed[3],
+//                                    colorsByFeature: confirmed[4], renderer: "Gridded",
+//                                    rendered_field: "densitykm"
+//                                };
+//                            render_choro(n_layer_name, rendering_params);
+//                        } else { return; }  });
+//                    });
             }
         });
         deactivate([nwBox, bg]);
@@ -1637,7 +1629,7 @@ var type_col = function(layer_name, target){
         return result;
 }
 
-function add_table_field(layer){
+function add_table_field(layer, parent){
     var check_name = function(){
         if(this.value.indexOf(" ") > -1 || this.value.indexOf(".") > 1 || this.value.indexOf("/") > 1){
             this.value = ""
@@ -1725,6 +1717,7 @@ function add_table_field(layer){
 
                             }
                         }
+                    if(parent) parent.display_table({"type": "layer"});
                     }
             });
 
@@ -1749,4 +1742,6 @@ function add_table_field(layer){
     var fields_type = type_col(layer),
         math_operation = ["+", "-", "*", "/"],
         string_operation = ["Concatenate", "Truncate"];
+
+    return box;
 }

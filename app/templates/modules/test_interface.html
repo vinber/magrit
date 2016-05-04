@@ -151,7 +151,7 @@ var browse_table = d3.select("#browse_section")
                         .attr("id", "browse_button")
                         .attr("disabled", true)
                         .html("Explore your table(s)")
-                        .on("click", createBoxExplore);
+                        .on("click", function(){  createBoxExplore.create();  });
 
 if(menu_option.text_button){
     var dv2 = section2.append("p").attr("class", "form-item");

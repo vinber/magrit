@@ -19,7 +19,8 @@ function handle_click_layer(layer_name){
 function createStyleBox(layer_name){
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
-         type = current_layers[layer_name].type;
+         type = current_layers[layer_name].type,
+         rendering_params = null;
 
      if(current_layers[layer_name].renderer !== undefined){
          rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].renderer + " method). Want to continue ?");
@@ -65,28 +66,37 @@ function createStyleBox(layer_name){
                               .insert('input').attr('type', 'color').attr("value", fill_prev)
                               .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
          } else {
-            var fields = type_col(layer_name, "number")
-            var field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params');
-            fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+            let field_to_discretize;
+            if(current_layers[layer_name].renderer == "Gridded"){
+                field_to_discretize = "densitykm";
+            } else {
+                var fields = type_col(layer_name, "number"),
+                    field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params').on("change", function(){ field_to_discretize = this.value; });
+                field_to_discretize = fields[0];
+                fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+            }
 
              popup.append('p').style("margin", "auto").html("")
                 .append("button").html("Display and arrange class")
                 .on("click", function(){
-                    display_discretization(layer_name, field_selec.node().value, current_layers[layer_name].colors_breaks.length, "Quantiles")
+                    display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "Quantiles")
                         .then(function(confirmed){
+                            console.log(confirmed);
                             if(confirmed){
-                                console.log(confirmed);
-                                let colorsByFeatures = confirmed[4];
+                                rendering_params = {
+                                    nb_class: confirmed[0],
+                                    type: confirmed[1],
+                                    breaks: confirmed[2],
+                                    colors:confirmed[3],
+                                    colorsByFeature: confirmed[4],
+                                    renderer:"Choropleth",
+                                    field: field_to_discretize
+                                };
                                 selection.style('fill-opacity', 0.9)
-                                         .style("fill", function(d, i){ return colorsByFeatures[i] })
-//                                        nb_class:rendering_params confirmed[0], type: confirmed[1],
-//                                        breaks: confirmed[2], colors:confirmed[3],
-//                                        colorsByFeature: confirmed[4], renderer:"Choropleth"
-//                                    }
+                                         .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] })
                             }
                         });
                 });
-            if(current_layers[layer_name].rendered_field) field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
          }
          popup.append('p').html('Fill opacity<br>')
                           .insert('input').attr('type', 'range')
@@ -117,14 +127,31 @@ function createStyleBox(layer_name){
      popup.append('button').attr('id', 'no').text('Close without saving');
 
     qs('#yes').onclick=function(){
+        // Update the object holding the properties of the layer if Yes is clicked
         if(stroke_width != current_layers[layer_name]['stroke-width-const'])
             current_layers[layer_name].fixed_stroke = true;
+        if(current_layers[layer_name].renderer != undefined && rendering_params != undefined){
+            current_layers[layer_name].colors = rendering_params.colorsByFeature;
+            let colors_breaks = [];
+            for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
+                colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
+            current_layers[layer_name].colors_breaks = colors_breaks;
+            current_layers[layer_name].rendered_field = rendering_params.field;
+            // Also change the legend if there is one displayed :
+            let lgd_choro = d3.select("#legend_root").node();
+            if(lgd_choro){
+                lgd_choro.remove();
+                createLegend_choro(layer_name, rendering_params.field);
+            }
+            if(current_layers[layer_name].rendered_field && current_layers[layer_name].renderer != "Gridded")
+                field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
+        }
         sendPreferences();
         deactivate([nwBox, bg]);
     }
     qs('#no').onclick=function(){
+         // Reset to original values the rendering parameters if "no" is clicked
          deactivate([nwBox, bg]);
-
          selection.style('fill-opacity', opacity)
                      .style('stroke-opacity', border_opacity);
          d3.select(g_lyr_name).style('stroke-width', stroke_width);
@@ -169,26 +196,34 @@ function center(el){
 }
 
 function createStyleBox_ProbSymbol(layer_name){
-     var nwBox = document.createElement('div'),
-         bg = document.createElement('div');
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div');
 
-     var g_lyr_name = "#" + layer_name,
-         ref_layer_name = layer_name.substring(0, layer_name.indexOf("_Prop")),
-         type_symbol = current_layers[layer_name].symbol,
-         field_used = current_layers[layer_name].rendered_field,
-         selection = d3.select(g_lyr_name).selectAll(type_symbol);
+    var g_lyr_name = "#" + layer_name,
+        ref_layer_name = layer_name.substring(0, layer_name.indexOf("_Prop")),
+        type_method = current_layers[layer_name].renderer,
+        type_symbol = current_layers[layer_name].symbol,
+        field_used = current_layers[layer_name].rendered_field,
+        selection = d3.select(g_lyr_name).selectAll(type_symbol);
 
      console.log([current_layers[layer_name].targeted, current_layers[layer_name], layer_name]);
 
      var stroke_prev = selection.style('stroke'),
-         fill_prev = selection.style("fill"),
          opacity = selection.style('fill-opacity'),
          border_opacity = selection.style('stroke-opacity'),
          stroke_width = selection.style('stroke-width');
 
-     if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
-     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
-     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
+    if(type_method == "PropSymbolsChoro"){
+        var fill_prev = current_layers[layer_name].colors;
+
+    }
+    else {
+        var fill_prev = selection.style("fill");
+        if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
+    }
+     
+    if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
+    if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
     var d_values = [],
         comp = function(a, b){return b-a};
@@ -197,46 +232,75 @@ function createStyleBox_ProbSymbol(layer_name){
 
     d_values.sort(comp);
 
-     bg.className = 'overlay';
-     nwBox.id = layer_name + "_style_popup";
-     nwBox.className = 'popup';
-     nwBox.innerHTML = "";
-     (document.body || document.documentElement).appendChild(nwBox);
-     (document.body || document.documentElement).appendChild(bg);
-     var popup = d3.select(["#", layer_name, "_style_popup"].join(''));
-     popup.append('h4').style({"font-size": "16px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
-     popup.append("p").html(['<br>Rendered layer : <b>', ref_layer_name,'</b><br>'].join(''));
+    bg.className = 'overlay';
+    nwBox.id = layer_name + "_style_popup";
+    nwBox.className = 'popup';
+    nwBox.innerHTML = "";
+    (document.body || document.documentElement).appendChild(nwBox);
+    (document.body || document.documentElement).appendChild(bg);
+    var popup = d3.select(["#", layer_name, "_style_popup"].join(''));
+    popup.append('h4').style({"font-size": "16px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
+    popup.append("p").html(['<br>Rendered layer : <b>', ref_layer_name,'</b><br>'].join(''));
 
-     popup.append('p').html('Symbol color<br>')
-         .insert('input').attr('type', 'color').attr("value", fill_prev)
-         .on('change', function(){selection.style("fill", this.value)});
-     popup.append('p').html('Fill opacity<br>')
+
+    popup.append('p').html('Symbol color<br>');
+    if(type_method === "PropSymbolsChoro"){
+        let field_color = current_layers[layer_name].rendered_field2;
+         popup.append('p').style("margin", "auto").html("Field used for symbol colors : <i>" + field_color + "</i><br>")
+            .append("button").html("Display and arrange class")
+            .on("click", function(){
+                display_discretization(ref_layer_name, field_color, current_layers[layer_name].colors_breaks.length, "Quantiles")
+                    .then(function(confirmed){
+                        console.log(confirmed);
+                        if(confirmed){
+                            rendering_params = {
+                                nb_class: confirmed[0],
+                                type: confirmed[1],
+                                breaks: confirmed[2],
+                                colors:confirmed[3],
+                                colorsByFeature: confirmed[4],
+                                renderer:"PropSymbolsChoro",
+                                field: field_color
+                            };
+                            selection.style('fill-opacity', 0.9)
+                                     .style("fill", function(d, i){
+                                        let ft_id = +current_layers[layer_name].id_size_map[i];
+                                        return rendering_params.colorsByFeature[ft_id]; });
+                        }
+                    });
+            });
+    } else {
+        popup.insert('input').attr('type', 'color').attr("value", fill_prev)
+             .on('change', function(){selection.style("fill", this.value)});
+    }
+    popup.append('p').html('Fill opacity<br>')
                       .insert('input').attr('type', 'range')
                       .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
                       .on('change', function(){selection.style('fill-opacity', this.value)});
 
-     popup.append('p').html('Border color<br>')
+    popup.append('p').html('Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
                       .on('change', function(){selection.style("stroke", this.value)});
-     popup.append('p').html('Border opacity<br>')
+    popup.append('p').html('Border opacity<br>')
                       .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
-     popup.append('p').html('Border width<br>')
+    popup.append('p').html('Border width<br>')
                       .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
                       .on('change', function(){selection.style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
-
-     popup.append('p').html('Symbol max size<br>')
-                      .insert('input').attr("type", "range").attr({min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
+    popup.append("p").html("Field used for proportionals values : <i>" + current_layers[layer_name].rendered_field + "</i>")
+    popup.append('p').html('Symbol max size<br>')
+                      .insert('input').attr("type", "range").attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
                       .on("change", function(){
-                        let prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / zoom.scale()), Number(this.value / zoom.scale()));
+                        let z_scale = zoom.scale(),
+                            prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
                         console.log(prop_values);
                         if(type_symbol === "circle") {
                             for(let i=0, len = prop_values.length; i < len; i++){
-                                selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / zoom.scale() + prop_values[i])
+                                selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
                             }
                         } else if(type_symbol === "rect") {
                             for(let i=0, len = prop_values.length; i < len; i++){
-                                let sz = +current_layers[layer_name].size[0] / zoom.scale() + prop_values[i],
+                                let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
                                     old_size = +selection[0][i].getAttribute('height'),
                                     centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
                                              +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
@@ -247,11 +311,27 @@ function createStyleBox_ProbSymbol(layer_name){
                                 selection[0][i].setAttribute('width', sz);
                             }
                         }
-                      })
-     popup.append('button').attr('id', 'yes').text('Apply')
-     popup.append('button').attr('id', 'no').text('Close without saving');
+                      });
+    popup.append('button').attr('id', 'yes').text('Apply')
+    popup.append('button').attr('id', 'no').text('Close without saving');
 
     qs('#yes').onclick=function(){
+        let max_val = d3.select("#max_size_range").node().value;
+        current_layers[layer_name].size[1] = max_val;
+        if(type_method === "PropSymbolsChoro"){
+            current_layers[layer_name].colors = rendering_params.colorsByFeature;
+            let colors_breaks = [];
+            for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
+                colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
+            current_layers[layer_name].colors_breaks = colors_breaks;
+            current_layers[layer_name].rendered_field = rendering_params.field;
+            // Also change the legend if there is one displayed :
+            let lgd_choro = d3.select("#legend_root").node();
+            if(lgd_choro){
+                lgd_choro.remove();
+                createLegend_choro(layer_name, rendering_params.field);
+            }
+        }
         sendPreferences();
         deactivate([nwBox, bg]);
     }
