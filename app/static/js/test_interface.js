@@ -9,7 +9,8 @@ function add_layer(d){
     input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
     input.on('change', prepareUpload);
     
-    if(self_section === "section1") target_layer_on_add = true;
+    target_layer_on_add = (this.id === "img_in_geom") ? true :
+                          (this.id === "img_data_ext") ? true : false;
     
     function prepareUpload(event){
         files = event.target.files;
@@ -20,20 +21,18 @@ function add_layer(d){
             handle_single_file(files);
         } else if((strContains(files[0].name.toLowerCase(), '.csv')
                     || strContains(files[0].name.toLowerCase(), '.tsv'))
-                    && self_section === "section1") {
+                    && target_layer_on_add) {
             handle_dataset(files)
             target_layer_on_add = false;
         }
         else if(files.length >= 4){
             var filenames = [];
-            for (var i=0; i<files.length; i++) filenames[i] = files[i].name;
-            var res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-            if(res.length >= 4){
+            for (let i=0; i<files.length; i++) filenames[i] = files[i].name;
+            let res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+            if(res.length >= 4)
                 handle_shapefile(files);
-                }
-            else {
+            else
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
-                }
         } else {
             alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         }
@@ -75,8 +74,6 @@ $(document).on('drop', '#section1,#section3', function(e) {
         var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
 
         if(result.length == 4){
-            $(this).css('border', '3px dashed red');
-//            alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
             $(this).css('border', '');
             handle_shapefile(files);
                 }
@@ -110,11 +107,9 @@ $(document).on('drop', '#section1,#section3', function(e) {
    }
   else if(strContains(files[0].name.toLowerCase(), '.csv')
             || strContains(files[0].name.toLowerCase(), '.tsv')) {
-        if(self_section === "section1"){
-//        alert('Dataset provided');
-            $(this).css('border', '');
+        $(this).css('border', '');
+        if(self_section === "section1")
             handle_dataset(files);
-        }
         else
             alert('Only layout layers can be added here');
         target_layer_on_add = false;
@@ -201,7 +196,7 @@ function handle_dataset(files){
             d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
             valid_join_check_display(false);
             if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-            d3.select("#section1").style("height", "245px");
+            d3.select("#section1").style("height", "230px");
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
         };
@@ -472,7 +467,6 @@ function add_layout_layers(){
     layout_layer_selec.on("change", function(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
         selec.layout = selected_asArray.map(elem => elem.value)
-        console.log(selec)
     });
 }
 
@@ -518,7 +512,7 @@ function add_sample_layer(){
                         d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
                         valid_join_check_display(false);
                         if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-                        d3.select("#section1").style("height", "245px");
+                        d3.select("#section1").style("height", "230px");
                         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
                     });
                 }

@@ -9,7 +9,7 @@ function get_menu_option(func){
         "test":{
             "title":"Explore your dataset",
             "desc":"Explore the dataset provided with the geometry and the joined (.csv) dataset",
-            "popup_factory": "createBoxExplore",
+            "popup_factory": "boxExplore",
             "text_button": "Browse..."
             },
         "prop_symbol":{
@@ -75,7 +75,7 @@ function popup_function(){
         return;
     }
 
-    layer_name = layer_name[0];
+    layer_name = layer_name[0].trim();
 
     var modal = eval([
         get_menu_option(func).popup_factory, "(\"", layer_name, "\")"
@@ -97,7 +97,7 @@ function createFuncOptionsBox_ChoroAndPropSymbol(layer){
 function createBox_MTA(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+layer.trim(),
+        g_lyr_name = "#"+layer,
         fields = type_col(layer, "number"),
         nb_features = user_data[layer].length,
         MTA_methods = [["Global Deviation", "global_dev"],
@@ -144,6 +144,8 @@ function createBox_MTA(layer){
 
     var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
 
+    // Each MTA method (global/local/medium) is associated with some 
+    // specific arguments to enable/disabled accordingly
     method_selec.on("change", function(){
         if(this.value == "global_dev"){
             ref_ratio.attr("disabled", null);
@@ -163,6 +165,8 @@ function createBox_MTA(layer){
         }
     });
 
+    // TODO : check that fields are correctly filled before trying to prepare the query
+    // ... and only enable the "compute" button when they are
     var ok_button = dialog_content.insert("button")
         .attr("value", "yes")
 //        .attr("disabled", true)
@@ -172,8 +176,7 @@ function createBox_MTA(layer){
         .attr("value", "no")
         .text("Cancel");
 
-    // TODO : check that fields are correctly filled before trying to prepare the query
-    // ... and only enable the "compute" button when they are
+    // Where the real job is done :
     ok_button.on("click", function(){
         let choosen_method = method_selec.node().value,
             table_to_send = new Object(),
@@ -279,7 +282,7 @@ function createBox_MTA(layer){
 function createFuncOptionsBox_PropSymbolChoro(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+layer.trim(),
+        g_lyr_name = "#"+layer,
         fields = type_col(layer, "number"),
         nb_features = user_data[layer].length;
 
@@ -313,6 +316,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
                                  .attr('class', 'params')
                                  .attr({min: 0.1, max: 333.0, value: +last_params.ref_size_val || 1.0, step: 0.1});
 
+    // Other symbols could probably easily be proposed :
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
@@ -472,7 +476,6 @@ function createBox_FlowMap(ref_layer){
                     layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                     fij_field_name = field_fij.node().value,
                     fij_values = joined_dataset[0].map(obj => obj[fij_field_name]),
-                    //fij_values = [for (ob of joined_dataset[0]) ob['fij']],
                     prop_values = prop_sizer_links(fij_values, 0.5 / zoom.scale(), 20 / zoom.scale());
                 current_layers[new_layer_name].fixed_stroke = true;
                 current_layers[new_layer_name].renderer = "Links";
@@ -499,7 +502,7 @@ function createFuncOptionsBox_Stewart(layer){
     }
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
-         g_lyr_name = "#"+layer.trim(),
+         g_lyr_name = "#"+layer,
          fields = type_col(layer, "number"),
          other_layers = Object.getOwnPropertyNames(current_layers),
          tmp_idx = null;
@@ -589,11 +592,14 @@ function createFuncOptionsBox_Stewart(layer){
                 current_layers[n_layer_name].renderer = "Stewart";
                 current_layers[n_layer_name].colors_breaks = colors_breaks;
                 current_layers[n_layer_name].rendered_field = field_selec.node().value;
-                d3.select("#"+n_layer_name).selectAll("path").style("fill", function(d, i){
-                                                                let k = Math.round(d.properties.min * 100) / 100;
-                                                                    col = col_map.get(k);
-                                                                current_layers[n_layer_name].colors[i] = col;
-                                                                return col; });
+                d3.select("#"+n_layer_name)
+                        .selectAll("path")
+                        .style("fill", function(d, i){
+                                let k = Math.round(d.properties.min * 100) / 100,
+                                    col = col_map.get(k);
+                                current_layers[n_layer_name].colors[i] = col;
+                                return col;
+                        });
                 makeButtonLegend(n_layer_name);
                 // Todo : use the function render_choro to render the result from stewart too
             }
@@ -613,7 +619,7 @@ function createFuncOptionsBox_Anamorphose(layer){
     }
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+layer.trim(),
+        g_lyr_name = "#"+layer,
         fields = type_col(layer, "number"),
         random_color = Colors.random();
 
@@ -630,7 +636,7 @@ function createFuncOptionsBox_Anamorphose(layer){
     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
     var iterations = dialog_content.append('p').html('N. interations :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', last_params.iterations || 5).attr("min", 1).attr("max", 12).attr("step", 1);
     var algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params');
-    [['Dorling (1996)', 'dorling'],
+    [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
      ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
@@ -639,6 +645,7 @@ function createFuncOptionsBox_Anamorphose(layer){
         cancel_button = dialog_content.append('button').attr('id', 'no').text('Close').on("click", function(){  deactivate([nwBox, bg]);  });
     ok_button.on("click", function(){
         let algo = algo_selec.node().value,
+            nb_features = user_data[layer].length,
             field_name = field_selec.node().value,
             nb_iter = iterations.node().value;
         if(algo === "gastner"){
@@ -668,15 +675,72 @@ function createFuncOptionsBox_Anamorphose(layer){
 
 
         } else if (algo === "dorling"){
-            alert('Not implemented (yet!)')
-        }
+            let new_layer_name = [layer, "DorlingCarto"].join('');
+            let rendering_params = {
+                "field": field_name,
+                "new_name": new_layer_name,
+                "nb_features": nb_features,
+                "ref_layer_name": layer,
+                "symbol": "circle",
+                "max_size": 15,
+                "ref_size": 0.1,
+                "fill_color": Colors.random()
+                };
+            let ret_val = make_prop_symbols(rendering_params),
+                dorling = d3.select('#' + new_layer_name).selectAll('circle'),
+                forceNodes = [],
+                ref_pt = [];
+
+            for(let i = 0 ; i < nb_features ; i++ ) {
+                let _id = ret_val[i];
+                forceNodes.push(user_data[layer][_id][field_name]);
+                ref_pt.push({x: +dorling[0][i].getAttribute('cx'), y: +dorling[0][i].getAttribute('cy'),
+                             c: [+dorling[0][i].getAttribute('cx'), +dorling[0][i].getAttribute('cy')],
+                             r: +dorling[0][i].getAttribute('r')});
+            }
+
+            console.log(ref_pt)
+            force = d3.layout.force().gravity(3.0).size([w,h]).charge(-1).nodes(forceNodes);
+            force.on("tick", function() {
+                for(let i = 0 ; i < nb_features ; i++) {
+                    for(let j = 0 ; j < nb_features ; j++) { 
+                        if(i==j) continue;
+                        let it = ref_pt[i],
+                            jt = ref_pt[j];
+
+                        let radius = it.r + jt.r,
+                            itx = it.x + it.c[0],
+                            ity = it.y + it.c[1],
+                            jtx = jt.x + jt.c[0],
+                            jty = jt.y + jt.c[1], 
+                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
+
+                        if(radius > dist) {
+                            console.log('here i am')
+                            let dr = ( radius - dist ) / ( dist * 1 );
+                            it.x = it.x + ( itx - jtx ) * dr;
+                            it.y = it.y + ( ity - jty ) * dr;
+                        }
+                    }
+                }
+                for(let i = 0 ; i < nb_features ; i++) {
+                    dorling[0][i].setAttribute('cx', ref_pt[i].x)
+                    dorling[0][i].setAttribute('cy', ref_pt[i].y)
+                }
+            });
+            force.start();
+            console.log(ref_pt)
+            binds_layers_buttons();
+            zoom_without_redraw();
+            makeButtonLegend(new_layer_name);
+            }
         deactivate([nwBox, bg]);
     });
 
     return nwBox;
 }
 
-var createBoxExplore = {
+var boxExplore = {
     display_table: function(prop){
         let self = this,
             add_field = d3.select("#add_field_button");
@@ -735,7 +799,7 @@ var createBoxExplore = {
 
         if(dataset_name != undefined && the_name != undefined)
             this.box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
-                    let type = (current_table === "layer") ? "ext_dataset" : "layer";
+                    let type = (this.current_table === "layer") ? "ext_dataset" : "layer";
                     this.current_table = type;
                     this.display_table({"type": type});
                     });
@@ -767,8 +831,6 @@ var createBoxExplore = {
 
 
 function fillMenu_Choropleth(layer){
-    layer = layer.trim();
-
     var g_lyr_name = "#"+layer,
         fields = type_col(layer, "number");
         ref_size_val = undefined,
@@ -813,20 +875,18 @@ function fillMenu_Choropleth(layer){
 
 function makeButtonLegend(layer_name){
     // Todo : make the label clickable as the checkbox
-    var display_legend = dv2.insert("p")
-                            .attr("id", "display_legend")
-                            .style({"text-align": "center", "margin-right": "5%"})
-                            .html("Display the legend")
-                            .insert('input')
-                            .attr("id", "checkbox_legend")
-                            .attr("type", "checkbox")
-                            .on("change", function(){handle_legend(layer_name);});
+    dv2.insert("p")
+        .attr("id", "display_legend")
+        .style({"text-align": "center", "margin-right": "5%"})
+        .html("Display the legend")
+        .insert('input')
+        .attr("id", "checkbox_legend")
+        .attr("type", "checkbox")
+        .on("change", function(){handle_legend(layer_name);});
 }
 
 function handle_legend(layer){
-    console.log(layer)
-    var state = current_layers[layer].renderer;
-    console.log(state)
+    let state = current_layers[layer].renderer;
     if(state != undefined){
         let rml = false;
         if(d3.selectAll("#legend_root").node()){
@@ -959,7 +1019,6 @@ function createLegend_symbol(layer, field, title, subtitle){
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ make_legend_edit_window('#legend_root2', layer); });
 
-    //let breaks_elem = [0].concat([for (i of Array.of(4,3,2,1)) Math.round((nb_features-1)/i)]),
     let breaks_elem = [0].concat([4,3,2,1].map(i => Math.round((nb_features-1)/i))),
         ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
         type_param = symbol_type === 'circle' ? 'r' : 'width',
@@ -1121,19 +1180,29 @@ function make_legend_edit_window(legend_id, layer_name){
     return center(modal);
 };
 
+// Function trying to mimic the R "seq" function or the python 2 "range" function
+// (ie its not generator based and returns a real array)
 let range = function(start = 0, stop, step = 1) {
-  let cur = (stop === undefined) ? 0 : start;
-  let max = (stop === undefined) ? start : stop;
-  let res = new Array();
-  for(let i = cur; step < 0 ? i > max : i < max; i += step)
-    res.push(i);
-  return res;
+    let cur = (stop === undefined) ? 0 : start;
+    let max = (stop === undefined) ? start : stop;
+    let res = new Array();
+    for(let i = cur; step < 0 ? i > max : i < max; i += step)
+        res.push(i);
+    return res;
+}
+
+// Function trying to mimic the python 2 "xrange" / python 3 "range" function 
+// (ie. its a generator and returns values "on request")
+let xrange = function*(start = 0, stop, step = 1) {
+    let cur = (stop === undefined) ? 0 : start;
+    let max = (stop === undefined) ? start : stop;
+    for(let i = cur; step < 0 ? i > max : i < max; i += step)
+        yield i;
 }
 
 function createlegendEditBox(legend_id, layer_name){
     let nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-//        layer_name = Object.getOwnPropertyNames(result_data)[0] || Object.getOwnPropertyNames(user_data)[0],
         title_content = d3.select(legend_id).select("#legendtitle"),
         subtitle_content = d3.select(legend_id).select("#legendsubtitle"),
         note_content = d3.select(legend_id).select("#legend_bottom_note"),
@@ -1163,7 +1232,9 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.node().textContent = this.value
             });
 
-    // float precision for the chorpleth legend :
+    // Float precision for label in the legend 
+    // (actually it's not really the float precision but an estimation based on
+    // the string representation of only two values but it will most likely do the job in many cases)
     let first_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][0].__data__[0].split(" - ")[0] : String(legend_boxes[0][0].__data__.value),
         fourth_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][1].__data__[0].split(" - ")[1] : String(legend_boxes[0][4].__data__.value),
         current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
@@ -1184,8 +1255,7 @@ function createlegendEditBox(legend_id, layer_name){
                         .style("display", "inline")
                         .on('change', function(){
                             let nb_float = this.value,
-                                dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
-//                                dec_mult = +["1", [for(j of new Array(nb_float)) "0"].join('')].join('');
+                                dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                             d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0, breaks = current_layers[layer_name].colors_breaks; i < legend_boxes[0].length; i++){
                                 let values = breaks[i][0].split(' - ');
@@ -1198,7 +1268,8 @@ function createlegendEditBox(legend_id, layer_name){
                         .style("display", "inline")
                         .on('change', function(){
                             let nb_float = +this.value,
-                                dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
+                                dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
+                                //dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
                             d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0; i < legend_boxes[0].length; i++){
                                 let value = legend_boxes[0][i].__data__.value;
@@ -1241,7 +1312,7 @@ function createlegendEditBox(legend_id, layer_name){
 function createFuncOptionsBox_PropSymbol(layer){
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
-        g_lyr_name = "#"+layer.trim(),
+        g_lyr_name = "#"+layer,
         fields = type_col(layer, "number");
 
     if(fields.length === 0){
@@ -1295,14 +1366,15 @@ function createFuncOptionsBox_PropSymbol(layer){
             symbol_color: fill_color.node().value
                 };
 
-        let rendering_params = new Object();
-        rendering_params.field = field_selec.node().value;
-        rendering_params.nb_features = nb_features;
-        rendering_params.ref_layer_name = layer;
-        rendering_params.symbol = symb_selec.node().value;
-        rendering_params.max_size = +max_size.node().value;
-        rendering_params.ref_size = +ref_size.node().value;
-        rendering_params.fill_color = fill_color.node().value;
+        let rendering_params = {
+            "field": field_selec.node().value,
+            "nb_features": nb_features,
+            "ref_layer_name": layer,
+            "symbol": symb_selec.node().value,
+            "max_size": +max_size.node().value,
+            "ref_size": +ref_size.node().value,
+            "fill_color": fill_color.node().value
+            };
 
         let ret_val = make_prop_symbols(rendering_params);
 
@@ -1406,12 +1478,12 @@ function make_prop_symbols(rendering_params){
         li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[layer_to_add] = {
-            renderer: rendering_params.renderer || "PropSymbols",
-            symbol: symbol_type,
-            rendered_field: field,
-            size: [ref_size, max_size],
+            "renderer": rendering_params.renderer || "PropSymbols",
+            "symbol": symbol_type,
+            "rendered_field": field,
+            "size": [ref_size, max_size],
             "stroke-width-const": "1px",
-            is_result: true
+            "is_result": true
             };
         let ret_val = new Array(nb_features);
         for(let i=0; i<nb_features;i++)
@@ -1428,7 +1500,7 @@ function createBox_griddedMap(layer){
 
      var nwBox = document.createElement('div'),
          bg = document.createElement('div'),
-         g_lyr_name = "#"+trim(layer),
+         g_lyr_name = "#"+layer,
          fields = type_col(layer, "number");
 
      bg.className = 'overlay';
@@ -1451,15 +1523,13 @@ function createBox_griddedMap(layer){
             col_pal.append("option").text(d).attr("value", d);
     });
 
-//    var nb_class = dialog_content.append('p').html('Number of class :').insert('input').attr('type', 'number').attr('class', 'params').attr('value', 6).attr("min", 1).attr("max", 28).attr("step", 1);
-
     dialog_content.append('button').attr('id', 'yes').text('Compute and render');
     dialog_content.append('button').attr('id', 'no').text('Close');
     qs('#yes').onclick=function(){
         let field_n = field_selec.node().value,
             formToSend = new FormData(),
             var_to_send = new Object();
-            //var_to_send = {field_n: [for (i of user_data[layer]) +i[field_n]]};
+
         var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
         last_params = {
             "var_name": field_n,
@@ -1503,21 +1573,7 @@ function createBox_griddedMap(layer){
                             rendered_field: "densitykm"
                                 };
                 render_choro(n_layer_name, rendering_params);
-                
-//                dv2.insert('p').style("margin", "auto").html("")
-//                    .append("button").html("Display and arrange class ...")
-//                    .on("click", function(){
-//                  display_discretization(n_layer_name, "densitykm", opt_nb_class, "Quantiles")
-//                    .then(function(confirmed){ if(confirmed){
-//                            rendering_params = {
-//                                    nb_class: confirmed[0], type: confirmed[1],
-//                                    breaks: confirmed[2], colors:confirmed[3],
-//                                    colorsByFeature: confirmed[4], renderer: "Gridded",
-//                                    rendered_field: "densitykm"
-//                                };
-//                            render_choro(n_layer_name, rendering_params);
-//                        } else { return; }  });
-//                    });
+
             }
         });
         deactivate([nwBox, bg]);
@@ -1528,7 +1584,9 @@ function createBox_griddedMap(layer){
      return nwBox;
 }
 
-
+// Function to render the `layer` according to the `rendering_params` 
+// (layer should be the name of group of path, ie. not a PropSymbol layer)
+// Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
     console.log(rendering_params);
     var layer_to_render = d3.select("#"+layer).selectAll("path");
@@ -1557,16 +1615,11 @@ function prop_sizer(arr, min_size, max_size){
         len_arr = arr.length,
         res = new Array(len_arr);
     // Lets use "for" loop with pre-sized array as "map" and "forEach" seems 
-    // to be sometimes a bootleneck in some browser
+    // to be sometimes slower in some browser
     for(let i=0; i<len_arr; ++i)
         res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
     return res;
 }
-//    return arr.map(i => (i/dif_val * dif_size) + min_size - dif_size/dif_val)
-//    return [for (i of arr) 
-//          ((i/dif_val * dif_size) + min_size - dif_size/dif_val)
-//        ];
-//}
 
 function prop_sizer2(arr, min_size, max_size){
     let arr_tmp = arr.map(i => i[1]),
@@ -1577,23 +1630,20 @@ function prop_sizer2(arr, min_size, max_size){
         arr_len = arr.length,
         res = new Array(arr_len);
 
-    for(let i=0; i<arr_len; i++)
-        res[i] = [arr[i][0], (Math.sqrt(arr[i][1])/dif_val * dif_size) + min_size - dif_size/dif_val, arr[i][2]];
+    for(let i=0; i<arr_len; i++){
+        let val = arr[i];
+        res[i] = [val[0], (Math.sqrt(val[1])/dif_val * dif_size) + min_size - dif_size/dif_val, val[2]];
+    }
     return res;
 }
-//    return arr.map(i => [i[0], (Math.sqrt(i[1])/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]])
-//    return [for (i of arr) 
-//          [i[0], (i[1]/dif_val * dif_size) + min_size - dif_size/dif_val, i[2]]
-//        ];
-//}
 
 var type_col = function(layer_name, target){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
 // ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data[layer_name];
-    var fields = Object.getOwnPropertyNames(table[0]),
+    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data[layer_name],
+        fields = Object.getOwnPropertyNames(table[0]),
         nb_features = current_layers[layer_name].n_features,
         deepth_test = 10 < nb_features ? 10 : nb_features,
         result = new Object(),
@@ -1603,16 +1653,16 @@ var type_col = function(layer_name, target){
     if(fields.indexOf('pkuid') != -1)
         fields.splice(fields.indexOf("pkuid"), 1);
 
-    for(var j = 0, len = fields.length; j < len; ++j){
+    for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         result[field] = []
-        for(var i=0; i < deepth_test; ++i){
+        for(let i=0; i < deepth_test; ++i){
             tmp_type = typeof table[i][field];
             if(tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number"
             result[fields[j]].push(tmp_type)
         }
     }
-    for(var j = 0, len = fields.length; j < len; ++j){
+    for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         if(result[field].every(function(ft){return ft === "number";}))
             result[field] = "number"
@@ -1620,7 +1670,7 @@ var type_col = function(layer_name, target){
             result[field] = "string"
     }
     if(target){
-        var res = [];
+        let res = [];
         for(let k in result)
             if(result[k] === target)
                 res.push(k)
@@ -1629,20 +1679,24 @@ var type_col = function(layer_name, target){
         return result;
 }
 
+// Function to add a field to the targeted layer 
+// Args :
+// - layer : the layer name
+// - parent : (optional) the object createBoxExplore to be used as a callback to redisplay the table with the new field
 function add_table_field(layer, parent){
     var check_name = function(){
-        if(this.value.indexOf(" ") > -1 || this.value.indexOf(".") > 1 || this.value.indexOf("/") > 1){
-            this.value = ""
-            alert("Unauthorized character");
-        } else {
+        if(regexp_name.test(this.value))
             chooses_handler.new_name = this.value;
+        else { // Rollback to the last correct name  :
+            this.value = chooses_handler.new_name;
+            alert("Unauthorized character");
         }
     };
 
     var refresh_type_content = function(type){
             field1.node().remove(); operator.node().remove(); field2.node().remove();
             field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; });
-            operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content();});
+            operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);});
             field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });
             if(type == "math_compute"){
                 math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
@@ -1669,12 +1723,12 @@ function add_table_field(layer, parent){
             }
     };
 
-    var refresh_subtype_content = function(subtype){
-        if(subtype != "string_field"){
+    var refresh_subtype_content = function(type, subtype){
+        if(type != "string_field"){
             d3.select("#val_opt").attr("disabled", true);
             d3.select("#txt_opt").text("")
         } else {
-            if(this.value == "Truncate"){
+            if(subtype == "Truncate"){
                 d3.select("#txt_opt").html("Number of char to keep (from the left) :<br>");
                 field2.attr("disabled", true);
             } else {
@@ -1687,33 +1741,33 @@ function add_table_field(layer, parent){
     var chooses_handler = {
         field1: undefined, field2: undefined,
         operator: undefined, type_operation: undefined,
-        opt_val: undefined, new_name: undefined
+        opt_val: undefined, new_name: 'NewFieldName'
         }
 
-    var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field", "addFieldBox", w - (w/4), h - (h/6))
+    var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field", "addFieldBox", w - (w/4), h - (h/8))
                 .then(function(valid){
                     if(valid){
                         console.log(chooses_handler)
-                        let fi1 = chooses_handler.field1, fi2 = chooses_handler.field2,
+                        let fi1 = chooses_handler.field1,
+                            fi2 = chooses_handler.field2,
+                            data_layer = user_data[layer],
                             new_name_field = chooses_handler.new_name, operation = chooses_handler.operator;
 
                         if(chooses_handler.type_operation === "math_compute"){
-                            for(let i=0; i<user_data[layer].length; i++){
-                                let cmd = [+user_data[layer][i][fi1], operation, +user_data[layer][i][fi2]].join(' '),
+                            for(let i=0; i<data_layer.length; i++){
+                                let cmd = [+data_layer[i][fi1], operation, +data_layer[i][fi2]].join(' '),
                                     result_val = eval(cmd);
-                                console.log(cmd);
-                                console.log(result_val);
-                                user_data[layer][i][new_name_field] = +result_val;
+                                data_layer[i][new_name_field] = +result_val;
                             }
                         } else {
                             let opt_val = chooses_handler.opt_val;
                             if(operation == "Truncate"){
                                 for(let i=0; i < user_data[layer].length; i++)
-                                    user_data[layer][i][new_name_field] = user_data[layer][i][fi1].substring(0, opt_val);
+                                    data_layer[i][new_name_field] = data_layer[i][fi1].substring(0, opt_val);
 
                             } else if (operation == "Concatenate"){
                                 for(let i=0; i < user_data[layer].length; i++)
-                                    user_data[layer][i][new_name_field] = [user_data[layer][i][fi1], user_data[layer][i][fi2]].join(opt_val)
+                                    data_layer[i][new_name_field] = [data_layer[i][fi1], data_layer[i][fi2]].join(opt_val)
 
                             }
                         }
@@ -1725,15 +1779,16 @@ function add_table_field(layer, parent){
         box_content = d3.select(".addFieldBox").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2"),
-        new_name = div1.append("p").html("New field name :<br>").insert("input").on("change", check_name),
+        new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keydown", check_name),
         type_content = div1.append("p").html("New field content :<br>")
-                            .insert("select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);});
+                            .insert("select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
+        regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
     [["Computation based on two existing numerical fields", "math_compute"],
      ["Modification on a character field", "string_field"]
     ].forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
 
     var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
-        operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content(this.value);}),
+        operator = div1.append("select").on("change", function(){ chooses_handler.operator = this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);}),
         field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });;
 
     div2.append("p").attr("id", "txt_opt").text("");

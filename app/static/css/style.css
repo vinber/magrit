@@ -21,6 +21,15 @@ body {
     font-family: Verdana, Tahoma;
 }
 
+#header a{
+    text-decoration:none;
+    color: white;
+}
+
+#header :hover{
+    color: red;
+}
+
 #page {
     width: 100%;
     height : calc(100% - 30px); 	
@@ -42,7 +51,6 @@ body {
 
 #map {
     padding: 0px;
-    //margin: auto;
     left: 375px;
     margin-top: 40px;
     background-color: white;
@@ -145,17 +153,9 @@ p.menu {
     font-size: 12px;
     font-weight: bold;
 }
-/*
-label
-{
-	color:red;	
-	display: block;
-	width: 100px;
-	float: left;
-}
-*/
+
 #section1 { 
-    height: 225px;
+    height: 205px;
     margin: 2px;
     font-size: 12px;
     color: black
@@ -210,16 +210,6 @@ label
     font: 12px "Enriqueta", arial, sans-serif;
 }
 
-#header a{
-    text-decoration:none;
-    color: white;
-    font: 12px "Enriqueta", arial, sans-serif;
-}
-
-#header :hover{
-    color: red;
-}
-
 .header_options {
     float: right;
     display:inline;
@@ -271,6 +261,10 @@ label
     font-size:0.8em;
 }
 
+.ui-dialog-buttonpane{
+    padding: 0px
+}
+
 #sortable li {
     margin: 5px 0 5px 0;
     padding: 5px;
@@ -282,18 +276,7 @@ label
     color: black;
 }
 
-#sortable li.sortable_target {
-    margin: 5px 0 5px 0;
-    border: 2px solid;
-    padding: 5px;
-    font-size: 12px;
-    line-height: 2em;
-    background: #7b98ce;
-    color: white;
-    border-radius: 9%;
-}
-
-#sortable li.sortable_result {
+#sortable li.sortable_target, #sortable li.sortable_result {
     margin: 5px 0 5px 0;
     border: 2px solid;
     padding: 5px;

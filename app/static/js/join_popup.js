@@ -20,6 +20,7 @@ function handle_join(){
     }
 }
 
+// Function called to update the menu according to user operation (triggered when layers/dataset are added and after a join operation)
 function valid_join_check_display(val, prop){
     if(!val){
         d3.select("#img_data_ext").attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"}).style({"width": "28px", "height": "28px"})
@@ -34,6 +35,11 @@ function valid_join_check_display(val, prop){
     }
 }
 
+// Where the real join is done 
+// Its two main results are:
+//    -the update of the global "field_join_map" array
+//       (storing the relation between index of the geometry layer and index of the external dataset)
+//    -the update of the global "user_data" object, adding actualy the value to each object representing each feature of the layer
 function valid_join_on(layer_name, field1, field2){
     var join_values1 = [],
         join_values2 = [],
@@ -128,6 +134,9 @@ function valid_join_on(layer_name, field1, field2){
     }
 }
 
+// Function creating the join box , filled by to "select" input linked one to
+// the geometry layer and the other to the external dataset, in order to choose
+// the common field to do the join.
 function createJoinBox(layer){
     var geom_layer_fields = Object.getOwnPropertyNames(user_data[layer][0]),
         ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
@@ -144,12 +153,13 @@ function createJoinBox(layer){
             button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
     button2.push("</select>");
 
-    inner_box = ['<div><p style="font:16px bold;text-align:center">Layer name : </p>',
-                 '<p style="font: 14px courrier bold; display:inline;">', layer, '<br>',
-                 '<p><b><i>Select fields on which operate the join :</i></b></p>',
-                 '<p>Geometrie layer fields :<br>', button1.join(''),
-                 '<p>External dataset fields :<br>', button2.join(''),
-                 '<br><br><br><p style="text-align:center;font: bold">Join datasets ?</p></div>'].join('');
+    inner_box = [
+        '<div><p style="font:12px italic;">Layer name : </p><p style="font: 14px courrier bold; display:inline;">',
+         layer, '<br>',
+         '<p><b><i>Select fields on which operate the join :</i></b></p>',
+         '<p>Geometrie layer fields :<br>', button1.join(''),
+         '<p>External dataset fields :<br>', button2.join(''),
+         '<br><br><p style="text-align:center;font: bold">Join datasets ?</p></div>'].join('');
 
     make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
         .then(function(confirmed){
@@ -159,65 +169,3 @@ function createJoinBox(layer){
     d3.select("#button_field1").on("change", function(){last_choice.field1 = this.value;});
     d3.select("#button_field2").on("change", function(){last_choice.field2 = this.value;});
 }
-
-//
-//function make_box(name){
-//    var modal = createJoinBox(name);
-//    modal.className += ' active';
-//    modal.style.position = 'fixed'
-//    modal.style.zIndex = 1;
-//    return center(modal);
-//};
-
-//function createJoinBox(modalid, html){
-//     var nwBox = document.createElement('div'),
-//         bg = document.createElement('div'),
-//         g_lyr_name = "#"+trim(modalid);
-//
-//     var geom_layer_fields = Object.getOwnPropertyNames(user_data[modalid][0]),
-//         ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
-//
-//     var button1 = ["<select id=button_field1>"],
-//         button2 = ["<select id=button_field2>"];
-//
-//     // Pretty ugly way to prepare the buttons:
-//     for(var i=0, len=geom_layer_fields.length; i<len; i++)
-//         button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
-//
-//     button1.push("</select>");
-//     button1 = button1.join('');
-//
-//     for(var i=0, len=ext_dataset_fields.length; i<len; i++)
-//        if(ext_dataset_fields[i].length > 0)
-//             button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
-//
-//     button2.push("</select>");
-//     button2 = button2.join('');
-//
-//     bg.className = 'overlay';
-//     nwBox.id = modalid;
-//     nwBox.className = 'popup';
-//     nwBox.innerHTML = ['<!DOCTYPE html>',
-//                        '<p style="font:16px bold;text-align:center">Join option</p><br>',
-//                        'Layer name : <p style="font: 14px courrier bold; display:inline;">', modalid, '<br>',
-//                        '<p><b><i>Select fields on which operate the join :</i></b></p>',
-//                        '<p>Geometrie layer fields :', button1,
-//                        '<p>External dataset fields :', button2,
-//                        '<br><br><br><p style="text-align:center;font: bold">Join datasets ?</p>',
-//                        '<p><button id="yes">Apply</button>',
-//                        '&nbsp;<button id="no">Cancel</button></p>'].join('');
-//
-//     (document.body || document.documentElement).appendChild(nwBox);
-//     (document.body || document.documentElement).appendChild(bg);
-//
-//     qs('#yes').onclick=function(){
-//         var field1 = $("#button_field1 :selected").text(),
-//             field2 = $("#button_field2 :selected").text();
-//         valid_join_on(modalid, field1, field2);
-//         deactivate([nwBox, bg]);
-//     }
-//     qs('#no').onclick=function(){
-//         deactivate([nwBox, bg]);
-//     }
-//     return nwBox;
-//}

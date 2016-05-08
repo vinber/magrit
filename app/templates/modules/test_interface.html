@@ -38,14 +38,15 @@
   </head>
   <body>
       <div id ="header">
-        <p style="display:inline;margin-left:10px;"><i>MAPOLOGIC</i></p>
-        <p class="header_options"><a href="https://github.com/riatelab/noname-stuff/">Sources</a>  <a href="">Documentation</a></p></div>
+        <p style="display:inline;margin-left:10px;"><i><a href="/">MAPOLOGIC</a></i></p>
+        <p id="rgt" class="header_options"><a href="https://github.com/riatelab/noname-stuff/">Sources</a>  <a href="">Documentation</a></p></div>
       <div id ="menu"></div>
   	 <div id ="map"></div>
       <div id="func">{{ func }}</div>
       <div id="user_id" style="display:none">{{ user_id }}</div>
       <a id="downloadAnchorElem" style="display:none"></a>
-    <script>
+<script>
+"use strict"
 var func = document.getElementById('func').innerHTML;
 document.getElementById('func').style.display = "none";
 var menu_option = get_menu_option(func);
@@ -64,6 +65,18 @@ var proj = d3.geo.mercator().scale(375).translate([525, 350]),
 //var x_center_proj = proj.center()[0],
 //    y_center_proj = proj.center()[1];
 
+/*
+A bunch of global variable, storing oftently reused informations :
+    - user_date[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
+            (+ the joined features if a join is done)
+    - result_data[layer_name] : the same but for an eventual result layer (like Stewart, gridded, etc.)
+    - joined_dataset : the joined dataset (read with d3.csv is pushed in the first slot of this array)
+    - field_join_map : an array containg mapping between index of geom layer and index of ext. dataset 
+    - current_layers : the main object describing **all** the layers on the map (incunding detailed, ie by features, styling properties if needed)
+    - last_params : an object to fill with the last user selected paremeter after "valid" button of
+            the targeted functionnality has been pushed
+*/
+
 var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
@@ -76,6 +89,7 @@ var user_data = new Object(),
     join_button = null,
     map_div = d3.select("#map");
 
+// The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
             .append("svg")
                 .attr("id", "svg_map")
@@ -83,18 +97,18 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
                 .attr("height", h)
                 .call(zoom);
 
-
+// A bunch of references to the buttons used in the layer manager
+// and some mapping to theses reference according to the type of geometry :
 var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="style_button" width="17" height="17" alt="submit"/>',
     button_trash = ' <img src="/static/img/Trash_font_awesome.svg" class="trash_button" width="17" height="17" alt="submit"/>',
     button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" class="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
-    button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">';
+    button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">',
     button_polygon = '<img src="/static/img/qgis_mIconPolygonLayer.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
     button_line = '<img src="/static/img/qgis_mIconLineLayer.svg" class="ico_type" width="17" height="17" alt="Line"/>',
     button_point = '<img src="/static/img/qgis_mIconPointLayer.svg" class="ico_type" width="17" height="17" alt="Point"/>',
     button_type = {"Point": button_point, "Line": button_line, "Polygon": button_polygon},
     button_type_blank = {"Point": button_point.replace(".svg", "_blank.svg"), "Line": button_line.replace(".svg", "_blank.svg"), "Polygon": button_polygon.replace(".svg", "_blank.svg")};
 
-// These triggers are in a function as they need to be called on each layer add
 
 current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
@@ -131,11 +145,10 @@ section1.append("div")
           .attr({"src": "/static/img/drop_section1.svg", "alt": "Drop_zone_section1"})
           .style({display: "block", "margin-left": "auto", "margin-right": "auto", width: "270px"})
           .on('click',  add_layer);
-
+section1.append('p').attr("id", "sample_link").style({margin: "auto", "text-align": "center"}).html('<i>Add sample data...</i>').on('click', add_sample_layer);
 
 {
     var dv1 = section1.append("div");
-    dv1.append('p').style({margin: "auto", "text-align": "center"}).html('<i>Add sample data...</i>').on('click', add_sample_layer);
     let dv11 = dv1.append("div");
     dv11.append("img").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
     dv11.append("p").attr("id", "input_geom").attr("class", "user_panel").style("display", "inline").html("<i>No layer</i>");
@@ -151,7 +164,7 @@ var browse_table = d3.select("#browse_section")
                         .attr("id", "browse_button")
                         .attr("disabled", true)
                         .html("Explore your table(s)")
-                        .on("click", function(){  createBoxExplore.create();  });
+                        .on("click", function(){  boxExplore.create();  });
 
 if(menu_option.text_button){
     var dv2 = section2.append("p").attr("class", "form-item");
@@ -166,7 +179,7 @@ if(menu_option.text_button){
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons")
-dv3 = section3.append("div")
+var dv3 = section3.append("div")
                 .attr("data-tooltip", "Drop new layout layer or click to browse locally and add one. Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON and TopoJSON")
                 .style("text-align", "center")
                 .html("Drop new layout layers here or browse locally...<br>");
@@ -177,11 +190,12 @@ dv3.append("img")
 
 dv3.append('p').html('<i>Add sample layout layers...</i>').on('click', function(){add_layout_layers();});
 
+// Reference to the sys run button already in two requested sizes are they are called many times :
 var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>',
     sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>'
 
 {
-    var dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
+    let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
     dv4.append("p").style("display", "inline").html("<b>Canvas width (px)</b><br>").insert("input").attr("id", "input-width").attr("type", "number").attr("value", w).on("change", function(){canvas_mod_size([this.value,null])})
     dv4.append("p").html("<b>Canvas height (px)</b><br>").insert("input").attr("id", "input-height").attr("type", "number").attr("value", h).on("change", function(){canvas_mod_size([null,this.value])})
     dv4.append("p").style("display", "inline").html("Map title<br>").insert("input").attr("id", "title").on("keyup", function(){handle_title(this.value);})
@@ -219,7 +233,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
               .html("");
 
 // These variables (background, p, const_options, etc.) are not needed anymore 
-// after so they are put into curly braces to ensure garbage collection :
+// after being used here so they are put into curly braces to ensure garbage collection (?):
 {
     let background = map.append("g")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
@@ -316,18 +330,18 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 
 }
 
+// Already append the div for displaying information on features,
+// setting it currently unactive until it will be requested :
 var info_features = d3.select("body").append("div")
               .attr("id", "info_features")
               .html("");
 info_features.active = false;
 
 // Trigger actions when buttons are clicked and set-up the initial view :
-
 d3.selectAll(".zoom_button").on("click", zoomClick);
 d3.selectAll(".info_button").on("click", displayInfoOnMove);
 d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 binds_layers_buttons();
-
 zoom.scale(0.5).translate([400, 250]);
 zoom_without_redraw();
 
@@ -339,6 +353,7 @@ setInterval(sendPreferences, 300000);
 // JQuery menu and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
+// Trigger the accordions, start with the first one (section 1) open :
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
  
@@ -346,6 +361,10 @@ $(function() {
   $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
     update: function(a){
+      // Set the layer order on the map in concordance with the user changes
+      // in the layer manager with a pretty rusty sorting algorythm
+      // trying to match the requested order from the actual order
+      // (currently havent been tested on a really large number of layers)
       var desired_order = [],
           actual_order = [],
           layers = d3.selectAll("svg").node();
@@ -365,6 +384,8 @@ $(function() {
   $( "#sortable" ).disableSelection();
 });
 
+// Display a progress bar during the ajaxRequest
+// (can be unset locally by using the `"global": false` param when making an ajax request)
 $(document).ajaxStart(function() {
         var bg = document.createElement('div');
         bg.className = 'overlay';
@@ -378,6 +399,7 @@ $(document).ajaxStart(function() {
         d3.selectAll(".overlay").remove();
 });
 
+// bind the mains tooltips 
 $("[data-tooltip!='']").qtip({
     content: {
         attr: "data-tooltip"
@@ -390,6 +412,9 @@ $("[data-tooltip!='']").qtip({
 // To sort:
 ////////////////
 
+// To bind the set of small buttons (trash icon, paint icon, active/deactive visibility, info tooltip, etc..)
+// which are on each feature representing a layer in the layer manager
+// (the function is called each time that a new feature is put in this layer manager)
 function binds_layers_buttons(){
     d3.selectAll(".trash_button").on("click", remove_layer);
     d3.selectAll(".active_button").on("change", handle_active_layer);
@@ -411,11 +436,13 @@ function binds_layers_buttons(){
     });
 }
 
+// Function to display information on the top layer (in the layer manager)
+// it will only works on layers appearing in blue in the layer manager
+// (ie. the targeted layer and result(s?) layer(s?))
 function displayInfoOnMove(){
     var target_lyr = Object.getOwnPropertyNames(user_data),
         result_lyr = Object.getOwnPropertyNames(result_data),
         nb_layer = d3.select('svg').selectAll(".layer")[0].length,
-        svg_layer = undefined,
         top_layer = d3.select('svg').selectAll(".layer")[0][nb_layer-1].id;
 
     if(target_lyr.length === 0 && result_lyr.length === 0){
@@ -425,7 +452,7 @@ function displayInfoOnMove(){
     } else if(top_layer !== target_lyr[0] && top_layer !== result_lyr[0]){
         alert("The layer to explore have to be in the top of the others");
     } else {
-        svg_layer = "#"+top_layer;
+        let svg_layer = "#"+top_layer;
         if(info_features.active){
             d3.select(".info_button").style('box-shadow', null);
             d3.select(svg_layer).selectAll("path").on("mouseover", null)
@@ -469,6 +496,8 @@ function qs(str){
     return document.querySelector(str);
 };
 
+// Convenience function to make a confirm dialog returning a defered promise 
+// which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
 var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height){
     html_content = html_content || "";
     text_ok = text_ok || "Ok";
@@ -500,6 +529,7 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
     return deferred.promise;
 };
 
+
 function log_coordinates(t){
   var coords = proj.invert(d3.mouse(t)),
       txt = [];
@@ -512,6 +542,7 @@ function log_coordinates(t){
   info_coords.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
 };
 
+// Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(){
     var name,
         name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
@@ -528,48 +559,50 @@ function remove_layer(){
     });
 }
 
-
+// Do some clean-up when a layer is removed 
+// Most of the job is to do when it's the targeted layer which is removed in
+// order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
      let g_lyr_name = "#"+name;
 
      // Making some clean-up regarding the result layer :
-     if(current_layers[name].rendered !== undefined){
-         d3.selectAll("#display_legend").remove();
-         if(current_layers[name].is_result){
-             d3.selectAll("#legend_root").remove();
-             d3.selectAll("#legend_root2").remove();
-             d3.selectAll(".source_block").remove();
-        }
-         if(result_data.hasOwnProperty(name)) { delete result_data[name]; }
-     }
-
-     d3.select(g_lyr_name).node().remove();
-     d3.select("#sortable").select('.'+name).node().remove();
-
-     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
-     if(current_layers[name].targeted){
-         d3.select("#img_in_geom").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
-         d3.select("#input_geom").html("<b><i>No layer</i></b>");
-         d3.select("#func_button").node().disabled = true;
-         field_join_map = [];
-         delete user_data[name];
-         targeted_layer_added = false;
-    }
-
     if(current_layers[name].is_result){
         d3.selectAll("#display_legend").remove();
         d3.selectAll("#legend_root").remove();
         d3.selectAll("#legend_root2").remove();
         d3.selectAll(".source_block").remove();
-        result_data = new Object();
+        if(result_data.hasOwnProperty(name))
+            delete result_data[name];
     }
 
-    if(joined_dataset.length == 0 && current_layers[name].targeted)
-        browse_table.node().disabled = true;
+    // Remove the layer from the map and from the layer manager :
+    d3.select(g_lyr_name).remove();
+    d3.select("#sortable").select('.'+name).remove();
 
+    // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
+    if(current_layers[name].targeted){
+        d3.select("#img_in_geom").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
+        d3.select("#input_geom").html("<b><i>No layer</i></b>");
+        //d3.select("#func_button").node().disabled = true;
+        document.getElementById("func_button").disabled = true;
+        field_join_map = [];
+        delete user_data[name];
+        targeted_layer_added = false;
+        // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
+        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; width: 270px;" alt="Drop_zone_section1" src="/static/img/drop_section1.svg">')
+        d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
+    }
+
+    // Restore the state of the bottom of the section 1 :
     if(d3.select("#join_button").node() != null && current_layers[name].targeted)
         valid_join_check_display();
 
+    // If there isn't nor a targeted layer neither an external dataset :
+    if(joined_dataset.length == 0 && current_layers[name].targeted)
+        browse_table.node().disabled = true;
+
+    // There is probably better ways in JS to delete the object,
+    // but in order to make it explicit that we are removing it :
     delete current_layers[name];
 }
 
@@ -577,6 +610,7 @@ function load_map_template(){
     alert("Not implemented!");
 }
 
+// Change color of the background (ie the parent "svg" element on the top of which group of elements have been added)
 function handle_bg_color(color){
     map.style("background-color", color);
 }
@@ -593,9 +627,9 @@ function handle_click_hand(){
     }
 }
 
+// Trying to handle zooming using a rectangle on the map
 function handle_click_zoom_select(){
     var last_click_behavior;
-
     return function(){
         var hand_button = d3.select('.hand_button'),
             zoom_sel_button = d3.select('.brush_zoom_button');
@@ -710,6 +744,7 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     return JSON.stringify({"map_config": map_config, "layers": layers_style})
 }
 
+// Function triggered when the user request a download of its map preferences
 function save_map_template(){
     var json_params = get_map_template(),
         dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params),
@@ -719,6 +754,8 @@ function save_map_template(){
     dlAnchorElem.click();
 }
 
+// Function triggered each 5 minutes and when a major modification (like style modification on a layer)
+// is done in order to keep basic informations about the map properties user (zoom, position, layers & styles, etc.)
 function sendPreferences(){
     var json_params = get_map_template(),
         FormToSend = new FormData();
@@ -754,11 +791,11 @@ function zoom_without_redraw(){
     }
     if(layers.length > 0){
         for(let i=0, i_len = layers.length; i < i_len; i++){
-        let lyr_name = layers[i];
-        if(current_layers[lyr_name].fixed_stroke)
-            d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const']);
-        else
-            d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'].split("px")[0] / zoom.scale() +  "px");
+            let lyr_name = layers[i];
+            if(current_layers[lyr_name].fixed_stroke)
+                d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const']);
+            else
+                d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'].split("px")[0] / zoom.scale() +  "px");
         }
     }
 };
@@ -926,18 +963,14 @@ var φ = d3.scale.linear()
     .domain([0, h])
     .range([90, -90]);
 
+// Function to switch the visibility of a layer with the checkbox designed for
 function handle_active_layer(){
-    var name,
-        name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
-
-    if(name_split.length == 2) name = name_split[1].trim();
-    else if(name_split.length > 2) console.log('Oups..');
-    else name = name_split[0].trim();
-
-    fill_value = this.checked ? 1 : 0;
+    let name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim(),
+        fill_value = this.checked ? 1 : 0;
     d3.selectAll("#"+name).style("opacity", fill_value);
 }
 
+// Function to handle the title add and changes 
 function handle_title(txt){
     var title = d3.select("#map_title");
     if(title.node()){
@@ -1006,10 +1039,10 @@ function handle_title_properties(){
     return;
 }
 
-
+// Function to change (one of ) the three rotations axis of a d3 projection
+// and redraw all the path in respect to that
 function handle_proj_center_button(param){
     current_rotation = proj.rotate();
-
     if(param[0]){
         proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
         map.selectAll("path").attr("d", path);
@@ -1024,7 +1057,10 @@ function handle_proj_center_button(param){
     }
 }
 
-
+// Function triggered by the change of map/canvas size
+// Args :
+//   - param (Array of two elements : width and height to use; generally only used
+//            once at the time so `param` values are like [null, 750] or [800, null])
 function canvas_mod_size(param){
     if(param[0]){
         w = param[0];

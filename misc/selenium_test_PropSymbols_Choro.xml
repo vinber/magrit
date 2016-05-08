@@ -3,13 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head profile="http://selenium-ide.openqa.org/profiles/test-case">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="selenium.base" href="http://192.168.56.1:9999/" />
-<title>testPropSymbolsChoro</title>
+<link rel="selenium.base" href="http://localhost:9999/" />
+<title>selenium_test_PropSymbols_Choro</title>
 </head>
 <body>
 <table cellpadding="1" cellspacing="1" border="1">
 <thead>
-<tr><td rowspan="1" colspan="3">testPropSymbolsChoro</td></tr>
+<tr><td rowspan="1" colspan="3">selenium_test_PropSymbols_Choro</td></tr>
 </thead><tbody>
 <tr>
 	<td>open</td>
@@ -18,13 +18,18 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>css=#section1 &gt; div &gt; p &gt; i</td>
+	<td>css=#sample_link &gt; i</td>
 	<td></td>
 </tr>
 <tr>
 	<td>select</td>
 	<td>css=select.sample_target</td>
 	<td>label=Nuts 2 (2013) European subdivisions (Polygons)</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.sample_dataset</td>
+	<td>label=&quot;Grand Paris&quot; incomes dataset (To link with Grand Paris municipality geometries)</td>
 </tr>
 <tr>
 	<td>click</td>
@@ -38,6 +43,76 @@
 </tr>
 <tr>
 	<td>click</td>
+	<td>id=join_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-3</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=img.trash_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#sample_link &gt; i</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.sample_target</td>
+	<td>label=Grand Paris municipalities (Polygons)</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForAlert</td>
+	<td>Layer successfully added to the canvas</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=join_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=button_field2</td>
+	<td>label=DEPCOM</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-3</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
 	<td>id=ui-id-2</td>
 	<td></td>
 </tr>
@@ -47,48 +122,38 @@
 	<td></td>
 </tr>
 <tr>
+	<td>select</td>
+	<td>css=select.params</td>
+	<td>label=INC</td>
+</tr>
+<tr>
 	<td>type</td>
 	<td>css=input.params</td>
-	<td>24.2</td>
+	<td>35.5</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=input.params</td>
+	<td>23.4</td>
 </tr>
 <tr>
 	<td>type</td>
 	<td>//input[@value='1']</td>
-	<td>0.9</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.8</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.7</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.6</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.5</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.4</td>
+	<td>0.1</td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>//div[@id='nuts2_dataPropSymbolChoro_popup']/p[5]/select</td>
-	<td>label=act2008</td>
+	<td>//div[@id='GrandParisMunicipalitiesPropSymbolChoro_popup']/p[5]/select</td>
+	<td>label=INC</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>//div[@id='GrandParisMunicipalitiesPropSymbolChoro_popup']/p[5]/select</td>
+	<td>label=TH</td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>//div[@id='nuts2_dataPropSymbolChoro_popup']/p[6]/button</td>
+	<td>//div[@id='GrandParisMunicipalitiesPropSymbolChoro_popup']/p[6]/button</td>
 	<td></td>
 </tr>
 <tr>
@@ -114,6 +179,111 @@
 <tr>
 	<td>click</td>
 	<td>id=checkbox_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#legend_root2 &gt; #move_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#legend_root2 &gt; #move_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#legend_root2 &gt; #move_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#legend_root2 &gt; #move_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=hand_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-2</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-4</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>id=title</td>
+	<td>An awesome map !</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=title</td>
+	<td>An awesome map !</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=img[alt=&quot;Title properties&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=div &gt; p &gt; input[type=&quot;number&quot;]</td>
+	<td>20</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=div &gt; p &gt; input[type=&quot;number&quot;]</td>
+	<td>26</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='50']</td>
+	<td>47</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.params</td>
+	<td>label=Comic Sans MS</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-3</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//img[@alt='submit'])[7]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//input[@value='#c8c8c8']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='#c8c8c8']</td>
+	<td>#f5fcf5</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=yes</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.const_buttons</td>
 	<td></td>
 </tr>
 

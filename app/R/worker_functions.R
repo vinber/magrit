@@ -92,8 +92,8 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(class(spdf@data[, var_name]) == "character"){
     spdf@data[, var_name] <- as.numeric(spdf@data[, var_name])
   }
-  print(layer_json_path)
-  # file.remove(layer_json_path)
+  # print(layer_json_path)
+  file.remove(layer_json_path)
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   

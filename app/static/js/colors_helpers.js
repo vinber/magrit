@@ -1,5 +1,8 @@
-// Helper function returning the original array of color of a larger one 
-// ... with interpolated values :
+// Helper function in order to have a colorbrewer color ramp with 
+// non-supported number of value using interpolation between the colorbrewer color
+// to fit the requested number of classes.
+// If the number of class fit the size of a colorbrewer ramp (3 < nb_class < 9)
+// the genuine colorbrewer array is directly returned.
 var getColorBrewerArray = function(nb_class, name){
     if(nb_class < 10 && nb_class >= 3){
         var colors = colorbrewer[name][nb_class];
@@ -21,6 +24,8 @@ var getColorBrewerArray = function(nb_class, name){
     }
 }
 
+// Function to make color interpolation from "colors" (an array of n colors)
+// to a larger array of "k" colors (using same start and stop than the original)
 var interp_n = function(colors, diff, k){
     var tmp = [], new_colors = [];
     for(var i = 0; i < diff; ++i){
@@ -60,6 +65,9 @@ function hexToRgb(hex, out) {
     }
 }
 
+// Return the interpolated value at "factor" (0<factor<1) between color1 and color2
+// (if no factor is provided the default value of 0.5 is used,
+// corresponding to the middle between the two colors).
 var interpolateColor = function(color1, color2, factor) {
   if (arguments.length < 3) { factor = 0.5; }
   var result = color1.slice();
@@ -70,6 +78,8 @@ var interpolateColor = function(color1, color2, factor) {
 };
 
 
+// Just a "Colors" object with a convenience "random" method 
+// ... when a random color is needed (they aren't specialy pretty colors though!)
 Colors = {};
 Colors.names = {
     aqua: "#00ffff",
