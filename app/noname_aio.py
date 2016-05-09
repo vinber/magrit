@@ -94,7 +94,7 @@ def ogr_to_geojson(filepath, to_latlong=True):
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--spherical", "--bbox", "true",
+    process = Popen(["topojson", "--spherical", "--no-quantization", "--bbox", "true",
                      "-p", "--", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     os.remove(filepath)
@@ -437,6 +437,7 @@ def carto_gridded(posted_data, session_redis, user_id):
     f_name = '_'.join([user_id, posted_data['topojson']])
     ref_layer = yield from app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
+    print(ref_layer)
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:

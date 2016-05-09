@@ -682,7 +682,7 @@ function createFuncOptionsBox_Anamorphose(layer){
                 "nb_features": nb_features,
                 "ref_layer_name": layer,
                 "symbol": "circle",
-                "max_size": 15,
+                "max_size": 20,
                 "ref_size": 0.1,
                 "fill_color": Colors.random()
                 };
@@ -699,36 +699,37 @@ function createFuncOptionsBox_Anamorphose(layer){
                              r: +dorling[0][i].getAttribute('r')});
             }
 
+            var res = new Array(nb_features);
             console.log(ref_pt)
-            force = d3.layout.force().gravity(3.0).size([w,h]).charge(-1).nodes(forceNodes);
-            force.on("tick", function() {
-                for(let i = 0 ; i < nb_features ; i++) {
-                    for(let j = 0 ; j < nb_features ; j++) { 
-                        if(i==j) continue;
-                        let it = ref_pt[i],
-                            jt = ref_pt[j];
-
-                        let radius = it.r + jt.r,
-                            itx = it.x + it.c[0],
-                            ity = it.y + it.c[1],
-                            jtx = jt.x + jt.c[0],
-                            jty = jt.y + jt.c[1], 
-                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
-
-                        if(radius > dist) {
-                            console.log('here i am')
-                            let dr = ( radius - dist ) / ( dist * 1 );
-                            it.x = it.x + ( itx - jtx ) * dr;
-                            it.y = it.y + ( ity - jty ) * dr;
-                        }
+            for(let i = 0 ; i < nb_features ; i++) {
+                for(let j = 0 ; j < nb_features ; j++) { 
+                    if(i==j) continue;
+                    let it = res[i] != undefined ? res[i] : ref_pt[i],
+                        jt = res[j] != undefined ? res[j] : ref_pt[j];
+    
+                    let radius = it.r + jt.r,
+                        itx = it.x + it.c[0],
+                        ity = it.y + it.c[1],
+                        jtx = jt.x + jt.c[0],
+                        jty = jt.y + jt.c[1],
+                        dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
+    
+                    if(radius >= dist) {
+                        let dr = ( radius - dist ) / ( dist * 1 );
+                        let tmp_x = it.x + ( itx - jtx ) * dr;
+                        let tmp_y = it.y + ( ity - jty ) * dr;
+                        res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r};
                     }
                 }
-                for(let i = 0 ; i < nb_features ; i++) {
-                    dorling[0][i].setAttribute('cx', ref_pt[i].x)
-                    dorling[0][i].setAttribute('cy', ref_pt[i].y)
-                }
-            });
-            force.start();
+            }
+
+            for(let i = 0 ; i < nb_features ; i++) {
+                let tmp_x = res[i] != undefined ? res[i].x : ref_pt[i].x,
+                    tmp_y = res[i] != undefined ? res[i].y : ref_pt[i].y;
+                dorling[0][i].setAttribute('cx', tmp_x);
+                dorling[0][i].setAttribute('cy', tmp_y);
+            }
+            console.log(res)
             console.log(ref_pt)
             binds_layers_buttons();
             zoom_without_redraw();
@@ -799,9 +800,9 @@ var boxExplore = {
 
         if(dataset_name != undefined && the_name != undefined)
             this.box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
-                    let type = (this.current_table === "layer") ? "ext_dataset" : "layer";
-                    this.current_table = type;
-                    this.display_table({"type": type});
+                    let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
+                    self.current_table = type;
+                    self.display_table({"type": type});
                     });
        
         this.display_table({"type": this.current_table});

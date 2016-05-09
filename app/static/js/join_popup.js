@@ -67,7 +67,7 @@ function valid_join_on(layer_name, field1, field2){
         alert("The values on which operate have to be uniques");
         return;
     }
-
+    console.log(join_values1);console.log(join_values2)
     if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
         for(let i=0, len=join_values1.length; i<len; i++){
             val = join_values2.indexOf(String(join_values1[i]));
