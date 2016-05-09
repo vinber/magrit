@@ -94,8 +94,10 @@ def ogr_to_geojson(filepath, to_latlong=True):
 def geojson_to_topojson(filepath):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--spherical", "--no-quantization", "--bbox", "true",
-                     "-p", "--", filepath], stdout=PIPE)
+    process = Popen(["topojson", "--spherical",
+                     "-q", "1e10",
+                     "-p", "--",
+                     filepath], stdout=PIPE)
     stdout, _ = process.communicate()
     os.remove(filepath)
     return stdout.decode()
@@ -347,48 +349,48 @@ def handle_app_functionality(request):
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 
-@asyncio.coroutine
-def links_map_py(posted_data, session_redis, user_id):
-    s_t = time.time()
-    posted_data = json.loads(posted_data.get("json"))
-
-    f_name = '_'.join([user_id, posted_data['topojson']])
-    ref_layer = yield from app_glob['redis_conn'].get(f_name)
-    ref_layer = json.loads(ref_layer.decode())
-    new_field = json.loads(posted_data['join_field'])
-    n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field)
-
-    src_layer = topojson_to_geojson(ref_layer)
-    gdf = GeoDataFrame.from_features(json.loads(src_layer)['features'])
-    df = pd.read_json(posted_data['csv_table'])
-
-    make_line = lambda pts: LineString([pts[0], pts[1]])
-    
-    gdf.geometry = gdf.geometry.centroid
-    gdf['geom_centroid'] = [(g.coords.xy[0][0], g.coords.xy[1][0]) for g in gdf.geometry]
-    
-    _id, i, j, fij = n_field_name, posted_data["field_i"], posted_data["field_j"], posted_data["field_fij"]
-    
-    gdf.set_index(_id, inplace=True, drop=False)
-    df.set_index(i, drop=False, inplace=True)
-    df = df.join(gdf['geom_centroid'], how='left', rsuffix='ii')
-    df.set_index(j, drop=False, inplace=True)
-    df = df.join(gdf['geom_centroid'], how='left', rsuffix='jj')
-
-    res = GeoDataFrame(
-        data=df[[i, j, fij]],
-        geometry=[make_line((i[1], i[2])) for i in df[['geom_centroid', 'geom_centroidjj']].itertuples()]
-        ).to_json()
-
-    tmp_part = get_name()
-    filename_result = ''.join(["/tmp/", tmp_part, ".geojson"])
-    savefile2(filename_result, res.encode())
-    res = geojson_to_topojson(filename_result)
-    print('Python - p3 : {:.4f}'.format(time.time()-s_t))
-    return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
-
+#@asyncio.coroutine
+#def links_map_py(posted_data, session_redis, user_id):
+#    s_t = time.time()
+#    posted_data = json.loads(posted_data.get("json"))
+#
+#    f_name = '_'.join([user_id, posted_data['topojson']])
+#    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = json.loads(posted_data['join_field'])
+#    n_field_name = list(new_field.keys())[0]
+#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+#        join_topojson_new_field(ref_layer, new_field)
+#
+#    src_layer = topojson_to_geojson(ref_layer)
+#    gdf = GeoDataFrame.from_features(json.loads(src_layer)['features'])
+#    df = pd.read_json(posted_data['csv_table'])
+#
+#    make_line = lambda pts: LineString([pts[0], pts[1]])
+#    
+#    gdf.geometry = gdf.geometry.centroid
+#    gdf['geom_centroid'] = [(g.coords.xy[0][0], g.coords.xy[1][0]) for g in gdf.geometry]
+#    
+#    _id, i, j, fij = n_field_name, posted_data["field_i"], posted_data["field_j"], posted_data["field_fij"]
+#    
+#    gdf.set_index(_id, inplace=True, drop=False)
+#    df.set_index(i, drop=False, inplace=True)
+#    df = df.join(gdf['geom_centroid'], how='left', rsuffix='ii')
+#    df.set_index(j, drop=False, inplace=True)
+#    df = df.join(gdf['geom_centroid'], how='left', rsuffix='jj')
+#
+#    res = GeoDataFrame(
+#        data=df[[i, j, fij]],
+#        geometry=[make_line((i[1], i[2])) for i in df[['geom_centroid', 'geom_centroidjj']].itertuples()]
+#        ).to_json()
+#
+#    tmp_part = get_name()
+#    filename_result = ''.join(["/tmp/", tmp_part, ".geojson"])
+#    savefile2(filename_result, res.encode())
+#    res = geojson_to_topojson(filename_result)
+#    print('Python - p3 : {:.4f}'.format(time.time()-s_t))
+#    return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
+#
 
 @asyncio.coroutine
 def links_map(posted_data, session_redis, user_id):
@@ -687,7 +689,7 @@ if __name__ == '__main__':
         data = f.read()
         app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]
     app_glob['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map_py,
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:

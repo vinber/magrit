@@ -54,7 +54,7 @@ var menu_option = get_menu_option(func);
 var w = Math.round((window.innerWidth / 1.34 ) / 10)*10,
     h = Math.round((window.innerHeight / 1.34 ) / 10)*10;
 
-var proj = d3.geo.mercator().scale(375).translate([525, 350]),
+var proj = d3.geo.mercator().scale(220).translate([460, 280]),
     path = d3.geo.path().projection(proj).pointRadius(1),
     t = proj.translate(),
     s = proj.scale(),
@@ -110,7 +110,7 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
     button_type_blank = {"Point": button_point.replace(".svg", "_blank.svg"), "Line": button_line.replace(".svg", "_blank.svg"), "Polygon": button_polygon.replace(".svg", "_blank.svg")};
 
 
-current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
+//current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ if(menu_option.text_button){
 }
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
-layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
+//layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons")
 var dv3 = section3.append("div")
                 .attr("data-tooltip", "Drop new layout layer or click to browse locally and add one. Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON and TopoJSON")
@@ -238,13 +238,13 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
     let background = map.append("g")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
                         .style({"stroke-width": "0.5px", stroke: "#718F79", fill: "#C8C8C8"});
-
+    /*
     map.append("g").attr({id: "Graticule", class: "layer"})
                    .append("path")
                    .attr("class", "graticule")
                    .datum(d3.geo.graticule())
                    .attr("d", path);
-
+    */
     d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
         background.selectAll('path')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
@@ -776,7 +776,7 @@ function sendPreferences(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    d3.select("svg").selectAll("g:not(.legend_feature)")
+    map.selectAll("g:not(.legend_feature)")
               .transition()
               .duration(30)
               .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
@@ -841,19 +841,18 @@ function zoomClick() {
 ////
 // Old zooming functions - too use when redrawing on zooming
 /////
-/*
-function redraw() {
-  sc = d3.event.scale;
-  tr  = d3.event.translate;
-  var tx = t[0] * d3.event.scale + d3.event.translate[0];
-  var ty = t[1] * d3.event.scale + d3.event.translate[1];
-  proj.translate([tx, ty]);
-  proj.scale(s * d3.event.scale);
+
+function redraw(sc, tr) {
+  sc = sc || d3.event.scale;
+  tr  = tr || d3.event.translate;
+  let tx = t[0] * sc + tr[0],
+      ty = t[1] * sc + tr[1];
+  proj.translate([tx, ty])
+    .scale(s * sc);
   map.selectAll(".layer").selectAll("path").attr("d", path);
   return [sc, tr];
-  //return tr;
 }
-
+/*
 function interpolateZoom(translate, scale) {
     return d3.transition().duration(225).tween("zoom", function () {
         var iTranslate = d3.interpolate(proj.translate(), translate),
@@ -1042,7 +1041,7 @@ function handle_title_properties(){
 // Function to change (one of ) the three rotations axis of a d3 projection
 // and redraw all the path in respect to that
 function handle_proj_center_button(param){
-    current_rotation = proj.rotate();
+    let current_rotation = proj.rotate();
     if(param[0]){
         proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
         map.selectAll("path").attr("d", path);

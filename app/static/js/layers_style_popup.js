@@ -17,23 +17,23 @@ function handle_click_layer(layer_name){
 };
 
 function createStyleBox(layer_name){
-     var nwBox = document.createElement('div'),
-         bg = document.createElement('div'),
-         type = current_layers[layer_name].type,
-         rendering_params = null;
+    var nwBox = document.createElement('div'),
+        bg = document.createElement('div'),
+        type = current_layers[layer_name].type,
+        rendering_params = null,
+        renderer = current_layers[layer_name].renderer;
 
-     if(current_layers[layer_name].renderer !== undefined){
-         rep = confirm("The selected layer seems to have been already rendered (with " + current_layers[layer_name].renderer + " method). Want to continue ?");
-          // Todo : do not ask this but display a choice of palette instead
-         if(!rep) return undefined;
-     }
+    if(renderer !== undefined){
+        rep = confirm("The selected layer seems to have been already rendered (with " + renderer + " method). Want to continue ?");
+        // Todo : do not ask this but display a choice of palette instead
+        if(!rep) return undefined;
+    }
 
-     var g_lyr_name = "#" + layer_name,
-         selection = d3.select(g_lyr_name).selectAll("path"),
-         opacity = selection.style('fill-opacity');
+    var g_lyr_name = "#" + layer_name,
+        selection = d3.select(g_lyr_name).selectAll("path"),
+        opacity = selection.style('fill-opacity');
 
-
-     if(current_layers[layer_name].colors_breaks != undefined){
+    if(current_layers[layer_name].colors_breaks != undefined){
         var fill_prev = current_layers[layer_name].colors;
      } else {
          var fill_prev = selection.style('fill');
@@ -67,7 +67,7 @@ function createStyleBox(layer_name){
                               .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
          } else {
             let field_to_discretize;
-            if(current_layers[layer_name].renderer == "Gridded"){
+            if(renderer == "Gridded"){
                 field_to_discretize = "densitykm";
             } else {
                 var fields = type_col(layer_name, "number"),
@@ -102,15 +102,24 @@ function createStyleBox(layer_name){
                           .insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
                           .on('change', function(){selection.style('fill-opacity', this.value)});
-    } else if (type === "Line" && current_layers[layer_name].renderer == "Links"){
+    } else if (type === "Line" && renderer == "Links"){
         let max_val = 0,
             previous_stroke_opacity = selection.style("stroke-opacity");
         selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
         popup.append('p').html('Only display flows larger than ...')
-                        .insert('input').attr({type: 'range', min: 0, max: max_val, step: 0.5})
+                        .insert('input').attr({type: 'range', min: 0, max: max_val, step: 0.5, value: 0})
                         .on("change", function(){
-                        selection.each(function(d, i){selection.transition(45).style("stroke-opacity", (d.properties.fij < this.value) ? 0 : previous_stroke_opacity)})
+                            let val = this.value;
+                            d3.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                            selection.style("stroke-opacity", function(d, i){
+                                if(+d.properties.fij > +val){
+                                    console.log(d.properties);
+                                    return 1;
+                                }
+                                else return 0;
+                            });
                         });
+        popup.append('label').attr("id", "larger_than").html('<i> 0 </i>')
      }
 
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
@@ -150,20 +159,23 @@ function createStyleBox(layer_name){
         deactivate([nwBox, bg]);
     }
     qs('#no').onclick=function(){
-         // Reset to original values the rendering parameters if "no" is clicked
-         deactivate([nwBox, bg]);
-         selection.style('fill-opacity', opacity)
+        // Reset to original values the rendering parameters if "no" is clicked
+        deactivate([nwBox, bg]);
+        selection.style('fill-opacity', opacity)
                      .style('stroke-opacity', border_opacity);
-         d3.select(g_lyr_name).style('stroke-width', stroke_width);
-         current_layers[layer_name]['stroke-width-const'] = stroke_width;
-         if(current_layers[layer_name].renderer === undefined)
-             selection.style('fill', fill_prev)
+        d3.select(g_lyr_name).style('stroke-width', stroke_width);
+        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        if(renderer === undefined)
+            selection.style('fill', fill_prev)
                      .style('stroke', stroke_prev);
-         else
+        else if(renderer != "Links")
             selection.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return current_layers[layer_name].colors[i] })
                    .style('stroke-opacity', 0.9)
                    .style("stroke", function(d, i){ return current_layers[layer_name].colors[i] });
+        else
+            selection.style('stroke-opacity', function(d, i){ return current_layers[layer_name].linksbyId[i][0]})
+                   .style("stroke", stroke_prev);
     }
     zoom_without_redraw();
     return nwBox;

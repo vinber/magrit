@@ -60,7 +60,6 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   if(!is.numeric(cellsize)){ cellsize <- as.numeric(cellsize) }
   
   latlong_string <- "+init=epsg:4326"
-  web_mercator <- "+init=epsg:3857"
   eckert_iv <- "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
   
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)

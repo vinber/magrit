@@ -15,3 +15,4 @@ TODO list:
 - Allow the user to display label of features on its map (based, or not on some criteria)
 - Set the scale according to the targeted layer once added (instead of zooming on it)
 - Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
+- Apply the same transformation to the prop symbols points when the map is reprojected

@@ -335,19 +335,46 @@ function add_layer_topojson(text, options){
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, result_layer_on_add ? button_type_blank[type] : button_type[type], "</div> ",lyr_name].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
     }
     if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
     if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
-    if(target_layer_on_add || result_layer_on_add) center_map(lyr_name);
-    binds_layers_buttons();
+    if(target_layer_on_add || result_layer_on_add) {
+        scale_map(lyr_name);
+        center_map(lyr_name);
+    }
     zoom_without_redraw();
+    binds_layers_buttons();
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
 };
+
+function scale_map(name){
+    var bbox_layer_path = undefined;
+    if(name.endsWith("_PropSymbols"))
+        name = name.substring(0, name.length - 12);
+    d3.select("#"+name).selectAll('path').each(function(d, i){
+        var bbox_path = path.bounds(d);
+        if(bbox_layer_path === undefined){
+            bbox_layer_path = bbox_path;
+        }
+        else {
+            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+        }
+    });
+    let prev_trans = proj.translate(),
+        prev_scale = proj.scale(),
+        s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+    proj.scale(s);
+    map.selectAll("g:not(.legend_feature)").selectAll("path").attr("d", path);
+};
+
 
 function center_map(name){
     var bbox_layer_path = undefined;

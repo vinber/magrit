@@ -475,10 +475,11 @@ function createBox_FlowMap(ref_layer){
                 let new_layer_name = ["Links_", name_join_field].join(""),
                     layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                     fij_field_name = field_fij.node().value,
-                    fij_values = joined_dataset[0].map(obj => obj[fij_field_name]),
-                    prop_values = prop_sizer_links(fij_values, 0.5 / zoom.scale(), 20 / zoom.scale());
+                    fij_values = joined_dataset[0].map(obj => +obj[fij_field_name]),
+                    prop_values = prop_sizer(fij_values, 0.5, 20);
                 current_layers[new_layer_name].fixed_stroke = true;
                 current_layers[new_layer_name].renderer = "Links";
+                current_layers[new_layer_name].linksbyId = prop_values.map(i => [0.8, i])
                 layer_to_render.style('fill-opacity', 0)
                                .style('stroke-opacity', 0.75)
                                .style("stroke-width", function(d, i){ return prop_values[i]; })
@@ -1609,8 +1610,8 @@ function render_choro(layer, rendering_params){
 
 
 function prop_sizer(arr, min_size, max_size){
-    let min_values = Math.sqrt(Math.min.apply(0, arr)),
-        max_values = Math.sqrt(Math.max.apply(0, arr)),
+    let min_values = Math.min.apply(0, arr),
+        max_values = Math.max.apply(0, arr),
         dif_val = max_values - min_values,
         dif_size = max_size - min_size,
         len_arr = arr.length,
@@ -1618,7 +1619,7 @@ function prop_sizer(arr, min_size, max_size){
     // Lets use "for" loop with pre-sized array as "map" and "forEach" seems 
     // to be sometimes slower in some browser
     for(let i=0; i<len_arr; ++i)
-        res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
+        res[i] = (arr[i]/dif_val * dif_size) + min_size - dif_size/dif_val;
     return res;
 }
 
