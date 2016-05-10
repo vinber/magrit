@@ -8,8 +8,9 @@ function add_layer(d){
 
     input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
     input.on('change', prepareUpload);
-    
-    target_layer_on_add = (this.id === "img_in_geom") ? true :
+    console.log(this.id)
+    target_layer_on_add = (this.id === "img_in_geom_big") ? true :
+                          (this.id === "img_in_geom") ? true :
                           (this.id === "img_data_ext") ? true : false;
     
     function prepareUpload(event){
@@ -196,7 +197,7 @@ function handle_dataset(files){
             d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
             valid_join_check_display(false);
             if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-            d3.select("#section1").style("height", "230px");
+            d3.select("#section1").style("height", "210px");
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
         };
@@ -310,9 +311,6 @@ function add_layer_topojson(text, options){
               .attr("height", "100%")
               .attr("width", "100%");
 
-//        d3.select("#layer_menu")
-//              .append('p').html('<a href>- ' + lyr_name+"</a>");
-
         let class_name = ["ui-state-default"];
         if(target_layer_on_add)
             class_name.push("sortable_target");
@@ -322,28 +320,34 @@ function add_layer_topojson(text, options){
         class_name = class_name.join(' ');
 
         layers_listed = layer_list.node()
-        var li = document.createElement("li");
+        let li = document.createElement("li"),
+            nb_ft = parsedJSON.objects[lyr_name].geometries.length;
         li.setAttribute("class", class_name);
-        li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", parsedJSON.objects[lyr_name].geometries.length, " features - ", field_names.length, " fields"].join(''))
+        li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
         if(target_layer_on_add){
-            if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+            if(browse_table.node().disabled === true)
+                browse_table.node().disabled = false;
+
+            if(joined_dataset.length != 0)
+                d3.select("#join_button").node().disabled = false;
+
             let _button = button_type[type],
-                _lyr_name_display = lyr_name.length > 29 ? [lyr_name.substring(0, 24), '(...)'].join('') : lyr_name;
+                _lyr_name_display = lyr_name.length > 25 ? [lyr_name.substring(0, 20), '(...)'].join('') : lyr_name;
+
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"});
-            d3.select('#input_geom').html(['<b>', lyr_name,'</b> (', field_names.length, ' fields)</i>'].join(''));
+            d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i>', nb_ft, " features - ", field_names.length, ' fields</i>'].join(''));
+            d3.select("#func_button").node().disabled = false; 
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
         } else {
             li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, result_layer_on_add ? button_type_blank[type] : button_type[type], "</div> ",lyr_name].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
-
     }
-    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
-    if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
+
     if(target_layer_on_add || result_layer_on_add) {
-        scale_map(lyr_name);
+        scale_to_lyr(lyr_name);
         center_map(lyr_name);
     }
     zoom_without_redraw();
@@ -352,7 +356,7 @@ function add_layer_topojson(text, options){
     alert('Layer successfully added to the canvas');
 };
 
-function scale_map(name){
+function scale_to_lyr(name){
     var bbox_layer_path = undefined;
     if(name.endsWith("_PropSymbols"))
         name = name.substring(0, name.length - 12);
@@ -539,7 +543,7 @@ function add_sample_layer(){
                         d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
                         valid_join_check_display(false);
                         if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-                        d3.select("#section1").style("height", "230px");
+                        d3.select("#section1").style("height", "210px");
                         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
                     });
                 }

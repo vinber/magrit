@@ -6,19 +6,20 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   s_t <- Sys.time()
   latlong_string <- "+init=epsg:4326"
   web_mercator <- "+init=epsg:3857"
+  nat_earth <- "+proj=natearth"
   additionnal_infos <- "null"
 
   knownpts_layer <- geojsonio::geojson_read(knownpts_json, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(knownpts_layer@proj4string@projargs)) knownpts_layer@proj4string@projargs = latlong_string
-  if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(web_mercator))
-#   
+  if(isLonLat(knownpts_layer)) knownpts_layer <- sp::spTransform(knownpts_layer, CRS(nat_earth))
+
   if(is.null(mask_json)){
     mask_layer <- NULL
   } else {
     mask_layer <- geojsonio::geojson_read(mask_json, what='sp', stringsAsFactors = FALSE)
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
-    if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(web_mercator))
+    if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(nat_earth))
     if(!rgeos::gIsValid(mask_layer)){
       print('Invalid geom mask - First test')
       mask_layer <- rgeos::gBuffer(mask_layer, width = 1)

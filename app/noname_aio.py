@@ -627,6 +627,8 @@ def init(loop, port=9999):
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.router.add_route('GET', '/', handler)
     app.router.add_route('GET', '/index', handler)
+    app.router.add_route('GET', '/modules', handler)
+    app.router.add_route('GET', '/modules/', handler)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('GET', '/R/{function}/{params}', R_commande)

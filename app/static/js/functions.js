@@ -674,7 +674,6 @@ function createFuncOptionsBox_Anamorphose(layer){
                     .attr("height", "100%")
                     .attr("width", "100%");
 
-
         } else if (algo === "dorling"){
             let new_layer_name = [layer, "DorlingCarto"].join('');
             let rendering_params = {
@@ -701,9 +700,9 @@ function createFuncOptionsBox_Anamorphose(layer){
             }
 
             var res = new Array(nb_features);
-            console.log(ref_pt)
+            console.log(ref_pt);
             for(let i = 0 ; i < nb_features ; i++) {
-                for(let j = 0 ; j < nb_features ; j++) { 
+                for(let j = 0 ; j < nb_features ; j++) {
                     if(i==j) continue;
                     let it = res[i] != undefined ? res[i] : ref_pt[i],
                         jt = res[j] != undefined ? res[j] : ref_pt[j];
