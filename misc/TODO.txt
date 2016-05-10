@@ -1,12 +1,20 @@
 TODO list:
-- Testing the join operation
-- Do more data validation (client and/or server side) to avoid weird user-uploads
+- Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
+- Propose directly palettes instead of only reclassing in the styling popup when features have been already classed
+- Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation
 - /!\ reload preferences from the exported json
-- /!\ zoom on the extent of freshly added layer (via the bbox returned by the --bbox topojson option)
-- /!\ add an button to display basic informations on a layer (nfeatures, nfields, type geom, etc..)
-- add functionnality to zoom on a selected zone (rectangle) drawn on the canvas by the user
-- rollback to the original header
-- better select the mouse behavior on orthgraphic projection (rotate or move but not both together)
-- allow styling options (font, size, etc.) on the title ?
+- /!\ fix the zoom by rectangular zone
 - add the simplification options ?
-- avoid sending data (zip & geojson) as dataurl as it might be a bottleneck ?
+- allow to display label on rendered features ?
+- /!\ Allow the user to choose layout elements (cardinal arrow, scale, etc.)
+- Fix confusion between layer pointed by the information cursor when layer order is modified while pointing for informations
+- /!\ Redraw directly the legend when the class limits are modified 
+- Keep trace of the last legend position, to redisplay it on the same place (only if colors are changed when a legend palette is displayed)
+- Improve the "user defined" break values in the discretization panel
+- Refactor broken selenium tests
+- Allow the user to display label of features on its map (based, or not on some criteria)
+- Set the scale according to the targeted layer once added (instead of zooming on it)
+- Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
+- Deactive the click on the icon on section1 once layers have been added (to be reactivate if removed)
+- Change the "functionnality box" in order to put it in the right sided menu
+- Add a tooltip on freshly created layers (propsymbols, MTA) as on other layers

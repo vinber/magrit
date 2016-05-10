@@ -2,13 +2,12 @@ load <- function(){
   require(pbdZMQ, quietly = TRUE)
   require(jsonlite, quietly = TRUE)
   require(raster, quietly = TRUE)
+  require(rgeos, quietly = TRUE)
   require(sp, quietly = TRUE)
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
   require(stats, quietly = TRUE)
-  require(rredis, quietly = TRUE)
-  rredis::redisConnect(host = "localhost", port = 6379)
-  rredis::redisSelect(1)
+  require(cartography)
 }
 
 # ToDo : find a better way to prepare an environment or at least
@@ -18,7 +17,8 @@ make_env <- function(lock = FALSE){
   source('R/worker_functions.R')
   preparedEnv = new.env(hash = TRUE, parent = baseenv())
   preparedEnv$stewart_to_json <- stewart_to_json
-  preparedEnv$reilly_to_json <- reilly_to_json
+  preparedEnv$make_gridded_map <- make_gridded_map
+  preparedEnv$getLinkLayer_json <- getLinkLayer_json
   preparedEnv$mta_globaldev <- mta_globaldev
   preparedEnv$mta_mediumdev <- mta_mediumdev
   preparedEnv$mta_localdev <- mta_localdev
@@ -26,8 +26,6 @@ make_env <- function(lock = FALSE){
   preparedEnv$rnorm <- rnorm
   preparedEnv$runif <- runif
   preparedEnv$runif <- rbinom
-  preparedEnv$redisGet <- rredis::redisGet
-  preparedEnv$redisCmd <- rredis::redisCmd
   if(lock == TRUE) lockEnvironment(preparedEnv)
   return(preparedEnv)
 }
@@ -70,9 +68,10 @@ R_Worker_fuw <- R6::R6Class(
         # .. as the request is prepared server-side ?
         output <- tryCatch(
           eval(expr = parse(text = request), envir = the_env),
-          error = function(e)paste0(e$message, "\n")
+          error = function(e){ a<-paste0(e$message, "\n");print(a);}
         )
         out <- self$validateOuput(output)
+        gc()
       }
       return(out)
     },
@@ -93,6 +92,7 @@ R_Worker_fuw <- R6::R6Class(
         zmq.send.multipart(socket, msg, FALSE)
         self$histo_count <<- self$histo_count + 1
         if(result == "Now exiting R\n") break
+        gc()
       }
     },
     

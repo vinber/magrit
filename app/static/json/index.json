@@ -1,33 +1,47 @@
 [
 	{
 	"img" : "empty.png",
-	"desc" : "Example 1 - Data Import",
-	"link" 	: "modules/test_interface.html"
+	"desc" : "Example 1 - Join geom and dataset",
+	"link" 	: "/modules/test"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 2 - Stewart potentials",
+	"link" 	: "/modules/stewart"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 3 - Choropleth map",
+	"link" 	: "/modules/choropleth"
+	},
+	{
+	"img" : "bubble.png",
+	"desc" : "Example 4 - Prop. symbols map",
+	"link" 	:  "/modules/prop_symbol"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 5 - Gridded map",
+	"link" 	:  "/modules/grid_map"
 	},
 	{
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 6 - Flows map",
+	"link" 	:  "/modules/flows_map"
 	},
-	{
+     {
 	"img" : "empty.png",
-	"desc" : "Non available yet",
-	"link" 	: "#"
+	"desc" : "Example 7 - Multiscalar Territorial Analysis",
+	"link" 	:  "/modules/MTA"
+	},
+     {
+	"img" : "bubble_choro.png",
+	"desc" : "Example 8 - Prop. symbols and choropleth map",
+	"link" 	:  "/modules/prop_symbol_choro"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 9 - Cartogram map",
+	"link" 	:  "/modules/cartogram"
 	}
-
 ]

@@ -1,0 +1,32 @@
+#discretization_panel {
+    margin-top: 30px;
+    width: 30%;
+    float: left;
+}
+
+#histo_options {
+    margin-top: 50px;
+    width: 30%;
+    float: left;
+    margin-left: 5%
+}
+
+#ref_histo_box {
+    margin-top: 30px;
+    width: 30%;
+    float: right;
+}
+
+#svg_ref_histo .axis label{
+    font-size: 10px;
+}
+
+.axis line, .axis path{
+    fill: none;
+    stroke: black;
+}
+
+label_it_inline {
+    font-size: 10px;
+    display: inline;
+}

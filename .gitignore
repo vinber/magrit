@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ dont exclude lib to grab JS libs
 lib64/
 parts/
 sdist/
@@ -61,5 +61,14 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-#Personal folder to ignore
+#R non-useful files :
+.RData
+.Rhistory
+Rplots.pdf
+
+# Temporary folder to ignore :
 tmp/
+
+# Other project related but non-useful stuffs :
+noname_aio_heavy_last.py
+noname_aio_lite.py

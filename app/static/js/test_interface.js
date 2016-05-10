@@ -1,53 +1,40 @@
+"use strict";
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
 
 function add_layer(d){
     var input = $(document.createElement('input')),
-        res = [];
+        res = [], self_section = this.parentNode.parentNode.id;
 
     input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
     input.on('change', prepareUpload);
-
-    if(this.parentNode.parentNode.id === "section1") target_layer_on_add = true;
-
+    console.log(this.id)
+    target_layer_on_add = (this.id === "img_in_geom_big") ? true :
+                          (this.id === "img_in_geom") ? true :
+                          (this.id === "img_data_ext") ? true : false;
+    
     function prepareUpload(event){
-        files = event.target.files;
+        let files = event.target.files;
         if(strContains(files[0].name, 'topojson')){
             handle_TopoJSON_files(files);
         } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
                             || strContains(files[0].name, 'zip'))){
             handle_single_file(files);
-        } else if(strContains(files[0].name.toLowerCase(), '.csv')
-                    || strContains(files[0].name.toLowerCase(), '.tsv')) {
+        } else if((strContains(files[0].name.toLowerCase(), '.csv')
+                    || strContains(files[0].name.toLowerCase(), '.tsv'))
+                    && target_layer_on_add) {
             handle_dataset(files)
+            target_layer_on_add = false;
         }
         else if(files.length >= 4){
             var filenames = [];
-            for (var i=0; i<files.length; i++) filenames[i] = files[i].name;
-            var res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-            if(res.length >= 4){
-                var ajaxData = new FormData();
-                ajaxData.append("action", "submit_form");
-                $.each(input, function(i, obj) {
-                    $.each(obj.files, function(j, file){
-                        ajaxData.append('file['+j+']', file);
-                    });
-                });
-                 $.ajax({
-                    processData: false,
-                    contentType: false,
-                    cache: false,
-                    url: '/convert_to_topojson',
-                    data: ajaxData,
-                    type: 'POST',
-                    success: function(data) {add_layer_fun(data);},
-                    error: function(error) {console.log(error); }
-                    });
-                }
-            else {
+            for (let i=0; i<files.length; i++) filenames[i] = files[i].name;
+            let res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+            if(res.length >= 4)
+                handle_shapefile(files);
+            else
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
-                }
         } else {
             alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         }
@@ -77,9 +64,10 @@ $(document).on('dragleave', '#section1,#section3', function(e) {
             return false;
 });
 $(document).on('drop', '#section1,#section3', function(e) {
-   var files = e.originalEvent.dataTransfer.files;
+    var files = e.originalEvent.dataTransfer.files,
+        self_section = this.id;
 
-   if(this.id === "section1") target_layer_on_add = true;
+   if(self_section === "section1") target_layer_on_add = true;
    e.preventDefault();e.stopPropagation();
 
    if(!(e.originalEvent.dataTransfer.files.length == 1)){
@@ -88,58 +76,45 @@ $(document).on('drop', '#section1,#section3', function(e) {
         var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
 
         if(result.length == 4){
-            $(this).css('border', '3px dashed red');
-            alert('All mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
             $(this).css('border', '');
-            var ajaxData = new FormData();
-            ajaxData.append("action", "submit_form");
-                $.each(files, function(j, file){
-                    ajaxData.append('file['+j+']', file);
-                });
-                 $.ajax({
-                    processData: false,
-                    contentType: false,
-                    cache: false,
-                    url: '/convert_to_topojson',
-                    data: ajaxData,
-                    type: 'POST',
-                    success: function(data) {add_layer_fun(data);},
-                    error: function(error) {console.log(error); }
-                    });
+            handle_shapefile(files);
                 }
             else {
                 alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                $(this).css('border', '');
               }
         }
    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
-           //e.preventDefault();e.stopPropagation();
            $(this).css('border', '');
-
-           if(target_layer_on_add && targeted_layer_added){
+           if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
-               return;
-             }
            // Most direct way to add a layer :
            else handle_TopoJSON_files(files);
    }
-   else if(strContains(files[0].name.toLowerCase(), 'geojson') 
-            || strContains(files[0].type.toLowerCase(), 'application/zip')){
-           //e.preventDefault();e.stopPropagation();
+//   else if(strContains(files[0].name.toLowerCase(), 'geojson')){
+//           $(this).css('border', '');
+//           if(target_layer_on_add && targeted_layer_added)
+//               alert("Only one layer can be added by this functionnality");
+//           // Most direct way to add a layer :
+//           else handle_GeoJSON_files(files);
+//    }
+   else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
+            strContains(files[0].type.toLowerCase(), 'application/zip')){
            $(this).css('border', '');
 
-           if(target_layer_on_add && targeted_layer_added){
+           if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
-               return;
-             }
            // Send the file to the server for conversion :
            else handle_single_file(files);
    }
   else if(strContains(files[0].name.toLowerCase(), '.csv')
             || strContains(files[0].name.toLowerCase(), '.tsv')) {
-        alert('Dataset provided');
-        e.preventDefault();e.stopPropagation();
         $(this).css('border', '');
-        handle_dataset(files);
+        if(self_section === "section1")
+            handle_dataset(files);
+        else
+            alert('Only layout layers can be added here');
+        target_layer_on_add = false;
    }
   else {
         $(this).css('border', '3px dashed red');
@@ -152,63 +127,109 @@ $(document).on('drop', '#section1,#section3', function(e) {
 // Functions to handles files according to their type
 ////////////////////////////////////////////////////////////////////////
 
-// Now some functions to handle the dropped-file(s) :
-// - By trying directly to add it if it's a TopoJSON :
+function handle_shapefile(files){
+    var ajaxData = new FormData();
+    ajaxData.append("action", "submit_form");
+    for(let j=0; j<files.length; j++){
+        ajaxData.append('file['+j+']', files[j]);
+    }
+     $.ajax({
+        processData: false,
+        contentType: false,
+        cache: false,
+        url: '/convert_to_topojson',
+        data: ajaxData,
+        type: 'POST',
+        success: function(data) {add_layer_topojson(data);},
+        error: function(error) {console.log(error); }
+        });
 
+}
+
+// - By trying directly to add it if it's a TopoJSON :
 function handle_TopoJSON_files(files) {
     var f = files[0],
         name = files[0].name,
         reader = new FileReader(),
         ajaxData = new FormData();
-    /*
-    ajaxData.append('file[]', file);
+    ajaxData.append('file[]', f);
     $.ajax({
         processData: false,
         contentType: false,
         cache: false,
-        global: false
-        url: '/cache_topojson',
+        global: false,
+        url: '/cache_topojson/user',
         data: ajaxData,
         type: 'POST',
         error: function(error) { console.log(error); }
-    }); */
+    });
 
     reader.onloadend = function(){
         var text = reader.result;
-        add_layer_fun(text);
+        add_layer_topojson(text);
         }
     reader.readAsText(f);
 };
 
 function handle_dataset(files){
-  for(var i = 0; i != files.length; ++i) {
-    var f = files[i],
-        reader = new FileReader(),
-        name = f.name;
-    reader.onload = function(e) {
-      var data = e.target.result;
-      joined_dataset.push(d3.csv.parse(data))
-    };
-    reader.readAsText(f);
-  }
-  // TODO : check if there is x / y / lat /long fields to add this as a geom layers
+    if(joined_dataset.length !== 0){
+        var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
+        if(!rep){ return; }
+        else joined_dataset = [];
+    }
 
-  var txt = d3.select('#datag').html();
-  if(txt.startsWith("User data : <b>Yes")) d3.select('#datag').html(txt + "<b> + Joined/external dataset</b>");
-  else d3.select('#datag').html("User data : <b>Joined/external dataset</b>");
+    for(var i = 0; i != files.length; ++i) {
+        var f = files[i],
+            reader = new FileReader(),
+            name = f.name;
 
-  var join_button = dv1.append("p").append("button").attr("id", "join_button").html("Valid the join").on("click", handle_join);
-  if(!targeted_layer_added) join_button.node().disabled = true;
-  d3.select("#section1").style("height", "185px");
+        reader.onload = function(e) {
+            var data = e.target.result;
+            dataset_name = name.substring(0, name.indexOf('.csv'));
+            joined_dataset.push(d3.csv.parse(data))
+
+            var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+            if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+                if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+                    add_csv_geom(joined_dataset);
+                }
+            }
+            let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+                nb_features = joined_dataset[0].length;
+            d3.select('#data_ext')
+                .attr("name-tooltip", dataset_name + '.csv')
+                .html([' <b>', d_name,
+                       '</b> - <i><span style="font-size:9.5px;"> ',
+                       nb_features, ' features - ',
+                       field_name.length, " fields</i></span>"].join(''));
+            valid_join_check_display(false);
+            if(targeted_layer_added){
+                d3.select("#join_button").node().disabled = false;
+                d3.select(".s1").html("").on("click", null)
+                d3.select("#sample_link").html("").on("click", null);
+                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+            } else { 
+                d3.select("#join_button").node().disabled = true;
+                d3.select("#section1").style("height", "215px");
+            }
+            if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+            $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
+        };
+        reader.readAsText(f);
+    }
+}
+
+function add_csv_geom(param){
+    null;
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
 function handle_single_file(files) {
     var ajaxData = new FormData();
+    // var md5_digest = md5_h(files[0]);
     ajaxData.append("action", "single_file");
-    $.each(files, function(j, file){
-        ajaxData.append('file[]', file);
-    });
+    ajaxData.append('file[]', files[0]);
+//    ajaxData.append('md5', md5_digest);
     $.ajax({
         processData: false,
         contentType: false,
@@ -216,130 +237,190 @@ function handle_single_file(files) {
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
-        success: function(data) {add_layer_fun(data);},
+        success: function(data) {add_layer_topojson(data);},
         error: function(error) {console.log(error);}
     });
 };
 
 // Add the TopoJSON to the 'svg' element :
-
-function add_layer_fun(text){
+function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
-        bounds = [];
+        result_layer_on_add = options ? options.result_layer_on_add : false;
 
+    
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
         return;
     }
-
-    console.log(parsedJSON);
-    var type = "", data_to_load = undefined,
+    var type = "", data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
+
+    // Add an ID if the input topojson is provided without :
+    layers_names.forEach(function(l_name, j){
+        if(!parsedJSON.objects[l_name].geometries[0].id){
+            for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
+                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){ 
+                tgt[i].id = i;
+                }
+        }
+    });
+
+    if(target_layer_on_add && menu_option.add_options && menu_option.add_options == "keep_file")
+        _target_layer_file = parsedJSON;
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(var i=0; i < layers_names.length; i++){
-        if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'oint')) type = 'Point';
-        else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'tring')) type = 'Line';
-        else if(strContains(parsedJSON.objects[layers_names[i]].geometries[0].type, 'olygon')) type = 'Polygon';
+        var random_color1 = Colors.random(),
+            lyr_name = layers_names[i],
+            field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
-        if(parsedJSON.objects[layers_names[i]].geometries[0].properties && target_layer_on_add){
-            user_data[layers_names[i]] = [];
+        if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
+        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
+        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
+
+//        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
+        current_layers[lyr_name] = {"type": type,
+                                    "n_features": parsedJSON.objects[lyr_name].geometries.length,
+                                    "stroke-width-const": "0.4px"};
+    
+        if(target_layer_on_add){
+            current_layers[lyr_name].targeted = true;
+            user_data[lyr_name] = [];
             data_to_load = true;
-        } else { data_to_load = false; }
+        } else if(result_layer_on_add){
+            result_data[lyr_name] = [];
+            current_layers[lyr_name].is_result = true;
+        }
 
-        map.append("g").attr("id", layers_names[i])
-              .attr("class", function(d) {
-                return data_to_load ? "targeted_layer" : null;})
+        map.append("g").attr("id", lyr_name)
+              .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
+              .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
-              .data(topojson.feature(parsedJSON, parsedJSON.objects[layers_names[i]]).features)
+              .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
               .enter().append("path")
               .attr("d", path)
-              .attr("id", function(d) {
-                if(data_to_load){
-                    user_data[layers_names[i]].push(d.properties);
-                    }
-                return "item " + d.id;})
-              .style("stroke-linecap", "round")
-              .style("stroke", "red")
+              .attr("id", function(d, ix) {
+                    if(data_to_load){
+                        if(field_names.length > 0){
+                            if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
+                                d.properties["_uid"] = d.id;
+                            d.properties["pkuid"] = ix;
+                            user_data[lyr_name].push(d.properties);
+                        } else {
+                            user_data[lyr_name].push({"id": d.id});
+                        }
+                    } else if(result_layer_on_add)
+                        result_data[lyr_name].push(d.properties);
+
+                    return "feature_" + ix;
+                })
+              .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
+                                          else return(random_color1);})
               .style("stroke-opacity", .4)
-              .style("fill", function(){if(type != 'Line') return("beige");
+              .style("fill", function(){if(type != 'Line') return(random_color1);
                                         else return(null);})
               .style("fill-opacity", function(){if(type != 'Line') return(0.5);
                                                 else return(0);})
               .attr("height", "100%")
               .attr("width", "100%");
 
-        d3.select("#layer_menu")
-              .append('p').html('<a href>- ' + layers_names[i]+"</a>");
+        let class_name = ["ui-state-default"];
+        if(target_layer_on_add)
+            class_name.push("sortable_target");
+        else if (result_layer_on_add)
+            class_name.push("sortable_result");
+        class_name.push(lyr_name);
+        class_name = class_name.join(' ');
 
-        //try {bounds = d3.geo.bounds(parsedJSON.objects[layers_names[i]]);}
-        //catch(err){ console.log(err); }
-
-        class_name = target_layer_on_add ? "ui-state-default sortable_target " + layers_names[i] : "ui-state-default " + layers_names[i]
-        layers_listed = layer_list.node()
-        li = document.createElement("li");
+        let layers_listed = layer_list.node(),
+            li = document.createElement("li"),
+            nb_ft = parsedJSON.objects[lyr_name].geometries.length;
         li.setAttribute("class", class_name);
-        li.innerHTML = type + " - " + layers_names[i] + button_style + button_trash + button_active;
-        layers_listed.insertBefore(li, layers_listed.childNodes[0])
+        li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
         if(target_layer_on_add){
-            d3.select('#input_geom').html("User geometry : <b>"+layers_names[i]+"</b> <i>("+type+")</i>");
+            if(browse_table.node().disabled === true)
+                browse_table.node().disabled = false;
+
+            if(joined_dataset.length != 0){
+                d3.select("#join_button").node().disabled = false;
+                d3.select(".s1").html("").on("click", null)
+                d3.select("#sample_link").html("").on("click", null);
+                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+            }
+
+            let _button = button_type[type],
+                _lyr_name_display = lyr_name.length > 24 ? [lyr_name.substring(0, 19), '(...)'].join('') : lyr_name;
+
+            _button = _button.substring(10, _button.indexOf("class") - 2);
+            d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
+            d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
+            d3.select("#func_button").node().disabled = false; 
             targeted_layer_added = true;
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
+        } else {
+            li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, result_layer_on_add ? button_type_blank[type] : button_type[type], "</div> ",lyr_name].join('')
         }
-        if(data_to_load){
-             var nb_field = Object.getOwnPropertyNames(user_data[layers_names[i]][0]).length
-             d3.select('#datag').html("User data : <b>Yes - Provided with geometries - "+nb_field+" field(s)</b>")
-        }
+        layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
-    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
+
+    if(target_layer_on_add || result_layer_on_add) {
+        scale_to_lyr(lyr_name);
+        center_map(lyr_name);
+    }
+    zoom_without_redraw();
     binds_layers_buttons();
-    /*
-    // Only zoom on the added layer if its the "targeted" one
-    if(target_layer_on_add) { 
-        if(parsedJSON.bbox) center_zoom_map(parsedJSON.bbox);
-        //else if(bounds) center_zoom_map([bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]]);
-        else alert("The topojson was provided without bbox information");
-      }
-    */
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
 };
 
-function center_zoom_map(bbox){
-    console.log(bbox);
-    var xmin= bbox[0],
-        xmax= bbox[1],
-        ymin= bbox[2],
-        ymax= bbox[3];
+function scale_to_lyr(name){
+    var bbox_layer_path = undefined;
+    if(name.endsWith("_PropSymbols"))
+        name = name.substring(0, name.length - 12);
+    d3.select("#"+name).selectAll('path').each(function(d, i){
+        var bbox_path = path.bounds(d);
+        if(bbox_layer_path === undefined){
+            bbox_layer_path = bbox_path;
+        }
+        else {
+            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+        }
+    });
+    let prev_trans = proj.translate(),
+        prev_scale = proj.scale(),
+        s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+    proj.scale(s);
+    map.selectAll("g:not(.legend_feature)").selectAll("path").attr("d", path);
+};
 
-    var bounds = [[bbox[0], bbox[2]], [bbox[1], bbox[3]]],
-        dx = bounds[1][0] - bounds[0][0],
-        dy = bounds[1][1] - bounds[0][1],
-        x = (bounds[0][0] + bounds[1][0]) / 2,
-        y = (bounds[0][1] + bounds[1][1]) / 2;
-    console.log([dx, dy, x, y, proj(dx / w, dy / h)]);
-    var scale = .9 / Math.max(proj(dx / w, dy / h)),
-        translate = proj([w / 2 - scale * x, h / 2 - scale * y]);
-    console.log(scale); console.log(translate);
-    if(proj && scale) proj.scale(scale).translate(translate);
-    /*
-    var top_left = proj([xmin, ymax]),
-        bottom_right = proj([xmax, ymin]),
-        ctr = [bottom_right[0] - top_left[0], top_left[1] - bottom_right[1]];
 
-    var current_trans = proj.translate(),
-        current_scale = proj.scale(),
-        new_scale = Math.max((bottom_right[0] - top_left[0]) / w, (top_left[1] - bottom_right[1]) / h),
-        trans = [Math.abs(t[0] - new_scale * ctr[0]),
-                 Math.abs(t[1] - new_scale * ctr[1])];
-    new_scale = new_scale * s;
-    console.log([proj.scale(), proj.center()[0], proj.center()[1], proj.translate()[0], proj.translate()[1]]);
-    proj.translate([ctr[0]+new_scale, ctr[1]*new_scale])
-    */
-}
+function center_map(name){
+    var bbox_layer_path = undefined;
+    if(name.indexOf("_PropSymbols") != -1 || name.indexOf("MTA") != -1)
+        name = current_layers[name].ref_layer_name
+    d3.select("#"+name).selectAll('path').each(function(d, i){
+        var bbox_path = path.bounds(d);
+        if(bbox_layer_path === undefined){
+            bbox_layer_path = bbox_path;
+        }
+        else {
+            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+        }
+    });
+    var s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
+        t = [(w - s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+    zoom.scale(s);
+    zoom.translate(t);
+};
 
 // Some helpers
-
 function strContains(string1, substring){
     return string1.indexOf(substring) >= 0;
 };
@@ -355,3 +436,318 @@ function strArraysContains(ArrString1, ArrSubstrings){
     }
     return result;
 };
+
+function add_layout_features(){
+    var available_features = ["North arrow", "Scale", "Sphere background"],
+        selected_ft = undefined;
+
+    make_confirm_dialog("", "Valid", "Cancel", "Layout features to be add ...", "sampleLayoutFtDialogBox", 4*w/5, h-10).then(
+        function(confirmed){ null; });
+
+    var box_body = d3.select(".sampleLayoutFtDialogBox");
+
+    box_body.append('h3').html("Choose features to be added : ");
+    box_body.append("p").style("color", "grey").html("<i>(multiple features can be selected)</i>");
+
+    var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: available_features.length});
+    available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft).attr("value", ft);});
+    layout_ft_selec.on("change", function(){
+        let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
+        selected_ft = selected_asArray.map(elem => elem.value);
+        console.log(selected_ft);
+    });
+
+
+}
+
+function add_layout_layers(){
+    var selec = {layout: null, target: null},
+        sample_datasets = undefined;
+
+    d3.json('/static/json/sample_layers.json', function(error, json){
+        sample_datasets = json[0];
+        });
+
+    var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
+                         ["Nuts 1 (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
+                         ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+                         ["World countries simplified <i>(Polygons)</i>", "world_country"],
+                         ["World country capitals <i>(Points)</i>", "world_cities"],
+                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
+                         ["Graticule", "graticule"]];
+
+
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleLayoutDialogBox", 4*w/5, h-10).then(
+        function(confirmed){
+            if(confirmed){
+                let url = undefined;
+                if(selec.layout && selec.layout.length > 0){
+                    for(let i = 0; i < selec.layout.length; ++i){
+                        if(selec.layout[i] === "graticule"){
+                            if(current_layers["Graticule"] != undefined)
+                                continue
+                            map.append("g").attr({id: "Graticule", class: "layer"})
+                                   .append("path")
+                                   .attr("class", "graticule")
+                                   .datum(d3.geo.graticule())
+                                   .attr("d", path);
+                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"};
+                           layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule");
+                           zoom_without_redraw();
+                           binds_layers_buttons();
+                        }
+                        else {
+                            url = sample_datasets[selec.layout[i]];
+                            cache_sample_layer(selec.layout[i]);
+                            d3.text(url, function(txt_layer){ add_layer_topojson(txt_layer); })
+                        }
+                    }
+                }
+            }
+        });
+
+    var box_body = d3.select(".sampleLayoutDialogBox");
+
+    box_body.append('h3').html("Choose layer(s) to be used as layout : ");
+    box_body.append("p").style("color", "grey").html("<i>(multiple layers can be selected)</i>");
+
+    var layout_layer_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
+    layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    layout_layer_selec.on("change", function(){
+        let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
+        selec.layout = selected_asArray.map(elem => elem.value)
+    });
+}
+
+
+function add_sample_layer(){
+    var dialog_res = [],
+        selec = {layout: null, target: null},
+        sample_datasets = undefined;
+
+    d3.json('/static/json/sample_layers.json', function(error, json){
+        sample_datasets = json[0];
+        });
+
+    var target_layers = [["<i>Target layer</i>",""],
+                    ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
+                    ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
+                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
+                    ["World countries <i>(Polygons)</i>", "world_countries_50m"]];
+
+    var tabular_datasets = [["<i>Tabular dataset</i>",""],
+                    ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
+                    ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset']];
+
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 700, 295).then(
+        function(confirmed){
+            if(confirmed){
+                let url = undefined;
+                if(selec.target){
+                    cache_sample_layer(selec.target);
+                    url = sample_datasets[selec.target];
+                    d3.text(url, function(txt_layer){
+                        target_layer_on_add = true;
+                        add_layer_topojson(txt_layer);
+                        target_layer_on_add = false;
+                    });
+                }
+                if(selec.dataset){
+                    url = sample_datasets[selec.dataset];
+                    d3.csv(url, function(error, data){
+                        joined_dataset.push(data);
+                        dataset_name = selec.dataset;
+                        let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]),
+                            d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+                            nb_features = joined_dataset[0].length;
+                        d3.select('#data_ext')
+                            .attr("name-tooltip", dataset_name + '.csv')
+                            .html([' <b>', d_name,
+                                   '</b> - <i><span style="font-size:9.5px;"> ',
+                                   nb_features, ' features - ',
+                                   field_name.length, " fields</i></span>"].join(''));
+                        valid_join_check_display(false);
+                        if(targeted_layer_added){
+                            d3.select("#join_button").node().disabled = false;
+                            d3.select(".s1").html("").on("click", null)
+                            d3.select("#sample_link").html("").on("click", null);
+                            d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+                        } else { 
+                            d3.select("#join_button").node().disabled = true;
+                            d3.select("#section1").style("height", "215px");
+                        }
+                        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
+                    });
+                }
+            }
+        });
+
+    var box_body = d3.select(".sampleDialogBox");
+
+    var title_tgt_layer = box_body.append('h3').html("Choose a layer to be rendered : ");
+
+    var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
+    target_layers.forEach(function(layer_info){t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    t_layer_selec.on("change", function(){selec.target = this.value;});
+
+    if(targeted_layer_added){
+        title_tgt_layer.style("color", "grey").html("<i>Choose a layer to be rendered : </i>");
+        t_layer_selec.node().disabled = true;
+        }
+
+    box_body.append('h3').html("Choose a dataset to link with geometries: ");
+
+    var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
+    tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    dataset_selec.on("change", function(){selec.dataset = this.value;});
+}
+
+function cache_sample_layer(name_layer){
+    var formToSend = new FormData();
+    formToSend.append("layer_name", name_layer)
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/cache_topojson/sample_data',
+        data: formToSend,
+        type: 'POST',
+        error: function(error) { console.log(error); }
+        });
+    }
+
+//function md5_h(file){
+//    var md5_digest = null;
+//    if(strContains(file.name, "zip") || strContains(file.name, "shp")){
+//        let md5_obj = md5.create(),
+//            fileReader = new FileReader();
+//        fileReader.onload = function(e){
+//            md5_obj.update(e.target.result);
+//            };
+//        fileReader.readAsArrayBuffer(file);
+//        md5_digest = md5_obj.hex();
+//        console.log(md5_digest);
+//    } else if(strContains(file.name, "json")){
+//        var fileReader = new FileReader();
+//        fileReader.onload = function(e){
+//            let data = e.target.result,
+//                md5_obj = md5.create();
+////            console.log(data);
+//            md5_obj.update(data);
+//            md5_digest = md5_obj.hex();
+////            console.log(md5_digest);
+//            };
+//        fileReader.readAsText(file);
+//    }
+//}
+
+//function handle_GeoJSON_files(files) {
+//    var f = files[0],
+//        name = files[0].name,
+//        reader = new FileReader();
+//
+//    reader.onloadend = function(){
+//        var text = reader.result;
+//        add_layer_geojson(text, name);
+//        }
+//    reader.readAsText(f);
+//};
+
+//function add_layer_geojson(text, name, options){
+//    var parsedJSON = JSON.parse(text),
+//        result_layer_on_add = options ? options.result_layer_on_add : false;
+//
+//    if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+//        alert(parsedJSON.Error);
+//        return;
+//    }
+////    console.log(parsedJSON)
+//    name = name.substring(0, name.indexOf('.geo'));
+//    var type = "", data_to_load = false;
+//
+//    var random_color1 = Colors.random(),
+//        field_names = parsedJSON.features[0].properties ? Object.getOwnPropertyNames(parsedJSON.features[0].properties) : [];
+//
+//    if(parsedJSON.features[0].geometry.type.indexOf('oint') > -1) type = 'Point';
+//    else if(parsedJSON.features[0].geometry.type.indexOf('tring') > -1) type = 'Line';
+//    else if(parsedJSON.features[0].geometry.type.indexOf('olygon') > -1) type = 'Polygon';
+//
+//
+//    current_layers[name] = {"type": type,
+//                            "n_features": parsedJSON.features.length,
+//                            "stroke-width-const": "0.4px"};
+//
+//    if(target_layer_on_add){
+//        current_layers[name].targeted = true;
+//        user_data[name] = [];
+//        data_to_load = true;
+//    } else if(result_layer_on_add){
+//        result_data[name] = [];
+//        current_layers[name].is_result = true;
+//    }
+//
+//    map.append("g").attr("id", name)
+//          .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
+//          .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+//          .selectAll(".subunit")
+//          .data(parsedJSON.features)
+//          .enter().append("path")
+//          .attr("d", path)
+//          .attr("id", function(d, ix) {
+//                if(data_to_load){
+//                    if(field_names.length > 0){
+//                        if(!d.properties.hasOwnProperty('id') && !d.properties.hasOwnProperty('ID'))
+//                            d.properties["id"] = ix;
+//                        user_data[name].push(d.properties);
+//                    } else {
+//                        user_data[name].push({"id": d.id});
+//                    }
+//                } else if(result_layer_on_add)
+//                    result_data[name].push(d.properties);
+//
+//                return "feature_" + ix;
+//            })
+//          .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
+//                                      else return(random_color1);})
+//          .style("stroke-opacity", .4)
+//          .style("fill", function(){if(type != 'Line') return(random_color1);
+//                                    else return(null);})
+//          .style("fill-opacity", function(){if(type != 'Line') return(0.5);
+//                                            else return(0);})
+//          .attr("height", "100%")
+//          .attr("width", "100%");
+//
+//    d3.select("#layer_menu")
+//          .append('p').html('<a href>- ' + name+"</a>");
+//
+//    let class_name = ["ui-state-default"];
+//    if(target_layer_on_add)
+//        class_name.push("sortable_target");
+//    else if (result_layer_on_add)
+//        class_name.push("sortable_result");
+//    class_name.push(name);
+//    class_name = class_name.join(' ');
+//
+//    layers_listed = layer_list.node()
+//    var li = document.createElement("li");
+//    li.setAttribute("class", class_name);
+//    li.setAttribute("title", [name, " - ", type, " - ", parsedJSON.features.length, " features - ", field_names.length, " fields"].join(''))
+//    li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", name].join('')
+//    layers_listed.insertBefore(li, layers_listed.childNodes[0])
+//    if(target_layer_on_add){
+//        if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+//        d3.select('#input_geom').html("User geometry : <b>"+name+"</b> <i>("+type+")</i>");
+//        targeted_layer_added = true;
+//        if(data_to_load){
+//             var nb_field = Object.getOwnPropertyNames(user_data[name][0]).length
+//             d3.select('#datag').html("Data provided with geometries : <b>Yes - "+nb_field+" field(s)</b>")
+//        }
+//    }
+//    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
+//    if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
+////    if(target_layer_on_add || result_layer_on_add) center_map(name);
+//    binds_layers_buttons();
+//    zoom_without_redraw();
+//    target_layer_on_add = false;
+//    alert('Layer successfully added to the canvas');
+//};
