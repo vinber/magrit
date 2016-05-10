@@ -1,9 +1,9 @@
 [
+	{"name": "Natural Earth", "projection": "d3.geo.naturalEarth().scale(400).translate([375, 50])"},
 	{"name": "mercator", "projection":  "d3.geo.mercator().scale(375).translate([525, 350])"},
 	{"name": "azimuthalEqualArea", "projection":  "d3.geo.azimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},  
 	{"name": "orthographic", "projection":  "d3.geo.orthographic().scale(475).translate([480, 480]).clipAngle(90)"},
 	{"name": "Sinusoidal", "projection": "d3.geo.sinusoidal()"},
-	{"name": "Natural Earth", "projection": "d3.geo.naturalEarth().scale(400).translate([375, 50])"},
 	{"name": "polyhedron butterfly", "projection": "d3.geo.polyhedron.butterfly()"},
 	{"name": "Armadillo", "projection": "d3.geo.armadillo()"},
 	{"name": "Baker", "projection": "d3.geo.baker().scale(100)"},

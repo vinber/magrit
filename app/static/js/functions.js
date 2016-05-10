@@ -1,3 +1,5 @@
+//"use strict";
+
 function get_menu_option(func){
     var menu_option = {
         "stewart":{
@@ -95,6 +97,44 @@ function createFuncOptionsBox_ChoroAndPropSymbol(layer){
 }
 
 function createBox_MTA(layer){
+    var prepare_mta = function(choosen_method, var1_name, var2_name){
+        var table_to_send = new Object(),
+            object_to_send = new Object();
+        if (choosen_method != "local_dev"){
+            table_to_send[var1_name] = new Array(nb_features);
+            table_to_send[var2_name] = new Array(nb_features);
+            for(let i=0; i<nb_features; i++){
+                table_to_send[var1_name][i] = +user_data[layer][i][var1_name];
+                table_to_send[var2_name][i] = +user_data[layer][i][var2_name];
+            }
+            object_to_send["method"] = choosen_method;
+            if(choosen_method == "medium_dev"){
+                let key_name = field_key_agg.node().value;
+                table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
+                object_to_send["key_field_name"] = key_name;
+            } else if(choosen_method == "global_dev"){
+                object_to_send["ref_value"] = +ref_ratio.node().value;
+            }
+            object_to_send["table"] = table_to_send;
+            object_to_send["var1_name"] = var1_name;
+            object_to_send["var2_name"] = var2_name;
+        
+        } else if (choosen_method == "local_dev"){
+            let val = +val_param_global_dev.node().value,
+                param_name = param_global_dev.node().value == "dist" ? "dist" : "order";
+                val1_to_send = new Object(),
+                val2_to_send = new Object();
+            val1_to_send[var1_name] = user_data[layer].map(i => +i[var1_name]);
+            val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
+            object_to_send["topojson"] = layer;
+            object_to_send["var1"] = JSON.stringify(val1_to_send);
+            object_to_send["var2"] = JSON.stringify(val2_to_send);
+            object_to_send["order"] = (param_name == "order") ? val : null;
+            object_to_send["dist"] = (param_name == "dist") ? val : null;
+        }
+        return object_to_send;
+    }
+
     var nwBox = document.createElement('div'),
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer,
@@ -132,7 +172,8 @@ function createBox_MTA(layer){
                                     .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1}).attr("disabled", true);
     var type_deviation = dialog_content.append("p").html("Type of deviation").insert("select").attr("class", "params");
     [["Relative deviation", "rel"],
-     ["Absolute deviation", "abs"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])});
+     ["Absolute deviation", "abs"],
+     ["Compute both", "both"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])});
 
     var a = dialog_content.append('div').style("margin-bottom", "15px");
 
@@ -179,96 +220,127 @@ function createBox_MTA(layer){
     // Where the real job is done :
     ok_button.on("click", function(){
         let choosen_method = method_selec.node().value,
-            table_to_send = new Object(),
-            object_to_send = new Object(),
             var1_name = field1_selec.node().value,
-            var2_name = field2_selec.node().value;
+            var2_name = field2_selec.node().value,
+            formToSend = new FormData(),
+            object_to_send = prepare_mta(choosen_method, var1_name, var2_name),
+            target_url = (choosen_method == "local_dev") ? "/R_compute/MTA_geo" : "/R_compute/MTA_d",
+            type_dev = type_deviation.node().value;
 
-        if (choosen_method != "local_dev"){
-            table_to_send[var1_name] = new Array(nb_features);
-            table_to_send[var2_name] = new Array(nb_features);
-            for(let i=0; i<nb_features; i++){
-                table_to_send[var1_name][i] = +user_data[layer][i][var1_name];
-                table_to_send[var2_name][i] = +user_data[layer][i][var2_name];
-            }
-            object_to_send["method"] = choosen_method;
-            if(choosen_method == "medium_dev"){
-                let key_name = field_key_agg.node().value;
-                table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
-                object_to_send["key_field_name"] = key_name;
-            } else if(choosen_method == "global_dev"){
-                object_to_send["ref_value"] = +ref_ratio.node().value;
-            }
-            object_to_send["table"] = table_to_send;
-            object_to_send["var1_name"] = var1_name;
-            object_to_send["var2_name"] = var2_name;
-            object_to_send["type_dev"] = type_deviation.node().value;
-
-        } else if (choosen_method == "local_dev"){
-            let val = +val_param_global_dev.node().value,
-                param_name = param_global_dev.node().value == "dist" ? "dist" : "order";
-                val1_to_send = new Object(),
-                val2_to_send = new Object();
-            val1_to_send[var1_name] = user_data[layer].map(i => +i[var1_name]);
-            val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
-            object_to_send["topojson"] = layer;
-            object_to_send["var1"] = JSON.stringify(val1_to_send);
-            object_to_send["var2"] = JSON.stringify(val2_to_send);
-            object_to_send["order"] = (param_name == "order") ? val : null;
-            object_to_send["dist"] = (param_name == "dist") ? val : null;
-            object_to_send["type_dev"] = type_deviation.node().value;
-        }
-        var formToSend = new FormData();
-        let target_url = (choosen_method == "local_dev") ? "/R_compute/MTA_geo" : "/R_compute/MTA_d";
-        formToSend.append("json", JSON.stringify(object_to_send))
-        console.log(object_to_send);
-        $.ajax({
-            processData: false,
-            contentType: false,
-            cache: false,
-            url: target_url,
-            data: formToSend,
-            type: 'POST',
-            error: function(error) { console.log(error); },
-            success: function(data){
-                current_layers[layer].is_result = true;
-                let result_values = JSON.parse(data),
-                    type_dev = (type_deviation.node().value == "abs") ? "AbsoluteDeviation" : "RelativeDeviation";
-                if(result_values.values){
-                    let field_name = [choosen_method, type_dev, var1_name, var2_name].join('_');
-                    for(let i=0; i<nb_features; ++i)
-                        user_data[layer][i][field_name] = result_values.values[i];
-                    if(type_dev == "RelativeDeviation"){
-                        current_layers[layer].renderer = ["MTA", type_dev].join('_');
-                        current_layers[layer].rendered_field = field_name
-                        makeButtonLegend(layer);
-                        let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
-                        let rendering_params = {
-                            nb_class: opt_nb_class,
-                            type: "Quantiles",
-                            breaks: disc_result[2],
-                            colors: disc_result[3],
-                            colorsByFeature: disc_result[4],
-                            renderer:  ["MTA", choosen_method].join('_'),
-                            rendered_field: field_name
+        if(type_dev != "both"){
+            object_to_send["type_dev"] = type_dev;
+            formToSend.append("json", JSON.stringify(object_to_send))
+            console.log(formToSend);
+            $.ajax({
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: target_url,
+                data: formToSend,
+                type: 'POST',
+                error: function(error) { console.log(error); },
+                success: function(data){
+                    current_layers[layer].is_result = true;
+                    let result_values = JSON.parse(data),
+                        type_dev = (type_deviation.node().value == "abs") ? "AbsoluteDeviation" : "RelativeDeviation";
+                    if(result_values.values){
+                        let field_name = [choosen_method, type_dev, var1_name, var2_name].join('_');
+                        for(let i=0; i<nb_features; ++i)
+                            user_data[layer][i][field_name] = result_values.values[i];
+                        if(type_dev == "RelativeDeviation"){
+                            current_layers[layer].renderer = ["MTA", type_dev].join('_');
+                            current_layers[layer].rendered_field = field_name
+                            makeButtonLegend(layer);
+                            let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
+                            let rendering_params = {
+                                nb_class: opt_nb_class,
+                                type: "Quantiles",
+                                breaks: disc_result[2],
+                                colors: disc_result[3],
+                                colorsByFeature: disc_result[4],
+                                renderer:  ["Choropleth", "MTA", choosen_method].join('_'),
+                                rendered_field: field_name
+                                    };
+                            render_choro(layer, rendering_params);
+                            makeButtonLegend(layer);
+                            zoom_without_redraw();
+                        } else if (type_dev == "AbsoluteDeviation"){
+                            let rendering_params = {
+                                new_name: field_name,
+                                field: field_name,
+                                nb_features: nb_features,
+                                ref_layer_name: layer,
+                                symbol: "circle",
+                                max_size: 35,
+                                ref_size: 0.5,
+                                fill_color: Colors.random()
                                 };
-                        render_choro(layer, rendering_params);
-                    } else if (type_dev == "AbsoluteDeviation"){
-                        let rendering_params = {
-                            new_name: field_name,
-                            field: field_name,
-                            nb_features: nb_features,
-                            ref_layer_name: layer,
-                            symbol: "circle",
-                            max_size: 35,
-                            ref_size: 0.5,
-                            fill_color: Colors.random()
-                            };
-                        let ret_val = make_prop_symbols(rendering_params);
+                            current_layers[new_lyr_name].renderer = "PropSymbols_MTA";
+                            let ret_val = make_prop_symbols(rendering_params);
+                            binds_layers_buttons();
+                            makeButtonLegend(new_lyr_name);
+                            zoom_without_redraw();
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else if (type_dev == "both"){
+            object_to_send["type_dev"] = "abs";
+            formToSend.append("json", JSON.stringify(object_to_send));
+            $.ajax({
+                processData: false,
+                contentType: false,
+                url: target_url,
+                data: formToSend,
+                type: 'POST',
+                error: function(error) { console.log(error); },
+                success: function(data){
+                    let result_values_abs = JSON.parse(data);
+                    if(result_values_abs.values){
+                        var field_name2 = [choosen_method, "AbsoluteDeviation", var1_name, var2_name].join('_');
+                        for(let i=0; i<nb_features; ++i)
+                            user_data[layer][i][field_name2] = result_values_abs.values[i]; }
+
+                    object_to_send["type_dev"] = "rel";
+                    formToSend = new FormData();
+                    formToSend.append("json", JSON.stringify(object_to_send));
+                    $.ajax({
+                        processData: false,
+                        contentType: false,
+                        url: target_url,
+                        data: formToSend,
+                        type: 'POST',
+                        error: function(error) { console.log(error); },
+                        success: function(data){
+                            let result_values_rel = JSON.parse(data);
+                            if(result_values_rel.values){
+                                let field_name1 = [choosen_method, "RelativeDeviation", var1_name, var2_name].join('_'),
+                                    new_lyr_name = ["MTA", var1_name, var2_name].join('_');
+                                for(let i=0; i<nb_features; ++i)
+                                    user_data[layer][i][field_name1] = result_values_rel.values[i];
+                                let disc_result = discretize_to_colors(result_values_rel.values, "Quantiles", opt_nb_class, "Reds");
+                                let rendering_params = {
+                                        new_name: new_lyr_name,
+                                        field: field_name1,
+                                        nb_features: nb_features,
+                                        ref_layer_name: layer,
+                                        symbol: "circle",
+                                        max_size: 22,
+                                        ref_size: 0.1,
+                                        fill_color: disc_result[4]
+                                        };
+                                let ret_val = make_prop_symbols(rendering_params);
+                                current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
+                                current_layers[new_lyr_name].colors_breaks = disc_result[2];
+                                binds_layers_buttons();
+                                makeButtonLegend(new_lyr_name);
+                                zoom_without_redraw();
+                            }
+                        }
+                    });
+                }
+            });
+        }
         deactivate([bg, nwBox]);
     });
 
@@ -284,7 +356,8 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer,
         fields = type_col(layer, "number"),
-        nb_features = user_data[layer].length;
+        nb_features = user_data[layer].length,
+        rendering_params = new Object();
 
     if(fields.length < 2){
         alert("The targeted layer doesn't seems to contain enough of numerical fields (at least two are required)");
@@ -306,7 +379,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
     var max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
                                  .insert('input')
                                  .attr({type: 'range', class: 'params'})
-                                 .attr({min: 0.2, max: 333.0, value: +last_params.max_size || 5.0, step: 0.1})
+                                 .attr({min: 0.2, max: 66.0, value: +last_params.max_size || 5.0, step: 0.1})
                                  .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
     var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html('0 px');
@@ -314,7 +387,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
     var ref_size = dialog_content.append('p').html('Reference (fixed) size (px) :')
                                  .insert('input').attr('type', 'number')
                                  .attr('class', 'params')
-                                 .attr({min: 0.1, max: 333.0, value: +last_params.ref_size_val || 1.0, step: 0.1});
+                                 .attr({min: 0.1, max: 66.0, value: +last_params.ref_size_val || 1.0, step: 0.1});
 
     // Other symbols could probably easily be proposed :
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
@@ -384,6 +457,7 @@ function createFuncOptionsBox_PropSymbolChoro(layer){
             renderer: "PropSymbolsChoro",
             id_size_map: id_map,
             symbol: rd_params.symbol,
+            ref_layer_name: layer,
             rendered_field: field1_selec.node().value,
             rendered_field2: field2_selec.node().value,
             size: [ref_size.node().value, max_size.node().value],
@@ -580,8 +654,8 @@ function createFuncOptionsBox_Stewart(layer){
                         raw_topojson = data_split[2];
                     add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                 }
-                col_pal = getColorBrewerArray(class_lim.min.length, "Purples")
-                var col_map = new Map(),
+                var col_pal = getColorBrewerArray(class_lim.min.length, "Purples"),
+                    col_map = new Map(),
                     colors_breaks = [];
                 for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
                     let k = Math.round(class_lim.min[i] * 100) / 100;
@@ -761,7 +835,7 @@ var boxExplore = {
         this.columns_headers = [];
         for(var i=0, col=this.columns_names, len = col.length; i<len; ++i)
             this.columns_headers.push({data: col[i], title: col[i]})
-        txt_intro = ["<b>", the_name, "</b><br>",
+        let txt_intro = ["<b>", the_name, "</b><br>",
                      this.nb_features, " features - ",
                      this.columns_names.length, " fields"];
         d3.selectAll('#table_intro').remove()
@@ -995,7 +1069,7 @@ function createLegend_symbol(layer, field, title, subtitle){
         xpos = 30,
         ypos = 30,
         y_pos2 =  ypos + space_elem,
-        ref_layer_name = layer.split("_PropSymbols")[0],
+        ref_layer_name = layer.split("_PropSymbols")[0] || current_layers[layer].ref_layer_name,
         nb_features = user_data[ref_layer_name].length,
         symbol_type = current_layers[layer].symbol,
         legend_root = map.insert('g').attr('id', 'legend_root2').attr("class", "legend_feature");
@@ -1374,7 +1448,7 @@ function createFuncOptionsBox_PropSymbol(layer){
             "symbol": symb_selec.node().value,
             "max_size": +max_size.node().value,
             "ref_size": +ref_size.node().value,
-            "fill_color": fill_color.node().value
+            "fill_color": fill_color.node().value,
             };
 
         let ret_val = make_prop_symbols(rendering_params);
@@ -1484,7 +1558,8 @@ function make_prop_symbols(rendering_params){
             "rendered_field": field,
             "size": [ref_size, max_size],
             "stroke-width-const": "1px",
-            "is_result": true
+            "is_result": true,
+            "ref_layer_name": layer
             };
         let ret_val = new Array(nb_features);
         for(let i=0; i<nb_features;i++)

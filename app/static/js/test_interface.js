@@ -1,3 +1,4 @@
+"use strict";
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
@@ -14,7 +15,7 @@ function add_layer(d){
                           (this.id === "img_data_ext") ? true : false;
     
     function prepareUpload(event){
-        files = event.target.files;
+        let files = event.target.files;
         if(strContains(files[0].name, 'topojson')){
             handle_TopoJSON_files(files);
         } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
@@ -193,11 +194,24 @@ function handle_dataset(files){
                     add_csv_geom(joined_dataset);
                 }
             }
-            let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name;
-            d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
+            let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+                nb_features = joined_dataset[0].length;
+            d3.select('#data_ext')
+                .attr("name-tooltip", dataset_name + '.csv')
+                .html([' <b>', d_name,
+                       '</b> - <i><span style="font-size:9.5px;"> ',
+                       nb_features, ' features - ',
+                       field_name.length, " fields</i></span>"].join(''));
             valid_join_check_display(false);
-            if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-            d3.select("#section1").style("height", "210px");
+            if(targeted_layer_added){
+                d3.select("#join_button").node().disabled = false;
+                d3.select(".s1").html("").on("click", null)
+                d3.select("#sample_link").html("").on("click", null);
+                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+            } else { 
+                d3.select("#join_button").node().disabled = true;
+                d3.select("#section1").style("height", "215px");
+            }
             if(browse_table.node().disabled === true) browse_table.node().disabled = false;
             $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
         };
@@ -319,8 +333,8 @@ function add_layer_topojson(text, options){
         class_name.push(lyr_name);
         class_name = class_name.join(' ');
 
-        layers_listed = layer_list.node()
-        let li = document.createElement("li"),
+        let layers_listed = layer_list.node(),
+            li = document.createElement("li"),
             nb_ft = parsedJSON.objects[lyr_name].geometries.length;
         li.setAttribute("class", class_name);
         li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
@@ -328,15 +342,19 @@ function add_layer_topojson(text, options){
             if(browse_table.node().disabled === true)
                 browse_table.node().disabled = false;
 
-            if(joined_dataset.length != 0)
+            if(joined_dataset.length != 0){
                 d3.select("#join_button").node().disabled = false;
+                d3.select(".s1").html("").on("click", null)
+                d3.select("#sample_link").html("").on("click", null);
+                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+            }
 
             let _button = button_type[type],
-                _lyr_name_display = lyr_name.length > 25 ? [lyr_name.substring(0, 20), '(...)'].join('') : lyr_name;
+                _lyr_name_display = lyr_name.length > 24 ? [lyr_name.substring(0, 19), '(...)'].join('') : lyr_name;
 
             _button = _button.substring(10, _button.indexOf("class") - 2);
-            d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"});
-            d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i>', nb_ft, " features - ", field_names.length, ' fields</i>'].join(''));
+            d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
+            d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
             d3.select("#func_button").node().disabled = false; 
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
@@ -382,8 +400,8 @@ function scale_to_lyr(name){
 
 function center_map(name){
     var bbox_layer_path = undefined;
-    if(name.endsWith("_PropSymbols"))
-        name = name.substring(0, name.length - 12);
+    if(name.indexOf("_PropSymbols") != -1 || name.indexOf("MTA") != -1)
+        name = current_layers[name].ref_layer_name
     d3.select("#"+name).selectAll('path').each(function(d, i){
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
@@ -420,7 +438,7 @@ function strArraysContains(ArrString1, ArrSubstrings){
 };
 
 function add_layout_features(){
-    var available_features = ["North arrow", "Scale", "Graticule"],
+    var available_features = ["North arrow", "Scale", "Sphere background"],
         selected_ft = undefined;
 
     make_confirm_dialog("", "Valid", "Cancel", "Layout features to be add ...", "sampleLayoutFtDialogBox", 4*w/5, h-10).then(
@@ -432,7 +450,7 @@ function add_layout_features(){
     box_body.append("p").style("color", "grey").html("<i>(multiple features can be selected)</i>");
 
     var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: available_features.length});
-    available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft[0]).attr("value", ft[1]);});
+    available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft).attr("value", ft);});
     layout_ft_selec.on("change", function(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
         selected_ft = selected_asArray.map(elem => elem.value);
@@ -481,7 +499,7 @@ function add_layout_layers(){
                         else {
                             url = sample_datasets[selec.layout[i]];
                             cache_sample_layer(selec.layout[i]);
-                            d3.text(url, function(txt_layer){ console.log(txt_layer); add_layer_topojson(txt_layer); })
+                            d3.text(url, function(txt_layer){ add_layer_topojson(txt_layer); })
                         }
                     }
                 }
@@ -514,7 +532,8 @@ function add_sample_layer(){
     var target_layers = [["<i>Target layer</i>",""],
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
                     ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
-                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"]];
+                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
+                    ["World countries <i>(Polygons)</i>", "world_countries_50m"]];
 
     var tabular_datasets = [["<i>Tabular dataset</i>",""],
                     ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
@@ -539,11 +558,24 @@ function add_sample_layer(){
                         joined_dataset.push(data);
                         dataset_name = selec.dataset;
                         let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                            d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name;
-                        d3.select('#data_ext').attr("name-tooltip", dataset_name + '.csv').html([' <b>', d_name, "</b> - ", field_name.length, " fields"].join(''));
+                            d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+                            nb_features = joined_dataset[0].length;
+                        d3.select('#data_ext')
+                            .attr("name-tooltip", dataset_name + '.csv')
+                            .html([' <b>', d_name,
+                                   '</b> - <i><span style="font-size:9.5px;"> ',
+                                   nb_features, ' features - ',
+                                   field_name.length, " fields</i></span>"].join(''));
                         valid_join_check_display(false);
-                        if(!targeted_layer_added){ d3.select("#join_button").node().disabled = true; }
-                        d3.select("#section1").style("height", "210px");
+                        if(targeted_layer_added){
+                            d3.select("#join_button").node().disabled = false;
+                            d3.select(".s1").html("").on("click", null)
+                            d3.select("#sample_link").html("").on("click", null);
+                            d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+                        } else { 
+                            d3.select("#join_button").node().disabled = true;
+                            d3.select("#section1").style("height", "215px");
+                        }
                         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
                     });
                 }

@@ -8,6 +8,7 @@
  "nuts0": "/database/topojson/nuts0.topojson",
  "nuts1": "/database/topojson/nuts1.topojson",
  "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
+ "world_countries_50m": "/database/topojson/ne_50m_admin_0_countries.topojson",
  "world_country": "/database/topojson/simplified_land_polygons.topojson",
  "world_cities": "/database/topojson/world_cities_extract5000.topojson",
  "water_coverage": "/database/topojson/water.topojson"

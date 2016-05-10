@@ -5,7 +5,7 @@
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> MAPOLOGIC - {{ func }}</title>
-    <script  src="/static/js/lib/d3.v3.min.js"></script>
+    <script  src="/static/js/lib/d3.js"></script>
     <script  src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
     <script topojson.version || document.write('<script src="/static/js/lib/topojson.v1.min.js">\x3C/script>')</script>
     <script  src="/static/js/lib/d3.geo.projection.js"></script>
@@ -57,14 +57,21 @@ var menu_option = get_menu_option(func);
 
     var w = first_guess < inn_width - 390 ? first_guess : Math.round((window.innerWidth - 395 ) / 10)*10,
         h = Math.round((window.innerHeight / 1.34 ) / 10)*10;
+
+    let _tmp = Math.min(+h, +w),
+        approx_scale = _tmp > 860 ? 600 : 
+                       _tmp > 440 ? 400 : 200,
+        trans_0 = +w / 2 - 200,
+        trans_1 = +h / 2 - 250;
+
+    var proj = d3.geo.naturalEarth().scale(approx_scale).translate([trans_0, trans_1]);
 }
-var proj = d3.geo.naturalEarth().scale(400).translate([375, 50]),
-    path = d3.geo.path().projection(proj).pointRadius(1),
+
+var path = d3.geo.path().projection(proj).pointRadius(1),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",
     zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
-//var zoom = d3.behavior.zoom().scale(1).on("zoom", redraw);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -112,7 +119,8 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
 
 
 //current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
+current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.3px"}
 
 //////////////////////////////////////////////////////////////////////////////
 // Set-up the menu :
@@ -180,6 +188,7 @@ if(menu_option.text_button){
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 //layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons")
+layer_list.append("li").attr("class", "ui-state-default Sphere").attr("layer-tooltip", "Sphere - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere")
 var dv3 = section3.append("div")
                 .attr("data-tooltip", "Drop new layout layer or click to browse locally and add one. Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON and TopoJSON")
                 .style("text-align", "center")
@@ -236,9 +245,6 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 // These variables (background, p, const_options, etc.) are not needed anymore 
 // after being used here so they are put into curly braces to ensure garbage collection (?):
 {
-    let background = map.append("g")
-                        .attr({id: "Simplified_land_polygons", class: "layer"})
-                        .style({"stroke-width": "0.5px", stroke: "#718F79", fill: "lightgrey"});
     /*
     // Actually the graticule seems to consume a lot of ressources
     // .. so maybe the user will add it if needed (in "layout features")
@@ -252,17 +258,24 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 
     // Instead the path of the sphere should be efficient enough to spot 
     // .. the earth limits :
-    map.append("g").append("path")
+    map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
+        .append("path")
         .datum({type: "Sphere"})
-        .style({"fill": "transparent", "stroke": "lightgrey"})
+        .style({fill: "lightblue", "fill-opacity": 0.2})
         .attr("id", "sphere")
         .attr("d", path);
+
+    let background = map.append("g")
+                        .attr({id: "Simplified_land_polygons", class: "layer"})
+                        .style({"stroke-width": "0.3px"});
+
 
     d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
         background.selectAll('path')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
                   .enter()
-                  .append('path');
+                  .append('path')
+                  .style({stroke: "rgb(0,0,64)", fill: "lightgrey"});
         map.selectAll("path").attr("d", path);  
     });
 
@@ -500,6 +513,26 @@ function reproj(){
   proj.translate([t[0], t[1]]);
   proj.scale(s)
   map.selectAll("path").attr("d", path);
+  if(func.indexOf('prop_symbol') != -1 || func.indexOf('MTA') != -1){
+    let pt_layer = d3.select('.result_layer');
+    if(pt_layer.node()){
+      let lyr_name = pt_layer.attr("id"),
+          ref_lyr_name = lyr_name.substring(0, lyr_name.indexOf('_Prop')),
+          idx_map = current_layers[lyr_name].id_size_map,
+          symbol = current_layers[lyr_name].symbol,
+          new_coords = new Array();
+      map.select("#" + ref_lyr_name).selectAll("path").each(function(d, i){new_coords.push(path.centroid(d))});
+      pt_layer.selectAll(symbol)
+                .attr("cx", function(d, i){
+                    let _id = idx_map[i];
+                    return new_coords[_id][0];
+                    })
+                .attr("cy", function(d, i){
+                    let _id = idx_map[i];
+                    return new_coords[_id][1];
+                    })
+    }
+  }
 }
 
 var trim = function(s){
@@ -512,7 +545,7 @@ function qs(str){
 
 // Convenience function to make a confirm dialog returning a defered promise 
 // which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
-var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height){
+var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height, top){
     html_content = html_content || "";
     text_ok = text_ok || "Ok";
     text_cancel = text_cancel || "Cancel";
@@ -524,7 +557,7 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
         .attr("title", title).html(html_content);
 
     $( "#dialog" ).dialog({
-        width: width, height: height, modal:true,
+        position: top ? { my: "center", at: "top" } : undefined, width: width, height: height, modal:true, 
         buttons:[
            {
             text: text_ok,
@@ -603,8 +636,9 @@ function remove_layer_cleanup(name){
         delete user_data[name];
         targeted_layer_added = false;
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
-        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; width: 280px;" alt="Drop_zone_section1" src="/static/img/drop_section1.svg">')
         d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
+        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; width: 270px;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1.svg">')
+        d3.select("#section1").style({"height": joined_dataset.length == 0 ? "185px" : "215px"})
     }
 
     // Restore the state of the bottom of the section 1 :
@@ -718,12 +752,14 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     map_config.projection_scale = proj.scale();
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
+    map_config.projection_rotation = proj.rotate();
     map_config.zoom_translate = zoom.translate();
     map_config.zoom_scale = zoom.scale();
     map_config.div_width = w;
     map_config.div_height = h;
-    // Todo : re-handle the rotation parameter
     map_config.n_layers = layers[0].length;
+
+    // Todo : re-handle the whole unsupported part of this function, i.e. the block coming next :
 
     for(let i=map_config.n_layers-1; i >= 0; --i){
         let layer_name = layers[0][i].id;
@@ -744,16 +780,16 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
             //layers_style[i].stroke = selection.style("stroke");
             //layers_style[i].stroke_opacity = selection.style("stroke-opacity");
             //layers_style[i].stroke_width = d3.select("#" + layer_name).style("stroke-width");
-            layers_style[i].fill_opacity = selection.style("fill-opacity");
+            //layers_style[i].fill_opacity = selection.style("fill-opacity");
+        /*
             if(!current_layers[layer_name].rendered || current_layers[layer_name].rendered !== "Choropleth"){
                 layers_style[i].fill = selection.style("fill");
             } else {
                 //layers_style[i].fill = current_layer[layer_name].colors_breaks;
                 layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             }
+        */
         }
-
-
     }
     return JSON.stringify({"map_config": map_config, "layers": layers_style})
 }

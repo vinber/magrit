@@ -1,3 +1,5 @@
+"use strict"
+
 function get_color_array(col_scheme, nb_class, selected_palette){
     var color_array = new Array;
     if(col_scheme === "Sequential"){
@@ -87,7 +89,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var col_div = d3.select("#color_div");
         col_div.selectAll('.color_params').remove();
         col_div.selectAll('.color_txt').remove();
+        col_div.selectAll('.color_txt2').remove();
         col_div.selectAll('.central_class').remove();
+        col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
                                                 .attr("class", "color_txt")
                                                 .html("Color palette ")
@@ -102,13 +106,22 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
          'Set1', 'Pastel1'].forEach(function(name){
             sequential_color_select.append("option").text(name).attr("value", name);
         });
+        var button_reverse = d3.select(".color_txt").insert("button")
+                                .style({"display": "inline", "margin-left": "10px"})
+                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
+                                .html("Reverse palette")
+                                .on("click", function(){
+                                    to_reverse = true;
+                                    redisplay.draw();
+                                    });
     };
     
     var make_diverg_button = function(){
         var col_div = d3.select("#color_div");
         col_div.selectAll('.color_params').remove();
         col_div.selectAll('.color_txt').remove();
-
+        col_div.selectAll('.color_txt2').remove();
+        col_div.selectAll('#reverse_pal_btn').remove();
         col_div.insert('p')
                 .attr("class", "central_class")
                 .html("Central class : ")
@@ -131,7 +144,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var right_color_select = d3.select("#color_div")
                                 .insert("p")
                                     .style({display: "inline", "margin-left": "70px"})
-                                    .attr("class", "color_txt")
+                                    .attr("class", "color_txt2")
                                     .html("Right-side color ramp ")
                                 .insert("select").attr("class", "color_params_right")
                                 .on("change", function(){ redisplay.draw() });
@@ -140,6 +153,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             right_color_select.append("option").text(name).attr("value", name)
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
+        var button_reverse = d3.select(".color_txt2").insert("button")
+                                .style({"display": "inline", "margin-left": "10px"})
+                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
+                                .html("Reverse palette")
+                                .on("click", function(){
+                                    to_reverse = true;
+                                    redisplay.draw();
+                                    });
     };
 
     var make_box_histo_option = function(){
@@ -198,9 +219,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     };
 
     var display_ref_histo = function(){
-        var svg_h = h/7.75,
-            svg_w = w/4.75,
-            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length))+1;
+        var svg_h = h / 7.75,
+            svg_w = w / 4.75,
+            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
 
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
         nb_bins = nb_bins > values.length ? nb_bins : values.length;
@@ -279,7 +300,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 breaks = eval(val);
                 let ir = serie.getInnerRanges();
                 if(!ir){ nb_class = old_nb_class; return false; }
-                ir = ir.map(function(el){let tmp=el.split(' - ');return [Number(tmp[0]), Number(tmp[1])]});
+                ir = ir.map(function(el){let tmp=el.split(' - ');return [+tmp[0], +tmp[1]]});
                 stock_class = [];
                 let _min = undefined, _max = undefined;
                 for(let j=0, len_j=ir.length; j < len_j; j++){
@@ -293,7 +314,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
             bins = [];
             for(let i = 0, len = stock_class.length, offset=0; i < len; i++){
-                bin = {};
+                let bin = {};
                 bin.val = stock_class[i] + 1;
                 bin.offset = breaks[i];
                 bin.width = breaks[i+1] - breaks[i];
@@ -313,6 +334,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             if(col_scheme === "Sequential"){
                 var selected_palette = d3.select('.color_params').node().value;
                 color_array = getColorBrewerArray(nb_class, selected_palette);
+                if(to_reverse)
+                    color_array = color_array.reverse();
             } else if(col_scheme === "Diverging"){
                 var left_palette = d3.select('.color_params_left').node().value,
                     right_palette = d3.select('.color_params_right').node().value,
@@ -328,11 +351,17 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                         left_pal = getColorBrewerArray(ctl_class_value, left_palette);
                     right_pal = right_pal.slice(0, ctl_class_value);
                 }
-                left_pal = left_pal.reverse()
+                left_pal = left_pal.reverse();
                 color_array = left_pal.concat(right_pal);
+                if(to_reverse){
+                    color_array = color_array.reverse();
+                    d3.select('.color_params_left').attr("value", right_palette)
+                    d3.select('.color_params_right').attr("value", left_palette)
+                }
             }
-
-            for(var i=0, len = bins.length; i<len; ++i){ bins[i].color = color_array[i]; }
+            to_reverse = false;
+            for(var i=0, len = bins.length; i<len; ++i)
+                bins[i].color = color_array[i];
 
             var x = d3.scale.linear()
                 .range([0, svg_w]);
@@ -360,7 +389,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
               .enter().append("text")
                 .attr("dy", ".75em")
                 .attr("y", function(d){
-                    let tmp = y(d.height)+5;
+                    let tmp = y(d.height) + 5;
                     return (tmp < height - 12) ? tmp : height - 12
 //                    if(tmp < height - 12) return tmp;
 //                    else return height - 12
@@ -475,8 +504,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                 }
                             });
 
-    var svg_h = h/5,
-        svg_w = w - (w/8),
+    var svg_h = h / 5,
+        svg_w = w - (w / 8),
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
   
@@ -577,7 +606,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                         }
                       });
     });
-
+    var to_reverse = false;
     document.getElementById("button_Sequential").checked = true;
 
     var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion"});
@@ -612,8 +641,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     $("#discretiz_charts").dialog({
         modal:true,
         resizable: true,
-        width: w-10,
-        height: h+60,
+        width: +w - 10,
+        height: +h + 60,
         buttons:[{
             text: "Confirm",
             click: function(){
@@ -646,8 +675,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 function getBreaksQ6(serie){
     var breaks = [], tmp = 0, j = undefined,
         len_serie = serie.length, stock_class = [],
-        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5*len_serie, 0.725*len_serie, 0.95*len_serie, len_serie];
-    for(let i=0; i<7; ++i){
+        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
+    for(let i=0; i < 7; ++i){
         j = Math.round(q6_class[i]) - 1
         breaks[i] = serie[j];
         stock_class.push(j - tmp)

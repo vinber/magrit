@@ -1,3 +1,5 @@
+"use strict";
+
 function handle_join(){
     var layer_name = Object.getOwnPropertyNames(user_data);
 
@@ -23,12 +25,18 @@ function handle_join(){
 // Function called to update the menu according to user operation (triggered when layers/dataset are added and after a join operation)
 function valid_join_check_display(val, prop){
     if(!val){
-        d3.select("#img_data_ext").attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"}).style({"width": "28px", "height": "28px"})
+        d3.select("#img_data_ext")
+            .attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"})
+            .style({"width": "28px", "height": "28px"})
+            .on("click", handle_join);
         d3.select("#join_section")
             .html([prop, 'Data not joined'].join(''));
         d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
     } else {
-        d3.select("#img_data_ext").attr({"src": "/static/img/qgis_relation_mod.svg", alt: "Validated join"}).style({"width": "28px", "height": "28px"})
+        d3.select("#img_data_ext")
+            .attr({"src": "/static/img/qgis_relation_mod.svg", alt: "Validated join"})
+            .style({"width": "28px", "height": "28px"})
+            .on("click", null);
         d3.select("#join_section")
             .html([' <b>', prop, ' matches</b>'].join(''))
         d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" - <i> Change join field </i>").on("click", handle_join);
@@ -153,7 +161,7 @@ function createJoinBox(layer){
             button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
     button2.push("</select>");
 
-    inner_box = [
+    let inner_box = [
         '<div><p style="font:12px italic;">Layer name : </p><p style="font: 14px courrier bold; display:inline;">',
          layer, '<br>',
          '<p><b><i>Select fields on which operate the join :</i></b></p>',
