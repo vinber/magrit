@@ -1,16 +1,16 @@
 [
 	{
-	"img" : "empty.png",
-	"desc" : "Example 1 - Join geom and dataset",
+	"img" : "world.png",
+	"desc" : "Example 1 - Explore geometries/dataset",
 	"link" 	: "/modules/test"
 	},
 	{
-	"img" : "empty.png",
+	"img" : "potentials2.png",
 	"desc" : "Example 2 - Stewart potentials",
 	"link" 	: "/modules/stewart"
 	},
 	{
-	"img" : "empty.png",
+	"img" : "choro.png",
 	"desc" : "Example 3 - Choropleth map",
 	"link" 	: "/modules/choropleth"
 	},
@@ -20,7 +20,7 @@
 	"link" 	:  "/modules/prop_symbol"
 	},
 	{
-	"img" : "empty.png",
+	"img" : "gridded2.png",
 	"desc" : "Example 5 - Gridded map",
 	"link" 	:  "/modules/grid_map"
 	},
@@ -36,7 +36,7 @@
 	},
      {
 	"img" : "bubble_choro.png",
-	"desc" : "Example 8 - Prop. symbols and choropleth map",
+	"desc" : "Example 8 - Choroplethized prop. symbols",
 	"link" 	:  "/modules/prop_symbol_choro"
 	},
      {

@@ -26,8 +26,9 @@ from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 from helpers.misc import try_float, savefile2, get_key, hash_md5_file
 
 import pandas as pd
-from geopandas import GeoDataFrame
-from shapely.geometry import LineString
+from io import StringIO
+#from geopandas import GeoDataFrame
+#from shapely.geometry import LineString
 
 pp = '(aiohttp_app) '
 
@@ -616,6 +617,45 @@ def handler_exists_layer(request):
     else:
         return web.Response(text="")
 
+@asyncio.coroutine
+def convert_csv_geo(request):
+    posted_data = yield from request.post()
+    st = time.time()
+    file_name = posted_data.get("filename")
+    raw_csv = StringIO(posted_data.get("csv_file"))
+    df = pd.read_csv(raw_csv)
+    geo_col_y = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"y", "latitude", "lat"}][0] + 1
+    geo_col_x = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"x", "longitude", "lon", "lng", "long"}][0] + 1
+    ft_template_start = '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
+    col_names = df.columns.tolist()
+    geojson_features = [
+        ''.join([ft_template_start,
+                 '''{0},{1}'''.format(ft[geo_col_x], ft[geo_col_y]),
+                 ''']},"properties":''',
+                 str({k: v for k, v in zip(col_names, ft[1:])}).replace("'", '"'),
+                 '''}'''])
+        for ft in df.itertuples()
+        ]
+    res = ''.join([
+        '''{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
+        ','.join(geojson_features),
+        """]}"""
+        ])
+    filepath = "/tmp/"+file_name+".geojson"
+    with open(filepath, 'wb') as f:
+        f.write(res.encode())
+    result = geojson_to_topojson(filepath)
+    if len(result) == 0:
+        result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
+    # Todo : put the result in redis as other input layers
+
+#    else:
+#        session_redis['converted'][hashed_input] = True
+#        yield from app_glob['redis_conn'].set(f_name, result)
+#        os.remove(filepath)
+    print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
+    return web.Response(text=result)
+
 
 @asyncio.coroutine
 def init(loop, port=9999):
@@ -635,6 +675,7 @@ def init(loop, port=9999):
     app.router.add_route('POST', '/R/{function}', R_commande)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)
     app.router.add_route('POST', '/convert_to_topojson', convert)
+    app.router.add_route('POST', '/convert_csv_geo', convert_csv_geo)
     app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_static('/foo/', path='templates/modules', name='modules')

@@ -46,7 +46,7 @@
       <div id="user_id" style="display:none">{{ user_id }}</div>
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
-"use strict"
+"use strict";
 var func = document.getElementById('func').innerHTML;
 document.getElementById('func').style.display = "none";
 var menu_option = get_menu_option(func);
@@ -60,14 +60,14 @@ var menu_option = get_menu_option(func);
 
     let _tmp = Math.min(+h, +w),
         approx_scale = _tmp > 860 ? 600 : 
-                       _tmp > 440 ? 400 : 200,
+                       _tmp > 405 ? 400 : 200,
         trans_0 = +w / 2 - 200,
         trans_1 = +h / 2 - 250;
 
     var proj = d3.geo.naturalEarth().scale(approx_scale).translate([trans_0, trans_1]);
 }
 
-var path = d3.geo.path().projection(proj).pointRadius(1),
+var path = d3.geo.path().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",

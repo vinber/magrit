@@ -191,7 +191,8 @@ function handle_dataset(files){
             var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
             if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
                 if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-                    add_csv_geom(joined_dataset);
+                    add_csv_geom(data, dataset_name);
+                    return;
                 }
             }
             let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
@@ -219,8 +220,24 @@ function handle_dataset(files){
     }
 }
 
-function add_csv_geom(param){
-    null;
+function add_csv_geom(file, name){
+    var ajaxData = new FormData();
+    ajaxData.append('filename', name);
+    ajaxData.append('csv_file', file);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/convert_csv_geo',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) {  console.log(error);  },
+        success: function(data) {
+            joined_dataset = [];
+            target_layer_on_add = true;
+            add_layer_topojson(data);
+            target_layer_on_add = false;
+        }
+    });
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
@@ -266,7 +283,7 @@ function add_layer_topojson(text, options){
     });
 
     if(target_layer_on_add && menu_option.add_options && menu_option.add_options == "keep_file")
-        _target_layer_file = parsedJSON;
+        window._target_layer_file = parsedJSON;
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?

@@ -749,65 +749,90 @@ function createFuncOptionsBox_Anamorphose(layer){
                     .attr("width", "100%");
 
         } else if (algo === "dorling"){
-            let new_layer_name = [layer, "DorlingCarto"].join('');
-            let rendering_params = {
-                "field": field_name,
-                "new_name": new_layer_name,
-                "nb_features": nb_features,
-                "ref_layer_name": layer,
-                "symbol": "circle",
-                "max_size": 20,
-                "ref_size": 0.1,
-                "fill_color": Colors.random()
-                };
-            let ret_val = make_prop_symbols(rendering_params),
-                dorling = d3.select('#' + new_layer_name).selectAll('circle'),
-                forceNodes = [],
-                ref_pt = [];
 
-            for(let i = 0 ; i < nb_features ; i++ ) {
-                let _id = ret_val[i];
-                forceNodes.push(user_data[layer][_id][field_name]);
-                ref_pt.push({x: +dorling[0][i].getAttribute('cx'), y: +dorling[0][i].getAttribute('cy'),
-                             c: [+dorling[0][i].getAttribute('cx'), +dorling[0][i].getAttribute('cy')],
-                             r: +dorling[0][i].getAttribute('r')});
+            let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+                d_values = new Array(nb_features),
+                res = new Array(nb_features),
+                zs = zoom.scale(),
+                max_size = 20,
+                ref_size = 0.5;
+
+            for(let i = 0; i < nb_features; ++i){
+                let centr = path.centroid(ref_layer_selection[0][i].__data__);
+                d_values[i] = [i, +user_data[layer][i][field_name], centr];
             }
 
-            var res = new Array(nb_features);
-            console.log(ref_pt);
-            for(let i = 0 ; i < nb_features ; i++) {
-                for(let j = 0 ; j < nb_features ; j++) {
-                    if(i==j) continue;
-                    let it = res[i] != undefined ? res[i] : ref_pt[i],
-                        jt = res[j] != undefined ? res[j] : ref_pt[j];
-    
-                    let radius = it.r + jt.r,
-                        itx = it.x + it.c[0],
-                        ity = it.y + it.c[1],
-                        jtx = jt.x + jt.c[0],
-                        jty = jt.y + jt.c[1],
-                        dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
-    
-                    if(radius >= dist) {
-                        let dr = ( radius - dist ) / ( dist * 1 );
-                        let tmp_x = it.x + ( itx - jtx ) * dr;
-                        let tmp_y = it.y + ( ity - jty ) * dr;
-                        res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r};
+            d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
+            let ref_pt = d_values.map(function(obj){return {x: +obj[2][0], y: +obj[2][1], c: obj[2], r: +obj[1], uid: +obj[0]}});
+            for(let iter = 0; iter < nb_iter; iter++){
+                for(let i = 0 ; i < nb_features ; i++) {
+                    for(let j = 0 ; j < nb_features ; j++) {
+                        if(i==j) continue;
+                        let it = res[i] != undefined ? res[i] : ref_pt[i],
+                            jt = res[j] != undefined ? res[j] : ref_pt[j];
+        
+                        let radius = it.r + jt.r,
+                            itx = it.x + it.c[0],
+                            ity = it.y + it.c[1],
+                            jtx = jt.x + jt.c[0],
+                            jty = jt.y + jt.c[1],
+                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
+        
+                        if(radius * zs > dist) {
+                            let dr = ( radius * zs - dist ) / ( dist * 1 );
+                            let tmp_x = it.x + ( itx - jtx ) * dr;
+                            let tmp_y = it.y + ( ity - jty ) * dr;
+                            res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r, "uid": it.uid};
+                        }
                     }
                 }
             }
+            console.log(res);console.log(ref_pt);
+            let bg_color = Colors.random(),
+                stroke_color = "black",
+                layer_to_add =  [layer, "DorlingCarto"].join('');
 
-            for(let i = 0 ; i < nb_features ; i++) {
-                let tmp_x = res[i] != undefined ? res[i].x : ref_pt[i].x,
-                    tmp_y = res[i] != undefined ? res[i].y : ref_pt[i].y;
-                dorling[0][i].setAttribute('cx', tmp_x);
-                dorling[0][i].setAttribute('cy', tmp_y);
+            if(current_layers[layer_to_add]){
+                remove_layer_cleanup(layer_to_add);
+                d3.selectAll('#' + layer_to_add).remove();
             }
-            console.log(res)
-            console.log(ref_pt)
+
+            var symbol_layer = map.append("g").attr("id", layer_to_add)
+                                  .attr("class", "result_layer layer");
+
+            for(let i = 0; i < res.length; i++){
+                let params = res[i] == undefined ? ref_pt[i] : res[i];
+                console.log(params);
+                symbol_layer.append('circle')
+                    .attr('cx', params.x)
+                    .attr("cy", params.y)
+                    .attr("r", ref_size / zs + params.r)
+                    .attr("id", ["PropSymbol_", i , " feature_", params.uid].join(''))
+                    .style("fill", bg_color)
+                    .style("stroke", "black")
+                    .style("stroke-width", 1 / zs);
+            }
+
+            let class_name = "ui-state-default sortable_result " + layer_to_add,
+                layers_listed = layer_list.node(),
+                li = document.createElement("li");
+
+            li.setAttribute("class", class_name);
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
+            layers_listed.insertBefore(li, layers_listed.childNodes[0])
+            current_layers[layer_to_add] = {
+                "renderer": "DorlingCarto",
+                "symbol": "circle",
+                "rendered_field": field_name,
+                "size": [ref_size, max_size],
+                "stroke-width-const": "1px",
+                "is_result": true,
+                "ref_layer_name": layer
+                };
+
             binds_layers_buttons();
             zoom_without_redraw();
-            makeButtonLegend(new_layer_name);
+            makeButtonLegend(layer_to_add);
             }
         deactivate([nwBox, bg]);
     });
@@ -1684,8 +1709,8 @@ function render_choro(layer, rendering_params){
 
 
 function prop_sizer(arr, min_size, max_size){
-    let min_values = Math.min.apply(0, arr),
-        max_values = Math.max.apply(0, arr),
+    let min_values = Math.sqrt(Math.min.apply(0, arr)),
+        max_values = Math.sqrt(Math.max.apply(0, arr)),
         dif_val = max_values - min_values,
         dif_size = max_size - min_size,
         len_arr = arr.length,
@@ -1693,7 +1718,7 @@ function prop_sizer(arr, min_size, max_size){
     // Lets use "for" loop with pre-sized array as "map" and "forEach" seems 
     // to be sometimes slower in some browser
     for(let i=0; i<len_arr; ++i)
-        res[i] = (arr[i]/dif_val * dif_size) + min_size - dif_size/dif_val;
+        res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
     return res;
 }
 
