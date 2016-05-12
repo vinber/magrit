@@ -139,6 +139,7 @@ function createBox_MTA(layer){
         bg = document.createElement('div'),
         g_lyr_name = "#"+layer,
         fields = type_col(layer, "number"),
+        fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         nb_features = user_data[layer].length,
         MTA_methods = [["Global Deviation", "global_dev"],
                        ["Medium deviation", "medium_dev"],
@@ -167,7 +168,7 @@ function createBox_MTA(layer){
     var field2_selec = dialog_content.append("p").html("Second field :").insert("select").attr("class", "params");
     fields.forEach(function(field){ field2_selec.append("option").text(field).attr("value", field)});
     var field_key_agg = dialog_content.append("p").html("Aggregation key field :").insert("select").attr("class", "params").attr("disabled", true);
-    fields.forEach(function(field){ field_key_agg.append("option").text(field).attr("value", field)});
+    fields_all.forEach(function(field){ field_key_agg.append("option").text(field).attr("value", field)});
     var ref_ratio = dialog_content.append("p").html("Reference ratio :")
                                     .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1}).attr("disabled", true);
     var type_deviation = dialog_content.append("p").html("Type of deviation").insert("select").attr("class", "params");
@@ -726,113 +727,114 @@ function createFuncOptionsBox_Anamorphose(layer){
         if(algo === "gastner"){
             alert('Not implemented (yet!)')
         } else if (algo === "dougenik"){
-            let carto = d3.cartogram().projection(d3.geo.mercator()).value(function(d, i){ return +user_data[layer][i][field_name]; }),
-                geoms = _target_layer_file.objects[layer].geometries,
-                new_features = carto(_target_layer_file, geoms).features,
-                new_layer_name = layer + "_Dougenik_Cartogram";
-            console.log(geoms);
-            console.log(new_features);
-            map.append("g")
-                .attr("id", new_layer_name)
-                .attr("class", "result_layer layer")
-                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-                .selectAll(".subunit")
-                .data(new_features)
-                .enter().append("path")
-                    .attr("d", path)
-                    .attr("id", function(d, ix) { return "feature_" + ix; })
-                    .style("stroke", "black")
-                    .style("stroke-opacity", .4)
-                    .style("fill", random_color)
-                    .style("fill-opacity", 0.5)
-                    .attr("height", "100%")
-                    .attr("width", "100%");
+            alert('Not implemented (yet!)')
+//            let carto = d3.cartogram().projection(d3.geo.mercator()).value(function(d, i){ return +user_data[layer][i][field_name]; }),
+//                geoms = _target_layer_file.objects[layer].geometries,
+//                new_features = carto(_target_layer_file, geoms).features,
+//                new_layer_name = layer + "_Dougenik_Cartogram";
+//            console.log(geoms);
+//            console.log(new_features);
+//            map.append("g")
+//                .attr("id", new_layer_name)
+//                .attr("class", "result_layer layer")
+//                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+//                .selectAll(".subunit")
+//                .data(new_features)
+//                .enter().append("path")
+//                    .attr("d", path)
+//                    .attr("id", function(d, ix) { return "feature_" + ix; })
+//                    .style("stroke", "black")
+//                    .style("stroke-opacity", .4)
+//                    .style("fill", random_color)
+//                    .style("fill-opacity", 0.5)
+//                    .attr("height", "100%")
+//                    .attr("width", "100%");
 
         } else if (algo === "dorling"){
-
-            let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
-                d_values = new Array(nb_features),
-                res = new Array(nb_features),
-                zs = zoom.scale(),
-                max_size = 20,
-                ref_size = 0.5;
-
-            for(let i = 0; i < nb_features; ++i){
-                let centr = path.centroid(ref_layer_selection[0][i].__data__);
-                d_values[i] = [i, +user_data[layer][i][field_name], centr];
-            }
-
-            d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
-            let ref_pt = d_values.map(function(obj){return {x: +obj[2][0], y: +obj[2][1], c: obj[2], r: +obj[1], uid: +obj[0]}});
-            for(let iter = 0; iter < nb_iter; iter++){
-                for(let i = 0 ; i < nb_features ; i++) {
-                    for(let j = 0 ; j < nb_features ; j++) {
-                        if(i==j) continue;
-                        let it = res[i] != undefined ? res[i] : ref_pt[i],
-                            jt = res[j] != undefined ? res[j] : ref_pt[j];
-        
-                        let radius = it.r + jt.r,
-                            itx = it.x + it.c[0],
-                            ity = it.y + it.c[1],
-                            jtx = jt.x + jt.c[0],
-                            jty = jt.y + jt.c[1],
-                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
-        
-                        if(radius * zs > dist) {
-                            let dr = ( radius * zs - dist ) / ( dist * 1 );
-                            let tmp_x = it.x + ( itx - jtx ) * dr;
-                            let tmp_y = it.y + ( ity - jty ) * dr;
-                            res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r, "uid": it.uid};
-                        }
-                    }
-                }
-            }
-            console.log(res);console.log(ref_pt);
-            let bg_color = Colors.random(),
-                stroke_color = "black",
-                layer_to_add =  [layer, "DorlingCarto"].join('');
-
-            if(current_layers[layer_to_add]){
-                remove_layer_cleanup(layer_to_add);
-                d3.selectAll('#' + layer_to_add).remove();
-            }
-
-            var symbol_layer = map.append("g").attr("id", layer_to_add)
-                                  .attr("class", "result_layer layer");
-
-            for(let i = 0; i < res.length; i++){
-                let params = res[i] == undefined ? ref_pt[i] : res[i];
-                console.log(params);
-                symbol_layer.append('circle')
-                    .attr('cx', params.x)
-                    .attr("cy", params.y)
-                    .attr("r", ref_size / zs + params.r)
-                    .attr("id", ["PropSymbol_", i , " feature_", params.uid].join(''))
-                    .style("fill", bg_color)
-                    .style("stroke", "black")
-                    .style("stroke-width", 1 / zs);
-            }
-
-            let class_name = "ui-state-default sortable_result " + layer_to_add,
-                layers_listed = layer_list.node(),
-                li = document.createElement("li");
-
-            li.setAttribute("class", class_name);
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
-            layers_listed.insertBefore(li, layers_listed.childNodes[0])
-            current_layers[layer_to_add] = {
-                "renderer": "DorlingCarto",
-                "symbol": "circle",
-                "rendered_field": field_name,
-                "size": [ref_size, max_size],
-                "stroke-width-const": "1px",
-                "is_result": true,
-                "ref_layer_name": layer
-                };
-
-            binds_layers_buttons();
-            zoom_without_redraw();
-            makeButtonLegend(layer_to_add);
+            alert('Not implemented (yet!)')
+//            let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+//                d_values = new Array(nb_features),
+//                res = new Array(nb_features),
+//                zs = zoom.scale(),
+//                max_size = 20,
+//                ref_size = 0.5;
+//
+//            for(let i = 0; i < nb_features; ++i){
+//                let centr = path.centroid(ref_layer_selection[0][i].__data__);
+//                d_values[i] = [i, +user_data[layer][i][field_name], centr];
+//            }
+//
+//            d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
+//            let ref_pt = d_values.map(function(obj){return {x: +obj[2][0], y: +obj[2][1], c: obj[2], r: +obj[1], uid: +obj[0]}});
+//            for(let iter = 0; iter < nb_iter; iter++){
+//                for(let i = 0 ; i < nb_features ; i++) {
+//                    for(let j = 0 ; j < nb_features ; j++) {
+//                        if(i==j) continue;
+//                        let it = res[i] != undefined ? res[i] : ref_pt[i],
+//                            jt = res[j] != undefined ? res[j] : ref_pt[j];
+//        
+//                        let radius = it.r + jt.r,
+//                            itx = it.x + it.c[0],
+//                            ity = it.y + it.c[1],
+//                            jtx = jt.x + jt.c[0],
+//                            jty = jt.y + jt.c[1],
+//                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
+//        
+//                        if(radius * zs > dist) {
+//                            let dr = ( radius * zs - dist ) / ( dist * 1 );
+//                            let tmp_x = it.x + ( itx - jtx ) * dr;
+//                            let tmp_y = it.y + ( ity - jty ) * dr;
+//                            res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r, "uid": it.uid};
+//                        }
+//                    }
+//                }
+//            }
+//            console.log(res);console.log(ref_pt);
+//            let bg_color = Colors.random(),
+//                stroke_color = "black",
+//                layer_to_add =  [layer, "DorlingCarto"].join('');
+//
+//            if(current_layers[layer_to_add]){
+//                remove_layer_cleanup(layer_to_add);
+//                d3.selectAll('#' + layer_to_add).remove();
+//            }
+//
+//            var symbol_layer = map.append("g").attr("id", layer_to_add)
+//                                  .attr("class", "result_layer layer");
+//
+//            for(let i = 0; i < res.length; i++){
+//                let params = res[i] == undefined ? ref_pt[i] : res[i];
+//                console.log(params);
+//                symbol_layer.append('circle')
+//                    .attr('cx', params.x)
+//                    .attr("cy", params.y)
+//                    .attr("r", ref_size / zs + params.r)
+//                    .attr("id", ["PropSymbol_", i , " feature_", params.uid].join(''))
+//                    .style("fill", bg_color)
+//                    .style("stroke", "black")
+//                    .style("stroke-width", 1 / zs);
+//            }
+//
+//            let class_name = "ui-state-default sortable_result " + layer_to_add,
+//                layers_listed = layer_list.node(),
+//                li = document.createElement("li");
+//
+//            li.setAttribute("class", class_name);
+//            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
+//            layers_listed.insertBefore(li, layers_listed.childNodes[0])
+//            current_layers[layer_to_add] = {
+//                "renderer": "DorlingCarto",
+//                "symbol": "circle",
+//                "rendered_field": field_name,
+//                "size": [ref_size, max_size],
+//                "stroke-width-const": "1px",
+//                "is_result": true,
+//                "ref_layer_name": layer
+//                };
+//
+//            binds_layers_buttons();
+//            zoom_without_redraw();
+//            makeButtonLegend(layer_to_add);
             }
         deactivate([nwBox, bg]);
     });
@@ -1822,6 +1824,8 @@ function add_table_field(layer, parent){
                 d3.select("#txt_opt").html("Character to join the two fields (can stay blank) :<br>");
                 chooses_handler.operator = string_operation[0];
             }
+            chooses_handler.field1 = field1.node().value;
+            chooses_handler.field2 = field2.node().value;
     };
 
     var refresh_subtype_content = function(type, subtype){
@@ -1852,7 +1856,8 @@ function add_table_field(layer, parent){
                         let fi1 = chooses_handler.field1,
                             fi2 = chooses_handler.field2,
                             data_layer = user_data[layer],
-                            new_name_field = chooses_handler.new_name, operation = chooses_handler.operator;
+                            new_name_field = chooses_handler.new_name,
+                            operation = chooses_handler.operator;
 
                         if(chooses_handler.type_operation === "math_compute"){
                             for(let i=0; i<data_layer.length; i++){
@@ -1864,7 +1869,7 @@ function add_table_field(layer, parent){
                             let opt_val = chooses_handler.opt_val;
                             if(operation == "Truncate"){
                                 for(let i=0; i < user_data[layer].length; i++)
-                                    data_layer[i][new_name_field] = data_layer[i][fi1].substring(0, opt_val);
+                                    data_layer[i][new_name_field] = data_layer[i][fi1].substring(0, +opt_val);
 
                             } else if (operation == "Concatenate"){
                                 for(let i=0; i < user_data[layer].length; i++)
@@ -1888,7 +1893,7 @@ function add_table_field(layer, parent){
      ["Modification on a character field", "string_field"]
     ].forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
 
-    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
+    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; console.log(this.value) }),
         operator = div1.append("select").on("change", function(){ chooses_handler.operator = this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);}),
         field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });;
 

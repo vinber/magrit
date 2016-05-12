@@ -27,8 +27,7 @@ from helpers.misc import try_float, savefile2, get_key, hash_md5_file
 
 import pandas as pd
 from io import StringIO
-#from geopandas import GeoDataFrame
-#from shapely.geometry import LineString
+
 
 pp = '(aiohttp_app) '
 
@@ -215,16 +214,14 @@ def convert(request):
     elif "action" in posted_data and "file[]" in posted_data:
         try:
             field = posted_data.get('file[]')
-#            md5_h = posted_data.get('md5')
             name = field[1]
             data = field[2].read()
             datatype = field[3]
-#            print("Browser computed md5 :", md5_h)
-#            md5_h_py = md5(data).hexdigest()
-#            print("Server computed md5 :", md5_h_py)
+
             hashed_input = sha512(data).hexdigest()
-            filepath = os.path.join(
-                app_glob['app_real_path'], app_glob['UPLOAD_FOLDER'], name)
+            filepath = ''.join(['/tmp/', name])
+#            tmp_part = get_name()
+#            filepath = ''.join(['/tmp/', tmp_part, name])
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
@@ -234,7 +231,7 @@ def convert(request):
     user_id = get_user_id(session_redis)
     
     f_name = '_'.join([user_id, name.split('.')[0]])
-    print(f_name)
+
     if not "converted" in session_redis:
         session_redis["converted"] = {}
         print('not "converted" : ',session_redis["converted"])
@@ -285,6 +282,7 @@ def convert(request):
                 f.write(data)
             res = ogr_to_geojson(filepath, to_latlong=True)
             print("Transform coordinates from GeoJSON")
+            os.remove(filepath)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(res)
         else:
@@ -298,7 +296,22 @@ def convert(request):
         else:
             session_redis['converted'][hashed_input] = True
             yield from app_glob['redis_conn'].set(f_name, result)
-#        os.remove(filepath)
+
+    elif 'kml' in datatype:
+        print(datatype)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(data.decode())
+        res = ogr_to_geojson(filepath, to_latlong=True)
+        os.remove(filepath)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(res)
+        result = geojson_to_topojson(filepath)
+        if len(result) == 0:
+            result = json.dumps({'Error': 'Error converting reading kml file'})
+        else:
+            session_redis['converted'][hashed_input] = True
+            yield from app_glob['redis_conn'].set(f_name, result)
+
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
 
@@ -346,7 +359,6 @@ def handle_app_functionality(request):
     session_redis = yield from get_session(request)
     user_id = get_user_id(session_redis)
     lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
-#    print(lastPref)
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 
@@ -620,14 +632,33 @@ def handler_exists_layer(request):
 @asyncio.coroutine
 def convert_csv_geo(request):
     posted_data = yield from request.post()
+    session_redis = yield from get_session(request)
+    user_id = get_user_id(session_redis)
     st = time.time()
     file_name = posted_data.get("filename")
-    raw_csv = StringIO(posted_data.get("csv_file"))
+    data = posted_data.get("csv_file")
+
+    f_name = '_'.join([user_id, file_name.split('.')[0]])
+    hashed_input = sha512(data).hexdigest()
+
+    if not "converted" in session_redis:
+        session_redis["converted"] = {}
+        print('not "converted" : ',session_redis["converted"])
+    else:
+        print('converted: ',session_redis["converted"])
+        print('actual hash : ', hashed_input)
+        if hashed_input in session_redis['converted']:
+            result = yield from app_glob['redis_conn'].get(f_name)
+            print("Used cached result")
+            return web.Response(text=result.decode())
+
+    raw_csv = StringIO(data)
     df = pd.read_csv(raw_csv)
     geo_col_y = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"y", "latitude", "lat"}][0] + 1
     geo_col_x = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"x", "longitude", "lon", "lng", "long"}][0] + 1
     ft_template_start = '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
     col_names = df.columns.tolist()
+    ## Ugly geojson construction "by hand" :
     geojson_features = [
         ''.join([ft_template_start,
                  '''{0},{1}'''.format(ft[geo_col_x], ft[geo_col_y]),
@@ -648,11 +679,10 @@ def convert_csv_geo(request):
     if len(result) == 0:
         result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
     # Todo : put the result in redis as other input layers
-
-#    else:
-#        session_redis['converted'][hashed_input] = True
-#        yield from app_glob['redis_conn'].set(f_name, result)
-#        os.remove(filepath)
+    else:
+        session_redis['converted'][hashed_input] = True
+        yield from app_glob['redis_conn'].set(f_name, result)
+        os.remove(filepath)
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
 

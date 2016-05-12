@@ -25,7 +25,7 @@
 	"link" 	:  "/modules/grid_map"
 	},
 	{
-	"img" : "empty.png",
+	"img" : "links.png",
 	"desc" : "Example 6 - Flows map",
 	"link" 	:  "/modules/flows_map"
 	},
@@ -40,7 +40,7 @@
 	"link" 	:  "/modules/prop_symbol_choro"
 	},
      {
-	"img" : "empty.png",
+	"img" : "cartogram.png",
 	"desc" : "Example 9 - Cartogram map",
 	"link" 	:  "/modules/cartogram"
 	}

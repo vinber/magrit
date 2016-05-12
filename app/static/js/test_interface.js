@@ -2,6 +2,7 @@
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
+const MAX_INPUT_SIZE = 12582912;
 
 function add_layer(d){
     var input = $(document.createElement('input')),
@@ -16,21 +17,27 @@ function add_layer(d){
     
     function prepareUpload(event){
         let files = event.target.files;
+        for(let i=0; i < files.length; i++){
+            if(files[i].size > MAX_INPUT_SIZE){
+                alert("Too large input file (should currently be under 12Mb");
+                return;
+            }
+        }
         if(strContains(files[0].name, 'topojson')){
             handle_TopoJSON_files(files);
         } else if(files.length == 1 && (strContains(files[0].name, 'geojson')
-                            || strContains(files[0].name, 'zip'))){
-            handle_single_file(files);
+                            || strContains(files[0].name, 'zip') || strContains(files[0].name, 'kml'))){
+            handle_single_file(files[0]);
         } else if((strContains(files[0].name.toLowerCase(), '.csv')
                     || strContains(files[0].name.toLowerCase(), '.tsv'))
                     && target_layer_on_add) {
-            handle_dataset(files)
+            handle_dataset(files[0])
             target_layer_on_add = false;
         }
         else if(files.length >= 4){
-            var filenames = [];
-            for (let i=0; i<files.length; i++) filenames[i] = files[i].name;
-            let res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+            var filenames = files.map(f => f.name),
+//            for (let i=0; i<files.length; i++) filenames[i] = files[i].name;
+                res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             if(res.length >= 4)
                 handle_shapefile(files);
             else
@@ -70,21 +77,26 @@ $(document).on('drop', '#section1,#section3', function(e) {
    if(self_section === "section1") target_layer_on_add = true;
    e.preventDefault();e.stopPropagation();
 
-   if(!(e.originalEvent.dataTransfer.files.length == 1)){
-        var filenames = [];
-        for(var i=0; i < files.length; i++){filenames[i] = files[i].name;}
-        var result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+    for(let i=0; i < files.length; i++){
+        if(files[i].size > MAX_INPUT_SIZE){
+            alert("Too large input file (should currently be under 12Mb");
+            return;
+        }
+    }
+
+    if(!(e.originalEvent.dataTransfer.files.length == 1)){
+        var filenames = files.map(f => f.name),
+            result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
 
         if(result.length == 4){
             $(this).css('border', '');
             handle_shapefile(files);
-                }
-            else {
-                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
-                $(this).css('border', '');
-              }
+        } else {
+            alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+            $(this).css('border', '');
         }
-   else if(strContains(files[0].name.toLowerCase(), 'topojson')){
+    }
+    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
            $(this).css('border', '');
            if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
@@ -99,19 +111,20 @@ $(document).on('drop', '#section1,#section3', function(e) {
 //           else handle_GeoJSON_files(files);
 //    }
    else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
-            strContains(files[0].type.toLowerCase(), 'application/zip')){
+        strContains(files[0].type.toLowerCase(), 'application/zip') ||
+        strContains(files[0].name.toLowerCase(), 'kml')){
            $(this).css('border', '');
 
            if(target_layer_on_add && targeted_layer_added)
                alert("Only one layer can be added by this functionnality");
            // Send the file to the server for conversion :
-           else handle_single_file(files);
+           else handle_single_file(files[0]);
    }
   else if(strContains(files[0].name.toLowerCase(), '.csv')
-            || strContains(files[0].name.toLowerCase(), '.tsv')) {
+    || strContains(files[0].name.toLowerCase(), '.tsv')) {
         $(this).css('border', '');
         if(self_section === "section1")
-            handle_dataset(files);
+            handle_dataset(files[0]);
         else
             alert('Only layout layers can be added here');
         target_layer_on_add = false;
@@ -156,7 +169,6 @@ function handle_TopoJSON_files(files) {
     $.ajax({
         processData: false,
         contentType: false,
-        cache: false,
         global: false,
         url: '/cache_topojson/user',
         data: ajaxData,
@@ -171,53 +183,49 @@ function handle_TopoJSON_files(files) {
     reader.readAsText(f);
 };
 
-function handle_dataset(files){
+function handle_dataset(f){
     if(joined_dataset.length !== 0){
         var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
         if(!rep){ return; }
         else joined_dataset = [];
     }
+    var reader = new FileReader(),
+        name = f.name;
 
-    for(var i = 0; i != files.length; ++i) {
-        var f = files[i],
-            reader = new FileReader(),
-            name = f.name;
+    reader.onload = function(e) {
+        var data = e.target.result;
+        dataset_name = name.substring(0, name.indexOf('.csv'));
+        joined_dataset.push(d3.csv.parse(data))
 
-        reader.onload = function(e) {
-            var data = e.target.result;
-            dataset_name = name.substring(0, name.indexOf('.csv'));
-            joined_dataset.push(d3.csv.parse(data))
-
-            var field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
-            if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
-                if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-                    add_csv_geom(data, dataset_name);
-                    return;
-                }
+        let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+        if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+            if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+                add_csv_geom(data, dataset_name);
+                return;
             }
-            let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-                nb_features = joined_dataset[0].length;
-            d3.select('#data_ext')
-                .attr("name-tooltip", dataset_name + '.csv')
-                .html([' <b>', d_name,
-                       '</b> - <i><span style="font-size:9.5px;"> ',
-                       nb_features, ' features - ',
-                       field_name.length, " fields</i></span>"].join(''));
-            valid_join_check_display(false);
-            if(targeted_layer_added){
-                d3.select("#join_button").node().disabled = false;
-                d3.select(".s1").html("").on("click", null)
-                d3.select("#sample_link").html("").on("click", null);
-                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
-            } else { 
-                d3.select("#join_button").node().disabled = true;
-                d3.select("#section1").style("height", "215px");
-            }
-            if(browse_table.node().disabled === true) browse_table.node().disabled = false;
-            $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
-        };
-        reader.readAsText(f);
-    }
+        }
+        let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+            nb_features = joined_dataset[0].length;
+        d3.select('#data_ext')
+            .attr("name-tooltip", dataset_name + '.csv')
+            .html([' <b>', d_name,
+                   '</b> - <i><span style="font-size:9.5px;"> ',
+                   nb_features, ' features - ',
+                   field_name.length, " fields</i></span>"].join(''));
+        valid_join_check_display(false);
+        if(targeted_layer_added){
+            d3.select("#join_button").node().disabled = false;
+            d3.select(".s1").html("").on("click", null)
+            d3.select("#sample_link").html("").on("click", null);
+            d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+        } else { 
+            d3.select("#join_button").node().disabled = true;
+            d3.select("#section1").style("height", "215px");
+        }
+        if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
+    };
+    reader.readAsText(f);
 }
 
 function add_csv_geom(file, name){
@@ -241,16 +249,13 @@ function add_csv_geom(file, name){
 }
 
 // - By sending it to the server for conversion (GeoJSON to TopoJSON)
-function handle_single_file(files) {
+function handle_single_file(file) {
     var ajaxData = new FormData();
-    // var md5_digest = md5_h(files[0]);
     ajaxData.append("action", "single_file");
-    ajaxData.append('file[]', files[0]);
-//    ajaxData.append('md5', md5_digest);
+    ajaxData.append('file[]', file);
     $.ajax({
         processData: false,
         contentType: false,
-        cache: false,
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
@@ -630,8 +635,8 @@ function cache_sample_layer(name_layer){
         data: formToSend,
         type: 'POST',
         error: function(error) { console.log(error); }
-        });
-    }
+    });
+}
 
 //function md5_h(file){
 //    var md5_digest = null;

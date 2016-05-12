@@ -68,8 +68,10 @@ function hexToRgb(hex, out) {
 // Return the interpolated value at "factor" (0<factor<1) between color1 and color2
 // (if no factor is provided the default value of 0.5 is used,
 // corresponding to the middle between the two colors).
-var interpolateColor = function(color1, color2, factor) {
-  if (arguments.length < 3) { factor = 0.5; }
+// Args :
+//    - color1 : array of 3 integer for rgb color as [R, G, B]
+//    - color2 : array of 3 integer for rgb color as [R, G, B]
+var interpolateColor = function(color1, color2, factor=0.5) {
   var result = color1.slice();
   for (var i=0;i<3;i++) {
     result[i] = Math.round(result[i] + factor*(color2[i]-color1[i]));

@@ -67,7 +67,7 @@ var menu_option = get_menu_option(func);
     var proj = d3.geo.naturalEarth().scale(approx_scale).translate([trans_0, trans_1]);
 }
 
-var path = d3.geo.path().projection(proj).pointRadius(4),
+var path = d3.geo.path().projection(proj).pointRadius(2),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",
@@ -206,15 +206,41 @@ var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width=
 
 {
     let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
-    dv4.append("p").style("display", "inline").html("<b>Canvas width (px)</b><br>").insert("input").attr("id", "input-width").attr("type", "number").attr("value", w).on("change", function(){canvas_mod_size([this.value,null])})
-    dv4.append("p").html("<b>Canvas height (px)</b><br>").insert("input").attr("id", "input-height").attr("type", "number").attr("value", h).on("change", function(){canvas_mod_size([null,this.value])})
-    dv4.append("p").style("display", "inline").html("Map title<br>").insert("input").attr("id", "title").on("keyup", function(){handle_title(this.value);})
-    dv4.insert("_img").style("display", "inline").style("top", "4px").html(sys_run_button.replace("submit", "Title properties")).on("click", handle_title_properties);
-    dv4.append("p").html("Background Color<br>").insert("input").attr("type", "color").attr("id", "bg_color").attr("value", "#ffffff").on("change", function(){handle_bg_color(this.value);})
+    dv4.append("div")
+            .style({float: "left", width: "50%", "text-align": "center"})
+            .html("<b>Canvas width (px)</b><br>")
+            .insert("input").style("width", "60px")
+            .attr({id: "input-width", type: "number", value: w, width: "55px"})
+            .on("change", function(){canvas_mod_size([this.value,null])})
+    dv4.append("div")
+            .style({float: "right", width: "50%", "text-align": "center"})
+            .html("<b>Canvas height (px)</b><br>")
+            .insert("input").style("width", "60px")
+            .attr({id: "input-height", type: "number", "value": h})
+            .on("change", function(){canvas_mod_size([null,this.value])})
+    dv4.append("p")
+            .style("display", "inline")
+            .html("<br>Map title<br>")
+            .insert("input").attr("id", "title")
+            .on("keyup", function(){handle_title(this.value);})
+    dv4.insert("_img")
+            .style("display", "inline").style("top", "4px")
+            .html(sys_run_button.replace("submit", "Title properties"))
+            .on("click", handle_title_properties);
+    dv4.append("p").html("Background color")
+            .insert("input").style("margin-left", "15px")
+            .attr({type: "color", id: "bg_color", value: "#ffffff"})
+            .on("change", function(){handle_bg_color(this.value);})
 
-    dv4.append("p").html(sys_run_button + " Add layout features (arrow, scale, etc.)").on("click", add_layout_features)
-    dv4.append("p").html(sys_run_button + " Save your preferences...").on("click", load_map_template)
-    dv4.append("p").html(sys_run_button + " Load a preference JSON...").on("click", load_map_template)
+    dv4.append("p")
+            .html(sys_run_button + " Add layout features (arrow, scale, etc.)")
+            .on("click", add_layout_features)
+    dv4.append("p")
+            .html(sys_run_button + " Save your preferences...")
+            .on("click", load_map_template)
+    dv4.append("p")
+            .html(sys_run_button + " Load a preference JSON...")
+            .on("click", load_map_template)
 }
 
 var dv5 = section5.append("p").attr("class", "form-item");
