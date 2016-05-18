@@ -2,15 +2,15 @@
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
-const MAX_INPUT_SIZE = 12582912;
+const MAX_INPUT_SIZE = 12582912; // max allowed input size in bytes
 
 function add_layer(d){
-    var input = $(document.createElement('input')),
-        res = [], self_section = this.parentNode.parentNode.id;
+    var res = [],
+        input = d3.select(document.createElement('input'))
+                    .attr("type", "file").attr("multiple", "").attr("name", "file[]")
+                    .attr("enctype", "multipart/form-data")
+                    .on('change', function(){ prepareUpload(d3.event) });
 
-    input.attr("type", "file").attr("multiple", "").attr("name", "file[]").attr("enctype", "multipart/form-data");
-    input.on('change', prepareUpload);
-    console.log(this.id)
     target_layer_on_add = (this.id === "img_in_geom_big") ? true :
                           (this.id === "img_in_geom") ? true :
                           (this.id === "img_data_ext") ? true : false;
@@ -35,8 +35,7 @@ function add_layer(d){
             target_layer_on_add = false;
         }
         else if(files.length >= 4){
-            var filenames = files.map(f => f.name),
-//            for (let i=0; i<files.length; i++) filenames[i] = files[i].name;
+            let filenames = Array.prototype.map.call(files, f => f.name),
                 res = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             if(res.length >= 4)
                 handle_shapefile(files);
@@ -46,95 +45,93 @@ function add_layer(d){
             alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
         }
     };
-    input.trigger('click');
+    input.node().dispatchEvent(new MouseEvent("click"))
 }
 
-////////////////////////////////////////////////////////////////////////
-// Some jQuery functions to handle drag-and-drop events :
-////////////////////////////////////////////////////////////////////////
 
-$(document).on('dragenter', '#section1,#section3', function() {
-            target_layer_on_add = false
-            $(this).css('border', '3px dashed green');
-            return false;
-});
-$(document).on('dragover', '#section1,#section3', function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).css('border', '3px dashed green');
-            return false;
-});
-$(document).on('dragleave', '#section1,#section3', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).css('border', '');
-            return false;
-});
-$(document).on('drop', '#section1,#section3', function(e) {
-    var files = e.originalEvent.dataTransfer.files,
-        self_section = this.id;
+function prepare_drop_section(){
+    Array.prototype.forEach.call(
+        document.querySelectorAll("#section1,#section3"),
+        function(elem){
+            elem.addEventListener("dragenter", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                target_layer_on_add = false;
+                elem.style.border = '3px dashed green';
+            });
+            elem.addEventListener("dragover", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                elem.style.border = '3px dashed green';
+            });
+            elem.addEventListener("dragleave", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                elem.style.border = '';
+            });
+            elem.addEventListener("drop", function(e) {
+                e.preventDefault();
+                let files = e.dataTransfer.files,
+                    self_section = elem.id;
 
-   if(self_section === "section1") target_layer_on_add = true;
-   e.preventDefault();e.stopPropagation();
+                e.stopPropagation();
 
-    for(let i=0; i < files.length; i++){
-        if(files[i].size > MAX_INPUT_SIZE){
-            alert("Too large input file (should currently be under 12Mb");
-            return;
-        }
-    }
+                if(self_section === "section1")
+                    target_layer_on_add = true;
 
-    if(!(e.originalEvent.dataTransfer.files.length == 1)){
-        var filenames = files.map(f => f.name),
-            result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-
-        if(result.length == 4){
-            $(this).css('border', '');
-            handle_shapefile(files);
-        } else {
-            alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
-            $(this).css('border', '');
-        }
-    }
-    else if(strContains(files[0].name.toLowerCase(), 'topojson')){
-           $(this).css('border', '');
-           if(target_layer_on_add && targeted_layer_added)
-               alert("Only one layer can be added by this functionnality");
-           // Most direct way to add a layer :
-           else handle_TopoJSON_files(files);
-   }
-//   else if(strContains(files[0].name.toLowerCase(), 'geojson')){
-//           $(this).css('border', '');
-//           if(target_layer_on_add && targeted_layer_added)
-//               alert("Only one layer can be added by this functionnality");
-//           // Most direct way to add a layer :
-//           else handle_GeoJSON_files(files);
-//    }
-   else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
-        strContains(files[0].type.toLowerCase(), 'application/zip') ||
-        strContains(files[0].name.toLowerCase(), 'kml')){
-           $(this).css('border', '');
-
-           if(target_layer_on_add && targeted_layer_added)
-               alert("Only one layer can be added by this functionnality");
-           // Send the file to the server for conversion :
-           else handle_single_file(files[0]);
-   }
-  else if(strContains(files[0].name.toLowerCase(), '.csv')
-    || strContains(files[0].name.toLowerCase(), '.tsv')) {
-        $(this).css('border', '');
-        if(self_section === "section1")
-            handle_dataset(files[0]);
-        else
-            alert('Only layout layers can be added here');
-        target_layer_on_add = false;
-   }
-  else {
-        $(this).css('border', '3px dashed red');
-        alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
-        $(this).css('border', '');
-    }
-});
+                for(let i=0; i < files.length; i++){
+                    if(files[i].size > MAX_INPUT_SIZE){
+                        alert("Too large input file (should currently be under 12Mb");
+                        return;
+                    }
+                }
+            
+                if(!(files.length == 1)){
+                    var filenames = files.map(f => f.name),
+                        result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
+            
+                    if(result.length == 4){
+                        elem.style.border = '';
+                        handle_shapefile(files);
+                    } else {
+                        alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                        elem.style.border = '';
+                    }
+                }
+                else if(strContains(files[0].name.toLowerCase(), 'topojson')){
+                       elem.style.border = '';
+                       if(target_layer_on_add && targeted_layer_added)
+                           alert("Only one layer can be added by this functionnality");
+                       // Most direct way to add a layer :
+                       else handle_TopoJSON_files(files);
+               }
+               else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
+                    strContains(files[0].type.toLowerCase(), 'application/zip') ||
+                    strContains(files[0].name.toLowerCase(), 'kml')){
+                       elem.style.border = '';
+            
+                       if(target_layer_on_add && targeted_layer_added)
+                           alert("Only one layer can be added by this functionnality");
+                       // Send the file to the server for conversion :
+                       else handle_single_file(files[0]);
+               }
+              else if(strContains(files[0].name.toLowerCase(), '.csv')
+                || strContains(files[0].name.toLowerCase(), '.tsv')) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        handle_dataset(files[0]);
+                    else
+                        alert('Only layout layers can be added here');
+                    target_layer_on_add = false;
+               }
+              else {
+                    elem.style.border = '3px dashed red';
+                    alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile detected)');
+                    elem.style.border = '';
+                }
+            }, true);
+    });
+}
 
 ////////////////////////////////////////////////////////////////////////
 // Functions to handles files according to their type
@@ -149,7 +146,6 @@ function handle_shapefile(files){
      $.ajax({
         processData: false,
         contentType: false,
-        cache: false,
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
@@ -214,14 +210,15 @@ function handle_dataset(f){
                    field_name.length, " fields</i></span>"].join(''));
         valid_join_check_display(false);
         if(targeted_layer_added){
-            d3.select("#join_button").node().disabled = false;
+            document.getElementById("join_button").disabled = false;
             d3.select(".s1").html("").on("click", null)
             d3.select("#sample_link").html("").on("click", null);
             d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
         } else { 
-            d3.select("#join_button").node().disabled = true;
-            d3.select("#section1").style("height", "215px");
+            document.getElementById("join_button").disabled = true;
+            d3.select("#section1").style("height", "165px");
         }
+        fields_handler.fill();
         if(browse_table.node().disabled === true) browse_table.node().disabled = false;
         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
     };
@@ -365,7 +362,7 @@ function add_layer_topojson(text, options){
                 browse_table.node().disabled = false;
 
             if(joined_dataset.length != 0){
-                d3.select("#join_button").node().disabled = false;
+                document.getElementById("join_button").disabled = false;
                 d3.select(".s1").html("").on("click", null)
                 d3.select("#sample_link").html("").on("click", null);
                 d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
@@ -377,11 +374,13 @@ function add_layer_topojson(text, options){
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
             d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
-            d3.select("#func_button").node().disabled = false; 
+//            document.getElementById("func_button").disabled = false;
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
+            fields_handler.fill(lyr_name);
         } else {
             li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, result_layer_on_add ? button_type_blank[type] : button_type[type], "</div> ",lyr_name].join('')
+            fields_handler.fill();
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
@@ -590,14 +589,15 @@ function add_sample_layer(){
                                    field_name.length, " fields</i></span>"].join(''));
                         valid_join_check_display(false);
                         if(targeted_layer_added){
-                            d3.select("#join_button").node().disabled = false;
+                            document.getElementById("join_button").disabled = false;
                             d3.select(".s1").html("").on("click", null)
                             d3.select("#sample_link").html("").on("click", null);
                             d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
-                        } else { 
-                            d3.select("#join_button").node().disabled = true;
-                            d3.select("#section1").style("height", "215px");
+                        } else {
+                            document.getElementById("join_button").disabled = true;
+                            d3.select("#section1").style("height", "165px");
                         }
+                        fields_handler.fill();
                         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
                     });
                 }
@@ -637,139 +637,3 @@ function cache_sample_layer(name_layer){
         error: function(error) { console.log(error); }
     });
 }
-
-//function md5_h(file){
-//    var md5_digest = null;
-//    if(strContains(file.name, "zip") || strContains(file.name, "shp")){
-//        let md5_obj = md5.create(),
-//            fileReader = new FileReader();
-//        fileReader.onload = function(e){
-//            md5_obj.update(e.target.result);
-//            };
-//        fileReader.readAsArrayBuffer(file);
-//        md5_digest = md5_obj.hex();
-//        console.log(md5_digest);
-//    } else if(strContains(file.name, "json")){
-//        var fileReader = new FileReader();
-//        fileReader.onload = function(e){
-//            let data = e.target.result,
-//                md5_obj = md5.create();
-////            console.log(data);
-//            md5_obj.update(data);
-//            md5_digest = md5_obj.hex();
-////            console.log(md5_digest);
-//            };
-//        fileReader.readAsText(file);
-//    }
-//}
-
-//function handle_GeoJSON_files(files) {
-//    var f = files[0],
-//        name = files[0].name,
-//        reader = new FileReader();
-//
-//    reader.onloadend = function(){
-//        var text = reader.result;
-//        add_layer_geojson(text, name);
-//        }
-//    reader.readAsText(f);
-//};
-
-//function add_layer_geojson(text, name, options){
-//    var parsedJSON = JSON.parse(text),
-//        result_layer_on_add = options ? options.result_layer_on_add : false;
-//
-//    if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
-//        alert(parsedJSON.Error);
-//        return;
-//    }
-////    console.log(parsedJSON)
-//    name = name.substring(0, name.indexOf('.geo'));
-//    var type = "", data_to_load = false;
-//
-//    var random_color1 = Colors.random(),
-//        field_names = parsedJSON.features[0].properties ? Object.getOwnPropertyNames(parsedJSON.features[0].properties) : [];
-//
-//    if(parsedJSON.features[0].geometry.type.indexOf('oint') > -1) type = 'Point';
-//    else if(parsedJSON.features[0].geometry.type.indexOf('tring') > -1) type = 'Line';
-//    else if(parsedJSON.features[0].geometry.type.indexOf('olygon') > -1) type = 'Polygon';
-//
-//
-//    current_layers[name] = {"type": type,
-//                            "n_features": parsedJSON.features.length,
-//                            "stroke-width-const": "0.4px"};
-//
-//    if(target_layer_on_add){
-//        current_layers[name].targeted = true;
-//        user_data[name] = [];
-//        data_to_load = true;
-//    } else if(result_layer_on_add){
-//        result_data[name] = [];
-//        current_layers[name].is_result = true;
-//    }
-//
-//    map.append("g").attr("id", name)
-//          .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
-//          .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-//          .selectAll(".subunit")
-//          .data(parsedJSON.features)
-//          .enter().append("path")
-//          .attr("d", path)
-//          .attr("id", function(d, ix) {
-//                if(data_to_load){
-//                    if(field_names.length > 0){
-//                        if(!d.properties.hasOwnProperty('id') && !d.properties.hasOwnProperty('ID'))
-//                            d.properties["id"] = ix;
-//                        user_data[name].push(d.properties);
-//                    } else {
-//                        user_data[name].push({"id": d.id});
-//                    }
-//                } else if(result_layer_on_add)
-//                    result_data[name].push(d.properties);
-//
-//                return "feature_" + ix;
-//            })
-//          .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
-//                                      else return(random_color1);})
-//          .style("stroke-opacity", .4)
-//          .style("fill", function(){if(type != 'Line') return(random_color1);
-//                                    else return(null);})
-//          .style("fill-opacity", function(){if(type != 'Line') return(0.5);
-//                                            else return(0);})
-//          .attr("height", "100%")
-//          .attr("width", "100%");
-//
-//    d3.select("#layer_menu")
-//          .append('p').html('<a href>- ' + name+"</a>");
-//
-//    let class_name = ["ui-state-default"];
-//    if(target_layer_on_add)
-//        class_name.push("sortable_target");
-//    else if (result_layer_on_add)
-//        class_name.push("sortable_result");
-//    class_name.push(name);
-//    class_name = class_name.join(' ');
-//
-//    layers_listed = layer_list.node()
-//    var li = document.createElement("li");
-//    li.setAttribute("class", class_name);
-//    li.setAttribute("title", [name, " - ", type, " - ", parsedJSON.features.length, " features - ", field_names.length, " fields"].join(''))
-//    li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, "</div> ", type, " - ", name].join('')
-//    layers_listed.insertBefore(li, layers_listed.childNodes[0])
-//    if(target_layer_on_add){
-//        if(browse_table.node().disabled === true) browse_table.node().disabled = false;
-//        d3.select('#input_geom').html("User geometry : <b>"+name+"</b> <i>("+type+")</i>");
-//        targeted_layer_added = true;
-//        if(data_to_load){
-//             var nb_field = Object.getOwnPropertyNames(user_data[name][0]).length
-//             d3.select('#datag').html("Data provided with geometries : <b>Yes - "+nb_field+" field(s)</b>")
-//        }
-//    }
-//    if(target_layer_on_add && joined_dataset.length != 0){ d3.select("#join_button").node().disabled = false; }
-//    if(Object.getOwnPropertyNames(user_data).length > 0){ d3.select("#func_button").node().disabled = false; }
-////    if(target_layer_on_add || result_layer_on_add) center_map(name);
-//    binds_layers_buttons();
-//    zoom_without_redraw();
-//    target_layer_on_add = false;
-//    alert('Layer successfully added to the canvas');
-//};

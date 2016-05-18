@@ -1,4 +1,3 @@
-# noname-stuff
+# Mapologic
 
-M.A.R.S.
-Mapping Artistic Real Spatial
+...

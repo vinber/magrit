@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function get_color_array(col_scheme, nb_class, selected_palette){
     var color_array = new Array;

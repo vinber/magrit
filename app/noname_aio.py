@@ -7,13 +7,17 @@ import sys
 import ujson as json
 import time
 
+import asyncio
+import zmq.asyncio
+import pandas as pd
+
 from zipfile import ZipFile
 from random import choice
 from datetime import datetime
 from hashlib import sha512
-import asyncio
-import zmq.asyncio
+from io import StringIO
 from subprocess import Popen, PIPE
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 # Web related stuff :
 import jinja2
@@ -22,11 +26,9 @@ from aiohttp import web
 import aioredis
 from aiohttp_session import get_session, session_middleware, redis_storage
 
+# Helpers :
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 from helpers.misc import try_float, savefile2, get_key, hash_md5_file
-
-import pandas as pd
-from io import StringIO
 
 
 pp = '(aiohttp_app) '
@@ -44,9 +46,9 @@ def get_name(length=25):
 
 
 @aiohttp_jinja2.template('index.html')
-@asyncio.coroutine
-def handler(request):
-    session = yield from get_session(request)
+#@asyncio.coroutine
+async def handler(request):
+    session = await get_session(request)
     if 'last_visit' in session:
         date = 'Last visit : {}'.format(datetime.fromtimestamp(
             session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
@@ -56,9 +58,9 @@ def handler(request):
     return {'last_visit': date}
 
 
-@asyncio.coroutine
-def is_known_user(request, ref):
-    session = yield from get_session(request)
+#@asyncio.coroutine
+async def is_known_user(request, ref):
+    session = await get_session(request)
     if 'R_user' in session and session['R_user'] in ref:
         id_ = session['R_user']
         assert id_ in ref
@@ -120,10 +122,10 @@ def topojson_to_geojson(data):
     return data
 
 
-@asyncio.coroutine
-def cache_input_topojson(request):
-    posted_data = yield from request.post()
-    session_redis = yield from get_session(request)
+#@asyncio.coroutine
+async def cache_input_topojson(request):
+    posted_data = await request.post()
+    session_redis = await get_session(request)
     params = request.match_info['params']
 
     if "sample_data" in params:
@@ -131,11 +133,11 @@ def cache_input_topojson(request):
         name = posted_data.getall('layer_name')[0]
         path = app_glob['db_layers'][name]
         f_name = '_'.join([user_id, name])
-        result = yield from app_glob['redis_conn'].get(f_name)
+        result = await app_glob['redis_conn'].get(f_name)
         if not result:
             with open(path, "r") as f:
                 data = f.read()
-            yield from app_glob['redis_conn'].set(f_name, data)
+            await app_glob['redis_conn'].set(f_name, data)
             print('Caching the TopoJSON')
             return web.Response(text='')
         else:
@@ -145,13 +147,12 @@ def cache_input_topojson(request):
         try:
             name, data = posted_data.getall('file[]')
             hashed_input = sha512(data.encode()).hexdigest()  # Todo : compute the hash on client side to avoid re-sending the data
-            print('Here i am')
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
     
-        session_redis = yield from get_session(request)
+        session_redis = await get_session(request)
         user_id = get_user_id(session_redis)
         f_name = '_'.join([user_id, name.split('.')[0]])
     
@@ -163,7 +164,7 @@ def cache_input_topojson(request):
                 return web.Response(text='')
     
         session_redis['converted'][hashed_input] = True
-        yield from app_glob['redis_conn'].set(f_name, data)
+        await app_glob['redis_conn'].set(f_name, data)
         print('Caching the TopoJSON')
         return web.Response(text='')
 
@@ -181,21 +182,21 @@ def get_user_id(session_redis):
         return user_id
 
 
-@asyncio.coroutine
-def user_pref(request):
-    last_pref = yield from request.post()
-    session_redis = yield from get_session(request)
+#@asyncio.coroutine
+async def user_pref(request):
+    last_pref = await request.post()
+    session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
     key = '_'.join([user_id, "lastPref"])
 #    print(last_pref)
-    yield from app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
+    await app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
     return web.Response(text=json.dumps(
         {'Info': "Preferences saved!"}))
 
 
-@asyncio.coroutine
-def convert(request):
-    posted_data = yield from request.post()
+#@asyncio.coroutine
+async def convert(request):
+    posted_data = await request.post()
 
     # If a shapefile is provided as multiple files (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and not "file[]" in posted_data:
@@ -227,7 +228,7 @@ def convert(request):
             print("err\n", err)
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
-    session_redis = yield from get_session(request)
+    session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
     
     f_name = '_'.join([user_id, name.split('.')[0]])
@@ -239,7 +240,7 @@ def convert(request):
         print('converted: ',session_redis["converted"])
         print('actual hash : ', hashed_input)
         if hashed_input in session_redis['converted']:
-            result = yield from app_glob['redis_conn'].get(f_name)
+            result = await app_glob['redis_conn'].get(f_name)
             print("Used cached result")
             return web.Response(text=result.decode())
 
@@ -250,7 +251,7 @@ def convert(request):
             f.write(res)
         result = geojson_to_topojson(filepath2)
         session_redis['converted'][hashed_input] = True
-        yield from app_glob['redis_conn'].set(f_name, result)
+        await app_glob['redis_conn'].set(f_name, result)
 #        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
@@ -269,7 +270,7 @@ def convert(request):
                 f.write(res)
             result = geojson_to_topojson(filepath2)
             session_redis['converted'][hashed_input] = True
-            yield from app_glob['redis_conn'].set(f_name, result)
+            await app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath+'archive')
 #        os.remove(filepath2)
         [os.remove(file) for file in list_files]
@@ -295,7 +296,7 @@ def convert(request):
             result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
         else:
             session_redis['converted'][hashed_input] = True
-            yield from app_glob['redis_conn'].set(f_name, result)
+            await app_glob['redis_conn'].set(f_name, result)
 
     elif 'kml' in datatype:
         print(datatype)
@@ -310,7 +311,7 @@ def convert(request):
             result = json.dumps({'Error': 'Error converting reading kml file'})
         else:
             session_redis['converted'][hashed_input] = True
-            yield from app_glob['redis_conn'].set(f_name, result)
+            await app_glob['redis_conn'].set(f_name, result)
 
     else:
         result = json.dumps({'Error': 'Incorrect datatype'})
@@ -319,8 +320,8 @@ def convert(request):
 
 
 class R_commande(web.View):
-    @asyncio.coroutine
-    def get(self):
+    #@asyncio.coroutine
+    async def get(self):
         function = self.request.match_info['function']
         params = self.request.match_info['params']
         data = dict([(_.split('=')[0], try_float(_.split('=')[1])) for _ in params.split('&')])
@@ -330,35 +331,35 @@ class R_commande(web.View):
              ','.join(['='.join([param,param]) for param in data]),
              ')']
             ).encode()
-        id_ = yield from is_known_user(
+        id_ = await is_known_user(
             self.request, ref=app_glob['session_map'])
         data = json.dumps(data).encode()
-        content = yield from R_client_fuw_async(
+        content = await R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
 
-    def post(self):
+    async def post(self):
         function = self.request.match_info['function']
-        params = yield from self.request.post()
+        params = await self.request.post()
         commande = ''.join([
             function,
             '(',
             ','.join(['='.join([param, param]) for param in params]),
             ')']).encode()
         data = {k:try_float(v) for k,v in params.items()}
-        id_ = yield from is_known_user(self.request, ref=app_glob['session_map'])
+        id_ = await is_known_user(self.request, ref=app_glob['session_map'])
         data = json.dumps(data).encode()
-        content = yield from R_client_fuw_async(
+        content = await R_client_fuw_async(
             url_client, commande, data, app_glob['async_ctx'], id_)
         return web.Response(text=content.decode())
 
 
-@asyncio.coroutine
 @aiohttp_jinja2.template('modules/test_interface.html')
-def handle_app_functionality(request):
-    session_redis = yield from get_session(request)
+#@asyncio.coroutine
+async def handle_app_functionality(request):
+    session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
-    lastPref = yield from app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
+    lastPref = await app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
 
@@ -368,7 +369,7 @@ def handle_app_functionality(request):
 #    posted_data = json.loads(posted_data.get("json"))
 #
 #    f_name = '_'.join([user_id, posted_data['topojson']])
-#    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+#    ref_layer = await app_glob['redis_conn'].get(f_name)
 #    ref_layer = json.loads(ref_layer.decode())
 #    new_field = json.loads(posted_data['join_field'])
 #    n_field_name = list(new_field.keys())[0]
@@ -405,13 +406,13 @@ def handle_app_functionality(request):
 #    return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
 #
 
-@asyncio.coroutine
-def links_map(posted_data, session_redis, user_id):
+#@asyncio.coroutine
+async def links_map(posted_data, session_redis, user_id):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, posted_data['topojson']])
-    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+    ref_layer = await app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
     new_field = json.loads(posted_data['join_field'])
     n_field_name = list(new_field.keys())[0]
@@ -432,7 +433,7 @@ def links_map(posted_data, session_redis, user_id):
         "join_field": n_field_name
         }).encode()
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    content = yield from R_client_fuw_async(
+    content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
     content = json.loads(content.decode())
@@ -444,15 +445,15 @@ def links_map(posted_data, session_redis, user_id):
     return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
 
 
-@asyncio.coroutine
-def carto_gridded(posted_data, session_redis, user_id):
+#@asyncio.coroutine
+async def carto_gridded(posted_data, session_redis, user_id):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, posted_data['topojson']])
-    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+    ref_layer = await app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
-    print(ref_layer)
+
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
@@ -469,7 +470,7 @@ def carto_gridded(posted_data, session_redis, user_id):
         "cellsize": posted_data["cellsize"]
         }).encode()
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    content = yield from R_client_fuw_async(
+    content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
     content = json.loads(content.decode())
@@ -482,8 +483,8 @@ def carto_gridded(posted_data, session_redis, user_id):
     return '|||'.join([new_name, res.replace(tmp_part, new_name)])
 
 
-@asyncio.coroutine
-def call_mta_simpl(posted_data, session_redis, user_id):
+#@asyncio.coroutine
+async def call_mta_simpl(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))  # method, jsonified_table, var1, var2, key/ref, type_dev
     if "medium" in posted_data["method"]:
         commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
@@ -502,17 +503,17 @@ def call_mta_simpl(posted_data, session_redis, user_id):
     else:
         return {"Error": "Unknow MTA method"}
     print(data)
-    content = yield from R_client_fuw_async(
+    content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     return content.decode()
 
 
-@asyncio.coroutine
-def call_mta_geo(posted_data, session_redis, user_id):
+#@asyncio.coroutine
+async def call_mta_geo(posted_data, session_redis, user_id):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson']])
-    ref_layer = yield from app_glob['redis_conn'].get(f_name)
+    ref_layer = await app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
     
     new_field1 = json.loads(posted_data['var1'])
@@ -540,7 +541,7 @@ def call_mta_geo(posted_data, session_redis, user_id):
         "dist": posted_data["dist"],
         "type_dev": posted_data["type_dev"]}).encode()
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    content = yield from R_client_fuw_async(
+    content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     return content.decode()
 
@@ -555,12 +556,12 @@ def join_topojson_new_field(topojson, new_field):
         geom['properties'][new_field_name] = new_field[new_field_name][ix]
 
 
-@asyncio.coroutine
-def call_stewart(posted_data, session_redis, user_id):
+#@asyncio.coroutine
+async def call_stewart(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, posted_data['topojson']])
-    point_layer = yield from app_glob['redis_conn'].get(f_name)
+    point_layer = await app_glob['redis_conn'].get(f_name)
     point_layer = json.loads(point_layer.decode())
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
@@ -569,7 +570,7 @@ def call_stewart(posted_data, session_redis, user_id):
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, posted_data['mask_layer']])
-        result_mask = yield from app_glob['redis_conn'].get(f_name)
+        result_mask = await app_glob['redis_conn'].get(f_name)
 
     tmp_part = get_name()
     filenames = {'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -590,7 +591,7 @@ def call_stewart(posted_data, session_redis, user_id):
         'mask_json': filenames['mask_layer']
         }).encode()
 #    print(data)
-    content = yield from R_client_fuw_async(
+    content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
     if "additional_infos" in content:
@@ -603,36 +604,36 @@ def call_stewart(posted_data, session_redis, user_id):
                        res.replace(tmp_part, new_name)])
 
 
-@asyncio.coroutine
-def R_compute(request):
+#@asyncio.coroutine
+async def R_compute(request):
     s_t = time.time()
     function = request.match_info['function']
     if function not in app_glob['R_function']:
         return web.Response(text=json.dumps(
             {"Error": "Wrong function requested"}))
     else:
-        posted_data = yield from request.post()
-        session_redis = yield from get_session(request)
+        posted_data = await request.post()
+        session_redis = await get_session(request)
         user_id = get_user_id(session_redis)
         func = app_glob['R_function'][function]
         print('Python - p1 : {:.4f}'.format(time.time()-s_t))
-        data_response = yield from func(posted_data, session_redis, user_id)
+        data_response = await func(posted_data, session_redis, user_id)
         return web.Response(text=data_response)
 
 
-@asyncio.coroutine
-def handler_exists_layer(request):
+#@asyncio.coroutine
+async def handler_exists_layer(request):
     expr = request.match_info['expr']
-    res = yield from app_glob['redis_conn'].get(expr)
+    res = await app_glob['redis_conn'].get(expr)
     if res:
         return web.Response(text=res.decode())
     else:
         return web.Response(text="")
 
-@asyncio.coroutine
-def convert_csv_geo(request):
-    posted_data = yield from request.post()
-    session_redis = yield from get_session(request)
+#@asyncio.coroutine
+async def convert_csv_geo(request):
+    posted_data = await request.post()
+    session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
     st = time.time()
     file_name = posted_data.get("filename")
@@ -648,7 +649,7 @@ def convert_csv_geo(request):
         print('converted: ',session_redis["converted"])
         print('actual hash : ', hashed_input)
         if hashed_input in session_redis['converted']:
-            result = yield from app_glob['redis_conn'].get(f_name)
+            result = await app_glob['redis_conn'].get(f_name)
             print("Used cached result")
             return web.Response(text=result.decode())
 
@@ -681,16 +682,16 @@ def convert_csv_geo(request):
     # Todo : put the result in redis as other input layers
     else:
         session_redis['converted'][hashed_input] = True
-        yield from app_glob['redis_conn'].set(f_name, result)
+        await app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath)
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
 
 
-@asyncio.coroutine
-def init(loop, port=9999):
-    redis_cookie = yield from aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
-    redis_conn = yield from aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
+#@asyncio.coroutine
+async def init(loop, port=9999):
+    redis_cookie = await aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
+    redis_conn = await aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)
@@ -712,7 +713,7 @@ def init(loop, port=9999):
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
 
-    srv = yield from loop.create_server(
+    srv = await loop.create_server(
         app.make_handler(), '0.0.0.0', port)
     return srv, redis_conn
 
@@ -764,6 +765,7 @@ if __name__ == '__main__':
     app_glob['R_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo }
+    app_glob['ThreadPoolExecutor'] = ThreadPoolExecutor(4)
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()

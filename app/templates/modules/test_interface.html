@@ -23,7 +23,8 @@
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
-    <script  src="/static/js/functions.js"></script>
+    <script  src="/static/js/function.js"></script>
+    <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
@@ -133,13 +134,15 @@ var accordion4 = d3.select("#menu").append("div").attr("id","accordion4").attr("
 var accordion5 = d3.select("#menu").append("div").attr("id","accordion5").attr("class", "accordion");
 
 accordion1.append("h3").html("Add your data");
-var section1 =  d3.select("#accordion1").append("div").attr("id","section1");
+var section1 =  d3.select("#accordion1").append("div").attr("id","section1")
+                    .attr("data-tooltip", "Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer by clicking here");
 
 accordion2.append("h3").html(menu_option.title);
 var section2 =  d3.select("#accordion2").append("div").attr("id","section2");
 
 accordion3.append("h3").html("Layers");
-var section3 =  d3.select("#accordion3").append("div").style("padding", "1em").attr("id","section3");
+var section3 =  d3.select("#accordion3").append("div").style("padding", "1em").attr("id","section3")
+                        .attr("data-tooltip", "Drop new layout layer or click to browse locally and add one. Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON and TopoJSON");
 
 accordion4.append("h3").html("Basemap configuration");
 var section4 =  d3.select("#accordion4").append("div").attr("id","section4");
@@ -147,13 +150,17 @@ var section4 =  d3.select("#accordion4").append("div").attr("id","section4");
 accordion5.append("h3").html("Projection options");
 var section5 =  d3.select("#accordion5").append("div").attr("id","section5");
 
-section1.append('p').attr("id", "sample_link").style({"margin": "-6px 0px 1px 0px", "text-align": "right", "font-size": "10px", "cursor": "pointer"}).html('<i>Add sample data...</i>').on('click', add_sample_layer);
+section1.insert("p")
+        .attr("id", "sample_link")
+        .style({"margin": "-6px 0px 1px 0px", "text-align": "right", "font-size": "10px", "cursor": "pointer"})
+        .html('<i>Add sample data...</i>')
+        .on('click', add_sample_layer);
+
 section1.append("div")
-            .attr({"data-tooltip": "Drop a GeoJSON, TopoJSON or ziped shapefile project here or add manually a layer by clicking here",
-                   "class": "s1"})
+            .attr({"class": "s1"})
         .insert("img")
-          .attr({"src": "/static/img/drop_section1.svg", "alt": "Drop_zone_section1", "id": "img_in_geom_big"})
-          .style({display: "block", "margin-left": "auto", "margin-right": "auto", width: "270px"})
+          .attr({"src": "/static/img/drop_section1_small.svg", "alt": "Drop_zone_section1", "id": "img_in_geom_big"})
+          .style({display: "block", "margin-left": "auto", "margin-right": "auto", height: "30px", cursor: "pointer"})
           .on('click',  add_layer);
 
 {
@@ -175,14 +182,10 @@ var browse_table = d3.select("#browse_section")
                         .html("Explore your table(s)")
                         .on("click", function(){  boxExplore.create();  });
 
-if(menu_option.text_button){
-    var dv2 = section2.append("p").attr("class", "form-item");
-    dv2.append("input").attr("type", "button")
-                       .attr("id", "func_button")
-                       .attr("value", menu_option.text_button)
-                       .style("margin-left", "5%")
-                       .on("click", popup_function);
-    d3.select("#func_button").node().disabled = true;
+if(menu_option.menu_factory){
+    var fill_menu = eval(menu_option.menu_factory),
+        fields_handler = eval(menu_option.fields_handler);
+    fill_menu();
 }
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
@@ -190,15 +193,14 @@ var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr
 layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons")
 layer_list.append("li").attr("class", "ui-state-default Sphere").attr("layer-tooltip", "Sphere - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere")
 var dv3 = section3.append("div")
-                .attr("data-tooltip", "Drop new layout layer or click to browse locally and add one. Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON and TopoJSON")
-                .style("text-align", "center")
-                .html("Drop new layout layers here or browse locally...<br>");
+                .style("text-align", "center").html('');
+                //.html("Drop new layout layers here or browse locally...<br>");
 
 dv3.append("img")
     .attr("src", "/static/img/mActionAdd.svg")
     .on("click", add_layer);
 
-dv3.append('p').html('<i>Add sample layout layers...</i>').on('click', function(){add_layout_layers();});
+dv3.append('p').style({margin: "auto", cursor: "pointer"}).html('<i>Add sample layout layers...</i>').on('click', function(){add_layout_layers();});
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
 var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>',
@@ -219,15 +221,15 @@ var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width=
             .attr({id: "input-height", type: "number", "value": h})
             .on("change", function(){canvas_mod_size([null,this.value])})
     dv4.append("p")
-            .style("display", "inline")
-            .html("<br>Map title<br>")
+            .style({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
+            .html("Map title<br>")
             .insert("input").attr("id", "title")
             .on("keyup", function(){handle_title(this.value);})
     dv4.insert("_img")
             .style("display", "inline").style("top", "4px")
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
-    dv4.append("p").html("Background color")
+    dv4.append("p").style("text-align", "center").html("Background color")
             .insert("input").style("margin-left", "15px")
             .attr({type: "color", id: "bg_color", value: "#ffffff"})
             .on("change", function(){handle_bg_color(this.value);})
@@ -400,9 +402,9 @@ zoom_without_redraw();
 // Trigger a periodical call to a function sending current map preference to the server :
 setInterval(sendPreferences, 300000);
 
-
+prepare_drop_section();
 /////////////////////////////////////////////////////////////////////////////
-// JQuery menu and progress bar related functions :
+// JQuery menu, tooltips and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
 // Trigger the accordions, start with the first one (section 1) open :
@@ -453,10 +455,9 @@ $(document).ajaxStart(function() {
 
 // bind the mains tooltips 
 $("[data-tooltip!='']").qtip({
-    content: {
-        attr: "data-tooltip"
-    },
-    style: { classes: 'qtip-youtube' }
+    content: { attr: "data-tooltip" },
+    style: { classes: 'qtip-youtube' },
+    position: { my: 'center left', at: 'center right', target: this }
 })
 
 
@@ -617,12 +618,7 @@ function log_coordinates(t){
 
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(){
-    var name,
-        name_split = this.parentElement.parentElement.innerHTML.split("></div> ")[1].split(' - ');
-
-    if(name_split.length == 2) name = name_split[1].trim();
-    else if(name_split.length > 2) console.log('Oups..');
-    else name = name_split[0].trim();
+    var name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
 
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
@@ -654,17 +650,18 @@ function remove_layer_cleanup(name){
 
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
+        fields_handler.unfill()
         d3.select("#img_in_geom").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
-        d3.select("#input_geom").html("<b><i>No layer</i></b>");
         //d3.select("#func_button").node().disabled = true;
+        document.getElementById("input_geom").innerHTML = "<b><i>No layer</i></b>";
         document.getElementById("func_button").disabled = true;
         field_join_map = [];
         delete user_data[name];
         targeted_layer_added = false;
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
         d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
-        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; width: 270px;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1.svg">')
-        d3.select("#section1").style({"height": joined_dataset.length == 0 ? "185px" : "215px"})
+        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
+        d3.select("#section1").style({"height": joined_dataset.length == 0 ? "135px" : "165px"})
     }
 
     // Restore the state of the bottom of the section 1 :

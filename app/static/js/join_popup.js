@@ -29,17 +29,16 @@ function valid_join_check_display(val, prop){
             .attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"})
             .style({"width": "28px", "height": "28px"})
             .on("click", handle_join);
-        d3.select("#join_section")
+        let join_sec = d3.select("#join_section")
             .html([prop, 'Data not joined'].join(''));
-        d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
+        join_sec.append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
     } else {
         d3.select("#img_data_ext")
             .attr({"src": "/static/img/qgis_relation_mod.svg", alt: "Validated join"})
             .style({"width": "28px", "height": "28px"})
             .on("click", null);
-        d3.select("#join_section")
-            .html([' <b>', prop, ' matches</b>'].join(''))
-        d3.select('#join_section').append("button").attr("id", "join_button").style("display", "inline").html(" - <i> Change join field </i>").on("click", handle_join);
+        let join_sec = d3.select("#join_section").html([' <b>', prop, ' matches</b>'].join(''));
+        join_sec.append("button").attr("id", "join_button").style("display", "inline").html(" - <i> Change join field </i>").on("click", handle_join);
     }
 }
 
@@ -173,6 +172,8 @@ function createJoinBox(layer){
         .then(function(confirmed){
             if(confirmed)
                 valid_join_on(layer, last_choice.field1, last_choice.field2);
+                fields_handler.unfill();
+                fields_handler.fill(layer);
         });
     d3.select("#button_field1").on("change", function(){last_choice.field1 = this.value;});
     d3.select("#button_field2").on("change", function(){last_choice.field2 = this.value;});
