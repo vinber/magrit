@@ -81,6 +81,8 @@ async def is_known_user(request, ref):
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
+    # Todo : rewrite using new gdal/ogr (> 2.0) bindings to avoid "exiting"
+    # ... python when using ogr2ogr 
     if to_latlong:
         process = Popen(["ogr2ogr", "-f", "GeoJSON",
                          "-preserve_fid",
@@ -101,7 +103,7 @@ def geojson_to_topojson(filepath):
                      "-p", "--",
                      filepath], stdout=PIPE)
     stdout, _ = process.communicate()
-#    os.remove(filepath)
+    os.remove(filepath)
     return stdout.decode()
 
 
@@ -122,7 +124,6 @@ def topojson_to_geojson(data):
     return data
 
 
-#@asyncio.coroutine
 async def cache_input_topojson(request):
     posted_data = await request.post()
     session_redis = await get_session(request)
@@ -146,7 +147,8 @@ async def cache_input_topojson(request):
     elif "user" in params:
         try:
             name, data = posted_data.getall('file[]')
-            hashed_input = sha512(data.encode()).hexdigest()  # Todo : compute the hash on client side to avoid re-sending the data
+            # Todo : compute the hash on client side to avoid re-sending the data ?
+            hashed_input = sha512(data.encode()).hexdigest()
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
@@ -182,19 +184,16 @@ def get_user_id(session_redis):
         return user_id
 
 
-#@asyncio.coroutine
 async def user_pref(request):
     last_pref = await request.post()
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
     key = '_'.join([user_id, "lastPref"])
-#    print(last_pref)
     await app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
     return web.Response(text=json.dumps(
         {'Info': "Preferences saved!"}))
 
 
-#@asyncio.coroutine
 async def convert(request):
     posted_data = await request.post()
 
@@ -252,7 +251,6 @@ async def convert(request):
         result = geojson_to_topojson(filepath2)
         session_redis['converted'][hashed_input] = True
         await app_glob['redis_conn'].set(f_name, result)
-#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'zip' in datatype:
@@ -272,7 +270,6 @@ async def convert(request):
             session_redis['converted'][hashed_input] = True
             await app_glob['redis_conn'].set(f_name, result)
         os.remove(filepath+'archive')
-#        os.remove(filepath2)
         [os.remove(file) for file in list_files]
 
     elif 'octet-stream' in datatype:
@@ -320,7 +317,6 @@ async def convert(request):
 
 
 class R_commande(web.View):
-    #@asyncio.coroutine
     async def get(self):
         function = self.request.match_info['function']
         params = self.request.match_info['params']
@@ -355,7 +351,6 @@ class R_commande(web.View):
 
 
 @aiohttp_jinja2.template('modules/test_interface.html')
-#@asyncio.coroutine
 async def handle_app_functionality(request):
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
@@ -604,7 +599,6 @@ async def call_stewart(posted_data, session_redis, user_id):
                        res.replace(tmp_part, new_name)])
 
 
-#@asyncio.coroutine
 async def R_compute(request):
     s_t = time.time()
     function = request.match_info['function']

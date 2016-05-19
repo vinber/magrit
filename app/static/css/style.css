@@ -169,10 +169,6 @@ p.menu {
     padding: 1em;
 }
 
-select {
-    height: 0.7em;
-}
-
 .overlay {
     width: 100%;
     height: 100%;
@@ -305,11 +301,18 @@ select {
     border-radius: 9%;
 }
 
-.dataTables_wrapper .ui-widget-header{
-    width: 82%;
-    margin: auto;
-    padding: 6px;
+.dataTable thead{
+    background: rgb(161, 188, 210) none repeat scroll 0% 0%;
 }
+
+.myTable_filter {
+    margin-right: 15px;
+}
+
+.myTable_length {
+    margin-left: 15px;
+}
+
 
 #join_button {
     border-color: transparent;

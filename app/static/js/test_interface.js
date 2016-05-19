@@ -374,7 +374,6 @@ function add_layer_topojson(text, options){
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
             d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
-//            document.getElementById("func_button").disabled = false;
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
             fields_handler.fill(lyr_name);
@@ -384,9 +383,11 @@ function add_layer_topojson(text, options){
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
-
-    if(target_layer_on_add || result_layer_on_add) {
+    
+    if(target_layer_on_add) {
         scale_to_lyr(lyr_name);
+        center_map(lyr_name);
+    } else if (result_layer_on_add) {
         center_map(lyr_name);
     }
     zoom_without_redraw();

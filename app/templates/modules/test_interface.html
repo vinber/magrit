@@ -1198,6 +1198,35 @@ function export_compo(){
     }
 }
 
+function apply_user_preferences(json_pref){
+    let preferences = JSON.parse(json_pref),
+        map_config = preferences.map_config,
+        layers_style = preferences.layer_style;
+
+    // Update some global variables with the readed values in order to retrieve
+    // the same map size / orientation / zoom / etc ...
+    current_proj_name = map_config.projection;
+    proj = eval(current_proj_name);
+    s = map_config.projection_scale;
+    t = map_config.projection_translate;
+    proj.scale(s).translate(t);
+    zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
+    w = map_config.div_width;
+    h = map_config.div_height;
+
+    // current_layers = eval(map_config.current_layers);
+
+    /*
+    for(let i = 0; i < preference.n_layers; i++){
+        if(layers_style[i].cache_url){
+
+        } else {
+
+        }
+    }
+    */
+}
+
 </script>
 </body>
 </html>

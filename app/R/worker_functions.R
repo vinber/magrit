@@ -22,7 +22,7 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(nat_earth))
     if(!rgeos::gIsValid(mask_layer)){
       print('Invalid geom mask - First test')
-      mask_layer <- rgeos::gBuffer(mask_layer, width = 1)
+      mask_layer <- rgeos::gBuffer(rgeos::gBuffer(mask_layer, width = 1), width = -1)
       additionnal_infos <- "Mask layer have been changed to obtain valid geometries"
       if(!rgeos::gIsValid(mask_layer)){
         mask_layer <- NULL
@@ -101,13 +101,8 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   geojsonio::geojson_write(spTransform(the_grid, CRS(latlong_string)), file=layer_json_path)
   result <- paste0('{"geojson_path":"', layer_json_path,'","additional_infos":null}')
   print(paste0("Save to Geojson ", round(Sys.time()-s_t,4),"s"))
-  # result <- paste0('{"geojson":', geojsonio::geojson_json(spTransform(the_grid, CRS(latlong_string))),
-  #                  ', "additional_infos":null}')
-  # print(paste0("Dump to Geojson ", round(Sys.time()-s_t,4),"s"))
   return(result)
 }
-
-# flow_map <- function(tab_data, )
 
 ###################################
 # MTA functions

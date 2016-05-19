@@ -911,20 +911,39 @@ function fillMenu_Anamorphose(){
     d3.selectAll(".params").attr("disabled", true);
 }
 
+function log_unused_ft(layer){
+    if(current_layers[layer].filter_not_use instanceof Map)
+        var filter_not_use = current_layers[layer].filter_not_use;
+    else {
+        current_layers[layer].filter_not_use = new Map();
+        var filter_not_use = current_layers[layer].filter_not_use
+    }
+    $('#myTable tbody tr').on('click', function(e) {
+        let row = this,
+            ret_val = row.classList.toggle('selected');
+        if(ret_val)
+            filter_not_use.set(row._DT_RowIndex, true)
+        else
+            filter_not_use.delete(row._DT_RowIndex)
+    });
+}
 var boxExplore = {
     display_table: function(prop){
         let self = this,
-            add_field = d3.select("#add_field_button");
+            add_field = d3.select("#add_field_button"),
+            unselect_features = d3.select("#unsel_features");
         if(prop.type === "ext_dataset"){
             var data_table = joined_dataset[0],
                 the_name = dataset_name,
                 message = "Switch to reference layer table...";
-                add_field.html("").on('click', null);
+                unselect_features.style("display", "none").on('click', null);
+                add_field.style("display", "none").on('click', null);
         } else if(prop.type === "layer"){
             var data_table = user_data[this.layer_name],
                 the_name = this.layer_name,
                 message = "Switch to external dataset table...";
-                add_field.html("Add a new field to your layer...").on('click', function(){  add_table_field(the_name, self) });
+                unselect_features.style("display", null).on('click', null);
+                add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
         }
         this.nb_features = data_table.length;
         this.columns_names = Object.getOwnPropertyNames(data_table[0]);
@@ -939,10 +958,11 @@ var boxExplore = {
         d3.selectAll('#myTable').remove()
         d3.selectAll('#myTable_wrapper').remove();
         this.box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
-        $('#myTable').DataTable({
+        let myTable = $('#myTable').DataTable({
             data: data_table,
-            columns: this.columns_headers
+            columns: this.columns_headers,
         });
+
         if(d3.select("#switch_button").node())
             d3.select("#switch_button").node().innerHTML = message;
     },
@@ -962,10 +982,17 @@ var boxExplore = {
             this.current_table = "ext_dataset";
         } else {
             this.current_table = "layer";
-            this.box_table.append('p')
+            this.box_table.append('p').style("margin-left", "15px")
+                     .insert("button").attr("class", "button_st2")
                      .attr("id", "add_field_button")
-                     .html("Add a new field to your layer...")
+                     .html("Add a new field...")
                      .on('click', function(){  add_table_field(the_name, self)  });
+            this.box_table.append('p').style("margin-left", "15px")
+                     .insert("button").attr("class", "button_st2")
+                     .attr("id", "unsel_features")
+                     .html("Remove features...")
+                     .on('click', function(){  });
+
         }
 
         if(dataset_name != undefined && the_name != undefined)
@@ -1022,9 +1049,9 @@ var fields_PropSymbol = {
 };
 
 function fillMenu_PropSymbol(layer){
-    var dialog_content = section.append("p").attr("class", "form-rendering"),
+    var dialog_content = section2.append("p").attr("class", "form-rendering"),
         field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
-        max_allowed_size = Math.round(h/2 - h/20);
+        max_allowed_size = Math.round(h/2 - h/20),
         max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
                          .insert('input')
                          .attr({type: 'range', class: 'params'})
@@ -1050,18 +1077,16 @@ function fillMenu_PropSymbol(layer){
         .attr("class", "params button_st2")
         .html('Compute')
         .on("click", function(){
-            let rendering_params = {
-                "field": field_selec.node().value,
-                "nb_features": nb_features,
-                "ref_layer_name": layer,
-                "symbol": symb_selec.node().value,
-                "max_size": +max_size.node().value,
-                "ref_size": +ref_size.node().value,
-                "fill_color": fill_color.node().value,
-                };
-
-            let ret_val = make_prop_symbols(rendering_params);
-
+            let layer = Object.getOwnPropertyNames(user_data)[0],
+                nb_features = user_data[layer].length,
+                rendering_params = { "field": field_selec.node().value,
+                                     "nb_features": nb_features,
+                                     "ref_layer_name": layer,
+                                     "symbol": symb_selec.node().value,
+                                     "max_size": +max_size.node().value,
+                                     "ref_size": +ref_size.node().value,
+                                     "fill_color": fill_color.node().value },
+                ret_val = make_prop_symbols(rendering_params);
             binds_layers_buttons();
             zoom_without_redraw();
             makeButtonLegend(layer + "_PropSymbols");
