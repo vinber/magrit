@@ -1,3 +1,5 @@
+"use strict";
+
 function makeButtonLegend(layer_name){
     // Todo : make the label clickable as the checkbox
     section2.insert("p")

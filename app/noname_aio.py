@@ -101,7 +101,7 @@ def geojson_to_topojson(filepath):
                      "-p", "--",
                      filepath], stdout=PIPE)
     stdout, _ = process.communicate()
-    os.remove(filepath)
+#    os.remove(filepath)
     return stdout.decode()
 
 

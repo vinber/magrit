@@ -26,12 +26,6 @@ function get_menu_option(func){
             "desc":"Render a choropleth map on a numerical field of your data",
             "fields_handler": "fields_Choropleth"
             },
-        "choropleth_and_prop_symbol":{
-            "title":"Proportional symbols and Choropleth maps",
-            "popup_factory": "createFuncOptionsBox_ChoroAndPropSymbol",
-            "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
-            "text_button": "Choose options and create..."
-            }, // TBD...
         "cartogram":{
             "title":"Anamorphose map",
             "menu_factory": "fillMenu_Anamorphose",
@@ -100,10 +94,7 @@ var fields_FlowMap = {
             field_j.removeChild(field_j.children[i]);
             field_fij.removeChild(field_fij.children[i]);
         }
-
-        for(let i = join_field.childElementCount - 1; i > -1; --i)
-            join_field.removeChild(join_field.children[i]);
-
+        unfillSelectInput(join_field)
         d3.selectAll(".params").attr("disabled", true);
 
     }
@@ -208,6 +199,7 @@ function fillMenu_PropSymbolChoro(layer){
                                  .insert('input')
                                  .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_max_size'})
                                  .attr({min: 0.2, max: 66.0, value: 10.0, step: 0.1})
+                                 .style("width", "8em")
                                  .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
     var max_size_txt = dv2.append('label-item').attr("id", "max_size_txt").html('0 px');
@@ -224,8 +216,8 @@ function fillMenu_PropSymbolChoro(layer){
     var field2_selec = dv2.append('p').html('Second field (symbol color):').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
 
     dv2.insert('p').style("margin", "auto").html("")
-                .append("button").attr('class', 'params')
-                .html("Choose your discretization ...")
+                .append("button").attr('class', 'params button_disc')
+                .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
                         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length))
@@ -243,10 +235,10 @@ function fillMenu_PropSymbolChoro(layer){
                 });
 
 
-    var ok_button = dv2.append('button')
+    var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
+                        .append('button')
                         .attr('id', 'yes')
-                        .attr('class', 'params')
-                        .attr('class', 'button_st2')
+                        .attr('class', 'params button_st2')
                         .attr('disabled', true)
                         .text('Render');
 
@@ -453,7 +445,7 @@ function fillMenu_MTA(){
 
     var dv2 = section2.append("p").attr("class", "form-rendering");
 
-    var method_selec = dv2.append("p").html("Analysis method")
+    var method_selec = dv2.append("p").style("margin", "auto").html("Analysis method")
                             .insert("select").attr("class", "params");
     MTA_methods.forEach(function(method){ method_selec.append("option").text(method[0]).attr("value", method[1]) });
     // TODO : (de)activate the appropriates options according to the selected method (key / ref / etc.)
@@ -498,7 +490,8 @@ function fillMenu_MTA(){
 
     // TODO : check that fields are correctly filled before trying to prepare the query
     // ... and only enable the "compute" button when they are
-    var ok_button = dv2.insert("button")
+    var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
+        .append("button")
         .attr("value", "yes")
         .attr("id", "yes")
         .attr("class", "params button_st2")
@@ -663,7 +656,7 @@ var fields_Stewart = {
 
 function fillMenu_Stewart(){
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field :').insert('select').attr('class', 'params').attr("id", "stewart_field"),
+        field_selec = dialog_content.append('p').style("margin", "auto").html('Field :').insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field"),
         span = dialog_content.append('p').html('Span :').insert('input').attr({type: 'number', class: 'params', id: "stewart_span", value: 0, min: 0, max: 100000, step: 0.1}),
         beta = dialog_content.append('p').html('Beta :').insert('input').attr({type: 'number', class: 'params', id: "stewart_beta", value: 0, min: 0, max: 11, step: 0.1}),
         resolution = dialog_content.append('p').html('Resolution :').insert('input').attr({type: 'number', class: 'params', id: "stewart_resolution", value: 0, min: 0, max: 1000000, step: 0.1}),
@@ -675,7 +668,7 @@ function fillMenu_Stewart(){
     });
 
 
-    dialog_content.insert("p").style("text-align", "right")
+    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'stewart_yes')
         .attr('class', "params button_st2")
@@ -770,7 +763,7 @@ function fillMenu_Anamorphose(){
      ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
 
-    dialog_content.insert("p").style("text-align", "right")
+    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append("button")
         .attr({id: 'Anamorph_yes', class: "params button_st2"})
         .html('Compute')
@@ -784,28 +777,50 @@ function fillMenu_Anamorphose(){
                 alert('Not implemented (yet!)')
             } else if (algo === "dougenik"){
                 alert('Not implemented (yet!)')
-    //            let carto = d3.cartogram().projection(d3.geo.mercator()).value(function(d, i){ return +user_data[layer][i][field_name]; }),
-    //                geoms = _target_layer_file.objects[layer].geometries,
-    //                new_features = carto(_target_layer_file, geoms).features,
-    //                new_layer_name = layer + "_Dougenik_Cartogram";
-    //            console.log(geoms);
-    //            console.log(new_features);
-    //            map.append("g")
-    //                .attr("id", new_layer_name)
-    //                .attr("class", "result_layer layer")
-    //                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-    //                .selectAll(".subunit")
-    //                .data(new_features)
-    //                .enter().append("path")
-    //                    .attr("d", path)
-    //                    .attr("id", function(d, ix) { return "feature_" + ix; })
-    //                    .style("stroke", "black")
-    //                    .style("stroke-opacity", .4)
-    //                    .style("fill", random_color)
-    //                    .style("fill-opacity", 0.5)
-    //                    .attr("height", "100%")
-    //                    .attr("width", "100%");
+                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
+                    geoms = _target_layer_file.objects[layer].geometries;
+
+                carto.value(function(d, i){
+                        return +user_data[layer][i][field_name]; });
+
+                let new_features = carto(_target_layer_file, geoms).features,
+                    new_layer_name = layer + "_Dougenik_Cartogram";
+                console.log(geoms);
+                console.log(new_features);
+                map.append("g")
+                    .attr("id", new_layer_name)
+                    .attr("class", "result_layer layer")
+                    .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                    .selectAll(".subunit")
+                    .data(new_features)
+                    .enter().append("path")
+                        .attr("d", path)
+                        .attr("id", function(d, ix) { return "feature_" + ix; })
+                        .style("stroke", "black")
+                        .style("stroke-opacity", .4)
+                        .style("fill", random_color)
+                        .style("fill-opacity", 0.5)
+                        .attr("height", "100%")
+                        .attr("width", "100%");
+
+                let class_name = "ui-state-default sortable_result " + new_layer_name,
+                    layers_listed = layer_list.node(),
+                    li = document.createElement("li");
     
+                li.setAttribute("class", class_name);
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
+                layers_listed.insertBefore(li, layers_listed.childNodes[0])
+                current_layers[new_layer_name] = {
+                    "renderer": "DougenikCarto",
+                    "rendered_field": field_name,
+                    "stroke-width-const": "1px",
+                    "is_result": true,
+                    "ref_layer_name": layer
+                    };
+                binds_layers_buttons();
+                zoom_without_redraw();
+                makeButtonLegend(new_layer_name);
+
             } else if (algo === "dorling"){
                 alert('Not implemented (yet!)')
     //            let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
@@ -1007,21 +1022,21 @@ var fields_PropSymbol = {
 };
 
 function fillMenu_PropSymbol(layer){
-
     var dialog_content = section.append("p").attr("class", "form-rendering"),
         field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
         max_allowed_size = Math.round(h/2 - h/20);
         max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
                          .insert('input')
                          .attr({type: 'range', class: 'params'})
-                         .attr({min: 0.2, max: max_allowed_size, value: +last_params.max_size || 5.0, step: 0.1})
-                         .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
+                         .attr({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
+                         .style("width", "8em")
+                         .on("change", function(){ d3.select("#max_size_txt").html([this.value, " px"].join('')) });
 
-    var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html('0 px'),
+    var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html([max_size.node().value, " px"].join('')),
         ref_size = dialog_content.append('p').html('Reference minimum size (fixed size in px) :')
                                  .insert('input').attr('type', 'number')
                                  .attr('class', 'params')
-                                 .attr({min: 0.1, max: max_allowed_size - 0.5, value: +last_params.ref_size_val || 0.3, step: 0.1});
+                                 .attr({min: 0.1, max: max_allowed_size - 0.5, value: 0.3, step: 0.1});
 
     var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
@@ -1029,7 +1044,7 @@ function fillMenu_PropSymbol(layer){
     var fill_color = dialog_content.append('p').html('Symbol color<br>')
               .insert('input').attr('type', 'color').attr("value", Colors.random());
 
-    dialog_content.insert("p").style("text-align", "right")
+    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'yes')
         .attr("class", "params button_st2")
@@ -1186,7 +1201,7 @@ function fillMenu_griddedMap(layer){
             col_pal.append("option").text(d).attr("value", d);
     });
 
-    dialog_content.insert("p").style("text-align", "right")
+    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
             .append('button')
             .attr("class", "params button_st2")
             .attr('id', 'Gridded_yes')
@@ -1198,10 +1213,6 @@ function fillMenu_griddedMap(layer){
                     var_to_send = new Object();
         
                 var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
-                last_params = {
-                    "var_name": field_n,
-                    "cellsize": cellsize.node().value
-                    };
         
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
@@ -1320,8 +1331,8 @@ function prop_sizer(arr, min_size, max_size){
         dif_size = max_size - min_size,
         len_arr = arr.length,
         res = new Array(len_arr);
-    // Lets use "for" loop with pre-sized array as "map" and "forEach" seems 
-    // to be sometimes slower in some browser
+    // Lets use "for" loop with pre-sized array (but maybe "push" method is faster ?)
+    // as "map" and "forEach" seems to be sometimes slower in some browser
     for(let i=0; i<len_arr; ++i)
         res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
     return res;
@@ -1343,7 +1354,7 @@ function prop_sizer2(arr, min_size, max_size){
     return res;
 }
 
-var type_col = function(layer_name, target){
+var type_col = function(layer_name, target, skip_if_empty_values=false){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
@@ -1412,8 +1423,8 @@ function add_table_field(layer, parent){
                         field2.append("option").text(k).attr("value", k);
                     }
                 }
-                d3.select("#val_opt").attr("disabled", true);
-                d3.select("#txt_opt").text("");
+                val_opt.attr("disabled", true);
+                txt_op.text("");
                 chooses_handler.operator = math_operation[0];
             } else {
                 string_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
@@ -1423,8 +1434,8 @@ function add_table_field(layer, parent){
                         field2.append("option").text(k).attr("value", k);
                     }
                 }
-                d3.select("#val_opt").attr("disabled", null);
-                d3.select("#txt_opt").html("Character to join the two fields (can stay blank) :<br>");
+                val_opt.attr("disabled", null);
+                txt_op.html("Character to join the two fields (can stay blank) :<br>");
                 chooses_handler.operator = string_operation[0];
             }
             chooses_handler.field1 = field1.node().value;
@@ -1433,14 +1444,14 @@ function add_table_field(layer, parent){
 
     var refresh_subtype_content = function(type, subtype){
         if(type != "string_field"){
-            d3.select("#val_opt").attr("disabled", true);
-            d3.select("#txt_opt").text("")
+            val_opt.attr("disabled", true);
+            txt_op.text("")
         } else {
             if(subtype == "Truncate"){
-                d3.select("#txt_opt").html("Number of char to keep (from the left) :<br>");
+                txt_op.html("Number of char to keep (from the left) :<br>");
                 field2.attr("disabled", true);
             } else {
-                d3.select("#txt_opt").html("Character used to join the two fields (can stay blank) :<br>");
+                txt_op.html("Character used to join the two fields (can stay blank) :<br>");
                 field2.attr("disabled", null);
             }
         }
@@ -1463,11 +1474,9 @@ function add_table_field(layer, parent){
                             operation = chooses_handler.operator;
 
                         if(chooses_handler.type_operation === "math_compute"){
-                            for(let i=0; i<data_layer.length; i++){
-                                let cmd = [+data_layer[i][fi1], operation, +data_layer[i][fi2]].join(' '),
-                                    result_val = eval(cmd);
-                                data_layer[i][new_name_field] = +result_val;
-                            }
+                            for(let i=0; i<data_layer.length; i++)
+                                data_layer[i][new_name_field] = +eval([+data_layer[i][fi1], operation, +data_layer[i][fi2]].join(' '));
+
                         } else {
                             let opt_val = chooses_handler.opt_val;
                             if(operation == "Truncate"){
@@ -1492,20 +1501,29 @@ function add_table_field(layer, parent){
         type_content = div1.append("p").html("New field content :<br>")
                             .insert("select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
+    
     [["Computation based on two existing numerical fields", "math_compute"],
-     ["Modification on a character field", "string_field"]
-    ].forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
+     ["Modification on a character field", "string_field"]]
+        .forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
 
     var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; console.log(this.value) }),
         operator = div1.append("select").on("change", function(){ chooses_handler.operator = this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);}),
         field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });;
 
-    div2.append("p").attr("id", "txt_opt").text("");
-    div2.append("input").attr("id", "val_opt").attr("disabled", true).on("change", function(){ chooses_handler.opt_val = this.value;});
+    var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
+        val_opt = div2.append("input").attr("id", "val_opt")
+                        .attr("disabled", true)
+                        .on("change", function(){ chooses_handler.opt_val = this.value;});
 
     var fields_type = type_col(layer),
         math_operation = ["+", "-", "*", "/"],
         string_operation = ["Concatenate", "Truncate"];
 
     return box;
+}
+
+var contains_empty_val = function(arr){
+    for(let i = arr.length - 1; i > -1; --i)
+        if(arr[i] == null) return true;
+    return false
 }

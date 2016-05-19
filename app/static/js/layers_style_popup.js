@@ -269,7 +269,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
          popup.append('p').style("margin", "auto").html("Field used for symbol colors : <i>" + field_color + "</i><br>")
-            .append("button").html("Display and arrange class")
+            .append("button").attr("class", "button_disc").html("Display and arrange class")
             .on("click", function(){display_discretization(ref_layer_name, field_color, current_layers[layer_name].colors_breaks.length, "Quantiles")
           .then(function(confirmed){
             if(confirmed){
