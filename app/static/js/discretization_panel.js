@@ -108,7 +108,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         });
         var button_reverse = d3.select(".color_txt").insert("button")
                                 .style({"display": "inline", "margin-left": "10px"})
-                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
+                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html("Reverse palette")
                                 .on("click", function(){
                                     to_reverse = true;
@@ -155,7 +155,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
         var button_reverse = d3.select(".color_txt2").insert("button")
                                 .style({"display": "inline", "margin-left": "10px"})
-                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
+                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html("Reverse palette")
                                 .on("click", function(){
                                     to_reverse = true;

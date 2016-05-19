@@ -193,8 +193,8 @@ section1.append("div")
 
 var browse_table = d3.select("#browse_section")
                         .append("button")
-                        .attr("id", "browse_button")
-                        .attr("disabled", true)
+                        .attr({id: "browse_button", class: "button_st3", disabled: true})
+                        .style("font-size", "12px")
                         .html("Explore your table(s)")
                         .on("click", function(){  boxExplore.create();  });
 

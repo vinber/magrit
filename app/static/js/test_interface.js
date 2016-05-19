@@ -87,7 +87,7 @@ function prepare_drop_section(){
                 }
             
                 if(!(files.length == 1)){
-                    var filenames = files.map(f => f.name),
+                    var filenames = Array.prototype.map.call(files, f => f.name),
                         result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
             
                     if(result.length == 4){

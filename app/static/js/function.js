@@ -2,6 +2,12 @@
 
 function get_menu_option(func){
     var menu_option = {
+        "test":{
+            "title": "test",
+            "desc": "Testing functionnality...",
+            "menu_factory": "fillMenu_Test",
+            "fields_handler": "fields_Test"
+        },
         "stewart":{
             "title":"Stewart potentials",
             "desc":"Compute stewart potentials...",
@@ -161,6 +167,68 @@ function fillMenu_FlowMap(){
     });
 }
 
+var fields_Test = {
+    fill: function(layer){
+        if(layer){
+            d3.selectAll(".params").attr("disabled", null);
+            let fields = type_col(layer, "number"),
+                nb_features = user_data[layer].length,
+                field_selec = d3.select("#Test_field");
+    
+            fields.forEach(function(field){
+                field_selec.append("option").text(field).attr("value", field);
+            });
+        }
+    },
+    unfill: function(){
+        let field_selec = document.getElementById("#Test_field");
+        unfillSelectInput(field_selec);
+        d3.selectAll(".params").attr("disabled", true);
+    }
+};
+
+function fillMenu_Test(){
+    let random_color = Colors.random();
+    var dialog_content = section2.append("div").attr("class", "form-rendering"),
+        field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Test_field'});
+
+    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
+        .append("button")
+        .attr({id: 'Test_yes', class: "params button_st2"})
+        .html('"Compute"...')
+        .on("click", function(){
+            let layer = Object.getOwnPropertyNames(user_data)[0],
+                nb_features = user_data[layer].length,
+                field_name = field_selec.node().value,
+                formToSend = new FormData(),
+                var_to_send = new Object();
+
+            var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
+            formToSend.append("json", JSON.stringify({
+                "topojson": layer,
+                "var_name": JSON.stringify(var_to_send) }))
+    
+            $.ajax({
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '/R_compute/nothing',
+                data: formToSend,
+                type: 'POST',
+                error: function(error) { console.log(error); },
+                success: function(data){
+                    add_layer_topojson(data);
+                    let n_layer_name = ["Nope", field_name].join('_');
+                    current_layers[n_layer_name] = new Object();
+                    current_layers[n_layer_name].colors = [];
+                    current_layers[n_layer_name]['stroke-width-const'] = "0.4px"
+                    current_layers[n_layer_name].renderer = "None";
+                    current_layers[n_layer_name].rendered_field = field_name;
+                    makeButtonLegend(n_layer_name);
+                }
+            });
+        });
+}
 
 var fields_PropSymbolChoro = {
     fill: function(layer){
@@ -777,49 +845,81 @@ function fillMenu_Anamorphose(){
                 alert('Not implemented (yet!)')
             } else if (algo === "dougenik"){
                 alert('Not implemented (yet!)')
-                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
-                    geoms = _target_layer_file.objects[layer].geometries;
+            let formToSend = new FormData(),
+                field_n = field_selec.node().value,
+                layer = Object.getOwnPropertyNames(user_data)[0],
+                var_to_send = new Object();
 
-                carto.value(function(d, i){
-                        return +user_data[layer][i][field_name]; });
-
-                let new_features = carto(_target_layer_file, geoms).features,
-                    new_layer_name = layer + "_Dougenik_Cartogram";
-                console.log(geoms);
-                console.log(new_features);
-                map.append("g")
-                    .attr("id", new_layer_name)
-                    .attr("class", "result_layer layer")
-                    .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-                    .selectAll(".subunit")
-                    .data(new_features)
-                    .enter().append("path")
-                        .attr("d", path)
-                        .attr("id", function(d, ix) { return "feature_" + ix; })
-                        .style("stroke", "black")
-                        .style("stroke-opacity", .4)
-                        .style("fill", random_color)
-                        .style("fill-opacity", 0.5)
-                        .attr("height", "100%")
-                        .attr("width", "100%");
-
-                let class_name = "ui-state-default sortable_result " + new_layer_name,
-                    layers_listed = layer_list.node(),
-                    li = document.createElement("li");
+            var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
+            formToSend.append("json", JSON.stringify({
+                "topojson": layer,
+                "var_name": JSON.stringify(var_to_send),
+                "iterations": nb_iter }))
     
-                li.setAttribute("class", class_name);
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
-                layers_listed.insertBefore(li, layers_listed.childNodes[0])
-                current_layers[new_layer_name] = {
-                    "renderer": "DougenikCarto",
-                    "rendered_field": field_name,
-                    "stroke-width-const": "1px",
-                    "is_result": true,
-                    "ref_layer_name": layer
-                    };
-                binds_layers_buttons();
-                zoom_without_redraw();
-                makeButtonLegend(new_layer_name);
+            $.ajax({
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '/R_compute/carto_doug',
+                data: formToSend,
+                type: 'POST',
+                error: function(error) { console.log(error); },
+                success: function(data){
+                    add_layer_topojson(data, {result_layer_on_add: true});
+                    let n_layer_name = ["Carto_doug", nb_iter, field_name].join('_');
+                    current_layers[n_layer_name] = new Object();
+                    current_layers[n_layer_name].colors = [];
+                    current_layers[n_layer_name]['stroke-width-const'] = "0.4px"
+                    current_layers[n_layer_name].renderer = "Carto_doug";
+                    current_layers[n_layer_name].rendered_field = field_name;
+
+                    makeButtonLegend(n_layer_name);
+                }
+            });
+
+//                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
+//                    geoms = _target_layer_file.objects[layer].geometries;
+//
+//                carto.value(function(d, i){
+//                        return +user_data[layer][i][field_name]; });
+//
+//                let new_features = carto(_target_layer_file, geoms).features,
+//                    new_layer_name = layer + "_Dougenik_Cartogram";
+//                console.log(geoms);
+//                console.log(new_features);
+//                map.append("g")
+//                    .attr("id", new_layer_name)
+//                    .attr("class", "result_layer layer")
+//                    .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+//                    .selectAll(".subunit")
+//                    .data(new_features)
+//                    .enter().append("path")
+//                        .attr("d", path)
+//                        .attr("id", function(d, ix) { return "feature_" + ix; })
+//                        .style("stroke", "black")
+//                        .style("stroke-opacity", .4)
+//                        .style("fill", random_color)
+//                        .style("fill-opacity", 0.5)
+//                        .attr("height", "100%")
+//                        .attr("width", "100%");
+//
+//                let class_name = "ui-state-default sortable_result " + new_layer_name,
+//                    layers_listed = layer_list.node(),
+//                    li = document.createElement("li");
+//    
+//                li.setAttribute("class", class_name);
+//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
+//                layers_listed.insertBefore(li, layers_listed.childNodes[0])
+//                current_layers[new_layer_name] = {
+//                    "renderer": "DougenikCarto",
+//                    "rendered_field": field_name,
+//                    "stroke-width-const": "1px",
+//                    "is_result": true,
+//                    "ref_layer_name": layer
+//                    };
+//                binds_layers_buttons();
+//                zoom_without_redraw();
+//                makeButtonLegend(new_layer_name);
 
             } else if (algo === "dorling"){
                 alert('Not implemented (yet!)')
@@ -954,7 +1054,7 @@ var boxExplore = {
                      this.nb_features, " features - ",
                      this.columns_names.length, " fields"];
         d3.selectAll('#table_intro').remove()
-        this.box_table.append("p").attr('id', 'table_intro').style("text-align", "center").html(txt_intro.join(''))
+        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro.join(''))
         d3.selectAll('#myTable').remove()
         d3.selectAll('#myTable_wrapper').remove();
         this.box_table.append("table").attr({class: "display compact", id: "myTable"}).style({width: "80%", height: "80%"})
@@ -982,24 +1082,30 @@ var boxExplore = {
             this.current_table = "ext_dataset";
         } else {
             this.current_table = "layer";
-            this.box_table.append('p').style("margin-left", "15px")
-                     .insert("button").attr("class", "button_st2")
-                     .attr("id", "add_field_button")
-                     .html("Add a new field...")
-                     .on('click', function(){  add_table_field(the_name, self)  });
-            this.box_table.append('p').style("margin-left", "15px")
-                     .insert("button").attr("class", "button_st2")
-                     .attr("id", "unsel_features")
-                     .html("Remove features...")
-                     .on('click', function(){  });
+            let top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+            top_buttons
+                 .insert("button")
+                 .attr({id: "add_field_button", class: "button_st3"})
+//                 .style("font-size", "12px")
+                 .html("Add a new field...")
+                 .on('click', function(){  add_table_field(the_name, self)  });
+            top_buttons
+                 .insert("button")
+                 .attr({id: "unsel_features", class: "button_st3"})
+//                 .style("font-size", "12px")
+                 .html("Remove features...")
+                 .on('click', function(){  });
 
         }
 
         if(dataset_name != undefined && the_name != undefined)
-            this.box_table.append('p').attr("id", "switch_button").html("Switch to external dataset table...").on('click', function(){
-                    let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
-                    self.current_table = type;
-                    self.display_table({"type": type});
+            this.box_table.append('p')
+                    .attr({id: "switch_button", class: "button_st3"})
+                    .html("Switch to external dataset table...")
+                    .on('click', function(){
+                        let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
+                        self.current_table = type;
+                        self.display_table({"type": type});
                     });
        
         this.display_table({"type": this.current_table});
