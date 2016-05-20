@@ -60,8 +60,9 @@ var menu_option = get_menu_option(func);
 
     let _tmp = Math.min(+h, +w),
         approx_scale = _tmp > 860 ? 600 : 
-                       _tmp > 405 ? 400 : 200,
-        trans_0 = +w / 2 - 200,
+                       _tmp > 540 ? 400 :
+                       _tmp > 250 ? 200 : 100,
+        trans_0 = +w / 2 - (approx_scale >= 400 ? 200 : approx_scale >= 200 ? _tmp : _tmp * 2),
         trans_1 = +h / 2 - 250;
 
     var proj = d3.geo.naturalEarth().scale(approx_scale).translate([trans_0, trans_1]);

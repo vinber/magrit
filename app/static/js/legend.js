@@ -43,7 +43,8 @@ function createLegend(layer, title, subtitle){
         createLegend_choro(layer, field2, "Legend", subtitle);
         createLegend_symbol(layer, field1);
     }
-    else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1){
+    else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1
+            || current_layers[layer].renderer.indexOf("DorlingCarto") != -1){
         let field = current_layers[layer].rendered_field;
         createLegend_symbol(layer, field, title);
     } else {
@@ -60,7 +61,7 @@ function createLegend_symbol(layer, field, title, subtitle){
         xpos = 30,
         ypos = 30,
         y_pos2 =  ypos + space_elem,
-        ref_layer_name = layer.split("_PropSymbols")[0] || current_layers[layer].ref_layer_name,
+        ref_layer_name = layer.indexOf('_PropSymbols') > -1 ? layer.split("_PropSymbols")[0] : current_layers[layer].ref_layer_name,
         nb_features = user_data[ref_layer_name].length,
         symbol_type = current_layers[layer].symbol,
         legend_root = map.insert('g').attr('id', 'legend_root2').attr("class", "legend_feature");
@@ -315,7 +316,6 @@ function createlegendEditBox(legend_id, layer_name){
                         .on('change', function(){
                             let nb_float = +this.value,
                                 dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
-                                //dec_mult = +["1", range(nb_float).map(i => "0").join('')].join('');
                             d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                             for(let i = 0; i < legend_boxes[0].length; i++){
                                 let value = legend_boxes[0][i].__data__.value;

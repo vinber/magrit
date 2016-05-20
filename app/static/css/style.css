@@ -300,19 +300,27 @@ p.menu {
     color: white;
     border-radius: 9%;
 }
-
+/*
 .dataTable thead{
     background: rgb(161, 188, 210) none repeat scroll 0% 0%;
 }
 
-.myTable_filter {
+#myTable_wrapper{
+    background-image: url(/static/img/color_grey.png), url(/static/img/color_grey.png);
+    background-position: bottom, top;
+    background-size: 80%;
+    background-size: 1.4em, 0.9em;
+    background-repeat: repeat-x;
+}
+
+#myTable_filter {
     margin-right: 15px;
 }
 
-.myTable_length {
+#myTable_length {
     margin-left: 15px;
 }
-
+*/
 #table_intro{
     margin: auto;
     text-align: center;
@@ -428,7 +436,7 @@ p.menu {
 	cursor:pointer;
 	color:#ffffff;
 	font-family:Arial;
-	font-size:15px;
+	font-size:12px;
 	padding:3px 16px;
 	text-decoration:none;
 	margin: 0px 1px 0px 1px

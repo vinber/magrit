@@ -161,7 +161,7 @@ function fillMenu_FlowMap(){
                     current_layers[new_layer_name].linksbyId = prop_values.map(i => [0.8, i])
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.75)
-                                   .style("stroke-width", function(d, i){ return prop_values[i]; })
+                                   .style("stroke-width", function(d, i){ return prop_values[i]; });
                 }
             });
     });
@@ -217,7 +217,7 @@ function fillMenu_Test(){
                 type: 'POST',
                 error: function(error) { console.log(error); },
                 success: function(data){
-                    add_layer_topojson(data);
+                    add_layer_topojson(data, {result_layer_on_add: true});
                     let n_layer_name = ["Nope", field_name].join('_');
                     current_layers[n_layer_name] = new Object();
                     current_layers[n_layer_name].colors = [];
@@ -284,7 +284,7 @@ function fillMenu_PropSymbolChoro(layer){
     var field2_selec = dv2.append('p').html('Second field (symbol color):').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
 
     dv2.insert('p').style("margin", "auto").html("")
-                .append("button").attr('class', 'params button_disc')
+                .append("button").attr('class', 'params')
                 .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -345,7 +345,7 @@ function fillMenu_PropSymbolChoro(layer){
                 colors: rendering_params['colorsByFeature'],
                 colors_breaks: colors_breaks,
                 is_result: true
-                };
+            };
             makeButtonLegend(layer_to_add);
             binds_layers_buttons();
             zoom_without_redraw();
@@ -415,7 +415,9 @@ function fillMenu_Choropleth(){
                     }
                 });
         });
-    dv2.append('button')
+
+    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+        .append("button")
         .attr('id', 'choro_yes')
         .attr('class', 'button_st2')
         .attr("disabled", true)
@@ -821,15 +823,45 @@ var fields_Anamorphose = {
 
 
 function fillMenu_Anamorphose(){
-    let random_color = Colors.random();
+
+    var make_opt_dorling = function(){
+        option1_txt.html('Symbol type');
+        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
+
+        symbols.forEach(function(symb){
+            option1_val.append("option").text(symb[0]).attr("value", symb[1]);
+        });
+    };
+
+    var make_opt_iter = function(){
+        option1_txt.html('N. iterations');
+        option1_val = option1_txt.insert('input')
+                        .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
+    };
+
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
+        algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params'),
         field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Anamorph_field'}),
-        iterations = dialog_content.append('p').html('N. interations :').insert('input').attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1}),
-        algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params');
+        option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html('Symbol type'),
+        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
+
+    var symbols = [["Circle", "circle"], ["Square", "rect"]];
+
+    symbols.forEach(function(symb){
+        option1_val.append("option").text(symb[0]).attr("value", symb[1]);
+    });
+
+    algo_selec.on("change", function(){
+        if(this.value == "dorling")
+            make_opt_dorling();
+        else
+            make_opt_iter();
+    });
+
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
      ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
-        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);});
+        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append("button")
@@ -839,46 +871,52 @@ function fillMenu_Anamorphose(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
-                field_name = field_selec.node().value,
-                nb_iter = iterations.node().value;
+                field_name = field_selec.node().value;
             if(algo === "gastner"){
                 alert('Not implemented (yet!)')
             } else if (algo === "dougenik"){
-                alert('Not implemented (yet!)')
-            let formToSend = new FormData(),
-                field_n = field_selec.node().value,
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                var_to_send = new Object();
-
-            var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
-            formToSend.append("json", JSON.stringify({
-                "topojson": layer,
-                "var_name": JSON.stringify(var_to_send),
-                "iterations": nb_iter }))
+                let formToSend = new FormData(),
+                    field_n = field_selec.node().value,
+                    layer = Object.getOwnPropertyNames(user_data)[0],
+                    var_to_send = new Object(),
+                    nb_iter = option1_val.node().value;
     
-            $.ajax({
-                processData: false,
-                contentType: false,
-                cache: false,
-                url: '/R_compute/carto_doug',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { console.log(error); },
-                success: function(data){
-                    add_layer_topojson(data, {result_layer_on_add: true});
-                    let n_layer_name = ["Carto_doug", nb_iter, field_name].join('_');
-                    current_layers[n_layer_name] = new Object();
-                    current_layers[n_layer_name].colors = [];
-                    current_layers[n_layer_name]['stroke-width-const'] = "0.4px"
-                    current_layers[n_layer_name].renderer = "Carto_doug";
-                    current_layers[n_layer_name].rendered_field = field_name;
-
-                    makeButtonLegend(n_layer_name);
-                }
-            });
-
+                var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
+                formToSend.append("json", JSON.stringify({
+                    "topojson": layer,
+                    "var_name": JSON.stringify(var_to_send),
+                    "iterations": nb_iter }))
+        
+                $.ajax({
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    url: '/R_compute/carto_doug',
+                    data: formToSend,
+                    type: 'POST',
+                    error: function(error) { console.log(error); },
+                    success: function(data){
+                        add_layer_topojson(data, {result_layer_on_add: true});
+                        let n_layer_name = ["Carto_doug", nb_iter, field_name].join('_');
+                        current_layers[n_layer_name] = new Object();
+                        current_layers[n_layer_name].colors = [];
+                        current_layers[n_layer_name].type = "Polygon";
+                        current_layers[n_layer_name].is_result = true;
+                        current_layers[n_layer_name]['stroke-width-const'] = "0.8px"
+                        current_layers[n_layer_name].renderer = "Carto_doug";
+                        current_layers[n_layer_name].rendered_field = field_name;
+                        d3.select("#" + n_layer_name)
+                            .selectAll("path")
+                            .style("fill", function(){ return Colors.random(); })
+                            .style("fill-opacity", 0.8)
+                            .style("stroke", "black")
+                            .style("stroke-opacity", 0.8)
+                        makeButtonLegend(n_layer_name);
+                    }
+                });
 //                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
-//                    geoms = _target_layer_file.objects[layer].geometries;
+//                    geoms = _target_layer_file.objects[layer].geometries,
+//                    let random_color = Colors.random();
 //
 //                carto.value(function(d, i){
 //                        return +user_data[layer][i][field_name]; });
@@ -922,90 +960,161 @@ function fillMenu_Anamorphose(){
 //                makeButtonLegend(new_layer_name);
 
             } else if (algo === "dorling"){
-                alert('Not implemented (yet!)')
-    //            let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
-    //                d_values = new Array(nb_features),
-    //                res = new Array(nb_features),
-    //                zs = zoom.scale(),
-    //                max_size = 20,
-    //                ref_size = 0.5;
-    //
-    //            for(let i = 0; i < nb_features; ++i){
-    //                let centr = path.centroid(ref_layer_selection[0][i].__data__);
-    //                d_values[i] = [i, +user_data[layer][i][field_name], centr];
-    //            }
-    //
-    //            d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
-    //            let ref_pt = d_values.map(function(obj){return {x: +obj[2][0], y: +obj[2][1], c: obj[2], r: +obj[1], uid: +obj[0]}});
-    //            for(let iter = 0; iter < nb_iter; iter++){
-    //                for(let i = 0 ; i < nb_features ; i++) {
-    //                    for(let j = 0 ; j < nb_features ; j++) {
-    //                        if(i==j) continue;
-    //                        let it = res[i] != undefined ? res[i] : ref_pt[i],
-    //                            jt = res[j] != undefined ? res[j] : ref_pt[j];
-    //        
-    //                        let radius = it.r + jt.r,
-    //                            itx = it.x + it.c[0],
-    //                            ity = it.y + it.c[1],
-    //                            jtx = jt.x + jt.c[0],
-    //                            jty = jt.y + jt.c[1],
-    //                            dist = Math.sqrt( (itx - jtx) * (itx - jtx) + (ity - jty) * (ity - jty) );
-    //        
-    //                        if(radius * zs > dist) {
-    //                            let dr = ( radius * zs - dist ) / ( dist * 1 );
-    //                            let tmp_x = it.x + ( itx - jtx ) * dr;
-    //                            let tmp_y = it.y + ( ity - jty ) * dr;
-    //                            res[i] = {"x": tmp_x, "y": tmp_y, "c": it.c, "r": it.r, "uid": it.uid};
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //            console.log(res);console.log(ref_pt);
-    //            let bg_color = Colors.random(),
-    //                stroke_color = "black",
-    //                layer_to_add =  [layer, "DorlingCarto"].join('');
-    //
-    //            if(current_layers[layer_to_add]){
-    //                remove_layer_cleanup(layer_to_add);
-    //                d3.selectAll('#' + layer_to_add).remove();
-    //            }
-    //
-    //            var symbol_layer = map.append("g").attr("id", layer_to_add)
-    //                                  .attr("class", "result_layer layer");
-    //
-    //            for(let i = 0; i < res.length; i++){
-    //                let params = res[i] == undefined ? ref_pt[i] : res[i];
-    //                console.log(params);
-    //                symbol_layer.append('circle')
-    //                    .attr('cx', params.x)
-    //                    .attr("cy", params.y)
-    //                    .attr("r", ref_size / zs + params.r)
-    //                    .attr("id", ["PropSymbol_", i , " feature_", params.uid].join(''))
-    //                    .style("fill", bg_color)
-    //                    .style("stroke", "black")
-    //                    .style("stroke-width", 1 / zs);
-    //            }
-    //
-    //            let class_name = "ui-state-default sortable_result " + layer_to_add,
-    //                layers_listed = layer_list.node(),
-    //                li = document.createElement("li");
-    //
-    //            li.setAttribute("class", class_name);
-    //            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
-    //            layers_listed.insertBefore(li, layers_listed.childNodes[0])
-    //            current_layers[layer_to_add] = {
-    //                "renderer": "DorlingCarto",
-    //                "symbol": "circle",
-    //                "rendered_field": field_name,
-    //                "size": [ref_size, max_size],
-    //                "stroke-width-const": "1px",
-    //                "is_result": true,
-    //                "ref_layer_name": layer
-    //                };
-    //
-    //            binds_layers_buttons();
-    //            zoom_without_redraw();
-    //            makeButtonLegend(layer_to_add);
+                let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+                    d_values = new Array(nb_features),
+                    zs = zoom.scale(),
+                    max_size = 25,
+                    ref_size = 0.1,
+                    shape_symbol = option1_val.node().value,
+                    symbol_layer = undefined,
+                    force = d3.layout.force().charge(0).gravity(0).size([w, h]);
+
+                for(let i = 0; i < nb_features; ++i){
+                    d_values[i] = +user_data[layer][i][field_name];
+                }
+                d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
+
+                let nodes = ref_layer_selection[0].map(function(d, i){
+                    let pt = path.centroid(d.__data__.geometry);
+                    return {x: pt[0], y: pt[1],
+                            x0: pt[0], y0: pt[1],
+                            r: +d_values[i],
+                            value: +d.__data__.properties[field_name]};
+                    });
+
+                let bg_color = Colors.random(),
+                    stroke_color = "black",
+                    layer_to_add =  ["DorlingCarto", layer, field_name].join('_');
+    
+                if(current_layers[layer_to_add]){
+                    remove_layer_cleanup(layer_to_add);
+                    d3.selectAll('#' + layer_to_add).remove();
+                }
+
+                force.nodes(nodes).on("tick", tick).start();
+
+                if(shape_symbol == "circle") {
+                    symbol_layer = map.append("g").attr("id", layer_to_add)
+                                      .attr("class", "result_layer layer")
+                                      .selectAll("circle")
+                                      .data(nodes).enter()
+                                      .append("circle")
+                                        .attr("r", function(d){ return d.r; })
+                                        .style("fill", function(){ return Colors.random();})
+                                        .style("stroke", "black");
+                } else {
+                    symbol_layer = map.append("g").attr("id", layer_to_add)
+                                      .attr("class", "result_layer layer")
+                                      .selectAll("rect")
+                                      .data(nodes).enter()
+                                      .append("rect")
+                                        .attr("height", function(d){ return d.r * 2; })
+                                        .attr("width", function(d){ return d.r * 2; })
+                                        .style("fill", function(){ return Colors.random();})
+                                        .style("stroke", "black");
+
+                }
+
+                function tick(e){
+                    if(shape_symbol == "circle"){
+                        symbol_layer.each(gravity(e.alpha * 0.1))
+                            .each(collide(.5))
+                            .attr("cx", function(d){ return d.x })
+                            .attr("cy", function(d){ return d.y })
+                    } else {
+                        symbol_layer.each(gravity(e.alpha * 0.1))
+                            .each(collide(.5))
+                            .attr("x", function(d){ return d.x - d.r})
+                            .attr("y", function(d){ return d.y - d.r})
+                    }
+                }
+
+                function gravity(k) {
+                    return function(d) {
+                        d.x += (d.x0 - d.x) * k;
+                        d.y += (d.y0 - d.y) * k;
+                    };
+                }
+
+                function collide(k) {
+                    var q = d3.geom.quadtree(nodes);
+                    if(shape_symbol == "circle"){
+                        return function(node) {
+                            let nr = node.r,
+                                nx1 = node.x - nr,
+                                nx2 = node.x + nr,
+                                ny1 = node.y - nr,
+                                ny2 = node.y + nr;
+                            q.visit(function(quad, x1, y1, x2, y2) {
+                                if (quad.point && (quad.point !== node)) {
+                                    let x = node.x - quad.point.x,
+                                        y = node.y - quad.point.y,
+                                        l = x * x + y * y,
+                                        r = nr + quad.point.r;
+                                    if (l < r * r) {
+                                        l = ((l = Math.sqrt(l)) - r) / l * k;
+                                        node.x -= x *= l;
+                                        node.y -= y *= l;
+                                        quad.point.x += x;
+                                        quad.point.y += y;
+                                    }
+                                }
+                                return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                            });
+                        };
+                    } else {
+                        return function(node) {
+                            let nr = node.r,
+                                nx1 = node.x - nr,
+                                nx2 = node.x + nr,
+                                ny1 = node.y - nr,
+                                ny2 = node.y + nr;
+                            q.visit(function(quad, x1, y1, x2, y2) {
+                                if (quad.point && (quad.point !== node)) {
+                                    let x = node.x - quad.point.x,
+                                        y = node.y - quad.point.y,
+                                        lx = Math.abs(x),
+                                        ly = Math.abs(y),
+                                        r = nr + quad.point.r;
+                                    if (lx < r && ly < r) {
+                                        if(lx > ly){
+                                            lx = (lx - r) * (x < 0 ? -k : k);
+                                            node.x -= lx;
+                                            quad.point.x += lx;
+                                        } else {
+                                            ly = (ly - r) * (y < 0 ? -k : k);
+                                            node.y -= ly;
+                                            quad.point.y += ly;
+                                        }
+                                    }
+                                }
+                                return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                            });
+                        };
+                    }
+                }
+
+                let class_name = "ui-state-default sortable_result " + layer_to_add,
+                    layers_listed = layer_list.node(),
+                    li = document.createElement("li");
+    
+                li.setAttribute("class", class_name);
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
+                layers_listed.insertBefore(li, layers_listed.childNodes[0])
+                current_layers[layer_to_add] = {
+                    "renderer": "DorlingCarto",
+                    "type": "Point",
+                    "symbol": shape_symbol,
+                    "rendered_field": field_name,
+                    "size": [ref_size, max_size],
+                    "stroke-width-const": "1px",
+                    "is_result": true,
+                    "ref_layer_name": layer
+                    };
+    
+                binds_layers_buttons();
+                zoom_without_redraw();
+                makeButtonLegend(layer_to_add);
                 }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -1027,6 +1136,7 @@ function log_unused_ft(layer){
             filter_not_use.delete(row._DT_RowIndex)
     });
 }
+
 var boxExplore = {
     display_table: function(prop){
         let self = this,
@@ -1042,7 +1152,10 @@ var boxExplore = {
             var data_table = user_data[this.layer_name],
                 the_name = this.layer_name,
                 message = "Switch to external dataset table...";
-                unselect_features.style("display", null).on('click', null);
+                unselect_features.style("display", null).on('click', function(){
+                    console.log(the_name);
+                    log_unused_ft(the_name);
+                  });
                 add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
         }
         this.nb_features = data_table.length;
@@ -1086,15 +1199,16 @@ var boxExplore = {
             top_buttons
                  .insert("button")
                  .attr({id: "add_field_button", class: "button_st3"})
-//                 .style("font-size", "12px")
                  .html("Add a new field...")
                  .on('click', function(){  add_table_field(the_name, self)  });
             top_buttons
                  .insert("button")
                  .attr({id: "unsel_features", class: "button_st3"})
-//                 .style("font-size", "12px")
                  .html("Remove features...")
-                 .on('click', function(){  });
+                 .on('click', function(){
+                    console.log(the_name);
+                    log_unused_ft(the_name);
+                  });
 
         }
 
@@ -1239,8 +1353,10 @@ function make_prop_symbols(rendering_params){
             for(let i=0; i<nb_features; ++i)
                 d_values[i].push(rendering_params.fill_color);
         } else {
-            for(let i=0; i<nb_features; ++i)
-                d_values[i].push(rendering_params.fill_color[i]);
+            for(let i=0; i<nb_features; ++i){
+                let idx = d_values[i][0];
+                d_values[i].push(rendering_params.fill_color[idx]);
+            }
         }
 
         if(current_layers[layer_to_add]){
@@ -1256,6 +1372,7 @@ function make_prop_symbols(rendering_params){
         if(symbol_type === "circle"){
             for(let i = 0; i < d_values.length; i++){
                 let params = d_values[i];
+                console.log(params[2])
                 symbol_layer.append('circle')
                     .attr('cx', params[2][0])
                     .attr("cy", params[2][1])

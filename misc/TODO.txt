@@ -15,3 +15,7 @@ TODO list:
 - Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
 - Add a tooltip on freshly created layers (propsymbols, MTA) as on other layers
 - Remove the "reverse palette" option on diverging coloramps
+- Add an option in the "style" box in order to fill each features with a random color (instead just allowing to fill all features with the same color)
+- Let the user choose the symbol max size on cartogram maps as on proportional symbols maps.
+- Fix the (colored) legend on PropSymbolChoro in order to keep it updated when a new discretization is changed (as on choropleth)
+- Double-check styling configuration for MTA results
