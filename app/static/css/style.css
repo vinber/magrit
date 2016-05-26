@@ -16,7 +16,7 @@ body {
     box-sizing: border-box;
     background-color : #2e91ce;
     line-height: 40px;
-    text-align: left;	
+    text-align: left;
     font-family: Verdana, Tahoma;
     letter-spacing: 3px;
 }
@@ -32,10 +32,10 @@ body {
 
 #page {
     width: 100%;
-    height : calc(100% - 30px); 	
+    height : calc(100% - 30px);
     float: left;
     padding:10px;
-    /*box-sizing: border-box; */ 
+    /*box-sizing: border-box; */
     text-align:center;
 }
 
@@ -55,7 +55,7 @@ body {
     margin-top: 40px;
     background-color: white;
     position: relative;
-    border-style: solid; 
+    border-style: solid;
 }
 #move {
     padding: 20px;
@@ -74,7 +74,7 @@ body {
 
 h1.menu {
 	color:#2e91ce;
-	font-size:15px;	
+	font-size:15px;
 }
 
 a.logo {
@@ -85,16 +85,16 @@ a.logo {
     padding:0px;
     vertical-align:middle;
     color : #ffffff;
-    line-height:30px;	
+    line-height:30px;
     font-weight : bold;
     font-family: 'Helvetica Neue', sans-serif;
-    font-size: 20px; 
+    font-size: 20px;
 }
 
 .icon {
     box-sizing: border-box;
     padding:10px;
-    box-sizing: border-box;  
+    box-sizing: border-box;
     text-align:center;
     vertical-align:middle;
     display:inline-block;
@@ -154,7 +154,7 @@ p.menu {
     font-weight: bold;
 }
 
-#section1 { 
+#section1 {
     height: 145px;
     font-size: 12px;
     color: black;
@@ -450,4 +450,35 @@ p.menu {
 	background:linear-gradient(to bottom, #6c7c7c 5%, #768d87 100%);
 	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#6c7c7c', endColorstr='#768d87',GradientType=0);
 	background-color:#6c7c7c;
+}
+
+.button_st4 {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf));
+	background:-moz-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-webkit-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-o-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-ms-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
+	background-color:#ededed;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	cursor:pointer;
+	color:#777777;
+	font-family:Verdana;
+	font-size:11px;
+	padding:6px 14px;
+	text-decoration:none;
+}
+
+.button_st4:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed));
+	background:-moz-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-webkit-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-o-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-ms-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
+	background-color:#dfdfdf;
 }

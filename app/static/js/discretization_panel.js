@@ -508,7 +508,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         svg_w = w - (w / 8),
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
-  
+
     var svg_histo = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)

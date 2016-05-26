@@ -31,3 +31,12 @@ Currently available mapping methods :
  - compute a gravitational interaction model (Stewart potential) to produce a smoothed map
  - compute and render the result of statistical comparison between territorial units (based on HyperCarte* methods)
 (- In progress : render cartograms according to various algorythms, render "label map" with optimal label positioning)
+
+Instalation
+Following dependencies are needed :
+
+Ubuntu:
+```
+sudo apt-get install libgdal-dev libproj-dev libv8-dev libffi-dev
+libpython3.5-dev r-base redis-server nodejs npm libfftw3-dev libzmq-dev
+```

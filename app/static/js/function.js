@@ -70,7 +70,7 @@ var fields_FlowMap = {
                 field_i = d3.select('#FlowMap_field_i'),
                 field_j = d3.select('#FlowMap_field_j'),
                 field_fij = d3.select('#FlowMap_field_fij');
-    
+
             fields.forEach(function(field){
                 field_i.append("option").text(field).attr("value", field);
                 field_j.append("option").text(field).attr("value", field);
@@ -80,7 +80,7 @@ var fields_FlowMap = {
         if(layer){
             let ref_fields = Object.getOwnPropertyNames(user_data[layer][0]),
                 join_field = d3.select('#FlowMap_field_join');
-    
+
             ref_fields.forEach(function(field){
                 join_field.append("option").text(field).attr("value", field);
             });
@@ -174,7 +174,7 @@ var fields_Test = {
             let fields = type_col(layer, "number"),
                 nb_features = user_data[layer].length,
                 field_selec = d3.select("#Test_field");
-    
+
             fields.forEach(function(field){
                 field_selec.append("option").text(field).attr("value", field);
             });
@@ -207,7 +207,7 @@ function fillMenu_Test(){
             formToSend.append("json", JSON.stringify({
                 "topojson": layer,
                 "var_name": JSON.stringify(var_to_send) }))
-    
+
             $.ajax({
                 processData: false,
                 contentType: false,
@@ -243,7 +243,7 @@ var fields_PropSymbolChoro = {
             field1_selec.append("option").text(field).attr("value", field);
             field2_selec.append("option").text(field).attr("value", field);
         });
-    
+
     },
     unfill: function(){
         let field1_selec = document.getElementById("PropSymbolChoro_field_1"),
@@ -302,6 +302,8 @@ function fillMenu_PropSymbolChoro(layer){
                             } else { return; } });
                 });
 
+    var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
+                                .insert("input").attr({type: "checkbox", class: "params"});
 
     var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
                         .append('button')
@@ -324,15 +326,15 @@ function fillMenu_PropSymbolChoro(layer){
             rd_params.max_size = +max_size.node().value;
             rd_params.ref_size = +ref_size.node().value;
             rd_params.fill_color = rendering_params['colorsByFeature'];
-    
+
             let id_map = make_prop_symbols(rd_params);
-    
+
             let colors_breaks = [],
                 layer_to_add = rd_params.new_name;
-    
+
             for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
                 colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]]);
-    
+
             current_layers[layer_to_add] = {
                 renderer: "PropSymbolsChoro",
                 id_size_map: id_map,
@@ -492,7 +494,7 @@ function fillMenu_MTA(){
             object_to_send["table"] = table_to_send;
             object_to_send["var1_name"] = var1_name;
             object_to_send["var2_name"] = var2_name;
-        
+
         } else if (choosen_method == "local_dev"){
             let val = +val_param_global_dev.node().value,
                 param_name = param_global_dev.node().value == "dist" ? "dist" : "order",
@@ -537,7 +539,7 @@ function fillMenu_MTA(){
 
     var val_param_global_dev = a.insert('input').style("width", "85px").attr({type: "number", min: 0, max:1000000, step:1}).attr("disabled", true);
 
-    // Each MTA method (global/local/medium) is associated with some 
+    // Each MTA method (global/local/medium) is associated with some
     // specific arguments to enable/disabled accordingly
     method_selec.on("change", function(){
         if(this.value == "global_dev"){
@@ -652,8 +654,8 @@ function fillMenu_MTA(){
                     if(result_values_abs.values){
                         var field_name2 = [choosen_method, "AbsoluteDeviation", var1_name, var2_name].join('_');
                         for(let i=0; i<nb_features; ++i)
-                            user_data[layer][i][field_name2] = result_values_abs.values[i]; }
-
+                            user_data[layer][i][field_name2] = +result_values_abs.values[i];
+                    }
                     object_to_send["type_dev"] = "rel";
                     formToSend = new FormData();
                     formToSend.append("json", JSON.stringify(object_to_send));
@@ -664,17 +666,18 @@ function fillMenu_MTA(){
                         data: formToSend,
                         type: 'POST',
                         error: function(error) { console.log(error); },
-                        success: function(data){
-                            let result_values_rel = JSON.parse(data);
+                        success: function(data2){
+                            let result_values_rel = JSON.parse(data2);
                             if(result_values_rel.values){
                                 let field_name1 = [choosen_method, "RelativeDeviation", var1_name, var2_name].join('_'),
                                     new_lyr_name = ["MTA", var1_name, var2_name].join('_');
                                 for(let i=0; i<nb_features; ++i)
-                                    user_data[layer][i][field_name1] = result_values_rel.values[i];
+                                    user_data[layer][i][field_name1] = +result_values_rel.values[i];
                                 let disc_result = discretize_to_colors(result_values_rel.values, "Quantiles", opt_nb_class, "Reds");
+                                console.log(disc_result)
                                 let rendering_params = {
                                         new_name: new_lyr_name,
-                                        field: field_name1,
+                                        field: field_name2,
                                         nb_features: nb_features,
                                         ref_layer_name: layer,
                                         symbol: "circle",
@@ -758,7 +761,7 @@ function fillMenu_Stewart(){
                 "typefct": func_selec.node().value,
                 "resolution": resolution.node().value,
                 "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
-    
+
             $.ajax({
                 processData: false,
                 contentType: false,
@@ -826,15 +829,21 @@ function fillMenu_Anamorphose(){
 
     var make_opt_dorling = function(){
         option1_txt.html('Symbol type');
+        option2_txt.html("Symbol Max Size (px)");
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
-
+        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
+        let option2_txt2 = option2_txt.append("span").attr("id", "Anamorph_opt_max_symb").html("10 px");
         symbols.forEach(function(symb){
             option1_val.append("option").text(symb[0]).attr("value", symb[1]);
+        });
+        option2_val.on("change", function(){
+            option2_txt2.html(this.value + " px")
         });
     };
 
     var make_opt_iter = function(){
         option1_txt.html('N. iterations');
+        option2_txt.html(""),
         option1_val = option1_txt.insert('input')
                         .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
     };
@@ -843,8 +852,13 @@ function fillMenu_Anamorphose(){
         algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params'),
         field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Anamorph_field'}),
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html('Symbol type'),
-        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
-
+        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"}),
+        option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Symbol Max Size (px)"),
+        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
+    let option2_txt2 = option2_txt.append("span").attr("id", "Anamorph_opt_max_symb").html("10 px");
+    option2_val.on("change", function(){
+        option2_txt2.html(this.value + " px")
+    });
     var symbols = [["Circle", "circle"], ["Square", "rect"]];
 
     symbols.forEach(function(symb){
@@ -880,13 +894,13 @@ function fillMenu_Anamorphose(){
                     layer = Object.getOwnPropertyNames(user_data)[0],
                     var_to_send = new Object(),
                     nb_iter = option1_val.node().value;
-    
+
                 var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
                     "var_name": JSON.stringify(var_to_send),
                     "iterations": nb_iter }))
-        
+
                 $.ajax({
                     processData: false,
                     contentType: false,
@@ -944,7 +958,7 @@ function fillMenu_Anamorphose(){
 //                let class_name = "ui-state-default sortable_result " + new_layer_name,
 //                    layers_listed = layer_list.node(),
 //                    li = document.createElement("li");
-//    
+//
 //                li.setAttribute("class", class_name);
 //                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
 //                layers_listed.insertBefore(li, layers_listed.childNodes[0])
@@ -960,144 +974,17 @@ function fillMenu_Anamorphose(){
 //                makeButtonLegend(new_layer_name);
 
             } else if (algo === "dorling"){
-                let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
-                    d_values = new Array(nb_features),
-                    zs = zoom.scale(),
-                    max_size = 25,
+                let max_size = d3.select("#Anamorph_opt2").node().value,
                     ref_size = 0.1,
-                    shape_symbol = option1_val.node().value,
-                    symbol_layer = undefined,
-                    force = d3.layout.force().charge(0).gravity(0).size([w, h]);
+                    layer_to_add =  ["DorlingCarto", layer, field_name].join('_'),
+                    shape_symbol = option1_val.node().value;
 
-                for(let i = 0; i < nb_features; ++i){
-                    d_values[i] = +user_data[layer][i][field_name];
-                }
-                d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
-
-                let nodes = ref_layer_selection[0].map(function(d, i){
-                    let pt = path.centroid(d.__data__.geometry);
-                    return {x: pt[0], y: pt[1],
-                            x0: pt[0], y0: pt[1],
-                            r: +d_values[i],
-                            value: +d.__data__.properties[field_name]};
-                    });
-
-                let bg_color = Colors.random(),
-                    stroke_color = "black",
-                    layer_to_add =  ["DorlingCarto", layer, field_name].join('_');
-    
-                if(current_layers[layer_to_add]){
-                    remove_layer_cleanup(layer_to_add);
-                    d3.selectAll('#' + layer_to_add).remove();
-                }
-
-                force.nodes(nodes).on("tick", tick).start();
-
-                if(shape_symbol == "circle") {
-                    symbol_layer = map.append("g").attr("id", layer_to_add)
-                                      .attr("class", "result_layer layer")
-                                      .selectAll("circle")
-                                      .data(nodes).enter()
-                                      .append("circle")
-                                        .attr("r", function(d){ return d.r; })
-                                        .style("fill", function(){ return Colors.random();})
-                                        .style("stroke", "black");
-                } else {
-                    symbol_layer = map.append("g").attr("id", layer_to_add)
-                                      .attr("class", "result_layer layer")
-                                      .selectAll("rect")
-                                      .data(nodes).enter()
-                                      .append("rect")
-                                        .attr("height", function(d){ return d.r * 2; })
-                                        .attr("width", function(d){ return d.r * 2; })
-                                        .style("fill", function(){ return Colors.random();})
-                                        .style("stroke", "black");
-
-                }
-
-                function tick(e){
-                    if(shape_symbol == "circle"){
-                        symbol_layer.each(gravity(e.alpha * 0.1))
-                            .each(collide(.5))
-                            .attr("cx", function(d){ return d.x })
-                            .attr("cy", function(d){ return d.y })
-                    } else {
-                        symbol_layer.each(gravity(e.alpha * 0.1))
-                            .each(collide(.5))
-                            .attr("x", function(d){ return d.x - d.r})
-                            .attr("y", function(d){ return d.y - d.r})
-                    }
-                }
-
-                function gravity(k) {
-                    return function(d) {
-                        d.x += (d.x0 - d.x) * k;
-                        d.y += (d.y0 - d.y) * k;
-                    };
-                }
-
-                function collide(k) {
-                    var q = d3.geom.quadtree(nodes);
-                    if(shape_symbol == "circle"){
-                        return function(node) {
-                            let nr = node.r,
-                                nx1 = node.x - nr,
-                                nx2 = node.x + nr,
-                                ny1 = node.y - nr,
-                                ny2 = node.y + nr;
-                            q.visit(function(quad, x1, y1, x2, y2) {
-                                if (quad.point && (quad.point !== node)) {
-                                    let x = node.x - quad.point.x,
-                                        y = node.y - quad.point.y,
-                                        l = x * x + y * y,
-                                        r = nr + quad.point.r;
-                                    if (l < r * r) {
-                                        l = ((l = Math.sqrt(l)) - r) / l * k;
-                                        node.x -= x *= l;
-                                        node.y -= y *= l;
-                                        quad.point.x += x;
-                                        quad.point.y += y;
-                                    }
-                                }
-                                return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-                            });
-                        };
-                    } else {
-                        return function(node) {
-                            let nr = node.r,
-                                nx1 = node.x - nr,
-                                nx2 = node.x + nr,
-                                ny1 = node.y - nr,
-                                ny2 = node.y + nr;
-                            q.visit(function(quad, x1, y1, x2, y2) {
-                                if (quad.point && (quad.point !== node)) {
-                                    let x = node.x - quad.point.x,
-                                        y = node.y - quad.point.y,
-                                        lx = Math.abs(x),
-                                        ly = Math.abs(y),
-                                        r = nr + quad.point.r;
-                                    if (lx < r && ly < r) {
-                                        if(lx > ly){
-                                            lx = (lx - r) * (x < 0 ? -k : k);
-                                            node.x -= lx;
-                                            quad.point.x += lx;
-                                        } else {
-                                            ly = (ly - r) * (y < 0 ? -k : k);
-                                            node.y -= ly;
-                                            quad.point.y += ly;
-                                        }
-                                    }
-                                }
-                                return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-                            });
-                        };
-                    }
-                }
+                make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
 
                 let class_name = "ui-state-default sortable_result " + layer_to_add,
                     layers_listed = layer_list.node(),
                     li = document.createElement("li");
-    
+
                 li.setAttribute("class", class_name);
                 li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
@@ -1111,7 +998,7 @@ function fillMenu_Anamorphose(){
                     "is_result": true,
                     "ref_layer_name": layer
                     };
-    
+
                 binds_layers_buttons();
                 zoom_without_redraw();
                 makeButtonLegend(layer_to_add);
@@ -1119,6 +1006,141 @@ function fillMenu_Anamorphose(){
     });
     d3.selectAll(".params").attr("disabled", true);
 }
+
+
+function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
+    let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+        nb_features = current_layers[layer].n_features,
+        d_values = new Array(nb_features),
+        zs = zoom.scale(),
+        symbol_layer = undefined,
+        force = d3.layout.force().charge(0).gravity(0).size([w, h]);
+
+    for(let i = 0; i < nb_features; ++i){
+        d_values[i] = +user_data[layer][i][field_name];
+    }
+    d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
+
+    let nodes = ref_layer_selection[0].map(function(d, i){
+        let pt = path.centroid(d.__data__.geometry);
+        return {x: pt[0], y: pt[1],
+                x0: pt[0], y0: pt[1],
+                r: +d_values[i],
+                value: +d.__data__.properties[field_name]};
+        });
+
+    let bg_color = Colors.random(),
+        stroke_color = "black";
+
+    if(current_layers[layer_to_add]){
+        remove_layer_cleanup(layer_to_add);
+        d3.selectAll('#' + layer_to_add).remove();
+    }
+
+    force.nodes(nodes).on("tick", tick).start();
+
+    if(shape_symbol == "circle") {
+        symbol_layer = map.append("g").attr("id", layer_to_add)
+                          .attr("class", "result_layer layer")
+                          .selectAll("circle")
+                          .data(nodes).enter()
+                          .append("circle")
+                            .attr("r", function(d){ return d.r; })
+                            .style("fill", function(){ return Colors.random();})
+                            .style("stroke", "black");
+    } else {
+        symbol_layer = map.append("g").attr("id", layer_to_add)
+                          .attr("class", "result_layer layer")
+                          .selectAll("rect")
+                          .data(nodes).enter()
+                          .append("rect")
+                            .attr("height", function(d){ return d.r * 2; })
+                            .attr("width", function(d){ return d.r * 2; })
+                            .style("fill", function(){ return Colors.random();})
+                            .style("stroke", "black");
+
+    }
+
+    function tick(e){
+        if(shape_symbol == "circle"){
+            symbol_layer.each(gravity(e.alpha * 0.1))
+                .each(collide(.5))
+                .attr("cx", function(d){ return d.x })
+                .attr("cy", function(d){ return d.y })
+        } else {
+            symbol_layer.each(gravity(e.alpha * 0.1))
+                .each(collide(.5))
+                .attr("x", function(d){ return d.x - d.r})
+                .attr("y", function(d){ return d.y - d.r})
+        }
+    }
+
+    function gravity(k) {
+        return function(d) {
+            d.x += (d.x0 - d.x) * k;
+            d.y += (d.y0 - d.y) * k;
+        };
+    }
+
+    function collide(k) {
+        var q = d3.geom.quadtree(nodes);
+        if(shape_symbol == "circle"){
+            return function(node) {
+                let nr = node.r,
+                    nx1 = node.x - nr,
+                    nx2 = node.x + nr,
+                    ny1 = node.y - nr,
+                    ny2 = node.y + nr;
+                q.visit(function(quad, x1, y1, x2, y2) {
+                    if (quad.point && (quad.point !== node)) {
+                        let x = node.x - quad.point.x,
+                            y = node.y - quad.point.y,
+                            l = x * x + y * y,
+                            r = nr + quad.point.r;
+                        if (l < r * r) {
+                            l = ((l = Math.sqrt(l)) - r) / l * k;
+                            node.x -= x *= l;
+                            node.y -= y *= l;
+                            quad.point.x += x;
+                            quad.point.y += y;
+                        }
+                    }
+                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                });
+            };
+        } else {
+            return function(node) {
+                let nr = node.r,
+                    nx1 = node.x - nr,
+                    nx2 = node.x + nr,
+                    ny1 = node.y - nr,
+                    ny2 = node.y + nr;
+                q.visit(function(quad, x1, y1, x2, y2) {
+                    if (quad.point && (quad.point !== node)) {
+                        let x = node.x - quad.point.x,
+                            y = node.y - quad.point.y,
+                            lx = Math.abs(x),
+                            ly = Math.abs(y),
+                            r = nr + quad.point.r;
+                        if (lx < r && ly < r) {
+                            if(lx > ly){
+                                lx = (lx - r) * (x < 0 ? -k : k);
+                                node.x -= lx;
+                                quad.point.x += lx;
+                            } else {
+                                ly = (ly - r) * (y < 0 ? -k : k);
+                                node.y -= ly;
+                                quad.point.y += ly;
+                            }
+                        }
+                    }
+                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                });
+            };
+        }
+    }
+}
+
 
 function log_unused_ft(layer){
     if(current_layers[layer].filter_not_use instanceof Map)
@@ -1134,6 +1156,7 @@ function log_unused_ft(layer){
             filter_not_use.set(row._DT_RowIndex, true)
         else
             filter_not_use.delete(row._DT_RowIndex)
+        console.log(filter_not_use)
     });
 }
 
@@ -1178,6 +1201,8 @@ var boxExplore = {
 
         if(d3.select("#switch_button").node())
             d3.select("#switch_button").node().innerHTML = message;
+        document.querySelector("body").style.cursor = "default";
+
     },
 
     create: function(){
@@ -1206,7 +1231,36 @@ var boxExplore = {
                  .attr({id: "unsel_features", class: "button_st3"})
                  .html("Remove features...")
                  .on('click', function(){
-                    console.log(the_name);
+                    let layer = the_name,
+                        top_tmp_buttons = d3.select("#table_intro");
+                    top_tmp_buttons.append("button")
+                            .attr({id: "remove_valid", class: "button_st4"})
+                            .style("float", "left")
+                            .html("Valid")
+                            .on("click", function(){
+                                let filter_not_use = current_layers[layer].filter_not_use;
+                                if(current_layers[layer].is_result || current_layers[layer].renderer){
+                                    d3.select("#" + layer).selectAll("path").style("fill", function(d,i){
+                                      if(filter_not_use.get(i)){
+                                        return "grey";
+                                      } else
+                                        return this.style.fill;
+                                    })
+                                } else {
+                                    null;
+                                }
+                                document.getElementById("remove_valid").remove();
+                                document.getElementById("cancel_valid").remove();
+                            });
+                     top_tmp_buttons.append("button")
+                            .attr({id: "cancel_valid", class: "button_st4"})
+                            .style("float", "left")
+                            .html("Cancel")
+                            .on("click", function(){
+                                filter_not_use = new Map();
+                                document.getElementById("remove_valid").remove();
+                                document.getElementById("cancel_valid").remove();
+                            });
                     log_unused_ft(the_name);
                   });
 
@@ -1221,9 +1275,9 @@ var boxExplore = {
                         self.current_table = type;
                         self.display_table({"type": type});
                     });
-       
+
         this.display_table({"type": this.current_table});
-    
+
         var deferred = Q.defer();
         $("#browse_data_box").dialog({
             modal:true,
@@ -1258,7 +1312,7 @@ var fields_PropSymbol = {
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field);
         });
-    
+
     },
 
     unfill: function(){
@@ -1289,7 +1343,10 @@ function fillMenu_PropSymbol(layer){
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
     var fill_color = dialog_content.append('p').html('Symbol color<br>')
-              .insert('input').attr('type', 'color').attr("value", Colors.random());
+              .insert('input').attr('type', 'color').attr({class: "params", "value": Colors.random()});
+
+    var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
+                                .insert("input").attr({type: "checkbox", class: "params"});
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append('button')
@@ -1311,6 +1368,7 @@ function fillMenu_PropSymbol(layer){
             zoom_without_redraw();
             makeButtonLegend(layer + "_PropSymbols");
         });
+    d3.selectAll(".params").attr("disabled", true);
 }
 
 
@@ -1459,9 +1517,9 @@ function fillMenu_griddedMap(layer){
                     layer = Object.getOwnPropertyNames(user_data)[0],
                     formToSend = new FormData(),
                     var_to_send = new Object();
-        
+
                 var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
-        
+
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
                     "var_name": JSON.stringify(var_to_send),
@@ -1482,10 +1540,10 @@ function fillMenu_griddedMap(layer){
                                 raw_topojson = data_split[1];
                             add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                         }
-                        
+
                         let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(result_data[n_layer_name].length)),
                             d_values = result_data[n_layer_name].map(obj => +obj["densitykm"]);
-        
+
                         current_layers[n_layer_name].renderer = "Gridded";
                         makeButtonLegend(n_layer_name);
                         let disc_result = discretize_to_colors(d_values, "Quantiles", opt_nb_class, col_pal.node().value),
@@ -1499,14 +1557,14 @@ function fillMenu_griddedMap(layer){
                                     rendered_field: "densitykm"
                                         };
                         render_choro(n_layer_name, rendering_params);
-        
+
                     }
                 });
             });
     d3.selectAll(".params").attr("disabled", true);
 }
 
-// Function to render the `layer` according to the `rendering_params` 
+// Function to render the `layer` according to the `rendering_params`
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
@@ -1562,7 +1620,7 @@ let range = function(start = 0, stop, step = 1) {
     return res;
 }
 
-// Function trying to mimic the python 2 "xrange" / python 3 "range" function 
+// Function trying to mimic the python 2 "xrange" / python 3 "range" function
 // (ie. its a generator and returns values "on request")
 let xrange = function*(start = 0, stop, step = 1) {
     let cur = (stop === undefined) ? 0 : start;
@@ -1644,7 +1702,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         return result;
 }
 
-// Function to add a field to the targeted layer 
+// Function to add a field to the targeted layer
 // Args :
 // - layer : the layer name
 // - parent : (optional) the object createBoxExplore to be used as a callback to redisplay the table with the new field
@@ -1714,6 +1772,7 @@ function add_table_field(layer, parent){
     var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field", "addFieldBox", w - (w/4), h - (h/8))
                 .then(function(valid){
                     if(valid){
+                        document.querySelector("body").style.cursor = "wait";
                         console.log(chooses_handler)
                         let fi1 = chooses_handler.field1,
                             fi2 = chooses_handler.field2,
@@ -1737,19 +1796,25 @@ function add_table_field(layer, parent){
 
                             }
                         }
-                    if(parent) parent.display_table({"type": "layer"});
+                        if(parent){
+                            parent.display_table({"type": "layer"});
+                            fields_handler.unfill()
+                            fields_handler.fill(layer
+)
+                         }
                     }
             });
 
     var current_fields = Object.getOwnPropertyNames(user_data[layer]),
+        fields_type = type_col(layer),
         box_content = d3.select(".addFieldBox").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2"),
         new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keydown", check_name),
         type_content = div1.append("p").html("New field content :<br>")
-                            .insert("select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
+                            .insert("select").attr("id", "type_content_select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
-    
+
     [["Computation based on two existing numerical fields", "math_compute"],
      ["Modification on a character field", "string_field"]]
         .forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
@@ -1763,9 +1828,21 @@ function add_table_field(layer, parent){
                         .attr("disabled", true)
                         .on("change", function(){ chooses_handler.opt_val = this.value;});
 
-    var fields_type = type_col(layer),
-        math_operation = ["+", "-", "*", "/"],
+    var math_operation = ["+", "-", "*", "/"],
         string_operation = ["Concatenate", "Truncate"];
+
+    {
+        let a = type_content.node(),
+            b = false;
+        for(let fi in fields_type){
+            if(fields_type[fi] == "number"){
+                b = true;
+                break;
+            }
+        }
+        a.value = b ? "math_compute" : "string_field";
+        a.dispatchEvent(new Event('change'));
+    }
 
     return box;
 }

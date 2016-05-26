@@ -1,19 +1,70 @@
 "use strict";
 
 function handle_click_layer(layer_name){
-    var layer_name_split = layer_name.split(' - ');
-
-    if(layer_name_split.length == 2) layer_name = layer_name_split[1].trim();
-    else if(layer_name_split.length > 2) console.log('Oups..');
-
-    if(current_layers[layer_name].renderer && strContains(current_layers[layer_name].renderer, "PropSymbol"))
+    if(current_layers[layer_name].renderer
+        && (strContains(current_layers[layer_name].renderer, "PropSymbol") 
+            || strContains(current_layers[layer_name].renderer, "Dorling")))
         createStyleBox_ProbSymbol(layer_name);
     else
         createStyleBox(layer_name);
-
     return;
 };
 
+function make_single_color_menu(layer, fill_prev, symbol = "path"){
+    var fill_color_section = d3.select("#fill_color_section"),
+        g_lyr_name = "#" + layer;
+    fill_color_section.insert('p')
+          .html('Fill color<br>')
+          .insert('input').attr({type: 'color', "value": fill_prev})
+          .on('change', function(){
+                d3.select(g_lyr_name).selectAll(symbol).style("fill", this.value)
+          });
+}
+
+function make_random_color(layer, symbol = "path"){
+    d3.select("#" + layer)
+        .selectAll(symbol)
+        .style("fill", function(){ return Colors.names[Colors.random()]; });
+    d3.select("#fill_color_section")
+        .style("text-align", "center")
+        .html('<b><i>Click to toogle colors</b></i>')
+        .on("click", function(d,i){  make_random_color(layer, symbol);  });
+}
+
+function make_categorical_color_menu(fields, layer, symbol = "path", ref_layer){
+    var fill_color_section = d3.select("#fill_color_section");
+    var field_selec = fill_color_section.insert("p").html("Categorical field :")
+            .insert("select");
+    var data_layer = ref_layer ? user_data[ref_layer] : user_data[layer];
+    fields.forEach(function(field){
+        field_selec.append("option").text(field).attr("value", field)
+    });
+    field_selec.on("change", function(){
+        let field_name = this.value,
+            values = data_layer.map(i => i[field_name]),
+            cats = new Set(values),
+            txt = [cats.size, " cat."].join('');
+        console.log(values); console.log(cats)
+        d3.select("#nb_cat_txt").html(txt)
+        var color_cat_map = new Map();
+        for(let val of cats)
+            color_cat_map.set(val, Colors.names[Colors.random()])
+
+        current_layers[layer].fill_categorial = color_cat_map;
+        if(ref_layer)
+            d3.select("#"+layer)
+                .selectAll(symbol)
+                .style("fill", function(d, i){
+                    return color_cat_map.get(data_layer[i][field_name])
+                });
+        else
+            d3.select("#"+layer)
+                .selectAll(symbol)
+                .style("fill", d => color_cat_map.get(d.properties[field_name]));
+    });
+    fill_color_section.append("p").attr("id", "nb_cat_txt").html("")
+    fill_color_section.append("p").html("Color palette :")
+};
 
 function createStyleBox(layer_name){
     var type = current_layers[layer_name].type,
@@ -100,9 +151,29 @@ function createStyleBox(layer_name){
 
      if(type !== 'Line'){
         if(current_layers[layer_name].colors_breaks == undefined){
-             popup.append('p').html('Fill color<br>')
-                              .insert('input').attr('type', 'color').attr("value", fill_prev)
-                              .on('change', function(){d3.select(g_lyr_name).selectAll("path").style("fill", this.value)});
+            if(sample_no_values.get(layer_name)){
+                popup.append('div').attr({id: "fill_color_section"})
+                make_single_color_menu(layer_name, fill_prev);
+            } else {
+                let fields = type_col(layer_name, "string");
+                let fill_method = popup.append("p").html("Fill color").insert("select");
+                [["Single color", "single"],
+                 ["Color according to a categorical field", "categorical"],
+                 ["Random color on each feature", "random"]].forEach(function(d,i){
+                        fill_method.append("option").text(d[0]).attr("value", d[1])  });
+                popup.append('div').attr({id: "fill_color_section"})
+                make_single_color_menu(layer_name, fill_prev);
+                fill_method.on("change", function(){
+                    d3.select("#fill_color_section").html("").on("click", null);
+                    if (this.value == "single"){
+                        make_single_color_menu(layer_name, fill_prev);
+                    } else if (this.value == "categorical"){
+                        make_categorical_color_menu(fields, layer_name);
+                    } else if (this.value == "random"){
+                        make_random_color(layer_name);
+                    }
+                });
+            }
          } else {
             let field_to_discretize;
             if(renderer == "Gridded"){
@@ -184,9 +255,9 @@ function viewport(){
         ,body   = document.documentElement || document.body
         ,root   = innerw  ? window : body
         ,which  = innerw ? 'inner' : 'client';
-    return {  width : root[ which+'Width' ] 
+    return {  width : root[ which+'Width' ]
              ,height : root[ which+'Height' ]
-             ,scrollTop: body.scrollTop 
+             ,scrollTop: body.scrollTop
              ,scrollLeft: body.scrollLeft };
 }
 
@@ -221,7 +292,7 @@ function createStyleBox_ProbSymbol(layer_name){
         var fill_prev = selection.style("fill");
         if(fill_prev.startsWith("rgb")) fill_prev = rgb2hex(fill_prev)
     }
-     
+
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
@@ -285,8 +356,28 @@ function createStyleBox_ProbSymbol(layer_name){
              }
             }); });
     } else {
+        /*
         popup.insert('input').attr('type', 'color').attr("value", fill_prev)
              .on('change', function(){selection.style("fill", this.value)});
+        */
+        let fields = type_col(ref_layer_name, "string");
+        let fill_method = popup.append("p").html("Fill color").insert("select");
+        [["Single color", "single"],
+         ["Color according to a categorical field", "categorical"],
+         ["Random color on each feature", "random"]].forEach(function(d,i){
+                fill_method.append("option").text(d[0]).attr("value", d[1])  });
+        popup.append('div').attr({id: "fill_color_section"})
+        make_single_color_menu(layer_name, fill_prev);
+        fill_method.on("change", function(){
+            d3.select("#fill_color_section").html("").on("click", null);
+            if (this.value == "single"){
+                make_single_color_menu(layer_name, fill_prev, type_symbol);
+            } else if (this.value == "categorical"){
+                make_categorical_color_menu(fields, layer_name, type_symbol, ref_layer_name);
+            } else if (this.value == "random"){
+                make_random_color(layer_name, type_symbol);
+            }
+        });
     }
     popup.append('p').html('Fill opacity<br>')
                       .insert('input').attr('type', 'range')
@@ -308,22 +399,26 @@ function createStyleBox_ProbSymbol(layer_name){
                       .on("change", function(){
                           let z_scale = zoom.scale(),
                               prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
-
-                          if(type_symbol === "circle") {
-                              for(let i=0, len = prop_values.length; i < len; i++){
-                                  selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
+                          if(type_method.indexOf("Dorling") > -1){
+                            d3.select(g_lyr_name).sele
+                            make_dorling_demers(ref_layer_name, current_layers[layer_name].rendered_field, this.value, current_layers[layer_name].size[0], layer_name)
+                          } else {
+                              if(type_symbol === "circle") {
+                                  for(let i=0, len = prop_values.length; i < len; i++){
+                                      selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
+                                  }
+                              } else if(type_symbol === "rect") {
+                                  for(let i=0, len = prop_values.length; i < len; i++){
+                                      let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
+                                          old_size = +selection[0][i].getAttribute('height'),
+                                          centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
+                                                   +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
+                                      selection[0][i].setAttribute('x', centr[0]);
+                                      selection[0][i].setAttribute('y', centr[1]);
+                                      selection[0][i].setAttribute('height', sz);
+                                      selection[0][i].setAttribute('width', sz);
+                                  }
                               }
-                          } else if(type_symbol === "rect") {
-                              for(let i=0, len = prop_values.length; i < len; i++){
-                                  let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
-                                      old_size = +selection[0][i].getAttribute('height'),
-                                      centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
-                                               +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
-                                  selection[0][i].setAttribute('x', centr[0]);
-                                  selection[0][i].setAttribute('y', centr[1]);
-                                  selection[0][i].setAttribute('height', sz);
-                                  selection[0][i].setAttribute('width', sz);
-                              }
-                          }
+                            }
                       });
 }

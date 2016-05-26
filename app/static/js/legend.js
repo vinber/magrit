@@ -99,10 +99,10 @@ function createLegend_symbol(layer, field, title, subtitle){
     }
 
     var legend_elems = legend_root.selectAll('.legend')
-                                      .append("g")
-                                      .data(ref_symbols_params)
-                                      .enter().insert('g')
-                                      .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
+                                  .append("g")
+                                  .data(ref_symbols_params)
+                                  .enter().insert('g')
+                                  .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
     let max_size = ref_symbols_params[0].size,
         last_size = 0,
         last_pos = y_pos2;
@@ -110,30 +110,16 @@ function createLegend_symbol(layer, field, title, subtitle){
     if(symbol_type === "circle"){
         legend_elems
               .append("circle")
-                  .attr("cx", xpos + space_elem + boxgap + max_size / 2)
-                  .attr("cy", function(d, i){
-                        last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos;
-                        })
-                  .attr('r', function(d, i){return d.size;})
-                  .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
-    } else if(symbol_type === "rect"){
-        legend_elems
-              .append("rect")
-              .attr("x", xpos + space_elem + boxgap + max_size / 2)
-              .attr("y", function(d, i){
-                        last_pos = (i * boxgap) + (d.size * 2) + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos;
-                        })
-              .attr('width', function(d, i){return d.size;})
-              .attr('height', function(d, i){return d.size;})
-              .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7})
-    }
-
-    last_pos = y_pos2; last_size = 0;
-    legend_elems.append("text")
+              .attr("cx", xpos + space_elem + boxgap + max_size / 2)
+              .attr("cy", function(d, i){
+                    last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                    last_size = d.size;
+                    return last_pos;
+                    })
+              .attr('r', function(d, i){return d.size;})
+              .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
+        last_pos = y_pos2; last_size = 0;
+        legend_elems.append("text")
             .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
             .attr("y", function(d, i){
                         last_pos = (i * boxgap) + d.size + last_pos + last_size;
@@ -142,6 +128,32 @@ function createLegend_symbol(layer, field, title, subtitle){
                         })
             .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
             .text(function(d, i){return d.value;});
+
+    } else if(symbol_type === "rect"){
+        legend_elems
+              .append("rect")
+              .attr("x", function(d, i){ return xpos + space_elem + boxgap + max_size / 2 - d.size / 2;})
+              .attr("y", function(d, i){
+                        last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+                        last_size = d.size;
+                        return last_pos;
+                        })
+              .attr('width', function(d, i){  return d.size;  })
+              .attr('height', function(d, i){  return d.size;  })
+              .style({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7})
+        last_pos = y_pos2; last_size = 0;
+        let x_text_pos = xpos + space_elem + boxgap + max_size * 1.5 + 5;
+        legend_elems.append("text")
+            .attr("x", x_text_pos)
+            .attr("y", function(d, i){
+                        last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+                        last_size = d.size;
+                        return last_pos + (d.size * 2 / 3);
+                        })
+            .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+            .text(function(d, i){return d.value;});
+
+    }
 
     var drag_lgd = d3.behavior.drag()
                 .on("dragstart", function(){

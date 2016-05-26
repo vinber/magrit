@@ -128,6 +128,9 @@ mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, ty
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
   spdf@data[,var1] <- as.numeric(spdf@data[,var1])
   spdf@data[,var2] <- as.numeric(spdf@data[,var2])
+  print(order)
+  print(dist)
+  print(str(spdf@data))
   res <- MTA::localDev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
                        var1 = var1, var2 = var2,
                        order = order, dist = dist, type = type_dev)

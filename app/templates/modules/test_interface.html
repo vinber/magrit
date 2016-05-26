@@ -72,7 +72,12 @@ var path = d3.geo.path().projection(proj).pointRadius(2),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",
-    zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw);
+    zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw),
+    sample_no_values = new Map();
+
+sample_no_values.set("Sphere", true);
+sample_no_values.set("Graticule", true);
+sample_no_values.set("Simplified_land_polygons", true)
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -338,7 +343,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .attr("title", "Export your composition")
                   .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
                   .style("margin-top", "none")
-                  .on("click", export_compo);
+                  .on("click", export_compo_svg);
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export / Load your map preferences")
@@ -399,8 +404,6 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
             .classed("active", false)
             .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>')
             .on("click", function(){brush_rect()});
-
-
 }
 
 // Already append the div for displaying information on features,
@@ -1174,7 +1177,33 @@ function canvas_mod_size(param){
     }
 }
 
-function export_compo(){
+function export_compo_svg(){
+    let targetSvg = document.getElementById("svg_map"),
+        serializer = new XMLSerializer(),
+        source = serializer.serializeToString(targetSvg);
+    
+    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+    
+    source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
+    
+    let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source),
+        dl_link = document.createElement("a");
+
+    dl_link.download = "export.svg";
+    dl_link.href = url;
+    dl_link.dataset.downloadurl = ["image/svg", dl_link.download, dl_link.href].join(':');
+    document.body.appendChild(dl_link);
+    dl_link.click();
+    dl_link.remove();
+
+}
+
+function export_compo_png(){
     // Todo : ask for output format (svg / png) before conversion / ! \
     var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
@@ -1227,7 +1256,6 @@ function apply_user_preferences(json_pref){
     }
     */
 }
-
 </script>
 </body>
 </html>
