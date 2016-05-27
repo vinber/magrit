@@ -14,7 +14,7 @@ function add_layer(d){
     target_layer_on_add = (this.id === "img_in_geom_big") ? true :
                           (this.id === "img_in_geom") ? true :
                           (this.id === "img_data_ext") ? true : false;
-    
+
     function prepareUpload(event){
         let files = event.target.files;
         for(let i=0; i < files.length; i++){
@@ -85,11 +85,11 @@ function prepare_drop_section(){
                         return;
                     }
                 }
-            
+
                 if(!(files.length == 1)){
                     var filenames = Array.prototype.map.call(files, f => f.name),
                         result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-            
+
                     if(result.length == 4){
                         elem.style.border = '';
                         handle_shapefile(files);
@@ -105,11 +105,11 @@ function prepare_drop_section(){
                        // Most direct way to add a layer :
                        else handle_TopoJSON_files(files);
                }
-               else if(strContains(files[0].name.toLowerCase(), 'geojson') || 
+               else if(strContains(files[0].name.toLowerCase(), 'geojson') ||
                     strContains(files[0].type.toLowerCase(), 'application/zip') ||
                     strContains(files[0].name.toLowerCase(), 'kml')){
                        elem.style.border = '';
-            
+
                        if(target_layer_on_add && targeted_layer_added)
                            alert("Only one layer can be added by this functionnality");
                        // Send the file to the server for conversion :
@@ -214,7 +214,7 @@ function handle_dataset(f){
             d3.select(".s1").html("").on("click", null)
             d3.select("#sample_link").html("").on("click", null);
             d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
-        } else { 
+        } else {
             document.getElementById("join_button").disabled = true;
             d3.select("#section1").style("height", "165px");
         }
@@ -266,7 +266,7 @@ function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
         result_layer_on_add = options ? options.result_layer_on_add : false;
 
-    
+
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
         return;
@@ -278,7 +278,7 @@ function add_layer_topojson(text, options){
     layers_names.forEach(function(l_name, j){
         if(!parsedJSON.objects[l_name].geometries[0].id){
             for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
-                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){ 
+                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){
                 tgt[i].id = i;
                 }
         }
@@ -289,8 +289,8 @@ function add_layer_topojson(text, options){
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
-    for(var i=0; i < layers_names.length; i++){
-        var random_color1 = Colors.random(),
+    for(let i=0; i < layers_names.length; i++){
+        var random_color1 = Colors.names[Colors.random()],
             lyr_name = layers_names[i],
             field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
@@ -301,8 +301,10 @@ function add_layer_topojson(text, options){
 //        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
         current_layers[lyr_name] = {"type": type,
                                     "n_features": parsedJSON.objects[lyr_name].geometries.length,
-                                    "stroke-width-const": "0.4px"};
-    
+                                    "stroke-width-const": "0.4px",
+                                    "fill_color":  {"single": random_color1},
+                                    };
+
         if(target_layer_on_add){
             current_layers[lyr_name].targeted = true;
             user_data[lyr_name] = [];
@@ -344,13 +346,11 @@ function add_layer_topojson(text, options){
               .attr("height", "100%")
               .attr("width", "100%");
 
-        let class_name = ["ui-state-default"];
-        if(target_layer_on_add)
-            class_name.push("sortable_target");
-        else if (result_layer_on_add)
-            class_name.push("sortable_result");
-        class_name.push(lyr_name);
-        class_name = class_name.join(' ');
+        let class_name = [
+            "ui-state-default ",
+            target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
+            lyr_name
+            ].join('');
 
         let layers_listed = layer_list.node(),
             li = document.createElement("li"),
@@ -358,6 +358,7 @@ function add_layer_topojson(text, options){
         li.setAttribute("class", class_name);
         li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
         if(target_layer_on_add){
+            current_layers[lyr_name].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name][0]));
             if(browse_table.node().disabled === true)
                 browse_table.node().disabled = false;
 
@@ -383,7 +384,7 @@ function add_layer_topojson(text, options){
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
-    
+
     if(target_layer_on_add) {
         scale_to_lyr(lyr_name);
         center_map(lyr_name);
@@ -571,7 +572,6 @@ function add_sample_layer(){
                     d3.text(url, function(txt_layer){
                         target_layer_on_add = true;
                         add_layer_topojson(txt_layer);
-                        target_layer_on_add = false;
                     });
                 }
                 if(selec.dataset){

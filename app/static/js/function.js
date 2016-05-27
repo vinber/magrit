@@ -119,8 +119,8 @@ function fillMenu_FlowMap(){
 
     let ok_button = dv2.append('button')
                         .attr('id', 'yes')
-                        .attr('class', 'params')
-                        .attr('class', 'button_st2')
+                        .attr('class', 'params button_st2')
+                        .style({"text-align": "right", margin: "auto"})
                         .text('Compute and render');
 
     d3.selectAll(".params").attr("disabled", true);
@@ -219,9 +219,6 @@ function fillMenu_Test(){
                 success: function(data){
                     add_layer_topojson(data, {result_layer_on_add: true});
                     let n_layer_name = ["Nope", field_name].join('_');
-                    current_layers[n_layer_name] = new Object();
-                    current_layers[n_layer_name].colors = [];
-                    current_layers[n_layer_name]['stroke-width-const'] = "0.4px"
                     current_layers[n_layer_name].renderer = "None";
                     current_layers[n_layer_name].rendered_field = field_name;
                     makeButtonLegend(n_layer_name);
@@ -262,8 +259,8 @@ function fillMenu_PropSymbolChoro(layer){
     var rendering_params = new Object(),
         dv2 = section2.append("p").attr("class", "form-rendering");
 
-    var field1_selec = dv2.append('p').html('First field (symbol size):').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_1');
-    var max_size = dv2.append('p').style("display", "inline").html('Max. size (px)')
+    var field1_selec = dv2.append('p').html('Field 1 (symbol size) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_1');
+    var max_size = dv2.append('p').style("display", "inline").html('Max. size (px) ')
                                  .insert('input')
                                  .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_max_size'})
                                  .attr({min: 0.2, max: 66.0, value: 10.0, step: 0.1})
@@ -272,34 +269,38 @@ function fillMenu_PropSymbolChoro(layer){
 
     var max_size_txt = dv2.append('label-item').attr("id", "max_size_txt").html('0 px');
 
-    var ref_size = dv2.append('p').html('Reference (fixed) size (px) :')
-                                 .insert('input').attr('type', 'number')
-                                 .attr('class', 'params').attr('id', 'PropSymbolChoro_ref_size')
+    var ref_size = dv2.append('p').html('Reference min. size ')
+                                 .insert('input')
+                                 .style('width', '60px')
+                                 .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
                                  .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
 
     // Other symbols could probably easily be proposed :
-    var symb_selec = dv2.append('p').html('Symbol type :').insert('select').attr('class', 'params');
+    var symb_selec = dv2.append('p').html('Symbol type ').insert('select').attr('class', 'params');
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
-    var field2_selec = dv2.append('p').html('Second field (symbol color):').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
+    var field2_selec = dv2.append('p').html('Field 2 (symbol color) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
 
     dv2.insert('p').style("margin", "auto").html("")
-                .append("button").attr('class', 'params')
+                .append("button").attr('class', 'params button_disc')
+                .style({"font-size": "0.8em", "text-align": "center"})
                 .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
                         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length))
 
                     display_discretization(layer, field2_selec.node().value, opt_nb_class, "Quantiles")
-                        .then(function(confirmed){ if(confirmed){
-                            dv2.select('#yes').attr("disabled", null);
-                            rendering_params = {
-                                nb_class: confirmed[0], type: confirmed[1],
-                                breaks: confirmed[2], colors: confirmed[3],
-                                colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
-                                }
-                            console.log(rendering_params)
-                            } else { return; } });
+                        .then(function(confirmed){
+                            if(confirmed){
+                                dv2.select('#yes').attr("disabled", null);
+                                rendering_params = {
+                                    nb_class: confirmed[0], type: confirmed[1],
+                                    breaks: confirmed[2], colors: confirmed[3],
+                                    colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
+                                    }
+                            } else
+                                return;
+                        });
                 });
 
     var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
@@ -337,14 +338,14 @@ function fillMenu_PropSymbolChoro(layer){
 
             current_layers[layer_to_add] = {
                 renderer: "PropSymbolsChoro",
-                id_size_map: id_map,
+                features_order: id_map,
                 symbol: rd_params.symbol,
                 ref_layer_name: layer,
                 rendered_field: field1_selec.node().value,
                 rendered_field2: field2_selec.node().value,
                 size: [ref_size.node().value, max_size.node().value],
                 "stroke-width-const": "1px",
-                colors: rendering_params['colorsByFeature'],
+                fill_color: { "class": rendering_params['colorsByFeature'] },
                 colors_breaks: colors_breaks,
                 is_result: true
             };
@@ -398,8 +399,8 @@ function fillMenu_Choropleth(){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attr("id", "choro_class")
-        .attr("disabled", true)
+        .attr({id: "choro_class", class: "button_disc params"})
+        .style({"font-size": "0.8em", "text-align": "center"})
         .html("Display and arrange class")
         .on("click", function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0],
@@ -500,8 +501,17 @@ function fillMenu_MTA(){
                 param_name = param_global_dev.node().value == "dist" ? "dist" : "order",
                 val1_to_send = new Object(),
                 val2_to_send = new Object();
-            val1_to_send[var1_name] = user_data[layer].map(i => +i[var1_name]);
-            val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
+
+            if(current_layers[layer].original_fields.has(var1_name))
+                val1_to_send[var1_name] = [];
+            else
+                val1_to_send[var1_name] = user_data[layer].map(i => +i[var1_name]);
+
+            if(current_layers[layer].original_fields.has(var2_name))
+                val2_to_send[var2_name] = [];
+            else
+                val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
+
             object_to_send["topojson"] = layer;
             object_to_send["var1"] = JSON.stringify(val1_to_send);
             object_to_send["var2"] = JSON.stringify(val2_to_send);
@@ -628,9 +638,10 @@ function fillMenu_MTA(){
                                     symbol: "circle",
                                     max_size: 22,
                                     ref_size: 0.1,
-                                    fill_color: Colors.random()
+                                    fill_color: Colors.random(),
+                                    values_to_use: result_values.values
                                     };
-                            let ret_val = make_prop_symbols(rendering_params);
+                            make_prop_symbols(rendering_params);
                             current_layers[new_lyr_name].renderer = "PropSymbols_MTA";
                             binds_layers_buttons();
                             makeButtonLegend(new_lyr_name);
@@ -667,13 +678,24 @@ function fillMenu_MTA(){
                         type: 'POST',
                         error: function(error) { console.log(error); },
                         success: function(data2){
-                            let result_values_rel = JSON.parse(data2);
+                            let result_values_rel = JSON.parse(data2),
+                                disc_result;
                             if(result_values_rel.values){
                                 let field_name1 = [choosen_method, "RelativeDeviation", var1_name, var2_name].join('_'),
                                     new_lyr_name = ["MTA", var1_name, var2_name].join('_');
                                 for(let i=0; i<nb_features; ++i)
                                     user_data[layer][i][field_name1] = +result_values_rel.values[i];
-                                let disc_result = discretize_to_colors(result_values_rel.values, "Quantiles", opt_nb_class, "Reds");
+                                while(true){
+                                    let disc_meth = "Quantiles";
+                                    disc_result = discretize_to_colors(result_values_rel.values, disc_meth, opt_nb_class + 1, "Reds");
+                                    if(disc_result) break;
+                                    else {
+                                        disc_meth = "Jenks";
+                                        disc_result = discretize_to_colors(result_values_rel.values, disc_meth, opt_nb_class + 1, "Reds");
+                                    }
+                                    if(disc_result) break;
+                                    opt_nb_class = opt_nb_class - 1;
+                                }
                                 console.log(disc_result)
                                 let rendering_params = {
                                         new_name: new_lyr_name,
@@ -683,9 +705,10 @@ function fillMenu_MTA(){
                                         symbol: "circle",
                                         max_size: 22,
                                         ref_size: 0.1,
-                                        fill_color: disc_result[4]
+                                        fill_color: disc_result[4],
+                                        values_to_use: result_values_abs.values.concat([])
                                         };
-                                let ret_val = make_prop_symbols(rendering_params);
+                                make_prop_symbols(rendering_params);
                                 current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
                                 current_layers[new_lyr_name].colors_breaks = disc_result[2];
                                 binds_layers_buttons();
@@ -706,7 +729,7 @@ var fields_Stewart = {
         let other_layers = get_other_layer_names(),
             mask_selec = d3.select("#stewart_mask");
 
-        unfillSelectInput(mask_selec);
+        unfillSelectInput(mask_selec.node());
         mask_selec.append("option").text("None").attr("value", "None");
         for(let lyr_name of other_layers)
             if(current_layers[lyr_name].type === "Polygon")
@@ -722,19 +745,19 @@ var fields_Stewart = {
 
     unfill: function(){
         let field_selec = document.getElementById("stewart_field");
-        unfillSelectInput(mask_selec);
+        unfillSelectInput(mask_selec.node());
         d3.selectAll(".params").attr("disabled", true);
     }
 };
 
 function fillMenu_Stewart(){
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').style("margin", "auto").html('Field :').insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field"),
-        span = dialog_content.append('p').html('Span :').insert('input').attr({type: 'number', class: 'params', id: "stewart_span", value: 0, min: 0, max: 100000, step: 0.1}),
-        beta = dialog_content.append('p').html('Beta :').insert('input').attr({type: 'number', class: 'params', id: "stewart_beta", value: 0, min: 0, max: 11, step: 0.1}),
-        resolution = dialog_content.append('p').html('Resolution :').insert('input').attr({type: 'number', class: 'params', id: "stewart_resolution", value: 0, min: 0, max: 1000000, step: 0.1}),
-        func_selec = dialog_content.append('p').html('Function type :').insert('select').attr({class: 'params', id: "stewart_func"}),
-        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) :').insert('select').attr({class: 'params', id: "stewart_mask"});
+        field_selec = dialog_content.append('p').style("margin", "auto").html('Field ').insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field"),
+        span = dialog_content.append('p').html('Span ').insert('input').attr({type: 'number', class: 'params', id: "stewart_span", value: 0, min: 0, max: 100000, step: 0.1}),
+        beta = dialog_content.append('p').html('Beta ').insert('input').attr({type: 'number', class: 'params', id: "stewart_beta", value: 0, min: 0, max: 11, step: 0.1}),
+        resolution = dialog_content.append('p').html('Resolution ').insert('input').attr({type: 'number', class: 'params', id: "stewart_resolution", value: 0, min: 0, max: 1000000, step: 0.1}),
+        func_selec = dialog_content.append('p').html('Function type ').insert('select').attr({class: 'params', id: "stewart_func"}),
+        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attr({class: 'params', id: "stewart_mask"});
 
     ['Exponential', 'Pareto'].forEach(function(fun_name){
         func_selec.append("option").text(fun_name).attr("value", fun_name);
@@ -752,7 +775,11 @@ function fillMenu_Stewart(){
                 var_to_send = new Object,
                 layer = Object.getOwnPropertyNames(user_data)[0];
 
-            var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+            if(current_layers[layer].original_fields.has(field_n))
+                var_to_send[field_n] = [];
+            else
+                var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+
             formToSend.append("json", JSON.stringify({
                 "topojson": layer,
                 "var_name": JSON.stringify(var_to_send),
@@ -786,8 +813,7 @@ function fillMenu_Stewart(){
                         col_map.set(k, col_pal[i]);
                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]])
                     }
-                    console.log(col_map)
-                    current_layers[n_layer_name].colors = [];
+                    current_layers[n_layer_name].fill_color = {"class": []};
                     current_layers[n_layer_name].renderer = "Stewart";
                     current_layers[n_layer_name].colors_breaks = colors_breaks;
                     current_layers[n_layer_name].rendered_field = field_selec.node().value;
@@ -796,7 +822,7 @@ function fillMenu_Stewart(){
                             .style("fill", function(d, i){
                                     let k = Math.round(d.properties.min * 100) / 100,
                                         col = col_map.get(k);
-                                    current_layers[n_layer_name].colors[i] = col;
+                                    current_layers[n_layer_name].fill_color.class[i] = col;
                                     return col;
                             });
                     makeButtonLegend(n_layer_name);
@@ -895,7 +921,11 @@ function fillMenu_Anamorphose(){
                     var_to_send = new Object(),
                     nb_iter = option1_val.node().value;
 
-                var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
+                if(current_layers[layer].original_fields.has(field_name))
+                    var_to_send[field_name] = [];
+                else
+                    var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
+
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
                     "var_name": JSON.stringify(var_to_send),
@@ -913,7 +943,7 @@ function fillMenu_Anamorphose(){
                         add_layer_topojson(data, {result_layer_on_add: true});
                         let n_layer_name = ["Carto_doug", nb_iter, field_name].join('_');
                         current_layers[n_layer_name] = new Object();
-                        current_layers[n_layer_name].colors = [];
+                        current_layers[n_layer_name].fill_color = { "random": true };
                         current_layers[n_layer_name].type = "Polygon";
                         current_layers[n_layer_name].is_result = true;
                         current_layers[n_layer_name]['stroke-width-const'] = "0.8px"
@@ -986,6 +1016,7 @@ function fillMenu_Anamorphose(){
                     li = document.createElement("li");
 
                 li.setAttribute("class", class_name);
+                li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", current_layers[layer].n_features, " features"].join(''))
                 li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[layer_to_add] = {
@@ -996,9 +1027,9 @@ function fillMenu_Anamorphose(){
                     "size": [ref_size, max_size],
                     "stroke-width-const": "1px",
                     "is_result": true,
-                    "ref_layer_name": layer
+                    "ref_layer_name": layer,
+                    "fill_color": { "random": true }
                     };
-
                 binds_layers_buttons();
                 zoom_without_redraw();
                 makeButtonLegend(layer_to_add);
@@ -1324,9 +1355,9 @@ var fields_PropSymbol = {
 
 function fillMenu_PropSymbol(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
+        field_selec = dialog_content.append('p').html('Field ').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
         max_allowed_size = Math.round(h/2 - h/20),
-        max_size = dialog_content.append('p').style("display", "inline").html('Max. size (px)')
+        max_size = dialog_content.append('p').style("display", "inline").html('Max. size ')
                          .insert('input')
                          .attr({type: 'range', class: 'params'})
                          .attr({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
@@ -1334,15 +1365,16 @@ function fillMenu_PropSymbol(layer){
                          .on("change", function(){ d3.select("#max_size_txt").html([this.value, " px"].join('')) });
 
     var max_size_txt = dialog_content.append('label-item').attr("id", "max_size_txt").html([max_size.node().value, " px"].join('')),
-        ref_size = dialog_content.append('p').html('Reference minimum size (fixed size in px) :')
-                                 .insert('input').attr('type', 'number')
-                                 .attr('class', 'params')
-                                 .attr({min: 0.1, max: max_allowed_size - 0.5, value: 0.3, step: 0.1});
-
-    var symb_selec = dialog_content.append('p').html('Symbol type :').insert('select').attr('class', 'params');
+        ref_size = dialog_content.append('p').attr("id", "ref_min_p")
+                                 .html('Reference min. size ')
+                                 .insert('input')
+                                 .style('width', '60px')
+                                 .attr({type: 'number', class: "params", min: 0.1, max: max_allowed_size - 0.5, value: 0.3, step: 0.1});
+    d3.select("#ref_min_p").insert('span').html(" px");
+    var symb_selec = dialog_content.append('p').html('Symbol type ').insert('select').attr('class', 'params');
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
-    var fill_color = dialog_content.append('p').html('Symbol color<br>')
+    var fill_color = dialog_content.append('p').html('Symbol color ')
               .insert('input').attr('type', 'color').attr({class: "params", "value": Colors.random()});
 
     var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
@@ -1362,8 +1394,8 @@ function fillMenu_PropSymbol(layer){
                                      "symbol": symb_selec.node().value,
                                      "max_size": +max_size.node().value,
                                      "ref_size": +ref_size.node().value,
-                                     "fill_color": fill_color.node().value },
-                ret_val = make_prop_symbols(rendering_params);
+                                     "fill_color": fill_color.node().value };
+            make_prop_symbols(rendering_params);
             binds_layers_buttons();
             zoom_without_redraw();
             makeButtonLegend(layer + "_PropSymbols");
@@ -1373,10 +1405,10 @@ function fillMenu_PropSymbol(layer){
 
 
 function make_prop_symbols(rendering_params){
-        console.log(rendering_params);
         let layer = rendering_params.ref_layer_name,
             field = rendering_params.field,
             nb_features = rendering_params.nb_features,
+            values_to_use = rendering_params.values_to_use,
             d_values = new Array(nb_features),
             comp = function(a, b){ return b[1]-a[1]; },
             ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
@@ -1384,13 +1416,20 @@ function make_prop_symbols(rendering_params){
             max_size = rendering_params.max_size,
             zs = zoom.scale();
 
-        for(let i = 0; i < nb_features; ++i){
-            let centr = path.centroid(ref_layer_selection[0][i].__data__);
-            d_values[i] = [i, +user_data[layer][i][field], centr];
-        }
+        if(values_to_use)
+            for(let i = 0; i < nb_features; ++i){
+                let centr = path.centroid(ref_layer_selection[0][i].__data__);
+                d_values[i] = [i, +values_to_use[i], centr];
+            }
+        else
+            for(let i = 0; i < nb_features; ++i){
+                let centr = path.centroid(ref_layer_selection[0][i].__data__);
+                d_values[i] = [i, +user_data[layer][i][field], centr];
+            }
 
         d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
         d_values.sort(comp);
+
         /*
             Values have been sorted (descendant order) to have larger symbols
             displayed under the smaller, so now d_values is an array like :
@@ -1402,9 +1441,7 @@ function make_prop_symbols(rendering_params){
             ]
         */
 
-        let bg_color = Colors.random(),
-            stroke_color = Colors.random(),
-            layer_to_add = rendering_params.new_name || (layer + "_PropSymbols"),
+        let layer_to_add = rendering_params.new_name || (layer + "_PropSymbols"),
             symbol_type = rendering_params.symbol;
 
         if(!(rendering_params.fill_color instanceof Array)){
@@ -1425,12 +1462,9 @@ function make_prop_symbols(rendering_params){
         var symbol_layer = map.append("g").attr("id", layer_to_add)
                               .attr("class", "result_layer layer");
 
-        console.log(d_values)
-
         if(symbol_type === "circle"){
             for(let i = 0; i < d_values.length; i++){
                 let params = d_values[i];
-                console.log(params[2])
                 symbol_layer.append('circle')
                     .attr('cx', params[2][0])
                     .attr("cy", params[2][1])
@@ -1462,21 +1496,25 @@ function make_prop_symbols(rendering_params){
             li = document.createElement("li");
 
         li.setAttribute("class", class_name);
+        li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", nb_features, " features"].join(''))
         li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
+        let ret_val = new Array(nb_features);
+        for(let i=0; i<nb_features;i++)
+            ret_val[i] = d_values[i][0]
+        let fill_color = rendering_params.fill_color instanceof Array ? {"class": rendering_params.fill_color} : {"single" : rendering_params.fill_color};
         current_layers[layer_to_add] = {
             "renderer": rendering_params.renderer || "PropSymbols",
             "symbol": symbol_type,
+            "fill_color" : fill_color,
             "rendered_field": field,
             "size": [ref_size, max_size],
             "stroke-width-const": "1px",
             "is_result": true,
-            "ref_layer_name": layer
+            "ref_layer_name": layer,
+            "features_order": ret_val
             };
-        let ret_val = new Array(nb_features);
-        for(let i=0; i<nb_features;i++)
-            ret_val[i] = d_values[i][0]
-        return ret_val
+        return ret_val;
 }
 
 var fields_griddedMap = {
@@ -1518,7 +1556,11 @@ function fillMenu_griddedMap(layer){
                     formToSend = new FormData(),
                     var_to_send = new Object();
 
-                var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
+                if(current_layers[layer].original_fields.has(field_n))
+                    var_to_send[field_n] = [];
+
+                else
+                    var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
 
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
@@ -1535,9 +1577,9 @@ function fillMenu_griddedMap(layer){
                     error: function(error) { console.log(error); },
                     success: function(data){
                         {
-                            let data_split = data.split('|||');
-                            var n_layer_name = data_split[0],
+                            let data_split = data.split('|||'),
                                 raw_topojson = data_split[1];
+                            var n_layer_name = data_split[0];
                             add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                         }
 
@@ -1577,7 +1619,7 @@ function render_choro(layer, rendering_params){
                    .style("stroke", "black");
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
-    current_layers[layer].colors = rendering_params['colorsByFeature'];
+    current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
     current_layers[layer]['stroke-width-const'] = "0.75px";
     current_layers[layer].is_result = true;
     let colors_breaks = [];
@@ -1799,8 +1841,7 @@ function add_table_field(layer, parent){
                         if(parent){
                             parent.display_table({"type": "layer"});
                             fields_handler.unfill()
-                            fields_handler.fill(layer
-)
+                            fields_handler.fill(layer)
                          }
                     }
             });

@@ -6,16 +6,15 @@
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> MAPOLOGIC - {{ func }}</title>
     <script  src="/static/js/lib/d3.js"></script>
-    <script  src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
-    <script topojson.version || document.write('<script src="/static/js/lib/topojson.v1.min.js">\x3C/script>')</script>
+    <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/d3.geo.projection.js"></script>
     <script  src="/static/js/lib/polyhedron.js"></script>
-    <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
-    <script window.jQuery || document.write('<script src="/static/js/lib/jquery-2.2.1.min.js">\x3C/script>')</script>
+    <script  src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
+    <script  src="/static/js/lib/chroma.js"></script>
     <script  src="/static/js/lib/cartogram.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
@@ -59,7 +58,7 @@ var menu_option = get_menu_option(func);
         h = Math.round((window.innerHeight / 1.34 ) / 10)*10;
 
     let _tmp = Math.min(+h, +w),
-        approx_scale = _tmp > 860 ? 600 : 
+        approx_scale = _tmp > 860 ? 600 :
                        _tmp > 540 ? 400 :
                        _tmp > 250 ? 200 : 100,
         trans_0 = +w / 2 - (approx_scale >= 400 ? 200 : approx_scale >= 200 ? _tmp : _tmp * 2),
@@ -80,12 +79,20 @@ sample_no_values.set("Graticule", true);
 sample_no_values.set("Simplified_land_polygons", true)
 
 /*
+//Seems to work with gecko & chromium :
+var sample_no_values = new Map([
+    ["Sphere", true],
+    ["Graticule", true],
+    ["Simplified_land_polygons", true] ]);
+*/
+
+/*
 A bunch of global variable, storing oftently reused informations :
     - user_date[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
             (+ the joined features if a join is done)
     - result_data[layer_name] : the same but for an eventual result layer (like Stewart, gridded, etc.)
     - joined_dataset : the joined dataset (read with d3.csv is pushed in the first slot of this array)
-    - field_join_map : an array containg mapping between index of geom layer and index of ext. dataset 
+    - field_join_map : an array containg mapping between index of geom layer and index of ext. dataset
     - current_layers : the main object describing **all** the layers on the map (incunding detailed, ie by features, styling properties if needed)
     - last_params : an object to fill with the last user selected paremeter after "valid" button of
             the targeted functionnality has been pushed
@@ -294,7 +301,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
               .style({"font-size": "14px", "margin-left":"5px", "color":"black"})
               .html("");
 
-// These variables (background, p, const_options, etc.) are not needed anymore 
+// These variables (background, p, const_options, etc.) are not needed anymore
 // after being used here so they are put into curly braces to ensure garbage collection (?):
 {
     /*
@@ -308,7 +315,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                    .attr("d", path);
     */
 
-    // Instead the path of the sphere should be efficient enough to spot 
+    // Instead the path of the sphere should be efficient enough to spot
     // .. the earth limits :
     map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
         .append("path")
@@ -328,14 +335,14 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .enter()
                   .append('path')
                   .style({stroke: "rgb(0,0,64)", fill: "lightgrey"});
-        map.selectAll("path").attr("d", path);  
+        map.selectAll("path").attr("d", path);
     });
 
     let p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", change_projection);
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             p.append("option").text(d.name).attr("value", d.projection);
-           });   
+           });
     });
 
     let const_options = d3.select("body").append("div").attr("id", "const_options")
@@ -343,7 +350,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .attr("title", "Export your composition")
                   .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
                   .style("margin-top", "none")
-                  .on("click", export_compo_svg);
+                  .on("click", handle_export);
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export / Load your map preferences")
@@ -432,7 +439,7 @@ prepare_drop_section();
 // Trigger the accordions, start with the first one (section 1) open :
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
- 
+
 $(function() {
   $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
@@ -444,7 +451,7 @@ $(function() {
       var desired_order = [],
           actual_order = [],
           layers = d3.selectAll("svg").node();
-    
+
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
           var n = (a.target.childNodes[i].innerHTML.split("></div> ")[1]).split(" - ");
           desired_order[i] = n[n.length - 1];
@@ -475,7 +482,7 @@ $(document).ajaxStart(function() {
         d3.selectAll(".overlay").remove();
 });
 
-// bind the mains tooltips 
+// bind the mains tooltips
 $("[data-tooltip!='']").qtip({
     content: { attr: "data-tooltip" },
     style: { classes: 'qtip-youtube' },
@@ -495,7 +502,6 @@ function binds_layers_buttons(){
     d3.selectAll(".active_button").on("change", handle_active_layer);
     d3.selectAll(".zoom_fit_button").on("click", function(){
         let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
-        if(layer_name.indexOf(' - ') > -1) layer_name = layer_name.split(' - ')[1];
         center_map(layer_name);
         zoom_without_redraw();
     });
@@ -592,7 +598,7 @@ function qs(str){
     return document.querySelector(str);
 };
 
-// Convenience function to make a confirm dialog returning a defered promise 
+// Convenience function to make a confirm dialog returning a defered promise
 // which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
 var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height, top){
     html_content = html_content || "";
@@ -606,7 +612,7 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
         .attr("title", title).html(html_content);
 
     $( "#dialog" ).dialog({
-        position: top ? { my: "center", at: "top" } : undefined, width: width, height: height, modal:true, 
+        position: top ? { my: "center", at: "top" } : undefined, width: width, height: height, modal:true,
         buttons:[
            {
             text: text_ok,
@@ -650,7 +656,7 @@ function remove_layer(){
     });
 }
 
-// Do some clean-up when a layer is removed 
+// Do some clean-up when a layer is removed
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
@@ -783,7 +789,7 @@ function handle_click_zoom_select(){
                       }, true);
                 d3.event.stopPropagation();
             });
-    
+
         }
     }
 }
@@ -857,11 +863,11 @@ function sendPreferences(){
     FormToSend.append("config", json_params)
     $.ajax({
        type: 'POST',
-       url: '/save_user_pref', 
+       url: '/save_user_pref',
        processData: false,
        contentType: false,
        data: FormToSend,
-       global: false, 
+       global: false,
        success: function(d) {console.log(d);}
     }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
 }
@@ -1028,7 +1034,7 @@ function change_projection() {
                 .attr("value", current_params[1]).attr("min", -180)
                 .attr("max", 180).attr("step", 0.5)
                 .on("input", function(){handle_proj_center_button([null, this.value, null])})
-                
+
         section5.append("div").attr("class", "options_ortho").html("Projection center (γ-axis rotation)")
                 .insert("input")
                 .attr("type", "range")
@@ -1043,7 +1049,7 @@ function change_projection() {
     d3.select("svg").on("mousedown", null)
                     .on("mousemove", function(){log_coordinates(this)})
                     .on("mouseup", null);
-}   
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Used for the sphere rotation when orthographic projection is enabled :
@@ -1064,7 +1070,7 @@ function handle_active_layer(){
     d3.selectAll("#"+name).style("opacity", fill_value);
 }
 
-// Function to handle the title add and changes 
+// Function to handle the title add and changes
 function handle_title(txt){
     var title = d3.select("#map_title");
     if(title.node()){
@@ -1181,16 +1187,16 @@ function export_compo_svg(){
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
-    
+
     if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
     }
     if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     }
-    
+
     source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
-    
+
     let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source),
         dl_link = document.createElement("a");
 
@@ -1217,7 +1223,7 @@ function export_compo_png(){
         ctx.drawImage(img, 0, 0);
         var imgUrl = targetCanvas.toDataURL(mime_type),
             dl_link = document.createElement("a");
-    
+
         dl_link.download = "export.png";
         dl_link.href = imgUrl;
         dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
@@ -1256,6 +1262,47 @@ function apply_user_preferences(json_pref){
     }
     */
 }
+
+function handle_export(){
+    d3.select("body").append("div")
+        .attr("id", "dialog").attr("class", "exportDialogBox")
+        .attr("title", "Choose a format...").html("");
+
+    let dialogBox = $("#dialog"),
+        box_content = d3.select("#dialog").append("div");
+
+    box_content.append("button")
+        .attr("class", "button_st2")
+        .html("Export to PNG")
+        .on("click", function(){
+            dialogBox.dialog("destroy").remove();
+            export_compo_png();
+        });
+
+    box_content.append("button")
+        .attr("class", "button_st2")
+        .html("Export to SVG")
+        .on("click", function(){
+            dialogBox.dialog("destroy").remove();
+            export_compo_svg();
+        });
+
+    box_content.append("button")
+        .attr("class", "button_st2")
+        .html("Export to GeoJSON")
+        .on("click", function(){
+            dialogBox.dialog("destroy").remove();
+            alert("No supported yet");
+        });
+
+    dialogBox.dialog({
+        position: { my: "center", at: "top" },
+        modal: false,
+        close: function(event, ui){ $(this).dialog("destroy").remove(); }
+      });
+
+}
+
 </script>
 </body>
 </html>

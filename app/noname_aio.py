@@ -75,15 +75,15 @@ async def is_known_user(request, ref):
 
 
 ##########################################################
-#### A few functions to open (server side) 
-#### ... a geo layer uploaded by the user 
+#### A few functions to open (server side)
+#### ... a geo layer uploaded by the user
 ##########################################################
 #### These functions are currently totaly insecure
 
 def ogr_to_geojson(filepath, to_latlong=True):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : rewrite using new gdal/ogr (> 2.0) bindings to avoid "exiting"
-    # ... python when using ogr2ogr 
+    # ... python when using ogr2ogr
     if to_latlong:
         process = Popen(["ogr2ogr", "-f", "GeoJSON",
                          "-preserve_fid",
@@ -154,18 +154,18 @@ async def cache_input_topojson(request):
             print("posted data :\n", posted_data)
             print("err\n", err)
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
-    
+
         session_redis = await get_session(request)
         user_id = get_user_id(session_redis)
         f_name = '_'.join([user_id, name.split('.')[0]])
-    
+
         if "converted" not in session_redis:
             session_redis["converted"] = {}
         else:
             if hashed_input in session_redis['converted']:
                 print("The TopoJSON was already cached !")
                 return web.Response(text='')
-    
+
         session_redis['converted'][hashed_input] = True
         await app_glob['redis_conn'].set(f_name, data)
         print('Caching the TopoJSON')
@@ -230,7 +230,7 @@ async def convert(request):
 
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
-    
+
     f_name = '_'.join([user_id, name.split('.')[0]])
 
     if not "converted" in session_redis:
@@ -316,40 +316,38 @@ async def convert(request):
 
     return web.Response(text=result)
 
-
-class R_commande(web.View):
-    async def get(self):
-        function = self.request.match_info['function']
-        params = self.request.match_info['params']
-        data = dict([(_.split('=')[0], try_float(_.split('=')[1])) for _ in params.split('&')])
-        commande = ''.join(
-            [function,
-             '(',
-             ','.join(['='.join([param,param]) for param in data]),
-             ')']
-            ).encode()
-        id_ = await is_known_user(
-            self.request, ref=app_glob['session_map'])
-        data = json.dumps(data).encode()
-        content = await R_client_fuw_async(
-            url_client, commande, data, app_glob['async_ctx'], id_)
-        return web.Response(text=content.decode())
-
-    async def post(self):
-        function = self.request.match_info['function']
-        params = await self.request.post()
-        commande = ''.join([
-            function,
-            '(',
-            ','.join(['='.join([param, param]) for param in params]),
-            ')']).encode()
-        data = {k:try_float(v) for k,v in params.items()}
-        id_ = await is_known_user(self.request, ref=app_glob['session_map'])
-        data = json.dumps(data).encode()
-        content = await R_client_fuw_async(
-            url_client, commande, data, app_glob['async_ctx'], id_)
-        return web.Response(text=content.decode())
-
+#class R_commande(web.View):
+#    async def get(self):
+#        function = self.request.match_info['function']
+#        params = self.request.match_info['params']
+#        data = dict([(_.split('=')[0], try_float(_.split('=')[1])) for _ in params.split('&')])
+#        commande = ''.join(
+#            [function,
+#             '(',
+#             ','.join(['='.join([param,param]) for param in data]),
+#             ')']
+#            ).encode()
+#        id_ = await is_known_user(
+#            self.request, ref=app_glob['session_map'])
+#        data = json.dumps(data).encode()
+#        content = await R_client_fuw_async(
+#            url_client, commande, data, app_glob['async_ctx'], id_)
+#        return web.Response(text=content.decode())
+#
+#    async def post(self):
+#        function = self.request.match_info['function']
+#        params = await self.request.post()
+#        commande = ''.join([
+#            function,
+#            '(',
+#            ','.join(['='.join([param, param]) for param in params]),
+#            ')']).encode()
+#        data = {k:try_float(v) for k,v in params.items()}
+#        id_ = await is_known_user(self.request, ref=app_glob['session_map'])
+#        data = json.dumps(data).encode()
+#        content = await R_client_fuw_async(
+#            url_client, commande, data, app_glob['async_ctx'], id_)
+#        return web.Response(text=content.decode())
 
 @aiohttp_jinja2.template('modules/test_interface.html')
 async def handle_app_functionality(request):
@@ -357,7 +355,6 @@ async def handle_app_functionality(request):
     user_id = get_user_id(session_redis)
     lastPref = await app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
-
 
 #@asyncio.coroutine
 #def links_map_py(posted_data, session_redis, user_id):
@@ -377,12 +374,12 @@ async def handle_app_functionality(request):
 #    df = pd.read_json(posted_data['csv_table'])
 #
 #    make_line = lambda pts: LineString([pts[0], pts[1]])
-#    
+#
 #    gdf.geometry = gdf.geometry.centroid
 #    gdf['geom_centroid'] = [(g.coords.xy[0][0], g.coords.xy[1][0]) for g in gdf.geometry]
-#    
+#
 #    _id, i, j, fij = n_field_name, posted_data["field_i"], posted_data["field_j"], posted_data["field_fij"]
-#    
+#
 #    gdf.set_index(_id, inplace=True, drop=False)
 #    df.set_index(i, drop=False, inplace=True)
 #    df = df.join(gdf['geom_centroid'], how='left', rsuffix='ii')
@@ -433,8 +430,8 @@ async def carto_doug(posted_data, session_redis, user_id):
     new_field = json.loads(posted_data['var_name'])
     iterations = json.loads(posted_data['iterations'])
     n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field, n_field_name)
+    if len(new_field[n_field_name]) > 0:
+        join_topojson_new_field(ref_layer, new_field[n_field_name], n_field_name)
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile2(tmp_path, topojson_to_geojson(ref_layer).encode())
@@ -495,8 +492,8 @@ async def carto_gridded(posted_data, session_redis, user_id):
 
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field, n_field_name)
+    if len(new_field[n_field_name]) > 0:
+        join_topojson_new_field(ref_layer, new_field[n_field_name], n_field_name)
 
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -552,19 +549,18 @@ async def call_mta_geo(posted_data, session_redis, user_id):
     f_name = '_'.join([user_id, posted_data['topojson']])
     ref_layer = await app_glob['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
-    l_name = list(ref_layer['objects'].keys())[0]
 
     new_field1 = json.loads(posted_data['var1'])
-    n_field_name1= list(new_field1.keys())[0]
-    
-    new_field2 = json.loads(posted_data['var2'])
-    n_field_name2= list(new_field2.keys())[0]
-    
-    if len(new_field1[n_field_name1]) > 0 and n_field_name1 not in ref_layer['objects'][l_name]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field1, n_field_name1)
+    n_field_name1 = list(new_field1.keys())[0]
 
-    if len(new_field2[n_field_name2]) > 0 and n_field_name2 not in ref_layer['objects'][l_name]['geometries'][0]['properties']:
-        join_topojson_new_field(ref_layer, new_field2, n_field_name2)
+    new_field2 = json.loads(posted_data['var2'])
+    n_field_name2 = list(new_field2.keys())[0]
+
+    if len(new_field1[n_field_name1]) > 0:
+        join_topojson_new_field(ref_layer, new_field1[n_field_name1], n_field_name1)
+
+    if len(new_field2[n_field_name2]) > 0:
+        join_topojson_new_field(ref_layer, new_field2[n_field_name2], n_field_name2)
 
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -590,7 +586,7 @@ def join_topojson_new_field(topojson, new_field, new_field_name):
     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
         if not 'properties' in geom:
             geom['properties'] = {}
-        geom['properties'][new_field_name] = new_field[new_field_name][ix]
+        geom['properties'][new_field_name] = new_field[ix]
 
 
 async def call_stewart(posted_data, session_redis, user_id):
@@ -600,9 +596,10 @@ async def call_stewart(posted_data, session_redis, user_id):
     point_layer = await app_glob['redis_conn'].get(f_name)
     point_layer = json.loads(point_layer.decode())
     new_field = json.loads(posted_data['var_name'])
+
     n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in point_layer['objects'][list(point_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-        join_topojson_new_field(point_layer, new_field, n_field_name)
+    if len(new_field[n_field_name]) > 0:
+        join_topojson_new_field(point_layer, new_field[n_field_name], n_field_name)
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, posted_data['mask_layer']])
@@ -735,8 +732,8 @@ async def init(loop, port=9999):
     app.router.add_route('GET', '/modules/', handler)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
-    app.router.add_route('GET', '/R/{function}/{params}', R_commande)
-    app.router.add_route('POST', '/R/{function}', R_commande)
+#    app.router.add_route('GET', '/R/{function}/{params}', R_commande)
+#    app.router.add_route('POST', '/R/{function}', R_commande)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('POST', '/convert_csv_geo', convert_csv_geo)
@@ -787,7 +784,7 @@ if __name__ == '__main__':
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
     path = os.path.dirname(os.path.realpath(__file__))
     app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
-    app_glob['session_map'] = {}
+#    app_glob['session_map'] = {}
     app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
     srv, redis_conn = loop.run_until_complete(init(loop, port))

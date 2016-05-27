@@ -13,7 +13,4 @@ TODO list:
 - Refactor broken selenium tests
 - Allow the user to display label of features on its map (based, or not on some criteria)
 - Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
-- Add a tooltip on freshly created layers (propsymbols, MTA) as on other layers
-- Remove the "reverse palette" option on diverging coloramps
 - Fix the (colored) legend on PropSymbolChoro in order to keep it updated when a new discretization is changed (as on choropleth)
-- Double-check styling configuration for MTA results

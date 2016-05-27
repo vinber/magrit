@@ -373,6 +373,16 @@ p.menu {
   text-decoration: none;
 }
 
+.button_st2:disabled {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #cfd4d8), color-stop(1, #c2ccd2));
+	background:-moz-linear-gradient(top, #cfd4d8 5%, #c2ccd2 100%);
+	background:-webkit-linear-gradient(top, #cfd4d8 5%, #c2ccd2 100%);
+	background:-o-linear-gradient(top, #cfd4d8 5%, #c2ccd2 100%);
+	background:-ms-linear-gradient(top, #cfd4d8 5%, #c2ccd2 100%);
+	background:linear-gradient(to bottom, #cfd4d8 5%, #c2ccd2 100%);
+	background-color:#cfd4d8;
+}
+
 .button_st2:hover {
   background: #3cb0fd;
   background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
@@ -398,7 +408,7 @@ p.menu {
 	border:1px solid #dcdcdc;
 	display:inline-block;
 	cursor:pointer;
-	color:#666666;
+	color:black;
 	font-family:Arial;
 	font-size:12px;
 	font-weight:bold;
@@ -414,6 +424,10 @@ p.menu {
 	background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
 	//filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0);
 	background-color:#f6f6f6;
+}
+
+.button_disc:disabled {
+    color: #DDDFE4;
 }
 
 .button_st3 {
