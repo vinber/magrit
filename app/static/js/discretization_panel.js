@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function get_color_array(col_scheme, nb_class, selected_palette){
     var color_array = new Array;
@@ -99,7 +99,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                                 .attr("class", "color_params")
                                                 .on("change", function(){
                                                     redisplay.draw() });
-    
+
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
          'Greens', 'Greys', 'Oranges', 'Purples', 'Reds',
@@ -108,14 +108,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         });
         var button_reverse = d3.select(".color_txt").insert("button")
                                 .style({"display": "inline", "margin-left": "10px"})
-                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
+                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html("Reverse palette")
                                 .on("click", function(){
                                     to_reverse = true;
                                     redisplay.draw();
                                     });
     };
-    
+
     var make_diverg_button = function(){
         var col_div = d3.select("#color_div");
         col_div.selectAll('.color_params').remove();
@@ -153,14 +153,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             right_color_select.append("option").text(name).attr("value", name)
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
-        var button_reverse = d3.select(".color_txt2").insert("button")
-                                .style({"display": "inline", "margin-left": "10px"})
-                                .attr({"class": "button_st1", "id": "reverse_pal_btn"})
-                                .html("Reverse palette")
-                                .on("click", function(){
-                                    to_reverse = true;
-                                    redisplay.draw();
-                                    });
+//        var button_reverse = d3.select(".color_txt2").insert("button")
+//                                .style({"display": "inline", "margin-left": "10px"})
+//                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
+//                                .html("Reverse palette")
+//                                .on("click", function(){
+//                                    to_reverse = true;
+//                                    redisplay.draw();
+//                                    });
     };
 
     var make_box_histo_option = function(){
@@ -229,7 +229,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var margin = {top: 5, right: 7.5, bottom: 12.5, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
-         
+
         var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
         ref_histo.append('p').style({"text-align": "center"}).html('<i>Distribution reference histogram</i>');
 
@@ -365,13 +365,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
             var x = d3.scale.linear()
                 .range([0, svg_w]);
-    
+
             var y = d3.scale.linear()
                 .range([svg_h, 0]);
-    
+
             x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
             y.domain([0, d3.max(bins.map(function(d) { return d.height + 5; }))]);
-    
+
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
               .enter().append("rect")
@@ -383,7 +383,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("width", function(d){ return x(d.width) - 1;})
                 .attr("y", function(d){ return y(d.height);})
                 .attr("height", function(d){ return height + 20 - y(d.height);}) // 20 to compensate the [, -20] translate on the y axis
-    
+
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
@@ -399,7 +399,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("class", "text_bar")
                 .style("color", "black")
                 .text(function(d) { return formatCount(d.val); });
-    
+
             svg_histo.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate(0, -20)")
@@ -434,7 +434,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     var color_array = new Array(),
         nb_values = db_data.length,
-        values = new Array(nb_values); 
+        values = new Array(nb_values);
 
 
     for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
@@ -508,7 +508,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         svg_w = w - (w / 8),
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
-  
+
     var svg_histo = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
@@ -581,7 +581,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .scale(x)
         .orient("bottom"));
 
-    var accordion_colors = newBox.append("div").attr({id: "accordion_colors", class: "accordion"});
+    var accordion_colors = newBox.append("div").attr({id: "accordion_colors", class: "accordion_disc"});
     accordion_colors.append("h3").html("<b>Color scheme</b>");
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
@@ -609,11 +609,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var to_reverse = false;
     document.getElementById("button_Sequential").checked = true;
 
-    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion"});
+    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion_disc"});
     accordion_summ.append("h3").html("<b>Summary</b>");
     var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
 
-    var accordion_breaks = newBox.append("div").attr({id: "accordion_breaks_vals", class: "accordion"});
+    var accordion_breaks = newBox.append("div").attr({id: "accordion_breaks_vals", class: "accordion_disc"});
     accordion_breaks.append("h3").html("<b>Current break values</b>");
     var user_defined_breaks =  d3.select("#accordion_breaks_vals").append("div").attr("id","user_breaks");
     user_defined_breaks.insert("textarea").attr("id","user_breaks_area");
@@ -630,7 +630,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     redisplay.draw();
              });
 
-    $(".accordion").accordion({collapsible: true, active: false, heightStyle: "content" });
+    $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
     $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
 
     make_sequ_button();
