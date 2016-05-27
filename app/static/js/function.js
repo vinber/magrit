@@ -56,12 +56,57 @@ function get_menu_option(func){
             "menu_factory": "fillMenu_FlowMap",
             "desc": "Render a map displaying links between features with graduated sizes",
             "fields_handler": "fields_FlowMap"
+            },
+        "discontinuities":{
+            "title":"Discontinuities map",
+            "menu_factory": "fillMenu_Discont",
+            "desc": "Render a map displaying discontinuities between polygons features",
+            "fields_handler": "fields_Discont"
             }
 
     };
     return menu_option[func.toLowerCase()] || {}
 }
 
+var fields_Discont = {
+    fill: function(layer){
+        if(!layer) return;
+        let fields = Object.getOwnPropertyNames(user_data[0][0]),
+            field_i = d3.select("#field_Discont");
+        fields.forEach(function(field){
+                field_i.append("option").text(field).attr("value", field)
+        });
+        d3.selectAll(".params").attr("disabled", null);
+    },
+    unfill: function(){
+        unfillSelectInput(document.getElementById("field_Discont"))
+        d3.selectAll(".params").attr("disabled", null);
+    }
+}
+
+function fillMenu_Discont(layer){
+    let dv2 = section2.append("p").attr("class", "form-rendering"),
+        field_selec = dv2.append('p').html('Field ')
+                        .insert('select')
+                        .attr({class: 'params', id: "field_Discont"}),
+        simplify = dv2.append("span")
+                        .html("Simplify borders before rendering ")
+                      .insert("input").attr({type: "checkbox", class: "params"})
+                        .attr('id', 'simplify_disc'),
+        ok_button = dv2.append("p").style({"text-align": "right", margin: "auto"})
+                        .append('button')
+                        .attr('id', 'yes')
+                        .attr('class', 'params button_st2')
+                        .text('Compute and render');
+
+    d3.selectAll(".params").attr("disabled", true);
+
+    ok_button.on("click", function(){
+        let layer = Object.getOwnPropertyNames(user_data)[0];
+            formToSend = new FormData();
+    });
+
+}
 
 var fields_FlowMap = {
     fill: function(layer){
@@ -309,7 +354,7 @@ function fillMenu_PropSymbolChoro(layer){
     var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
                         .append('button')
                         .attr('id', 'yes')
-                        .attr('class', 'params button_st2')
+                        .attr('class', 'button_st2')
                         .attr('disabled', true)
                         .text('Render');
 
@@ -368,10 +413,8 @@ var fields_Choropleth = {
             alert("The targeted layer doesn't seems to contain any numerical field or contains too many empty values");
             return;
         }
-        field_selec.attr("disabled", null);
         fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
-        document.getElementById("choro_class").removeAttribute("disabled");
-        document.getElementById("choro_yes").removeAttribute("disabled");
+        d3.selectAll(".params").attr("disabled", null)
     },
 
     unfill: function(){
@@ -381,9 +424,7 @@ var fields_Choropleth = {
         for(let i = nb_fields - 1; i > -1 ; --i)
             field_selec.removeChild(field_selec.children[i]);
 
-        field_selec.setAttribute("disabled", true);
-        document.getElementById("choro_class").setAttribute("disabled", true);
-        document.getElementById("choro_yes").setAttribute("disabled", true);
+        d3.selectAll(".params").attr("disabled", true);
     }
 };
 
@@ -391,11 +432,11 @@ function fillMenu_Choropleth(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
         rendering_params = new Object();
 
-    var field_selec = dv2.append('p').html('Field :')
-                        .insert('select')
+    var field_selec = dv2.append('p')
+                            .html('Field :')
+                         .insert('select')
                             .attr('class', 'params')
-                            .attr('id', 'choro_field_1')
-                            .attr("disabled", true);
+                            .attr('id', 'choro_field_1');
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
@@ -408,7 +449,7 @@ function fillMenu_Choropleth(){
             display_discretization(layer_name, field_selec.node().value, opt_nb_class, "Quantiles")
                 .then(function(confirmed){
                     if(confirmed){
-                        console.log(confirmed);
+                        d3.select("#choro_yes").attr("disabled", null)
                         rendering_params = {
                                 nb_class: confirmed[0], type: confirmed[1],
                                 breaks: confirmed[2], colors:confirmed[3],
@@ -422,8 +463,8 @@ function fillMenu_Choropleth(){
     dv2.insert("p").style({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'choro_yes')
-        .attr('class', 'button_st2')
         .attr("disabled", true)
+        .attr('class', 'button_st2')
         .html('Render')
         .on("click", function(){
             if(rendering_params){
@@ -432,7 +473,9 @@ function fillMenu_Choropleth(){
                 makeButtonLegend(layer);
             }
          });
+    d3.selectAll(".params").attr("disabled", true);
 }
+
 
 var fields_MTA = {
     fill: function(layer){

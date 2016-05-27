@@ -43,5 +43,10 @@
 	"img" : "cartogram.png",
 	"desc" : "Example 9 - Cartogram map",
 	"link" 	:  "/modules/cartogram"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 9 - Discontinuities Map",
+	"link" 	:  "/modules/discontinuities"
 	}
 ]

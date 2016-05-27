@@ -56,13 +56,29 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   return(result)
 }
 
+###################################
+# Cartography functions
+###################################
+
+getBordersJson <- function(layer_json_path){
+  s_t <- Sys.time()
+  latlong_string <- "+init=epsg:4326"
+  spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
+  file.remove(layer_json_path)
+  result <- cartography::getBorders(spdf)
+  geojsonio::geojson_write(result, file=layer_json_path)
+  result <- paste0('{"geojson_path":"', layer_json_path,'","additional_infos":null}')
+  print(paste0("getBordersJson ", round(Sys.time()-s_t,4),"s"))
+  return(result)
+}
+
 make_gridded_map <- function(layer_json_path, var_name, cellsize){
   s_t <- Sys.time()
   if(!is.numeric(cellsize)){ cellsize <- as.numeric(cellsize) }
-
+  
   latlong_string <- "+init=epsg:4326"
   eckert_iv <- "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-
+  
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
@@ -86,7 +102,7 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   }
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
-
+  
   mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)
 
   datagrid.df <- cartography::getGridData(x = mygrid, df = spdf@data, var = var_name, dfid = s_id)
@@ -121,14 +137,16 @@ mta_mediumdev <- function(x, var1, var2, key, type_dev){
 mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, type_dev='rel'){
   latlong_string <- "+init=epsg:4326"
   web_mercator <- "+init=epsg:3857"
-
+  
   spdf <- geojsonio::geojson_read(geojson_path, what='sp', stringsAsFactors = FALSE)
-
+  
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
   spdf@data[,var1] <- as.numeric(spdf@data[,var1])
   spdf@data[,var2] <- as.numeric(spdf@data[,var2])
-
+  print(order)
+  print(dist)
+  print(str(spdf@data))
   res <- MTA::localDev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
                        var1 = var1, var2 = var2,
                        order = order, dist = dist, type = type_dev)
@@ -144,11 +162,11 @@ getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field)
   df <- jsonlite::fromJSON(csv_table)
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp')
   print(paste0("Opening csv table & geojson ", round(Sys.time()-s_t,4),"s"))
-
+  
   s_t <- Sys.time()
   links <- cartography::getLinkLayer(spdf = spdf, df = df, spdfid = join_field, dfids = i, dfide = j)
   print(paste0("GetLinkLayer ", round(Sys.time()-s_t,4),"s"))
-
+  
   s_t <- Sys.time()
   links@data <- data.frame(df[match(x = paste(links@data[, i], links@data[, j]), table = paste(df[, i], df[, j])),])
   print(paste0("Match rows ", round(Sys.time()-s_t,4),"s"))
