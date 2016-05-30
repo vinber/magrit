@@ -5,7 +5,7 @@
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> MAPOLOGIC - {{ func }}</title>
-    <script  src="/static/js/lib/d3.js"></script>
+    <script  src="/static/js/lib/d3.v3.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/d3.geo.projection.js"></script>
     <script  src="/static/js/lib/polyhedron.js"></script>
@@ -14,7 +14,6 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
-    <script  src="/static/js/lib/chroma.js"></script>
     <script  src="/static/js/lib/cartogram.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
@@ -31,10 +30,6 @@
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
-    <style>
-        #sortable {list-style-type: none; margin: auto; padding: 0; width: 100%; color: white; border-radius: 10%}
-        .ui-state-highlight {line-height: 12px; background: red}
-    </style>
   </head>
   <body>
       <div id="header">
@@ -131,9 +126,9 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
     button_type_blank = {"Point": button_point.replace(".svg", "_blank.svg"), "Line": button_line.replace(".svg", "_blank.svg"), "Polygon": button_polygon.replace(".svg", "_blank.svg")};
 
 
-//current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"}
-current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.5px"}
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": "0.3px"}
+//current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1}
+current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5}
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.3}
 
 //////////////////////////////////////////////////////////////////////////////
 // Set-up the menu :
@@ -524,8 +519,8 @@ function displayInfoOnMove(){
     var info_features = d3.select("#info_features"),
         target_lyr = Object.getOwnPropertyNames(user_data),
         result_lyr = Object.getOwnPropertyNames(result_data),
-        nb_layer = d3.select('svg').selectAll(".layer")[0].length,
-        top_layer = d3.select('svg').selectAll(".layer")[0][nb_layer-1].id;
+        nb_layer = map.selectAll(".layer")[0].length,
+        top_layer = map.selectAll(".layer")[0][nb_layer-1].id;
 
     if(target_lyr.length === 0 && result_lyr.length === 0){
         alert("Informations are only displayed on the targeted layer or its result");
@@ -543,14 +538,12 @@ function displayInfoOnMove(){
             info_features.style({});
             document.getElementById("map").style.cursor="";
         } else {
-            //let obj_ref = (top_layer === target_lyr[0]) ? user_data : result_data;
             d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
             d3.select(svg_layer).selectAll("path").on("mouseover", function(d){
                 var item_nb = Number((this.id).split('_')[1]),
-                    ft = user_data[svg_layer.substring(1, svg_layer.length)] ? user_data[svg_layer.substring(1, svg_layer.length)][item_nb] : result_data[svg_layer.substring(1, svg_layer.length)][item_nb],
-                    txt_info = ["<h2>Features #", item_nb, "</h2><br><i>",
-                                current_layers[svg_layer.substring(1, svg_layer.length)].type,
-                                "</i><br>"];
+                    ft = user_data[top_layer] ? user_data[top_layer][item_nb] : result_data[top_layer][item_nb],
+                    txt_info = ["<h2>Features #", item_nb, "</h2><i>",
+                                current_layers[top_layer].type, "</i>"];
                 Object.getOwnPropertyNames(ft).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+ft[el]);
                     });
@@ -877,27 +870,16 @@ function sendPreferences(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    map.selectAll("g:not(.legend_feature)")
+    map.selectAll("g.layer")
               .transition()
-              .duration(30)
+              .duration(45)
               .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
     let layers = Object.getOwnPropertyNames(current_layers);
-    if(layers.indexOf("Graticule") !== -1){
-        layers.splice(layers.indexOf("Graticule"), 1)
-        d3.select('#Graticule').style("stroke-width", current_layers["Graticule"]['stroke-width-const'].split("px")[0] / zoom.scale() + "px" );
-    }
-    if(layers.indexOf("Simplified_land_polygons") !== -1){
-        layers.splice(layers.indexOf("Simplified_land_polygons"), 1)
-        d3.select('#Simplified_land_polygons').style("stroke-width", current_layers["Simplified_land_polygons"]['stroke-width-const'].split("px")[0] / zoom.scale() + "px" );
-    }
-    if(layers.length > 0){
-        for(let i=0, i_len = layers.length; i < i_len; i++){
-            let lyr_name = layers[i];
-            if(current_layers[lyr_name].fixed_stroke)
-                d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const']);
-            else
-                d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'].split("px")[0] / zoom.scale() +  "px");
-        }
+
+    for(let i = layers.length - 1; i > -1; i--){
+        let lyr_name = layers[i];
+        if(!(current_layers[lyr_name].fixed_stroke))
+            d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / zoom.scale() +  "px");
     }
 };
 

@@ -61,7 +61,8 @@ function get_menu_option(func){
             "title":"Discontinuities map",
             "menu_factory": "fillMenu_Discont",
             "desc": "Render a map displaying discontinuities between polygons features",
-            "fields_handler": "fields_Discont"
+            "fields_handler": "fields_Discont",
+            "add_options": "keep_file"
             }
 
     };
@@ -71,41 +72,198 @@ function get_menu_option(func){
 var fields_Discont = {
     fill: function(layer){
         if(!layer) return;
-        let fields = Object.getOwnPropertyNames(user_data[0][0]),
-            field_i = d3.select("#field_Discont");
-        fields.forEach(function(field){
-                field_i.append("option").text(field).attr("value", field)
+        let fields_num = type_col(layer, "number"),
+            fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+            field_discont = d3.select("#field_Discont"),
+            field_id = d3.select("#field_id_Discont");
+        fields_num.forEach(function(field){
+                field_discont.append("option").text(field).attr("value", field)
+        });
+        fields_all.forEach(function(field){
+                field_id.append("option").text(field).attr("value", field)
         });
         d3.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Discont"))
-        d3.selectAll(".params").attr("disabled", null);
+        unfillSelectInput(document.getElementById("field_id_Discont"))
+        d3.selectAll(".params").attr("disabled", true);
     }
 }
 
 function fillMenu_Discont(layer){
-    let dv2 = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dv2.append('p').html('Field ')
-                        .insert('select')
-                        .attr({class: 'params', id: "field_Discont"}),
-        simplify = dv2.append("span")
-                        .html("Simplify borders before rendering ")
-                      .insert("input").attr({type: "checkbox", class: "params"})
-                        .attr('id', 'simplify_disc'),
-        ok_button = dv2.append("p").style({"text-align": "right", margin: "auto"})
-                        .append('button')
-                        .attr('id', 'yes')
-                        .attr('class', 'params button_st2')
-                        .text('Compute and render');
+    let dv2 = section2.append("p").attr("class", "form-rendering");
+    dv2.append('p').html('Value field ')
+                .insert('select')
+                .attr({class: 'params', id: "field_Discont"});
+
+    dv2.append('p').html('Id field ')
+                .insert('select')
+                .attr({class: 'params', id: "field_id_Discont"});
+
+    let disc_kind = dv2.append('p').html('Discontinuity kind ')
+                .insert('select')
+                .attr({class: 'params', id: "kind_Discont"});
+
+    [ ["Relative", "rel"],
+      ["Absolute", "abs"] ].forEach(function(k){
+        disc_kind.append("option").text(k[0]).attr("value", k[1]); });
+
+    dv2.append('p').html('Color ')
+                .insert('input')
+                .attr({class: 'params', id: "color_Discont",
+                       type: "color", value: Colors.names[Colors.random()]});
+
+    dv2.append("span")
+            .html("Simplify borders before rendering ")
+          .insert("input").attr({type: "checkbox", class: "params"})
+            .attr('id', 'simplify_disc');
+
+    let ok_button = dv2.append("p")
+                      .style({"text-align": "right", margin: "auto"})
+                      .append('button')
+                      .attr('id', 'yes')
+                      .attr('class', 'params button_st2')
+                      .text('Compute and render');
 
     d3.selectAll(".params").attr("disabled", true);
 
     ok_button.on("click", function(){
-        let layer = Object.getOwnPropertyNames(user_data)[0];
-            formToSend = new FormData();
-    });
+        let layer = Object.getOwnPropertyNames(user_data)[0],
+            field = document.getElementById("field_Discont").value,
+            field_id = document.getElementById("field_id_Discont").value;
 
+        let result_value = new Map(),
+            result_geom = {};
+
+        // Use topojson.mesh a first time to compute the discontinuity value
+        // for each border (according to the given topology)
+        if(disc_kind.node().value == "rel")
+            topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                    if(a !== b){
+                         let value = Math.max(a.properties[field] / b.properties[field],
+                                              b.properties[field] / a.properties[field]),
+                             new_id = [a.id, b.id].join('_'),
+                             new_id_rev = [b.id, a.id].join('_');
+                        if(!(result_value.get(new_id) || result_value.get(new_id_rev)))
+                            result_value.set(new_id, value)
+                    }
+                    return false; });
+        else
+            topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                    if(a !== b){
+                         let value = Math.max(a.properties[field] - b.properties[field],
+                                              b.properties[field] - a.properties[field]),
+                             new_id = [a.id, b.id].join('_'),
+                             new_id_rev = [b.id, a.id].join('_');
+                        if(!(result_value.get(new_id) || result_value.get(new_id_rev)))
+                            result_value.set(new_id, value)
+                    }
+                    return false; });
+
+        let new_layer_name = ["Disc", layer, field, disc_kind.node().value].join('_'),
+            user_color = document.getElementById("color_Discont").value,
+            method = document.getElementById("kind_Discont").value,
+            result_layer = map.append("g").attr("id", new_layer_name)
+                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                .attr("class", "result_layer layer");
+
+        let arr_disc = [], arr_tmp = [];
+        for(let [id, val] of result_value){
+            arr_disc.push([id, val]);
+            arr_tmp.push(val)
+        }
+
+        let min_values = Math.sqrt(Math.min.apply(0, arr_tmp)),
+            max_values = Math.sqrt(Math.max.apply(0, arr_tmp)),
+            max_size = 10, min_size = 0.5,
+            dif_val = max_values - min_values,
+            dif_size = max_size - min_size,
+            nb_ft = arr_tmp.length;
+        result_data[new_layer_name] = new Array(nb_ft);
+        let data_result = result_data[new_layer_name];
+
+        // This is bad and should be replaced by somthing better as we are
+        // traversing the whole topojson again and again
+        // looking for each "border" from its "id" (though it isn't that slow)
+        for(let i=0; i<nb_ft; i++){
+            let val = arr_disc[i],
+                prop_val = (Math.sqrt(val[1])/dif_val * dif_size) + min_size - dif_size/dif_val;
+            data_result[i] =  {id: val[0], disc_value: val[1], prop_value: prop_val};
+            result_layer .append("path")
+                .datum(topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                    let a_id = val[0].split("_")[0], b_id = val[0].split("_")[1];
+                    return a != b
+                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
+                .attr({d: path, id: ["feature", i].join('_')})
+                .style({stroke: user_color, "stroke-width": prop_val, "fill": "transparent"})
+        }
+
+        let layers_listed = layer_list.node(),
+            li = document.createElement("li");
+
+        li.setAttribute("class", "ui-state-default sortable_result " + new_layer_name);
+        li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Line'], "</div> ", new_layer_name].join('')
+        layers_listed.insertBefore(li, layers_listed.childNodes[0])
+        current_layers[new_layer_name] = {
+            "renderer": "DiscLayer",
+            "type": "Line",
+            "rendered_field": field,
+            "size": [0.5, 10],
+            "is_result": true,
+            "fixed_stroke": true,
+            "ref_layer_name": layer,
+            "fill_color": { "single": user_color },
+            "n_features": arr_disc.length,
+            "result": result_value
+            };
+        binds_layers_buttons();
+        zoom_without_redraw();
+///*
+//        var result_value = new Map(),
+//            result_geom = {};
+//        let tmp = topojson.mesh(_target_layer_file, _target_layer_file.objects.nuts2_data, function(a, b){
+//            if(a !== b){
+//                 let value = Math.max(a.properties[field] / b.properties[field], b.properties[field] / a.properties[field]);
+//                 let new_id = [a.properties.id, b.properties.id].join('_'),
+//                     new_id_rev = [b.properties.id, a.properties.id].join('_');
+//                 if(new_id in result_geom || new_id_rev in result_geom){
+//                      let new_arcs = new Array(a.arcs[0].concat(b.arcs[0]))
+//                      result_geom[new_id].arcs[0].concat(new_arcs)
+//                 }
+//                 else{
+//                    result_geom[new_id] = {type: "MultiLineString", id: new_id, properties : {"id1": a.id, "id2":b.id, "disc_value": value},
+//                                            arcs: [new Array(a.arcs[0].concat(b.arcs[0]))]
+//                    }
+//                 }
+//                 return true;
+//            }
+//            return false;
+//        });
+//        console.log(result_geom)
+//        console.log(tmp)
+//        var new_layer_name = ["Disc", layer, field].join('_');
+//        var result_topo = {
+//            type: "Topology",   arcs: _target_layer_file.arcs.slice(0, _target_layer_file.arcs.length),
+//            objects: {}
+//            };
+//        result_topo.objects[new_layer_name] = {
+//            crs : cloneObj(_target_layer_file.objects[layer].crs), type: "GeometryCollection", geometries: new Array() };
+//        for(let _id in result_geom)
+//            result_topo.objects[new_layer_name].geometries.push(result_geom[_id])
+//        console.log(result_topo);
+//        map.append("g").attr("id", "Disc")
+//                .attr("class", "result_layer layer")
+//                .selectAll(".subunit")
+//                .data(topojson.features(result_topo, result_topo.objects[new_layer_name]).features)
+//                .enter().append("path")
+//                .attr("d", path)
+//                .attr("id", function(d,i){  return i;  })
+//                .style("stroke", "red")
+//                .style("stroke-width", function(d, i){  return d.properties.disc_value;  });
+//    */
+        });
 }
 
 var fields_FlowMap = {
@@ -312,7 +470,7 @@ function fillMenu_PropSymbolChoro(layer){
                                  .style("width", "8em")
                                  .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
-    var max_size_txt = dv2.append('label-item').attr("id", "max_size_txt").html('0 px');
+    var max_size_txt = dv2.append('label-item').attr("id", "max_size_txt").html('10 px');
 
     var ref_size = dv2.append('p').html('Reference min. size ')
                                  .insert('input')
@@ -389,7 +547,7 @@ function fillMenu_PropSymbolChoro(layer){
                 rendered_field: field1_selec.node().value,
                 rendered_field2: field2_selec.node().value,
                 size: [ref_size.node().value, max_size.node().value],
-                "stroke-width-const": "1px",
+                "stroke-width-const": 1,
                 fill_color: { "class": rendering_params['colorsByFeature'] },
                 colors_breaks: colors_breaks,
                 is_result: true
@@ -787,8 +945,10 @@ var fields_Stewart = {
     },
 
     unfill: function(){
-        let field_selec = document.getElementById("stewart_field");
-        unfillSelectInput(mask_selec.node());
+        let field_selec = document.getElementById("stewart_field"),
+            mask_selec = document.getElementById("stewart_mask");
+        unfillSelectInput(field_selec);
+        unfillSelectInput(mask_selec);
         d3.selectAll(".params").attr("disabled", true);
     }
 };
@@ -897,8 +1057,8 @@ var fields_Anamorphose = {
 function fillMenu_Anamorphose(){
 
     var make_opt_dorling = function(){
-        option1_txt.html('Symbol type');
-        option2_txt.html("Symbol Max Size (px)");
+        option1_txt.html('Symbol type ');
+        option2_txt.html("Symbol Max Size (px) ");
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
         option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
         let option2_txt2 = option2_txt.append("span").attr("id", "Anamorph_opt_max_symb").html("10 px");
@@ -911,10 +1071,18 @@ function fillMenu_Anamorphose(){
     };
 
     var make_opt_iter = function(){
-        option1_txt.html('N. iterations');
+        option1_txt.html('N. iterations ');
         option2_txt.html(""),
         option1_val = option1_txt.insert('input')
                         .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
+    };
+
+    var make_opt_olsen = function(){
+        option1_txt.html("Maximum size reduction (%) ");
+        option2_txt.html(""),
+        option1_val = option1_txt.insert('input')
+                        .style("width", "60px")
+                        .attr({type: 'number', class: 'params', value: 10, min: 0, max: 100, step: 1});
     };
 
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
@@ -937,13 +1105,16 @@ function fillMenu_Anamorphose(){
     algo_selec.on("change", function(){
         if(this.value == "dorling")
             make_opt_dorling();
+        else if(this.value == "olsen")
+            make_opt_olsen();
         else
             make_opt_iter();
     });
 
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
-     ['Gastner & Newman (2004)', 'gastner']].forEach(function(fun_name){
+     ['Gastner & Newman (2004)', 'gastner'],
+     ['Olsen (2005)', 'olsen']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
@@ -957,6 +1128,90 @@ function fillMenu_Anamorphose(){
                 field_name = field_selec.node().value;
             if(algo === "gastner"){
                 alert('Not implemented (yet!)')
+            } else if (algo === "olsen"){
+                let field_n = field_selec.node().value,
+                    layer = Object.getOwnPropertyNames(user_data)[0],
+                    scale_max = 2 * +option1_val.node().value / 100,
+                    nb_ft = current_layers[layer].n_features,
+                    dataset = user_data[layer],
+                    new_layer_name = ["CartogramOlsen", layer, field_n].join('_');
+
+                let layer_select = map.select("#"+layer).selectAll("path")[0],
+                    d_values = new Array(nb_ft),
+                    area_values = new Array(nb_ft);
+                for(let i = 0; i < nb_ft; ++i){
+                    d_values[i] = +dataset[i][field_n];
+                    area_values[i] = +path.area(layer_select[i].__data__.geometry);
+                }
+                console.log(d_values);
+                console.log(area_values);
+                let mean = d3.mean(d_values),
+                    min = d3.min(d_values),
+                    max = d3.max(d_values),
+                    low_ = Math.abs(mean-min),
+                    up_ = Math.abs(max-mean),
+                    max_dif = low_ > up_ ? low_ : up_;
+
+                let transform = [];
+                for(let i= 0; i < nb_ft; ++i){
+                    let area = area_values[i],
+                        val = d_values[i],
+                        scale_area;
+                    if(val > mean)
+                        scale_area = scale_max / (max_dif / Math.abs(val-mean));
+                    else if(val == mean)
+                        scale_area = 1;
+                    else
+                        scale_area = scale_max / -(max_dif / Math.abs(val-mean));
+                    transform.push(scale_area)
+                }
+                console.log(transform);
+                result_data[new_layer_name] = new Array();
+                map.append("g").attr("id", new_layer_name)
+                      .attr("class", "result_layer layer")
+                      .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                      .selectAll(".subunit")
+                      .data(topojson.feature(_target_layer_file, _target_layer_file.objects[layer]).features)
+                      .enter().append("path")
+                      .attr("d", path)
+                      .attr("id", function(d,ix) {
+                            result_data[new_layer_name].push(d.properties);
+                            return ["feature", ix].join('_');
+                        })
+                      .style("stroke", "rgb(0, 0, 0)")
+                      .style("stroke-opacity", .4)
+                      .style("fill", Colors.names[Colors.random()])
+                      .style("fill-opacity", 0.6)
+                      .attr("transform", function(d,i) {
+                            let centroid = path.centroid(d),
+                                x = centroid[0],
+                                y = centroid[1];
+                            return ["translate(", x, ",", y, ")",
+                                    "scale(", transform[i], ")",
+                                    "translate(", -x, ",", -y, ")"].join("")
+                        });
+
+                let class_name = "ui-state-default sortable_result " + new_layer_name,
+                    layers_listed = layer_list.node(),
+                    li = document.createElement("li");
+
+                li.setAttribute("class", class_name);
+                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
+                layers_listed.insertBefore(li, layers_listed.childNodes[0])
+                current_layers[new_layer_name] = {
+                    "renderer": "OlsenCarto",
+                    "type": "Polygon",
+                    "rendered_field": field_n,
+                    "scale_max": scale_max,
+                    "stroke-width-const": 1,
+                    "is_result": true,
+                    "ref_layer_name": layer,
+                    "fill_color": { "random": true }
+                    };
+                binds_layers_buttons();
+                zoom_without_redraw();
+                makeButtonLegend(new_layer_name);
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -989,7 +1244,7 @@ function fillMenu_Anamorphose(){
                         current_layers[n_layer_name].fill_color = { "random": true };
                         current_layers[n_layer_name].type = "Polygon";
                         current_layers[n_layer_name].is_result = true;
-                        current_layers[n_layer_name]['stroke-width-const'] = "0.8px"
+                        current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                         current_layers[n_layer_name].renderer = "Carto_doug";
                         current_layers[n_layer_name].rendered_field = field_name;
                         d3.select("#" + n_layer_name)
@@ -1038,7 +1293,7 @@ function fillMenu_Anamorphose(){
 //                current_layers[new_layer_name] = {
 //                    "renderer": "DougenikCarto",
 //                    "rendered_field": field_name,
-//                    "stroke-width-const": "1px",
+//                    "stroke-width-const": 1,
 //                    "is_result": true,
 //                    "ref_layer_name": layer
 //                    };
@@ -1052,7 +1307,7 @@ function fillMenu_Anamorphose(){
                     layer_to_add =  ["DorlingCarto", layer, field_name].join('_'),
                     shape_symbol = option1_val.node().value;
 
-                make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
+                let force = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
 
                 let class_name = "ui-state-default sortable_result " + layer_to_add,
                     layers_listed = layer_list.node(),
@@ -1068,10 +1323,11 @@ function fillMenu_Anamorphose(){
                     "symbol": shape_symbol,
                     "rendered_field": field_name,
                     "size": [ref_size, max_size],
-                    "stroke-width-const": "1px",
+                    "stroke-width-const": 1,
                     "is_result": true,
                     "ref_layer_name": layer,
-                    "fill_color": { "random": true }
+                    "fill_color": { "random": true },
+                    "force": force
                     };
                 binds_layers_buttons();
                 zoom_without_redraw();
@@ -1213,6 +1469,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
             };
         }
     }
+    return force;
 }
 
 
@@ -1299,7 +1556,7 @@ var boxExplore = {
                  .insert("button")
                  .attr({id: "add_field_button", class: "button_st3"})
                  .html("Add a new field...")
-                 .on('click', function(){  add_table_field(the_name, self)  });
+                 .on('click', function(){  add_table_field(the_name, self);});
             top_buttons
                  .insert("button")
                  .attr({id: "unsel_features", class: "button_st3"})
@@ -1552,7 +1809,7 @@ function make_prop_symbols(rendering_params){
             "fill_color" : fill_color,
             "rendered_field": field,
             "size": [ref_size, max_size],
-            "stroke-width-const": "1px",
+            "stroke-width-const": 1,
             "is_result": true,
             "ref_layer_name": layer,
             "features_order": ret_val
@@ -1663,7 +1920,7 @@ function render_choro(layer, rendering_params){
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
-    current_layers[layer]['stroke-width-const'] = "0.75px";
+    current_layers[layer]['stroke-width-const'] = 0.75;
     current_layers[layer].is_result = true;
     let colors_breaks = [];
     for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
@@ -1881,11 +2138,10 @@ function add_table_field(layer, parent){
 
                             }
                         }
-                        if(parent){
+                        fields_handler.unfill()
+                        fields_handler.fill(layer)  
+                        if(parent)
                             parent.display_table({"type": "layer"});
-                            fields_handler.unfill()
-                            fields_handler.fill(layer)
-                         }
                     }
             });
 

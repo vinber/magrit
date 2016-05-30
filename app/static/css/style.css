@@ -254,11 +254,10 @@ p.menu {
     right: 0px;
     top: 100px;
     border-radius: 2%;
-    background-color: beige;
-    font-size:15px;
-    font-weight:bold;
-    padding-right: 20px;
-    padding-left: 20px;
+    background-color:beige;
+    font-size:14px;
+    padding-right:20px;
+    padding-left:20px;
     color:black;
 }
 
@@ -279,6 +278,20 @@ p.menu {
     padding: 0 0 0 0;
 }
 
+.ui-state-highlight {
+    line-height:12px;
+    background:red
+}
+
+
+#sortable {
+    list-style-type:none;
+    margin:auto;
+    padding:0;
+    width:100%;
+    border-radius:10%
+}
+
 #sortable li {
     margin: 5px 0 5px 0;
     padding: 5px;
@@ -291,36 +304,12 @@ p.menu {
 }
 
 #sortable li.sortable_target, #sortable li.sortable_result {
-    margin: 5px 0 5px 0;
     border: 2px solid;
-    padding: 5px;
-    font-size: 12px;
-    line-height: 2em;
     background: #7b98ce;
     color: white;
     border-radius: 9%;
 }
-/*
-.dataTable thead{
-    background: rgb(161, 188, 210) none repeat scroll 0% 0%;
-}
 
-#myTable_wrapper{
-    background-image: url(/static/img/color_grey.png), url(/static/img/color_grey.png);
-    background-position: bottom, top;
-    background-size: 80%;
-    background-size: 1.4em, 0.9em;
-    background-repeat: repeat-x;
-}
-
-#myTable_filter {
-    margin-right: 15px;
-}
-
-#myTable_length {
-    margin-left: 15px;
-}
-*/
 #table_intro{
     margin: auto;
     text-align: center;

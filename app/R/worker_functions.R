@@ -60,17 +60,18 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 # Cartography functions
 ###################################
 
-getBordersJson <- function(layer_json_path){
-  s_t <- Sys.time()
-  latlong_string <- "+init=epsg:4326"
-  spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
-  file.remove(layer_json_path)
-  result <- cartography::getBorders(spdf)
-  geojsonio::geojson_write(result, file=layer_json_path)
-  result <- paste0('{"geojson_path":"', layer_json_path,'","additional_infos":null}')
-  print(paste0("getBordersJson ", round(Sys.time()-s_t,4),"s"))
-  return(result)
-}
+# getBordersJson <- function(layer_json_path){
+#   s_t <- Sys.time()
+#   latlong_string <- "+init=epsg:4326"
+#   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
+#   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
+#   file.remove(layer_json_path)
+#   result <- cartography::getBorders(spdf)
+#   geojsonio::geojson_write(result, file=layer_json_path)
+#   result <- paste0('{"geojson_path":"', layer_json_path,'","additional_infos":null}')
+#   print(paste0("getBordersJson ", round(Sys.time()-s_t,4),"s"))
+#   return(result)
+# }
 
 make_gridded_map <- function(layer_json_path, var_name, cellsize){
   s_t <- Sys.time()
@@ -144,9 +145,6 @@ mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, ty
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
   spdf@data[,var1] <- as.numeric(spdf@data[,var1])
   spdf@data[,var2] <- as.numeric(spdf@data[,var2])
-  print(order)
-  print(dist)
-  print(str(spdf@data))
   res <- MTA::localDev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
                        var1 = var1, var2 = var2,
                        order = order, dist = dist, type = type_dev)
@@ -178,7 +176,6 @@ getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field)
 
   return(result)
 }
-
 
 prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE){
   mat <- jsonlite::fromJSON(mat)

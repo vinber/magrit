@@ -301,7 +301,7 @@ function add_layer_topojson(text, options){
 //        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
         current_layers[lyr_name] = {"type": type,
                                     "n_features": parsedJSON.objects[lyr_name].geometries.length,
-                                    "stroke-width-const": "0.4px",
+                                    "stroke-width-const": 0.4,
                                     "fill_color":  {"single": random_color1},
                                     };
 
@@ -398,9 +398,10 @@ function add_layer_topojson(text, options){
 };
 
 function scale_to_lyr(name){
+    name = current_layers[name].ref_layer_name || name;
     var bbox_layer_path = undefined;
-    if(name.endsWith("_PropSymbols"))
-        name = name.substring(0, name.length - 12);
+//    if(name.endsWith("_PropSymbols"))
+//        name = name.substring(0, name.length - 12);
     d3.select("#"+name).selectAll('path').each(function(d, i){
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
@@ -514,7 +515,7 @@ function add_layout_layers(){
                                    .attr("class", "graticule")
                                    .datum(d3.geo.graticule())
                                    .attr("d", path);
-                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": "1px"};
+                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1};
                            layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule");
                            zoom_without_redraw();
                            binds_layers_buttons();

@@ -136,7 +136,7 @@ function createStyleBox(layer_name){
         stroke_width = current_layers[layer_name]['stroke-width-const'];
 
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
-    if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
+//    if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
     make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
         .then(function(confirmed){
@@ -297,7 +297,7 @@ function createStyleBox(layer_name){
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
      popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
                       .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
-                      .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
+                      .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
 }
 
 
@@ -374,7 +374,7 @@ function createStyleBox_ProbSymbol(layer_name){
                 selection.style('fill-opacity', opacity)
                              .style('stroke-opacity', border_opacity);
                 d3.select(g_lyr_name).style('stroke-width', stroke_width);
-                current_layers[layer_name]['stroke-width-const'] = stroke_width + "px";
+                current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
                 if(fill_meth == "single") {
                     selection.style('fill', fill_prev.single)
@@ -470,33 +470,38 @@ function createStyleBox_ProbSymbol(layer_name){
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
     popup.append('p').html('Border width<br>')
                       .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
-                      .on('change', function(){selection.style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = this.value+"px"});
-    popup.append("p").html("Field used for proportionals values : <i>" + current_layers[layer_name].rendered_field + "</i>")
+                      .on('change', function(){selection.style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
+    popup.append("p").html("Field used for proportionals values : <i>" + field_used + "</i>")
     popup.append('p').html('Symbol max size<br>')
                       .insert('input').attr("type", "range").attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
                       .on("change", function(){
                           let z_scale = zoom.scale(),
                               prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
-                          if(type_method.indexOf("Dorling") > -1){
-                            d3.select(g_lyr_name).sele
-                            make_dorling_demers(ref_layer_name, current_layers[layer_name].rendered_field, this.value, current_layers[layer_name].size[0], layer_name)
-                          } else {
-                              if(type_symbol === "circle") {
-                                  for(let i=0, len = prop_values.length; i < len; i++){
-                                      selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
-                                  }
-                              } else if(type_symbol === "rect") {
-                                  for(let i=0, len = prop_values.length; i < len; i++){
-                                      let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
-                                          old_size = +selection[0][i].getAttribute('height'),
-                                          centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
-                                                   +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
-                                      selection[0][i].setAttribute('x', centr[0]);
-                                      selection[0][i].setAttribute('y', centr[1]);
-                                      selection[0][i].setAttribute('height', sz);
-                                      selection[0][i].setAttribute('width', sz);
-                                  }
+                          if(type_symbol === "circle") {
+                              for(let i=0, len = prop_values.length; i < len; i++){
+                                  selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
                               }
-                            }
+                          } else if(type_symbol === "rect") {
+                              for(let i=0, len = prop_values.length; i < len; i++){
+                                  let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
+                                      old_size = +selection[0][i].getAttribute('height'),
+                                      centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
+                                               +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
+                                  selection[0][i].setAttribute('x', centr[0]);
+                                  selection[0][i].setAttribute('y', centr[1]);
+                                  selection[0][i].setAttribute('height', sz);
+                                  selection[0][i].setAttribute('width', sz);
+                              }
+                          }
+                          if(type_method.indexOf('Dorling') > -1){
+                            let nodes = selection[0].map((d, i) => {
+                                let pt = path.centroid(d.__data__.geometry);
+                                return {x: pt[0], y: pt[1],
+                                        x0: pt[0], y0: pt[1],
+                                        r: +prop_values[i],
+                                        value: +d_values[i]};
+                                });
+                              current_layers[layer_name].force.nodes(nodes).start()
+                          }
                       });
 }
