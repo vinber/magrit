@@ -20,11 +20,12 @@ Currently allowed geometry input :
 
 Currently allowed external dataset :
  - **csv file**
-(- To be done : read xls, xlsx and ods formats)
+ - To be done : read xls, xlsx and ods formats
 
 Currently available mapping methods :
  - choropleth map
  - proportional symbol map
+ - discontinuities map
  - links map
  - choroplethized proportional symbol
  - gridded map
@@ -36,7 +37,7 @@ Currently available mapping methods :
 #### Instalation
 Following dependencies are needed :
 
-Ubuntu:
+Ubuntu/Debian:
 ```
 sudo apt-get install libgdal-dev libproj-dev libv8-dev libffi-dev
 libpython3.5-dev r-base redis-server nodejs npm libfftw3-dev libzmq-dev

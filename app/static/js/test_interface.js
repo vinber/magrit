@@ -81,7 +81,9 @@ function prepare_drop_section(){
 
                 for(let i=0; i < files.length; i++){
                     if(files[i].size > MAX_INPUT_SIZE){
+                        elem.style.border = '3px dashed red';
                         alert("Too large input file (should currently be under 12Mb");
+                        elem.style.border = '';
                         return;
                     }
                 }
@@ -94,6 +96,7 @@ function prepare_drop_section(){
                         elem.style.border = '';
                         handle_shapefile(files);
                     } else {
+                        elem.style.border = '3px dashed red';
                         alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
                         elem.style.border = '';
                     }
@@ -266,7 +269,8 @@ function handle_single_file(file) {
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
-        result_layer_on_add = options ? options.result_layer_on_add : false;
+        result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
+        skip_alert = (options && options.skip_alert) ? true : false;
 
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
@@ -400,7 +404,7 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons();
     target_layer_on_add = false;
-    alert('Layer successfully added to the canvas');
+    if(!skip_alert) alert('Layer successfully added to the canvas');
     return lyr_name;
 };
 

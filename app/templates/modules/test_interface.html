@@ -66,6 +66,7 @@ var path = d3.geo.path().projection(proj).pointRadius(2),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",
+    available_projections = new Map(),
     zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Map();
 
@@ -103,6 +104,7 @@ var user_data = new Object(),
     last_params = new Object(),
     dataset_name = undefined,
     join_button = null,
+    canvas_rotation_value = undefined,
     map_div = d3.select("#map");
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
@@ -266,7 +268,7 @@ var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width=
             .on("click", add_layout_features)
     dv4.append("p")
             .html(sys_run_button + " Save your preferences...")
-            .on("click", load_map_template)
+            .on("click", save_map_template)
     dv4.append("p")
             .html(sys_run_button + " Load a preference JSON...")
             .on("click", load_map_template)
@@ -334,9 +336,10 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
         map.selectAll("path").attr("d", path);
     });
 
-    let p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", change_projection);
+    let p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", function(){ change_projection(this.value); });
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
+            available_projections.set(d.name, d.projection);
             p.append("option").text(d.name).attr("value", d.projection);
            });
     });
@@ -723,7 +726,19 @@ function remove_layer_cleanup(name){
 }
 
 function load_map_template(){
-    alert("Not implemented!");
+    let input_button = d3.select(document.createElement('input'))
+                    .attr("type", "file").attr("name", "file")
+                    .attr("enctype", "text/json")
+                    .on('change', function(){ prepareReading(d3.event) });
+
+    let prepareReading = function(event){
+        let file = event.target.files[0],
+            reader = new FileReader();
+        reader.onloadend = function(){ apply_user_preferences(reader.result); }
+        reader.readAsText(file);
+    }
+
+    input_button.node().dispatchEvent(new MouseEvent("click"))
 }
 
 // Change color of the background (ie the parent "svg" element on the top of which group of elements have been added)
@@ -814,7 +829,9 @@ function handle_click_zoom_select(){
 function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
     var map_config = new Object(),
         layers_style = [],
-        layers = d3.selectAll("svg").selectAll("g:not(.legend_feature)");
+        layers = map.selectAll("g.layer"),
+        map_title = document.getElementById('map_title'),
+        user_id = document.getElementById('user_id').innerHTML;
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
@@ -827,9 +844,19 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     map_config.div_height = h;
     map_config.n_layers = layers[0].length;
 
+    if(map_title){
+        map_config.title = {
+            "content": map_title.textContent,
+            "x": map_title.getAttribute("x"),
+            "y": map_title.getAttribute("y"),
+            "style": map_title.getAttribute("style")
+            };
+    }
+
+
     // Todo : re-handle the whole unsupported part of this function, i.e. the block coming next :
 
-    for(let i=map_config.n_layers-1; i >= 0; --i){
+    for(let i=map_config.n_layers-1; i > -1; --i){
         let layer_name = layers[0][i].id;
         layers_style[i] = new Object();
         layers_style[i].layer_name = layer_name;
@@ -841,22 +868,20 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
             layers_style[i].size_params = current_layers[layer_name].size;
             layers_style[i].fill = selection.style("fill");
             layers_style[i].fill_opacity = selection.style("fill-opacity");
-        } else {
-            layers_style[i].cache_url = [d3.select("#user_id").html(), "nuts2_data"].join('_');
-            let selection = d3.select("#" + layer_name).selectAll("path");
+        } else if (current_layers[layer_name].targeted){
+            layers_style[i].targeted = true;
+            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
+            //let selection = d3.select("#" + layer_name).selectAll("path");
             // Todo : re-handle the stroke parameter
             //layers_style[i].stroke = selection.style("stroke");
             //layers_style[i].stroke_opacity = selection.style("stroke-opacity");
             //layers_style[i].stroke_width = d3.select("#" + layer_name).style("stroke-width");
             //layers_style[i].fill_opacity = selection.style("fill-opacity");
-        /*
-            if(!current_layers[layer_name].rendered || current_layers[layer_name].rendered !== "Choropleth"){
-                layers_style[i].fill = selection.style("fill");
-            } else {
-                //layers_style[i].fill = current_layer[layer_name].colors_breaks;
-                layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
-            }
-        */
+        } else if (current_layers[layer_name].renderer == "Stewart" 
+                    || current_layers[layer_name].renderer == "Gridded"
+                    || current_layers[layer_name].renderer == "Carto_doug"){
+            layers_style[i].renderer = current_layers[layer_name].renderer;
+            layers_style[i].cache_url = [user_id, layer_name].join('_');
         }
     }
     return JSON.stringify({"map_config": map_config, "layers": layers_style})
@@ -897,7 +922,10 @@ function zoom_without_redraw(){
     map.selectAll("g.layer")
               .transition()
               .duration(45)
-              .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
+              .attr("transform", [canvas_rotation_value || "",
+                                  "translate(", zoom.translate(), "),",
+                                  "scale(", zoom.scale(), ")"].join(''));
+              //.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
     let layers = Object.getOwnPropertyNames(current_layers);
 
     for(let i = layers.length - 1; i > -1; i--){
@@ -999,7 +1027,7 @@ function rotate_global(angle){
     d3.selectAll("svg").selectAll("g:not(.legend_feature)")
       .transition()
       .duration(10)
-      .attr("transform", "rotate(" + angle + ","+ w / 2 +","+  h / 2 +")");
+      .attr("transform", canvas_rotation_value);
 };
 
 
@@ -1009,20 +1037,21 @@ function rotate_global(angle){
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
-    let ztrans = zoom.translate();
+    canvas_rotation_value = ["rotate(", angle, ",", w / 2,",", h / 2, ")"].join('');
     map.selectAll("g:not(.legend_feature)")
       .transition()
       .duration(10)
-      .attr("transform", ["rotate(", angle, ",",  w / 2, ",",  h / 2, "),",
-                          "translate(", ztrans[0], ",", ztrans[1], "),",
+      .attr("transform", [canvas_rotation_value,
+                          ",translate(", zoom.translate(), "),",
                           "scale(", zoom.scale(), ")"].join(''));
 };
 
-function change_projection() {
-    var current_proj_name = this.value.split('()')[0].split('.')[2]
+function change_projection(proj_name) {
+    console.log(proj_name)
+    var current_proj_name = proj_name.split('()')[0].split('.')[2];
 
     // Update global variables:
-    proj = eval(this.value);
+    proj = eval(proj_name);
     path = d3.geo.path().projection(proj);
     t = proj.translate();
     s = proj.scale();
@@ -1171,7 +1200,8 @@ function handle_proj_center_button(param){
 // Function triggered by the change of map/canvas size
 // Args :
 //   - param (Array of two elements : width and height to use; generally only used
-//            once at the time so `param` values are like [null, 750] or [800, null])
+//            once at the time so `param` values are like [null, 750] or [800, null]
+//            but also works with the 2 params together like [800, 750])
 function canvas_mod_size(param){
     if(param[0]){
         w = param[0];
@@ -1248,30 +1278,55 @@ function export_compo_png(){
 function apply_user_preferences(json_pref){
     let preferences = JSON.parse(json_pref),
         map_config = preferences.map_config,
-        layers_style = preferences.layer_style;
+        layers = preferences.layers;
 
     // Update some global variables with the readed values in order to retrieve
     // the same map size / orientation / zoom / etc ...
-    current_proj_name = map_config.projection;
-    proj = eval(current_proj_name);
-    s = map_config.projection_scale;
-    t = map_config.projection_translate;
-    proj.scale(s).translate(t);
-    zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
     w = map_config.div_width;
     h = map_config.div_height;
+    canvas_mod_size([w, h])
+    current_proj_name = map_config.projection;
+    proj = eval(available_projections.get(current_proj_name));
+    s = map_config.projection_scale;
+    t = map_config.projection_translate;
+    proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+    path = d3.geo.path().projection(proj);
+    map.selectAll("path").attr("d", path)
+    zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
+    zoom_without_redraw();
 
-    // current_layers = eval(map_config.current_layers);
-
-    /*
-    for(let i = 0; i < preference.n_layers; i++){
-        if(layers_style[i].cache_url){
-
+    if(map_config.title){
+        let title = document.getElementById("map_title");
+        if(title){
+            title.textContent = map_config.title.content;
+            title.setAttribute("x", map_config.title.x)
+            title.setAttribute("y", map_config.title.y)
+            title.setAttribute("style", map_config.title.style)
         } else {
-
+            title = map.append("g")
+                     .attr("class", "legend_feature title")
+                  .insert("text")
+                     .attr({id: "map_title", x: map_config.title.x, y: map_config.title.y, "alignment-baseline": "middle", "text-anchor": "middle"})
+                     .text(map_config.title.content);
+            title.node().setAttribute("style", map_config.title.style)
         }
     }
-    */
+
+    for(let i = map_config.n_layers - 1; i > -1; --i){
+        let layer_name = layers[i].layer_name;
+        if(layers[i].cache_url && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
+            let url = "/get_layer/"+layers[i].cache_url;
+            d3.text(url, function(data){
+                let tmp = {skip_alert: true};
+                if(layers[i].targeted) target_layer_on_add = true;
+                else if(layers[i].renderer) tmp['result_layer_on_add'] = true;
+                add_layer_topojson(data, tmp);
+            })
+        } else {
+            null;
+        }
+    }
+
 }
 
 function handle_export(){

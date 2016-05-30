@@ -1,9 +1,9 @@
 TODO list:
+- /!\ Fix the (colored) legend on PropSymbolChoro in order to keep it updated when a new discretization is changed (as on choropleth)
+- /!\ fix the zoom by rectangular zone
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
 - Propose directly palettes instead of only reclassing in the styling popup when features have been already classed
 - Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation
-- /!\ reload preferences from the exported json
-- /!\ fix the zoom by rectangular zone
 - add the simplification options ?
 - allow to display label on rendered features ?
 - Add some layout elements (cardinal arrow, scale, etc.)
@@ -13,6 +13,4 @@ TODO list:
 - Refactor broken selenium tests
 - Allow the user to display label of features on its map (based, or not on some criteria)
 - Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
-- Fix the (colored) legend on PropSymbolChoro in order to keep it updated when a new discretization is changed (as on choropleth)
 - Allow to explore the table of the result layer
-- Add some kind of quantization option for the topojson to use for discontinuity map
