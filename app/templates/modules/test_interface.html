@@ -117,6 +117,7 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
 // and some mapping to theses reference according to the type of geometry :
 var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="style_button" width="17" height="17" alt="submit"/>',
     button_trash = ' <img src="/static/img/Trash_font_awesome.svg" class="trash_button" width="17" height="17" alt="submit"/>',
+    button_legend = ' <img src="/static/img/qgis_legend.svg" class="legend_button" width="17" height="17" alt="submit"/>',
     button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" class="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
     button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">',
     button_polygon = '<img src="/static/img/qgis_mIconPolygonLayer.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
@@ -492,24 +493,48 @@ $("[data-tooltip!='']").qtip({
 // To bind the set of small buttons (trash icon, paint icon, active/deactive visibility, info tooltip, etc..)
 // which are on each feature representing a layer in the layer manager
 // (the function is called each time that a new feature is put in this layer manager)
-function binds_layers_buttons(){
-    d3.selectAll(".trash_button").on("click", remove_layer);
-    d3.selectAll(".active_button").on("change", handle_active_layer);
-    d3.selectAll(".zoom_fit_button").on("click", function(){
-        let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
-        center_map(layer_name);
-        zoom_without_redraw();
-    });
-    d3.selectAll(".style_button").on("click", function(){
-        handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
-    });
-    d3.selectAll(".style_target_layer").on("click", function(){
-        handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
-    });
-    $("[layer-tooltip!='']").qtip({
-        content: { attr: "layer-tooltip" },
-        style: { classes: 'qtip-rounded qtip-light qtip_layer'}
-    });
+function binds_layers_buttons(layer_name){
+    if(layer_name != undefined){
+        let cl_layer = '.' + layer_name,
+            sortable_li = d3.select("#sortable");
+        sortable_li.select(cl_layer).select(".trash_button").on("click", function(){ remove_layer(layer_name); });
+        sortable_li.select(cl_layer).select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
+        sortable_li.select(cl_layer).select(".zoom_fit_button").on("click", function(){
+            center_map(layer_name);
+            zoom_without_redraw();
+        });
+        sortable_li.select(cl_layer).select(".style_button").on("click", function(){
+            handle_click_layer(layer_name);
+        });
+        sortable_li.select(cl_layer).select(".style_target_layer").on("click", function(){
+            handle_click_layer(layer_name)
+        });
+        sortable_li.select(cl_layer).select(".legend_button").on("click", function(){
+            handle_legend(layer_name);
+        });
+    } else {
+        let selec = d3.select('#sortable');
+        selec.selectAll(".trash_button").on("click", remove_layer);
+        selec.selectAll(".active_button").on("change", handle_active_layer);
+        selec.selectAll(".zoom_fit_button").on("click", function(){
+            let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+            center_map(layer_name);
+            zoom_without_redraw();
+        });
+        selec.selectAll(".style_button").on("click", function(){
+            handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+        });
+        selec.selectAll(".style_target_layer").on("click", function(){
+            handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+        });
+        selec.selectAll(".legend_button").on("click", function(){
+            handle_legend(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+        });
+        $("[layer-tooltip!='']").qtip({
+            content: { attr: "layer-tooltip" },
+            style: { classes: 'qtip-rounded qtip-light qtip_layer'}
+        });
+    }
 }
 
 // Function to display information on the top layer (in the layer manager)
@@ -638,9 +663,8 @@ function log_coordinates(t){
 };
 
 // Wrapper to obtain confirmation before actually removing a layer :
-function remove_layer(){
-    var name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
-
+function remove_layer(name){
+    name = name || this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
         if(confirmed){
@@ -1046,9 +1070,14 @@ var φ = d3.scale.linear()
     .range([90, -90]);
 
 // Function to switch the visibility of a layer with the checkbox designed for
-function handle_active_layer(){
-    let name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim(),
+function handle_active_layer(name){
+    let fill_value;
+    if(!name) {
+        name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
         fill_value = this.checked ? 1 : 0;
+    } else {
+        fill_value = d3.select("#sortable").select('.' + name).select("#active_button").node().checked ? 1 : 0;
+    }
     d3.selectAll("#"+name).style("opacity", fill_value);
 }
 

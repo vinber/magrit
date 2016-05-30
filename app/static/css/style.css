@@ -195,7 +195,7 @@ p.menu {
     border-color:transparent;
 }
 
-.trash_button,.zoom_fit_button,.style_button,.style_target_layer {
+.trash_button,.zoom_fit_button,.style_button,.style_target_layer,.legend_button {
     margin-top: 4px;
     margin-left: 2px;
     float: right;

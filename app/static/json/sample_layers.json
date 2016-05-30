@@ -1,16 +1,18 @@
 [
  {
- "GrandParisMunicipalities": "/database/topojson/GrandParisMunicipalities.topojson",
+ "GrandParisMunicipalities": "/database/geojson/GrandParisMunicipalities.geojson",
  "gpm_dataset": "/database/csv/gpm.csv",
- "nuts2": "/database/topojson/nuts2.topojson",
- "nuts2_data": "/database/topojson/nuts2_data.topojson",
+ "nuts2": "/database/geojson/nuts2.geojson",
+ "nuts2_data": "/database/geojson/nuts2_data.geojson",
  "twincities": "/database/csv/twincities.csv",
- "nuts0": "/database/topojson/nuts0.topojson",
- "nuts1": "/database/topojson/nuts1.topojson",
- "paris_hospitals": "/database/topojson/paris_hospitals.topojson",
- "world_countries_50m": "/database/topojson/ne_50m_admin_0_countries.topojson",
- "world_country": "/database/topojson/simplified_land_polygons.topojson",
- "world_cities": "/database/topojson/world_cities_extract5000.topojson",
- "water_coverage": "/database/topojson/water.topojson"
+ "nuts0": "/database/geojson/nuts0.geojson",
+ "nuts1": "/database/geojson/nuts1.geojson",
+ "paris_hospitals": "/database/geojson/paris_hospitals.geojson",
+ "us_county": "/database/geojson/cb_2015_us_county_20m.geojson",
+ "us_states": "/database/geojson/cb_2015_us_state_5m.geojson",
+ "world_countries_50m": "/database/geojson/ne_50m_admin_0_countries.geojson",
+ "world_country": "/database/geojson/simplified_land_polygons.geojson",
+ "world_cities": "/database/geojson/world_cities_extract5000.geojson",
+ "water_coverage": "/database/geojson/water.geojson"
  }
 ]

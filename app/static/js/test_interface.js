@@ -139,6 +139,7 @@ function prepare_drop_section(){
 
 function handle_shapefile(files){
     var ajaxData = new FormData();
+    ajaxData.append("quantization", menu_option.quantization_default);
     ajaxData.append("action", "submit_form");
     for(let j=0; j<files.length; j++){
         ajaxData.append('file['+j+']', files[j]);
@@ -249,6 +250,7 @@ function add_csv_geom(file, name){
 function handle_single_file(file) {
     var ajaxData = new FormData();
     ajaxData.append("action", "single_file");
+    ajaxData.append("quantization", menu_option.quantization_default);
     ajaxData.append('file[]', file);
     $.ajax({
         processData: false,
@@ -291,7 +293,7 @@ function add_layer_topojson(text, options){
     // Probably better open an alert asking to the user which one to load ?
     for(let i=0; i < layers_names.length; i++){
         var random_color1 = Colors.names[Colors.random()],
-            lyr_name = layers_names[i],
+            lyr_name = check_layer_name(layers_names[i]),
             field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
@@ -378,8 +380,11 @@ function add_layer_topojson(text, options){
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
             fields_handler.fill(lyr_name);
+        } else if (result_layer_on_add) {
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
+            fields_handler.fill();
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', result_layer_on_add ? sys_run_button_t2 : button_style, button_trash, button_zoom_fit, button_active, result_layer_on_add ? button_type_blank[type] : button_type[type], "</div> ",lyr_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name].join('')
             fields_handler.fill();
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
@@ -390,11 +395,13 @@ function add_layer_topojson(text, options){
         center_map(lyr_name);
     } else if (result_layer_on_add) {
         center_map(lyr_name);
+        switch_accordion_section();
     }
     zoom_without_redraw();
     binds_layers_buttons();
     target_layer_on_add = false;
     alert('Layer successfully added to the canvas');
+    return lyr_name;
 };
 
 function scale_to_lyr(name){
@@ -522,8 +529,10 @@ function add_layout_layers(){
                         }
                         else {
                             url = sample_datasets[selec.layout[i]];
-                            cache_sample_layer(selec.layout[i]);
-                            d3.text(url, function(txt_layer){ add_layer_topojson(txt_layer); })
+                            //cache_sample_layer(selec.layout[i]);
+                            d3.text(url, function(txt_layer){
+                                add_layer_topojson(txt_layer);
+                            });
                         }
                     }
                 }
@@ -568,12 +577,14 @@ function add_sample_layer(){
             if(confirmed){
                 let url = undefined;
                 if(selec.target){
-                    cache_sample_layer(selec.target);
-                    url = sample_datasets[selec.target];
-                    d3.text(url, function(txt_layer){
-                        target_layer_on_add = true;
-                        add_layer_topojson(txt_layer);
-                    });
+                    // cache_sample_layer(selec.target);
+                    target_layer_on_add = true;
+                    add_sample_geojson(selec.target)
+//                    url = sample_datasets[selec.target];
+//                    d3.text(url, function(txt_layer){
+//                        target_layer_on_add = true;
+//                        add_layer_topojson(txt_layer);
+//                    });
                 }
                 if(selec.dataset){
                     url = sample_datasets[selec.dataset];
@@ -626,16 +637,17 @@ function add_sample_layer(){
     dataset_selec.on("change", function(){selec.dataset = this.value;});
 }
 
-function cache_sample_layer(name_layer){
+function add_sample_geojson(name){
     var formToSend = new FormData();
-    formToSend.append("layer_name", name_layer)
+    formToSend.append("layer_name", name)
+    formToSend.append("quantization", menu_option.quantization_default);
     $.ajax({
         processData: false,
         contentType: false,
-        global: false,
         url: '/cache_topojson/sample_data',
         data: formToSend,
         type: 'POST',
+        success: function(data){ add_layer_topojson(data); },
         error: function(error) { console.log(error); }
     });
 }

@@ -20,7 +20,7 @@ def try_float(val):
 #        with open(path, 'w') as f:
 #            f.write(raw_data.decode())
 
-def savefile2(path, raw_data):
+def savefile(path, raw_data):
     with open(path, 'wb') as f:
         f.write(raw_data)
 
@@ -35,9 +35,13 @@ def hash_md5_file(path):
 
 def get_key(var):
     """Find and return an available key (ie. which is not in 'var')"""
+    choice_list = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
+                   101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
+                   113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
+
     while True:
-        k = (b''.join([bytes([choice(list(range(48, 58))+list(range(97, 123)))])
-                    for i in range(25)])).decode()
+        k = ''.join([chr(choice(choice_list))
+                    for i in range(25)])
         if k not in var:
             return k
 

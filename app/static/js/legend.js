@@ -1,16 +1,15 @@
 "use strict";
-
-function makeButtonLegend(layer_name){
-    // Todo : make the label clickable as the checkbox
-    section2.insert("p")
-        .attr("id", "display_legend")
-        .style({"text-align": "center", "margin-right": "5%"})
-        .html("Display the legend")
-        .insert('input')
-        .attr("id", "checkbox_legend")
-        .attr("type", "checkbox")
-        .on("change", function(){handle_legend(layer_name);});
-}
+//function makeButtonLegend(layer_name){
+//    // Todo : make the label clickable as the checkbox
+//    section2.insert("p")
+//        .attr("id", "display_legend")
+//        .style({"text-align": "center", "margin-right": "5%"})
+//        .html("Display the legend")
+//        .insert('input')
+//        .attr("id", "checkbox_legend")
+//        .attr("type", "checkbox")
+//        .on("change", function(){handle_legend(layer_name);});
+//}
 
 function handle_legend(layer){
     let state = current_layers[layer].renderer;
@@ -224,7 +223,7 @@ function createLegend_choro(layer, field, title, subtitle){
       .attr('height', boxheight)
       .style('fill', function(d) { return d[1]; })
       .style('stroke', function(d) { return d[1]; });
-      
+
     legend_elems
       .append('text')
       .attr("x", xpos + boxwidth * 2 + boxgap)
@@ -272,7 +271,7 @@ function createlegendEditBox(legend_id, layer_name){
     nwBox.className = 'popup';
     (document.body || document.documentElement).appendChild(nwBox);
     (document.body || document.documentElement).appendChild(bg);
-   
+
     var box_body = d3.select(["#", layer_name, "_legend_popup"].join('')),
         legend_boxes = d3.selectAll([legend_id, ".lg"].join(' ')).select("text"),
         current_nb_dec;
@@ -291,7 +290,7 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.node().textContent = this.value
             });
 
-    // Float precision for label in the legend 
+    // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
     let first_value = legend_id.indexOf("2") === -1 ? legend_boxes[0][0].__data__[0].split(" - ")[0] : String(legend_boxes[0][0].__data__.value),

@@ -20,7 +20,7 @@ let setSelected = function(selectNode, value)
 function make_single_color_menu(layer, fill_prev, symbol = "path"){
     var fill_color_section = d3.select("#fill_color_section"),
         g_lyr_name = "#" + layer,
-        last_color = fill_prev.single ? fill_prev.single : undefined;
+        last_color = (fill_prev && fill_prev.single) ? fill_prev.single : undefined;
     fill_color_section.insert('p')
           .html('Fill color<br>')
           .insert('input').attr({type: 'color', "value": last_color})
