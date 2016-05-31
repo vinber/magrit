@@ -831,7 +831,8 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
-        user_id = document.getElementById('user_id').innerHTML;
+        user_id = document.getElementById('user_id').innerHTML,
+        displayed_legend = d3.selectAll(".legend_feature:not(.title)");
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
@@ -840,9 +841,10 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
     map_config.projection_rotation = proj.rotate();
     map_config.zoom_translate = zoom.translate();
     map_config.zoom_scale = zoom.scale();
-    map_config.div_width = w;
-    map_config.div_height = h;
+    map_config.div_width = +w;
+    map_config.div_height = +h;
     map_config.n_layers = layers[0].length;
+    map_config.displayed_legend = displayed_legend.size() > 0 ? true : false;
 
     if(map_title){
         map_config.title = {
@@ -853,36 +855,75 @@ function get_map_template(){   //  ... or maintain up-to-date a global Object() 
             };
     }
 
-
-    // Todo : re-handle the whole unsupported part of this function, i.e. the block coming next :
-
     for(let i=map_config.n_layers-1; i > -1; --i){
-        let layer_name = layers[0][i].id;
+        let layer_name = layers[0][i].id,
+            nb_ft = current_layers[layer_name].n_features,
+            selection;
+
         layers_style[i] = new Object();
         layers_style[i].layer_name = layer_name;
+        layers_style[i].n_features = nb_ft;
+
+        if(current_layers[layer_name]["stroke-width-const"])
+            layers_style[i]["stroke-width-const"] = current_layers[layer_name]["stroke-width-const"];
+
+        if(current_layers[layer_name].fixed_stroke)
+            layers_style[i].fixed_stroke = current_layers[layer_name].fixed_stroke;
+
+        if(current_layers[layer_name].colors_breaks)
+            layers_style[i].colors_breaks = JSON.stringify(current_layers[layer_name].colors_breaks);
+
+
         if(layer_name.indexOf('PropSymbols') !== -1){
-            let type_symbol = current_layers[layer_name].symbol,
-                selection = d3.select("#" + layer_name).selectAll(type_symbol);
+            let type_symbol = current_layers[layer_name].symbol;
+            selection = map.select("#" + layer_name).selectAll(type_symbol);
             layers_style[i].symbol = type_symbol;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
-            layers_style[i].size_params = current_layers[layer_name].size;
-            layers_style[i].fill = selection.style("fill");
-            layers_style[i].fill_opacity = selection.style("fill-opacity");
+            layers_style[i].renderer = current_layers[layer_name].renderer;
+            layers_style[i].size = current_layers[layer_name].size;
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
+            layers_style[i].features_order = JSON.stringify(current_layers[layer_name].features_order);
         } else if (current_layers[layer_name].targeted){
+            selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].fill_opacity = selection.style("fill-opacity");
             layers_style[i].targeted = true;
             layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
-            //let selection = d3.select("#" + layer_name).selectAll("path");
-            // Todo : re-handle the stroke parameter
-            //layers_style[i].stroke = selection.style("stroke");
-            //layers_style[i].stroke_opacity = selection.style("stroke-opacity");
-            //layers_style[i].stroke_width = d3.select("#" + layer_name).style("stroke-width");
-            //layers_style[i].fill_opacity = selection.style("fill-opacity");
-        } else if (current_layers[layer_name].renderer == "Stewart" 
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            if(current_layers[layer_name].renderer && current_layers[layer_name].renderer.startsWith("Choro")){
+                layers_style[i].renderer = current_layers[layer_name].renderer;
+                layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            }
+        } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
                     || current_layers[layer_name].renderer == "Carto_doug"){
+            selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
             layers_style[i].cache_url = [user_id, layer_name].join('_');
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
+        } else if (current_layers[layer_name].renderer == "Links"
+                    || current_layers[layer_name].renderer == "DiscLayer"){
+            selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
+            layers_style[i].size = current_layers[layer_name].size;
+            layers_style[i].min_display = current_layers[layer_name].min_display;
+            if(current_layers[layer_name].renderer == "DiscLayer"){
+                layers_style[i].result = new Array(nb_ft)
+                for(let j = 0; j < nb_ft; j++)
+                    layers_style[i].result[j] = nb_ft;
+            } else {
+                layers_style[i].cache_url = [user_id, layer_name].join('_');
+                layers_style[i].LinksById = current_layers[layer_name].LinksById.splice(0, nb_ft)
+            }
+        } else {
+            selection = map.select("#" + layer_name).selectAll("path");
         }
+        layers_style[i].stroke_opacity = selection.style("stroke-opacity");
+        layers_style[i].fill_opacity = selection.style("fill-opacity")
     }
     return JSON.stringify({"map_config": map_config, "layers": layers_style})
 }
@@ -1282,16 +1323,156 @@ function apply_user_preferences(json_pref){
 
     // Update some global variables with the readed values in order to retrieve
     // the same map size / orientation / zoom / etc ...
-    w = map_config.div_width;
-    h = map_config.div_height;
-    canvas_mod_size([w, h])
+    w = +map_config.div_width;
+    h = +map_config.div_height;
+    canvas_mod_size([w, h]);
+    document.getElementById("input-width").value = w;
+    document.getElementById("input-height").value = h;
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     path = d3.geo.path().projection(proj);
-    map.selectAll("path").attr("d", path)
+    map.selectAll("path").attr("d", path);
+
+    for(let i = map_config.n_layers - 1; i > -1; --i){
+        let layer_name = layers[i].layer_name,
+            symbol,
+            layer_selec;
+        let fill_opacity = layers[i].fill_opacity,
+            stroke_opacity = layers[i].stroke_opacity;
+
+        if(layers[i].cache_url && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
+            let url = "/get_layer/"+layers[i].cache_url;
+            d3.text(url, function(data){
+                let tmp = {skip_alert: true};
+                if(layers[i].targeted) target_layer_on_add = true;
+                else if(layers[i].renderer)tmp['result_layer_on_add'] = true;
+                add_layer_topojson(data, tmp);
+
+                symbol = "path";
+                layer_selec = map.select("#" + layer_name);
+
+                current_layers[layer_name].renderer = layers[i].renderer;
+                current_layers[layer_name].rendered_field = layers[i].rendered_field;
+                current_layers[layer_name]['stroke-width-const'] = layers[i]['stroke-width-const'];
+                current_layers[layer_name].fixed_stroke = layers[i].fixed_stroke;
+                if(layers[i].ref_layer_name)
+                    current_layers[layer_name].ref_layer_name = layers[i].ref_layer_name;
+                if(layers[i].size)
+                    current_layers[layer_name].size = layers[i].size;
+                if(layers[i].colors_breaks)
+                    current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
+                if(layers[i].fill_color)
+                    current_layers[layer_name].fill_color = layers[i].fill_color;
+
+                if(layers[i].renderer == "Choropleth"
+                    || layers[i].renderer == "Stewart"
+                    || layers[i].renderer == "Gridded"){
+                    layer_selec.selectAll("path")
+                            .style("fill", (d,j) => layers[i].fill_color.class[j])
+                    if(layers[i].renderer == "Choropleth"){
+                        insert_legend_button(layer_name);
+                        binds_layers_buttons(layer_name);
+                    }
+                } else if (layers[i].renderer == "Links"){
+                    current_layers[layer_name].LinksById = layers[i].LinksById;
+                    current_layers[layer_name].min_display = layers[i].min_display;
+                } else if (layers[i].renderer == "DiscLayer"){
+                    current_layers[layer_name].result = new Map(layers[i].result);
+                    layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
+                }
+            layer_selec.selectAll(symbol)
+                    .style("fill-opacity", fill_opacity)
+                    .style("stroke-opacity", stroke_opacity)
+            if(layers[i].fill_color.random)
+                layer_selec
+                    .selectAll(symbol)
+                    .style("fill", () => Colors.names[Colors.random()]);
+            });
+        } else if (layer_name == "Sphere" || layer_name == "Simplified_land_polygons"){
+            layer_selec = map.select("#"+layer_name);
+            symbol = "path";
+            layer_selec.selectAll(symbol)
+                    .style("fill-opacity", fill_opacity)
+                    .style("stroke-opacity", stroke_opacity)
+        } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
+            let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
+            let zs = zoom.scale();
+            let full_params = JSON.parse(layers[i].features_order);
+            let n_ft = full_params.length;
+            symbol = layers[i].symbol;
+
+            current_layers[layer_name] = {
+                renderer: layers[i].renderer,
+                rendered_field:layers[i].rendered_field,
+                'stroke-width-const': layers[i]['stroke-width-const'],
+                fixed_stroke: layers[i].fixed_stroke,
+                size: layers[i].size,
+                ref_layer_name: layers[i].ref_layer_name,
+                fill_color: layers[i].fill_color,
+                features_order: full_params,
+                symbol: symbol,
+                n_features: n_ft,
+                }
+
+            let ref_size = current_layers[layer_name].size[0],
+                max_size = current_layers[layer_name].size[1];
+
+            if(layers[i].colors_breaks)
+                current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
+
+            if(symbol == "circle"){
+                for(let ii = 0; ii < n_ft; ii++){
+                    let params = full_params[ii];
+                    layer_to_append.append('circle')
+                        .attr('cx', params[2][0])
+                        .attr("cy", params[2][1])
+                        .attr("r", ref_size / zs + params[1])
+                        .attr("id", ["PropSymbol_", ii , " feature_", params[0]].join(''))
+                        .style("fill", params[3])
+                        .style("stroke", "black")
+                        .style("stroke-width", 1 / zs);
+                }
+            } else if(symbol == "rect"){
+                for(let ii = 0; ii < n_ft; ii++){
+                    let params = full_params[ii],
+                        size = ref_size / zs + params[1];
+
+                    layer_to_append.append('rect')
+                        .attr('x', params[2][0] - size/2)
+                        .attr("y", params[2][1] - size/2)
+                        .attr("height", size)
+                        .attr("width", size)
+                        .attr("id", ["PropSymbol_", ii , " feature_", params[0]].join(''))
+                        .style("fill", params[3])
+                        .style("stroke", "black")
+                        .style("stroke-width", 1 / zs);
+                };
+            }
+            layer_selec = map.select("#"+layer_name);
+            layer_selec.selectAll(symbol)
+                    .style("fill-opacity", fill_opacity)
+                    .style("stroke-opacity", stroke_opacity)
+
+            let layers_listed = layer_list.node(),
+                li = document.createElement("li");
+
+            li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
+            li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''))
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", layer_name].join('')
+            layers_listed.insertBefore(li, layers_listed.childNodes[0])
+            binds_layers_buttons();
+
+        } else {
+            null;
+        }
+
+        if(layers[i].is_result && map_config.displayed_legend)
+            handle_legend(layer_name)
+    }
+
     zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
     zoom_without_redraw();
 
@@ -1311,22 +1492,6 @@ function apply_user_preferences(json_pref){
             title.node().setAttribute("style", map_config.title.style)
         }
     }
-
-    for(let i = map_config.n_layers - 1; i > -1; --i){
-        let layer_name = layers[i].layer_name;
-        if(layers[i].cache_url && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
-            let url = "/get_layer/"+layers[i].cache_url;
-            d3.text(url, function(data){
-                let tmp = {skip_alert: true};
-                if(layers[i].targeted) target_layer_on_add = true;
-                else if(layers[i].renderer) tmp['result_layer_on_add'] = true;
-                add_layer_topojson(data, tmp);
-            })
-        } else {
-            null;
-        }
-    }
-
 }
 
 function handle_export(){

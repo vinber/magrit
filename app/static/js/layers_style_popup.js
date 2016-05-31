@@ -51,7 +51,7 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
         d3.select("#"+layer)
             .selectAll(symbol)
             .style("fill", function(d, i){
-                let idx = features_order[i];
+                let idx = features_order[i][0];
                 return color_cat_map.get(data_layer[idx][field_name]);
             });
     } else if (ref_layer)
@@ -429,7 +429,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     };
                 selection.style('fill-opacity', 0.9)
                          .style("fill", function(d, i){
-                    let ft_id = +current_layers[layer_name].features_order[i];
+                    let ft_id = +current_layers[layer_name].features_order[i][0];
                     return rendering_params.colorsByFeature[ft_id];
                 });
              }

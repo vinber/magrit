@@ -297,7 +297,8 @@ function add_layer_topojson(text, options){
     // Probably better open an alert asking to the user which one to load ?
     for(let i=0; i < layers_names.length; i++){
         var random_color1 = Colors.names[Colors.random()],
-            lyr_name = check_layer_name(layers_names[i]),
+            lyr_name = layers_names[i],
+            lyr_name_to_add = check_layer_name(lyr_name),
             field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
@@ -305,22 +306,22 @@ function add_layer_topojson(text, options){
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
 
 //        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
-        current_layers[lyr_name] = {"type": type,
+        current_layers[lyr_name_to_add] = {"type": type,
                                     "n_features": parsedJSON.objects[lyr_name].geometries.length,
                                     "stroke-width-const": 0.4,
                                     "fill_color":  {"single": random_color1},
                                     };
 
         if(target_layer_on_add){
-            current_layers[lyr_name].targeted = true;
-            user_data[lyr_name] = [];
+            current_layers[lyr_name_to_add].targeted = true;
+            user_data[lyr_name_to_add] = [];
             data_to_load = true;
         } else if(result_layer_on_add){
-            result_data[lyr_name] = [];
-            current_layers[lyr_name].is_result = true;
+            result_data[lyr_name_to_add] = [];
+            current_layers[lyr_name_to_add].is_result = true;
         }
 
-        map.append("g").attr("id", lyr_name)
+        map.append("g").attr("id", lyr_name_to_add)
               .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
               .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
@@ -333,12 +334,12 @@ function add_layer_topojson(text, options){
                             if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
                                 d.properties["_uid"] = d.id;
                             d.properties["pkuid"] = ix;
-                            user_data[lyr_name].push(d.properties);
+                            user_data[lyr_name_to_add].push(d.properties);
                         } else {
-                            user_data[lyr_name].push({"id": d.id});
+                            user_data[lyr_name_to_add].push({"id": d.id});
                         }
                     } else if(result_layer_on_add)
-                        result_data[lyr_name].push(d.properties);
+                        result_data[lyr_name_to_add].push(d.properties);
 
                     return "feature_" + ix;
                 })
@@ -355,16 +356,16 @@ function add_layer_topojson(text, options){
         let class_name = [
             "ui-state-default ",
             target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
-            lyr_name
+            lyr_name_to_add
             ].join('');
 
         let layers_listed = layer_list.node(),
             li = document.createElement("li"),
             nb_ft = parsedJSON.objects[lyr_name].geometries.length;
         li.setAttribute("class", class_name);
-        li.setAttribute("layer-tooltip", ["<b>", lyr_name, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
+        li.setAttribute("layer-tooltip", ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
         if(target_layer_on_add){
-            current_layers[lyr_name].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name][0]));
+            current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
             if(browse_table.node().disabled === true)
                 browse_table.node().disabled = false;
 
@@ -376,43 +377,41 @@ function add_layer_topojson(text, options){
             }
 
             let _button = button_type[type],
-                _lyr_name_display = lyr_name.length > 24 ? [lyr_name.substring(0, 19), '(...)'].join('') : lyr_name;
+                _lyr_name_display = lyr_name_to_add.length > 24 ? [lyr_name_to_add.substring(0, 19), '(...)'].join('') : lyr_name_to_add;
 
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
-            d3.select('#input_geom').html(['<b>', lyr_name,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
+            d3.select('#input_geom').html(['<b>', lyr_name_to_add,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
-            fields_handler.fill(lyr_name);
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
+            fields_handler.fill(lyr_name_to_add);
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",lyr_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
             fields_handler.fill();
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name_to_add].join('')
             fields_handler.fill();
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
 
     if(target_layer_on_add) {
-        scale_to_lyr(lyr_name);
-        center_map(lyr_name);
+        scale_to_lyr(lyr_name_to_add);
+        center_map(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        center_map(lyr_name);
+        center_map(lyr_name_to_add);
         switch_accordion_section();
     }
     zoom_without_redraw();
     binds_layers_buttons();
     target_layer_on_add = false;
     if(!skip_alert) alert('Layer successfully added to the canvas');
-    return lyr_name;
+    return lyr_name_to_add;
 };
 
 function scale_to_lyr(name){
     name = current_layers[name].ref_layer_name || name;
     var bbox_layer_path = undefined;
-//    if(name.endsWith("_PropSymbols"))
-//        name = name.substring(0, name.length - 12);
     d3.select("#"+name).selectAll('path').each(function(d, i){
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
@@ -426,22 +425,20 @@ function scale_to_lyr(name){
         }
     });
     let prev_trans = proj.translate(),
-        prev_scale = proj.scale(),
-        s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+        prev_scale = proj.scale();
+    s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     proj.scale(s);
-    map.selectAll("g:not(.legend_feature)").selectAll("path").attr("d", path);
+    map.selectAll("g.layer").selectAll("path").attr("d", path);
 };
 
 
 function center_map(name){
     var bbox_layer_path = undefined;
-    if(name.indexOf("_PropSymbols") != -1 || name.indexOf("MTA") != -1)
-        name = current_layers[name].ref_layer_name
+    name = current_layers[name].ref_layer_name || name;
     d3.select("#"+name).selectAll('path').each(function(d, i){
-        var bbox_path = path.bounds(d);
-        if(bbox_layer_path === undefined){
+        let bbox_path = path.bounds(d);
+        if(!bbox_layer_path)
             bbox_layer_path = bbox_path;
-        }
         else {
             bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
             bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
@@ -449,10 +446,9 @@ function center_map(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-    var s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
-        t = [(w - s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    zoom.scale(s);
-    zoom.translate(t);
+    var _s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
+        _t = [(w - _s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - _s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+    zoom.scale(_s).translate(_t);
 };
 
 // Some helpers
@@ -508,7 +504,7 @@ function add_layout_layers(){
                          ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
                          ["World countries simplified <i>(Polygons)</i>", "world_country"],
                          ["World country capitals <i>(Points)</i>", "world_cities"],
-                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
+//                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
                          ["Graticule", "graticule"]];
 
 
