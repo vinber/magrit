@@ -2100,8 +2100,8 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         field = undefined,
         tmp_type = undefined;
 
-    if(fields.indexOf('pkuid') != -1)
-        fields.splice(fields.indexOf("pkuid"), 1);
+//    if(fields.indexOf('pkuid') != -1)
+//        fields.splice(fields.indexOf("pkuid"), 1);
 
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];

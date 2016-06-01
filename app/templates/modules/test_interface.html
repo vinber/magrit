@@ -285,13 +285,27 @@ section5.append("input")
         .attr("max",360).attr("step",1)
         .on("input", function(){rotate_global(this.value)});
 
-section5.append("div").html("Projection center (λ-axis rotation)")
-section5.append("input")
+var rotation_param = section5.append("div").html("Projection center (λ-axis rotation)")
+rotation_param.append("input")
         .attr("type", "range")
         .attr("id","form_projection_center")
-        .attr("value", 0).attr("min", 0)
-        .attr("max", 360).attr("step", 0.5)
+        .attr("value", 0).attr("min", -180)
+        .attr("max", 180).attr("step", 0.5)
         .on("input", function(){handle_proj_center_button([this.value, null, null])});
+
+section5.append("div").insert("button")
+        .attr("id","reset_center_rotation")
+        .attr("class", "button_st4")
+        .text("Reset center/zooming/rotation")
+        .on("click", function(){
+            document.getElementById('form_projection_center').value = 0;
+            document.getElementById('form_rotate').value = 0;
+            proj.rotate([0,,]);
+            map.selectAll("path").attr("d", path);
+            reproj_symbol_layer();
+            rotate_global(0);
+        });
+
 
 var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
             .style({position:"absolute", bottom:"-40px", left:"0px", "z-index":-1})
@@ -452,7 +466,7 @@ $(function() {
           layers = d3.selectAll("svg").node();
 
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
-          var n = (a.target.childNodes[i].innerHTML.split("></div> ")[1]).split(" - ");
+          let n = (a.target.childNodes[i].innerHTML.split("></div> ")[1]).split(" - ");
           desired_order[i] = n[n.length - 1];
           actual_order[i] = layers.children[i].id;
       }
@@ -586,34 +600,38 @@ function displayInfoOnMove(){
 }
 
 function reproj(){
-  proj.translate([t[0], t[1]]);
-  proj.scale(s)
+  proj.translate([t[0], t[1]]).scale(s);
   map.selectAll("path").attr("d", path);
-  if(func.indexOf('prop_symbol') != -1 || func.indexOf('MTA') != -1){
-    let pt_layer = d3.select('.result_layer');
-    if(pt_layer.node()){
-      let lyr_name = pt_layer.attr("id"),
-          ref_lyr_name = lyr_name.substring(0, lyr_name.indexOf('_Prop')),
-          idx_map = current_layers[lyr_name].id_size_map,
+  reproj_symbol_layer();
+}
+
+function reproj_symbol_layer(){
+  for(let lyr_name in current_layers){
+    if(current_layers[lyr_name].renderer
+        && current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1){
+      let ref_layer_name = current_layers[lyr_name].ref_layer_name,
+          features_order = current_layers[lyr_name].features_order,
           symbol = current_layers[lyr_name].symbol,
           new_coords = new Array();
-      map.select("#" + ref_lyr_name).selectAll("path").each(function(d, i){new_coords.push(path.centroid(d))});
-      pt_layer.selectAll(symbol)
-                .attr("cx", function(d, i){
-                    let _id = idx_map[i];
-                    return new_coords[_id][0];
-                    })
-                .attr("cy", function(d, i){
-                    let _id = idx_map[i];
-                    return new_coords[_id][1];
-                    })
+      map.select("#" + ref_layer_name)
+            .selectAll("path")
+            .each((d,i) => {
+                new_coords.push(path.centroid(d))
+            });
+      map.select("#"+lyr_name)
+            .selectAll(symbol)
+            .attr("cx", function(d, i){
+                let _id = features_order[i][0];
+                return new_coords[_id][0];
+            })
+            .attr("cy", function(d, i){
+                let _id = features_order[i][0];
+                return new_coords[_id][1];
+            })
+
     }
   }
 }
-
-var trim = function(s){
-    return s.replace(/^\s+|\s+$/,'');
-};
 
 function qs(str){
     return document.querySelector(str);
@@ -654,8 +672,11 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
 
 
 function log_coordinates(t){
-  var coords = proj.invert(d3.mouse(t)),
-      txt = [];
+  var coords = d3.mouse(t),
+      txt = [],
+      zt = zoom.translate(),
+      zs = zoom.scale();
+  coords = proj.invert([(coords[0]-zt[0])/zs, (coords[1]-zt[1])/zs]);
 
   if(coords[0]>0) txt.push("E")
   else txt.push("W")
@@ -1013,7 +1034,7 @@ function zoomClick() {
     interpolateZoom([view.x, view.y], view.k);
 }
 
-
+/*
 ////
 // Old zooming functions - too use when redrawing on zooming
 /////
@@ -1028,7 +1049,7 @@ function redraw(sc, tr) {
   map.selectAll(".layer").selectAll("path").attr("d", path);
   return [sc, tr];
 }
-/*
+
 function interpolateZoom(translate, scale) {
     return d3.transition().duration(225).tween("zoom", function () {
         var iTranslate = d3.interpolate(proj.translate(), translate),
@@ -1071,15 +1092,16 @@ function rotate_global(angle){
       .attr("transform", canvas_rotation_value);
 };
 
-
 */
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Rotation functions :
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
     canvas_rotation_value = ["rotate(", angle, ",", w / 2,",", h / 2, ")"].join('');
-    map.selectAll("g:not(.legend_feature)")
+    map.selectAll("g.layer")
       .transition()
       .duration(10)
       .attr("transform", [canvas_rotation_value,
@@ -1088,7 +1110,6 @@ function rotate_global(angle){
 };
 
 function change_projection(proj_name) {
-    console.log(proj_name)
     var current_proj_name = proj_name.split('()')[0].split('.')[2];
 
     // Update global variables:
@@ -1103,24 +1124,21 @@ function change_projection(proj_name) {
     // Set specifics mouse events according to the projection :
     if(strContains(current_proj_name, 'orthographic')){
         var current_params = proj.rotate();
-        section5.append("div").attr("class", "options_ortho").html("Projection center (φ-axis rotation)")
+        rotation_param.append("div").attr("class", "options_ortho").html("Projection center (φ-axis rotation)")
                 .insert("input")
-                .attr("type", "range")
-                .attr("id","form_projection_phi")
-                .attr("value", current_params[1]).attr("min", -180)
-                .attr("max", 180).attr("step", 0.5)
+                .attr({type: "range", id: "form_projection_phi"})
+                .attr({value: current_params[1], min: -180, max: 180, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, this.value, null])})
 
-        section5.append("div").attr("class", "options_ortho").html("Projection center (γ-axis rotation)")
+        rotation_param.append("div").attr("class", "options_ortho").html("Projection center (γ-axis rotation)")
                 .insert("input")
-                .attr("type", "range")
-                .attr("id","form_projection_gamma")
-                .attr("value", current_params[2]).attr("min", -90)
-                .attr("max", 90).attr("step", 0.5)
+                .attr({type: "range", id: "form_projection_gamma"})
+                .attr({value: current_params[2], min: -90, max: 90, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, null, this.value])});
     } else {
         var options_ortho = d3.selectAll(".options_ortho");
-        if(options_ortho.node()){options_ortho.remove()}
+        if(options_ortho.node())
+            options_ortho.remove();
     }
     d3.select("svg").on("mousedown", null)
                     .on("mousemove", function(){log_coordinates(this)})
@@ -1236,6 +1254,7 @@ function handle_proj_center_button(param){
         proj.rotate([current_rotation[0], current_rotation[1], param[2] - h/2]);
         map.selectAll("path").attr("d", path);
     }
+    reproj_symbol_layer();
 }
 
 // Function triggered by the change of map/canvas size

@@ -196,7 +196,7 @@ async def convert(request):
     # If a shapefile is provided as multiple files (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and not "file[]" in posted_data:
         list_files = []
-        for i in range(len(posted_data) - 1):
+        for i in range(len(posted_data) - 2):
             field = posted_data.getall('file[{}]'.format(i))[0]
             file_name = ''.join(['/tmp/', field[1]])
             list_files.append(file_name)

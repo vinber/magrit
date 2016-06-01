@@ -249,7 +249,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         var y = d3.scale.linear()
             .domain([0, d3.max(data, function(d) { return d.y; })])
-            .range([svg_h, 0]);
+            .range([height, 0]);
 
         var bar = svg_ref_histo.selectAll(".bar")
             .data(data)
@@ -293,6 +293,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = eval(val);
+                console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 serie.setClassManually(breaks);
@@ -332,10 +333,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             var col_scheme = d3.select('.color_params_left').node() ? "Diverging" : "Sequential";
 
             if(col_scheme === "Sequential"){
-                var selected_palette = d3.select('.color_params').node().value;
-                color_array = getColorBrewerArray(nb_class, selected_palette);
                 if(to_reverse)
                     color_array = color_array.reverse();
+                else {
+                var selected_palette = d3.select('.color_params').node().value;
+                color_array = getColorBrewerArray(nb_class, selected_palette);
+                }
             } else if(col_scheme === "Diverging"){
                 var left_palette = d3.select('.color_params_left').node().value,
                     right_palette = d3.select('.color_params_right').node().value,
@@ -351,16 +354,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                         left_pal = getColorBrewerArray(ctl_class_value, left_palette);
                     right_pal = right_pal.slice(0, ctl_class_value);
                 }
-                left_pal = left_pal.reverse();
-                color_array = left_pal.concat(right_pal);
-                if(to_reverse){
-                    color_array = color_array.reverse();
-                    d3.select('.color_params_left').attr("value", right_palette)
-                    d3.select('.color_params_right').attr("value", left_palette)
-                }
+//                left_pal = [].concat(left_pal.reverse());
+                color_array = new Array().concat(left_pal.reverse(), right_pal);
             }
             to_reverse = false;
-            for(var i=0, len = bins.length; i<len; ++i)
+            for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = color_array[i];
 
             var x = d3.scale.linear()
@@ -391,8 +389,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("y", function(d){
                     let tmp = y(d.height) + 5;
                     return (tmp < height - 12) ? tmp : height - 12
-//                    if(tmp < height - 12) return tmp;
-//                    else return height - 12
                     })
                 .attr("x", function(d){return x(d.offset + d.width /2)})
                 .attr("text-anchor", "middle")
@@ -408,14 +404,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     .ticks(5)
                     .orient("left"));
 
+            document.getElementById("user_breaks_area").value = breaks.join(' - ')
             //user_defined_breaks.html(breaks.join(', '))
-           d3.selectAll('#break_vals').remove();
-           var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
-            for(let i=0, len = breaks.length; i < len; ++i){
-                let min_allowed = (i === 0) ? serie.min() : breaks[i-1],
-                    max_allowed = (i === len) ? serie.max() : breaks[i+1]
-                f_class.insert("p").insert("input").attr({type: "number", value: breaks[i], min: min_allowed, max: max_allowed})
-            }
+//           d3.selectAll('#break_vals').remove();
+//           var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
+//            for(let i=0, len = breaks.length; i < len; ++i){
+//                let min_allowed = (i === 0) ? serie.min() : breaks[i-1],
+//                    max_allowed = (i === len) ? serie.max() : breaks[i+1]
+//                f_class.insert("p").insert("input").attr({type: "number", value: breaks[i], min: min_allowed, max: max_allowed})
+//            }
             return true;
         },
     };
@@ -436,13 +433,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         nb_values = db_data.length,
         values = new Array(nb_values);
 
-
     for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
 
     var serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
-        max_nb_class = 22 < serie.pop() ? 22 : serie.pop();
+        max_nb_class = 22 < nb_values ? 22 : nb_values;
 
     values = serie.sorted();
     serie.setPrecision(6);
@@ -483,6 +479,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                             .attr("type", "range")
                             .attr({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
+                                type = discretization.node().value;
                                 var old_nb_class = nb_class;
                                 if(type === "Q6"){
                                     this.value = 6;
@@ -509,66 +506,72 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
 
-    var svg_histo = newBox.append('div')
+    var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
-        .attr("height", svg_h + margin.top + margin.bottom)
-      .append("g")
+        .attr("height", svg_h + margin.top + margin.bottom);
+
+    var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var overlay_svg = div_svg.append("g");
 
     var x = d3.scale.linear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
-    var line_mean = svg_histo.append("line")
+    let mean_val = serie.mean(),
+        stddev = serie.stddev();
+
+    var line_mean = overlay_svg.append("line")
         .attr("class", "line_mean")
-        .attr("x1", x(serie.mean()))
-        .attr("y1", 0-margin.top/6)
-        .attr("x2", x(serie.mean()))
-        .attr("y2", svg_h - margin.top)
+        .attr("x1", x(mean_val))
+        .attr("y1", 0 + margin.top / 2)
+        .attr("x2", x(mean_val))
+        .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "red", fill: "none"})
         .classed("active", false);
 
-    var txt_mean = svg_histo.append("text")
-        .attr("y", -17.5)
+    var txt_mean = overlay_svg.append("text")
+        .attr("y", 0)
         .attr("dy", "0.75em")
-        .attr("x", x(serie.mean()))
+        .attr("x", x(mean_val))
         .style("fill", "none")
         .attr("text-anchor", "middle")
         .text("Mean");
 
-    var line_median = svg_histo.append("line")
+    var line_median = overlay_svg.append("line")
         .attr("class", "line_med")
         .attr("x1", x(serie.median()))
-        .attr("y1", 0-margin.top/6)
+        .attr("y1", 0 + margin.top / 2)
         .attr("x2", x(serie.median()))
-        .attr("y2", svg_h - margin.top)
+        .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "blue", fill: "none"})
         .classed("active", false);
 
-    var txt_median = svg_histo.append("text")
-        .attr("y", -17.5)
+    var txt_median = overlay_svg.append("text")
+        .attr("y", 0)
         .attr("dy", "0.75em")
         .attr("x", x(serie.median()))
         .style("fill", "none")
         .attr("text-anchor", "middle")
         .text("Median");
 
-    var line_std_left = svg_histo.append("line")
+    var line_std_left = overlay_svg.append("line")
         .attr("class", "lines_std")
-        .attr("x1", x(serie.mean() - serie.stddev()))
-        .attr("y1", 0-margin.top/6)
-        .attr("x2", x(serie.mean() - serie.stddev()))
-        .attr("y2", svg_h - margin.top)
+        .attr("x1", x(mean_val - stddev))
+        .attr("y1", 0 + margin.top / 2)
+        .attr("x2", x(mean_val - stddev))
+        .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
-    var line_std_right = svg_histo.append("line")
+    var line_std_right = overlay_svg.append("line")
         .attr("class", "lines_std")
-        .attr("x1", x(serie.mean() + serie.stddev()))
-        .attr("y1", 0-margin.top/8)
-        .attr("x2", x(serie.mean() + serie.stddev()))
-        .attr("y2", svg_h - margin.top)
+        .attr("x1", x(mean_val + stddev))
+        .attr("y1", 0 + margin.top / 2)
+        .attr("x2", x(mean_val + stddev))
+        .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
@@ -586,10 +589,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
                             .append("form_action");
-
-//    var color_scheme = newBox.append("div")
-//                        .attr("id", "color_div").html("<b>Color scheme : </b><br>")
-//                        .append("form_action");
 
     ["Sequential", "Diverging"].forEach(function(el){
         color_scheme.insert("label").style("margin", "20px").html(el)
@@ -621,9 +620,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .on("click", function(){
                     let old_nb_class = nb_class;
                     user_break_list = d3.select("#user_breaks_area").node().value;
-                    console.log(user_break_list);
                     type = "user_defined";
-                    nb_class = user_break_list.split(' - ').length;
+                    nb_class = user_break_list.split('-').length - 1;
                     txt_nb_class.html(nb_class + " class");
                     d3.select("#nb_class_range").node().value = nb_class;
                     redisplay.compute(old_nb_class);
@@ -649,7 +647,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     var colors_map = [];
                     for(let j=0; j<db_data.length; ++j){
                         var idx = serie.getClass(+db_data[j][field_name])
-//                        console.log([user_data[layer_name][j][field_name], serie, idx, color_array])
                         colors_map.push(color_array[idx])
                     }
                     deferred.resolve([nb_class, type, breaks, color_array, colors_map]);
@@ -690,17 +687,13 @@ function getBreaksQ6(serie){
 }
 
 function getBreaks_userDefined(serie, breaks_list){
-    console.log(serie);
-    console.log(breaks_list);
-    var break_values = breaks_list.split(' - '),
-        tmp = 0,
-        j = 0,
+    var break_values = breaks_list.split('-').map(el => +el.trim()),
         len_serie = serie.length,
-        stock_class = [];
+        j = 0,
+        len_break_val = break_values.length,
+        stock_class = new Array(len_break_val-1);
 
-    break_values.forEach(function(el, i){ break_values[i] = +el; });
-
-    for(let i=1; i<break_values.length; ++i){
+    for(let i=1; i<len_break_val; ++i){
         let class_max = break_values[i];
         stock_class[i-1] = 0;
         while(serie[j] < class_max){
@@ -708,8 +701,6 @@ function getBreaks_userDefined(serie, breaks_list){
             j++;
         }
     }
-    stock_class.shift();
-
     return {
         breaks: break_values,
         stock_class: stock_class

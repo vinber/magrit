@@ -195,15 +195,16 @@ function handle_dataset(f){
     reader.onload = function(e) {
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
-        joined_dataset.push(d3.csv.parse(data))
+        let tmp_dataset = d3.csv.parse(data);
 
-        let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]);
+        let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
         if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
             if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
                 add_csv_geom(data, dataset_name);
                 return;
             }
         }
+        joined_dataset.push(tmp_dataset);
         let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
             nb_features = joined_dataset[0].length;
         d3.select('#data_ext')
@@ -241,7 +242,7 @@ function add_csv_geom(file, name){
         type: 'POST',
         error: function(error) {  console.log(error);  },
         success: function(data) {
-            joined_dataset = [];
+            dataset_name = undefined;
             target_layer_on_add = true;
             add_layer_topojson(data);
             target_layer_on_add = false;
@@ -277,18 +278,19 @@ function add_layer_topojson(text, options){
         alert(parsedJSON.Error);
         return;
     }
-    var type = "", data_to_load = false,
+    var type = "",
+        data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
-    // Add an ID if the input topojson is provided without :
-    layers_names.forEach(function(l_name, j){
-        if(!parsedJSON.objects[l_name].geometries[0].id){
-            for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
-                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){
-                tgt[i].id = i;
-                }
-        }
-    });
+//    // Add an ID if the input topojson is provided without :
+//    layers_names.forEach(function(l_name, j){
+//        if(!parsedJSON.objects[l_name].geometries[0].id){
+//            for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
+//                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){
+//                tgt[i].id = i;
+//                }
+//        }
+//    });
 
     if(target_layer_on_add && menu_option.add_options && menu_option.add_options == "keep_file")
         window._target_layer_file = parsedJSON;
@@ -331,12 +333,15 @@ function add_layer_topojson(text, options){
               .attr("id", function(d, ix) {
                     if(data_to_load){
                         if(field_names.length > 0){
-                            if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
+                            //if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
+                            if(d.id != ix){
                                 d.properties["_uid"] = d.id;
-                            d.properties["pkuid"] = ix;
+                            //d.properties["pkuid"] = ix;
+                                d.id = +ix;
+                            }
                             user_data[lyr_name_to_add].push(d.properties);
                         } else {
-                            user_data[lyr_name_to_add].push({"id": d.id});
+                            user_data[lyr_name_to_add].push({"id": d.id || ix});
                         }
                     } else if(result_layer_on_add)
                         result_data[lyr_name_to_add].push(d.properties);
@@ -492,13 +497,7 @@ function add_layout_features(){
 }
 
 function add_layout_layers(){
-    var selec = {layout: null, target: null},
-        sample_datasets = undefined;
-
-    d3.json('/static/json/sample_layers.json', function(error, json){
-        sample_datasets = json[0];
-        });
-
+    var selec = {layout: null};
     var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
                          ["Nuts 1 (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
                          ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
@@ -528,11 +527,7 @@ function add_layout_layers(){
                            binds_layers_buttons();
                         }
                         else {
-                            url = sample_datasets[selec.layout[i]];
-                            //cache_sample_layer(selec.layout[i]);
-                            d3.text(url, function(txt_layer){
-                                add_layer_topojson(txt_layer);
-                            });
+                            add_sample_geojson(selec.layout[i]);
                         }
                     }
                 }
@@ -566,7 +561,9 @@ function add_sample_layer(){
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
                     ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
                     ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
-                    ["World countries <i>(Polygons)</i>", "world_countries_50m"]];
+                    ["World countries <i>(Polygons)</i>", "world_countries_50m"],
+                    ["U.S.A counties <i>(Polygons)</i>", "us_county"],
+                    ["U.S.A states <i>(Polygons)</i>", "us_states"]];
 
     var tabular_datasets = [["<i>Tabular dataset</i>",""],
                     ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
@@ -577,14 +574,8 @@ function add_sample_layer(){
             if(confirmed){
                 let url = undefined;
                 if(selec.target){
-                    // cache_sample_layer(selec.target);
                     target_layer_on_add = true;
-                    add_sample_geojson(selec.target)
-//                    url = sample_datasets[selec.target];
-//                    d3.text(url, function(txt_layer){
-//                        target_layer_on_add = true;
-//                        add_layer_topojson(txt_layer);
-//                    });
+                    add_sample_geojson(selec.target);
                 }
                 if(selec.dataset){
                     url = sample_datasets[selec.dataset];
