@@ -42,6 +42,17 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
+
+function get_approx_zoom(h, w){
+    let _tmp = Math.min(+h, +w),
+        approx_scale = _tmp > 860 ? 600 :
+                       _tmp > 540 ? 400 :
+                       _tmp > 250 ? 200 : 100,
+        trans_0 = +w / 2 - (approx_scale >= 400 ? 200 : approx_scale >= 200 ? _tmp : _tmp * 2),
+        trans_1 = +h / 2 - 250;
+    return {approx_scale: approx_scale, approx_translate: [trans_0, trans_1]};
+}
+
 var func = document.getElementById('func').innerHTML;
 var menu_option = get_menu_option(func);
 
@@ -52,14 +63,9 @@ var menu_option = get_menu_option(func);
     var w = first_guess < inn_width - 390 ? first_guess : Math.round((window.innerWidth - 395 ) / 10)*10,
         h = Math.round((window.innerHeight / 1.34 ) / 10)*10;
 
-    let _tmp = Math.min(+h, +w),
-        approx_scale = _tmp > 860 ? 600 :
-                       _tmp > 540 ? 400 :
-                       _tmp > 250 ? 200 : 100,
-        trans_0 = +w / 2 - (approx_scale >= 400 ? 200 : approx_scale >= 200 ? _tmp : _tmp * 2),
-        trans_1 = +h / 2 - 250;
+    let proj_params = get_approx_zoom(h, w);
 
-    var proj = d3.geo.naturalEarth().scale(approx_scale).translate([trans_0, trans_1]);
+    var proj = d3.geo.naturalEarth().scale(proj_params.approx_scale).translate(proj_params.approx_translate);
 }
 
 var path = d3.geo.path().projection(proj).pointRadius(2),
@@ -298,12 +304,21 @@ section5.append("div").insert("button")
         .attr("class", "button_st4")
         .text("Reset center/zooming/rotation")
         .on("click", function(){
+            //if(document.getElementsByClassName("result_layer").length
+            //        + document.getElementsByClassName("target_layer").length == 0){
+            zoom.scale(0.5).translate([400, 250]);
+            zoom_without_redraw();
+            let proj_params = get_approx_zoom(h, w);
+            proj.scale(proj_params.approx_scale).translate(proj_params.approx_translate);
             document.getElementById('form_projection_center').value = 0;
             document.getElementById('form_rotate').value = 0;
             proj.rotate([0,,]);
             map.selectAll("path").attr("d", path);
             reproj_symbol_layer();
             rotate_global(0);
+            //} else {
+            //    null;
+            //}
         });
 
 
@@ -496,12 +511,17 @@ $(document).ajaxStart(function() {
 });
 
 // bind the mains tooltips
-$("[data-tooltip!='']").qtip({
+$("#section1[data-tooltip!='']").qtip({
     content: { attr: "data-tooltip" },
-    style: { classes: 'qtip-youtube' },
+    style: { classes: 'qtip-youtube qtip-section1' },
     position: { my: 'center left', at: 'center right', target: this }
 })
 
+$("#section3[data-tooltip!='']").qtip({
+    content: { attr: "data-tooltip" },
+    style: { classes: 'qtip-youtube qtip-section3' },
+    position: { my: 'center left', at: 'center right', target: this }
+})
 
 ////////////////
 // To sort:
@@ -549,7 +569,11 @@ function binds_layers_buttons(layer_name){
         });
         $("[layer-tooltip!='']").qtip({
             content: { attr: "layer-tooltip" },
-            style: { classes: 'qtip-rounded qtip-light qtip_layer'}
+            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+            events: {
+                show: function(){ $('.qtip.qtip-section3').qtip("hide") },
+                hide: function(){ $('.qtip.qtip-section3').qtip("show") }
+            }
         });
     }
 }
@@ -714,19 +738,24 @@ function remove_layer_cleanup(name){
     }
 
     // Remove the layer from the map and from the layer manager :
-    d3.select(g_lyr_name).remove();
+    map.select(g_lyr_name).remove();
     d3.select("#sortable").select('.'+name).remove();
 
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
-        fields_handler.unfill()
+        // Updating the top of the menu (section 1) :
+        $("#input_geom").qtip("destroy");
         d3.select("#img_in_geom").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
-        //d3.select("#func_button").node().disabled = true;
         document.getElementById("input_geom").innerHTML = "<b><i>No layer</i></b>";
-        document.getElementById("func_button").disabled = true;
+
+        // Unfiling the fields related to the targeted functionnality:
+        fields_handler.unfill()
+
+        // Update some global variables :
         field_join_map = [];
         delete user_data[name];
         targeted_layer_added = false;
+
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
         d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
         d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
@@ -847,7 +876,7 @@ function handle_click_zoom_select(){
     }
 }
 
-function get_map_template(){   //  ... or maintain up-to-date a global Object() containing these options ?
+function get_map_template(){
     var map_config = new Object(),
         layers_style = [],
         layers = map.selectAll("g.layer"),

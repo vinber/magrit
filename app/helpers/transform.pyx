@@ -3,9 +3,22 @@ ctypedef public struct Point:
     double x
     double y
 
+cpdef from_topo(topo, obj_name):
+    cdef dict geojson
+    geojson = topo['objects'][obj_name]
+    assert "GeometryCollection" in geojson['type']
+    if not "transform" in topo:
+        transformer = Transformer_no_transform(topo['arcs'])
+    else:
+        transformer = Transformer(topo['transform'], topo['arcs'])
+    geojson = transformer.geom_dispatch(geojson)
+    return geojson
+
 cdef class Transformer_no_transform:
-    cdef list arcs
-    cdef dict dispatch_geom
+    cdef:
+        list arcs
+        dict dispatch_geom
+
     def __init__(self, arcs):
         self.arcs = arcs
         self.dispatch_geom = {
@@ -16,25 +29,30 @@ cdef class Transformer_no_transform:
             }
 
     cdef list stitch_arcs(self, list arcs):
-        cdef list line_string = []
-        for arc in arcs:
+        cdef:
+            list line_string = [], line
+            Py_ssize_t len_arcs = len(arcs)
+            unsigned int i
+            int arc
+
+        for i in range(len_arcs):
+            arc = arcs[i]
             if arc < 0:
                 line = self.arcs[~arc][::-1]
             else:
                 line = self.arcs[arc]
-            if len(line_string)>0:
-                if line_string[-1] == line[0]:
-                    line_string.extend(line[1:])
-                else:
-                    line_string.extend(line)
+            if len(line_string) > 0 and line_string[-1] == line[0] :
+                line_string.extend(line[1:])
             else:
                 line_string.extend(line)
         return line_string
 
-    cdef list stich_multi_arcs(self,arcs):
+
+    cdef list stich_multi_arcs(self, list arcs):
+        cdef list a
         return [self.stitch_arcs(a) for a in arcs]
 
-    cdef feature(self, dict feature):
+    cdef dict feature(self, dict feature):
         cdef dict out
         cdef str type_ = feature['type']
         cdef dict geom_ = {'type': type_}
@@ -52,36 +70,39 @@ cdef class Transformer_no_transform:
                 out[key] = feature[key]
         return out
 
-    def geom_dispatch(self, geometry):
-        _type = geometry['type']
-        return self.dispatch_geom[_type](geometry)
+    cpdef geom_dispatch(self, dict geometry):
+        return self.dispatch_geom[geometry['type']](geometry)
 
-    def point(self, geometry):
+    cpdef dict point(self, dict geometry):
         geometry['coordinates'] = [geometry['coordinates'][0], geometry['coordinates'][1]]
         return geometry
 
-    def multi_point(self, geometry):
+    cpdef dict multi_point(self, dict geometry):
+        cdef list geom
         geometry['coordinates'] = [[geom[0], geom[1]] for geom in geometry['coordinates']]
         return  geometry
 
-    def line_string(self,geometry):
+    cpdef dict line_string(self, dict geometry):
         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
         del geometry['arcs']
         return geometry
 
-    def multi_line_string_poly(self,geometry):
+    cpdef dict multi_line_string_poly(self, dict geometry):
         geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])
         del geometry['arcs']
         return geometry
 
-    def multi_poly(self,geometry):
+    cpdef dict multi_poly(self, geometry):
+        cdef list a
         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
         del geometry['arcs']
         return geometry
 
-    def geometry_collection(self, geometry):
-        out = {'type': 'FeatureCollection'}
-        out['features'] = [self.feature(geom) for geom in geometry['geometries']]
+    cpdef dict geometry_collection(self, dict geometry):
+        cdef dict out = {
+            'type': 'FeatureCollection',
+            'features': [self.feature(geom) for geom in geometry['geometries']]
+            }
         return out
 
 cdef class Transformer:

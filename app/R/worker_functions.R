@@ -2,7 +2,8 @@
 # SpatialPosition functions
 ###################################
 stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
-                            span, beta, resolution=NULL, mask_json = NULL){
+                            span, beta, resolution=NULL, nb_class=8,
+                            user_breaks=NULL, mask_json = NULL){
   s_t <- Sys.time()
   latlong_string <- "+init=epsg:4326"
   web_mercator <- "+init=epsg:3857"
@@ -31,20 +32,24 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
       }
     }
   }
-
+  
   if(class(knownpts_layer@data[, var_name]) == "character"){
     knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
   }
+
   file.remove(knownpts_json)
   print(paste0("Layer opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
+  print(user_breaks)
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
                                             var = var_name,
                                             typefct = typefct,
                                             span=span, beta=beta,
                                             resolution=resolution,
-                                            mask = mask_layer)
+                                            mask = mask_layer,
+                                            nclass = nb_class,
+                                            breaks = user_breaks)
   print(paste0("quickStewart ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
   # Always return the result in latitude-longitude for the moment :

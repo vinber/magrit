@@ -366,9 +366,11 @@ function add_layer_topojson(text, options){
 
         let layers_listed = layer_list.node(),
             li = document.createElement("li"),
-            nb_ft = parsedJSON.objects[lyr_name].geometries.length;
+            nb_ft = parsedJSON.objects[lyr_name].geometries.length,
+            nb_fields = field_names.length,
+            layer_tooltip_content =  ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", nb_fields, " fields"].join('');
         li.setAttribute("class", class_name);
-        li.setAttribute("layer-tooltip", ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", field_names.length, " fields"].join(''))
+        li.setAttribute("layer-tooltip", layer_tooltip_content)
         if(target_layer_on_add){
             current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
             if(browse_table.node().disabled === true)
@@ -382,14 +384,28 @@ function add_layer_topojson(text, options){
             }
 
             let _button = button_type[type],
-                _lyr_name_display = lyr_name_to_add.length > 24 ? [lyr_name_to_add.substring(0, 19), '(...)'].join('') : lyr_name_to_add;
+                nb_fields = field_names.length,
+                nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length,
+                _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
 
             _button = _button.substring(10, _button.indexOf("class") - 2);
-            d3.select("#img_in_geom").attr({"src": _button, "width": "28", "height": "28"}).on("click", null);
-            d3.select('#input_geom').html(['<b>', lyr_name_to_add,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', field_names.length, ' fields</i></span>'].join(''));
+            d3.select("#img_in_geom")
+                .attr({"src": _button, "width": "23", "height": "23"})
+                .on("click", null);
+            d3.select('#input_geom')
+                .attr("layer-target-tooltip", layer_tooltip_content)
+                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', nb_fields, ' fields</i></span>'].join(''));
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
             fields_handler.fill(lyr_name_to_add);
+            $("[layer-target-tooltip!='']").qtip({
+                content: { attr: "layer-target-tooltip" },
+                style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+                events: {
+                    show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+                    hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+                }
+            });
         } else if (result_layer_on_add) {
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
             fields_handler.fill();

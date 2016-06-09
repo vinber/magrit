@@ -233,12 +233,6 @@ function fillMenu_Discont(layer){
             arr_tmp.push(val)
         }
 
-//        let min_values = Math.sqrt(Math.min.apply(0, arr_tmp)),
-//            max_values = Math.sqrt(Math.max.apply(0, arr_tmp)),
-//            dif_val = max_values - min_values,
-//            dif_size = max_size - min_size,
-//            nb_ft = arr_tmp.length;
-
         let serie = new geostats(arr_tmp),
             nb_ft = arr_tmp.length,
             opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
@@ -381,12 +375,64 @@ var fields_FlowMap = {
             field_j.removeChild(field_j.children[i]);
             field_fij.removeChild(field_fij.children[i]);
         }
-        unfillSelectInput(join_field)
+        unfillSelectInput(join_field);
+        document.getElementById("FlowMap_discTable").innerHTML = "";
         d3.selectAll(".params").attr("disabled", true);
 
     }
 };
 
+function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size){
+    if(!(joined_dataset[0][0].hasOwnProperty(fij_name))){
+        document.getElementById("FlowMap_discTable").innerHTML = "";
+        return;
+    } else {
+        document.getElementById("FlowMap_discTable").innerHTML = "";
+        let fij_values = joined_dataset[0].map(obj => +obj[fij_name]),
+            disc_result = discretize_to_size(fij_values, disc_kind, nb_class, min_size, max_size),
+            breaks = disc_result[2];
+        if(!breaks)
+            return;
+        d3.select("#FlowMap_discTable")
+            .append("p")
+            .style("word-spacing", "1.8em")
+            .html('Min - Max - Size');
+        d3.select("#FlowMap_discTable")
+            .append("div")
+            .selectAll("p")
+            .data(breaks).enter()
+            .append("p").attr("class", "breaks_vals").attr("id", (d,i) => ["line", i].join('_'));
+        let selec = d3.select("#FlowMap_discTable").selectAll(".breaks_vals");
+        for(let i = 0; i < selec[0].length; i++){
+            let selection =  d3.select("#FlowMap_discTable").select('#line_' + i);
+            selection
+                .insert('input')
+                .attr("type", "number")
+                .attr("id", "min_class")
+                .attr("step", 0.1)
+                .attr("value", +breaks[i][0][0].toFixed(2))
+                .style("width", "60px");
+            selection
+                .insert('input')
+                .attr("type", "number")
+                .attr("id", "max_class")
+                .attr("step", 0.1)
+                .attr("value", +breaks[i][0][1].toFixed(2))
+                .style("width", "60px");
+            selection
+                .insert('input')
+                .attr("type", "number")
+                .attr("id", "size_class")
+                .attr("step", 0.1)
+                .attr("value", +breaks[i][1].toFixed(2))
+                .style("margin-left", "20px")
+                .style("width", "60px");
+            selection
+                .insert('span')
+                .html(" px")
+        }
+    }
+}
 
 function fillMenu_FlowMap(){
     var dv2 = section2.append("p").attr("class", "form-rendering");
@@ -395,12 +441,46 @@ function fillMenu_FlowMap(){
     var field_i = dv2.append('p').html('<b><i> i </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_i");
     var field_j = dv2.append('p').html('<b><i> j </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_j");
     var field_fij = dv2.append('p').html('<b><i> fij </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
-    var field_max_size = dv2.append('p').html(' Max. links width (px) ');
-    field_max_size.insert('input')
-            .attr({type: "range", class: 'params', id: "FlowMap_max_size", min: 0, max: 66, step: 0.1, value: 10})
-            .style("width", "60px")
-            .on("change", function(){ document.getElementById("FlowMap_max_size_txt").innerHTML = [this.value, "px"].join(' '); });
-    field_max_size.insert('span').attr('id', "FlowMap_max_size_txt").html('10 px');
+//    var disc_type = dv2.append('p').html(' Discretization type ').insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
+//    ["Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
+//        .forEach(field => {
+//            disc_type.append("option").text(field).attr("value", field)
+//        });
+
+    var nb_class_input = dv2.append('p').html(' Number of class ')
+                        .insert('input')
+                        .attr({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
+                        .style("width", "50px");
+
+    field_fij.on("change", function(){
+        let name = this.value,
+            nclass = nb_class_input.node().value,
+//            disc = disc_type.node().value,
+            min_size = 0.5,
+            max_size = 10;
+        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size)
+    })
+
+//    disc_type.on("change", function(){
+//        let name = field_fij.node().value,
+//            nclass = nb_class.node().value,
+//            disc = this.value,
+//            min_size = 0.5,
+//            max_size = 10;
+//        make_min_max_tableau(name, nclass, disc, min_size, max_size)
+//    })
+//
+    nb_class_input.on("change", function(){
+        let name = field_fij.node().value,
+            nclass = this.value,
+//            disc = disc_type.node().value,
+            min_size = 0.5,
+            max_size = 10;
+        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size)
+    })
+
+    dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('')
+
     dv2.append('p').html('<b>Reference layer fields :</b>');
     var join_field = dv2.append('p').html('join field :').insert('select').attr('class', 'params').attr("id", "FlowMap_field_join");
 
@@ -417,8 +497,10 @@ function fillMenu_FlowMap(){
                 name_join_field = join_field.node().value,
                 formToSend = new FormData(),
                 join_field_to_send = new Object(),
-                max_size = document.getElementById("FlowMap_max_size").value,
-                min_size = 0.5;
+                min_max_range = document.querySelectorAll("#size_class"),
+                nclass = min_max_range.length,
+                min_size = +min_max_range[0].value,
+                max_size = +min_max_range[nclass - 1].value;
 
             join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
             formToSend.append("json", JSON.stringify({
@@ -429,6 +511,7 @@ function fillMenu_FlowMap(){
                 "field_fij": field_fij.node().value,
                 "join_field": JSON.stringify(join_field_to_send)
                 }))
+
             $.ajax({
                 processData: false,
                 contentType: false,
@@ -438,25 +521,38 @@ function fillMenu_FlowMap(){
                 type: 'POST',
                 error: function(error) { console.log(error); },
                 success: function(data){
-                    add_layer_topojson(data, {result_layer_on_add: true});
-                    let new_layer_name = ["Links_", name_join_field].join(""),
-                        layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
+                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
+                    let layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                         fij_field_name = field_fij.node().value,
-                        fij_values = joined_dataset[0].map(obj => +obj[fij_field_name]),
-                        prop_values = prop_sizer(fij_values, min_size, max_size),
+                        fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
                         nb_ft = fij_values.length;
+
+                    let arr_disc = [], arr_tmp = [];
+                    for(let i = 0; i < nb_ft; ++i){
+                        let val =  fij_values[i];
+                        arr_disc.push([i, val]);
+                        arr_tmp.push(val)
+                    }
+
+                    let serie = new geostats(arr_tmp),
+                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
+                        step = (max_size - min_size) / (opt_nb_class - 1),
+                        class_size = Array(opt_nb_class).fill(0).map((d,i) => min_size + (i * step));
+
+                    let breaks_val = serie.getEqInterval(opt_nb_class),
+                        breaks = new Array();
+
+                    for(let i = 0; i<breaks_val.length-1; ++i)
+                        breaks.push([[breaks_val[i], breaks_val[i+1]].join(' - '), class_size[i]]);
 
                     current_layers[new_layer_name].fixed_stroke = true;
                     current_layers[new_layer_name].renderer = "Links";
                     current_layers[new_layer_name].linksbyId = new Array(nb_ft);
-                    for(let i=0; i < nb_ft; i++)
-                         current_layers[new_layer_name].linksbyId[i] = [fij_values[i], prop_values[i]];
 
                     layer_to_render.style('fill-opacity', 0)
-                                   .style('stroke-opacity', 0.75)
-                                   .style("stroke-width", (d,i) => prop_values[i]);
+                                   .style('stroke-opacity', 0.75);
+//                                   .style("stroke-width", (d,i) => prop_values[i]);
                     switch_accordion_section();
-
                 }
             });
     });
@@ -1051,6 +1147,8 @@ function fillMenu_Stewart(){
         beta = dialog_content.append('p').html('Beta ').insert('input').attr({type: 'number', class: 'params', id: "stewart_beta", value: 0, min: 0, max: 11, step: 0.1}),
         resolution = dialog_content.append('p').html('Resolution ').insert('input').attr({type: 'number', class: 'params', id: "stewart_resolution", value: 0, min: 0, max: 1000000, step: 0.1}),
         func_selec = dialog_content.append('p').html('Function type ').insert('select').attr({class: 'params', id: "stewart_func"}),
+        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attr({type: "number", class: 'params', id: "stewart_nb_class", value: 6, min: 1, max: 20, step: 1}),
+        breaks_val = dialog_content.append("p").html("Break values").insert("textarea").attr({class: 'params', id: "stewart_breaks"}),
         mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attr({class: 'params', id: "stewart_mask"});
 
     ['Exponential', 'Pareto'].forEach(function(fun_name){
@@ -1067,7 +1165,10 @@ function fillMenu_Stewart(){
             let formToSend = new FormData(),
                 field_n = field_selec.node().value,
                 var_to_send = new Object,
-                layer = Object.getOwnPropertyNames(user_data)[0];
+                layer = Object.getOwnPropertyNames(user_data)[0],
+                bval = breaks_val.node().value.trim();
+
+            bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
             if(current_layers[layer].original_fields.has(field_n))
                 var_to_send[field_n] = [];
@@ -1081,6 +1182,8 @@ function fillMenu_Stewart(){
                 "beta": beta.node().value,
                 "typefct": func_selec.node().value,
                 "resolution": resolution.node().value,
+                "nb_class": nb_class.node().value,
+                "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
 
             $.ajax({
@@ -1145,7 +1248,6 @@ var fields_Anamorphose = {
 
 
 function fillMenu_Anamorphose(){
-
     var make_opt_dorling = function(){
         option1_txt.html('Symbol type ');
         option2_txt.html("Symbol Max Size (px) ");

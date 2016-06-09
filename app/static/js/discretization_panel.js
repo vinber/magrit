@@ -25,6 +25,46 @@ function get_color_array(col_scheme, nb_class, selected_palette){
     return color_array;
 }
 
+function discretize_to_size(values, type, nb_class, min_size, max_size){
+    var func_switch = {
+        to: function(name){return this.target[name];},
+        target: {
+            "Jenks": "serie.getJenks(nb_class)",
+            "Equal interval": "serie.getEqInterval(nb_class)",
+            "Standard deviation": "serie.getStdDeviation(nb_class)",
+            "Quantiles": "serie.getQuantile(nb_class)",
+            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
+            "Q6": "getBreaksQ6(values)",
+        }
+    }
+
+    var serie = new geostats(values),
+        nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
+        step = (max_size - min_size) / (nb_class - 1),
+        breaks = new Array(),
+        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step)),
+        breaks_prop = new Array(),
+        rendering_params = new Object(),
+        tmp, ir;
+
+    var val = func_switch.to(type);
+    if(type === "Q6"){
+        tmp = eval(val);
+        breaks = tmp.breaks;
+        serie.setClassManually(breaks);
+    } else {
+        breaks = eval(val);
+//        // In order to avoid class limit falling out the serie limits with Std class :
+//        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+        ir = serie.getInnerRanges();
+        if(!ir) return false;
+    }
+    for(let i = 0; i<breaks.length-1; ++i)
+        breaks_prop.push([[breaks[i], breaks[i+1]], class_size[i]]);
+    return [nb_class, type, breaks_prop];
+}
+
+
 function discretize_to_colors(values, type, nb_class, col_ramp_name){
     var func_switch = {
         to: function(name){return this.target[name];},

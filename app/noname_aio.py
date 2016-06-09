@@ -298,6 +298,7 @@ async def convert(request):
 
     return web.Response(text=result)
 
+
 @aiohttp_jinja2.template('modules/test_interface.html')
 async def handle_app_functionality(request):
     session_redis = await get_session(request)
@@ -305,48 +306,7 @@ async def handle_app_functionality(request):
     lastPref = await app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
     return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
 
-#@asyncio.coroutine
-#def links_map_py(posted_data, session_redis, user_id):
-#    s_t = time.time()
-#    posted_data = json.loads(posted_data.get("json"))
-#
-#    f_name = '_'.join([user_id, posted_data['topojson']])
-#    ref_layer = await app_glob['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = json.loads(posted_data['join_field'])
-#    n_field_name = list(new_field.keys())[0]
-#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
-#        join_topojson_new_field(ref_layer, new_field)
-#
-#    src_layer = topojson_to_geojson(ref_layer)
-#    gdf = GeoDataFrame.from_features(json.loads(src_layer)['features'])
-#    df = pd.read_json(posted_data['csv_table'])
-#
-#    make_line = lambda pts: LineString([pts[0], pts[1]])
-#
-#    gdf.geometry = gdf.geometry.centroid
-#    gdf['geom_centroid'] = [(g.coords.xy[0][0], g.coords.xy[1][0]) for g in gdf.geometry]
-#
-#    _id, i, j, fij = n_field_name, posted_data["field_i"], posted_data["field_j"], posted_data["field_fij"]
-#
-#    gdf.set_index(_id, inplace=True, drop=False)
-#    df.set_index(i, drop=False, inplace=True)
-#    df = df.join(gdf['geom_centroid'], how='left', rsuffix='ii')
-#    df.set_index(j, drop=False, inplace=True)
-#    df = df.join(gdf['geom_centroid'], how='left', rsuffix='jj')
-#
-#    res = GeoDataFrame(
-#        data=df[[i, j, fij]],
-#        geometry=[make_line((i[1], i[2])) for i in df[['geom_centroid', 'geom_centroidjj']].itertuples()]
-#        ).to_json()
-#
-#    tmp_part = get_name()
-#    filename_result = ''.join(["/tmp/", tmp_part, ".geojson"])
-#    savefile(filename_result, res.encode())
-#    res = geojson_to_topojson(filename_result)
-#    print('Python - p3 : {:.4f}'.format(time.time()-s_t))
-#    return res.replace(tmp_part, ''.join(["Links_", n_field_name]))
-#
+
 async def nothing(posted_data, session_redis, user_id):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
@@ -355,7 +315,7 @@ async def nothing(posted_data, session_redis, user_id):
     ref_layer = json.loads(ref_layer.decode())
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+    if len(new_field[n_field_name]) > 0:
         join_topojson_new_field(ref_layer, new_field, n_field_name)
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
@@ -540,9 +500,10 @@ def join_topojson_new_field(topojson, new_field, new_field_name):
     layer_name = list(topojson['objects'].keys())[0]
     print('Joining new fields..')
     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
-        if not 'properties' in geom:
-            geom['properties'] = {}
-        geom['properties'][new_field_name] = new_field[ix]
+        try:
+            geom['properties'][new_field_name] = new_field[ix]
+        except KeyError:
+            geom['properties'] = {new_field_name: new_field[ix]}
 
 
 async def call_stewart(posted_data, session_redis, user_id):
@@ -568,7 +529,7 @@ async def call_stewart(posted_data, session_redis, user_id):
         savefile(filenames['mask_layer'], topojson_to_geojson(json.loads(result_mask.decode())).encode())
 
     commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
-                b'beta, resolution, mask_json)')
+                b'beta, resolution, nb_class, user_breaks, mask_json)')
 
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
@@ -577,9 +538,11 @@ async def call_stewart(posted_data, session_redis, user_id):
         'span': float(posted_data['span']),
         'beta': float(posted_data['beta']),
         'resolution': float(posted_data['resolution']),
+        'nb_class': int(posted_data['nb_class']),
+        'user_breaks': posted_data['user_breaks'],
         'mask_json': filenames['mask_layer']
         }).encode()
-
+    print(data)
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())
@@ -611,8 +574,11 @@ async def R_compute(request):
 
 
 async def handler_exists_layer(request):
-    expr = request.match_info['expr']
-    res = await app_glob['redis_conn'].get(expr)
+#    session_redis = await get_session(request)
+#    user_id = get_user_id(session_redis)
+#    p_key = '_'.join([user_id, request.match_info['expr']])
+#    res = await app_glob['redis_conn'].get(p_key)
+    res = await app_glob['redis_conn'].get(request.match_info['expr'])
     if res:
         return web.Response(text=res.decode())
     else:
@@ -648,9 +614,7 @@ async def convert_csv_geo(request):
     st = time.time()
     file_name = posted_data.get("filename")
     data = posted_data.get("csv_file")
-
     f_name = '_'.join([user_id, file_name.split('.')[0]])
-#    hashed_input = sha512(data.encode()).hexdigest()
 
     result = await app_glob['redis_conn'].get(f_name)
     if result:
@@ -666,7 +630,6 @@ async def convert_csv_geo(request):
     if len(result) == 0:
         result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
     else:
-#        session_redis['converted'][hashed_input] = True
         asyncio.ensure_future(app_glob['redis_conn'].set(f_name, result))
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
@@ -746,7 +709,6 @@ if __name__ == '__main__':
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,
         "carto_doug": carto_doug, "nothing": nothing }
-#    app_glob['ThreadPoolExecutor'] = ThreadPoolExecutor(4)
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()
