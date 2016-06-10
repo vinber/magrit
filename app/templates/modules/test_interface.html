@@ -967,7 +967,7 @@ function get_map_template(){
                     layers_style[i].result[j] = nb_ft;
             } else {
                 layers_style[i].cache_url = [user_id, layer_name].join('_');
-                layers_style[i].LinksById = current_layers[layer_name].LinksById.splice(0, nb_ft)
+                layers_style[i].linksById = current_layers[layer_name].LinksById.splice(0, nb_ft)
             }
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
@@ -1195,7 +1195,8 @@ function handle_active_layer(name){
     } else {
         fill_value = d3.select("#sortable").select('.' + name).select("#active_button").node().checked ? 1 : 0;
     }
-    d3.selectAll("#"+name).style("opacity", fill_value);
+    map.selectAll("#"+name).style("opacity", fill_value);
+    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial")
 }
 
 // Function to handle the title add and changes

@@ -172,7 +172,11 @@ function createStyleBox(layer_name){
                 d3.select(g_lyr_name).style('stroke-width', stroke_width);
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-                if(fill_meth == "single") {
+
+                if(renderer == "DiscLayer"){
+                    selection.style('fill', "transparent")
+                             .style('stroke', fill_prev.single);
+                } else if(fill_meth == "single") {
                     selection.style('fill', fill_prev.single)
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "class" && renderer != "Links") {
@@ -248,7 +252,6 @@ function createStyleBox(layer_name){
                 .on("click", function(){
                     display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "Quantiles")
                         .then(function(confirmed){
-                            console.log(confirmed);
                             if(confirmed){
                                 rendering_params = {
                                     nb_class: confirmed[0],
@@ -259,6 +262,7 @@ function createStyleBox(layer_name){
                                     renderer:"Choropleth",
                                     field: field_to_discretize
                                 };
+                                console.log(rendering_params);
                                 selection.style('fill-opacity', 0.9)
                                          .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] })
                             }
@@ -295,9 +299,11 @@ function createStyleBox(layer_name){
      popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
                       .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
-     popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
-                      .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
-                      .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
+
+    if(renderer != "DiscLayer")
+         popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
+                          .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+                          .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
 }
 
 
@@ -308,25 +314,6 @@ function deactivate(forpopup){
     }
 }
 
-function viewport(){
-    var  innerw = window.innerWidth
-        ,body   = document.documentElement || document.body
-        ,root   = innerw  ? window : body
-        ,which  = innerw ? 'inner' : 'client';
-    return {  width : root[ which+'Width' ]
-             ,height : root[ which+'Height' ]
-             ,scrollTop: body.scrollTop
-             ,scrollLeft: body.scrollLeft };
-}
-
-function center(el){
-  var dims = viewport(),
-      h = Math.floor((0.20*dims.height));
-  el.style.right= '0px';
-  el.style.top =  h+'px';
-  return true;
-}
-
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
         ref_layer_name = current_layers[layer_name].ref_layer_name || layer_name.substring(0, layer_name.indexOf("_Prop")),
@@ -334,7 +321,8 @@ function createStyleBox_ProbSymbol(layer_name){
         type_symbol = current_layers[layer_name].symbol,
         field_used = current_layers[layer_name].rendered_field,
         selection = d3.select(g_lyr_name).selectAll(type_symbol),
-        rendering_params;
+        rendering_params,
+        new_size = [].concat(current_layers[layer_name].size)
 
      var stroke_prev = selection.style('stroke'),
          opacity = selection.style('fill-opacity'),
@@ -345,7 +333,7 @@ function createStyleBox_ProbSymbol(layer_name){
         prev_col_breaks;
 
     if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
-        prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+        prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
 
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
@@ -353,15 +341,21 @@ function createStyleBox_ProbSymbol(layer_name){
     make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
-                let max_val = d3.select("#max_size_range").node().value;
-                current_layers[layer_name].size[1] = max_val;
-                console.log(rendering_params, type_method)
+
+                if(current_layers[layer_name].size != new_size){
+                    let lgd_prop_symb = document.getElementById("legend_root2");
+                    if(lgd_prop_symb){
+                        lgd_prop_symb.remove();
+                        createLegend_symbol(layer_name, field_used)
+                    }
+                    current_layers[layer_name].size = new_size;
+                }
+                console.log(rendering_params, type_method);
                 if(type_method == "PropSymbolsChoro"){
-                    current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature };
-                    let colors_breaks = [];
-                    for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
-                        colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
-                    current_layers[layer_name].colors_breaks = colors_breaks;
+                    current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
+                    current_layers[layer_name].colors_breaks = [];
+                    for(let i = 0; i<rendering_params.breaks.length-1; ++i)
+                        current_layers[layer_name].colors_breaks.push([[rendering_params.breaks[i], " - ", rendering_params.breaks[i+1]].join(''), rendering_params.colors[i]]);
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
                     let lgd_choro = d3.select("#legend_root").node();
@@ -379,14 +373,15 @@ function createStyleBox_ProbSymbol(layer_name){
                 if(fill_meth == "single") {
                     selection.style('fill', fill_prev.single)
                              .style('stroke', stroke_prev);
-                } else if(fill_meth == "class" && renderer != "Links") {
+                } else if(fill_meth == "class") {
                     selection.style('fill-opacity', opacity)
                            .style("fill", function(d, i){ return current_layers[layer_name].fill_color.class[i] })
                            .style('stroke-opacity', previous_stroke_opacity)
                            .style("stroke", stroke_prev);
-                } else if(fill_meth == "class" && renderer == "Links"){
-                    selection.style('stroke-opacity', function(d, i){ return current_layers[layer_name].linksbyId[i][0]})
-                           .style("stroke", stroke_prev);
+                    current_layers[layer_name].colors_breaks = prev_col_breaks;
+//                } else if(fill_meth == "class" && renderer == "Links"){
+//                    selection.style('stroke-opacity', function(d, i){ return current_layers[layer_name].linksbyId[i][0]})
+//                           .style("stroke", stroke_prev);
                 } else if(fill_meth == "random"){
                     selection.style('fill', function(){return Colors.name[Colors.random()];})
                              .style('stroke', stroke_prev);
@@ -394,8 +389,6 @@ function createStyleBox_ProbSymbol(layer_name){
                     fill_categorical(layer_name, fill_prev.categorical[0],
                                      type_symbol, fill_prev.categorical[1],
                                      ref_layer_name)
-                } else if(fill_meth == "class"){
-                    current_layers[layer_name].colors_breaks = prev_col_breaks;
                 }
                 current_layers[layer_name].fill_color = fill_prev;
             }
@@ -404,6 +397,7 @@ function createStyleBox_ProbSymbol(layer_name){
 
     var d_values = [],
         comp = function(a, b){return b-a};
+
     for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
         d_values.push(+user_data[ref_layer_name][i][field_used]);
 
@@ -433,7 +427,8 @@ function createStyleBox_ProbSymbol(layer_name){
                     return rendering_params.colorsByFeature[ft_id];
                 });
              }
-            }); });
+            });
+        });
     } else {
         /*
         popup.insert('input').attr('type', 'color').attr("value", fill_prev)
@@ -457,6 +452,7 @@ function createStyleBox_ProbSymbol(layer_name){
         });
         setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
     }
+
     popup.append('p').html('Fill opacity<br>')
                       .insert('input').attr('type', 'range')
                       .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
@@ -477,6 +473,8 @@ function createStyleBox_ProbSymbol(layer_name){
                       .on("change", function(){
                           let z_scale = zoom.scale(),
                               prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
+
+                          new_size[1] = +this.value;
                           if(type_symbol === "circle") {
                               for(let i=0, len = prop_values.length; i < len; i++){
                                   selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
@@ -493,15 +491,15 @@ function createStyleBox_ProbSymbol(layer_name){
                                   selection[0][i].setAttribute('width', sz);
                               }
                           }
-                          if(type_method.indexOf('Dorling') > -1){
-                            let nodes = selection[0].map((d, i) => {
-                                let pt = path.centroid(d.__data__.geometry);
-                                return {x: pt[0], y: pt[1],
-                                        x0: pt[0], y0: pt[1],
-                                        r: +prop_values[i],
-                                        value: +d_values[i]};
-                                });
-                              current_layers[layer_name].force.nodes(nodes).start()
-                          }
+//                          if(type_method.indexOf('Dorling') > -1){
+//                            let nodes = selection[0].map((d, i) => {
+//                                let pt = path.centroid(d.__data__.geometry);
+//                                return {x: pt[0], y: pt[1],
+//                                        x0: pt[0], y0: pt[1],
+//                                        r: +prop_values[i],
+//                                        value: +d_values[i]};
+//                                });
+//                              current_layers[layer_name].force.nodes(nodes).start()
+//                          }
                       });
 }

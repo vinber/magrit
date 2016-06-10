@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://192.168.56.1:9999/" />
+<title>DiscLayer</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">DiscLayer</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/modules/discontinuities</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#sample_link &gt; i</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.sample_target</td>
+	<td>label=Grand Paris municipalities (Polygons)</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select.sample_dataset</td>
+	<td>label=&quot;Grand Paris&quot; incomes dataset (To link with Grand Paris municipality geometries)</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForAlert</td>
+	<td>Layer successfully added to the canvas</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=join_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=button_field2</td>
+	<td>label=DEPCOM</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ui-id-2</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=field_Discont</td>
+	<td>label=TH</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=kind_Discont</td>
+	<td>label=Absolute</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=yes</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=img.legend_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=move_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=edit_legend</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=precision_range</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=img.style_target_layer</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForConfirmation</td>
+	<td>The selected layer seems to have been already rendered (with DiscLayer method). Want to continue ?</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.8</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.6</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.5</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.4</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>1</td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

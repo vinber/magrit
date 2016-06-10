@@ -434,13 +434,44 @@ function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size)
     }
 }
 
+function fetch_min_max_table_value(parent_node){
+    if(!parent_node){
+        if(func == "flows_map") parent_node = document.getElementById("FlowMap_discTable");
+        else if (func == "discontinuities") parent_node = document.getElementById("Discont_discTable");
+        else return false;
+    }
+
+    let mins = Array.prototype.map.call(parent_node.querySelectorAll("#min_class"), el => +el.value),
+        maxs = Array.prototype.map.call(parent_node.querySelectorAll("#max_class"), el => +el.value),
+        sizes = Array.prototype.map.call(parent_node.querySelectorAll("#size_class"), el => +el.value),
+        nb_class = mins.length,
+        comp_fun = (a,b) => a > b;
+
+    if(mins != mins.sort(comp_fun)
+            || maxs != maxs.sort(comp_fun)
+            || sizes != sizes.sort(comp_fun)){
+        alert("Values have to be ordered (from the minimum to the maximum)");
+        return false;
+    }
+
+    for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
+        if(mins[i+1] != maxs[i]){
+            alert("Class min and max values have to be consistent");
+            return false;
+        }
+    }
+
+    return {"mins" : mins, "maxs" : maxs, "sizes" : sizes}
+}
+
 function fillMenu_FlowMap(){
     var dv2 = section2.append("p").attr("class", "form-rendering");
     dv2.append('p').html('<b>Links dataset fields :</b>');
 
-    var field_i = dv2.append('p').html('<b><i> i </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_i");
-    var field_j = dv2.append('p').html('<b><i> j </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_j");
-    var field_fij = dv2.append('p').html('<b><i> fij </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
+    var field_i = dv2.append('p').html('<b><i> i </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_i"),
+        field_j = dv2.append('p').html('<b><i> j </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_j"),
+        field_fij = dv2.append('p').html('<b><i> fij </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
+
 //    var disc_type = dv2.append('p').html(' Discretization type ').insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
 //    ["Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
 //        .forEach(field => {
@@ -469,7 +500,7 @@ function fillMenu_FlowMap(){
 //            max_size = 10;
 //        make_min_max_tableau(name, nclass, disc, min_size, max_size)
 //    })
-//
+
     nb_class_input.on("change", function(){
         let name = field_fij.node().value,
             nclass = this.value,
@@ -496,13 +527,19 @@ function fillMenu_FlowMap(){
             let ref_layer = Object.getOwnPropertyNames(user_data)[0],
                 name_join_field = join_field.node().value,
                 formToSend = new FormData(),
-                join_field_to_send = new Object(),
-                min_max_range = document.querySelectorAll("#size_class"),
-                nclass = min_max_range.length,
-                min_size = +min_max_range[0].value,
-                max_size = +min_max_range[nclass - 1].value;
+                join_field_to_send = new Object();
+
+            let disc_params = fetch_min_max_table_value(),
+                mins = disc_params.mins,
+                maxs = disc_params.maxs,
+                sizes = disc_params.sizes,
+                nb_class = mins.length,
+                user_breaks = [].concat(mins, maxs[nb_class - 1]),
+                min_size = Math.min.apply(null, sizes),
+                max_size = Math.max.apply(null, sizes);
 
             join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
+
             formToSend.append("json", JSON.stringify({
                 "topojson": ref_layer,
                 "csv_table": JSON.stringify(joined_dataset[0]),
@@ -521,37 +558,39 @@ function fillMenu_FlowMap(){
                 type: 'POST',
                 error: function(error) { console.log(error); },
                 success: function(data){
-                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
-                    let layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
+                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true}),
+                        layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                         fij_field_name = field_fij.node().value,
                         fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
-                        nb_ft = fij_values.length;
+                        nb_ft = fij_values.length,
+                        serie = new geostats(fij_values);
 
-                    let arr_disc = [], arr_tmp = [];
-                    for(let i = 0; i < nb_ft; ++i){
-                        let val =  fij_values[i];
-                        arr_disc.push([i, val]);
-                        arr_tmp.push(val)
-                    }
-
-                    let serie = new geostats(arr_tmp),
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
-                        step = (max_size - min_size) / (opt_nb_class - 1),
-                        class_size = Array(opt_nb_class).fill(0).map((d,i) => min_size + (i * step));
-
-                    let breaks_val = serie.getEqInterval(opt_nb_class),
-                        breaks = new Array();
-
-                    for(let i = 0; i<breaks_val.length-1; ++i)
-                        breaks.push([[breaks_val[i], breaks_val[i+1]].join(' - '), class_size[i]]);
+                    serie.setClassManually(user_breaks);
 
                     current_layers[new_layer_name].fixed_stroke = true;
                     current_layers[new_layer_name].renderer = "Links";
+                    current_layers[new_layer_name].breaks = [];
                     current_layers[new_layer_name].linksbyId = new Array(nb_ft);
+                    current_layers[new_layer_name].size = [min_size, max_size];
+                    current_layers[new_layer_name].rendered_field = fij_field_name;
+                    current_layers[new_layer_name].ref_layer_name = ref_layer;
+
+                    let links_byId = current_layers[new_layer_name].linksbyId;
+
+                    for(let i = 0; i < nb_ft; ++i){
+                        let val = +fij_values[i];
+                        links_byId[i] = [i, fij_values[i], sizes[serie.getClass(val)]];
+                    }
+
+                    for(let i = 0; i<nb_class; ++i)
+                        current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]].join(' - '), sizes[i]]);
+
+                    console.log(links_byId);
 
                     layer_to_render.style('fill-opacity', 0)
-                                   .style('stroke-opacity', 0.75);
-//                                   .style("stroke-width", (d,i) => prop_values[i]);
+                                   .style('stroke-opacity', 0.75)
+                                   .style("stroke-width", (d,i) => {return links_byId[i][2]});
+
                     switch_accordion_section();
                 }
             });
@@ -996,6 +1035,7 @@ function fillMenu_MTA(){
                     current_layers[layer].is_result = true;
                     let result_values = JSON.parse(data),
                         type_dev = (type_deviation.node().value == "abs") ? "AbsoluteDeviation" : "RelativeDeviation";
+
                     if(result_values.values){
                         let field_name = [choosen_method, type_dev, var1_name, var2_name].join('_');
                         for(let i=0; i<nb_features; ++i)
@@ -1014,9 +1054,12 @@ function fillMenu_MTA(){
                                 rendered_field: field_name
                                     };
                             render_choro(layer, rendering_params);
+                            current_layers[layer].colors_breaks = disc_result[2];
+                            insert_legend_button(layer);
                             zoom_without_redraw();
                         } else if (type_dev == "AbsoluteDeviation"){
                             let new_lyr_name = check_layer_name(["MTA", "AbsoluteDev", var1_name, var2_name].join('_')),
+                                rand_color = Colors.random(),
                                 rendering_params = {
                                     new_name: new_lyr_name,
                                     field: field_name,
@@ -1025,7 +1068,7 @@ function fillMenu_MTA(){
                                     symbol: "circle",
                                     max_size: 22,
                                     ref_size: 0.1,
-                                    fill_color: Colors.random(),
+                                    fill_color: rand_color,
                                     values_to_use: result_values.values
                                     };
                             make_prop_symbols(rendering_params);
@@ -1096,8 +1139,11 @@ function fillMenu_MTA(){
                                         values_to_use: result_values_abs.values.concat([])
                                         };
                                 make_prop_symbols(rendering_params);
+                                let col_breaks = [];
+                                for(let i = 0, len_i = disc_result[2].length - 1; i < len_i; ++i)
+                                    col_breaks.push([[disc_result[2][i], disc_result[2][i+1]].join(' - '), disc_result[3][i]])
+                                current_layers[new_lyr_name].colors_breaks = col_breaks;
                                 current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
-                                current_layers[new_lyr_name].colors_breaks = disc_result[2];
                                 binds_layers_buttons();
                                 zoom_without_redraw();
                                 switch_accordion_section();
@@ -1492,7 +1538,7 @@ function fillMenu_Anamorphose(){
 //                makeButtonLegend(new_layer_name);
 
             } else if (algo === "dorling"){
-                let max_size = d3.select("#Anamorph_opt2").node().value,
+                let max_size = +document.getElementById("Anamorph_opt2").value,
                     ref_size = 0.1,
                     layer_to_add =  check_layer_name(["DorlingCarto", layer, field_name].join('_')),
                     shape_symbol = option1_val.node().value;
@@ -1521,7 +1567,6 @@ function fillMenu_Anamorphose(){
                     };
                 binds_layers_buttons();
                 zoom_without_redraw();
-//                makeButtonLegend(layer_to_add);
                 switch_accordion_section();
 
                 }
@@ -1533,22 +1578,27 @@ function fillMenu_Anamorphose(){
 function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
     let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
         nb_features = current_layers[layer].n_features,
-        d_values = new Array(nb_features),
+        d_values = [],
         zs = zoom.scale(),
         symbol_layer = undefined,
+        comp = (a,b) => a[1] < b[1],
         force = d3.layout.force().charge(0).gravity(0).size([w, h]);
 
-    for(let i = 0; i < nb_features; ++i){
-        d_values[i] = +user_data[layer][i][field_name];
-    }
-    d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
+    for(let i = 0; i < nb_features; ++i)
+        d_values.push([i, +user_data[layer][i][field_name], null]);
+
+//    d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
+
+    d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
+    d_values.sort(comp);
 
     let nodes = ref_layer_selection[0].map(function(d, i){
         let pt = path.centroid(d.__data__.geometry);
         return {x: pt[0], y: pt[1],
                 x0: pt[0], y0: pt[1],
-                r: +d_values[i],
-                value: +d.__data__.properties[field_name]};
+                r: +d_values[i][1],
+                value: +d.__data__.properties[field_name],
+                ix: d_values[i][0]};
         });
 
     let bg_color = Colors.random(),
@@ -1567,6 +1617,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
                           .selectAll("circle")
                           .data(nodes).enter()
                           .append("circle")
+                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
                             .attr("r", function(d){ return d.r; })
                             .style("fill", function(){ return Colors.random();})
                             .style("stroke", "black");
@@ -1576,6 +1627,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
                           .selectAll("rect")
                           .data(nodes).enter()
                           .append("rect")
+                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
                             .attr("height", function(d){ return d.r * 2; })
                             .attr("width", function(d){ return d.r * 2; })
                             .style("fill", function(){ return Colors.random();})
@@ -1922,7 +1974,7 @@ function make_prop_symbols(rendering_params){
                 let centr = path.centroid(ref_layer_selection[0][i].__data__);
                 d_values[i] = [i, +user_data[layer][i][field], centr];
             }
-
+        console.log(d_values)
         d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
         d_values.sort(comp);
 
@@ -2086,7 +2138,6 @@ function fillMenu_griddedMap(layer){
                                     rendered_field: "densitykm"
                                         };
                         render_choro(n_layer_name, rendering_params);
-
                     }
                 });
             });

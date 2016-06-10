@@ -3,27 +3,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head profile="http://selenium-ide.openqa.org/profiles/test-case">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="selenium.base" href="http://localhost:9999/" />
-<title>selenium_test</title>
+<link rel="selenium.base" href="http://192.168.56.1:9999/" />
+<title>DiscLayer</title>
 </head>
 <body>
 <table cellpadding="1" cellspacing="1" border="1">
 <thead>
-<tr><td rowspan="1" colspan="3">selenium_test</td></tr>
+<tr><td rowspan="1" colspan="3">DiscLayer</td></tr>
 </thead><tbody>
 <tr>
 	<td>open</td>
-	<td>/modules/stewart</td>
+	<td>/modules/discontinuities</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>css=input[type=&quot;button&quot;]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>css=#section1 &gt; div &gt; p</td>
+	<td>css=#sample_link &gt; i</td>
 	<td></td>
 </tr>
 <tr>
@@ -58,16 +53,6 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=yes</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>id=browse_button</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
 	<td>xpath=(//button[@type='button'])[2]</td>
 	<td></td>
 </tr>
@@ -77,34 +62,14 @@
 	<td></td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>id=func_button</td>
-	<td></td>
+	<td>select</td>
+	<td>id=field_Discont</td>
+	<td>label=TH</td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>css=select.params</td>
-	<td>label=INC</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>css=input.params</td>
-	<td>4250</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>xpath=(//input[@value='0'])[4]</td>
-	<td>2</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>xpath=(//input[@value='0'])[5]</td>
-	<td>2500</td>
-</tr>
-<tr>
-	<td>select</td>
-	<td>//div[@id='GrandParisMunicipalities_stewart_popup']/p[5]/select</td>
-	<td>label=Pareto</td>
+	<td>id=kind_Discont</td>
+	<td>label=Absolute</td>
 </tr>
 <tr>
 	<td>click</td>
@@ -112,50 +77,66 @@
 	<td></td>
 </tr>
 <tr>
-	<td>waitForAlert</td>
-	<td>Layer successfully added to the canvas</td>
+	<td>click</td>
+	<td>css=img.legend_button</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=ui-id-2</td>
+	<td>id=move_legend</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=ui-id-3</td>
+	<td>id=edit_legend</td>
 	<td></td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>xpath=(//button[@type='submit'])[8]</td>
-	<td></td>
+	<td>type</td>
+	<td>id=precision_range</td>
+	<td>1</td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>xpath=(//button[@type='button'])[2]</td>
+	<td>css=img.style_target_layer</td>
 	<td></td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>css=button.zoom_fit_button</td>
+	<td>waitForConfirmation</td>
+	<td>The selected layer seems to have been already rendered (with DiscLayer method). Want to continue ?</td>
 	<td></td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>id=ui-id-3</td>
-	<td></td>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.8</td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>id=ui-id-2</td>
-	<td></td>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.6</td>
 </tr>
 <tr>
-	<td>click</td>
-	<td>id=checkbox_legend</td>
-	<td></td>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.5</td>
 </tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.4</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>0.1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@value='1']</td>
+	<td>1</td>
+</tr>
+
 </tbody></table>
 </body>
 </html>

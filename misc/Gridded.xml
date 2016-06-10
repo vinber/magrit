@@ -3,22 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head profile="http://selenium-ide.openqa.org/profiles/test-case">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="selenium.base" href="http://localhost:9999/" />
-<title>selenium_test_choropleth2</title>
+<link rel="selenium.base" href="http://192.168.56.1:9999/" />
+<title>Gridded</title>
 </head>
 <body>
 <table cellpadding="1" cellspacing="1" border="1">
 <thead>
-<tr><td rowspan="1" colspan="3">selenium_test_choropleth2</td></tr>
+<tr><td rowspan="1" colspan="3">Gridded</td></tr>
 </thead><tbody>
 <tr>
 	<td>open</td>
-	<td>/</td>
-	<td></td>
-</tr>
-<tr>
-	<td>clickAndWait</td>
-	<td>link=Example 8 - Choroplethized prop. symbols</td>
+	<td>/modules/grid_map</td>
 	<td></td>
 </tr>
 <tr>
@@ -63,77 +58,47 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=browse_button</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>xpath=(//button[@type='button'])[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
 	<td>id=ui-id-2</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=func_button</td>
+	<td>id=Gridded_field</td>
 	<td></td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>css=select.params</td>
+	<td>id=Gridded_field</td>
 	<td>label=INC</td>
 </tr>
 <tr>
 	<td>type</td>
 	<td>css=input.params</td>
-	<td>15.9</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.3</td>
+	<td>7500</td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>//div[@id='GrandParisMunicipalitiesPropSymbolChoro_popup']/p[5]/select</td>
-	<td>label=TH</td>
+	<td>//div[@id='section2']/p/p[3]/select</td>
+	<td>label=PuBu</td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>//div[@id='GrandParisMunicipalitiesPropSymbolChoro_popup']/p[6]/button</td>
+	<td>id=Gridded_yes</td>
 	<td></td>
 </tr>
 <tr>
-	<td>select</td>
-	<td>css=select.color_params</td>
-	<td>label=PuBuGn</td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>css=option[value=&quot;PuBuGn&quot;]</td>
+	<td>waitForAlert</td>
+	<td>Layer successfully added to the canvas</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=reverse_pal_btn</td>
+	<td>css=img.legend_button</td>
 	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>xpath=(//button[@type='button'])[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>id=yes</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>id=ui-id-3</td>
+	<td>id=move_legend</td>
 	<td></td>
 </tr>
 <tr>
@@ -142,19 +107,34 @@
 	<td></td>
 </tr>
 <tr>
-	<td>type</td>
-	<td>id=max_size_range</td>
-	<td>21.9</td>
+	<td>assertConfirmation</td>
+	<td>The selected layer seems to have been already rendered (with Gridded method). Want to continue ?</td>
+	<td></td>
 </tr>
 <tr>
-	<td>type</td>
-	<td>id=max_size_range</td>
-	<td>29.5</td>
+	<td>click</td>
+	<td>css=button.button_disc</td>
+	<td></td>
 </tr>
 <tr>
-	<td>type</td>
-	<td>xpath=(//input[@value='1'])[2]</td>
-	<td>0.3</td>
+	<td>click</td>
+	<td>id=button_Diverging</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='color_div']/form_action/label[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=button_Diverging</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//button[@type='button'])[5]</td>
+	<td></td>
 </tr>
 <tr>
 	<td>click</td>
@@ -163,29 +143,10 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>id=checkbox_legend</td>
+	<td>id=move_legend</td>
 	<td></td>
 </tr>
-<tr>
-	<td>click</td>
-	<td>id=checkbox_legend</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>id=ui-id-2</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>id=checkbox_legend</td>
-	<td></td>
-</tr>
-<tr>
-	<td>click</td>
-	<td>css=button.const_buttons</td>
-	<td></td>
-</tr>
+
 </tbody></table>
 </body>
 </html>
