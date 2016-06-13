@@ -79,7 +79,6 @@ var interpolateColor = function(color1, color2, factor=0.5) {
   return result;
 };
 
-
 // Just a "Colors" object with a convenience "random" method 
 // ... when a random color is needed (they aren't specialy pretty colors though!)
 var Colors = {

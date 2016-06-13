@@ -92,7 +92,7 @@ cdef class Transformer_no_transform:
         del geometry['arcs']
         return geometry
 
-    cpdef dict multi_poly(self, geometry):
+    cpdef dict multi_poly(self, dict geometry):
         cdef list a
         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
         del geometry['arcs']
@@ -182,25 +182,31 @@ cdef class Transformer:
         elif geometry['type']=='GeometryCollection':
             return self.geometry_collection(geometry)
 
-    def point(self, geometry):
+    cpdef dict point(self, dict geometry):
         geometry['coordinates'] = self.convert_point(geometry['coordinates'])
         return geometry
-    def multi_point(self, geometry):
+
+    def dict multi_point(self, dict geometry):
         geometry['coordinates'] = [self.convert_point(geom) for geom in geometry['coordinates']]
         return  geometry
-    def line_string(self,geometry):
+
+    def dict line_string(self, dict geometry):
         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
         del geometry['arcs']
         return geometry
-    def multi_line_string_poly(self,geometry):
+
+    cpdef dict multi_line_string_poly(self, dict geometry):
         geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])
         del geometry['arcs']
         return geometry
-    def multi_poly(self,geometry):
+
+    cpdef dict multi_poly(self, dict geometry):
+        cdef list a
         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
         del geometry['arcs']
         return geometry
-    def geometry_collection(self, geometry):
+
+    cpdef dict geometry_collection(self, dict geometry):
         out = {'type': 'FeatureCollection'}
         out['features'] = [self.feature(geom) for geom in geometry['geometries']]
         return out

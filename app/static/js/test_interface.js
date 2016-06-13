@@ -109,7 +109,7 @@ function prepare_drop_section(){
                        else handle_TopoJSON_files(files);
                }
                else if(strContains(files[0].name.toLowerCase(), 'geojson') ||
-                    strContains(files[0].type.toLowerCase(), 'application/zip') ||
+                    strContains(files[0].name.toLowerCase(), 'zip') ||
                     strContains(files[0].name.toLowerCase(), 'kml')){
                        elem.style.border = '';
 
@@ -267,6 +267,10 @@ function handle_single_file(file) {
     });
 };
 
+function get_display_name_on_layer_list(layer_name_to_add){
+    return +layer_name_to_add.length > 28 ? [layer_name_to_add.substring(0, 23), '(...)'].join('') : layer_name_to_add;
+}
+
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
@@ -282,17 +286,9 @@ function add_layer_topojson(text, options){
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
-//    // Add an ID if the input topojson is provided without :
-//    layers_names.forEach(function(l_name, j){
-//        if(!parsedJSON.objects[l_name].geometries[0].id){
-//            for(var i=0, len = parsedJSON.objects[l_name].geometries.length,
-//                         tgt = parsedJSON.objects[l_name].geometries; i < len; i++){
-//                tgt[i].id = i;
-//                }
-//        }
-//    });
-
-    if(target_layer_on_add && menu_option.add_options && menu_option.add_options == "keep_file")
+    if(target_layer_on_add
+            && menu_option.add_options
+            && menu_option.add_options == "keep_file")
         window._target_layer_file = parsedJSON;
 
     // Loop over the layers to add them all ?
@@ -368,8 +364,11 @@ function add_layer_topojson(text, options){
             li = document.createElement("li"),
             nb_ft = parsedJSON.objects[lyr_name].geometries.length,
             nb_fields = field_names.length,
-            layer_tooltip_content =  ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", nb_fields, " fields"].join('');
+            layer_tooltip_content =  ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", nb_fields, " fields"].join(''),
+            _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
+
         li.setAttribute("class", class_name);
+        li.setAttribute("layer_name", lyr_name_to_add)
         li.setAttribute("layer-tooltip", layer_tooltip_content)
         if(target_layer_on_add){
             current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
@@ -396,7 +395,7 @@ function add_layer_topojson(text, options){
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', nb_fields, ' fields</i></span>'].join(''));
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",_lyr_name_display_menu].join('')
             fields_handler.fill(lyr_name_to_add);
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
@@ -407,10 +406,10 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",lyr_name_to_add].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",_lyr_name_display_menu].join('')
             fields_handler.fill();
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",lyr_name_to_add].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",_lyr_name_display_menu].join('')
             fields_handler.fill();
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
@@ -490,7 +489,7 @@ function strArraysContains(ArrString1, ArrSubstrings){
 };
 
 function add_layout_features(){
-    var available_features = ["North arrow", "Scale", "Sphere background"],
+    var available_features = ["North arrow", "Scale", "Sphere background", "Graticule", "Text annotation"],
         selected_ft = undefined;
 
     make_confirm_dialog("", "Valid", "Cancel", "Layout features to be add ...", "sampleLayoutFtDialogBox", 4*w/5, h-10).then(
@@ -536,9 +535,16 @@ function add_layout_layers(){
                                    .append("path")
                                    .attr("class", "graticule")
                                    .datum(d3.geo.graticule())
-                                   .attr("d", path);
-                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1};
-                           layer_list.append("li").attr("class", "ui-state-default Graticule").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + "</div> Graticule");
+                                   .attr("d", path)
+                                   .style("stroke", "grey");
+                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}};
+                           let layers_listed = layer_list.node(),
+                                li = document.createElement("li");
+                           li.setAttribute("layer_name", "Graticule");
+                           li.setAttribute("class", "ui-state-default Graticule");
+                           li.setAttribute("layer-tooltip", "<b>Graticule</b> - Sample layout layer");
+                           li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, "</div> Graticule"].join('');
+                           layers_listed.insertBefore(li, layers_listed.childNodes[0])
                            zoom_without_redraw();
                            binds_layers_buttons();
                         }

@@ -79,6 +79,15 @@ function get_menu_option(func){
     return menu_option[func.toLowerCase()] || {}
 }
 
+// Function trying to avoid layer name collision by adding a suffix
+// to the layer name if already exists and incrementing it if necessary
+// (MyLayer -> MyLayer_1 -> MyLayer_2 etc.)
+// Args:
+//     - name : the original name of the layer to add
+//
+// Returns:
+//     - new_name : the input name if not already in use or a new name
+//                  to safely add the layer.
 function check_layer_name(name){
     if(!(current_layers.hasOwnProperty(name)))
         return name;
@@ -197,6 +206,8 @@ function fillMenu_Discont(layer){
 
         // Use topojson.mesh a first time to compute the discontinuity value
         // for each border (according to the given topology)
+        // (Discontinuities could also be computed relativly fastly server side
+        // which can be a better solution for large dataset..)
         if(disc_kind.node().value == "rel")
             topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     if(a !== b){
@@ -257,7 +268,6 @@ function fillMenu_Discont(layer){
                 val = arr_disc[i][1],
                 p_size = class_size[serie.getClass(val)],
                 size = val >= threshold ? p_size : 0;
-//                prop_val = val[1] >= threshold ? (Math.sqrt(val[1])/dif_val * dif_size) + min_size - dif_size/dif_val : 0;
             data_result[i] =  {id: id_ft, disc_value: val, prop_value: size};
             result_layer .append("path")
                 .datum(topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
@@ -268,12 +278,14 @@ function fillMenu_Discont(layer){
                 .style({stroke: user_color, "stroke-width": size, "fill": "transparent"})
         }
 
-        let layers_listed = layer_list.node(),
+        let _list_display_name = get_display_name_on_layer_list(new_layer_name),
+            layers_listed = layer_list.node(),
             li = document.createElement("li");
 
+        li.setAttribute("layer_name", new_layer_name);
         li.setAttribute("class", "ui-state-default sortable_result " + new_layer_name);
         li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Line'], "</div> ", new_layer_name].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Line'], "</div> ", _list_display_name].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
@@ -447,6 +459,8 @@ function fetch_min_max_table_value(parent_node){
         nb_class = mins.length,
         comp_fun = (a,b) => a > b;
 
+// Some verification regarding the input values provided by the user :
+// - Values are orderer :
     if(mins != mins.sort(comp_fun)
             || maxs != maxs.sort(comp_fun)
             || sizes != sizes.sort(comp_fun)){
@@ -454,6 +468,7 @@ function fetch_min_max_table_value(parent_node){
         return false;
     }
 
+// - Min / max values are consistent :
     for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
         if(mins[i+1] != maxs[i]){
             alert("Class min and max values have to be consistent");
@@ -565,6 +580,12 @@ function fillMenu_FlowMap(){
                         nb_ft = fij_values.length,
                         serie = new geostats(fij_values);
 
+                    if(user_breaks[0] < serie.min())
+                        user_breaks[0] = serie.min();
+
+                    if(user_breaks[nb_class] > serie.max())
+                        user_breaks[nb_class] = serie.max();
+
                     serie.setClassManually(user_breaks);
 
                     current_layers[new_layer_name].fixed_stroke = true;
@@ -585,8 +606,7 @@ function fillMenu_FlowMap(){
                     for(let i = 0; i<nb_class; ++i)
                         current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]].join(' - '), sizes[i]]);
 
-                    console.log(links_byId);
-
+//                    console.log(links_byId);
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.75)
                                    .style("stroke-width", (d,i) => {return links_byId[i][2]});
@@ -687,25 +707,33 @@ function fillMenu_PropSymbolChoro(layer){
     var rendering_params = new Object(),
         dv2 = section2.append("p").attr("class", "form-rendering");
 
-    var field1_selec = dv2.append('p').html('Field 1 (symbol size) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_1');
-    var max_size = dv2.append('p').style("display", "inline").html('Max. size (px) ')
-                                 .insert('input')
-                                 .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_max_size'})
-                                 .attr({min: 0.2, max: 66.0, value: 10.0, step: 0.1})
-                                 .style("width", "8em")
-                                 .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
+    var field1_selec = dv2.append('p').html('Field 1 (symbol size) ')
+                          .insert('select')
+                          .attr({class: 'params', id: 'PropSymbolChoro_field_1'});
 
-    var max_size_txt = dv2.append('label-item').attr("id", "max_size_txt").html('10 px');
+    var max_size = dv2.append('p').style("display", "inline").html('Max. size (px) ')
+                     .insert('input')
+                     .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_max_size'})
+                     .attr({min: 0.2, max: 66.0, value: 10.0, step: 0.1})
+                     .style("width", "8em")
+                     .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
+
+    var max_size_txt = dv2.append('label-item')
+                            .attr("id", "max_size_txt")
+                            .html('10 px');
 
     var ref_size = dv2.append('p').html('Reference min. size ')
-                                 .insert('input')
-                                 .style('width', '60px')
-                                 .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                                 .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
+                     .insert('input')
+                     .style('width', '60px')
+                     .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
+                     .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
 
     // Other symbols could probably easily be proposed :
     var symb_selec = dv2.append('p').html('Symbol type ').insert('select').attr('class', 'params');
-    [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
+    [['Circle', "circle"], ['Square', "rect"]]
+        .forEach( symb => {
+            symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
+        });
 
     var field2_selec = dv2.append('p').html('Field 2 (symbol color) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
 
@@ -757,9 +785,8 @@ function fillMenu_PropSymbolChoro(layer){
             rd_params.ref_size = +ref_size.node().value;
             rd_params.fill_color = rendering_params['colorsByFeature'];
 
-            let id_map = make_prop_symbols(rd_params);
-
-            let colors_breaks = [];
+            let id_map = make_prop_symbols(rd_params),
+                colors_breaks = [];
 
             for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
                 colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]]);
@@ -872,7 +899,6 @@ var fields_MTA = {
             field1_selec = d3.select("#MTA_field_1"),
             field2_selec = d3.select("#MTA_field_2"),
             field_key_agg = d3.select("#MTA_field_key_agg");
-
 
             fields.forEach(function(field){
                 field1_selec.append("option").text(field).attr("value", field);
@@ -1295,6 +1321,7 @@ var fields_Anamorphose = {
 
 function fillMenu_Anamorphose(){
     var make_opt_dorling = function(){
+
         option1_txt.html('Symbol type ');
         option2_txt.html("Symbol Max Size (px) ");
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
@@ -1315,12 +1342,18 @@ function fillMenu_Anamorphose(){
                         .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
     };
 
-    var make_opt_olsen = function(){
-        option1_txt.html("Maximum size reduction (%) ");
-        option2_txt.html(""),
-        option1_val = option1_txt.insert('input')
+    var make_opt_olson = function(){
+        option1_txt.html("Scale reference size on : ");
+        option2_txt.html("Maximum size modification (%) ");
+        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
+        [["Mean value (may cause overlapping)", "mean"],
+         ["Max. value (prevent overlapping)", "max"]].forEach(function(opt_field){
+            option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
+        });
+
+        option2_val = option2_txt.insert('input')
                         .style("width", "60px")
-                        .attr({type: 'number', class: 'params', value: 10, min: 0, max: 100, step: 1});
+                        .attr({type: 'number', class: 'params', id: "Anamorph_opt2", value: 10, min: 0, max: 100, step: 1});
     };
 
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
@@ -1329,22 +1362,19 @@ function fillMenu_Anamorphose(){
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html('Symbol type'),
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"}),
         option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Symbol Max Size (px)"),
-        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
-    let option2_txt2 = option2_txt.append("span").attr("id", "Anamorph_opt_max_symb").html("10 px");
-    option2_val.on("change", function(){
-        option2_txt2.html(this.value + " px")
-    });
-    var symbols = [["Circle", "circle"], ["Square", "rect"]];
+        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
+        symbols = [["Circle", "circle"], ["Square", "rect"]];
 
     symbols.forEach(function(symb){
         option1_val.append("option").text(symb[0]).attr("value", symb[1]);
     });
 
     algo_selec.on("change", function(){
+
         if(this.value == "dorling")
             make_opt_dorling();
-        else if(this.value == "olsen")
-            make_opt_olsen();
+        else if(this.value == "olson")
+            make_opt_olson();
         else
             make_opt_iter();
     });
@@ -1352,7 +1382,7 @@ function fillMenu_Anamorphose(){
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
      ['Gastner & Newman (2004)', 'gastner'],
-     ['Olsen (2005)', 'olsen']].forEach(function(fun_name){
+     ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
@@ -1366,13 +1396,16 @@ function fillMenu_Anamorphose(){
                 field_name = field_selec.node().value;
             if(algo === "gastner"){
                 alert('Not implemented (yet!)')
-            } else if (algo === "olsen"){
+            } else if (algo === "olson"){
                 let field_n = field_selec.node().value,
                     layer = Object.getOwnPropertyNames(user_data)[0],
-                    scale_max = +option1_val.node().value / 100,
+                    ref_size = option1_val.node().value,
+                    scale_max = +option2_val.node().value / 100,
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer],
-                    new_layer_name = check_layer_name(["CartogramOlsen", layer, field_n].join('_'));
+                    new_layer_name = check_layer_name(["CartogramOlson", layer, field_n].join('_'));
+
+                //console.log(ref_size); console.log(scale_max);
 
                 let layer_select = map.select("#"+layer).selectAll("path")[0],
                     d_values = new Array(nb_ft),
@@ -1385,22 +1418,37 @@ function fillMenu_Anamorphose(){
                 let mean = d3.mean(d_values),
                     min = d3.min(d_values),
                     max = d3.max(d_values),
-                    low_ = Math.abs(mean-min),
-                    up_ = Math.abs(max-mean),
-                    max_dif = low_ > up_ ? low_ : up_;
+                    transform = [];
+                if(ref_size == "mean"){
+                    let low_ = Math.abs(mean-min),
+                        up_ = Math.abs(max-mean),
+                        max_dif = low_ > up_ ? low_ : up_;
 
-                let transform = [];
-                for(let i= 0; i < nb_ft; ++i){
-                    let area = area_values[i],
-                        val = d_values[i],
-                        scale_area;
-                    if(val > mean)
-                        scale_area = 1 + scale_max / (max_dif / Math.abs(val-mean));
-                    else if(val == mean)
-                        scale_area = 1;
-                    else
-                        scale_area = 1 - scale_max / (max_dif / Math.abs(mean-val));
-                    transform.push(scale_area)
+                    for(let i= 0; i < nb_ft; ++i){
+                        let val = d_values[i],
+                            scale_area;
+                        if(val > mean)
+                            scale_area = 1 + scale_max / (max_dif / Math.abs(val-mean));
+                        else if(val == mean)
+                            scale_area = 1;
+                        else
+                            scale_area = 1 - scale_max / (max_dif / Math.abs(mean-val));
+                        transform.push(scale_area)
+                    }
+                } else if (ref_size == "max"){
+                    let max_dif = Math.abs(max-min);
+
+                    for(let i= 0; i < nb_ft; ++i){
+                        let val = d_values[i],
+                            val_dif = max_dif / val,
+                            scale_area;
+                        if(val_dif < 1)
+                            scale_area = 1;
+                        else
+                            scale_area = 1 - (scale_max / val_dif);
+                        transform.push(scale_area)
+                    }
+
                 }
                 console.log(transform);
                 result_data[new_layer_name] = new Array();
@@ -1425,26 +1473,29 @@ function fillMenu_Anamorphose(){
                                 y = centroid[1];
                             return ["translate(", x, ",", y, ")",
                                     "scale(", transform[i], ")",
-                                    "translate(", -x, ",", -y, ")"].join("")
+                                    "translate(", -x, ",", -y, ")"].join("");
                         });
 
                 let class_name = "ui-state-default sortable_result " + new_layer_name,
+                    _list_display_name = get_display_name_on_layer_list(new_layer_name),
                     layers_listed = layer_list.node(),
                     li = document.createElement("li");
 
+                li.setAttribute("layer_name", new_layer_name);
                 li.setAttribute("class", class_name);
                 li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[new_layer_name] = {
-                    "renderer": "OlsenCarto",
+                    "renderer": "OlsonCarto",
                     "type": "Polygon",
                     "rendered_field": field_n,
                     "scale_max": scale_max,
                     "stroke-width-const": 1,
                     "is_result": true,
                     "ref_layer_name": layer,
-                    "fill_color": { "random": true }
+                    "fill_color": { "random": true },
+                    "scale_byFeature": transform
                     };
                 binds_layers_buttons();
                 zoom_without_redraw();
@@ -1489,7 +1540,6 @@ function fillMenu_Anamorphose(){
                             .style("fill-opacity", 0.8)
                             .style("stroke", "black")
                             .style("stroke-opacity", 0.8)
-//                        makeButtonLegend(n_layer_name);
                     }
                 });
 //                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
@@ -1546,12 +1596,14 @@ function fillMenu_Anamorphose(){
                 let force = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
 
                 let class_name = "ui-state-default sortable_result " + layer_to_add,
+                    _list_display_name = get_display_name_on_layer_list(layer_to_add),
                     layers_listed = layer_list.node(),
                     li = document.createElement("li");
 
+                li.setAttribute("layer_name", layer_to_add);
                 li.setAttribute("class", class_name);
                 li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", current_layers[layer].n_features, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", _list_display_name].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
@@ -1586,8 +1638,6 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 
     for(let i = 0; i < nb_features; ++i)
         d_values.push([i, +user_data[layer][i][field_name], null]);
-
-//    d_values = prop_sizer(d_values, Number(ref_size / zs), Number(max_size / zs));
 
     d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
     d_values.sort(comp);
@@ -1717,43 +1767,43 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 }
 
 
-function log_unused_ft(layer){
-    if(current_layers[layer].filter_not_use instanceof Map)
-        var filter_not_use = current_layers[layer].filter_not_use;
-    else {
-        current_layers[layer].filter_not_use = new Map();
-        var filter_not_use = current_layers[layer].filter_not_use
-    }
-    $('#myTable tbody tr').on('click', function(e) {
-        let row = this,
-            ret_val = row.classList.toggle('selected');
-        if(ret_val)
-            filter_not_use.set(row._DT_RowIndex, true)
-        else
-            filter_not_use.delete(row._DT_RowIndex)
-        console.log(filter_not_use)
-    });
-}
+//function log_unused_ft(layer){
+//    if(current_layers[layer].filter_not_use instanceof Map)
+//        var filter_not_use = current_layers[layer].filter_not_use;
+//    else {
+//        current_layers[layer].filter_not_use = new Map();
+//        var filter_not_use = current_layers[layer].filter_not_use
+//    }
+//    $('#myTable tbody tr').on('click', function(e) {
+//        let row = this,
+//            ret_val = row.classList.toggle('selected');
+//        if(ret_val)
+//            filter_not_use.set(row._DT_RowIndex, true)
+//        else
+//            filter_not_use.delete(row._DT_RowIndex)
+//        console.log(filter_not_use)
+//    });
+//}
 
 var boxExplore = {
     display_table: function(prop){
         let self = this,
-            add_field = d3.select("#add_field_button"),
-            unselect_features = d3.select("#unsel_features");
+            add_field = d3.select("#add_field_button");
+//            unselect_features = d3.select("#unsel_features");
         if(prop.type === "ext_dataset"){
             var data_table = joined_dataset[0],
                 the_name = dataset_name,
                 message = "Switch to reference layer table...";
-                unselect_features.style("display", "none").on('click', null);
+//                unselect_features.style("display", "none").on('click', null);
                 add_field.style("display", "none").on('click', null);
         } else if(prop.type === "layer"){
             var data_table = user_data[this.layer_name],
                 the_name = this.layer_name,
                 message = "Switch to external dataset table...";
-                unselect_features.style("display", null).on('click', function(){
-                    console.log(the_name);
-                    log_unused_ft(the_name);
-                  });
+//                unselect_features.style("display", null).on('click', function(){
+//                    console.log(the_name);
+//                    log_unused_ft(the_name);
+//                  });
                 add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
         }
         this.nb_features = data_table.length;
@@ -1774,8 +1824,8 @@ var boxExplore = {
             columns: this.columns_headers,
         });
 
-        if(d3.select("#switch_button").node())
-            d3.select("#switch_button").node().innerHTML = message;
+        let switch_but = document.getElementById("switch_button");
+        if(switch_but) switch_but.innerHTML = message;
         document.querySelector("body").style.cursor = "default";
 
     },
@@ -1801,43 +1851,43 @@ var boxExplore = {
                  .attr({id: "add_field_button", class: "button_st3"})
                  .html("Add a new field...")
                  .on('click', function(){  add_table_field(the_name, self);});
-            top_buttons
-                 .insert("button")
-                 .attr({id: "unsel_features", class: "button_st3"})
-                 .html("Remove features...")
-                 .on('click', function(){
-                    let layer = the_name,
-                        top_tmp_buttons = d3.select("#table_intro");
-                    top_tmp_buttons.append("button")
-                            .attr({id: "remove_valid", class: "button_st4"})
-                            .style("float", "left")
-                            .html("Valid")
-                            .on("click", function(){
-                                let filter_not_use = current_layers[layer].filter_not_use;
-                                if(current_layers[layer].is_result || current_layers[layer].renderer){
-                                    d3.select("#" + layer).selectAll("path").style("fill", function(d,i){
-                                      if(filter_not_use.get(i)){
-                                        return "grey";
-                                      } else
-                                        return this.style.fill;
-                                    })
-                                } else {
-                                    null;
-                                }
-                                document.getElementById("remove_valid").remove();
-                                document.getElementById("cancel_valid").remove();
-                            });
-                     top_tmp_buttons.append("button")
-                            .attr({id: "cancel_valid", class: "button_st4"})
-                            .style("float", "left")
-                            .html("Cancel")
-                            .on("click", function(){
-                                filter_not_use = new Map();
-                                document.getElementById("remove_valid").remove();
-                                document.getElementById("cancel_valid").remove();
-                            });
-                    log_unused_ft(the_name);
-                  });
+//            top_buttons
+//                 .insert("button")
+//                 .attr({id: "unsel_features", class: "button_st3"})
+//                 .html("Remove features...")
+//                 .on('click', function(){
+//                    let layer = the_name,
+//                        top_tmp_buttons = d3.select("#table_intro");
+//                    top_tmp_buttons.append("button")
+//                            .attr({id: "remove_valid", class: "button_st4"})
+//                            .style("float", "left")
+//                            .html("Valid")
+//                            .on("click", function(){
+//                                let filter_not_use = current_layers[layer].filter_not_use;
+//                                if(current_layers[layer].is_result || current_layers[layer].renderer){
+//                                    d3.select("#" + layer).selectAll("path").style("fill", function(d,i){
+//                                      if(filter_not_use.get(i)){
+//                                        return "grey";
+//                                      } else
+//                                        return this.style.fill;
+//                                    })
+//                                } else {
+//                                    null;
+//                                }
+//                                document.getElementById("remove_valid").remove();
+//                                document.getElementById("cancel_valid").remove();
+//                            });
+//                     top_tmp_buttons.append("button")
+//                            .attr({id: "cancel_valid", class: "button_st4"})
+//                            .style("float", "left")
+//                            .html("Cancel")
+//                            .on("click", function(){
+//                                filter_not_use = new Map();
+//                                document.getElementById("remove_valid").remove();
+//                                document.getElementById("cancel_valid").remove();
+//                            });
+//                    log_unused_ft(the_name);
+//                  });
 
         }
 
@@ -1944,7 +1994,6 @@ function fillMenu_PropSymbol(layer){
             make_prop_symbols(rendering_params);
             binds_layers_buttons();
             zoom_without_redraw();
-//            makeButtonLegend(new_layer_name);
             switch_accordion_section();
 
         });
@@ -1974,7 +2023,7 @@ function make_prop_symbols(rendering_params){
                 let centr = path.centroid(ref_layer_selection[0][i].__data__);
                 d_values[i] = [i, +user_data[layer][i][field], centr];
             }
-        console.log(d_values)
+
         d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
         d_values.sort(comp);
 
@@ -2040,12 +2089,14 @@ function make_prop_symbols(rendering_params){
         }
 
         let class_name = "ui-state-default sortable_result " + layer_to_add,
+            _list_display_name = get_display_name_on_layer_list(layer_to_add),
             layers_listed = layer_list.node(),
             li = document.createElement("li");
 
+        li.setAttribute("layer_name", layer_to_add);
         li.setAttribute("class", class_name);
         li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", nb_features, " features"].join(''))
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", layer_to_add].join('')
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", _list_display_name].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
         let fill_color = rendering_params.fill_color instanceof Array ? {"class": rendering_params.fill_color} : {"single" : rendering_params.fill_color};
@@ -2161,7 +2212,12 @@ function render_choro(layer, rendering_params){
     current_layers[layer]['stroke-width-const'] = 0.75;
     current_layers[layer].is_result = true;
     let colors_breaks = [];
-    for(let i = 0; i<rendering_params['breaks'].length-1; ++i){colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]])}
+    for(let i = 0; i<rendering_params['breaks'].length-1; ++i){
+        colors_breaks.push([
+                [rendering_params['breaks'][i], " - ", rendering_params['breaks'][i+1]].join(''),
+                rendering_params['colors'][i]
+            ])
+        }
     current_layers[layer].colors_breaks = colors_breaks;
     zoom_without_redraw();
 }
@@ -2252,9 +2308,6 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         result = new Object(),
         field = undefined,
         tmp_type = undefined;
-
-//    if(fields.indexOf('pkuid') != -1)
-//        fields.splice(fields.indexOf("pkuid"), 1);
 
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];

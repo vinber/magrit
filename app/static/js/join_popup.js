@@ -74,7 +74,7 @@ function valid_join_on(layer_name, field1, field2){
         alert("The values on which operate have to be uniques");
         return;
     }
-    console.log(join_values1);console.log(join_values2)
+//    console.log(join_values1);console.log(join_values2)
     if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
         for(let i=0, len=join_values1.length; i<len; i++){
             val = join_values2.indexOf(String(join_values1[i]));
@@ -161,7 +161,8 @@ function createJoinBox(layer){
     button2.push("</select>");
 
     let inner_box = [
-        '<div><p style="font:12px italic;">Layer name : </p><p style="font: 14px courrier bold; display:inline;">',
+        '<div><p style="font:12px italic;">Layer name : </p>',
+        '<p style="font: 14px courrier bold; display:inline;">',
          layer, '<br>',
          '<p><b><i>Select fields on which operate the join :</i></b></p>',
          '<p>Geometrie layer fields :<br>', button1.join(''),

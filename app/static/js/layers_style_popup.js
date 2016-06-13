@@ -208,10 +208,7 @@ function createStyleBox(layer_name){
 
      if(type !== 'Line'){
         if(current_layers[layer_name].colors_breaks == undefined){
-            if(sample_no_values.get(layer_name)){
-                popup.append('div').attr({id: "fill_color_section"})
-                make_single_color_menu(layer_name, fill_prev);
-            } else {
+            if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
                 let fields = type_col(layer_name, "string");
                 let fill_method = popup.append("p").html("Fill color").insert("select");
                 [["Single color", "single"],
@@ -229,6 +226,9 @@ function createStyleBox(layer_name){
                         make_random_color(layer_name);
                     });
                 setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
+            } else {
+                popup.append('div').attr({id: "fill_color_section"})
+                make_single_color_menu(layer_name, fill_prev);
             }
          } else {
             let field_to_discretize;
@@ -262,7 +262,7 @@ function createStyleBox(layer_name){
                                     renderer:"Choropleth",
                                     field: field_to_discretize
                                 };
-                                console.log(rendering_params);
+//                                console.log(rendering_params);
                                 selection.style('fill-opacity', 0.9)
                                          .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] })
                             }
@@ -300,19 +300,19 @@ function createStyleBox(layer_name){
                       .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
 
-    if(renderer != "DiscLayer")
+    if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
                           .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
                           .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
 }
 
 
-function deactivate(forpopup){
-    for(var i=0; i < forpopup.length; i++){
-        var elem = forpopup[i];
-        elem.remove();
-    }
-}
+//function deactivate(forpopup){
+//    for(var i=0; i < forpopup.length; i++){
+//        var elem = forpopup[i];
+//        elem.remove();
+//    }
+//}
 
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
@@ -341,7 +341,6 @@ function createStyleBox_ProbSymbol(layer_name){
     make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
-
                 if(current_layers[layer_name].size != new_size){
                     let lgd_prop_symb = document.getElementById("legend_root2");
                     if(lgd_prop_symb){
@@ -350,7 +349,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     }
                     current_layers[layer_name].size = new_size;
                 }
-                console.log(rendering_params, type_method);
+
                 if(type_method == "PropSymbolsChoro"){
                     current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
                     current_layers[layer_name].colors_breaks = [];
@@ -379,9 +378,6 @@ function createStyleBox_ProbSymbol(layer_name){
                            .style('stroke-opacity', previous_stroke_opacity)
                            .style("stroke", stroke_prev);
                     current_layers[layer_name].colors_breaks = prev_col_breaks;
-//                } else if(fill_meth == "class" && renderer == "Links"){
-//                    selection.style('stroke-opacity', function(d, i){ return current_layers[layer_name].linksbyId[i][0]})
-//                           .style("stroke", stroke_prev);
                 } else if(fill_meth == "random"){
                     selection.style('fill', function(){return Colors.name[Colors.random()];})
                              .style('stroke', stroke_prev);
@@ -430,16 +426,15 @@ function createStyleBox_ProbSymbol(layer_name){
             });
         });
     } else {
-        /*
-        popup.insert('input').attr('type', 'color').attr("value", fill_prev)
-             .on('change', function(){selection.style("fill", this.value)});
-        */
-        let fields = type_col(ref_layer_name, "string");
-        let fill_method = popup.append("p").html("Fill color").insert("select");
+        let fields = type_col(ref_layer_name, "string"),
+            fill_method = popup.append("p").html("Fill color").insert("select");
+
         [["Single color", "single"],
          ["Color according to a categorical field", "categorical"],
-         ["Random color on each feature", "random"]].forEach(function(d,i){
-                fill_method.append("option").text(d[0]).attr("value", d[1])  });
+         ["Random color on each feature", "random"]]
+            .forEach(function(d,i){
+                fill_method.append("option").text(d[0]).attr("value", d[1])
+            });
         popup.append('div').attr({id: "fill_color_section"})
         fill_method.on("change", function(){
             d3.select("#fill_color_section").html("").on("click", null);
@@ -454,52 +449,59 @@ function createStyleBox_ProbSymbol(layer_name){
     }
 
     popup.append('p').html('Fill opacity<br>')
-                      .insert('input').attr('type', 'range')
-                      .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
-                      .on('change', function(){selection.style('fill-opacity', this.value)});
+          .insert('input').attr('type', 'range')
+          .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
+          .on('change', function(){selection.style('fill-opacity', this.value)});
 
     popup.append('p').html('Border color<br>')
-                      .insert('input').attr('type', 'color').attr("value", stroke_prev)
-                      .on('change', function(){selection.style("stroke", this.value)});
+          .insert('input').attr('type', 'color').attr("value", stroke_prev)
+          .on('change', function(){selection.style("stroke", this.value)});
+
     popup.append('p').html('Border opacity<br>')
-                      .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
-                      .on('change', function(){selection.style('stroke-opacity', this.value)});
+          .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
+          .on('change', function(){selection.style('stroke-opacity', this.value)});
+
     popup.append('p').html('Border width<br>')
-                      .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
-                      .on('change', function(){selection.style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
+          .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+          .on('change', function(){
+                selection.style("stroke-width", this.value+"px");
+                current_layers[layer_name]['stroke-width-const'] = +this.value
+            });
+
     popup.append("p").html("Field used for proportionals values : <i>" + field_used + "</i>")
     popup.append('p').html('Symbol max size<br>')
-                      .insert('input').attr("type", "range").attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
-                      .on("change", function(){
-                          let z_scale = zoom.scale(),
-                              prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
+          .insert('input').attr("type", "range").attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
+          .on("change", function(){
+              let z_scale = zoom.scale(),
+                  prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
 
-                          new_size[1] = +this.value;
-                          if(type_symbol === "circle") {
-                              for(let i=0, len = prop_values.length; i < len; i++){
-                                  selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
-                              }
-                          } else if(type_symbol === "rect") {
-                              for(let i=0, len = prop_values.length; i < len; i++){
-                                  let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
-                                      old_size = +selection[0][i].getAttribute('height'),
-                                      centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
-                                               +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
-                                  selection[0][i].setAttribute('x', centr[0]);
-                                  selection[0][i].setAttribute('y', centr[1]);
-                                  selection[0][i].setAttribute('height', sz);
-                                  selection[0][i].setAttribute('width', sz);
-                              }
-                          }
-//                          if(type_method.indexOf('Dorling') > -1){
-//                            let nodes = selection[0].map((d, i) => {
-//                                let pt = path.centroid(d.__data__.geometry);
-//                                return {x: pt[0], y: pt[1],
-//                                        x0: pt[0], y0: pt[1],
-//                                        r: +prop_values[i],
-//                                        value: +d_values[i]};
-//                                });
-//                              current_layers[layer_name].force.nodes(nodes).start()
-//                          }
-                      });
+              new_size[1] = +this.value;
+              if(type_symbol === "circle") {
+                  for(let i=0, len = prop_values.length; i < len; i++){
+                      selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
+                  }
+              } else if(type_symbol === "rect") {
+                  for(let i=0, len = prop_values.length; i < len; i++){
+                      let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
+                          old_size = +selection[0][i].getAttribute('height'),
+                          centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
+                                   +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
+                      selection[0][i].setAttribute('x', centr[0]);
+                      selection[0][i].setAttribute('y', centr[1]);
+                      selection[0][i].setAttribute('height', sz);
+                      selection[0][i].setAttribute('width', sz);
+                  }
+              }
+// Todo : find a "light" way to recompute the "force" on the node after changing their size
+//              if(type_method.indexOf('Dorling') > -1){
+//                let nodes = selection[0].map((d, i) => {
+//                    let pt = path.centroid(d.__data__.geometry);
+//                    return {x: pt[0], y: pt[1],
+//                            x0: pt[0], y0: pt[1],
+//                            r: +prop_values[i],
+//                            value: +d_values[i]};
+//                    });
+//                  current_layers[layer_name].force.nodes(nodes).start()
+//              }
+          });
 }

@@ -95,9 +95,17 @@ async def geojson_to_topojson(filepath, quantization="--no-quantization"):
     return stdout.decode()
 
 def topojson_to_geojson(data):
+    """
+    Topojson to geojson back-conversion in python
+    (	through cython-written extension)
+    """
     return json.dumps(convert_from_topo(data))
 
 #def topojson_to_geojson(data):
+#    """
+#    Topojson to geojson back-conversion
+#    (using "official" TopoJSON cli tool)
+#    """
 #    # Todo : Rewrite using asyncio.subprocess methods
 #    # Todo : Use topojson python port if possible to avoid writing a temp. file
 #    layer_name = list(data['objects'].keys())[0]
@@ -111,7 +119,7 @@ def topojson_to_geojson(data):
 #        data = f.read()
 #    os.remove(f_path)
 #    os.remove(new_path)
-#    return data
+#    return datathough
 
 
 async def cache_input_topojson(request):
@@ -542,7 +550,7 @@ async def call_stewart(posted_data, session_redis, user_id):
         'user_breaks': posted_data['user_breaks'],
         'mask_json': filenames['mask_layer']
         }).encode()
-    print(data)
+
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     content = json.loads(content.decode())

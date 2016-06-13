@@ -193,14 +193,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             right_color_select.append("option").text(name).attr("value", name)
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
-//        var button_reverse = d3.select(".color_txt2").insert("button")
-//                                .style({"display": "inline", "margin-left": "10px"})
-//                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
-//                                .html("Reverse palette")
-//                                .on("click", function(){
-//                                    to_reverse = true;
-//                                    redisplay.draw();
-//                                    });
     };
 
     var make_box_histo_option = function(){
@@ -253,9 +245,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                         line_std_right.classed("active", true)
                     }
                 })
-        a.append("label_it_inline").attr("class", "label_it_inline").html("Display mean<br>");
-        b.append("label_it_inline").attr("class", "label_it_inline").html("Display median<br>");
-        c.append("label_it_inline").attr("class", "label_it_inline").html("Display standard deviation<br>");
+        a.append("label_it_inline")
+            .attr("class", "label_it_inline")
+            .html("Display mean<br>");
+        b.append("label_it_inline")
+            .attr("class", "label_it_inline")
+            .html("Display median<br>");
+        c.append("label_it_inline")
+            .attr("class", "label_it_inline")
+            .html("Display standard deviation<br>");
     };
 
     var display_ref_histo = function(){
@@ -352,7 +350,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             }
 
             // In order to avoid class limit falling out the serie limits with Std class :
-            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+//            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+//            ^^^ well finally not ?
             bins = [];
             for(let i = 0, len = stock_class.length, offset=0; i < len; i++){
                 let bin = {};
@@ -395,7 +394,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     right_pal = right_pal.slice(0, ctl_class_value);
                 }
 //                left_pal = [].concat(left_pal.reverse());
-                color_array = new Array().concat(left_pal.reverse(), right_pal);
+                color_array = [].concat(left_pal.reverse(), right_pal);
             }
             to_reverse = false;
             for(let i=0, len = bins.length; i<len; ++i)
@@ -652,10 +651,17 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     accordion_summ.append("h3").html("<b>Summary</b>");
     var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
 
-    var accordion_breaks = newBox.append("div").attr({id: "accordion_breaks_vals", class: "accordion_disc"});
+    var accordion_breaks = newBox.append("div")
+                                .attr({id: "accordion_breaks_vals",
+                                       class: "accordion_disc"});
     accordion_breaks.append("h3").html("<b>Current break values</b>");
-    var user_defined_breaks =  d3.select("#accordion_breaks_vals").append("div").attr("id","user_breaks");
-    user_defined_breaks.insert("textarea").attr("id","user_breaks_area");
+
+    var user_defined_breaks =  d3.select("#accordion_breaks_vals")
+                                .append("div").attr("id","user_breaks");
+
+    user_defined_breaks.insert("textarea")
+                        .attr("id","user_breaks_area")
+                        .style("width", w / 3 + "px");
     user_defined_breaks.insert("button").text("Valid")
             .on("click", function(){
                     let old_nb_class = nb_class;

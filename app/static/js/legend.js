@@ -1,7 +1,6 @@
 "use strict";
 
 function handle_legend(layer){
-    console.log(layer);
     let state = current_layers[layer].renderer;
     if(state != undefined){
         let class_name = [".lgdf", layer].join('_');
@@ -89,6 +88,8 @@ function createLegend_nothing(layer, field, title, subtitle){
                 .on("drag", function() {
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
+
+    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -184,7 +185,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
 
-    document.getElementById("move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -309,7 +310,7 @@ function createLegend_symbol(layer, field, title, subtitle){
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
 
-    document.getElementById("move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -399,16 +400,8 @@ function createLegend_choro(layer, field, title, subtitle){
             .attr({x: xpos, y: last_pos + 2*boxheight})
             .html('');
 
-    document.getElementById("move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
 }
-
-//function make_legend_edit_window(legend_id, layer_name){
-//    var modal = createlegendEditBox(legend_id, layer_name);
-//    modal.className += ' active';
-//    modal.style.position = 'fixed'
-//    modal.style.zIndex = 12;
-//    return center(modal);
-//};
 
 function createlegendEditBox(legend_id, layer_name){
     let box_class = [layer_name, "_legend_popup"].join(''),
@@ -474,44 +467,34 @@ function createlegendEditBox(legend_id, layer_name){
                         .attr("id", "precision_change_txt")
                         .html(['Floating number rounding precision<br> ', current_nb_dec, ' '].join(''));
             if(legend_id === "legend_root" || legend_id === "legend_root_links")
-                    box_body.append('input')
-                            .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
-                            .style("display", "inline")
-                            .on('change', function(){
-                                let nb_float = +this.value,
-                                    dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
-                                d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-                                for(let i = 0; i < legend_boxes[0].length; i++){
-                                    let values = legend_boxes[0][i].__data__.value.split(' - ');
-                                    legend_boxes[0][i].innerHTML = [Math.round(+values[0] * dec_mult) / dec_mult, " - ", Math.round(+values[1] * dec_mult) / dec_mult].join('');
-                                }
-                            });
+                box_body.append('input')
+                    .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                    .style("display", "inline")
+                    .on('change', function(){
+                        let nb_float = +this.value,
+                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
+                        d3.select("#precision_change_txt")
+                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                        for(let i = 0; i < legend_boxes[0].length; i++){
+                            let values = legend_boxes[0][i].__data__.value.split(' - ');
+                            legend_boxes[0][i].innerHTML = [Math.round(+values[0] * dec_mult) / dec_mult, " - ", Math.round(+values[1] * dec_mult) / dec_mult].join('');
+                        }
+                    });
             else if(legend_id === "legend_root2")
-                    box_body.append('input')
-                            .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
-                            .style("display", "inline")
-                            .on('change', function(){
-                                let nb_float = +this.value,
-                                    dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
-                                d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-                                for(let i = 0; i < legend_boxes[0].length; i++){
-                                    let value = legend_boxes[0][i].__data__.value;
-                                    legend_boxes[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
-                                }
-                            });
-    //        else if (legend_id === "#legend_root_links")
-    //                box_body.append('input')
-    //                        .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
-    //                        .style("display", "inline")
-    //                        .on('change', function(){
-    //                            let nb_float = +this.value,
-    //                                dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
-    //                            d3.select("#precision_change_txt").html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-    //                            for(let i = 0; i < legend_boxes[0].length; i++){
-    //                                let values = legend_boxes[0][i].__data__.value.split(' - ');
-    //                                legend_boxes[0][i].innerHTML = [Math.round(+values[0] * dec_mult) / dec_mult, " - ", Math.round(+values[1] * dec_mult) / dec_mult].join('');
-    //                            }
-    //                        });
+                box_body.append('input')
+                    .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                    .style("display", "inline")
+                    .on('change', function(){
+                        let nb_float = +this.value,
+                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
+                        d3.select("#precision_change_txt")
+                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                        for(let i = 0; i < legend_boxes[0].length; i++){
+                            let value = legend_boxes[0][i].__data__.value;
+                            legend_boxes[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
+                        }
+                    });
+
         }
     }
 

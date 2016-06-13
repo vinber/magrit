@@ -136,8 +136,8 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
 
 
 //current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1}
-current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5}
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.3}
+current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}}
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
 
 //////////////////////////////////////////////////////////////////////////////
 // Set-up the menu :
@@ -223,8 +223,17 @@ if(menu_option.menu_factory){
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 //layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
-layer_list.append("li").attr("class", "ui-state-default Simplified_land_polygons").attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons")
-layer_list.append("li").attr("class", "ui-state-default Sphere").attr("layer-tooltip", "Sphere - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere")
+layer_list.append("li")
+        .attr("layer_name", "Simplified_land_polygons")
+        .attr("class", "ui-state-default Simplified_land_polygons")
+        .attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer")
+        .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons");
+layer_list.append("li")
+        .attr("layer_name", "Sphere")
+        .attr("class", "ui-state-default Sphere")
+        .attr("layer-tooltip", "Sphere - Sample layout layer")
+        .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere");
+
 var dv3 = section3.append("div")
                 .style("text-align", "center").html('');
                 //.html("Drop new layout layers here or browse locally...<br>");
@@ -313,12 +322,31 @@ section5.append("div").insert("button")
             document.getElementById('form_projection_center').value = 0;
             document.getElementById('form_rotate').value = 0;
             proj.rotate([0,,]);
-            map.selectAll("path").attr("d", path);
+            if(func == "cartogram"){
+                map.selectAll("path:not([transform])").attr("d", path);
+                let selec = map.selectAll("path[transform]");
+                let layer_names = selec[0].map( d => d.parentElement.id);
+                for(let ii = 0; ii < layer_names.length; ++ii){
+                    let lyr_name = layer_names[ii],
+                        transform_values = current_layers[lyr_name].scale_byFeature;
+                    map.select(lyr_name)
+                        .selectAll("path[transform]")
+                            .attr("d", path)
+                            .attr("transform", function(d,i) {
+                                let centroid = path.centroid(d),
+                                    x = centroid[0],
+                                    y = centroid[1];
+                                return ["translate(", x, ",", y, ")",
+                                        "scale(", transform_values[i], ")",
+                                        "translate(", -x, ",", -y, ")"].join("")
+                            });
+                }
+
+            } else {
+                map.selectAll("path").attr("d", path);
+            }
             reproj_symbol_layer();
             rotate_global(0);
-            //} else {
-            //    null;
-            //}
         });
 
 
@@ -357,10 +385,11 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 
 
     d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
-        background.selectAll('path')
+        background.selectAll('.subunit')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
                   .enter()
                   .append('path')
+                  .attr("d", path)
                   .style({stroke: "rgb(0,0,64)", fill: "lightgrey"});
         map.selectAll("path").attr("d", path);
     });
@@ -481,8 +510,11 @@ $(function() {
           layers = d3.selectAll("svg").node();
 
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
-          let n = (a.target.childNodes[i].innerHTML.split("></div> ")[1]).split(" - ");
-          desired_order[i] = n[n.length - 1];
+          console.log(a.target.childNodes[i]);
+          //let n = (a.target.childNodes[i].innerHTML.split("</div> ")[1]).split(" - ");
+          let n = a.target.childNodes[i].getAttribute("layer_name");
+          //console.log(n)
+          desired_order[i] = n;
           actual_order[i] = layers.children[i].id;
       }
       for(let i = 0, len = desired_order.length; i < len; i++){
@@ -554,18 +586,22 @@ function binds_layers_buttons(layer_name){
         selec.selectAll(".trash_button").on("click", remove_layer);
         selec.selectAll(".active_button").on("change", handle_active_layer);
         selec.selectAll(".zoom_fit_button").on("click", function(){
-            let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+            //let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+            let layer_name = this.parentElement.parentElement.getAttribute("layer_name");
             center_map(layer_name);
             zoom_without_redraw();
         });
         selec.selectAll(".style_button").on("click", function(){
-            handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            //handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
         });
         selec.selectAll(".style_target_layer").on("click", function(){
-            handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            //handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
         });
         selec.selectAll(".legend_button").on("click", function(){
-            handle_legend(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            //handle_legend(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+            handle_legend(this.parentElement.parentElement.getAttribute("layer_name"))
         });
         $("[layer-tooltip!='']").qtip({
             content: { attr: "layer-tooltip" },
@@ -625,7 +661,28 @@ function displayInfoOnMove(){
 
 function reproj(){
   proj.translate([t[0], t[1]]).scale(s);
-  map.selectAll("path").attr("d", path);
+  //map.selectAll("path").attr("d", path);
+  if(func == "cartogram"){
+      map.selectAll("path:not([transform])").attr("d", path);
+      let selec = map.selectAll("path[transform]");
+      let layer_names = new Set(selec[0].map( d => d.parentElement.id));
+      for(let lyr_name of layer_names){
+          let transform_values = current_layers[lyr_name].scale_byFeature;
+          map.select("#" + lyr_name)
+              .selectAll("path[transform]")
+                  .attr("d", path)
+                  .attr("transform", function(d,i) {
+                      let centroid = path.centroid(d),
+                          x = centroid[0],
+                          y = centroid[1];
+                      return ["translate(", x, ",", y, ")",
+                              "scale(", transform_values[i], ")",
+                              "translate(", -x, ",", -y, ")"].join("")
+                  });
+      }
+    } else {
+        map.selectAll("path").attr("d", path);
+    }
   reproj_symbol_layer();
 }
 
@@ -700,19 +757,25 @@ function log_coordinates(t){
       txt = [],
       zt = zoom.translate(),
       zs = zoom.scale();
+
   coords = proj.invert([(coords[0]-zt[0])/zs, (coords[1]-zt[1])/zs]);
+  if(!coords || isNaN(coords[0]) || isNaN(coords[1])){
+      info_coords.node().innerHTML = "";
+      return;
+  } else {
+      if(coords[0]>0) txt.push("E")
+      else txt.push("W")
 
-  if(coords[0]>0) txt.push("E")
-  else txt.push("W")
-
-  if(coords[1]>0) txt.push("N")
-  else txt.push("S")
-  info_coords.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
+      if(coords[1]>0) txt.push("N")
+      else txt.push("S")
+      info_coords.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
+  }
 };
 
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(name){
-    name = name || this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
+    name = name || this.parentElement.parentElement.getAttribute("layer_name");
+    //name = name || this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
         if(confirmed){
@@ -967,7 +1030,7 @@ function get_map_template(){
                     layers_style[i].result[j] = nb_ft;
             } else {
                 layers_style[i].cache_url = [user_id, layer_name].join('_');
-                layers_style[i].linksById = current_layers[layer_name].LinksById.splice(0, nb_ft)
+                layers_style[i].linksById = current_layers[layer_name].linksById.splice(0, nb_ft)
             }
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
@@ -1190,7 +1253,8 @@ var φ = d3.scale.linear()
 function handle_active_layer(name){
     let fill_value;
     if(!name) {
-        name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
+        name = this.parentElement.parentElement.getAttribute("layer_name");
+        //name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
         fill_value = this.checked ? 1 : 0;
     } else {
         fill_value = d3.select("#sortable").select('.' + name).select("#active_button").node().checked ? 1 : 0;
@@ -1508,6 +1572,7 @@ function apply_user_preferences(json_pref){
             let layers_listed = layer_list.node(),
                 li = document.createElement("li");
 
+            li.setAttribute("layer_name", layer_name)
             li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
             li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''))
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", layer_name].join('')
