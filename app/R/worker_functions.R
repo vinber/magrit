@@ -40,7 +40,6 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   file.remove(knownpts_json)
   print(paste0("Layer opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
-  print(user_breaks)
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
                                             var = var_name,

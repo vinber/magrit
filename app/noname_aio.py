@@ -201,7 +201,8 @@ async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
 
-    # If a shapefile is provided as multiple files (.shp, .dbf, .shx, and .prj are expected), not ziped :
+    # If a shapefile is provided as multiple files 
+    # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and not "file[]" in posted_data:
         list_files = []
         for i in range(len(posted_data) - 2):
@@ -312,7 +313,8 @@ async def handle_app_functionality(request):
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
     lastPref = await app_glob['redis_conn'].get('_'.join([user_id, "lastPref"]))
-    return {"func": request.match_info['function'], "lastPref": lastPref, "user_id": user_id}
+    return {"func": request.match_info['function'],
+            "lastPref": lastPref, "user_id": user_id}
 
 
 async def nothing(posted_data, session_redis, user_id):
@@ -359,7 +361,8 @@ async def carto_doug(posted_data, session_redis, user_id):
     res = await geojson_to_topojson(tmp_path)
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
-    asyncio.ensure_future(app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res
 
@@ -372,14 +375,16 @@ async def links_map(posted_data, session_redis, user_id):
     ref_layer = json.loads(ref_layer.decode())
     new_field = json.loads(posted_data['join_field'])
     n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
+    if len(new_field[n_field_name]) > 0:
         join_topojson_new_field(ref_layer, new_field, n_field_name)
 
     tmp_part = get_name()
     filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-    commande = b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
+    commande = \
+        b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
     data = json.dumps({
         "layer_json_path": filenames['src_layer'],
         "csv_table": posted_data['csv_table'],
@@ -392,14 +397,21 @@ async def links_map(posted_data, session_redis, user_id):
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
-    content = json.loads(content.decode())
+    content = content.decode()
+    try:
+        content = json.loads(content)
+    except:
+        return '{"Error":"Something went wrong... : %s"}' % content \
+            if content else "Unknown Error"
+
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
-    asyncio.ensure_future(app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res
 
@@ -431,40 +443,59 @@ async def carto_gridded(posted_data, session_redis, user_id):
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
     s_t = time.time()
-    content = json.loads(content.decode())
+    content = content.decode()
+    try:
+        content = json.loads(content)
+    except:
+        return '{"Error":"Something went wrong... : %s"}' % content \
+            if content else "Unknown Error"
+
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     res = res.replace(tmp_part, new_name)
-    asyncio.ensure_future(app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res
 
 
 async def call_mta_simpl(posted_data, session_redis, user_id):
-    posted_data = json.loads(posted_data.get("json"))  # method, jsonified_table, var1, var2, key/ref, type_dev
+    posted_data = json.loads(posted_data.get("json"))
     if "medium" in posted_data["method"]:
         commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
         data = json.dumps({
-            "x": json.dumps(posted_data['table']).encode(), "var1": posted_data['var1_name'],
-            "var2": posted_data['var2_name'], "key": posted_data["key_field_name"],
-            "type_dev": posted_data["type_dev"]}).encode()
+            "x": json.dumps(posted_data['table']).encode(),
+            "var1": posted_data['var1_name'],
+            "var2": posted_data['var2_name'],
+            "key": posted_data["key_field_name"],
+            "type_dev": posted_data["type_dev"]
+            }).encode()
 
     elif "global" in posted_data["method"]:
         commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
         data = json.dumps({
-            "x": json.dumps(posted_data['table']).encode(), "var1": posted_data['var1_name'],
-            "var2": posted_data['var2_name'], "ref": posted_data["ref_value"],
-            "type_dev": posted_data["type_dev"]}).encode()
+            "x": json.dumps(posted_data['table']).encode(),
+            "var1": posted_data['var1_name'],
+            "var2": posted_data['var2_name'],
+            "ref": posted_data["ref_value"],
+            "type_dev": posted_data["type_dev"]
+            }).encode()
 
     else:
         return {"Error": "Unknow MTA method"}
 
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
-    return content.decode()
+    content = content.decode()
+    try:
+        assert '{' in content
+        return content
+    except:
+        return '{"Error":"Something went wrong... : %s"}' % content \
+            if content else "Unknown Error"
 
 
 async def call_mta_geo(posted_data, session_redis, user_id):
@@ -501,8 +532,13 @@ async def call_mta_geo(posted_data, session_redis, user_id):
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
-    return content.decode()
-
+    content = content.decode()
+    try:
+        assert '{' in content
+        return content
+    except:
+        return '{"Error":"Something went wrong... : %s"}' % content \
+            if content else "Unknown Error"
 
 def join_topojson_new_field(topojson, new_field, new_field_name):
     layer_name = list(topojson['objects'].keys())[0]
@@ -512,7 +548,6 @@ def join_topojson_new_field(topojson, new_field, new_field_name):
             geom['properties'][new_field_name] = new_field[ix]
         except KeyError:
             geom['properties'] = {new_field_name: new_field[ix]}
-
 
 async def call_stewart(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
@@ -534,10 +569,16 @@ async def call_stewart(posted_data, session_redis, user_id):
                  'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None}
     savefile(filenames['point_layer'], topojson_to_geojson(point_layer).encode())
     if filenames['mask_layer']:
-        savefile(filenames['mask_layer'], topojson_to_geojson(json.loads(result_mask.decode())).encode())
+        savefile(filenames['mask_layer'],
+                 topojson_to_geojson(json.loads(result_mask.decode())).encode())
 
     commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
                 b'beta, resolution, nb_class, user_breaks, mask_json)')
+
+    reso = None if posted_data['resolution'] == "" \
+        else float(posted_data['resolution']) \
+        if float(posted_data['resolution']) > 0 \
+        else None
 
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
@@ -545,7 +586,7 @@ async def call_stewart(posted_data, session_redis, user_id):
         'typefct': posted_data['typefct'].lower(),
         'span': float(posted_data['span']),
         'beta': float(posted_data['beta']),
-        'resolution': float(posted_data['resolution']),
+        'resolution': reso,
         'nb_class': int(posted_data['nb_class']),
         'user_breaks': posted_data['user_breaks'],
         'mask_json': filenames['mask_layer']
@@ -553,17 +594,23 @@ async def call_stewart(posted_data, session_redis, user_id):
 
     content = await R_client_fuw_async(
         url_client, commande, data, app_glob['async_ctx'], user_id)
-    content = json.loads(content.decode())
+    content = content.decode()
+
+    try:
+        content = json.loads(content)
+    except:
+        return '{"Error":"Something went wrong... : %s"}' % content \
+            if content else "Unknown Error"
+
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['StewartPot', n_field_name])
     res = res.replace(tmp_part, new_name)
-    asyncio.ensure_future(app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
-    return '|||'.join([json.dumps(content['breaks']),
-                       res])
-
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+    return '|||'.join([res, json.dumps(content['breaks'])])
 
 async def R_compute(request):
     s_t = time.time()
@@ -580,7 +627,6 @@ async def R_compute(request):
         data_response = await func(posted_data, session_redis, user_id)
         return web.Response(text=data_response)
 
-
 async def handler_exists_layer(request):
 #    session_redis = await get_session(request)
 #    user_id = get_user_id(session_redis)
@@ -595,11 +641,14 @@ async def handler_exists_layer(request):
 async def rawcsv_to_geo(data):
     raw_csv = StringIO(data)
     df = pd.read_csv(raw_csv)
-    geo_col_y = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"y", "latitude", "lat"}][0] + 1
-    geo_col_x = [colnb for colnb, col in enumerate(df.columns) if col.lower() in {"x", "longitude", "lon", "lng", "long"}][0] + 1
-    ft_template_start = '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
+    geo_col_y = [colnb for colnb, col in enumerate(df.columns)
+                 if col.lower() in {"y", "latitude", "lat"}][0] + 1
+    geo_col_x = [colnb for colnb, col in enumerate(df.columns)
+                 if col.lower() in {"x", "longitude", "lon", "lng", "long"}][0] + 1
     col_names = df.columns.tolist()
     ## Ugly minified geojson construction "by hand" :
+    ft_template_start = \
+        '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
     geojson_features = [
         ''.join([ft_template_start,
                  '''{0},{1}'''.format(ft[geo_col_x], ft[geo_col_y]),
@@ -609,7 +658,8 @@ async def rawcsv_to_geo(data):
         for ft in df.itertuples()
         ]
     res = ''.join([
-        '''{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
+        '''{"type":"FeatureCollection","crs":{"type":"name","properties":'''
+        '''{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
         ','.join(geojson_features),
         """]}"""
         ])
