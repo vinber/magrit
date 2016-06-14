@@ -264,12 +264,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
         nb_bins = nb_bins > values.length ? nb_bins : values.length;
 
-        var margin = {top: 5, right: 7.5, bottom: 12.5, left: 22.5},
+        var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
 
         var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
-        ref_histo.append('p').style({"text-align": "center"}).html('<i>Distribution reference histogram</i>');
+        ref_histo.append('p').html('<i>Distribution reference histogram</i>');
 
         var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
             .attr("width", svg_w + margin.left + margin.right)
@@ -279,39 +279,45 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         var x = d3.scale.linear()
             .domain([serie.min(), serie.max()])
-            .range([0, svg_w]);
+            .range([0, width]);
 
         var data = d3.layout.histogram()
             .bins(x.ticks(nb_bins))
             (values);
 
         var y = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d.y; })])
+            .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
             .range([height, 0]);
 
         var bar = svg_ref_histo.selectAll(".bar")
             .data(data)
-          .enter().append("g")
+          .enter()
+            .append("rect")
             .attr("class", "bar")
-            .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
-
-        bar.append("rect")
-            .attr("x", 1)
-            .attr("width", x(data[0].dx)+0.5)
-            .attr("height", function(d) { return height - y(d.y); })
-            .style({fill: "beige", stroke: "black", "stroke-width": "0.5px"});
+            .attr("x", d => x(d.x))
+            .attr("y", d =>  y(d.y) - margin.bottom)
+            .attr("width", x(data[0].dx))
+            .attr("height", d => height - y(d.y))
+            .attr("transform", "translate(0, "+ margin.bottom +")")
+            .style({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
             .attr("class", "x axis")
+            .style("font-size", "10px")
             .attr("transform", "translate(0," + height + ")")
             .call(d3.svg.axis()
                 .scale(x)
-                .ticks(6)
-                .orient("bottom"));
+                .ticks(4)
+                .orient("bottom"))
+            .selectAll("text")
+                .attr("y", 4).attr("x", -4)
+                .attr("dy", ".45em")
+                .attr("transform", "rotate(-40)")
+                .style("text-anchor", "end");
 
         svg_ref_histo.append("g")
             .attr("class", "y axis")
-            .attr("transform", "translate(0, -" + (margin.top+margin.bottom) +")")
+            .style("font-size", "10px")
             .call(d3.svg.axis()
                 .scale(y)
                 .ticks(5)
@@ -361,6 +367,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 bin.height = bin.val;
                 bins[i] = bin;
             }
+            console.log(bins)
             return true;
         },
         draw: function(){
@@ -413,13 +420,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .data(bins)
               .enter().append("rect")
                 .attr("class", "bar")
-                .attr("transform", "translate(0, -20)")
+                .attr("transform", "translate(0, -17.5)")
                 .style("fill", function(d){return d.color;})
                 .style({"opacity": 0.5, "stroke-opacity":1})
                 .attr("x", function(d){ return x(d.offset);})
-                .attr("width", function(d){ return x(d.width) - 1;})
-                .attr("y", function(d){ return y(d.height);})
-                .attr("height", function(d){ return height + 20 - y(d.height);}) // 20 to compensate the [, -20] translate on the y axis
+                .attr("width", function(d){ return x(d.width);})
+                .attr("y", function(d){ return y(d.height) - margin.bottom;})
+                .attr("height", function(d){ return svg_h - y(d.height);});
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
@@ -437,7 +444,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
             svg_histo.append("g")
                 .attr("class", "y axis")
-                .attr("transform", "translate(0, -20)")
+                .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
                 .call(d3.svg.axis()
                     .scale(y)
                     .ticks(5)
@@ -565,7 +572,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_mean = overlay_svg.append("line")
         .attr("class", "line_mean")
         .attr("x1", x(mean_val))
-        .attr("y1", 0 + margin.top / 2)
+        .attr("y1", 10)
         .attr("x2", x(mean_val))
         .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "red", fill: "none"})
@@ -582,7 +589,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_median = overlay_svg.append("line")
         .attr("class", "line_med")
         .attr("x1", x(serie.median()))
-        .attr("y1", 0 + margin.top / 2)
+        .attr("y1", 10)
         .attr("x2", x(serie.median()))
         .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "blue", fill: "none"})
@@ -599,7 +606,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_std_left = overlay_svg.append("line")
         .attr("class", "lines_std")
         .attr("x1", x(mean_val - stddev))
-        .attr("y1", 0 + margin.top / 2)
+        .attr("y1", 10)
         .attr("x2", x(mean_val - stddev))
         .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})
@@ -608,7 +615,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var line_std_right = overlay_svg.append("line")
         .attr("class", "lines_std")
         .attr("x1", x(mean_val + stddev))
-        .attr("y1", 0 + margin.top / 2)
+        .attr("y1", 10)
         .attr("x2", x(mean_val + stddev))
         .attr("y2", svg_h - margin.bottom)
         .style({"stroke-width": 0, stroke: "grey", fill: "none"})

@@ -186,11 +186,11 @@ cdef class Transformer:
         geometry['coordinates'] = self.convert_point(geometry['coordinates'])
         return geometry
 
-    def dict multi_point(self, dict geometry):
+    cpdef dict multi_point(self, dict geometry):
         geometry['coordinates'] = [self.convert_point(geom) for geom in geometry['coordinates']]
         return  geometry
 
-    def dict line_string(self, dict geometry):
+    cpdef dict line_string(self, dict geometry):
         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
         del geometry['arcs']
         return geometry

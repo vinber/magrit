@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 @author: mz
@@ -11,10 +12,12 @@ import asyncio
 import zmq.asyncio
 import pandas as pd
 
+from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO
 from subprocess import Popen, PIPE
+from socket import socket, AF_INET, SOCK_STREAM
 #from hashlib import sha512
 #from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
@@ -28,7 +31,7 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 # Helpers :
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 from helpers.misc import savefile, get_key
-from helpers.cy_misc import get_name
+from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
 from helpers.topo_to_geo import convert_from_topo
 
@@ -175,6 +178,11 @@ async def cache_input_topojson(request):
 
 
 def get_user_id(session_redis):
+    """
+    Function to get (or retrieve) the user unique ID
+    (ID is used amongst other things to set/get data in/from redis
+    and for retrieving the layers decribed in a "preference file" of an user)
+    """
     if 'app_user' not in session_redis:
         user_id = get_key(app_glob['app_users'])
         app_glob['app_users'].add(user_id)
@@ -186,6 +194,17 @@ def get_user_id(session_redis):
             app_glob['app_users'].add(user_id)
         return user_id
 
+async def ajson_loads(str_data):
+    """
+    Just a wrapper around json.loads to make it an awaitable coroutine.
+    Not sure yet if their is a real benefit to "gather" simultaneously multiple
+    loaded JSON this way.
+    Args:
+        - str_data, str: the raw JSON, decoded as String
+    Return:
+        - parsed_json, dict : the JSON file loaded in a python dictionnary
+    """
+    return json.loads(str_data)
 
 async def user_pref(request):
     last_pref = await request.post()
@@ -201,7 +220,7 @@ async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
 
-    # If a shapefile is provided as multiple files 
+    # If a shapefile is provided as multiple files
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and not "file[]" in posted_data:
         list_files = []
@@ -326,7 +345,7 @@ async def nothing(posted_data, session_redis, user_id):
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field(ref_layer, new_field, n_field_name)
+        join_topojson_new_field2(ref_layer, new_field, n_field_name)
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
@@ -339,24 +358,27 @@ async def nothing(posted_data, session_redis, user_id):
     return res.replace(
         tmp_part, '_'.join(["Nope", n_field_name]))
 
-
 async def carto_doug(posted_data, session_redis, user_id):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app_glob['redis_conn'].get(f_name)
-    ref_layer = json.loads(ref_layer.decode())
-    new_field = json.loads(posted_data['var_name'])
-    iterations = json.loads(posted_data['iterations'])
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = json.loads(posted_data['var_name'])
+#    iterations = json.loads(posted_data['iterations'])
+    ref_layer, new_field, iterations = \
+        await asyncio.gather(*[ajson_loads(ref_layer.decode()),
+                               ajson_loads(posted_data['var_name']),
+                               ajson_loads(posted_data['iterations'])])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field(ref_layer, new_field[n_field_name], n_field_name)
+        join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
     gdf = GeoDataFrame.from_file(tmp_path)
     os.remove(tmp_path)
-    result = make_cartogram(gdf, n_field_name, iterations)
+    result = await make_cartogram(gdf, n_field_name, iterations)
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
@@ -372,12 +394,14 @@ async def links_map(posted_data, session_redis, user_id):
 
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app_glob['redis_conn'].get(f_name)
-    ref_layer = json.loads(ref_layer.decode())
-    new_field = json.loads(posted_data['join_field'])
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = json.loads(posted_data['join_field'])
+    ref_layer, new_field = await asyncio.gather(*[
+        ajson_loads(ref_layer.decode()), ajson_loads(posted_data['join_field'])])
+
     n_field_name = list(new_field.keys())[0]
-#    if len(new_field[n_field_name]) > 0 and n_field_name not in ref_layer['objects'][list(ref_layer['objects'].keys())[0]]['geometries'][0]['properties']:
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field(ref_layer, new_field, n_field_name)
+        join_topojson_new_field2(ref_layer, new_field, n_field_name)
 
     tmp_part = get_name()
     filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -422,12 +446,15 @@ async def carto_gridded(posted_data, session_redis, user_id):
 
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app_glob['redis_conn'].get(f_name)
-    ref_layer = json.loads(ref_layer.decode())
 
-    new_field = json.loads(posted_data['var_name'])
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = json.loads(posted_data['var_name'])
+    ref_layer, new_field = await asyncio.gather(*[
+        ajson_loads(ref_layer.decode()), ajson_loads(posted_data['var_name'])])
+
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field(ref_layer, new_field[n_field_name], n_field_name)
+        join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
 
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -512,10 +539,10 @@ async def call_mta_geo(posted_data, session_redis, user_id):
     n_field_name2 = list(new_field2.keys())[0]
 
     if len(new_field1[n_field_name1]) > 0:
-        join_topojson_new_field(ref_layer, new_field1[n_field_name1], n_field_name1)
+        join_topojson_new_field2(ref_layer, new_field1[n_field_name1], n_field_name1)
 
     if len(new_field2[n_field_name2]) > 0:
-        join_topojson_new_field(ref_layer, new_field2[n_field_name2], n_field_name2)
+        join_topojson_new_field2(ref_layer, new_field2[n_field_name2], n_field_name2)
 
     tmp_part = get_name()
     filenames = {"src_layer" : ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -558,7 +585,7 @@ async def call_stewart(posted_data, session_redis, user_id):
 
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field(point_layer, new_field[n_field_name], n_field_name)
+        join_topojson_new_field2(point_layer, new_field[n_field_name], n_field_name)
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, posted_data['mask_layer'], "--no-quantization"])
@@ -692,6 +719,24 @@ async def convert_csv_geo(request):
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
 
+def check_port_available(port_nb):
+    if port_nb < 7000:
+        return False
+    with closing(socket(AF_INET, SOCK_STREAM)) as sock:
+        if sock.connect_ex(("0.0.0.0", port_nb)) == 0:
+            return False
+    return True
+
+def display_usage(file_name):
+    print("""
+    Usage :
+        ./{} [TCP port to use] [Number of R process]
+
+        TCP port to use       An available TCP port for the application
+                              (default: 9999)
+        Number of R process   The number of R instance to start in background
+                              (default: 2)
+        """.format(file_name))
 
 async def init(loop, port=9999):
     redis_cookie = await aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
@@ -725,20 +770,35 @@ if __name__ == '__main__':
             os.mkdir('/tmp/feeds')
         except Exception as err:
             print(err)
+            display_usage(sys.argv[0])
             sys.exit()
 
     if len(sys.argv) == 2:
-        port = int(sys.argv[1])
+        try:
+            port = int(sys.argv[1])
+        except:
+            display_usage(sys.argv[0])
+            sys.exit()
         nb_r_workers = '2'
     elif len(sys.argv) == 3:
-        port = int(sys.argv[1])
+        try:
+            port = int(sys.argv[1])
+        except:
+            display_usage(sys.argv[0])
+            sys.exit()
         nb_r_workers = sys.argv[2]
         if not nb_r_workers.isnumeric():
+            print("Error : The number of R instances have to be a number (<= 8)")
+            display_usage(sys.argv[0])
             sys.exit()
     else:
         port = 9999
         nb_r_workers = '2'
 
+    if not check_port_available(port):
+        print("Error : Selected port is already in use")
+        display_usage(sys.argv[0])
+        sys.exit()
     # The mutable mapping provided by web.Application will be used to store (safely ?)
     # some global variables :
     # Todo : create only one web.Application object instead of app + app_glob

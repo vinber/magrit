@@ -1358,23 +1358,23 @@ function handle_proj_center_button(param){
 //            but also works with the 2 params together like [800, 750])
 function canvas_mod_size(param){
     if(param[0]){
-        w = param[0];
+        w = +param[0];
         map.attr("width", w)
             .call(zoom_without_redraw);
-        map_div.style("width", w+"px");
+        map_div.style("width", w + "px");
     }
     if(param[1]){
-        h = param[1];
+        h = +param[1];
         map.attr("height", h)
             .call(zoom_without_redraw);
-        map_div.style("height", h+"px");
+        map_div.style("height", h + "px");
 
         // Change also the position of displayed coordinates when height of map is changed :
-        info_coords.style({"font-size": "14px", "margin-top": (Number(h)+10)+"px",
-                      "margin-left":"5px", "color":"black"});
+        info_coords.style({"font-size": "14px", "margin-top": (h + 10) + "px",
+                           "margin-left":"5px", "color":"black"});
 
         // And change the position of the `source` element displayed in the bottom of the map :
-        d3.selectAll(".source_block").select("text").attr("y", h-10)
+        d3.selectAll(".source_block").select("text").attr("y", h - 10)
     }
 }
 

@@ -18,7 +18,7 @@ from cpython cimport array
 from libc.stdlib cimport malloc, free
 
 
-def make_cartogram(geodf, field_name, iterations=5):
+async def make_cartogram(geodf, field_name, iterations=5):
     """
     Make a continuous cartogram on a geopandas.GeoDataFrame collection
     of Polygon/MultiPolygon (wrapper to call the core functions
@@ -101,7 +101,7 @@ cdef class Cartogram(object):
         (recursively, according to the specified iteration number)
         """
         cdef unsigned int ite=0, nbi=0
-        
+
         for ite in range(self.iterations):
             self.getinfo()
             for nbi in range(self.total_features):

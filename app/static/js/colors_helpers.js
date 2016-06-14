@@ -1,4 +1,5 @@
-// Helper function in order to have a colorbrewer color ramp with 
+"use strict";
+// Helper function in order to have a colorbrewer color ramp with
 // non-supported number of value using interpolation between the colorbrewer color
 // to fit the requested number of classes.
 // If the number of class fit the size of a colorbrewer ramp (3 < nb_class < 9)
@@ -79,7 +80,7 @@ var interpolateColor = function(color1, color2, factor=0.5) {
   return result;
 };
 
-// Just a "Colors" object with a convenience "random" method 
+// Just a "Colors" object with a convenience "random" method
 // ... when a random color is needed (they aren't specialy pretty colors though!)
 var Colors = {
     names: {

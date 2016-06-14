@@ -42,7 +42,7 @@ function valid_join_check_display(val, prop){
     }
 }
 
-// Where the real join is done 
+// Where the real join is done
 // Its two main results are:
 //    -the update of the global "field_join_map" array
 //       (storing the relation between index of the geometry layer and index of the external dataset)
@@ -161,13 +161,13 @@ function createJoinBox(layer){
     button2.push("</select>");
 
     let inner_box = [
-        '<div><p style="font:12px italic;">Layer name : </p>',
-        '<p style="font: 14px courrier bold; display:inline;">',
-         layer, '<br>',
-         '<p><b><i>Select fields on which operate the join :</i></b></p>',
-         '<p>Geometrie layer fields :<br>', button1.join(''),
-         '<p>External dataset fields :<br>', button2.join(''),
-         '<br><br><p style="text-align:center;font: bold">Join datasets ?</p></div>'].join('');
+         '<p><b><i>Select fields on which operate the join</i></b></p>',
+         '<div style="padding:10px"><p>Geometrie layer field :</p>',
+         button1.join(''), '<em style="float:right;">(', layer, ')</em></div>',
+         '<div style="padding:15px 10px 10px"><p>External dataset field :<br></p>',
+         button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>',
+         '<br><p><strong>Join datasets ?<strong></p></div>'
+        ].join('');
 
     make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
         .then(function(confirmed){
@@ -176,6 +176,7 @@ function createJoinBox(layer){
                 fields_handler.unfill();
                 fields_handler.fill(layer);
         });
-    d3.select("#button_field1").on("change", function(){last_choice.field1 = this.value;});
-    d3.select("#button_field2").on("change", function(){last_choice.field2 = this.value;});
+    d3.select(".joinBox").style({"text-align": "center", "line-height": "0.9em"});
+    d3.select("#button_field1").style("float", "left").on("change", function(){last_choice.field1 = this.value;});
+    d3.select("#button_field2").style("float", "left").on("change", function(){last_choice.field2 = this.value;});
 }

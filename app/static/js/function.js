@@ -1222,14 +1222,39 @@ var fields_Stewart = {
 };
 
 function fillMenu_Stewart(){
-    var dialog_content = section2.append("div").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').style("margin", "auto").html('Field ').insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field"),
-        span = dialog_content.append('p').html('Span ').insert('input').attr({type: 'number', class: 'params', id: "stewart_span", value: 0, min: 0, max: 100000, step: 0.1}),
-        beta = dialog_content.append('p').html('Beta ').insert('input').attr({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: 0.1}),
-        resolution = dialog_content.append('p').html('Resolution (opt.)').insert('input').attr({type: 'number', class: 'params', id: "stewart_resolution", min: 0, max: 1000000, step: 0.1}),
-        func_selec = dialog_content.append('p').html('Function type ').insert('select').attr({class: 'params', id: "stewart_func"}),
-        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attr({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 20, step: 1}),
-        breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attr({class: 'params', id: "stewart_breaks"}),
+    var dialog_content = section2.append("div").attr("class", "form-rendering");
+
+    var field_selec = dialog_content.append('p').style("margin", "10px 0px 0px").html('Field ')
+                                    .insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field");
+
+    {
+        let p_span = dialog_content
+                        .append("p")
+                            .style({"float": "left"})
+                            .text("Span ");
+        var span = p_span.append('input')
+                        .style("width", "60px")
+                        .attr({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: 0.001});
+        p_span.insert("span").html(" km")
+
+        var beta = dialog_content
+                        .append('p')
+                            .style({"float": "right", "margin-right": "35px"})
+                            .html('Beta ')
+                        .insert('input')
+                            .style("width", "60px")
+                            .attr({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: 0.1});
+
+        let p_reso = dialog_content
+                            .append('p').text('Resolution (opt.) ');
+        var resolution = p_reso.insert('input').style("width", "60px")
+                            .attr({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: 0.1});
+        p_reso.insert("span").html(" km");
+    }
+
+    var func_selec = dialog_content.append('p').html('Function type ').insert('select').attr({class: 'params', id: "stewart_func"}),
+        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attr({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}).style("width", "50px"),
+        breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attr({class: 'params', id: "stewart_breaks"}).style({"width": "260px", "height": "30px"}),
         mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attr({class: 'params', id: "stewart_mask"});
 
     ['Exponential', 'Pareto'].forEach(function(fun_name){
@@ -1827,7 +1852,8 @@ var boxExplore = {
         d3.selectAll('#myTable_wrapper').remove();
         this.box_table.append("table")
                       .attr({class: "display compact", id: "myTable"})
-                      .style({width: "80%", height: "80%"})
+                      .style("width", "80%");
+
         let myTable = $('#myTable').DataTable({
             data: data_table,
             columns: this.columns_headers,
@@ -1847,7 +1873,7 @@ var boxExplore = {
         this.current_table = undefined,
         this.box_table = d3.select("body").append("div")
                             .attr({id: "browse_data_box", title: "Explore dataset"})
-                            .style("font-size", "0.8em");
+                            .style("font-size", "0.75em");
         let the_name = this.layer_name,
             self = this;
         if(!the_name){
@@ -1860,44 +1886,6 @@ var boxExplore = {
                  .attr({id: "add_field_button", class: "button_st3"})
                  .html("Add a new field...")
                  .on('click', function(){  add_table_field(the_name, self);});
-//            top_buttons
-//                 .insert("button")
-//                 .attr({id: "unsel_features", class: "button_st3"})
-//                 .html("Remove features...")
-//                 .on('click', function(){
-//                    let layer = the_name,
-//                        top_tmp_buttons = d3.select("#table_intro");
-//                    top_tmp_buttons.append("button")
-//                            .attr({id: "remove_valid", class: "button_st4"})
-//                            .style("float", "left")
-//                            .html("Valid")
-//                            .on("click", function(){
-//                                let filter_not_use = current_layers[layer].filter_not_use;
-//                                if(current_layers[layer].is_result || current_layers[layer].renderer){
-//                                    d3.select("#" + layer).selectAll("path").style("fill", function(d,i){
-//                                      if(filter_not_use.get(i)){
-//                                        return "grey";
-//                                      } else
-//                                        return this.style.fill;
-//                                    })
-//                                } else {
-//                                    null;
-//                                }
-//                                document.getElementById("remove_valid").remove();
-//                                document.getElementById("cancel_valid").remove();
-//                            });
-//                     top_tmp_buttons.append("button")
-//                            .attr({id: "cancel_valid", class: "button_st4"})
-//                            .style("float", "left")
-//                            .html("Cancel")
-//                            .on("click", function(){
-//                                filter_not_use = new Map();
-//                                document.getElementById("remove_valid").remove();
-//                                document.getElementById("cancel_valid").remove();
-//                            });
-//                    log_unused_ft(the_name);
-//                  });
-
         }
 
         if(dataset_name != undefined && the_name != undefined)
@@ -1917,7 +1905,6 @@ var boxExplore = {
             modal:true,
             resizable: true,
             width: Math.round(window.innerWidth * 0.8),
-            height:  Math.round(window.innerHeight * 0.85),
             buttons:[{
                     text: "Confirm",
                     click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
@@ -2118,8 +2105,8 @@ function make_prop_symbols(rendering_params){
                     "</div> ", _list_display_name].join('')
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
-    let fill_color = rendering_params.fill_color instanceof Array 
-                    ? {"class": rendering_params.fill_color} 
+    let fill_color = rendering_params.fill_color instanceof Array
+                    ? {"class": rendering_params.fill_color}
                     : {"single" : rendering_params.fill_color};
     current_layers[layer_to_add] = {
         "renderer": rendering_params.renderer || "PropSymbols",
@@ -2427,8 +2414,9 @@ function add_table_field(layer, parent){
         opt_val: undefined, new_name: 'NewFieldName'
         }
 
-    var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field", "addFieldBox", w - (w/4), h - (h/8))
-            .then(function(valid){ if(valid){
+    var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field",
+                    "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
+            if(valid){
                 document.querySelector("body").style.cursor = "wait";
                 console.log(chooses_handler)
                 let fi1 = chooses_handler.field1,
@@ -2456,15 +2444,15 @@ function add_table_field(layer, parent){
                 fields_handler.fill(layer);
                 if(parent)
                     parent.display_table({"type": "layer"});
-              }
-            });
+            }
+        });
 
     var current_fields = Object.getOwnPropertyNames(user_data[layer]),
         fields_type = type_col(layer),
         box_content = d3.select(".addFieldBox").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2"),
-        new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keydown", check_name),
+        new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keyup", check_name),
         type_content = div1.append("p").html("New field content :<br>")
                             .insert("select").attr("id", "type_content_select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name

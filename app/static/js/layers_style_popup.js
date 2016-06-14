@@ -302,7 +302,7 @@ function createStyleBox(layer_name){
 
     if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
-                          .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+                          .insert('input').attr('type', 'number').attr({min: 0, step: 0.1, value: stroke_width})
                           .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
 }
 
@@ -402,10 +402,9 @@ function createStyleBox_ProbSymbol(layer_name){
     var popup = d3.select(".styleBox");
     popup.append('h4').style({"font-size": "15px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
     popup.append("p").html(['Rendered layer : <b>', ref_layer_name,'</b><br>'].join(''));
-    popup.append('p').html('Symbol color<br>');
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
-         popup.append('p').style("margin", "auto").html("Field used for symbol colors : <i>" + field_color + "</i><br>")
+         popup.append('p').style("margin", "auto").html("Field used for <strong>symbol colors</strong> : <i>" + field_color + "</i><br>")
             .append("button").attr("class", "button_disc").html("Display and arrange class")
             .on("click", function(){display_discretization(ref_layer_name, field_color, current_layers[layer_name].colors_breaks.length, "Quantiles")
           .then(function(confirmed){
@@ -462,20 +461,25 @@ function createStyleBox_ProbSymbol(layer_name){
           .on('change', function(){selection.style('stroke-opacity', this.value)});
 
     popup.append('p').html('Border width<br>')
-          .insert('input').attr('type', 'number').attr("value", stroke_width).attr("step", 0.1)
+          .insert('input').attr('type', 'number').attr({min: 0, step: 0.1, value: stroke_width})
           .on('change', function(){
                 selection.style("stroke-width", this.value+"px");
                 current_layers[layer_name]['stroke-width-const'] = +this.value
             });
 
-    popup.append("p").html("Field used for proportionals values : <i>" + field_used + "</i>")
-    popup.append('p').html('Symbol max size<br>')
-          .insert('input').attr("type", "range").attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
+    let prop_val_content = popup.append("p").html([
+        "Field used for <strong>proportionals values</strong> : <i>", field_used,
+        "</i><br><br>Symbol max size<br>"].join(''))
+    prop_val_content
+          .insert('input').attr("type", "range")
+          .attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
           .on("change", function(){
-              let z_scale = zoom.scale(),
-                  prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(this.value / z_scale));
+              let val = +this.value,
+                  z_scale = zoom.scale(),
+                  prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(val / z_scale));
 
-              new_size[1] = +this.value;
+              new_size[1] = val;
+              prop_val_content.select("#txt_symb_size").html([val, " px"].join(''))
               if(type_symbol === "circle") {
                   for(let i=0, len = prop_values.length; i < len; i++){
                       selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
@@ -504,4 +508,5 @@ function createStyleBox_ProbSymbol(layer_name){
 //                  current_layers[layer_name].force.nodes(nodes).start()
 //              }
           });
+    prop_val_content.append("span").attr('id', 'txt_symb_size').html([current_layers[layer_name].size[1], ' px'].join(''));
 }
