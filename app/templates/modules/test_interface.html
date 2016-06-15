@@ -699,17 +699,23 @@ function reproj_symbol_layer(){
             .each((d,i) => {
                 new_coords.push(path.centroid(d))
             });
-      map.select("#"+lyr_name)
-            .selectAll(symbol)
-            .attr("cx", function(d, i){
-                let _id = features_order[i][0];
-                return new_coords[_id][0];
-            })
-            .attr("cy", function(d, i){
-                let _id = features_order[i][0];
-                return new_coords[_id][1];
-            })
+      let ord = features_order.map(obj => obj[0]);
+      for(let i = 0; i < ord.length; i++)
+        features_order[i][2] = new_coords[ord[i]];
 
+      if(symbol == "circle")
+          map.select("#"+lyr_name)
+                .selectAll(symbol)
+                .attr("cx", (d,i) => features_order[i][2][0])
+                .attr("cy", (d,i) => features_order[i][2][1])
+                .attr("r", (d,i) => features_order[i][1]);
+      else if (symbol == "rect")
+          map.select("#"+lyr_name)
+                .selectAll(symbol)
+                .attr("x", (d,i) => features_order[i][2][0] - features_order[i][1] / 2)
+                .attr("y", (d,i) => features_order[i][2][1] - features_order[i][1] / 2)
+                .attr("height", (d,i) => features_order[i][1])
+                .attr("width", (d,i) => features_order[i][1]);
     }
   }
 }

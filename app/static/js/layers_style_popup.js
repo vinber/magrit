@@ -202,9 +202,14 @@ function createStyleBox(layer_name){
     });
 
      var popup = d3.select(".styleBox");
-     popup.append('h4').style({"font-size": "15px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
-     popup.append("p").html(['Layer name : <b>', layer_name,'</b><br>',
-                             'Geometry type : <b><i>', type, '</b></i>'].join(''));
+     popup.append('h4')
+            .style({"font-size": "15px", "text-align": "center",
+                    "font-weight": "bold", "margin-bottom": "10px"})
+            .html("Layer style option");
+     popup.append("p")
+            .style("text-align", "center")
+            .html(['Layer name : <b>', layer_name,'</b><br>',
+                   'Geometry type : <b><i>', type, '</b></i>'].join(''));
 
      if(type !== 'Line'){
         if(current_layers[layer_name].colors_breaks == undefined){
@@ -307,13 +312,6 @@ function createStyleBox(layer_name){
 }
 
 
-//function deactivate(forpopup){
-//    for(var i=0; i < forpopup.length; i++){
-//        var elem = forpopup[i];
-//        elem.remove();
-//    }
-//}
-
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
         ref_layer_name = current_layers[layer_name].ref_layer_name || layer_name.substring(0, layer_name.indexOf("_Prop")),
@@ -400,8 +398,13 @@ function createStyleBox_ProbSymbol(layer_name){
     d_values.sort(comp);
 
     var popup = d3.select(".styleBox");
-    popup.append('h4').style({"font-size": "15px", "text-align": "center", "font-weight": "bold"}).html("Layer style option");
-    popup.append("p").html(['Rendered layer : <b>', ref_layer_name,'</b><br>'].join(''));
+    popup.append('h4')
+            .style({"font-size": "15px", "text-align": "center",
+                    "font-weight": "bold", "margin-bottom": "10px"})
+            .html("Layer style option");
+    popup.append("p")
+            .style({"text-align": "center", "color": "grey"})
+            .html(['<i>Rendered layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
          popup.append('p').style("margin", "auto").html("Field used for <strong>symbol colors</strong> : <i>" + field_color + "</i><br>")

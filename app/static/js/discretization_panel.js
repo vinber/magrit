@@ -451,14 +451,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                     .orient("left"));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
-            //user_defined_breaks.html(breaks.join(', '))
-//           d3.selectAll('#break_vals').remove();
-//           var f_class = user_defined_breaks.insert('form_action').attr("id", "break_vals")
-//            for(let i=0, len = breaks.length; i < len; ++i){
-//                let min_allowed = (i === 0) ? serie.min() : breaks[i-1],
-//                    max_allowed = (i === len) ? serie.max() : breaks[i+1]
-//                f_class.insert("p").insert("input").attr({type: "number", value: breaks[i], min: min_allowed, max: max_allowed})
-//            }
             return true;
         },
     };
