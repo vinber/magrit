@@ -11,8 +11,7 @@ url_worker = 'ipc:///tmp/feeds/workers'
 url_client = 'ipc:///tmp/feeds/clients'
 
 
-@asyncio.coroutine
-def R_client_fuw_async(client_url, request, data, context, i):
+async def R_client_fuw_async(client_url, request, data, context, i):
     """Basic client sending a request (REQ) to a ROUTER (the broker)"""
     socket = context.socket(zmq.REQ)
     socket.connect(client_url)
@@ -20,8 +19,8 @@ def R_client_fuw_async(client_url, request, data, context, i):
     socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+40))
     socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
     socket.setsockopt(zmq.LINGER, 0)
-    yield from socket.send_multipart([request, b'', data])
-    reply = yield from socket.recv()
+    await socket.send_multipart([request, b'', data])
+    reply = await socket.recv()
     socket.close()
     return reply
 

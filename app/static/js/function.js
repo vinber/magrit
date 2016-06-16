@@ -304,55 +304,13 @@ function fillMenu_Discont(layer){
         binds_layers_buttons();
         zoom_without_redraw();
         switch_accordion_section();
-///*
-//        var result_value = new Map(),
-//            result_geom = {};
-//        let tmp = topojson.mesh(_target_layer_file, _target_layer_file.objects.nuts2_data, function(a, b){
-//            if(a !== b){
-//                 let value = Math.max(a.properties[field] / b.properties[field], b.properties[field] / a.properties[field]);
-//                 let new_id = [a.properties.id, b.properties.id].join('_'),
-//                     new_id_rev = [b.properties.id, a.properties.id].join('_');
-//                 if(new_id in result_geom || new_id_rev in result_geom){
-//                      let new_arcs = new Array(a.arcs[0].concat(b.arcs[0]))
-//                      result_geom[new_id].arcs[0].concat(new_arcs)
-//                 }
-//                 else{
-//                    result_geom[new_id] = {type: "MultiLineString", id: new_id, properties : {"id1": a.id, "id2":b.id, "disc_value": value},
-//                                            arcs: [new Array(a.arcs[0].concat(b.arcs[0]))]
-//                    }
-//                 }
-//                 return true;
-//            }
-//            return false;
-//        });
-//        console.log(result_geom)
-//        console.log(tmp)
-//        var new_layer_name = ["Disc", layer, field].join('_');
-//        var result_topo = {
-//            type: "Topology",   arcs: _target_layer_file.arcs.slice(0, _target_layer_file.arcs.length),
-//            objects: {}
-//            };
-//        result_topo.objects[new_layer_name] = {
-//            crs : cloneObj(_target_layer_file.objects[layer].crs), type: "GeometryCollection", geometries: new Array() };
-//        for(let _id in result_geom)
-//            result_topo.objects[new_layer_name].geometries.push(result_geom[_id])
-//        console.log(result_topo);
-//        map.append("g").attr("id", "Disc")
-//                .attr("class", "result_layer layer")
-//                .selectAll(".subunit")
-//                .data(topojson.features(result_topo, result_topo.objects[new_layer_name]).features)
-//                .enter().append("path")
-//                .attr("d", path)
-//                .attr("id", function(d,i){  return i;  })
-//                .style("stroke", "red")
-//                .style("stroke-width", function(d, i){  return d.properties.disc_value;  });
-//    */
         });
 }
 
 var fields_FlowMap = {
     fill: function(layer){
-        if(joined_dataset.length > 0){
+        if(joined_dataset.length > 0
+            && document.getElementById("FlowMap_field_i").options.length == 0){
             let fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
                 field_i = d3.select('#FlowMap_field_i'),
                 field_j = d3.select('#FlowMap_field_j'),
@@ -475,7 +433,6 @@ function fetch_min_max_table_value(parent_node){
             return false;
         }
     }
-
     return {"mins" : mins, "maxs" : maxs, "sizes" : sizes}
 }
 
@@ -798,9 +755,9 @@ function fillMenu_PropSymbolChoro(layer){
                 ref_layer_name: layer,
                 rendered_field: field1_selec.node().value,
                 rendered_field2: field2_selec.node().value,
-                size: [ref_size.node().value, max_size.node().value],
+                size: [+ref_size.node().value, +max_size.node().value],
                 "stroke-width-const": 1,
-                fill_color: { "class": rendering_params['colorsByFeature'] },
+                fill_color: { "class": id_map.map(obj => obj[3]) },
                 colors_breaks: colors_breaks,
                 is_result: true
             };
@@ -1175,7 +1132,9 @@ function fillMenu_MTA(){
                                 for(let i = 0, len_i = disc_result[2].length - 1; i < len_i; ++i)
                                     col_breaks.push([[disc_result[2][i], disc_result[2][i+1]].join(' - '), disc_result[3][i]])
                                 current_layers[new_lyr_name].colors_breaks = col_breaks;
+                                current_layers[new_lyr_name].fill_color = {class: current_layers[new_lyr_name].features_order.map(obj => obj[3])}
                                 current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
+                                current_layers[new_lyr_name].rendered_field2 = field_name1;
                                 binds_layers_buttons();
                                 zoom_without_redraw();
                                 switch_accordion_section();
@@ -1281,13 +1240,11 @@ function fillMenu_Stewart(){
             else
                 var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
 
-            console.log(resolution.node().value);
-
             formToSend.append("json", JSON.stringify({
                 "topojson": layer,
                 "var_name": JSON.stringify(var_to_send),
-                "span": span.node().value,
-                "beta": beta.node().value,
+                "span": +span.node().value * 1000,
+                "beta": +beta.node().value,
                 "typefct": func_selec.node().value,
                 "resolution": resolution.node().value,
                 "nb_class": nb_class.node().value,

@@ -611,7 +611,7 @@ async def call_stewart(posted_data, session_redis, user_id):
         'knownpts_json': filenames['point_layer'],
         'var_name': n_field_name,
         'typefct': posted_data['typefct'].lower(),
-        'span': float(posted_data['span']),
+        'span': posted_data['span'],
         'beta': float(posted_data['beta']),
         'resolution': reso,
         'nb_class': int(posted_data['nb_class']),

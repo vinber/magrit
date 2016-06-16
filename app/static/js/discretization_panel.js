@@ -1,29 +1,29 @@
 "use strict";
 
-function get_color_array(col_scheme, nb_class, selected_palette){
-    var color_array = new Array;
-    if(col_scheme === "Sequential"){
-        color_array = getColorBrewerArray(nb_class, selected_palette);
-    } else if(col_scheme === "Diverging"){
-        var left_palette = selected_palette.left,
-            right_palette = selected_palette.right,
-            ctl_class_value = selected_palette.ctl_class,
-            class_right = nb_class - ctl_class_value;
-
-        if(ctl_class_value <= class_right){
-            var right_pal = getColorBrewerArray(class_right, right_palette),
-                left_pal = getColorBrewerArray(class_right, left_palette);
-            left_pal = left_pal.slice(0, ctl_class_value)
-        } else {
-            var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
-                left_pal = getColorBrewerArray(ctl_class_value, left_palette);
-            right_pal = right_pal.slice(0, ctl_class_value);
-        }
-        left_pal = left_pal.reverse()
-        color_array = left_pal.concat(right_pal);
-    }
-    return color_array;
-}
+//function get_color_array(col_scheme, nb_class, selected_palette){
+//    var color_array = new Array;
+//    if(col_scheme === "Sequential"){
+//        color_array = getColorBrewerArray(nb_class, selected_palette);
+//    } else if(col_scheme === "Diverging"){
+//        var left_palette = selected_palette.left,
+//            right_palette = selected_palette.right,
+//            ctl_class_value = selected_palette.ctl_class,
+//            class_right = nb_class - ctl_class_value;
+//
+//        if(ctl_class_value <= class_right){
+//            var right_pal = getColorBrewerArray(class_right, right_palette),
+//                left_pal = getColorBrewerArray(class_right, left_palette);
+//            left_pal = left_pal.slice(0, ctl_class_value)
+//        } else {
+//            var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
+//                left_pal = getColorBrewerArray(ctl_class_value, left_palette);
+//            right_pal = right_pal.slice(0, ctl_class_value);
+//        }
+//        left_pal = left_pal.reverse()
+//        color_array = left_pal.concat(right_pal);
+//    }
+//    return color_array;
+//}
 
 function discretize_to_size(values, type, nb_class, min_size, max_size){
     var func_switch = {
@@ -264,6 +264,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
         nb_bins = nb_bins > values.length ? nb_bins : values.length;
 
+        console.log(nb_bins)
+
         var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
@@ -285,6 +287,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .bins(x.ticks(nb_bins))
             (values);
 
+        console.log(data)
+
         var y = d3.scale.linear()
             .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
             .range([height, 0]);
@@ -296,7 +300,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .attr("class", "bar")
             .attr("x", d => x(d.x))
             .attr("y", d =>  y(d.y) - margin.bottom)
-            .attr("width", x(data[0].dx))
+            .attr("width", x(data[1].x) - x(data[0].x))
             .attr("height", d => height - y(d.y))
             .attr("transform", "translate(0, "+ margin.bottom +")")
             .style({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
@@ -362,12 +366,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             for(let i = 0, len = stock_class.length, offset=0; i < len; i++){
                 let bin = {};
                 bin.val = stock_class[i] + 1;
-                bin.offset = breaks[i];
+                bin.offset = i == 0 ? 0 : (bins[i-1].width + bins[i-1].offset);
                 bin.width = breaks[i+1] - breaks[i];
                 bin.height = bin.val;
                 bins[i] = bin;
             }
-            console.log(bins)
             return true;
         },
         draw: function(){
@@ -388,21 +391,37 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             } else if(col_scheme === "Diverging"){
                 var left_palette = d3.select('.color_params_left').node().value,
                     right_palette = d3.select('.color_params_right').node().value,
-                    ctl_class_value = d3.select('#centr_class').node().value,
-                    class_right = nb_class - ctl_class_value;
-                color_array = [];
-                if(ctl_class_value <= class_right){
-                    var right_pal = getColorBrewerArray(class_right, right_palette),
-                        left_pal = getColorBrewerArray(class_right, left_palette);
-                    left_pal = left_pal.slice(0, ctl_class_value)
-                } else {
-                    var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
-                        left_pal = getColorBrewerArray(ctl_class_value, left_palette);
-                    right_pal = right_pal.slice(0, ctl_class_value);
-                }
-//                left_pal = [].concat(left_pal.reverse());
-                color_array = [].concat(left_pal.reverse(), right_pal);
+                    ctl_class_value = +d3.select('#centr_class').node().value;
+
+                let class_right = nb_class - ctl_class_value,
+                    class_left = ctl_class_value,
+                    max_col_nb = Math.max(class_right, class_left),
+                    right_pal = getColorBrewerArray(max_col_nb, right_palette),
+                    left_pal = getColorBrewerArray(max_col_nb, left_palette);
+
+                left_pal = left_pal.slice(0, class_left).reverse();
+                right_pal = right_pal.slice(0, class_right);
+
+                color_array = [].concat(left_pal, right_pal);
             }
+//            } else if(col_scheme === "Diverging"){
+//                var left_palette = d3.select('.color_params_left').node().value,
+//                    right_palette = d3.select('.color_params_right').node().value,
+//                    ctl_class_value = d3.select('#centr_class').node().value,
+//                    class_right = nb_class - ctl_class_value;
+//                color_array = [];
+//                if(ctl_class_value <= class_right){
+//                    var right_pal = getColorBrewerArray(class_right, right_palette),
+//                        left_pal = getColorBrewerArray(class_right, left_palette);
+//                    left_pal = left_pal.slice(0, ctl_class_value)
+//                } else {
+//                    var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
+//                        left_pal = getColorBrewerArray(ctl_class_value, left_palette);
+//                    right_pal = right_pal.slice(0, ctl_class_value);
+//                }
+////                left_pal = [].concat(left_pal.reverse());
+//                color_array = [].concat(left_pal.reverse(), right_pal);
+//            }
             to_reverse = false;
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = color_array[i];
@@ -414,7 +433,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .range([svg_h, 0]);
 
             x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
-            y.domain([0, d3.max(bins.map(function(d) { return d.height + 5; }))]);
+            y.domain([0, d3.max(bins.map(function(d) { return d.height + d.height / 5; }))]);
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)

@@ -68,7 +68,7 @@ var menu_option = get_menu_option(func);
     var proj = d3.geo.naturalEarth().scale(proj_params.approx_scale).translate(proj_params.approx_translate);
 }
 
-var path = d3.geo.path().projection(proj).pointRadius(2),
+var path = d3.geo.path().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",

@@ -142,25 +142,29 @@ function createStyleBox(layer_name){
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
-                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
-                    current_layers[layer_name].fixed_stroke = true;
-                if(current_layers[layer_name].renderer != undefined && rendering_params != undefined){
+//                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
+//                    current_layers[layer_name].fixed_stroke = true;
+                if(current_layers[layer_name].renderer != undefined
+                     && rendering_params != undefined && renderer != "Stewart"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
                     let colors_breaks = [];
                     for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
                         colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
                     current_layers[layer_name].colors_breaks = colors_breaks;
                     current_layers[layer_name].rendered_field = rendering_params.field;
-                    // Also change the legend if there is one displayed :
-                    let lgd_choro = d3.select("#legend_root").node();
-                    if(lgd_choro){
-                        lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field);
-                    }
-                    if(current_layers[layer_name].rendered_field
-                            && current_layers[layer_name].renderer != "Gridded"
-                            && current_layers[layer_name].renderer != "Stewart")
-                        field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
+//                    if(current_layers[layer_name].rendered_field
+//                            && current_layers[layer_name].renderer != "Gridded"
+//                            && current_layers[layer_name].renderer != "Stewart")
+//                        field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
+                } else if (renderer == "Stewart"){
+                    current_layers[layer_name].colors_breaks = rendering_params.breaks;
+                    current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
+                }
+                // Also change the legend if there is one displayed :
+                let lgd_choro = d3.select("#legend_root").node();
+                if(lgd_choro){
+                    lgd_choro.remove();
+                    createLegend_choro(layer_name, rendering_params.field);
                 }
                 sendPreferences();
                 zoom_without_redraw();
@@ -168,8 +172,8 @@ function createStyleBox(layer_name){
             } else {
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
-                             .style('stroke-opacity', border_opacity);
-                d3.select(g_lyr_name).style('stroke-width', stroke_width);
+                         .style('stroke-opacity', border_opacity);
+                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom.scale()+"px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
@@ -235,12 +239,10 @@ function createStyleBox(layer_name){
                 popup.append('div').attr({id: "fill_color_section"})
                 make_single_color_menu(layer_name, fill_prev);
             }
-         } else {
+         } else if (renderer != "Stewart"){
             let field_to_discretize;
             if(renderer == "Gridded")
                 field_to_discretize = "densitykm";
-            else if(renderer == "Stewart")
-                field_to_discretize = "center";
             else {
                 var fields = type_col(layer_name, "number"),
                     field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params').on("change", function(){ field_to_discretize = this.value; });
@@ -249,7 +251,6 @@ function createStyleBox(layer_name){
                 if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
                     setSelected(field_selec.node(), current_layers[layer_name].rendered_field)
             }
-
              popup.append('p').style("margin", "auto").html("")
                 .append("button")
                 .attr("class", "button_disc")
@@ -267,12 +268,45 @@ function createStyleBox(layer_name){
                                     renderer:"Choropleth",
                                     field: field_to_discretize
                                 };
-//                                console.log(rendering_params);
                                 selection.style('fill-opacity', 0.9)
                                          .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] })
                             }
                         });
                 });
+         } else if (renderer == "Stewart"){
+            let field_to_colorize = "min",
+                nb_ft = current_layers[layer_name].n_features;
+
+            rendering_params = {breaks: [].concat(current_layers[layer_name].colors_breaks)};
+
+            let recolor_stewart = function(coloramp_name, reversed){
+                let new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+                if(reversed) new_coloramp.reverse();
+                for(let i=0; i < nb_ft; ++i)
+                    rendering_params.breaks[i][1] = new_coloramp[i];
+                selection.style("fill", (d,i) => new_coloramp[i] )
+            }
+
+            let seq_color_select = popup.insert("p")
+                                        .html("Color palette ")
+                                        .insert("select")
+                                        .attr("id", "coloramp_params")
+                                        .on("change", function(){
+                                            recolor_stewart(this.value)
+                                         });
+
+            ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
+             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds', 'Set1', 'Pastel1'].forEach(function(name){
+                seq_color_select.append("option").text(name).attr("value", name); });
+
+            var button_reverse = popup.insert("button")
+                                    .style({"display": "inline", "margin-left": "10px"})
+                                    .attr({"class": "button_st3", "id": "reverse_colramp"})
+                                    .html("Reverse palette")
+                                    .on("click", function(){
+                                        let pal_name = document.getElementById("coloramp_params").value;
+                                        recolor_stewart(pal_name, true);
+                                     });
          }
          popup.append('p').html('Fill opacity<br>')
                           .insert('input').attr('type', 'range')
@@ -308,19 +342,24 @@ function createStyleBox(layer_name){
     if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
                           .insert('input').attr('type', 'number').attr({min: 0, step: 0.1, value: stroke_width})
-                          .on('change', function(){d3.select(g_lyr_name).style("stroke-width", this.value+"px");current_layers[layer_name]['stroke-width-const'] = +this.value});
+                          .on('change', function(){
+                                let val = +this.value;
+                                map.select(g_lyr_name).style("stroke-width", (val / zoom.scale()) + "px");
+                                current_layers[layer_name]['stroke-width-const'] = val;
+                          });
 }
 
 
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
         ref_layer_name = current_layers[layer_name].ref_layer_name || layer_name.substring(0, layer_name.indexOf("_Prop")),
-        type_method = current_layers[layer_name].renderer,
+        type_method = current_layers[layer_name].renderer.indexOf("PropSymbolsChoro") > -1 ? "PropSymbolsChoro" : current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,
         field_used = current_layers[layer_name].rendered_field,
         selection = d3.select(g_lyr_name).selectAll(type_symbol),
         rendering_params,
-        new_size = [].concat(current_layers[layer_name].size)
+        old_size = [current_layers[layer_name].size[0],
+                    current_layers[layer_name].size[1]];
 
      var stroke_prev = selection.style('stroke'),
          opacity = selection.style('fill-opacity'),
@@ -329,6 +368,32 @@ function createStyleBox_ProbSymbol(layer_name){
 
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
+
+    var d_values = [],
+        comp = function(a, b){return b-a};
+    for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
+        d_values.push(+user_data[ref_layer_name][i][field_used]);
+    d_values.sort(comp);
+
+    let redraw_prop_val = function(prop_values, z_scale){
+      console.log(prop_values)
+      if(type_symbol === "circle") {
+          for(let i=0, len = prop_values.length; i < len; i++){
+              selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / +z_scale + prop_values[i])
+          }
+      } else if(type_symbol === "rect") {
+          for(let i=0, len = prop_values.length; i < len; i++){
+              let sz = +current_layers[layer_name].size[0] / +z_scale + prop_values[i],
+                  old_rect_size = +selection[0][i].getAttribute('height'),
+                  centr = [+selection[0][i].getAttribute("x") + (old_rect_size/2) - (sz / 2),
+                           +selection[0][i].getAttribute("y") + (old_rect_size/2) - (sz / 2)];
+              selection[0][i].setAttribute('x', centr[0]);
+              selection[0][i].setAttribute('y', centr[1]);
+              selection[0][i].setAttribute('height', sz);
+              selection[0][i].setAttribute('width', sz);
+          }
+      }
+    }
 
     if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
         prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
@@ -339,13 +404,12 @@ function createStyleBox_ProbSymbol(layer_name){
     make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
-                if(current_layers[layer_name].size != new_size){
+                if(current_layers[layer_name].size != old_size){
                     let lgd_prop_symb = document.getElementById("legend_root2");
                     if(lgd_prop_symb){
                         lgd_prop_symb.remove();
                         createLegend_symbol(layer_name, field_used)
                     }
-                    current_layers[layer_name].size = new_size;
                 }
 
                 if(type_method == "PropSymbolsChoro"){
@@ -385,17 +449,16 @@ function createStyleBox_ProbSymbol(layer_name){
                                      ref_layer_name)
                 }
                 current_layers[layer_name].fill_color = fill_prev;
+                if(current_layers[layer_name].size[1] != old_size[1]){
+                    let z_scale = zoom.scale(),
+                        prop_values = prop_sizer(d_values, +old_size[0] / z_scale,
+                                                 +old_size[1] / z_scale);
+                    redraw_prop_val(prop_values, z_scale);
+                    current_layers[layer_name].size = [old_size[0], old_size[1]];
+                }
             }
             zoom_without_redraw();
         });
-
-    var d_values = [],
-        comp = function(a, b){return b-a};
-
-    for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-        d_values.push(+user_data[ref_layer_name][i][field_used]);
-
-    d_values.sort(comp);
 
     var popup = d3.select(".styleBox");
     popup.append('h4')
@@ -479,26 +542,11 @@ function createStyleBox_ProbSymbol(layer_name){
           .on("change", function(){
               let val = +this.value,
                   z_scale = zoom.scale(),
-                  prop_values = prop_sizer(d_values, Number(current_layers[layer_name].size[0] / z_scale), Number(val / z_scale));
+                  prop_values = prop_sizer(d_values, current_layers[layer_name].size[0] / z_scale, val / z_scale);
 
-              new_size[1] = val;
+              current_layers[layer_name].size[1] = val;
               prop_val_content.select("#txt_symb_size").html([val, " px"].join(''))
-              if(type_symbol === "circle") {
-                  for(let i=0, len = prop_values.length; i < len; i++){
-                      selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / z_scale + prop_values[i])
-                  }
-              } else if(type_symbol === "rect") {
-                  for(let i=0, len = prop_values.length; i < len; i++){
-                      let sz = +current_layers[layer_name].size[0] / z_scale + prop_values[i],
-                          old_size = +selection[0][i].getAttribute('height'),
-                          centr = [+selection[0][i].getAttribute("x") + (old_size/2) - (sz / 2),
-                                   +selection[0][i].getAttribute("y") + (old_size/2) - (sz / 2)];
-                      selection[0][i].setAttribute('x', centr[0]);
-                      selection[0][i].setAttribute('y', centr[1]);
-                      selection[0][i].setAttribute('height', sz);
-                      selection[0][i].setAttribute('width', sz);
-                  }
-              }
+              redraw_prop_val(prop_values, z_scale);
 // Todo : find a "light" way to recompute the "force" on the node after changing their size
 //              if(type_method.indexOf('Dorling') > -1){
 //                let nodes = selection[0].map((d, i) => {
