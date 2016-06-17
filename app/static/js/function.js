@@ -259,7 +259,6 @@ function fillMenu_Discont(layer){
         result_data[new_layer_name] = new Array(nb_ft);
         let data_result = result_data[new_layer_name];
 
-
         // This is bad and should be replaced by somthing better as we are
         // traversing the whole topojson again and again
         // looking for each "border" from its "id" (though it isn't that slow)
@@ -1230,7 +1229,8 @@ function fillMenu_Stewart(){
                 field_n = field_selec.node().value,
                 var_to_send = new Object,
                 layer = Object.getOwnPropertyNames(user_data)[0],
-                bval = breaks_val.node().value.trim();
+                bval = breaks_val.node().value.trim(),
+                reso = +resolution.node().value * 1000;
 
             bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
@@ -1245,7 +1245,7 @@ function fillMenu_Stewart(){
                 "span": +span.node().value * 1000,
                 "beta": +beta.node().value,
                 "typefct": func_selec.node().value,
-                "resolution": resolution.node().value,
+                "resolution": reso > 0 ? reso : null,
                 "nb_class": nb_class.node().value,
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
@@ -1780,6 +1780,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 
 var boxExplore = {
     display_table: function(table_name){
+        document.querySelector("body").style.cursor = "";
         let the_table = this.layer_names.get(table_name)[1];
         this.current_table = table_name;
         this.nb_features = the_table.length;
@@ -2365,8 +2366,8 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
 // ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] 
-                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name] 
+    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name]
+                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name]
                     : joined_dataset[0],
         fields = Object.getOwnPropertyNames(table[0]),
         nb_features = table.length,

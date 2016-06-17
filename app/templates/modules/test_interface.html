@@ -414,8 +414,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .html('<img src="/static/img/High-contrast-system-run.svg" width="24" height="24" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){
-                      make_confirm_dialog("Not implemented").then(function(confirmed){
-                          if(confirmed) console.log(true);else console.log(false)});
+                      alert("Not implemented!");
                   });
 
     const_options.append("button").attr("class", "const_buttons")
@@ -816,8 +815,9 @@ function remove_layer_cleanup(name){
 
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
         d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
+        section1.style("padding-top", null);
         d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
-        d3.select("#section1").style({"height": joined_dataset.length == 0 ? "135px" : "165px"})
+        //d3.select("#section1").style({"height": joined_dataset.length == 0 ? "135px" : "165px"})
     }
 
     // Restore the state of the bottom of the section 1 :
@@ -1068,19 +1068,20 @@ function sendPreferences(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
+    let z_scale = zoom.scale(),
+        rot_val = canvas_rotation_value || "",
+        layers = Object.getOwnPropertyNames(current_layers);
+
     map.selectAll("g.layer")
               .transition()
-              .duration(45)
-              .attr("transform", [canvas_rotation_value || "",
-                                  "translate(", zoom.translate(), "),",
-                                  "scale(", zoom.scale(), ")"].join(''));
-              //.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")");
-    let layers = Object.getOwnPropertyNames(current_layers);
+              .duration(25)
+              .attr("transform", [rot_val,"translate(", zoom.translate(), "),",
+                                 "scale(", z_scale, ")"].join(''));
 
     for(let i = layers.length - 1; i > -1; i--){
         let lyr_name = layers[i];
         if(!(current_layers[lyr_name].fixed_stroke))
-            d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / zoom.scale() +  "px");
+            d3.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px");
     }
 };
 
@@ -1628,10 +1629,10 @@ function handle_export(){
 
     box_content.append("button")
         .attr("class", "button_st2")
-        .html("Export to GeoJSON")
+        .html("Export to geographic layers...")
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
-            alert("No supported yet");
+            make_export_layer_box();
         });
 
     dialogBox.dialog({
@@ -1639,6 +1640,91 @@ function handle_export(){
         modal: false,
         close: function(event, ui){ $(this).dialog("destroy").remove(); }
       });
+}
+
+function make_export_layer_box(){
+    d3.select("body").append("div")
+        .attr({id: "dialogGeoExport", class: "exportGeoDialogBox", title: "Choose layer and datatype..."})
+        .style("font-size", "0.6em")
+        .html("");
+
+    let dialogBox = $("#dialogGeoExport"),
+        box_content = d3.select("#dialogGeoExport").append("div");
+
+    dialogBox.dialog({
+        position: { my: "center", at: "top" },
+        width: 400,
+        modal: false,
+        close: function(event, ui){ $(this).dialog("destroy").remove(); }
+      });
+
+    let unwanted = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
+
+    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+        if(unwanted.has(name))
+            return 0;
+        else if(current_layers[name].renderer
+                && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+                    || current_layers[name].renderer.indexOf("Dorling") > -1))
+            return 0;
+        return 1;
+    });
+
+    box_content.append("h3").html("Layer export");
+
+    let selec_layer = box_content.append("p").html("Layer to export ")
+             .insert("select").attr("id", "layer_to_export");
+
+    let selec_type = box_content.append("p").html("Datatype ")
+             .insert("select").attr("id", "datatype_to_use")
+
+    let selec_projection = box_content.append("p").html("Projection ")
+             .insert("select").attr("id", "projection_to_use");
+
+    let proj4_input = box_content.append("input")
+                                .attr("id", "proj4str")
+                                .style("display", "none")
+                                .style("width", "200px");
+
+    layer_names.forEach( name => {
+        selec_layer.append("option").attr("value", name).text(name);
+    });
+
+    ["GeoJSON", "TopoJSON", "Shapefile"].forEach( name => {
+        selec_type.append("option").attr("value", name).text(name);
+    });
+
+    [["Geographic coordinates / WGS 84 (EPSG:4326)", "EPSG:4326"],
+     ["Web-mercator / WGS 84 (EPSG:3857)", "EPSG:3857"],
+     ["LAEA Europe / ETRS89 (EPSG:3035)", "EPSG:3035"],
+     ["Enter a valid Proj.4 string...", "proj4string"]].forEach(projection => {
+        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
+    });
+
+    selec_type.on("change", function(){
+        if(this.value == "TopoJSON")
+            selec_projection.attr("disabled", true);
+        else
+            selec_projection.attr("disabled", null);
+    });
+
+    selec_projection.on("change", function(){
+        if(this.value == "proj4string")
+            proj4_input.style("display", "initial");
+        else
+            proj4_input.style("display", "none");
+    });
+
+    box_content.append("p").append("button")
+            .attr("class", "button_st2")
+            .html("Export")
+            .on("click", function(){
+                let layer = selec_layer.node().value,
+                    type = selec_type.node().value,
+                    projec = selec_projection.node().value;
+                console.log([layer, type, projec, [layer, menu_option.quantization_default].join('_')]);
+                dialogBox.dialog("destroy").remove();
+            });
 
 }
 

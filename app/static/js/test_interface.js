@@ -218,10 +218,11 @@ function handle_dataset(f){
             document.getElementById("join_button").disabled = false;
             d3.select(".s1").html("").on("click", null)
             d3.select("#sample_link").html("").on("click", null);
-            d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+           //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+            section1.style({"padding-top": "25px"});
         } else {
             document.getElementById("join_button").disabled = true;
-            d3.select("#section1").style("height", "165px");
+            //d3.select("#section1").style("height", "165px");
         }
         fields_handler.fill();
         if(browse_table.node().disabled === true) browse_table.node().disabled = false;
@@ -320,7 +321,7 @@ function add_layer_topojson(text, options){
         }
 
         map.append("g").attr("id", lyr_name_to_add)
-              .attr("class", function(d) { return data_to_load ? "targeted_layer layer" : "layer"; })
+              .attr("class", data_to_load ? "targeted_layer layer" : "layer")
               .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
               .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
@@ -344,13 +345,10 @@ function add_layer_topojson(text, options){
 
                     return "feature_" + ix;
                 })
-              .style("stroke", function(){if(type != 'Line') return("rgb(0, 0, 0)");
-                                          else return(random_color1);})
+              .style("stroke", type != 'Line' ? "rgb(0, 0, 0)" : random_color1)
               .style("stroke-opacity", .4)
-              .style("fill", function(){if(type != 'Line') return(random_color1);
-                                        else return(null);})
-              .style("fill-opacity", function(){if(type != 'Line') return(0.5);
-                                                else return(0);})
+              .style("fill", type != 'Line' ? random_color1 : null)
+              .style("fill-opacity", type != 'Line' ? 0.75 : 0)
               .attr("height", "100%")
               .attr("width", "100%");
 
@@ -379,7 +377,8 @@ function add_layer_topojson(text, options){
                 document.getElementById("join_button").disabled = false;
                 d3.select(".s1").html("").on("click", null)
                 d3.select("#sample_link").html("").on("click", null);
-                d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+                section1.style({"padding-top": "25px"})
+                //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
             }
 
             let _button = button_type[type],
@@ -618,10 +617,11 @@ function add_sample_layer(){
                             document.getElementById("join_button").disabled = false;
                             d3.select(".s1").html("").on("click", null)
                             d3.select("#sample_link").html("").on("click", null);
-                            d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+                           //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
+                            section1.style({"padding-top": "25px"})
                         } else {
                             document.getElementById("join_button").disabled = true;
-                            d3.select("#section1").style("height", "165px");
+                            //d3.select("#section1").style("height", "165px");
                         }
                         fields_handler.fill();
                         $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );

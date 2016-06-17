@@ -401,7 +401,7 @@ async def links_map(posted_data, session_redis, user_id):
 
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field2(ref_layer, new_field, n_field_name)
+        join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
 
     tmp_part = get_name()
     filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
@@ -602,18 +602,13 @@ async def call_stewart(posted_data, session_redis, user_id):
     commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
                 b'beta, resolution, nb_class, user_breaks, mask_json)')
 
-    reso = None if posted_data['resolution'] == "" \
-        else float(posted_data['resolution']) \
-        if float(posted_data['resolution']) > 0 \
-        else None
-
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
         'var_name': n_field_name,
         'typefct': posted_data['typefct'].lower(),
         'span': posted_data['span'],
         'beta': float(posted_data['beta']),
-        'resolution': reso,
+        'resolution': posted_data['resolution'],
         'nb_class': int(posted_data['nb_class']),
         'user_breaks': posted_data['user_breaks'],
         'mask_json': filenames['mask_layer']
@@ -655,11 +650,19 @@ async def R_compute(request):
         return web.Response(text=data_response)
 
 async def handler_exists_layer(request):
-#    session_redis = await get_session(request)
-#    user_id = get_user_id(session_redis)
-#    p_key = '_'.join([user_id, request.match_info['expr']])
-#    res = await app_glob['redis_conn'].get(p_key)
     res = await app_glob['redis_conn'].get(request.match_info['expr'])
+    if res:
+        return web.Response(text=res.decode())
+    else:
+        return web.Response(text="")
+
+async def handler_exists_layer2(request):
+    session_redis = await get_session(request)
+    user_id = get_user_id(session_redis)
+
+    res = await app_glob['redis_conn'].get(
+            '_'.join([user_id, request.match_info['expr']])
+            )
     if res:
         return web.Response(text=res.decode())
     else:
@@ -699,7 +702,7 @@ async def convert_csv_geo(request):
     st = time.time()
     file_name = posted_data.get("filename")
     data = posted_data.get("csv_file")
-    f_name = '_'.join([user_id, file_name.split('.')[0]])
+    f_name = '_'.join([user_id, file_name.split('.')[0], "--no-quantization"])
 
     result = await app_glob['redis_conn'].get(f_name)
     if result:
@@ -750,6 +753,7 @@ async def init(loop, port=9999):
     app.router.add_route('GET', '/modules', handler)
     app.router.add_route('GET', '/modules/', handler)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
+    app.router.add_route('GET', '/get_layer2/{expr}', handler_exists_layer2)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)
     app.router.add_route('POST', '/convert_to_topojson', convert)
