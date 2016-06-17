@@ -70,8 +70,8 @@ cdef dict get_common_arcs(dict topojson):
             if geom_a["id"] != geom_b["id"]:
                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
                 if common_arcs:
-                    _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
-                    _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+                    _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+                    _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
                         seen.add(_id_arcs)
                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]

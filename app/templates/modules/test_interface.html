@@ -618,44 +618,33 @@ function binds_layers_buttons(layer_name){
 // it will only works on layers appearing in blue in the layer manager
 // (ie. the targeted layer and result(s?) layer(s?))
 function displayInfoOnMove(){
-    var info_features = d3.select("#info_features"),
-        target_lyr = Object.getOwnPropertyNames(user_data),
-        result_lyr = Object.getOwnPropertyNames(result_data),
-        nb_layer = map.selectAll(".layer")[0].length,
-        top_layer = map.selectAll(".layer")[0][nb_layer-1].id;
-
-    if(target_lyr.length === 0 && result_lyr.length === 0){
-        alert("Informations are only displayed on the targeted layer or its result");
-    } else if(target_lyr > 1){
-        alert("Too many layers to handle");
-    } else if(top_layer !== target_lyr[0] && top_layer !== result_lyr[0]){
-        alert("The layer to explore have to be in the top of the others");
+    var info_features = d3.select("#info_features");
+    if(info_features.classed("active")){
+        d3.select(".info_button").style('box-shadow', null);
+        map.selectAll("path").on("mouseover", null)
+        info_features.classed("active", false);
+        info_features.node().innerHTML = ""
+        info_features.style({});
+        document.getElementById("map").style.cursor="";
     } else {
-        let svg_layer = "#"+top_layer;
-        if(info_features.classed("active")){
-            d3.select(".info_button").style('box-shadow', null);
-            d3.select(svg_layer).selectAll("path").on("mouseover", null)
-            info_features.classed("active", false);
-            info_features.node().innerHTML = ""
-            info_features.style({});
-            document.getElementById("map").style.cursor="";
-        } else {
-            d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
-            d3.select(svg_layer).selectAll("path").on("mouseover", function(d){
-                var item_nb = Number((this.id).split('_')[1]),
-                    ft = user_data[top_layer] ? user_data[top_layer][item_nb] : result_data[top_layer][item_nb],
-                    txt_info = ["<h2>Features #", item_nb, "</h2><i>",
-                                current_layers[top_layer].type, "</i>"];
-                Object.getOwnPropertyNames(ft).forEach(function(el, i){
-                    txt_info.push("<br><b>"+el+"</b> : "+ft[el]);
-                    });
-                info_features.node().innerHTML = txt_info.join('');
+        var nb_layer = map.selectAll(".layer")[0].length,
+            top_layer = map.selectAll(".layer")[0][nb_layer-1].id;
+
+        let symbol = current_layers[top_layer].symbol ? current_layers[top_layer].symbol : "path"
+        let id_top_layer = "#" + top_layer;
+        d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
+        map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
+            let txt_info = ["<h3>", top_layer, "</h3><br><i>Feature ",
+                            i, "/", current_layers[top_layer].n_features, "</i><br>"];
+            Object.getOwnPropertyNames(d.properties).forEach(function(el, i){
+                txt_info.push("<br><b>"+el+"</b> : "+d.properties[el]);
+                });
+            info_features.node().innerHTML = txt_info.join('');
             });
-            d3.select(svg_layer).attr("d", path).on("mouseout", function(){
-                info_features.node().innerHTML = "";});
-            info_features.classed("active", true);
-            document.getElementById("map").style.cursor="help";
-        }
+        map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
+                info_features.node().innerHTML = ""; });
+        info_features.classed("active", true);
+        document.getElementById("map").style.cursor="help";
     }
 }
 
@@ -1592,7 +1581,6 @@ function apply_user_preferences(json_pref){
         if(layers[i].is_result && map_config.displayed_legend)
             handle_legend(layer_name)
     }
-
     zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
     zoom_without_redraw();
 

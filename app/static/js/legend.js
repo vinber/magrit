@@ -494,7 +494,6 @@ function createlegendEditBox(legend_id, layer_name){
                             legend_boxes[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
                         }
                     });
-
         }
     }
 

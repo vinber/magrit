@@ -563,7 +563,6 @@ function fillMenu_FlowMap(){
                     for(let i = 0; i<nb_class; ++i)
                         current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]].join(' - '), sizes[i]]);
 
-//                    console.log(links_byId);
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.75)
                                    .style("stroke-width", (d,i) => {return links_byId[i][2]});
@@ -1677,7 +1676,6 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
                             .attr("width", function(d){ return d.r * 2; })
                             .style("fill", function(){ return Colors.random();})
                             .style("stroke", "black");
-
     }
 
     function tick(e){
@@ -1781,49 +1779,55 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 //}
 
 var boxExplore = {
-    display_table: function(prop){
-        let self = this,
-            add_field = d3.select("#add_field_button");
-        if(prop.type === "ext_dataset"){
-            var data_table = joined_dataset[0],
-                the_name = dataset_name,
-                message = "Switch to reference layer table...";
-                add_field.style("display", "none").on('click', null);
-        } else if(prop.type === "layer"){
-            var data_table = user_data[this.layer_name],
-                the_name = this.layer_name,
-                message = "Switch to external dataset table...";
-                add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
-        }
-        this.nb_features = data_table.length;
-        this.columns_names = Object.getOwnPropertyNames(data_table[0]);
+    display_table: function(table_name){
+        let the_table = this.layer_names.get(table_name)[1];
+        this.current_table = table_name;
+        this.nb_features = the_table.length;
+        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
         this.columns_headers = [];
-        for(var i=0, col=this.columns_names, len = col.length; i<len; ++i)
-            this.columns_headers.push({data: col[i], title: col[i]})
-        let txt_intro = ["<b>", the_name, "</b><br>",
-                     this.nb_features, " features - ",
-                     this.columns_names.length, " fields"];
+        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
+            this.columns_headers.push({data: col[i], title: col[i]});
+        this.top_buttons.selectAll("#add_field_button").remove();
+        let self = this;
+        this.top_buttons
+             .insert("button")
+             .attr({id: "add_field_button", class: "button_st3"})
+             .html("Add a new field...")
+             .on('click', function(){
+                add_table_field(the_table, table_name, self);
+             });
+        let txt_intro = [
+            "<b>", table_name, "</b><br>",
+            this.nb_features, " features - ",
+            this.columns_names.length, " fields"].join('');
         d3.selectAll('#table_intro').remove()
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro.join(''))
+        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro)
         d3.selectAll('#myTable').remove()
         d3.selectAll('#myTable_wrapper').remove();
         this.box_table.append("table")
                       .attr({class: "display compact", id: "myTable"})
                       .style("width", "80%");
-
         let myTable = $('#myTable').DataTable({
-            data: data_table,
+            data: the_table,
             columns: this.columns_headers,
         });
-
-        let switch_but = document.getElementById("switch_button");
-        if(switch_but) switch_but.innerHTML = message;
-        document.querySelector("body").style.cursor = "default";
-
     },
-
+    get_available_tables: function(){
+        let target_layer = Object.getOwnPropertyNames(user_data),
+            ext_dataset = dataset_name,
+            result_layers = Object.getOwnPropertyNames(result_data),
+            available = new Map();
+        for(let lyr_name of target_layer)
+            available.set(lyr_name, ["Target layer", user_data[lyr_name]])
+        if(ext_dataset)
+            available.set(dataset_name, ["Ext. dataset", joined_dataset[0]])
+        for(let lyr_name of result_layers)
+            available.set(lyr_name, ["Result layer", result_data[lyr_name]])
+        return available;
+    },
     create: function(){
-        this.layer_name = Object.getOwnPropertyNames(user_data)[0];
+        this.layer_names = this.get_available_tables()
+        if(this.layer_names.size == 0) return;
         this.columns_headers = [];
         this.nb_features = undefined;
         this.columns_names = undefined;
@@ -1831,32 +1835,23 @@ var boxExplore = {
         this.box_table = d3.select("body").append("div")
                             .attr({id: "browse_data_box", title: "Explore dataset"})
                             .style("font-size", "0.75em");
-        let the_name = this.layer_name,
-            self = this;
-        if(!the_name){
-            this.current_table = "ext_dataset";
-        } else {
-            this.current_table = "layer";
-            let top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
-            top_buttons
-                 .insert("button")
-                 .attr({id: "add_field_button", class: "button_st3"})
-                 .html("Add a new field...")
-                 .on('click', function(){  add_table_field(the_name, self);});
-        }
 
-        if(dataset_name != undefined && the_name != undefined)
-            this.box_table.append('p')
-                    .attr({id: "switch_button", class: "button_st3"})
-                    .html("Switch to external dataset table...")
-                    .on('click', function(){
-                        let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
-                        self.current_table = type;
-                        self.display_table({"type": type});
-                    });
+        let self = this;
 
-        this.display_table({"type": this.current_table});
+        this.top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
+        let select_a_table = this.box_table
+                                .append('p').html("Available tables :")
+                                .insert("select").attr({id: "select_table"})
+                                .on("change", function(){
+                                    self.display_table(this.value);
+                                })
+
+        this.layer_names.forEach( (value, key) => {
+            let txt = [key, " (", value[0], ")"].join('')
+            select_a_table.append("option").attr("value", key).text(txt)
+        });
+        setSelected(select_a_table.node(), select_a_table.node().options[0].value);
         var deferred = Q.defer();
         $("#browse_data_box").dialog({
             modal:true,
@@ -1878,6 +1873,106 @@ var boxExplore = {
         return deferred.promise;
     }
 };
+
+
+//var boxExplore = {
+//    display_table: function(prop){
+//        let self = this,
+//            add_field = d3.select("#add_field_button");
+//        if(prop.type === "ext_dataset"){
+//            var data_table = joined_dataset[0],
+//                the_name = dataset_name,
+//                message = "Switch to reference layer table...";
+//                add_field.style("display", "none").on('click', null);
+//        } else if(prop.type === "layer"){
+//            var data_table = user_data[this.layer_name],
+//                the_name = this.layer_name,
+//                message = "Switch to external dataset table...";
+//                add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
+//        }
+//        this.nb_features = data_table.length;
+//        this.columns_names = Object.getOwnPropertyNames(data_table[0]);
+//        this.columns_headers = [];
+//        for(var i=0, col=this.columns_names, len = col.length; i<len; ++i)
+//            this.columns_headers.push({data: col[i], title: col[i]})
+//        let txt_intro = ["<b>", the_name, "</b><br>",
+//                     this.nb_features, " features - ",
+//                     this.columns_names.length, " fields"];
+//        d3.selectAll('#table_intro').remove()
+//        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro.join(''))
+//        d3.selectAll('#myTable').remove()
+//        d3.selectAll('#myTable_wrapper').remove();
+//        this.box_table.append("table")
+//                      .attr({class: "display compact", id: "myTable"})
+//                      .style("width", "80%");
+//
+//        let myTable = $('#myTable').DataTable({
+//            data: data_table,
+//            columns: this.columns_headers,
+//        });
+//
+//        let switch_but = document.getElementById("switch_button");
+//        if(switch_but) switch_but.innerHTML = message;
+//        document.querySelector("body").style.cursor = "default";
+//
+//    },
+//
+//    create: function(){
+//        this.layer_name = Object.getOwnPropertyNames(user_data)[0];
+//        this.columns_headers = [];
+//        this.nb_features = undefined;
+//        this.columns_names = undefined;
+//        this.current_table = undefined,
+//        this.box_table = d3.select("body").append("div")
+//                            .attr({id: "browse_data_box", title: "Explore dataset"})
+//                            .style("font-size", "0.75em");
+//        let the_name = this.layer_name,
+//            self = this;
+//        if(!the_name){
+//            this.current_table = "ext_dataset";
+//        } else {
+//            this.current_table = "layer";
+//            let top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+//            top_buttons
+//                 .insert("button")
+//                 .attr({id: "add_field_button", class: "button_st3"})
+//                 .html("Add a new field...")
+//                 .on('click', function(){  add_table_field(the_name, self);});
+//        }
+//
+//        if(dataset_name != undefined && the_name != undefined)
+//            this.box_table.append('p')
+//                    .attr({id: "switch_button", class: "button_st3"})
+//                    .html("Switch to external dataset table...")
+//                    .on('click', function(){
+//                        let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
+//                        self.current_table = type;
+//                        self.display_table({"type": type});
+//                    });
+//
+//        this.display_table({"type": this.current_table});
+//
+//        var deferred = Q.defer();
+//        $("#browse_data_box").dialog({
+//            modal:true,
+//            resizable: true,
+//            width: Math.round(window.innerWidth * 0.8),
+//            buttons:[{
+//                    text: "Confirm",
+//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+//                        },
+//                   {
+//                    text: "Cancel",
+//                    click: function(){$(this).dialog("close");$(this).remove();}
+//                   }],
+//            close: function(event, ui){
+//                    $(this).dialog("destroy").remove();
+//                    if(deferred.promise.isPending()) deferred.resolve(false);
+//                }
+//        });
+//        return deferred.promise;
+//    }
+//};
 
 var fields_PropSymbol = {
     fill: function(layer){
@@ -2270,9 +2365,11 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
 // ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data[layer_name],
+    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] 
+                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name] 
+                    : joined_dataset[0],
         fields = Object.getOwnPropertyNames(table[0]),
-        nb_features = current_layers[layer_name].n_features,
+        nb_features = table.length,
         deepth_test = 10 < nb_features ? 10 : nb_features,
         result = new Object(),
         field = undefined,
@@ -2308,7 +2405,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 // Args :
 // - layer : the layer name
 // - parent : (optional) the object createBoxExplore to be used as a callback to redisplay the table with the new field
-function add_table_field(layer, parent){
+function add_table_field(table, layer_name, parent){
     function check_name(){
         if(regexp_name.test(this.value))
             chooses_handler.new_name = this.value;
@@ -2378,34 +2475,33 @@ function add_table_field(layer, parent){
                 console.log(chooses_handler)
                 let fi1 = chooses_handler.field1,
                     fi2 = chooses_handler.field2,
-                    data_layer = user_data[layer],
                     new_name_field = chooses_handler.new_name,
                     operation = chooses_handler.operator;
 
                 if(chooses_handler.type_operation === "math_compute"){
-                    for(let i=0; i<data_layer.length; i++)
-                        data_layer[i][new_name_field] = +eval([+data_layer[i][fi1], operation, +data_layer[i][fi2]].join(' '));
+                    for(let i=0; i<table.length; i++)
+                        table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
 
                 } else {
                     let opt_val = chooses_handler.opt_val;
                     if(operation == "Truncate"){
-                        for(let i=0; i < user_data[layer].length; i++)
-                            data_layer[i][new_name_field] = data_layer[i][fi1].substring(0, +opt_val);
+                        for(let i=0; i < table.length; i++)
+                            table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
 
                     } else if (operation == "Concatenate"){
-                        for(let i=0; i < user_data[layer].length; i++)
-                            data_layer[i][new_name_field] = [data_layer[i][fi1], data_layer[i][fi2]].join(opt_val);
+                        for(let i=0; i < table.length; i++)
+                            table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
                     }
                 }
                 fields_handler.unfill();
-                fields_handler.fill(layer);
+                fields_handler.fill(layer_name);
                 if(parent)
-                    parent.display_table({"type": "layer"});
+                    parent.display_table(layer_name);
             }
         });
 
-    var current_fields = Object.getOwnPropertyNames(user_data[layer]),
-        fields_type = type_col(layer),
+    var current_fields = Object.getOwnPropertyNames(table),
+        fields_type = type_col(layer_name),
         box_content = d3.select(".addFieldBox").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2"),
