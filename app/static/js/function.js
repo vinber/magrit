@@ -644,7 +644,16 @@ var fields_PropSymbolChoro = {
             field2_selec.append("option").text(field).attr("value", field);
         });
 
+        field1_selec.on("change", function(){
+            let field_name = this.value,
+                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                ref_value_field = document.getElementById("PropSymbolChoro_ref_value");
+
+            ref_value_field.setAttribute("max", max_val_field);
+            ref_value_field.setAttribute("value", max_val_field / 2);
+        });
     },
+
     unfill: function(){
         let field1_selec = document.getElementById("PropSymbolChoro_field_1"),
             field2_selec = document.getElementById("PropSymbolChoro_field_2");
@@ -666,10 +675,10 @@ function fillMenu_PropSymbolChoro(layer){
                           .insert('select')
                           .attr({class: 'params', id: 'PropSymbolChoro_field_1'});
 
-    var max_size = dv2.append('p').style("display", "inline").html('Max. size (px) ')
+    var ref_size = dv2.append('p').style("display", "inline").html('Fixed size ')
                      .insert('input')
-                     .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_max_size'})
-                     .attr({min: 0.2, max: 66.0, value: 10.0, step: 0.1})
+                     .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_ref_size'})
+                     .attr({min: 0.1, max: 66.0, value: 10.0, step: 0.1})
                      .style("width", "8em")
                      .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
@@ -677,18 +686,18 @@ function fillMenu_PropSymbolChoro(layer){
                             .attr("id", "max_size_txt")
                             .html('10 px');
 
-    var ref_size = dv2.append('p').html('Reference min. size ')
+    var ref_value = dv2.append('p').html('on value ... ')
                      .insert('input')
-                     .style('width', '60px')
-                     .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
+                     .style({'width': '100px', "margin-left": "65px"})
+                     .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
+                     .attr({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
     var symb_selec = dv2.append('p').html('Symbol type ').insert('select').attr('class', 'params');
-    [['Circle', "circle"], ['Square', "rect"]]
-        .forEach( symb => {
-            symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
-        });
+    [['Circle', "circle"],
+     ['Square', "rect"]].forEach( symb => {
+        symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
+    });
 
     var field2_selec = dv2.append('p').html('Field 2 (symbol color) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
 
@@ -736,7 +745,7 @@ function fillMenu_PropSymbolChoro(layer){
             rd_params.nb_features = nb_features;
             rd_params.ref_layer_name = layer;
             rd_params.symbol = symb_selec.node().value;
-            rd_params.max_size = +max_size.node().value;
+            rd_params.ref_value = +ref_value.node().value;
             rd_params.ref_size = +ref_size.node().value;
             rd_params.fill_color = rendering_params['colorsByFeature'];
 
@@ -753,12 +762,13 @@ function fillMenu_PropSymbolChoro(layer){
                 ref_layer_name: layer,
                 rendered_field: field1_selec.node().value,
                 rendered_field2: field2_selec.node().value,
-                size: [+ref_size.node().value, +max_size.node().value],
+                size: [+ref_value.node().value, +ref_size.node().value],
                 "stroke-width-const": 1,
                 fill_color: { "class": id_map.map(obj => obj[3]) },
                 colors_breaks: colors_breaks,
                 is_result: true
             };
+
             binds_layers_buttons();
             zoom_without_redraw();
             switch_accordion_section();
@@ -1760,24 +1770,6 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 }
 
 
-//function log_unused_ft(layer){
-//    if(current_layers[layer].filter_not_use instanceof Map)
-//        var filter_not_use = current_layers[layer].filter_not_use;
-//    else {
-//        current_layers[layer].filter_not_use = new Map();
-//        var filter_not_use = current_layers[layer].filter_not_use
-//    }
-//    $('#myTable tbody tr').on('click', function(e) {
-//        let row = this,
-//            ret_val = row.classList.toggle('selected');
-//        if(ret_val)
-//            filter_not_use.set(row._DT_RowIndex, true)
-//        else
-//            filter_not_use.delete(row._DT_RowIndex)
-//        console.log(filter_not_use)
-//    });
-//}
-
 var boxExplore = {
     display_table: function(table_name){
         document.querySelector("body").style.cursor = "";
@@ -1876,105 +1868,6 @@ var boxExplore = {
 };
 
 
-//var boxExplore = {
-//    display_table: function(prop){
-//        let self = this,
-//            add_field = d3.select("#add_field_button");
-//        if(prop.type === "ext_dataset"){
-//            var data_table = joined_dataset[0],
-//                the_name = dataset_name,
-//                message = "Switch to reference layer table...";
-//                add_field.style("display", "none").on('click', null);
-//        } else if(prop.type === "layer"){
-//            var data_table = user_data[this.layer_name],
-//                the_name = this.layer_name,
-//                message = "Switch to external dataset table...";
-//                add_field.style("display", null).on('click', function(){  add_table_field(the_name, self) });
-//        }
-//        this.nb_features = data_table.length;
-//        this.columns_names = Object.getOwnPropertyNames(data_table[0]);
-//        this.columns_headers = [];
-//        for(var i=0, col=this.columns_names, len = col.length; i<len; ++i)
-//            this.columns_headers.push({data: col[i], title: col[i]})
-//        let txt_intro = ["<b>", the_name, "</b><br>",
-//                     this.nb_features, " features - ",
-//                     this.columns_names.length, " fields"];
-//        d3.selectAll('#table_intro').remove()
-//        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro.join(''))
-//        d3.selectAll('#myTable').remove()
-//        d3.selectAll('#myTable_wrapper').remove();
-//        this.box_table.append("table")
-//                      .attr({class: "display compact", id: "myTable"})
-//                      .style("width", "80%");
-//
-//        let myTable = $('#myTable').DataTable({
-//            data: data_table,
-//            columns: this.columns_headers,
-//        });
-//
-//        let switch_but = document.getElementById("switch_button");
-//        if(switch_but) switch_but.innerHTML = message;
-//        document.querySelector("body").style.cursor = "default";
-//
-//    },
-//
-//    create: function(){
-//        this.layer_name = Object.getOwnPropertyNames(user_data)[0];
-//        this.columns_headers = [];
-//        this.nb_features = undefined;
-//        this.columns_names = undefined;
-//        this.current_table = undefined,
-//        this.box_table = d3.select("body").append("div")
-//                            .attr({id: "browse_data_box", title: "Explore dataset"})
-//                            .style("font-size", "0.75em");
-//        let the_name = this.layer_name,
-//            self = this;
-//        if(!the_name){
-//            this.current_table = "ext_dataset";
-//        } else {
-//            this.current_table = "layer";
-//            let top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
-//            top_buttons
-//                 .insert("button")
-//                 .attr({id: "add_field_button", class: "button_st3"})
-//                 .html("Add a new field...")
-//                 .on('click', function(){  add_table_field(the_name, self);});
-//        }
-//
-//        if(dataset_name != undefined && the_name != undefined)
-//            this.box_table.append('p')
-//                    .attr({id: "switch_button", class: "button_st3"})
-//                    .html("Switch to external dataset table...")
-//                    .on('click', function(){
-//                        let type = (self.current_table === "layer") ? "ext_dataset" : "layer";
-//                        self.current_table = type;
-//                        self.display_table({"type": type});
-//                    });
-//
-//        this.display_table({"type": this.current_table});
-//
-//        var deferred = Q.defer();
-//        $("#browse_data_box").dialog({
-//            modal:true,
-//            resizable: true,
-//            width: Math.round(window.innerWidth * 0.8),
-//            buttons:[{
-//                    text: "Confirm",
-//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-//                        },
-//                   {
-//                    text: "Cancel",
-//                    click: function(){$(this).dialog("close");$(this).remove();}
-//                   }],
-//            close: function(event, ui){
-//                    $(this).dialog("destroy").remove();
-//                    if(deferred.promise.isPending()) deferred.resolve(false);
-//                }
-//        });
-//        return deferred.promise;
-//    }
-//};
-
 var fields_PropSymbol = {
     fill: function(layer){
         if(!layer) return;
@@ -1987,10 +1880,19 @@ var fields_PropSymbol = {
             field_selec.append("option").text(field).attr("value", field);
         });
 
+        field_selec.on("change", function(){
+            let field_name = this.value,
+                data_layer = user_data[layer],
+                field_values = data_layer.map(obj => +obj[field_name]),
+                max_val_field = Math.max.apply(null, field_values),
+                ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
+            ref_value_field.setAttribute("max", max_val_field);
+            ref_value_field.setAttribute("value", max_val_field / 2);
+        })
     },
 
     unfill: function(){
-        let field_selec = document.getElementById("PropSymbolChoro_field_1");
+        let field_selec = document.getElementById("PropSymbol_field_1");
         unfillSelectInput(field_selec);
         d3.selectAll(".params").attr("disabled", true);
     }
@@ -2000,22 +1902,20 @@ function fillMenu_PropSymbol(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering"),
         field_selec = dialog_content.append('p').html('Field ').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
         max_allowed_size = Math.round(h/2 - h/20),
-        max_size = dialog_content.append('p').style("display", "inline").html('Max. size ')
+        ref_size = dialog_content.append('p').style("display", "inline").html('Fixed size ')
                          .insert('input')
-                         .attr({type: 'range', class: 'params'})
+                         .attr({type: 'number', class: 'params'})
                          .attr({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
-                         .style("width", "8em")
-                         .on("change", function(){ d3.select("#max_size_txt").html([this.value, " px"].join('')) });
+                         .style("width", "50px");
 
-    var max_size_txt = dialog_content.append('label-item')
-                            .attr("id", "max_size_txt")
-                            .html([max_size.node().value, " px"].join(''));
-    var ref_size = dialog_content.append('p').attr("id", "ref_min_p")
-                            .html('Reference min. size ')
+    dialog_content.append('span').html(" px");
+
+    var ref_value = dialog_content.append('p').attr("id", "PropSymbol_ref_value")
+                            .html('on value ... ')
                             .insert('input')
-                            .style('width', '60px')
-                            .attr({type: 'number', class: "params", min: 0.1, max: max_allowed_size - 0.5, value: 0.3, step: 0.1});
-    d3.select("#ref_min_p").insert('span').html(" px");
+                            .style({'width': '100px', "margin-left": "65px"})
+                            .attr({type: 'number', class: "params", min: 0.1, step: 0.1});
+
     var symb_selec = dialog_content
                         .append('p').html('Symbol type ')
                         .insert('select').attr('class', 'params');
@@ -2043,8 +1943,8 @@ function fillMenu_PropSymbol(layer){
                                      "new_name": new_layer_name,
                                      "ref_layer_name": layer,
                                      "symbol": symb_selec.node().value,
-                                     "max_size": +max_size.node().value,
                                      "ref_size": +ref_size.node().value,
+                                     "ref_value": +ref_value.node().value,
                                      "fill_color": fill_color.node().value };
             make_prop_symbols(rendering_params);
             binds_layers_buttons();
@@ -2063,23 +1963,25 @@ function make_prop_symbols(rendering_params){
         values_to_use = rendering_params.values_to_use,
         d_values = new Array(nb_features),
         comp = function(a, b){ return b[1]-a[1]; },
-        ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+//        ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+        ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         ref_size = rendering_params.ref_size,
-        max_size = rendering_params.max_size,
+        ref_value = rendering_params.ref_value,
+        symbol_type = rendering_params.symbol,
         zs = zoom.scale();
 
     if(values_to_use)
         for(let i = 0; i < nb_features; ++i){
-            let centr = path.centroid(ref_layer_selection[0][i].__data__);
+            let centr = path.centroid(ref_layer_selection[i].__data__);
             d_values[i] = [i, +values_to_use[i], centr];
         }
     else
         for(let i = 0; i < nb_features; ++i){
-            let centr = path.centroid(ref_layer_selection[0][i].__data__);
+            let centr = path.centroid(ref_layer_selection[i].__data__);
             d_values[i] = [i, +user_data[layer][i][field], centr];
         }
 
-    d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
+    d_values = prop_sizer3(d_values, ref_value, ref_size, symbol_type);
     d_values.sort(comp);
 
     /*
@@ -2093,8 +1995,7 @@ function make_prop_symbols(rendering_params){
         ]
     */
 
-    let layer_to_add = rendering_params.new_name,
-        symbol_type = rendering_params.symbol;
+    let layer_to_add = rendering_params.new_name;
 
     if(!(rendering_params.fill_color instanceof Array)){
         for(let i=0; i<nb_features; ++i)
@@ -2120,7 +2021,7 @@ function make_prop_symbols(rendering_params){
             symbol_layer.append('circle')
                 .attr('cx', params[2][0])
                 .attr("cy", params[2][1])
-                .attr("r", ref_size / zs + params[1])
+                .attr("r", params[1])
                 .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
                 .style("fill", params[3])
                 .style("stroke", "black")
@@ -2129,7 +2030,7 @@ function make_prop_symbols(rendering_params){
     } else if(symbol_type === "rect"){
         for(let i = 0; i < d_values.length; i++){
             let params = d_values[i],
-                size = ref_size / zs + params[1];
+                size = params[1];
 
             symbol_layer.append('rect')
                 .attr('x', params[2][0] - size/2)
@@ -2166,7 +2067,7 @@ function make_prop_symbols(rendering_params){
         "symbol": symbol_type,
         "fill_color" : fill_color,
         "rendered_field": field,
-        "size": [ref_size, max_size],
+        "size": [ref_value, ref_size],
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
@@ -2345,6 +2246,52 @@ function prop_sizer(arr, min_size, max_size){
     return res;
 }
 
+function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
+    let pi = Math.PI,
+        arr_len = arr.length,
+        p_scale = proj.scale(),
+        z_scale = zoom.scale(),
+        res = [];
+
+    fixed_value = Math.sqrt(fixed_value);
+
+    if(type_symbol == "circle")
+        for(let i=0; i < arr_len; ++i){
+            let val = arr[i];
+            res.push(
+                [val[0], Math.sqrt(pi * val[1] * fixed_size / fixed_value), val[2]]
+                )
+        }
+    else
+        for(let i=0; i < arr_len; ++i){
+            let val = arr[i];
+            res.push(
+                [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
+                )
+        }
+    return res
+}
+
+function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
+    let pi = Math.PI,
+        arr_len = arr.length,
+        p_scale = proj.scale(),
+        z_scale = zoom.scale(),
+        res = [];
+
+    fixed_value = Math.sqrt(fixed_value);
+
+    if(type_symbol == "circle")
+        for(let i=0; i < arr_len; ++i)
+            res.push(Math.sqrt(pi * arr[i] * fixed_size / fixed_value));
+
+    else
+        for(let i=0; i < arr_len; ++i)
+            res.push(Math.sqrt(arr[i] * fixed_size / fixed_value));
+
+    return res
+}
+
 function prop_sizer2(arr, min_size, max_size){
     let arr_tmp = arr.map(i => i[1]),
         min_values = Math.sqrt(Math.min.apply(0, arr_tmp)),
@@ -2359,6 +2306,11 @@ function prop_sizer2(arr, min_size, max_size){
         res[i] = [val[0], (Math.sqrt(val[1])/dif_val * dif_size) + min_size - dif_size/dif_val, val[2]];
     }
     return res;
+}
+
+function get_nb_decimals(nb){
+    let tmp = nb.toString().split('.');
+    return tmp.length < 2 ? 0 : tmp[1].length;
 }
 
 var type_col = function(layer_name, target, skip_if_empty_values=false){
@@ -2508,7 +2460,8 @@ function add_table_field(table, layer_name, parent){
         div2 = box_content.append("div").attr("id", "field_div2"),
         new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keyup", check_name),
         type_content = div1.append("p").html("New field content :<br>")
-                            .insert("select").attr("id", "type_content_select").on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
+                            .insert("select").attr("id", "type_content_select")
+                            .on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
 
     [["Computation based on two existing numerical fields", "math_compute"],

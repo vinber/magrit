@@ -218,11 +218,9 @@ function handle_dataset(f){
             document.getElementById("join_button").disabled = false;
             d3.select(".s1").html("").on("click", null)
             d3.select("#sample_link").html("").on("click", null);
-           //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
             section1.style({"padding-top": "25px"});
         } else {
             document.getElementById("join_button").disabled = true;
-            //d3.select("#section1").style("height", "165px");
         }
         fields_handler.fill();
         if(browse_table.node().disabled === true) browse_table.node().disabled = false;
@@ -269,7 +267,9 @@ function handle_single_file(file) {
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
-    return +layer_name_to_add.length > 28 ? [layer_name_to_add.substring(0, 23), '(...)'].join('') : layer_name_to_add;
+    return +layer_name_to_add.length > 28
+        ? [layer_name_to_add.substring(0, 23), '(...)'].join('')
+        : layer_name_to_add;
 }
 
 // Add the TopoJSON to the 'svg' element :
@@ -287,29 +287,25 @@ function add_layer_topojson(text, options){
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
 
-    if(target_layer_on_add
-            && menu_option.add_options
-            && menu_option.add_options == "keep_file")
-        window._target_layer_file = parsedJSON;
-
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(let i=0; i < layers_names.length; i++){
         var random_color1 = Colors.names[Colors.random()],
             lyr_name = layers_names[i],
             lyr_name_to_add = check_layer_name(lyr_name),
+            nb_ft = parsedJSON.objects[lyr_name].geometries.length,
             field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
         if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
         else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
 
-//        if(parsedJSON.objects[lyr_name].geometries[0].properties && target_layer_on_add){
-        current_layers[lyr_name_to_add] = {"type": type,
-                                    "n_features": parsedJSON.objects[lyr_name].geometries.length,
-                                    "stroke-width-const": 0.4,
-                                    "fill_color":  {"single": random_color1},
-                                    };
+        current_layers[lyr_name_to_add] = {
+            "type": type,
+            "n_features": nb_ft,
+            "stroke-width-const": 0.4,
+            "fill_color":  {"single": random_color1},
+            };
 
         if(target_layer_on_add){
             current_layers[lyr_name_to_add].targeted = true;
@@ -360,7 +356,6 @@ function add_layer_topojson(text, options){
 
         let layers_listed = layer_list.node(),
             li = document.createElement("li"),
-            nb_ft = parsedJSON.objects[lyr_name].geometries.length,
             nb_fields = field_names.length,
             layer_tooltip_content =  ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", nb_fields, " fields"].join(''),
             _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
@@ -378,7 +373,6 @@ function add_layer_topojson(text, options){
                 d3.select(".s1").html("").on("click", null)
                 d3.select("#sample_link").html("").on("click", null);
                 section1.style({"padding-top": "25px"})
-                //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
             }
 
             let _button = button_type[type],
@@ -415,6 +409,8 @@ function add_layer_topojson(text, options){
     }
 
     if(target_layer_on_add) {
+        if(menu_option.add_options && menu_option.add_options == "keep_file")
+            window._target_layer_file = parsedJSON;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
     } else if (result_layer_on_add) {
@@ -431,7 +427,7 @@ function add_layer_topojson(text, options){
 function scale_to_lyr(name){
     name = current_layers[name].ref_layer_name || name;
     var bbox_layer_path = undefined;
-    d3.select("#"+name).selectAll('path').each(function(d, i){
+    map.select("#"+name).selectAll('path').each(function(d, i){
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
             bbox_layer_path = bbox_path;
@@ -454,7 +450,7 @@ function scale_to_lyr(name){
 function center_map(name){
     var bbox_layer_path = undefined;
     name = current_layers[name].ref_layer_name || name;
-    d3.select("#"+name).selectAll('path').each(function(d, i){
+    map.select("#"+name).selectAll('path').each(function(d, i){
         let bbox_path = path.bounds(d);
         if(!bbox_layer_path)
             bbox_layer_path = bbox_path;

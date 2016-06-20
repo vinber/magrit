@@ -152,19 +152,20 @@ function createStyleBox(layer_name){
                         colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
                     current_layers[layer_name].colors_breaks = colors_breaks;
                     current_layers[layer_name].rendered_field = rendering_params.field;
-//                    if(current_layers[layer_name].rendered_field
-//                            && current_layers[layer_name].renderer != "Gridded"
-//                            && current_layers[layer_name].renderer != "Stewart")
-//                        field_selec.node().selectedOption = current_layers[layer_name].rendered_field;
                 } else if (renderer == "Stewart"){
                     current_layers[layer_name].colors_breaks = rendering_params.breaks;
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
                 }
                 // Also change the legend if there is one displayed :
-                let lgd_choro = d3.select("#legend_root").node();
+                let lgd_choro = document.getElementById("legend_root");
                 if(lgd_choro){
+                    let transform_param = lgd_choro.getAttribute("transform"),
+                        lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
+                        lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
                     lgd_choro.remove();
-                    createLegend_choro(layer_name, rendering_params.field);
+                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
+                    lgd_choro = document.getElementById("legend_root");
+                    lgd_choro.setAttribute("transform", transform_param);
                 }
                 sendPreferences();
                 zoom_without_redraw();
@@ -269,7 +270,7 @@ function createStyleBox(layer_name){
                                     field: field_to_discretize
                                 };
                                 selection.style('fill-opacity', 0.9)
-                                         .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] })
+                                         .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] });
                             }
                         });
                 });
@@ -284,7 +285,7 @@ function createStyleBox(layer_name){
                 if(reversed) new_coloramp.reverse();
                 for(let i=0; i < nb_ft; ++i)
                     rendering_params.breaks[i][1] = new_coloramp[i];
-                selection.style("fill", (d,i) => new_coloramp[i] )
+                selection.style("fill", (d,i) => new_coloramp[i] );
             }
 
             let seq_color_select = popup.insert("p")
@@ -375,24 +376,25 @@ function createStyleBox_ProbSymbol(layer_name){
         d_values.push(+user_data[ref_layer_name][i][field_used]);
     d_values.sort(comp);
 
-    let redraw_prop_val = function(prop_values, z_scale){
-      console.log(prop_values)
-      if(type_symbol === "circle") {
-          for(let i=0, len = prop_values.length; i < len; i++){
-              selection[0][i].setAttribute('r', +current_layers[layer_name].size[0] / +z_scale + prop_values[i])
-          }
-      } else if(type_symbol === "rect") {
-          for(let i=0, len = prop_values.length; i < len; i++){
-              let sz = +current_layers[layer_name].size[0] / +z_scale + prop_values[i],
-                  old_rect_size = +selection[0][i].getAttribute('height'),
-                  centr = [+selection[0][i].getAttribute("x") + (old_rect_size/2) - (sz / 2),
-                           +selection[0][i].getAttribute("y") + (old_rect_size/2) - (sz / 2)];
-              selection[0][i].setAttribute('x', centr[0]);
-              selection[0][i].setAttribute('y', centr[1]);
-              selection[0][i].setAttribute('height', sz);
-              selection[0][i].setAttribute('width', sz);
-          }
-      }
+    let redraw_prop_val = function(prop_values){
+        let selec = selection[0];
+
+        if(type_symbol === "circle") {
+            for(let i=0, len = prop_values.length; i < len; i++){
+                selec[i].setAttribute('r', prop_values[i])
+            }
+        } else if(type_symbol === "rect") {
+            for(let i=0, len = prop_values.length; i < len; i++){
+                let old_rect_size = +selec[i].getAttribute('height'),
+                    centr = [+selec[i].getAttribute("x") + (old_rect_size/2) - (prop_values[i] / 2),
+                             +selec[i].getAttribute("y") + (old_rect_size/2) - (prop_values[i] / 2)];
+
+                selec[i].setAttribute('x', centr[0]);
+                selec[i].setAttribute('y', centr[1]);
+                selec[i].setAttribute('height', prop_values[i]);
+                selec[i].setAttribute('width', prop_values[i]);
+            }
+        }
     }
 
     if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
@@ -407,22 +409,35 @@ function createStyleBox_ProbSymbol(layer_name){
                 if(current_layers[layer_name].size != old_size){
                     let lgd_prop_symb = document.getElementById("legend_root2");
                     if(lgd_prop_symb){
+                        let transform_param = lgd_prop_symb.getAttribute("transform"),
+                            lgd_title = lgd_prop_symb.querySelector("#legendtitle").innerHTML,
+                            lgd_subtitle = lgd_prop_symb.querySelector("#legendsubtitle").innerHTML;
                         lgd_prop_symb.remove();
-                        createLegend_symbol(layer_name, field_used)
+                        createLegend_symbol(layer_name, field_used, lgd_title, lgd_subtitle);
+                        lgd_prop_symb = document.getElementById("legend_root2");
+                        if(transform_param)
+                            lgd_prop_symb.setAttribute("transform", transform_param);
                     }
                 }
 
                 if(type_method == "PropSymbolsChoro"){
+                    console.log(rendering_params.breaks)
                     current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
                     current_layers[layer_name].colors_breaks = [];
                     for(let i = 0; i<rendering_params.breaks.length-1; ++i)
                         current_layers[layer_name].colors_breaks.push([[rendering_params.breaks[i], " - ", rendering_params.breaks[i+1]].join(''), rendering_params.colors[i]]);
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
-                    let lgd_choro = d3.select("#legend_root").node();
+                    let lgd_choro = document.getElementById("legend_root");
                     if(lgd_choro){
+                        let transform_param = lgd_choro.getAttribute("transform"),
+                            lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
+                            lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
                         lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
+                        lgd_choro = document.getElementById("legend_root");
+                        if(transform_param)
+                            lgd_choro.setAttribute("transform", transform_param);
                     }
                 }
             } else {
@@ -450,10 +465,8 @@ function createStyleBox_ProbSymbol(layer_name){
                 }
                 current_layers[layer_name].fill_color = fill_prev;
                 if(current_layers[layer_name].size[1] != old_size[1]){
-                    let z_scale = zoom.scale(),
-                        prop_values = prop_sizer(d_values, +old_size[0] / z_scale,
-                                                 +old_size[1] / z_scale);
-                    redraw_prop_val(prop_values, z_scale);
+                    let prop_values = prop_sizer3_e(d_values, old_size[0], old_size[1], type_symbol);
+                    redraw_prop_val(prop_values);
                     current_layers[layer_name].size = [old_size[0], old_size[1]];
                 }
             }
@@ -535,18 +548,32 @@ function createStyleBox_ProbSymbol(layer_name){
 
     let prop_val_content = popup.append("p").html([
         "Field used for <strong>proportionals values</strong> : <i>", field_used,
-        "</i><br><br>Symbol max size<br>"].join(''))
+        "</i><br><br>Symbol fixed size<br>"].join(''))
     prop_val_content
           .insert('input').attr("type", "range")
-          .attr({id: "max_size_range", min: 1, max: 50, step: 0.1, value: current_layers[layer_name].size[1]})
+          .attr({id: "max_size_range", min: 0.1, max: 40, step: 0.1, value: current_layers[layer_name].size[1]})
           .on("change", function(){
-              let val = +this.value,
-                  z_scale = zoom.scale(),
-                  prop_values = prop_sizer(d_values, current_layers[layer_name].size[0] / z_scale, val / z_scale);
+              let f_size = +this.value,
+                  prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
 
-              current_layers[layer_name].size[1] = val;
-              prop_val_content.select("#txt_symb_size").html([val, " px"].join(''))
-              redraw_prop_val(prop_values, z_scale);
+              current_layers[layer_name].size[1] = f_size;
+              prop_val_content.select("#txt_symb_size").html([f_size, " px"].join(''))
+              redraw_prop_val(prop_values);
+          });
+    prop_val_content.append("span").attr('id', 'txt_symb_size').html([current_layers[layer_name].size[1], ' px'].join(''));
+
+    let max_val_prop_symbol = Math.max.apply(null, user_data[ref_layer_name].map(obj => +obj[field_used]));
+
+    popup.append("p").html("on value ...")
+        .insert("input")
+        .style("width", "100px")
+        .attr({type: "number", min: 0.1, max: max_val_prop_symbol,
+               value: +current_layers[layer_name].size[0], step: 0.1})
+        .on("change", function(){
+            let f_val = +this.value,
+                prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
+            redraw_prop_val(prop_values);
+        });
 // Todo : find a "light" way to recompute the "force" on the node after changing their size
 //              if(type_method.indexOf('Dorling') > -1){
 //                let nodes = selection[0].map((d, i) => {
@@ -558,6 +585,4 @@ function createStyleBox_ProbSymbol(layer_name){
 //                    });
 //                  current_layers[layer_name].force.nodes(nodes).start()
 //              }
-          });
-    prop_val_content.append("span").attr('id', 'txt_symb_size').html([current_layers[layer_name].size[1], ' px'].join(''));
 }

@@ -109,7 +109,15 @@ cdef class Transformer:
     cdef Point scale
     cdef Point translate
     cdef list arcs
+    cdef dict dispatch_geom
+
     def __init__(self, dict transform, arcs):
+        self.dispatch_geom = {
+            'Point': self.point, 'MultiPoint': self.multi_point,
+            'LineString': self.line_string, 'MultiLineString': self.multi_line_string_poly,
+            'Polygon': self.multi_line_string_poly, 'MultiPolygon': self.multi_poly,
+            "GeometryCollection": self.geometry_collection
+            }
         self.scale.x, self.scale.y = transform['scale']
         self.translate.x, self.translate.y = transform['translate']
         self.arcs = [self.convert_arc(a) for a in arcs]
@@ -166,21 +174,24 @@ cdef class Transformer:
         out['geometry']=self.geometry(out['geometry'])
         return out
 
-    def geometry(self,geometry):
-        if geometry['type']=='Point':
-            return self.point(geometry)
-        elif geometry['type']=='MultiPoint':
-            return self.multi_point(geometry)
-        elif geometry['type']=='LineString':
-            return self.line_string(geometry)
-        elif geometry['type']=='MultiLineString':
-            return self.multi_line_string_poly(geometry)
-        elif geometry['type']=='Polygon':
-            return self.multi_line_string_poly(geometry)
-        elif geometry['type']=='MultiPolygon':
-            return self.multi_poly(geometry)
-        elif geometry['type']=='GeometryCollection':
-            return self.geometry_collection(geometry)
+#    def geometry(self,geometry):
+#        if geometry['type']=='Point':
+#            return self.point(geometry)
+#        elif geometry['type']=='MultiPoint':
+#            return self.multi_point(geometry)
+#        elif geometry['type']=='LineString':
+#            return self.line_string(geometry)
+#        elif geometry['type']=='MultiLineString':
+#            return self.multi_line_string_poly(geometry)
+#        elif geometry['type']=='Polygon':
+#            return self.multi_line_string_poly(geometry)
+#        elif geometry['type']=='MultiPolygon':
+#            return self.multi_poly(geometry)
+#        elif geometry['type']=='GeometryCollection':
+#            return self.geometry_collection(geometry)
+
+    cpdef geom_dispatch(self, dict geometry):
+        return self.dispatch_geom[geometry['type']](geometry)
 
     cpdef dict point(self, dict geometry):
         geometry['coordinates'] = self.convert_point(geometry['coordinates'])

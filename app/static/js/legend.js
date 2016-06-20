@@ -229,18 +229,42 @@ function createLegend_symbol(layer, field, title, subtitle){
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ createlegendEditBox('legend_root2', layer); });
 
-    let breaks_elem = [0].concat([4,3,2,1].map(i => Math.round((nb_features-1)/i))),
-        ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
-        type_param = symbol_type === 'circle' ? 'r' : 'width',
-        ref_symbols_params = new Array();
+//    let breaks_elem = [0].concat([4,3,2,1].map(i => Math.round((nb_features-1)/i))),
+//        ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
+//        type_param = symbol_type === 'circle' ? 'r' : 'width',
+//        ref_symbols_params = new Array();
+//
+//    for(let i of breaks_elem){
+//        let ft_id = +ref_symbols[i].id.split(' ')[1].split('_')[1],
+//            value = user_data[ref_layer_name][ft_id][field],
+//            size = +ref_symbols[i].getAttribute(type_param) * zoom.scale();
+//        ref_symbols_params.push({value:value, size:size})
+//    }
 
-    for(let i of breaks_elem){
-        let ft_id = +ref_symbols[i].id.split(' ')[1].split('_')[1],
-            value = user_data[ref_layer_name][ft_id][field],
-            size = +ref_symbols[i].getAttribute(type_param) * zoom.scale();
-        ref_symbols_params.push({value:value, size:size})
-    }
+    let ref_symbols = document.getElementById(layer).querySelectorAll(symbol_type),
+        type_param = symbol_type === 'circle' ? 'r' : 'width';
 
+//    for(let i = 0; i < ref_symbols.length; ++i){
+//        ref_symbols_size.push(ref_symbols[i].getAttribute(type_param));
+//    }
+    let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
+        id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
+        val_min = +user_data[ref_layer_name][id_ft_val_min][field],
+        val_max = +user_data[ref_layer_name][id_ft_val_max][field],
+        val_1 = val_min + (val_max - val_min) / 3,
+        val_2 = val_1 + (val_max - val_min) / 3,
+        d_values = [val_max, val_2, val_1, val_min],
+        z_scale = zoom.scale(),
+        nb_decimals = get_nb_decimals(val_max),
+        ref_symbols_params = [];
+
+    let prop_values = prop_sizer3_e(d_values, current_layers[layer].size[0], current_layers[layer].size[1], symbol_type);
+    console.log(prop_values)
+    prop_values.forEach((val,i) => {
+        ref_symbols_params.push({value: d_values[i].toFixed(nb_decimals),
+                                 size: val * z_scale});
+    });
+    console.log(ref_symbols_params);
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
@@ -453,7 +477,7 @@ function createlegendEditBox(legend_id, layer_name){
                             : String(legend_boxes[0][0].__data__.value),
             fourth_value = (legend_id.indexOf("2") === -1)
                             ? legend_boxes[0][1].__data__.value.split(" - ")[1]
-                            : String(legend_boxes[0][4].__data__.value),
+                            : String(legend_boxes[0][3].__data__.value),
             current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
             current_nb_dec4 = fourth_value.length - fourth_value.indexOf(".") - 1;
 

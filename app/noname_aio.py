@@ -631,7 +631,7 @@ async def call_stewart(posted_data, session_redis, user_id):
     new_name = '_'.join(['StewartPot', n_field_name])
     res = res.replace(tmp_part, new_name)
     asyncio.ensure_future(
-        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+        app_glob['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
     return '|||'.join([res, json.dumps(content['breaks'])])
 
 async def R_compute(request):
@@ -658,15 +658,23 @@ async def handler_exists_layer(request):
 
 async def handler_exists_layer2(request):
     session_redis = await get_session(request)
+    posted_data = await request.post()
     user_id = get_user_id(session_redis)
-
+    layer_name = posted_data.get('layer_name')
+    file_format = posted_data.get('format')
+    projection = posted_data.get('projection')
     res = await app_glob['redis_conn'].get(
-            '_'.join([user_id, request.match_info['expr']])
+            '_'.join([user_id, layer_name])
             )
-    if res:
+    if not res:
+        return web.Response(text="Something wrong happened")
+    if "TopoJSON" in file_format:
         return web.Response(text=res.decode())
+    elif 'GeoJSON' in file_format:
+        return web.Response(text=topojson_to_geojson(json.loads(res.decode())))
     else:
-        return web.Response(text="")
+        return web.Response(text="Not supported yet")
+
 
 async def rawcsv_to_geo(data):
     raw_csv = StringIO(data)
@@ -753,7 +761,7 @@ async def init(loop, port=9999):
     app.router.add_route('GET', '/modules', handler)
     app.router.add_route('GET', '/modules/', handler)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
-    app.router.add_route('GET', '/get_layer2/{expr}', handler_exists_layer2)
+    app.router.add_route('POST', '/get_layer2', handler_exists_layer2)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
     app.router.add_route('POST', '/R_compute/{function}', R_compute)
     app.router.add_route('POST', '/convert_to_topojson', convert)
