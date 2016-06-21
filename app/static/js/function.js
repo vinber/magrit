@@ -1637,7 +1637,7 @@ function fillMenu_Anamorphose(){
 
 function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
 //    let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
-    let ref_layer_selection = document.getElementById(layer).querySelectorAll("circle"),
+    let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
         zs = zoom.scale(),
@@ -1664,11 +1664,6 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 
     let bg_color = Colors.random(),
         stroke_color = "black";
-
-//    if(current_layers[layer_to_add]){
-//        remove_layer_cleanup(layer_to_add);
-//        d3.selectAll('#' + layer_to_add).remove();
-//    }
 
     force.nodes(nodes).on("tick", tick).start();
 
@@ -2105,9 +2100,9 @@ var fields_griddedMap = {
 
 function fillMenu_griddedMap(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: "Gridded_field"}),
-        cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i>').insert('input').attr({type: 'number', class: 'params', value: 0, min: 1000, max: 700000, step: 0.1}),
-        col_pal = dialog_content.append('p').html('Colorramp :').insert('select').attr('class', 'params');
+        field_selec = dialog_content.append('p').html('Field ').insert('select').attr({class: 'params', id: "Gridded_field"}),
+        cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i> ').insert('input').attr({type: 'number', class: 'params', value: 0, min: 1000, max: 700000, step: 0.1}),
+        col_pal = dialog_content.append('p').html('Colorramp ').insert('select').attr('class', 'params');
 
     ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
     'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(d, i){

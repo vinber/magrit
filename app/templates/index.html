@@ -1,14 +1,14 @@
 <script src="/static/js/lib/d3.v3.min.js"></script>
 <script src="/static/js/noname.js"></script>
-<link href="/static/css/style.css" rel="stylesheet" type="text/css" >  
+<link href="/static/css/style.css" rel="stylesheet" type="text/css" >
 
-<body> 
+<body>
     <div id="header"></div>
-    <div id="page"></div>
-    <div id="footer"> {{ last_visit }} </div>
+    <div id="page" style="position: relative;"></div>
+    <div id="footer"><p> {{ last_visit }} </p></div>
 </body>
 
 <script>
     getMenu("#page","../static/json/index.json");
-    getHeader("#header","Noname","");
+    getHeader("#header","MAPOLOGIC","");
 </script>

@@ -2,8 +2,24 @@
 """
 @author: mz
 """
+import os
+import zipfile
+from io import BytesIO
 from hashlib import md5
 from random import choice
+
+from .cy_misc import get_name
+
+
+def prepare_folder():
+    for i in range(10):
+        try:
+            tmp_path = "/tmp/" + get_name()
+            os.mkdir(tmp_path)
+            return tmp_path
+        except:
+            continue
+    raise ValueError("Unable to create folder")
 
 
 def try_float(val):
@@ -11,14 +27,6 @@ def try_float(val):
         return float(val)
     except ValueError:
         return val
-
-#def savefile(path, raw_data):
-#    if '.shp' in path or '.dbf' in path or '.shx' in path:
-#        with open(path, 'wb') as f:
-#            f.write(raw_data)
-#    else:
-#        with open(path, 'w') as f:
-#            f.write(raw_data.decode())
 
 def savefile(path, raw_data):
     with open(path, 'wb') as f:
@@ -75,3 +83,15 @@ def guess_separator(file):
             else:
                 return None
 
+
+def zip_and_clean(dir_path, layer_name):
+    zip_stream = BytesIO()
+    myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
+    for ext in [".shp", ".dbf", ".prj", ".shx"]:
+        f_name = "".join([dir_path, "/", layer_name, ext])
+        myZip.write(f_name, ''.join([layer_name, ext]), zipfile.ZIP_DEFLATED)
+        os.remove(f_name)
+    myZip.close()
+    zip_stream.seek(0)
+    os.removedirs(dir_path)
+    return zip_stream, ''.join([layer_name, ".zip"])

@@ -11,6 +11,7 @@ import time
 import asyncio
 import zmq.asyncio
 import pandas as pd
+import base64
 
 from contextlib import closing
 from zipfile import ZipFile
@@ -24,13 +25,14 @@ from socket import socket, AF_INET, SOCK_STREAM
 # Web related stuff :
 import jinja2
 import aiohttp_jinja2
-from aiohttp import web
 import aioredis
+from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
-from helpers.misc import savefile, get_key
+from helpers.misc import savefile, get_key, zip_and_clean, prepare_folder
+from helpers.geo import reproj_convert_layer, reproj_layer, check_projection
 from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
 from helpers.topo_to_geo import convert_from_topo
@@ -655,11 +657,12 @@ async def handler_exists_layer2(request):
     session_redis = await get_session(request)
     posted_data = await request.post()
     user_id = get_user_id(session_redis)
-    layer_name = posted_data.get('layer_name')
+    layer_name = posted_data.get('layer')
+    layer_name_redis = posted_data.get('layer_name')
     file_format = posted_data.get('format')
     projection = json.loads(posted_data.get('projection'))
     res = await app_glob['redis_conn'].get(
-            '_'.join([user_id, layer_name])
+            '_'.join([user_id, layer_name_redis])
             )
     if not res:
         return web.Response(text="Something wrong happened")
@@ -667,10 +670,31 @@ async def handler_exists_layer2(request):
         return web.Response(text=res.decode())
     else:
         res_geojson = topojson_to_geojson(json.loads(res.decode()))
+        out_proj = projection["name"] if "name" in projection else projection["proj4string"]
+        out_proj = check_projection(out_proj)
+        if not out_proj:
+            return web.Response(text="Unable to understand the projection string")
         if "GeoJSON" in file_format:
-            if "name" in projection and projection["name"] == "EPSG:4326":
+            if out_proj == "epsg:4326":
                 return web.Response(text=res_geojson)
-
+            else:
+                reproj_layer(res_geojson, out_proj)
+                return web.Response(text=res_geojson)
+        elif "Shapefile" in file_format:
+            tmp_path = prepare_folder()
+            output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
+            savefile(output_path, res_geojson.encode())
+            reproj_convert_layer(output_path, output_path.replace(".geojson", ".shp"),
+                                 "ESRI Shapefile", out_proj)
+            os.remove(output_path)
+            zstream, zipname = zip_and_clean(tmp_path, layer_name)
+            b64_zip =  base64.b64encode(zstream.read())
+            return web.Response(
+                body=b64_zip,
+                headers= MultiDict({
+                    "Content-Type": "application/octet-stream",
+                    "Content-Disposition": "attachment; filename=" + layer_name + ".zip",
+                    "Content-length": len(b64_zip)}))
     return web.Response(text="Not supported yet")
 
 async def rawcsv_to_geo(data):

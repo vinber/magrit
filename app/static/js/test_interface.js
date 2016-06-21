@@ -529,8 +529,10 @@ function add_layout_layers(){
                             map.append("g").attr({id: "Graticule", class: "layer"})
                                    .append("path")
                                    .attr("class", "graticule")
+                                   .style("stroke-dasharray",  5)
                                    .datum(d3.geo.graticule())
                                    .attr("d", path)
+                                   .style("fill", "none")
                                    .style("stroke", "grey");
                            current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}};
                            let layers_listed = layer_list.node(),

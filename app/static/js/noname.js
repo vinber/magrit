@@ -1,3 +1,4 @@
+"use strict";
 // Dispay home page elements
 function getMenu(targetdiv,jsonfile) {
     var page = d3.select(targetdiv)
@@ -9,27 +10,27 @@ function getMenu(targetdiv,jsonfile) {
             .html("<a href='"+d.link+"'><img src='../static/img/"+d.img+"'></img><br/>"+d.desc+"</a>")
        });
 
-        page.append("div")
+        d3.select("#footer")
+            .append("p")
             .attr("class","footer")
             .html("<br/>Propulsed by<br/><img src='../static/img/riate.png'></img>")
     });
-
 }
-    
+
 // Dispay header elements
 function getHeader(targetdiv,module,version) {
-    var header = d3.select(targetdiv)
-    header.append("p")
-        .html("<a href ='http://localhost/noname-stuff/templates' class='logo'>"+module+" "+version+"</a>")
-    header.append("p")
-        .attr("class","item-menu")
-        .html("<a href='https://github.com/riatelab/noname-stuff' target='_blank' class='menu'>Sources</a>")
+    var header = d3.select(targetdiv);
+    header.append("p").style("margin", "auto")
+        .html("<a href ='/modules' class='logo'>"+module+" "+version+"</a>")
     header.append("p")
         .attr("class","item-menu")
-        .html("<a href='#' class='menu'>Examples</a>")
+        .html("<a href='https://github.com/riatelab/noname-stuff' target='_blank'>Sources</a>")
     header.append("p")
         .attr("class","item-menu")
-        .html("<a href='#' class='menu'>Documentation</a>")
+        .html("<a href='#'>Examples</a>")
+    header.append("p")
+        .attr("class","item-menu")
+        .html("<a href='#'>Documentation</a>")
 }
 
 

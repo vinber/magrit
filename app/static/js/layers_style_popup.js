@@ -112,15 +112,8 @@ let cloneObj = function(obj){
 function createStyleBox(layer_name){
     var type = current_layers[layer_name].type,
         rendering_params = null,
-        renderer = current_layers[layer_name].renderer;
-
-    if(renderer !== undefined){
-        let rep = confirm("The selected layer seems to have been already rendered (with " + renderer + " method). Want to continue ?");
-        // Todo : do not ask this but display a choice of palette instead
-        if(!rep) return undefined;
-    }
-
-    var g_lyr_name = "#" + layer_name,
+        renderer = current_layers[layer_name].renderer,
+        g_lyr_name = "#" + layer_name,
         selection = d3.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
@@ -135,8 +128,8 @@ function createStyleBox(layer_name){
         border_opacity = selection.style('stroke-opacity'),
         stroke_width = current_layers[layer_name]['stroke-width-const'];
 
-    if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
-//    if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
+    if(stroke_prev.startsWith("rgb"))
+        stroke_prev = rgb2hex(stroke_prev);
 
     make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
         .then(function(confirmed){
@@ -169,7 +162,6 @@ function createStyleBox(layer_name){
                 }
                 sendPreferences();
                 zoom_without_redraw();
-                console.log(stroke_prev)
             } else {
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
@@ -178,31 +170,37 @@ function createStyleBox(layer_name){
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
-                if(renderer == "DiscLayer"){
-                    selection.style('fill', "transparent")
-                             .style('stroke', fill_prev.single);
-                } else if(fill_meth == "single") {
-                    selection.style('fill', fill_prev.single)
-                             .style('stroke', stroke_prev);
-                } else if(fill_meth == "class" && renderer != "Links") {
-                    selection.style('fill-opacity', opacity)
-                           .style("fill", function(d, i){ return current_layers[layer_name].fill_color.class[i] })
-                           .style('stroke-opacity', previous_stroke_opacity)
-                           .style("stroke", stroke_prev);
-                } else if(fill_meth == "class" && renderer == "Links"){
-                    selection.style('stroke-opacity', function(d, i){ return current_layers[layer_name].linksbyId[i][0]})
-                           .style("stroke", stroke_prev);
-                } else if(fill_meth == "random"){
-                    selection.style('fill', function(){return Colors.name[Colors.random()];})
-                             .style('stroke', stroke_prev);
-                } else if(fill_meth == "categorical"){
-                    fill_categorical(layer_name, fill_prev.categorical[0], "path", fill_prev.categorical[1])
-                } else if(fill_meth == "class"){
-                    current_layers[layer_name].colors_breaks = prev_col_breaks;
+                if(type == "Line"){
+                    if(fill_meth == "single")
+                    selection.style("stroke", fill_prev.single)
+                            .style("stroke-opacity", previous_stroke_opacity);
+                    else if(fill_meth == "random")
+                        selection.style("stroke-opacity", previous_stroke_opacity)
+                                .style("stroke", () => Colors.name[Colors.random()]);
+                    else if(fill_math == "class" && renderer == "Links")
+                        selection.style('stroke-opacity', (d,i) => current_layers[layer_name].linksbyId[i][0])
+                               .style("stroke", stroke_prev);
                 }
+                else {
+                    if(fill_meth == "single") {
+                        selection.style('fill', fill_prev.single)
+                                 .style('stroke', stroke_prev);
+                    } else if(fill_meth == "class") {
+                        selection.style('fill-opacity', opacity)
+                               .style("fill", function(d, i){ return current_layers[layer_name].fill_color.class[i] })
+                               .style('stroke-opacity', previous_stroke_opacity)
+                               .style("stroke", stroke_prev);
+                    } else if(fill_meth == "random"){
+                        selection.style('fill', function(){return Colors.name[Colors.random()];})
+                                 .style('stroke', stroke_prev);
+                    } else if(fill_meth == "categorical"){
+                        fill_categorical(layer_name, fill_prev.categorical[0], "path", fill_prev.categorical[1])
+                    }
+                }
+                if(current_layers[layer_name].colors_breaks)
+                    current_layers[layer_name].colors_breaks = prev_col_breaks;
                 current_layers[layer_name].fill_color = fill_prev;
                 zoom_without_redraw();
-                console.log(stroke_prev);
             }
     });
 

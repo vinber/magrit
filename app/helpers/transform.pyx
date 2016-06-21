@@ -174,22 +174,6 @@ cdef class Transformer:
         out['geometry']=self.geometry(out['geometry'])
         return out
 
-#    def geometry(self,geometry):
-#        if geometry['type']=='Point':
-#            return self.point(geometry)
-#        elif geometry['type']=='MultiPoint':
-#            return self.multi_point(geometry)
-#        elif geometry['type']=='LineString':
-#            return self.line_string(geometry)
-#        elif geometry['type']=='MultiLineString':
-#            return self.multi_line_string_poly(geometry)
-#        elif geometry['type']=='Polygon':
-#            return self.multi_line_string_poly(geometry)
-#        elif geometry['type']=='MultiPolygon':
-#            return self.multi_poly(geometry)
-#        elif geometry['type']=='GeometryCollection':
-#            return self.geometry_collection(geometry)
-
     cpdef geom_dispatch(self, dict geometry):
         return self.dispatch_geom[geometry['type']](geometry)
 
