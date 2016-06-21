@@ -142,8 +142,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
-         'Greens', 'Greys', 'Oranges', 'Purples', 'Reds',
-         'Set1', 'Pastel1'].forEach(function(name){
+         'Greens', 'Greys', 'Oranges', 'Purples',
+         'Reds'].forEach(function(name){
             sequential_color_select.append("option").text(name).attr("value", name);
         });
         var button_reverse = d3.select(".color_txt").insert("button")
@@ -174,20 +174,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
                          'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
-        var left_color_select = d3.select("#color_div")
-                                .insert("p")
-                                    .attr("class", "color_txt")
-                                    .style("display", "inline")
-                                    .html("Left-side color ramp ")
-                                .insert("select").attr("class", "color_params_left")
-                                .on("change", function(){ redisplay.draw() });
-        var right_color_select = d3.select("#color_div")
-                                .insert("p")
-                                    .style({display: "inline", "margin-left": "70px"})
-                                    .attr("class", "color_txt2")
-                                    .html("Right-side color ramp ")
-                                .insert("select").attr("class", "color_params_right")
-                                .on("change", function(){ redisplay.draw() });
+        var left_color_select = col_div.insert("p")
+                        .attr("class", "color_txt")
+                        .style("display", "inline")
+                        .html("Left-side color ramp ")
+                        .insert("select").attr("class", "color_params_left")
+                        .on("change", function(){ redisplay.draw() });
+        var right_color_select = col_div.insert("p")
+                        .style({display: "inline", "margin-left": "70px"})
+                        .attr("class", "color_txt2")
+                        .html("Right-side color ramp ")
+                        .insert("select").attr("class", "color_params_right")
+                        .on("change", function(){ redisplay.draw() });
         pal_names.forEach(function(name){
             left_color_select.append("option").text(name).attr("value", name);
             right_color_select.append("option").text(name).attr("value", name)
@@ -404,24 +402,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
                 color_array = [].concat(left_pal, right_pal);
             }
-//            } else if(col_scheme === "Diverging"){
-//                var left_palette = d3.select('.color_params_left').node().value,
-//                    right_palette = d3.select('.color_params_right').node().value,
-//                    ctl_class_value = d3.select('#centr_class').node().value,
-//                    class_right = nb_class - ctl_class_value;
-//                color_array = [];
-//                if(ctl_class_value <= class_right){
-//                    var right_pal = getColorBrewerArray(class_right, right_palette),
-//                        left_pal = getColorBrewerArray(class_right, left_palette);
-//                    left_pal = left_pal.slice(0, ctl_class_value)
-//                } else {
-//                    var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
-//                        left_pal = getColorBrewerArray(ctl_class_value, left_palette);
-//                    right_pal = right_pal.slice(0, ctl_class_value);
-//                }
-////                left_pal = [].concat(left_pal.reverse());
-//                color_array = [].concat(left_pal.reverse(), right_pal);
-//            }
             to_reverse = false;
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = color_array[i];

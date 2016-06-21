@@ -297,7 +297,7 @@ function createStyleBox(layer_name){
                                          });
 
             ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
-             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds', 'Set1', 'Pastel1'].forEach(function(name){
+             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(name){
                 seq_color_select.append("option").text(name).attr("value", name); });
 
             var button_reverse = popup.insert("button")

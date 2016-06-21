@@ -417,7 +417,7 @@ function fetch_min_max_table_value(parent_node){
         comp_fun = (a,b) => a > b;
 
 // Some verification regarding the input values provided by the user :
-// - Values are orderer :
+// - Values are ordered :
     if(mins != mins.sort(comp_fun)
             || maxs != maxs.sort(comp_fun)
             || sizes != sizes.sort(comp_fun)){
@@ -886,7 +886,6 @@ var fields_MTA = {
         }
 
         unfillSelectInput(field_key_agg);
-
         d3.selectAll(".params").attr("disabled", true);
     }
 };
@@ -1367,10 +1366,15 @@ function fillMenu_Anamorphose(){
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"}),
         option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Symbol Max Size (px)"),
         option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
+        option2_txt2 = option2_txt.insert("span").html("10 px"),
         symbols = [["Circle", "circle"], ["Square", "rect"]];
 
     symbols.forEach(function(symb){
         option1_val.append("option").text(symb[0]).attr("value", symb[1]);
+    });
+
+    option2_val.on("change", function(){
+        option2_txt2.html([this.value, " px"].join(''));
     });
 
     algo_selec.on("change", function(){
@@ -1597,7 +1601,7 @@ function fillMenu_Anamorphose(){
                     layer_to_add =  check_layer_name(["DorlingCarto", layer, field_name].join('_')),
                     shape_symbol = option1_val.node().value;
 
-                let force = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
+                let features_order = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
 
                 let class_name = "ui-state-default sortable_result " + layer_to_add,
                     _list_display_name = get_display_name_on_layer_list(layer_to_add),
@@ -1617,9 +1621,9 @@ function fillMenu_Anamorphose(){
                     "size": [ref_size, max_size],
                     "stroke-width-const": 1,
                     "is_result": true,
+                    "features_order": features_order,
                     "ref_layer_name": layer,
-                    "fill_color": { "random": true },
-                    "force": force
+                    "fill_color": {"random": true}
                     };
                 binds_layers_buttons();
                 zoom_without_redraw();
@@ -1632,7 +1636,8 @@ function fillMenu_Anamorphose(){
 
 
 function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
-    let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+//    let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
+    let ref_layer_selection = document.getElementById(layer).querySelectorAll("circle"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
         zs = zoom.scale(),
@@ -1640,28 +1645,30 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
         comp = (a,b) => a[1] < b[1],
         force = d3.layout.force().charge(0).gravity(0).size([w, h]);
 
-    for(let i = 0; i < nb_features; ++i)
-        d_values.push([i, +user_data[layer][i][field_name], null]);
-
+    for(let i = 0; i < nb_features; ++i){
+        let val = +user_data[layer][i][field_name];
+        let pt = path.centroid(ref_layer_selection[i].__data__.geometry)
+        d_values.push([i, val, pt]);
+    }
     d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
     d_values.sort(comp);
 
-    let nodes = ref_layer_selection[0].map(function(d, i){
-        let pt = path.centroid(d.__data__.geometry);
-        return {x: pt[0], y: pt[1],
-                x0: pt[0], y0: pt[1],
-                r: +d_values[i][1],
-                value: +d.__data__.properties[field_name],
-                ix: d_values[i][0]};
+    let nodes = d_values.map(function(d, i){
+        let val = +ref_layer_selection[d[0]].__data__.properties[field_name];
+        return {x: d[2][0], y: d[2][1],
+                x0: d[2][0], y0: d[2][1],
+                r: d[1],
+                value: val,
+                ix: d[0]};
         });
 
     let bg_color = Colors.random(),
         stroke_color = "black";
 
-    if(current_layers[layer_to_add]){
-        remove_layer_cleanup(layer_to_add);
-        d3.selectAll('#' + layer_to_add).remove();
-    }
+//    if(current_layers[layer_to_add]){
+//        remove_layer_cleanup(layer_to_add);
+//        d3.selectAll('#' + layer_to_add).remove();
+//    }
 
     force.nodes(nodes).on("tick", tick).start();
 
@@ -1766,7 +1773,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
             };
         }
     }
-    return force;
+    return d_values;
 }
 
 
@@ -1780,7 +1787,12 @@ var boxExplore = {
         this.columns_headers = [];
         for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
             this.columns_headers.push({data: col[i], title: col[i]});
-        this.top_buttons.selectAll("#add_field_button").remove();
+        if(this.top_buttons.select("#add_field_button").node()){
+            this.top_buttons.select("#add_field_button").remove()
+            document.getElementById("table_intro").remove();
+            document.getElementById("myTable").remove();
+            document.getElementById("myTable_wrapper").remove();
+        }
         let self = this;
         this.top_buttons
              .insert("button")
@@ -1793,10 +1805,7 @@ var boxExplore = {
             "<b>", table_name, "</b><br>",
             this.nb_features, " features - ",
             this.columns_names.length, " fields"].join('');
-        d3.selectAll('#table_intro').remove()
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro)
-        d3.selectAll('#myTable').remove()
-        d3.selectAll('#myTable_wrapper').remove();
+        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
         this.box_table.append("table")
                       .attr({class: "display compact", id: "myTable"})
                       .style("width", "80%");
@@ -1831,7 +1840,8 @@ var boxExplore = {
 
         let self = this;
 
-        this.top_buttons = this.box_table.append('p').style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+        this.top_buttons = this.box_table.append('p')
+                                    .style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
         let select_a_table = this.box_table
                                 .append('p').html("Available tables :")
@@ -1847,17 +1857,17 @@ var boxExplore = {
         setSelected(select_a_table.node(), select_a_table.node().options[0].value);
         var deferred = Q.defer();
         $("#browse_data_box").dialog({
-            modal:true,
+            modal:false,
             resizable: true,
             width: Math.round(window.innerWidth * 0.8),
-            buttons:[{
-                    text: "Confirm",
-                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-                        },
-                   {
-                    text: "Cancel",
-                    click: function(){$(this).dialog("close");$(this).remove();}
-                   }],
+//            buttons:[{
+//                    text: "Confirm",
+//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+//                        },
+//                   {
+//                    text: "Cancel",
+//                    click: function(){$(this).dialog("close");$(this).remove();}
+//                   }],
             close: function(event, ui){
                     $(this).dialog("destroy").remove();
                     if(deferred.promise.isPending()) deferred.resolve(false);
@@ -1963,7 +1973,6 @@ function make_prop_symbols(rendering_params){
         values_to_use = rendering_params.values_to_use,
         d_values = new Array(nb_features),
         comp = function(a, b){ return b[1]-a[1]; },
-//        ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
         ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,

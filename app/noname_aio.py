@@ -384,7 +384,7 @@ async def carto_doug(posted_data, session_redis, user_id):
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
     asyncio.ensure_future(
-        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+        app_glob['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res
 
@@ -435,7 +435,7 @@ async def links_map(posted_data, session_redis, user_id):
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
     asyncio.ensure_future(
-        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+        app_glob['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res
 
@@ -484,7 +484,7 @@ async def carto_gridded(posted_data, session_redis, user_id):
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     res = res.replace(tmp_part, new_name)
     asyncio.ensure_future(
-        app_glob['redis_conn'].set('_'.join([user_id, new_name]), res))
+        app_glob['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res
 
@@ -567,14 +567,6 @@ async def call_mta_geo(posted_data, session_redis, user_id):
         return '{"Error":"Something went wrong... : %s"}' % content \
             if content else "Unknown Error"
 
-def join_topojson_new_field(topojson, new_field, new_field_name):
-    layer_name = list(topojson['objects'].keys())[0]
-    print('Joining new fields..')
-    for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
-        try:
-            geom['properties'][new_field_name] = new_field[ix]
-        except KeyError:
-            geom['properties'] = {new_field_name: new_field[ix]}
 
 async def call_stewart(posted_data, session_redis, user_id):
     posted_data = json.loads(posted_data.get("json"))
@@ -592,9 +584,12 @@ async def call_stewart(posted_data, session_redis, user_id):
         result_mask = await app_glob['redis_conn'].get(f_name)
 
     tmp_part = get_name()
-    filenames = {'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
-                 'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None}
+    filenames = {
+        'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
+        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] != "" else None
+        }
     savefile(filenames['point_layer'], topojson_to_geojson(point_layer).encode())
+
     if filenames['mask_layer']:
         savefile(filenames['mask_layer'],
                  topojson_to_geojson(json.loads(result_mask.decode())).encode())
@@ -662,19 +657,21 @@ async def handler_exists_layer2(request):
     user_id = get_user_id(session_redis)
     layer_name = posted_data.get('layer_name')
     file_format = posted_data.get('format')
-    projection = posted_data.get('projection')
+    projection = json.loads(posted_data.get('projection'))
     res = await app_glob['redis_conn'].get(
             '_'.join([user_id, layer_name])
             )
     if not res:
         return web.Response(text="Something wrong happened")
-    if "TopoJSON" in file_format:
+    elif "TopoJSON" in file_format:
         return web.Response(text=res.decode())
-    elif 'GeoJSON' in file_format:
-        return web.Response(text=topojson_to_geojson(json.loads(res.decode())))
     else:
-        return web.Response(text="Not supported yet")
+        res_geojson = topojson_to_geojson(json.loads(res.decode()))
+        if "GeoJSON" in file_format:
+            if "name" in projection and projection["name"] == "EPSG:4326":
+                return web.Response(text=res_geojson)
 
+    return web.Response(text="Not supported yet")
 
 async def rawcsv_to_geo(data):
     raw_csv = StringIO(data)
@@ -695,13 +692,13 @@ async def rawcsv_to_geo(data):
                  '''}'''])
         for ft in df.itertuples()
         ]
-    res = ''.join([
+
+    return ''.join([
         '''{"type":"FeatureCollection","crs":{"type":"name","properties":'''
         '''{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
         ','.join(geojson_features),
         """]}"""
         ])
-    return res
 
 async def convert_csv_geo(request):
     posted_data, session_redis = \

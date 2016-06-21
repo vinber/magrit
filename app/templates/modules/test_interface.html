@@ -1759,11 +1759,14 @@ function make_export_layer_box(){
                     type: 'POST',
                     error: function(error) { console.log(error); },
                     success: function(data){
-                        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data),
-                            dlAnchorElem = document.getElementById('downloadAnchorElem');
-                        dlAnchorElem.setAttribute("href", dataStr);
-                        dlAnchorElem.setAttribute("download", [layer, extensions.get(type)].join('.'));
-                        dlAnchorElem.click();
+                        let ext = extensions.get(type);
+                        if(ext.indexOf("json") > -1){
+                            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data),
+                                dlAnchorElem = document.getElementById('downloadAnchorElem');
+                            dlAnchorElem.setAttribute("href", dataStr);
+                            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                            dlAnchorElem.click();
+                        }
                     }
                 });
                 dialogBox.dialog("destroy").remove();
