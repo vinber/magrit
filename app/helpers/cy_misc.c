@@ -1113,7 +1113,6 @@ static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_chr;
 static PyObject *__pyx_builtin_enumerate;
 static PyObject *__pyx_builtin_KeyError;
-static PyObject *__pyx_builtin_map;
 static PyObject *__pyx_builtin_MemoryError;
 static const char __pyx_k_[] = "_";
 static const char __pyx_k_0[] = "0";
@@ -1124,7 +1123,6 @@ static const char __pyx_k__4[] = ",";
 static const char __pyx_k__5[] = "]}";
 static const char __pyx_k_id[] = "id";
 static const char __pyx_k_chr[] = "chr";
-static const char __pyx_k_map[] = "map";
 static const char __pyx_k_arcs[] = "arcs";
 static const char __pyx_k_join[] = "join";
 static const char __pyx_k_keys[] = "keys";
@@ -1169,7 +1167,6 @@ static PyObject *__pyx_n_s_join;
 static PyObject *__pyx_n_s_keys;
 static PyObject *__pyx_n_s_length;
 static PyObject *__pyx_n_s_main;
-static PyObject *__pyx_n_s_map;
 static PyObject *__pyx_n_s_new_field;
 static PyObject *__pyx_n_s_new_field_name;
 static PyObject *__pyx_n_s_objects;
@@ -2719,7 +2716,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])             # <<<<<<<<<<<<<<
  *                 if common_arcs:
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
  */
         if (unlikely(__pyx_v_geom_a == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
@@ -2752,8 +2749,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:             # <<<<<<<<<<<<<<
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  */
         __pyx_t_8 = (__pyx_v_common_arcs != Py_None) && (PyList_GET_SIZE(__pyx_v_common_arcs) != 0);
         if (__pyx_t_8) {
@@ -2761,8 +2758,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           /* "app/helpers/cy_misc.pyx":73
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))             # <<<<<<<<<<<<<<
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])             # <<<<<<<<<<<<<<
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
  */
           if (unlikely(__pyx_v_geom_a == Py_None)) {
@@ -2771,12 +2768,28 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           }
           __pyx_t_7 = __Pyx_PyDict_GetItem(__pyx_v_geom_a, __pyx_n_s_id); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 73, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
+          __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_GIVEREF(__pyx_t_7);
+          PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_7);
+          __pyx_t_7 = 0;
+          __pyx_t_7 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_2, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 73, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           if (unlikely(__pyx_v_geom_b == Py_None)) {
             PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
             __PYX_ERR(0, 73, __pyx_L1_error)
           }
           __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geom_b, __pyx_n_s_id); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_GIVEREF(__pyx_t_2);
+          PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
+          __pyx_t_2 = 0;
+          __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __pyx_t_6 = PyList_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_GIVEREF(__pyx_t_7);
@@ -2785,17 +2798,6 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           PyList_SET_ITEM(__pyx_t_6, 1, __pyx_t_2);
           __pyx_t_7 = 0;
           __pyx_t_2 = 0;
-          __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_2);
-          __Pyx_INCREF(((PyObject *)(&PyString_Type)));
-          __Pyx_GIVEREF(((PyObject *)(&PyString_Type)));
-          PyTuple_SET_ITEM(__pyx_t_2, 0, ((PyObject *)(&PyString_Type)));
-          __Pyx_GIVEREF(__pyx_t_6);
-          PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_6);
-          __pyx_t_6 = 0;
-          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_builtin_map, __pyx_t_2, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_6);
-          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           __pyx_t_2 = __Pyx_PyString_Join(__pyx_n_s_, __pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -2805,8 +2807,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
 
           /* "app/helpers/cy_misc.pyx":74
  *                 if common_arcs:
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))             # <<<<<<<<<<<<<<
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])             # <<<<<<<<<<<<<<
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
  *                         seen.add(_id_arcs)
  */
@@ -2816,12 +2818,28 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           }
           __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geom_b, __pyx_n_s_id); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 74, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_GIVEREF(__pyx_t_2);
+          PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
+          __pyx_t_2 = 0;
+          __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           if (unlikely(__pyx_v_geom_a == Py_None)) {
             PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
             __PYX_ERR(0, 74, __pyx_L1_error)
           }
           __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_geom_a, __pyx_n_s_id); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 74, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 74, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __Pyx_GIVEREF(__pyx_t_6);
+          PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6);
+          __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_7, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 74, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 74, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_GIVEREF(__pyx_t_2);
@@ -2830,17 +2848,6 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           PyList_SET_ITEM(__pyx_t_7, 1, __pyx_t_6);
           __pyx_t_2 = 0;
           __pyx_t_6 = 0;
-          __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 74, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_6);
-          __Pyx_INCREF(((PyObject *)(&PyString_Type)));
-          __Pyx_GIVEREF(((PyObject *)(&PyString_Type)));
-          PyTuple_SET_ITEM(__pyx_t_6, 0, ((PyObject *)(&PyString_Type)));
-          __Pyx_GIVEREF(__pyx_t_7);
-          PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_7);
-          __pyx_t_7 = 0;
-          __pyx_t_7 = __Pyx_PyObject_Call(__pyx_builtin_map, __pyx_t_6, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 74, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_7);
-          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __pyx_t_6 = __Pyx_PyString_Join(__pyx_n_s_, __pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 74, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -2849,8 +2856,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           __pyx_t_6 = 0;
 
           /* "app/helpers/cy_misc.pyx":75
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :             # <<<<<<<<<<<<<<
  *                         seen.add(_id_arcs)
  *                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]
@@ -2869,7 +2876,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           if (__pyx_t_8) {
 
             /* "app/helpers/cy_misc.pyx":76
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
  *                         seen.add(_id_arcs)             # <<<<<<<<<<<<<<
  *                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]
@@ -2915,8 +2922,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
             __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
             /* "app/helpers/cy_misc.pyx":75
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :             # <<<<<<<<<<<<<<
  *                         seen.add(_id_arcs)
  *                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]
@@ -2927,8 +2934,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:             # <<<<<<<<<<<<<<
- *                     _id_arcs = "_".join(map(str, [geom_a["id"], geom_b["id"]]))
- *                     _id_arcs_reverse = "_".join(map(str, [geom_b["id"], geom_a["id"]]))
+ *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
+ *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  */
         }
 
@@ -4050,7 +4057,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_keys, __pyx_k_keys, sizeof(__pyx_k_keys), 0, 0, 1, 1},
   {&__pyx_n_s_length, __pyx_k_length, sizeof(__pyx_k_length), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
-  {&__pyx_n_s_map, __pyx_k_map, sizeof(__pyx_k_map), 0, 0, 1, 1},
   {&__pyx_n_s_new_field, __pyx_k_new_field, sizeof(__pyx_k_new_field), 0, 0, 1, 1},
   {&__pyx_n_s_new_field_name, __pyx_k_new_field_name, sizeof(__pyx_k_new_field_name), 0, 0, 1, 1},
   {&__pyx_n_s_objects, __pyx_k_objects, sizeof(__pyx_k_objects), 0, 0, 1, 1},
@@ -4071,7 +4077,6 @@ static int __Pyx_InitCachedBuiltins(void) {
   __pyx_builtin_chr = __Pyx_GetBuiltinName(__pyx_n_s_chr); if (!__pyx_builtin_chr) __PYX_ERR(0, 21, __pyx_L1_error)
   __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 30, __pyx_L1_error)
   __pyx_builtin_KeyError = __Pyx_GetBuiltinName(__pyx_n_s_KeyError); if (!__pyx_builtin_KeyError) __PYX_ERR(0, 33, __pyx_L1_error)
-  __pyx_builtin_map = __Pyx_GetBuiltinName(__pyx_n_s_map); if (!__pyx_builtin_map) __PYX_ERR(0, 73, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(1, 107, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;

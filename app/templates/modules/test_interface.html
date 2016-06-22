@@ -21,6 +21,7 @@
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
+    <script  src="/static/js/txt_annotation.js"></script>
     <script  src="/static/js/function.js"></script>
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
@@ -78,7 +79,6 @@ var path = d3.geo.path().projection(proj).pointRadius(4),
 
 sample_no_values.set("Sphere", true);
 sample_no_values.set("Graticule", true);
-sample_no_values.set("Simplified_land_polygons", true)
 
 /*
 //Seems to work with gecko & chromium :
@@ -280,7 +280,7 @@ var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width=
 
     dv4.append("p")
             .html(sys_run_button + " Add layout features (arrow, scale, etc.)")
-            .on("click", add_layout_features)
+            .on("click", select_layout_features)
     dv4.append("p")
             .html(sys_run_button + " Save your preferences...")
             .on("click", save_map_template)
@@ -504,6 +504,11 @@ $(function() {
       // in the layer manager with a pretty rusty sorting algorythm
       // trying to match the requested order from the actual order
       // (currently havent been tested on a really large number of layers)
+      let at_end = null;
+      if(document.getElementById("info_features").className == "active"){
+        displayInfoOnMove();
+        at_end = true;
+      }
       var desired_order = [],
           actual_order = [],
           layers = d3.selectAll("svg").node();
@@ -521,6 +526,7 @@ $(function() {
               lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node();
           layers.insertBefore(lyr2, lyr1);
       }
+     if(at_end) displayInfoOnMove();
      }
   });
   $( "#sortable" ).disableSelection();
@@ -1299,7 +1305,7 @@ function handle_title_properties(){
     }
     var title_props = {
         size: title.style("font-size"),
-        color: title.style("color"),
+        color: title.style("fill"),
         position_x: title.attr("x"),
         position_y: title.attr("y"),
         font_family: title.style("font-family")
@@ -1309,7 +1315,7 @@ function handle_title_properties(){
     make_confirm_dialog("", "Valid", "Cancel", "Title properties", "mapTitleitleDialogBox", 280).then(
         function(confirmed){ if(!confirmed)
             title.style("font-size", title_props.size)
-                .style("color", title_props.color)
+                .style("fill", title_props.color)
                 .style("font-family", title_props.font_family)
                 .attr({x: title_props.position_x, y: title_props.position_y});
         });
@@ -1337,7 +1343,7 @@ function handle_title_properties(){
         .on("change", function(){  title.attr("y", this.value + "%");  });
     box_content.append("p").html("Font color :<br>")
         .insert("input").attr({type: "color", value: title_props.color})
-        .on("change", function(){  title.style("color", this.value);  });
+        .on("change", function(){  title.style("fill", this.value);  });
     var font_select = box_content.append("p").html("Font family :<br>")
         .insert("select").attr("class", "params")
         .on("change", function(){  title.style("font-family", this.value); });

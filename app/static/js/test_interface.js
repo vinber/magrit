@@ -483,27 +483,94 @@ function strArraysContains(ArrString1, ArrSubstrings){
     return result;
 };
 
-function add_layout_features(){
+function select_layout_features(){
     var available_features = ["North arrow", "Scale", "Sphere background", "Graticule", "Text annotation"],
         selected_ft = undefined;
 
-    make_confirm_dialog("", "Valid", "Cancel", "Layout features to be add ...", "sampleLayoutFtDialogBox", 4*w/5, h-10).then(
-        function(confirmed){ null; });
+    make_confirm_dialog("", "Valid", "Cancel", "Layout features", "sampleLayoutFtDialogBox").then(
+        function(confirmed){
+            if(confirmed){
+                add_layout_feature(selected_ft);
+            }
+        });
 
     var box_body = d3.select(".sampleLayoutFtDialogBox");
-
+    box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html("Choose features to be added : ");
-    box_body.append("p").style("color", "grey").html("<i>(multiple features can be selected)</i>");
 
-    var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: available_features.length});
+    var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', size: available_features.length});
     available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft).attr("value", ft);});
     layout_ft_selec.on("change", function(){
-        let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
-        selected_ft = selected_asArray.map(elem => elem.value);
-        console.log(selected_ft);
+        console.log(this);
+        selected_ft = this.value;
     });
+}
 
 
+function add_layout_feature(selected_feature){
+    if(selected_feature == "Text annotation"){
+        let existing_annotation = document.querySelectorAll(".txt_annot"),
+            existing_id = [],
+            new_id;
+        if(existing_annotation)
+            existing_id = Array.prototype.map.call(existing_annotation, elem => +elem.id.split('text_annotation_')[1]);
+        for(let i in range(25)){
+            i = +i;
+            if(existing_id.indexOf(i) == -1){
+                existing_id.push(i);
+                new_id = ["text_annotation_", i].join('');
+                break;
+            } else continue;
+        }
+        if(!(new_id_nb)){
+            alert("Maximum number of text annotations has been reached")
+            return;
+        }
+        let t = new Textbox(map, new_id);
+
+    } else if (selected_feature == "Sphere background"){
+        if(current_layers.Sphere) return;
+        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}};
+        map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
+            .append("path")
+            .datum({type: "Sphere"})
+            .style({fill: "lightblue", "fill-opacity": 0.2})
+            .attr("id", "sphere")
+            .attr("d", path);
+       let layers_listed = layer_list.node(),
+            li = document.createElement("li");
+       li.setAttribute("layer_name", "Sphere");
+       li.setAttribute("class", "ui-state-default Sphere");
+       li.setAttribute("layer-tooltip", "<b>Sphere</b> - Sample layout layer");
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, button_type["Polygon"], "</div> Sphere"].join('');
+       layers_listed.insertBefore(li, layers_listed.childNodes[0])
+       zoom_without_redraw();
+       binds_layers_buttons();
+
+    } else if (selected_feature == "Graticule"){
+        if(current_layers["Graticule"] != undefined)
+            return;
+        map.append("g").attr({id: "Graticule", class: "layer"})
+               .append("path")
+               .attr("class", "graticule")
+               .style("stroke-dasharray",  5)
+               .datum(d3.geo.graticule())
+               .attr("d", path)
+               .style("fill", "none")
+               .style("stroke", "grey");
+       current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}};
+       let layers_listed = layer_list.node(),
+            li = document.createElement("li");
+       li.setAttribute("layer_name", "Graticule");
+       li.setAttribute("class", "ui-state-default Graticule");
+       li.setAttribute("layer-tooltip", "<b>Graticule</b> - Sample layout layer");
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, button_type["Line"], "</div> Graticule"].join('');
+       layers_listed.insertBefore(li, layers_listed.childNodes[0])
+       zoom_without_redraw();
+       binds_layers_buttons();
+    } else {
+        alert("Not available yet..!")
+    }
 }
 
 function add_layout_layers(){
@@ -514,51 +581,29 @@ function add_layout_layers(){
                          ["World countries simplified <i>(Polygons)</i>", "world_country"],
                          ["World country capitals <i>(Points)</i>", "world_cities"],
 //                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
-                         ["Graticule", "graticule"]];
+                         ];
 
 
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleLayoutDialogBox", 4*w/5, h-10).then(
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layout layers", "sampleLayoutDialogBox").then(
         function(confirmed){
             if(confirmed){
                 let url = undefined;
                 if(selec.layout && selec.layout.length > 0){
                     for(let i = 0; i < selec.layout.length; ++i){
-                        if(selec.layout[i] === "graticule"){
-                            if(current_layers["Graticule"] != undefined)
-                                continue
-                            map.append("g").attr({id: "Graticule", class: "layer"})
-                                   .append("path")
-                                   .attr("class", "graticule")
-                                   .style("stroke-dasharray",  5)
-                                   .datum(d3.geo.graticule())
-                                   .attr("d", path)
-                                   .style("fill", "none")
-                                   .style("stroke", "grey");
-                           current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}};
-                           let layers_listed = layer_list.node(),
-                                li = document.createElement("li");
-                           li.setAttribute("layer_name", "Graticule");
-                           li.setAttribute("class", "ui-state-default Graticule");
-                           li.setAttribute("layer-tooltip", "<b>Graticule</b> - Sample layout layer");
-                           li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, "</div> Graticule"].join('');
-                           layers_listed.insertBefore(li, layers_listed.childNodes[0])
-                           zoom_without_redraw();
-                           binds_layers_buttons();
-                        }
-                        else {
-                            add_sample_geojson(selec.layout[i]);
-                        }
+                        add_sample_geojson(selec.layout[i]);
                     }
                 }
             }
         });
 
     var box_body = d3.select(".sampleLayoutDialogBox");
-
+    box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html("Choose layer(s) to be used as layout : ");
     box_body.append("p").style("color", "grey").html("<i>(multiple layers can be selected)</i>");
 
-    var layout_layer_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
+    var layout_layer_selec = box_body.append('p').html('')
+                                    .insert('select')
+                                    .attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
     layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     layout_layer_selec.on("change", function(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
@@ -588,7 +633,7 @@ function add_sample_layer(){
                     ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
                     ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset']];
 
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Collection of sample layers...", "sampleDialogBox", 700, 295).then(
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "sampleDialogBox").then(
         function(confirmed){
             if(confirmed){
                 let url = undefined;
@@ -629,7 +674,7 @@ function add_sample_layer(){
         });
 
     var box_body = d3.select(".sampleDialogBox");
-
+    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html("Choose a layer to be rendered : ");
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');

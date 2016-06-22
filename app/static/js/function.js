@@ -73,7 +73,21 @@ function get_menu_option(func){
             "fields_handler": "fields_Discont",
             "add_options": "keep_file",
             "quantization_default" : "-q 1e10"
-            }
+            },
+        "categorical":{
+            "title":"Categorical map",
+            "menu_factory": "fillMenu_Typo",
+            "desc":"Render a categorical map with an attribute field of your dataset",
+            "fields_handler": "fields_Typo",
+            "quantization_default" : "-q 1e8"
+            },
+        "label":{
+            "title":"Label map",
+            "menu_factory": "fillMenu_Label",
+            "desc":"Render a map with optimal label positionning",
+            "fields_handler": "fields_Label",
+            "quantization_default" : "-q 1e8"
+            },
 
     };
     return menu_option[func.toLowerCase()] || {}
@@ -802,6 +816,236 @@ var fields_Choropleth = {
         d3.selectAll(".params").attr("disabled", true);
     }
 };
+
+var fields_Typo = {
+    fill: function(layer){
+        if(!layer) return;
+        let g_lyr_name = "#" + layer,
+            fields = type_col(layer),
+            fields_name = Object.getOwnPropertyNames(fields),
+            field_selec = d3.select("#Typo_field_1");
+
+        fields_name.forEach(f_name => {
+            field_selec.append("option").text(f_name).attr("value", f_name);
+        });
+        d3.selectAll(".params").attr("disabled", null);
+    },
+    unfill: function(){
+        let field_selec = document.getElementById("Typo_field_1"),
+            nb_fields = field_selec.childElementCount;
+
+        for(let i = nb_fields - 1; i > -1 ; --i)
+            field_selec.removeChild(field_selec.children[i]);
+
+        d3.selectAll(".params").attr("disabled", true);
+    }
+};
+
+var fields_Label = {
+    fill: function(layer){
+        if(!layer) return;
+        let g_lyr_name = "#" + layer,
+            fields = type_col(layer),
+            fields_name = Object.getOwnPropertyNames(fields),
+            field_selec = d3.select("#Label_field_1"),
+            field_prop_selec = d3.select("#Label_field_prop");
+
+
+        fields_name.forEach(f_name => {
+            field_selec.append("option").text(f_name).attr("value", f_name);
+            if(fields[f_name] == "number")
+                field_prop_selec.append("option").text(f_name).attr("value", f_name);
+        });
+        d3.selectAll(".params").attr("disabled", null);
+    },
+    unfill: function(){
+        let field_selec = document.getElementById("Label_field_1"),
+            nb_fields = field_selec.childElementCount;
+
+        for(let i = nb_fields - 1; i > -1 ; --i)
+            field_selec.removeChild(field_selec.children[i]);
+
+        d3.selectAll(".params").attr("disabled", true);
+    }
+};
+
+var fillMenu_Label = function(){
+    var dv2 = section2.append("p").attr("class", "form-rendering"),
+        rendering_params = new Object();
+
+    var field_selec = dv2.append('p')
+                            .html('Labels field ')
+                         .insert('select')
+                            .attr('class', 'params')
+                            .attr('id', 'Label_field_1');
+
+    var prop_selec = dv2.append('p').html('Proportional labels ')
+                        .insert("input").attr("type", "checkbox")
+                        .on("change", function(){
+                            let display_style = this.checked ? "initial" : "none";
+                            prop_menu.style("display", display_style);
+                        });
+
+    var prop_menu = dv2.append("div");
+
+    var field_prop_selec = prop_menu.append("p").html("Proportional values field ")
+                            .insert('select')
+                            .attr('class', 'params')
+                            .attr('id', 'Label_field_prop');
+
+    var max_font_size = prop_menu.append("p").html("Maximum font size ")
+                            .insert("input").attr("type", "number")
+                            .attr({min: 0, max: 35, value: 11, step: 0.1});
+
+    var ref_font_size = dv2.append("p").html("Reference font size ")
+                            .insert("input").attr("type", "number")
+                            .attr({min: 0, max: 35, value: 9, step: 0.1});
+
+
+    var choice_font = dv2.append("p").html("Font ")
+                            .insert("select")
+                            .attr("class", "params")
+                            .attr("id", "Label_font_name");
+    var available_fonts = [
+        ['Arial', 'Arial,Helvetica,sans-serif'],
+        ['Arial Black', 'Arial Black,Gadget,sans-serif'],
+        ['Comic Sans MS', 'Comic Sans MS,cursive,sans-serif'],
+        ['Impact', 'Impact,Charcoal,sans-serif'],
+        ['Georgia', 'Georgia,serif'],
+        ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
+        ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
+        ['Tahoma', 'Tahoma,Geneva,sans-serif'],
+        ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
+        ['Verdana', 'Verdana,Geneva,sans-serif']
+        ];
+
+    available_fonts.forEach( name => {
+        choice_font.append("option").attr("value", name[1]).text(name[0]);
+    });
+
+    var choice_color = dv2.append("p").html("Label color ")
+                            .insert("input").attr("type", "color")
+                            .attr("class", "params")
+                            .attr("id", "Label_color")
+                            .attr("value", "#000");
+
+    prop_menu.style("display", "none");
+
+    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+        .append("button")
+        .attr('id', 'Label_yes')
+        .attr('class', 'button_st2')
+        .html('Render')
+        .on("click", function(){
+            rendering_params["label_field"] = field_selec.node().value;
+            if(prop_selec.node().checked){
+                rendering_params["prop_field"] = field_prop_selec.node().value;
+                rendering_params["max_size"] = max_font_size.node().value;
+            }
+            rendering_params["font"] = choice_font.node().value;
+            rendering_params["ref_font_size"] = ref_font_size.node().value;
+            rendering_params["color"] = choice_color.node().value;
+            let layer = Object.getOwnPropertyNames(user_data)[0];
+            let new_layer_name = render_label(layer, rendering_params);
+            binds_layers_buttons(new_layer_name);
+            switch_accordion_section();
+         });
+    d3.selectAll(".params").attr("disabled", true);
+}
+
+var render_label = function(layer, rendering_params){
+    let label_field = rendering_params.label_field;
+    let txt_color = rendering_params.color;
+    let selected_font = rendering_params.font;
+    let font_size = rendering_params.ref_font_size + "px"
+    let new_layer_data = [];
+    let ref_selection = document.getElementById(layer).querySelectorAll("path");
+    let layer_to_add = check_layer_name("labels_" + layer);
+    for(let i=0; i<ref_selection.length; i++){
+        let ft = ref_selection[i].__data__;
+        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)})
+    }
+    map.append("g").attr({id: layer_to_add, class: "layer"})
+        .selectAll("text")
+        .data(new_layer_data).enter()
+        .insert("text")
+        .attr("x", d => d.coords[0])
+        .attr("y", d => d.coords[1])
+        .style("font-size", font_size)
+        .style("fill", txt_color)
+        .text(d => d.label);
+
+    let class_name = "ui-state-default sortable_result " + layer_to_add,
+        _list_display_name = get_display_name_on_layer_list(layer_to_add),
+        layers_listed = layer_list.node(),
+        li = document.createElement("li");
+
+    li.setAttribute("layer_name", layer_to_add);
+    li.setAttribute("class", class_name);
+    li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
+                    button_trash, button_zoom_fit,
+                    button_active, button_type_blank['Point'],
+                    "</div> ", _list_display_name].join('')
+    layers_listed.insertBefore(li, layers_listed.childNodes[0])
+
+    current_layers[layer_to_add] = {
+        "renderer": "Label",
+        "symbol": "text",
+        "fill_color" : "black",
+        "rendered_field": label_field,
+        "is_result": true,
+        "ref_layer_name": layer,
+        };
+    zoom_without_redraw();
+    return layer_to_add;
+}
+
+var fillMenu_Typo = function(){
+    var dv2 = section2.append("p").attr("class", "form-rendering"),
+        rendering_params = new Object();
+
+    var field_selec = dv2.append('p')
+                            .html('Field ')
+                         .insert('select')
+                            .attr('class', 'params')
+                            .attr('id', 'Typo_field_1');
+
+    dv2.insert('p').style("margin", "auto").html("")
+        .append("button")
+        .attr({id: "Typo_class", class: "button_disc params"})
+        .style({"font-size": "0.8em", "text-align": "center"})
+        .html("Choose colors")
+        .on("click", function(){
+            let layer = Object.getOwnPropertyNames(user_data)[0];
+            display_categorical_box(layer, field_selec.node().value)
+                .then(function(confirmed){
+                    if(confirmed){
+                        d3.select("#Typo_yes").attr("disabled", null)
+                        rendering_params = {
+                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                renderer:"Categorical", rendered_field: field_selec.node().value
+                            }
+                    }
+                });
+        });
+
+    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+        .append("button")
+        .attr('id', 'Typo_yes')
+        .attr("disabled", true)
+        .attr('class', 'button_st2')
+        .html('Render')
+        .on("click", function(){
+            if(rendering_params){
+                let layer = Object.getOwnPropertyNames(user_data)[0];
+                render_categorical(layer, rendering_params);
+                insert_legend_button(layer);
+                binds_layers_buttons(layer);
+                switch_accordion_section();
+            }
+         });
+    d3.selectAll(".params").attr("disabled", true);
+}
 
 function fillMenu_Choropleth(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
@@ -2163,6 +2407,24 @@ function fillMenu_griddedMap(layer){
             });
         });
     d3.selectAll(".params").attr("disabled", true);
+}
+
+function render_categorical(layer, rendering_params){
+    var colorsByFeature = rendering_params.colorByFeature,
+        color_map = rendering_params.color_map,
+        field = rendering_params.rendered_field,
+        layer_to_render = map.select("#" + layer).selectAll("path");
+
+    layer_to_render.style("fill", (d,i) => colorsByFeature[i])
+                    .style("fill-opacity", 0.9)
+                    .style("stroke-opacity", 0.9)
+                    .style("stroke", "black");
+    current_layers[layer].renderer = rendering_params['renderer'];
+    current_layers[layer].rendered_field = field;
+    current_layers[layer].fill_color = {"class": rendering_params['colorByFeature']};
+    current_layers[layer]['stroke-width-const'] = 0.75;
+    current_layers[layer].is_result = true;
+    zoom_without_redraw();
 }
 
 // Function to render the `layer` according to the `rendering_params`

@@ -48,5 +48,15 @@
 	"img" : "empty.png",
 	"desc" : "Example 9 - Discontinuities Map",
 	"link" 	:  "/modules/discontinuities"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 10 - Categorical Map",
+	"link" 	:  "/modules/categorical"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 11 - Label Map",
+	"link" 	:  "/modules/label"
 	}
 ]

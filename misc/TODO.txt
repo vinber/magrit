@@ -1,13 +1,10 @@
 TODO list:
 - /!\ fix the zoom by rectangular zone
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
-- Propose directly palettes instead of only reclassing in the styling popup when features have been already classed (like with Stewart)
 - Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation
 - add the simplification options ?
 - allow to display label on rendered features ?
-- Add some layout elements (cardinal arrow, scale, etc.)
-- Fix confusion between layer pointed by the information cursor when layer order is modified while pointing for informations
-- Keep trace of the last legend position, to redisplay it on the same place (only if colors are changed when a legend palette is displayed)
 - Allow the user to display label of features on its map (based, or not on some criteria)
-- Allow to explore the table of the result layer
-
+- Choose some fonts (to be upload on the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts int the current browser.
+- Make a "style box" dedicated to the label layer.
+- Improve default displayed colors in the "categorical box".
