@@ -807,6 +807,8 @@ function remove_layer_cleanup(name){
         d3.selectAll(".source_block").remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
+        if(!(current_layers[name].hasOwnProperty("symbol")))
+            send_remove_server(name);
     }
 
     // Remove the layer from the map and from the layer manager :
@@ -1706,7 +1708,7 @@ function make_export_layer_box(){
         selec_layer.append("option").attr("value", name).text(name);
     });
 
-    ["GeoJSON", "TopoJSON", "Shapefile"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -1715,17 +1717,19 @@ function make_export_layer_box(){
      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-     ["Lambert-93 / GRS80 (EPSG:2154)", "epsg:2154"],
+     ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
     });
 
     selec_type.on("change", function(){
-        if(this.value == "TopoJSON")
+        if(this.value == "TopoJSON" || this.value == "KML"){
+            selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr("disabled", true);
-        else
+        } else {
             selec_projection.attr("disabled", null);
+        }
     });
 
     selec_projection.on("change", function(){
@@ -1738,7 +1742,9 @@ function make_export_layer_box(){
     let extensions = new Map([
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
-        ["Shapefile", "zip"]]);
+        ["ESRI Shapefile", "zip"],
+        ["GML", "zip"],
+        ["KML", "kml"]]);
 
     box_content.append("p").append("button")
             .attr("class", "button_st2")
@@ -1764,12 +1770,19 @@ function make_export_layer_box(){
                     type: 'POST',
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
+                        if(data.indexOf("Error:") == 0){
+                            alert("Something went wrong : " + data.substring(6, data.length));
+                            return;
+                        }
                         let ext = extensions.get(type);
-                            console.log(data);
-                            console.log(code);
-                            console.log(obj);
                         if(ext.indexOf("json") > -1){
                             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data),
+                                dlAnchorElem = document.getElementById('downloadAnchorElem');
+                            dlAnchorElem.setAttribute("href", dataStr);
+                            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                            dlAnchorElem.click();
+                        } else if (ext.indexOf("kml") > -1){
+                            let dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data),
                                 dlAnchorElem = document.getElementById('downloadAnchorElem');
                             dlAnchorElem.setAttribute("href", dataStr);
                             dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
@@ -1780,7 +1793,6 @@ function make_export_layer_box(){
                             dlAnchorElem.setAttribute("href", dataStr);
                             dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
                             dlAnchorElem.click();
-
                         }
                     }
                 });

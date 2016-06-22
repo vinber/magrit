@@ -83,15 +83,35 @@ def guess_separator(file):
             else:
                 return None
 
+def fetch_zip_clean(dir_path, layer_name):
+    filenames = [file for file in os.listdir(dir_path)]
+    if len(filenames) == 1:
+        filename = '/'.join([dir_path, filenames[0]])
+        with open(filename, 'rb') as f:
+            raw_data = f.read()
+        os.remove(filename)
+        os.removedirs(dir_path)
+        return raw_data, filenames[0]
+    else:
+        zip_stream = BytesIO()
+        myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
+        for filename in filenames:
+            f_name = "".join([dir_path, "/", filename])
+            myZip.write(f_name, filename, zipfile.ZIP_DEFLATED)
+            os.remove(f_name)
+        myZip.close()
+        zip_stream.seek(0)
+        os.removedirs(dir_path)
+        return zip_stream.read(), ''.join([filename.split(".")[0], ".zip"])
 
-def zip_and_clean(dir_path, layer_name):
-    zip_stream = BytesIO()
-    myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
-    for ext in [".shp", ".dbf", ".prj", ".shx"]:
-        f_name = "".join([dir_path, "/", layer_name, ext])
-        myZip.write(f_name, ''.join([layer_name, ext]), zipfile.ZIP_DEFLATED)
-        os.remove(f_name)
-    myZip.close()
-    zip_stream.seek(0)
-    os.removedirs(dir_path)
-    return zip_stream, ''.join([layer_name, ".zip"])
+#def zip_and_clean(dir_path, layer_name):
+#    zip_stream = BytesIO()
+#    myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
+#    for ext in [".shp", ".dbf", ".prj", ".shx"]:
+#        f_name = "".join([dir_path, "/", layer_name, ext])
+#        myZip.write(f_name, ''.join([layer_name, ext]), zipfile.ZIP_DEFLATED)
+#        os.remove(f_name)
+#    myZip.close()
+#    zip_stream.seek(0)
+#    os.removedirs(dir_path)
+#    return zip_stream, ''.join([layer_name, ".zip"])

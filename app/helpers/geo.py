@@ -54,6 +54,8 @@ def reproj_convert_layer(geojson_path, output_path,
         outSpRef.MorphToESRI()
         with open(output_path.replace(".shp", ".prj"), 'w') as file_proj:
             file_proj.write(outSpRef.ExportToWkt())
+        with open(output_path.replace(".shp", ".cpg"), "w") as encoding_file:
+            encoding_file.write("UTF-8")
     return 0
 
 

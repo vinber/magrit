@@ -662,3 +662,31 @@ function add_sample_geojson(name){
         error: function(error) { console.log(error); }
     });
 }
+
+function send_remove_server(layer_name){
+    let formToSend = new FormData();
+    formToSend.append("layer_name", layer_name);
+    formToSend.append("quantization", menu_option.quantization_default);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/layers/delete',
+        data: formToSend,
+        type: 'POST',
+        success: function(data){ console.log(JSON.parse(data)) },
+        error: function(error) { console.log(error); }
+    });
+}
+
+function list_existing_layers_server(){
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/layers',
+        type: 'GET',
+        success: function(data){ console.log(JSON.parse(data)) },
+        error: function(error) { console.log(error); }
+    });
+}

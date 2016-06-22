@@ -31,7 +31,7 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
-from helpers.misc import savefile, get_key, zip_and_clean, prepare_folder
+from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder
 from helpers.geo import reproj_convert_layer, reproj_layer, check_projection
 from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
@@ -126,6 +126,30 @@ def topojson_to_geojson(data):
 #    os.remove(new_path)
 #    return datathough
 
+async def remove_layer(request):
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis)
+    name = posted_data.get('layer_name')
+    quantization = posted_data.get('quantization')
+    f_name = '_'.join([user_id, name, quantization])
+    asyncio.ensure_future(
+        app_glob["redis_conn"].delete(f_name))
+    return web.Response(text=json.dumps({"code": "Ok"}))
+
+async def list_user_layers(request):
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis)
+    layers = await app_glob["redis_conn"].keys(user_id + "_*")
+    if not layers:
+        return web.Response(text=json.dumps({"Error": "No layer to list"}))
+    else:
+        tmp = user_id + "_"
+        layer_names = ['_'.join(name.decode().replace(
+                            tmp, '').split('_')[::-1][1::][::-1])
+                       for name in layers]   # ^^^^^^^^^^^^^ seriously, i couldnt find better ?
+        return web.Response(text=json.dumps({"layers": layer_names}))
 
 async def cache_input_topojson(request):
     posted_data, session_redis = \
@@ -347,7 +371,7 @@ async def nothing(posted_data, session_redis, user_id):
     new_field = json.loads(posted_data['var_name'])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
-        join_topojson_new_field2(ref_layer, new_field, n_field_name)
+        join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
@@ -665,37 +689,44 @@ async def handler_exists_layer2(request):
             '_'.join([user_id, layer_name_redis])
             )
     if not res:
-        return web.Response(text="Something wrong happened")
-    elif "TopoJSON" in file_format:
+        return web.Response(text="Error: Unable to fetch the layer on the server")
+    elif file_format == "TopoJSON":
         return web.Response(text=res.decode())
     else:
         res_geojson = topojson_to_geojson(json.loads(res.decode()))
         out_proj = projection["name"] if "name" in projection else projection["proj4string"]
         out_proj = check_projection(out_proj)
         if not out_proj:
-            return web.Response(text="Unable to understand the projection string")
+            return web.Response(text="Error: Unable to understand the projection string")
         if "GeoJSON" in file_format:
             if out_proj == "epsg:4326":
                 return web.Response(text=res_geojson)
             else:
                 reproj_layer(res_geojson, out_proj)
                 return web.Response(text=res_geojson)
-        elif "Shapefile" in file_format:
+        else:
+            available_formats = {"ESRI Shapefile": ".shp",
+                         "KML": ".kml",
+                         "GML": ".gml"}
+            ext = available_formats[file_format]
             tmp_path = prepare_folder()
             output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
             savefile(output_path, res_geojson.encode())
-            reproj_convert_layer(output_path, output_path.replace(".geojson", ".shp"),
-                                 "ESRI Shapefile", out_proj)
+            reproj_convert_layer(output_path, output_path.replace(".geojson", ext),
+                                 file_format, out_proj)
             os.remove(output_path)
-            zstream, zipname = zip_and_clean(tmp_path, layer_name)
-            b64_zip =  base64.b64encode(zstream.read())
-            return web.Response(
-                body=b64_zip,
-                headers= MultiDict({
-                    "Content-Type": "application/octet-stream",
-                    "Content-Disposition": "attachment; filename=" + layer_name + ".zip",
-                    "Content-length": len(b64_zip)}))
-    return web.Response(text="Not supported yet")
+            raw_data, filename = fetch_zip_clean(tmp_path, layer_name)
+            if ".zip" in filename:
+                b64_zip =  base64.b64encode(raw_data)
+                return web.Response(
+                    body=b64_zip,
+                    headers= MultiDict({
+                        "Content-Type": "application/octet-stream",
+                        "Content-Disposition": "attachment; filename=" + layer_name + ".zip",
+                        "Content-length": len(b64_zip)}))
+            else:
+                return web.Response(text=raw_data.decode())
+    return web.Response(text="Error: Not supported yet")
 
 async def rawcsv_to_geo(data):
     raw_csv = StringIO(data)
@@ -781,6 +812,8 @@ async def init(loop, port=9999):
     app.router.add_route('GET', '/index', handler)
     app.router.add_route('GET', '/modules', handler)
     app.router.add_route('GET', '/modules/', handler)
+    app.router.add_route('GET', '/layers', list_user_layers)
+    app.router.add_route('POST', '/layers/delete', remove_layer)
     app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     app.router.add_route('POST', '/get_layer2', handler_exists_layer2)
     app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
@@ -847,8 +880,8 @@ if __name__ == '__main__':
     zmq.asyncio.install()
     app_glob['async_ctx'] = zmq.asyncio.Context(2)
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-    path = os.path.dirname(os.path.realpath(__file__))
-    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
+#    path = os.path.dirname(os.path.realpath(__file__))
+#    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
     srv, redis_conn = loop.run_until_complete(init(loop, port))
