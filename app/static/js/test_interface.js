@@ -91,9 +91,10 @@ function prepare_drop_section(){
                 if(!(files.length == 1)){
                     var filenames = Array.prototype.map.call(files, f => f.name),
                         result = strArraysContains(filenames, ['.shp', '.dbf', '.shx', '.prj']);
-
-                    if(result.length == 4){
-                        elem.style.border = '';
+                    elem.style.border = '';
+                    if(target_layer_on_add && targeted_layer_added){
+                           alert("Only one layer can be added by this functionnality");
+                    } else if(result.length == 4){
                         handle_shapefile(files);
                     } else {
                         elem.style.border = '3px dashed red';

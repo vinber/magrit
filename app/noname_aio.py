@@ -362,7 +362,7 @@ async def handle_app_functionality(request):
             "lastPref": lastPref, "user_id": user_id}
 
 
-async def nothing(posted_data, session_redis, user_id, *args):
+async def nothing(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -384,7 +384,7 @@ async def nothing(posted_data, session_redis, user_id, *args):
     return res.replace(
         tmp_part, '_'.join(["Nope", n_field_name]))
 
-async def carto_doug(posted_data, session_redis, user_id, loop):
+async def carto_doug(posted_data, user_id, loop):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -418,7 +418,7 @@ async def carto_doug(posted_data, session_redis, user_id, loop):
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res
 
-async def links_map(posted_data, session_redis, user_id, *args):
+async def links_map(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
@@ -470,7 +470,7 @@ async def links_map(posted_data, session_redis, user_id, *args):
     return res
 
 
-async def carto_gridded(posted_data, session_redis, user_id, *args):
+async def carto_gridded(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
@@ -519,7 +519,7 @@ async def carto_gridded(posted_data, session_redis, user_id, *args):
     return res
 
 
-async def call_mta_simpl(posted_data, session_redis, user_id, *args):
+async def call_mta_simpl(posted_data, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
     if "medium" in posted_data["method"]:
         commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
@@ -555,7 +555,7 @@ async def call_mta_simpl(posted_data, session_redis, user_id, *args):
             if content else "Unknown Error"
 
 
-async def call_mta_geo(posted_data, session_redis, user_id, *args):
+async def call_mta_geo(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -598,7 +598,7 @@ async def call_mta_geo(posted_data, session_redis, user_id, *args):
             if content else "Unknown Error"
 
 
-async def call_stewart(posted_data, session_redis, user_id, *args):
+async def call_stewart(posted_data, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     point_layer = await app_glob['redis_conn'].get(f_name)
@@ -672,7 +672,7 @@ async def R_compute(request):
         func = app_glob['R_function'][function]
         loop = request.app.loop
         print('Python - p1 : {:.4f}'.format(time.time()-s_t))
-        data_response = await func(posted_data, session_redis, user_id, loop)
+        data_response = await func(posted_data, user_id, loop)
         return web.Response(text=data_response)
 
 async def handler_exists_layer(request):

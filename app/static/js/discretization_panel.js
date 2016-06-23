@@ -755,7 +755,7 @@ function fetch_categorical_colors(){
     let categ = document.querySelectorAll(".typo_class"),
         color_map = new Map();
     for(let i = 0; i < categ.length; i++){
-        color_map.set(categ[i].__data__.name, categ[i].querySelector("input").value);
+        color_map.set(categ[i].__data__.name, rgb2hex(categ[i].querySelector(".color_square").style.backgroundColor));
     }
     return color_map;
 }
@@ -775,37 +775,66 @@ function display_categorical_box(layer, field){
             categories.set(value, [1, [i]]);
     }
 
-    let nb_class = categories.size
+    let nb_class = categories.size;
 
-    categories.forEach( (v,k) => { cats.push({name: k, nb_elem: v[0]})});
+    categories.forEach( (v,k) => {
+        cats.push({name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
+    });
 
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
                         .attr({id: "categorical_box",
                                title: ["Color a catgorical field - ", layer, " - ", nb_features, " features"].join('')});
-
     newbox.append("h3").html("")
     newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
 
-    newbox.append("ul")
+    newbox.append("ul").style("padding", "unset")
             .selectAll("li")
             .data(cats).enter()
             .append("li")
-                .style("margin", "auto")
+                .style({margin: "auto", "list-style": "none"})
                 .attr("class", "typo_class")
-                .attr("id", (d,i) => ["line", i].join('_'))
-                .html((d,i) => {
-                    return "<b>" + d.name + " </b>"
-                });
+                .attr("id", (d,i) => ["line", i].join('_'));
 
     newbox.selectAll(".typo_class")
-            .insert("input")
-            .attr("type", "color")
-            .attr("value", () => Colors.names[Colors.random()])
-            .style({width: "30px", height: "20px", "margin-left": "5px"});
+            .append("p").style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle"})
+            .html(d => "<b>" + d.name + " </b>");
 
     newbox.selectAll(".typo_class")
-            .insert("span").html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
+            .insert("p").attr("class", "color_square")
+            .style("background-color", d => d.color)
+            .style("margin", "auto")
+            .style("vertical-align", "middle")
+//            .style({"border-width": "0.1px 0px","border-style": "solid none","border-color": "grey"})
+            .style({width: "22px", height: "22px", "border-radius": "10%", display: "inline-block"})
+            .on("click", function(){
+                let self = this;
+                let this_color = self.style.backgroundColor;
+                let input_col = document.createElement("input");
+                input_col.setAttribute("type", "color");
+                input_col.setAttribute("value", rgb2hex(this_color));
+                input_col.className = "color_input";
+                input_col.onchange = function(change){
+                    self.style.backgroundColor = hexToRgb(change.target.value, "string");
+                }
+                let t = input_col.dispatchEvent(new MouseEvent("click"));
+            });
+
+    newbox.selectAll(".typo_class")
+            .insert("span")
+            .style("float", "right")
+            .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
+
+    newbox.insert("p")
+        .insert("button")
+        .attr("class", "button_st3")
+        .html("New random colors")
+        .on("click", function(){
+            let lines = document.querySelectorAll(".typo_class");
+            for(let i=0; i<lines.length; ++i){
+                lines[i].querySelector(".color_square").style.backgroundColor = Colors.names[Colors.random()];
+            }
+        });
 
     var deferred = Q.defer();
     $("#categorical_box").dialog({
@@ -827,6 +856,7 @@ function display_categorical_box(layer, field){
                 $(this).remove();}
            }],
         close: function(event, ui){
+                d3.selectAll(".color_input").remove();
                 $(this).dialog("destroy").remove();
                 if(deferred.promise.isPending()){
                     deferred.resolve(false);
