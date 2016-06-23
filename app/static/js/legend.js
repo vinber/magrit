@@ -37,7 +37,7 @@ function createLegend(layer, title){
             || current_layers[layer].renderer.indexOf("DiscLayer") != -1)
         createLegend_discont_links(layer, field);
 
-    else if (current_layers[layer].colors_breaks)
+    else if (current_layers[layer].colors_breaks || current_layers[layer].color_map)
         createLegend_choro(layer, field, title, field);
 
     else if (current_layers[layer].renderer.indexOf("Carto_doug") != -1)
@@ -354,7 +354,8 @@ function createLegend_choro(layer, field, title, subtitle){
         last_pos = null,
         y_pos2 =  ypos + boxheight,
         tmp_class_name = ["legend_feature", "lgdf_" + layer].join(' '),
-        nb_class = current_layers[layer].colors_breaks.length;
+        nb_class,
+        data_colors_label;
 
     var legend_root = map.insert('g').attr('id', 'legend_root').attr("class", tmp_class_name);
 
@@ -378,9 +379,17 @@ function createLegend_choro(layer, field, title, subtitle){
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ createlegendEditBox('legend_root', layer); });
 
-    let data_colors_label = current_layers[layer].colors_breaks.map(obj => {
-        return {value: obj[0], color: obj[1]};  });
-
+    if(current_layers[layer].renderer.indexOf('Categorical') > -1){
+        data_colors_label = [];
+        current_layers[layer].color_map.forEach( (v,k) => {
+            data_colors_label.push({value: k, color: v}); } );
+        nb_class = current_layers[layer].color_map.size;
+    } else { 
+        data_colors_label = current_layers[layer].colors_breaks.map(obj => {
+            return {value: obj[0], color: obj[1]};
+        });
+        nb_class = current_layers[layer].colors_breaks.length;
+    }
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(data_colors_label)

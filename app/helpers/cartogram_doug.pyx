@@ -18,7 +18,7 @@ from cpython cimport array
 from libc.stdlib cimport malloc, free
 
 
-async def make_cartogram(geodf, field_name, iterations=5):
+def make_cartogram(geodf, field_name, iterations=5):
     """
     Make a continuous cartogram on a geopandas.GeoDataFrame collection
     of Polygon/MultiPolygon (wrapper to call the core functions

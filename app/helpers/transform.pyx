@@ -159,19 +159,22 @@ cdef class Transformer:
     cpdef convert_point(self, point):
         return self.conv_point({'x': point[0], 'y': point[1]})
 
-    cdef feature(self, dict feature):
-        cdef dict out={'type':'Feature'}
-        out['geometry']={'type':feature['type']}
-        if feature['type'] in ('Point','MultiPoint'):
-            out['geometry']['coordinates'] = feature['coordinates']
-        elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
-            out['geometry']['arcs'] = feature['arcs']
-        elif feature['type'] == 'GeometryCollection':
-            out['geometry']['geometries'] = feature['geometries']
+    cdef dict feature(self, dict feature):
+        cdef dict out
+        cdef str type_ = feature['type']
+        cdef dict geom_ = {'type': type_}
+        if type_ in ('Point','MultiPoint'):
+            geom_['coordinates'] = feature['coordinates']
+        elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+            geom_['arcs'] = feature['arcs']
+        elif type_ == 'GeometryCollection':
+            geom_['geometries'] = feature['geometries']
+
+        geom_ = self.geom_dispatch(geom_)
+        out = {'type':'Feature', 'geometry': geom_}
         for key in ('properties','bbox','id'):
             if key in feature:
                 out[key] = feature[key]
-        out['geometry']=self.geometry(out['geometry'])
         return out
 
     cpdef geom_dispatch(self, dict geometry):

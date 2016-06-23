@@ -20,7 +20,7 @@ from io import StringIO
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 #from hashlib import sha512
-#from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor  #, ProcessPoolExecutor
 
 # Web related stuff :
 import jinja2
@@ -362,7 +362,7 @@ async def handle_app_functionality(request):
             "lastPref": lastPref, "user_id": user_id}
 
 
-async def nothing(posted_data, session_redis, user_id):
+async def nothing(posted_data, session_redis, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -384,7 +384,7 @@ async def nothing(posted_data, session_redis, user_id):
     return res.replace(
         tmp_part, '_'.join(["Nope", n_field_name]))
 
-async def carto_doug(posted_data, session_redis, user_id):
+async def carto_doug(posted_data, session_redis, user_id, loop):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -402,9 +402,13 @@ async def carto_doug(posted_data, session_redis, user_id):
     tmp_part = get_name()
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
-    gdf = GeoDataFrame.from_file(tmp_path)
+#    gdf = GeoDataFrame.from_file(tmp_path)
+    result = await loop.run_in_executor(
+        app_glob["ThreadPool"],
+        make_cartogram,
+        GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+#    result = await make_cartogram(gdf, n_field_name, iterations)
     os.remove(tmp_path)
-    result = await make_cartogram(gdf, n_field_name, iterations)
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
@@ -414,7 +418,7 @@ async def carto_doug(posted_data, session_redis, user_id):
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res
 
-async def links_map(posted_data, session_redis, user_id):
+async def links_map(posted_data, session_redis, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
@@ -466,7 +470,7 @@ async def links_map(posted_data, session_redis, user_id):
     return res
 
 
-async def carto_gridded(posted_data, session_redis, user_id):
+async def carto_gridded(posted_data, session_redis, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
@@ -515,7 +519,7 @@ async def carto_gridded(posted_data, session_redis, user_id):
     return res
 
 
-async def call_mta_simpl(posted_data, session_redis, user_id):
+async def call_mta_simpl(posted_data, session_redis, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
     if "medium" in posted_data["method"]:
         commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
@@ -551,7 +555,7 @@ async def call_mta_simpl(posted_data, session_redis, user_id):
             if content else "Unknown Error"
 
 
-async def call_mta_geo(posted_data, session_redis, user_id):
+async def call_mta_geo(posted_data, session_redis, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
@@ -594,7 +598,7 @@ async def call_mta_geo(posted_data, session_redis, user_id):
             if content else "Unknown Error"
 
 
-async def call_stewart(posted_data, session_redis, user_id):
+async def call_stewart(posted_data, session_redis, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     point_layer = await app_glob['redis_conn'].get(f_name)
@@ -666,8 +670,9 @@ async def R_compute(request):
             await asyncio.gather(*[request.post(), get_session(request)])
         user_id = get_user_id(session_redis)
         func = app_glob['R_function'][function]
+        loop = request.app.loop
         print('Python - p1 : {:.4f}'.format(time.time()-s_t))
-        data_response = await func(posted_data, session_redis, user_id)
+        data_response = await func(posted_data, session_redis, user_id, loop)
         return web.Response(text=data_response)
 
 async def handler_exists_layer(request):
@@ -889,6 +894,7 @@ if __name__ == '__main__':
     with open('static/json/sample_layers.json', 'r') as f:
         data = f.read()
         app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]
+    app_glob['ThreadPool'] = ThreadPoolExecutor(4)
     app_glob['R_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,

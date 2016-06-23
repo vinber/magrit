@@ -4651,7 +4651,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_convert_point(st
  *     cpdef convert_point(self, point):
  *         return self.conv_point({'x': point[0], 'y': point[1]})             # <<<<<<<<<<<<<<
  * 
- *     cdef feature(self, dict feature):
+ *     cdef dict feature(self, dict feature):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_point, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 160, __pyx_L1_error)
@@ -4732,13 +4732,15 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_2convert_point(
 /* "app/helpers/transform.pyx":162
  *         return self.conv_point({'x': point[0], 'y': point[1]})
  * 
- *     cdef feature(self, dict feature):             # <<<<<<<<<<<<<<
- *         cdef dict out={'type':'Feature'}
- *         out['geometry']={'type':feature['type']}
+ *     cdef dict feature(self, dict feature):             # <<<<<<<<<<<<<<
+ *         cdef dict out
+ *         cdef str type_ = feature['type']
  */
 
 static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_feature(struct __pyx_obj_3app_7helpers_9transform_Transformer *__pyx_v_self, PyObject *__pyx_v_feature) {
   PyObject *__pyx_v_out = 0;
+  PyObject *__pyx_v_type_ = 0;
+  PyObject *__pyx_v_geom_ = 0;
   PyObject *__pyx_v_key = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -4746,275 +4748,281 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_feature(struct _
   PyObject *__pyx_t_2 = NULL;
   int __pyx_t_3;
   int __pyx_t_4;
-  Py_ssize_t __pyx_t_5;
-  PyObject *__pyx_t_6 = NULL;
+  int __pyx_t_5;
+  Py_ssize_t __pyx_t_6;
   PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("feature", 0);
 
-  /* "app/helpers/transform.pyx":163
- * 
- *     cdef feature(self, dict feature):
- *         cdef dict out={'type':'Feature'}             # <<<<<<<<<<<<<<
- *         out['geometry']={'type':feature['type']}
- *         if feature['type'] in ('Point','MultiPoint'):
- */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 163, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_n_s_Feature) < 0) __PYX_ERR(0, 163, __pyx_L1_error)
-  __pyx_v_out = ((PyObject*)__pyx_t_1);
-  __pyx_t_1 = 0;
-
   /* "app/helpers/transform.pyx":164
- *     cdef feature(self, dict feature):
- *         cdef dict out={'type':'Feature'}
- *         out['geometry']={'type':feature['type']}             # <<<<<<<<<<<<<<
- *         if feature['type'] in ('Point','MultiPoint'):
- *             out['geometry']['coordinates'] = feature['coordinates']
+ *     cdef dict feature(self, dict feature):
+ *         cdef dict out
+ *         cdef str type_ = feature['type']             # <<<<<<<<<<<<<<
+ *         cdef dict geom_ = {'type': type_}
+ *         if type_ in ('Point','MultiPoint'):
  */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 164, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_feature == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
     __PYX_ERR(0, 164, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 164, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_t_2) < 0) __PYX_ERR(0, 164, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_n_s_geometry, __pyx_t_1) < 0)) __PYX_ERR(0, 164, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_type); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 164, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(PyString_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 164, __pyx_L1_error)
+  __pyx_v_type_ = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
 
   /* "app/helpers/transform.pyx":165
- *         cdef dict out={'type':'Feature'}
- *         out['geometry']={'type':feature['type']}
- *         if feature['type'] in ('Point','MultiPoint'):             # <<<<<<<<<<<<<<
- *             out['geometry']['coordinates'] = feature['coordinates']
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ *         cdef dict out
+ *         cdef str type_ = feature['type']
+ *         cdef dict geom_ = {'type': type_}             # <<<<<<<<<<<<<<
+ *         if type_ in ('Point','MultiPoint'):
+ *             geom_['coordinates'] = feature['coordinates']
  */
-  if (unlikely(__pyx_v_feature == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 165, __pyx_L1_error)
-  }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_type); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 165, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_Point, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 165, __pyx_L1_error)
-  if (!__pyx_t_4) {
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_v_type_) < 0) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_v_geom_ = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "app/helpers/transform.pyx":166
+ *         cdef str type_ = feature['type']
+ *         cdef dict geom_ = {'type': type_}
+ *         if type_ in ('Point','MultiPoint'):             # <<<<<<<<<<<<<<
+ *             geom_['coordinates'] = feature['coordinates']
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ */
+  __Pyx_INCREF(__pyx_v_type_);
+  __pyx_t_2 = __pyx_v_type_;
+  __pyx_t_4 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_Point, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 166, __pyx_L1_error)
+  __pyx_t_5 = (__pyx_t_4 != 0);
+  if (!__pyx_t_5) {
   } else {
-    __pyx_t_3 = __pyx_t_4;
+    __pyx_t_3 = __pyx_t_5;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_4 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_MultiPoint, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_t_5 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_MultiPoint, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 166, __pyx_L1_error)
+  __pyx_t_4 = (__pyx_t_5 != 0);
   __pyx_t_3 = __pyx_t_4;
   __pyx_L4_bool_binop_done:;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = (__pyx_t_3 != 0);
   if (__pyx_t_4) {
 
-    /* "app/helpers/transform.pyx":166
- *         out['geometry']={'type':feature['type']}
- *         if feature['type'] in ('Point','MultiPoint'):
- *             out['geometry']['coordinates'] = feature['coordinates']             # <<<<<<<<<<<<<<
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
- *             out['geometry']['arcs'] = feature['arcs']
+    /* "app/helpers/transform.pyx":167
+ *         cdef dict geom_ = {'type': type_}
+ *         if type_ in ('Point','MultiPoint'):
+ *             geom_['coordinates'] = feature['coordinates']             # <<<<<<<<<<<<<<
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ *             geom_['arcs'] = feature['arcs']
  */
     if (unlikely(__pyx_v_feature == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 166, __pyx_L1_error)
+      __PYX_ERR(0, 167, __pyx_L1_error)
     }
-    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 166, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 167, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_out, __pyx_n_s_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(PyObject_SetItem(__pyx_t_2, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(PyDict_SetItem(__pyx_v_geom_, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "app/helpers/transform.pyx":165
- *         cdef dict out={'type':'Feature'}
- *         out['geometry']={'type':feature['type']}
- *         if feature['type'] in ('Point','MultiPoint'):             # <<<<<<<<<<<<<<
- *             out['geometry']['coordinates'] = feature['coordinates']
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+    /* "app/helpers/transform.pyx":166
+ *         cdef str type_ = feature['type']
+ *         cdef dict geom_ = {'type': type_}
+ *         if type_ in ('Point','MultiPoint'):             # <<<<<<<<<<<<<<
+ *             geom_['coordinates'] = feature['coordinates']
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
  */
     goto __pyx_L3;
   }
 
-  /* "app/helpers/transform.pyx":167
- *         if feature['type'] in ('Point','MultiPoint'):
- *             out['geometry']['coordinates'] = feature['coordinates']
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):             # <<<<<<<<<<<<<<
- *             out['geometry']['arcs'] = feature['arcs']
- *         elif feature['type'] == 'GeometryCollection':
+  /* "app/helpers/transform.pyx":168
+ *         if type_ in ('Point','MultiPoint'):
+ *             geom_['coordinates'] = feature['coordinates']
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):             # <<<<<<<<<<<<<<
+ *             geom_['arcs'] = feature['arcs']
+ *         elif type_ == 'GeometryCollection':
  */
-  if (unlikely(__pyx_v_feature == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 167, __pyx_L1_error)
+  __Pyx_INCREF(__pyx_v_type_);
+  __pyx_t_2 = __pyx_v_type_;
+  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_LineString, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __pyx_t_5 = (__pyx_t_3 != 0);
+  if (!__pyx_t_5) {
+  } else {
+    __pyx_t_4 = __pyx_t_5;
+    goto __pyx_L6_bool_binop_done;
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_type); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 167, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_LineString, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_5 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_MultiLineString, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __pyx_t_3 = (__pyx_t_5 != 0);
   if (!__pyx_t_3) {
   } else {
     __pyx_t_4 = __pyx_t_3;
     goto __pyx_L6_bool_binop_done;
   }
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_MultiLineString, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
-  if (!__pyx_t_3) {
+  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_MultiPolygon, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __pyx_t_5 = (__pyx_t_3 != 0);
+  if (!__pyx_t_5) {
   } else {
-    __pyx_t_4 = __pyx_t_3;
+    __pyx_t_4 = __pyx_t_5;
     goto __pyx_L6_bool_binop_done;
   }
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_MultiPolygon, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
-  if (!__pyx_t_3) {
-  } else {
-    __pyx_t_4 = __pyx_t_3;
-    goto __pyx_L6_bool_binop_done;
-  }
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_Polygon, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_5 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_Polygon, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __pyx_t_3 = (__pyx_t_5 != 0);
   __pyx_t_4 = __pyx_t_3;
   __pyx_L6_bool_binop_done:;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_3 = (__pyx_t_4 != 0);
   if (__pyx_t_3) {
 
-    /* "app/helpers/transform.pyx":168
- *             out['geometry']['coordinates'] = feature['coordinates']
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
- *             out['geometry']['arcs'] = feature['arcs']             # <<<<<<<<<<<<<<
- *         elif feature['type'] == 'GeometryCollection':
- *             out['geometry']['geometries'] = feature['geometries']
+    /* "app/helpers/transform.pyx":169
+ *             geom_['coordinates'] = feature['coordinates']
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ *             geom_['arcs'] = feature['arcs']             # <<<<<<<<<<<<<<
+ *         elif type_ == 'GeometryCollection':
+ *             geom_['geometries'] = feature['geometries']
  */
     if (unlikely(__pyx_v_feature == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 168, __pyx_L1_error)
+      __PYX_ERR(0, 169, __pyx_L1_error)
     }
-    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 168, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_out, __pyx_n_s_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 168, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(PyObject_SetItem(__pyx_t_2, __pyx_n_s_arcs, __pyx_t_1) < 0)) __PYX_ERR(0, 168, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(PyDict_SetItem(__pyx_v_geom_, __pyx_n_s_arcs, __pyx_t_1) < 0)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "app/helpers/transform.pyx":167
- *         if feature['type'] in ('Point','MultiPoint'):
- *             out['geometry']['coordinates'] = feature['coordinates']
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):             # <<<<<<<<<<<<<<
- *             out['geometry']['arcs'] = feature['arcs']
- *         elif feature['type'] == 'GeometryCollection':
+    /* "app/helpers/transform.pyx":168
+ *         if type_ in ('Point','MultiPoint'):
+ *             geom_['coordinates'] = feature['coordinates']
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):             # <<<<<<<<<<<<<<
+ *             geom_['arcs'] = feature['arcs']
+ *         elif type_ == 'GeometryCollection':
  */
     goto __pyx_L3;
   }
 
-  /* "app/helpers/transform.pyx":169
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
- *             out['geometry']['arcs'] = feature['arcs']
- *         elif feature['type'] == 'GeometryCollection':             # <<<<<<<<<<<<<<
- *             out['geometry']['geometries'] = feature['geometries']
- *         for key in ('properties','bbox','id'):
+  /* "app/helpers/transform.pyx":170
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ *             geom_['arcs'] = feature['arcs']
+ *         elif type_ == 'GeometryCollection':             # <<<<<<<<<<<<<<
+ *             geom_['geometries'] = feature['geometries']
+ * 
  */
-  if (unlikely(__pyx_v_feature == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 169, __pyx_L1_error)
-  }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_type); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 169, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_n_s_GeometryCollection, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 169, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (__pyx_t_3) {
+  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_v_type_, __pyx_n_s_GeometryCollection, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 170, __pyx_L1_error)
+  __pyx_t_4 = (__pyx_t_3 != 0);
+  if (__pyx_t_4) {
 
-    /* "app/helpers/transform.pyx":170
- *             out['geometry']['arcs'] = feature['arcs']
- *         elif feature['type'] == 'GeometryCollection':
- *             out['geometry']['geometries'] = feature['geometries']             # <<<<<<<<<<<<<<
- *         for key in ('properties','bbox','id'):
- *             if key in feature:
+    /* "app/helpers/transform.pyx":171
+ *             geom_['arcs'] = feature['arcs']
+ *         elif type_ == 'GeometryCollection':
+ *             geom_['geometries'] = feature['geometries']             # <<<<<<<<<<<<<<
+ * 
+ *         geom_ = self.geom_dispatch(geom_)
  */
     if (unlikely(__pyx_v_feature == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 170, __pyx_L1_error)
+      __PYX_ERR(0, 171, __pyx_L1_error)
     }
-    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_geometries); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_n_s_geometries); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 171, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_out, __pyx_n_s_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 170, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(PyObject_SetItem(__pyx_t_2, __pyx_n_s_geometries, __pyx_t_1) < 0)) __PYX_ERR(0, 170, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(PyDict_SetItem(__pyx_v_geom_, __pyx_n_s_geometries, __pyx_t_1) < 0)) __PYX_ERR(0, 171, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "app/helpers/transform.pyx":169
- *         elif feature['type'] in ('LineString','MultiLineString','MultiPolygon','Polygon'):
- *             out['geometry']['arcs'] = feature['arcs']
- *         elif feature['type'] == 'GeometryCollection':             # <<<<<<<<<<<<<<
- *             out['geometry']['geometries'] = feature['geometries']
- *         for key in ('properties','bbox','id'):
+    /* "app/helpers/transform.pyx":170
+ *         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+ *             geom_['arcs'] = feature['arcs']
+ *         elif type_ == 'GeometryCollection':             # <<<<<<<<<<<<<<
+ *             geom_['geometries'] = feature['geometries']
+ * 
  */
   }
   __pyx_L3:;
 
-  /* "app/helpers/transform.pyx":171
- *         elif feature['type'] == 'GeometryCollection':
- *             out['geometry']['geometries'] = feature['geometries']
+  /* "app/helpers/transform.pyx":173
+ *             geom_['geometries'] = feature['geometries']
+ * 
+ *         geom_ = self.geom_dispatch(geom_)             # <<<<<<<<<<<<<<
+ *         out = {'type':'Feature', 'geometry': geom_}
+ *         for key in ('properties','bbox','id'):
+ */
+  __pyx_t_1 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->geom_dispatch(__pyx_v_self, __pyx_v_geom_, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(PyDict_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 173, __pyx_L1_error)
+  __Pyx_DECREF_SET(__pyx_v_geom_, ((PyObject*)__pyx_t_1));
+  __pyx_t_1 = 0;
+
+  /* "app/helpers/transform.pyx":174
+ * 
+ *         geom_ = self.geom_dispatch(geom_)
+ *         out = {'type':'Feature', 'geometry': geom_}             # <<<<<<<<<<<<<<
+ *         for key in ('properties','bbox','id'):
+ *             if key in feature:
+ */
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_n_s_Feature) < 0) __PYX_ERR(0, 174, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_geometry, __pyx_v_geom_) < 0) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_v_out = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "app/helpers/transform.pyx":175
+ *         geom_ = self.geom_dispatch(geom_)
+ *         out = {'type':'Feature', 'geometry': geom_}
  *         for key in ('properties','bbox','id'):             # <<<<<<<<<<<<<<
  *             if key in feature:
  *                 out[key] = feature[key]
  */
-  __pyx_t_1 = __pyx_tuple__4; __Pyx_INCREF(__pyx_t_1); __pyx_t_5 = 0;
+  __pyx_t_1 = __pyx_tuple__4; __Pyx_INCREF(__pyx_t_1); __pyx_t_6 = 0;
   for (;;) {
-    if (__pyx_t_5 >= 3) break;
+    if (__pyx_t_6 >= 3) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_5); __Pyx_INCREF(__pyx_t_2); __pyx_t_5++; if (unlikely(0 < 0)) __PYX_ERR(0, 171, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_7); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 175, __pyx_L1_error)
     #else
-    __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 171, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_7 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
     #endif
-    __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_2);
-    __pyx_t_2 = 0;
+    __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_7);
+    __pyx_t_7 = 0;
 
-    /* "app/helpers/transform.pyx":172
- *             out['geometry']['geometries'] = feature['geometries']
+    /* "app/helpers/transform.pyx":176
+ *         out = {'type':'Feature', 'geometry': geom_}
  *         for key in ('properties','bbox','id'):
  *             if key in feature:             # <<<<<<<<<<<<<<
  *                 out[key] = feature[key]
- *         out['geometry']=self.geometry(out['geometry'])
+ *         return out
  */
     if (unlikely(__pyx_v_feature == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      __PYX_ERR(0, 172, __pyx_L1_error)
+      __PYX_ERR(0, 176, __pyx_L1_error)
     }
-    __pyx_t_3 = (__Pyx_PyDict_ContainsTF(__pyx_v_key, __pyx_v_feature, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 172, __pyx_L1_error)
-    __pyx_t_4 = (__pyx_t_3 != 0);
-    if (__pyx_t_4) {
+    __pyx_t_4 = (__Pyx_PyDict_ContainsTF(__pyx_v_key, __pyx_v_feature, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_3 = (__pyx_t_4 != 0);
+    if (__pyx_t_3) {
 
-      /* "app/helpers/transform.pyx":173
+      /* "app/helpers/transform.pyx":177
  *         for key in ('properties','bbox','id'):
  *             if key in feature:
  *                 out[key] = feature[key]             # <<<<<<<<<<<<<<
- *         out['geometry']=self.geometry(out['geometry'])
  *         return out
+ * 
  */
       if (unlikely(__pyx_v_feature == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 173, __pyx_L1_error)
+        __PYX_ERR(0, 177, __pyx_L1_error)
       }
-      __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_v_key); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 173, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_v_key, __pyx_t_2) < 0)) __PYX_ERR(0, 173, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_7 = __Pyx_PyDict_GetItem(__pyx_v_feature, __pyx_v_key); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 177, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_v_key, __pyx_t_7) < 0)) __PYX_ERR(0, 177, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "app/helpers/transform.pyx":172
- *             out['geometry']['geometries'] = feature['geometries']
+      /* "app/helpers/transform.pyx":176
+ *         out = {'type':'Feature', 'geometry': geom_}
  *         for key in ('properties','bbox','id'):
  *             if key in feature:             # <<<<<<<<<<<<<<
  *                 out[key] = feature[key]
- *         out['geometry']=self.geometry(out['geometry'])
+ *         return out
  */
     }
 
-    /* "app/helpers/transform.pyx":171
- *         elif feature['type'] == 'GeometryCollection':
- *             out['geometry']['geometries'] = feature['geometries']
+    /* "app/helpers/transform.pyx":175
+ *         geom_ = self.geom_dispatch(geom_)
+ *         out = {'type':'Feature', 'geometry': geom_}
  *         for key in ('properties','bbox','id'):             # <<<<<<<<<<<<<<
  *             if key in feature:
  *                 out[key] = feature[key]
@@ -5022,49 +5030,9 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_feature(struct _
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/transform.pyx":174
+  /* "app/helpers/transform.pyx":178
  *             if key in feature:
  *                 out[key] = feature[key]
- *         out['geometry']=self.geometry(out['geometry'])             # <<<<<<<<<<<<<<
- *         return out
- * 
- */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_out, __pyx_n_s_geometry); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 174, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = NULL;
-  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_7)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_7);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_2, function);
-    }
-  }
-  if (!__pyx_t_7) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_GOTREF(__pyx_t_1);
-  } else {
-    __pyx_t_8 = PyTuple_New(1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 174, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_7); __pyx_t_7 = NULL;
-    __Pyx_GIVEREF(__pyx_t_6);
-    PyTuple_SET_ITEM(__pyx_t_8, 0+1, __pyx_t_6);
-    __pyx_t_6 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  }
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_n_s_geometry, __pyx_t_1) < 0)) __PYX_ERR(0, 174, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "app/helpers/transform.pyx":175
- *                 out[key] = feature[key]
- *         out['geometry']=self.geometry(out['geometry'])
  *         return out             # <<<<<<<<<<<<<<
  * 
  *     cpdef geom_dispatch(self, dict geometry):
@@ -5077,29 +5045,29 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_feature(struct _
   /* "app/helpers/transform.pyx":162
  *         return self.conv_point({'x': point[0], 'y': point[1]})
  * 
- *     cdef feature(self, dict feature):             # <<<<<<<<<<<<<<
- *         cdef dict out={'type':'Feature'}
- *         out['geometry']={'type':feature['type']}
+ *     cdef dict feature(self, dict feature):             # <<<<<<<<<<<<<<
+ *         cdef dict out
+ *         cdef str type_ = feature['type']
  */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_8);
   __Pyx_AddTraceback("app.helpers.transform.Transformer.feature", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_out);
+  __Pyx_XDECREF(__pyx_v_type_);
+  __Pyx_XDECREF(__pyx_v_geom_);
   __Pyx_XDECREF(__pyx_v_key);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":177
+/* "app/helpers/transform.pyx":180
  *         return out
  * 
  *     cpdef geom_dispatch(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5121,7 +5089,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_geom_dispatch); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 177, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_geom_dispatch); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_5geom_dispatch)) {
       __Pyx_XDECREF(__pyx_r);
@@ -5137,16 +5105,16 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 177, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 177, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 180, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 177, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
@@ -5159,7 +5127,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":178
+  /* "app/helpers/transform.pyx":181
  * 
  *     cpdef geom_dispatch(self, dict geometry):
  *         return self.dispatch_geom[geometry['type']](geometry)             # <<<<<<<<<<<<<<
@@ -5169,15 +5137,15 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_self->dispatch_geom == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 178, __pyx_L1_error)
+    __PYX_ERR(0, 181, __pyx_L1_error)
   }
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 178, __pyx_L1_error)
+    __PYX_ERR(0, 181, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 178, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_self->dispatch_geom, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 178, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_self->dispatch_geom, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -5191,16 +5159,16 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
     }
   }
   if (!__pyx_t_2) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 178, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   } else {
-    __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 178, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 181, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2); __pyx_t_2 = NULL;
     __Pyx_INCREF(__pyx_v_geometry);
     __Pyx_GIVEREF(__pyx_v_geometry);
     PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 178, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
@@ -5209,7 +5177,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(st
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":177
+  /* "app/helpers/transform.pyx":180
  *         return out
  * 
  *     cpdef geom_dispatch(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5238,7 +5206,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_5geom_dispatch(
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("geom_dispatch (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 177, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 180, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_4geom_dispatch(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -5256,7 +5224,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_4geom_dispatch(
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("geom_dispatch", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_geom_dispatch(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5273,7 +5241,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_4geom_dispatch(
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":180
+/* "app/helpers/transform.pyx":183
  *         return self.dispatch_geom[geometry['type']](geometry)
  * 
  *     cpdef dict point(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5295,7 +5263,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_point(struct __p
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_point); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_point); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 183, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_7point)) {
       __Pyx_XDECREF(__pyx_r);
@@ -5311,21 +5279,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_point(struct __p
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 183, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 180, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 183, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 183, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 180, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 183, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5334,7 +5302,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_point(struct __p
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":181
+  /* "app/helpers/transform.pyx":184
  * 
  *     cpdef dict point(self, dict geometry):
  *         geometry['coordinates'] = self.convert_point(geometry['coordinates'])             # <<<<<<<<<<<<<<
@@ -5343,21 +5311,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_point(struct __p
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 181, __pyx_L1_error)
+    __PYX_ERR(0, 184, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 184, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->convert_point(__pyx_v_self, __pyx_t_1, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->convert_point(__pyx_v_self, __pyx_t_1, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 184, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 181, __pyx_L1_error)
+    __PYX_ERR(0, 184, __pyx_L1_error)
   }
-  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 181, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 184, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/transform.pyx":182
+  /* "app/helpers/transform.pyx":185
  *     cpdef dict point(self, dict geometry):
  *         geometry['coordinates'] = self.convert_point(geometry['coordinates'])
  *         return geometry             # <<<<<<<<<<<<<<
@@ -5369,7 +5337,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_point(struct __p
   __pyx_r = __pyx_v_geometry;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":180
+  /* "app/helpers/transform.pyx":183
  *         return self.dispatch_geom[geometry['type']](geometry)
  * 
  *     cpdef dict point(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5398,7 +5366,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_7point(PyObject
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("point (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 180, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 183, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_6point(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -5416,7 +5384,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_6point(struct _
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("point", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_point(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_point(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5433,7 +5401,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_6point(struct _
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":184
+/* "app/helpers/transform.pyx":187
  *         return geometry
  * 
  *     cpdef dict multi_point(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5458,7 +5426,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_point); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 184, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_point); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 187, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_9multi_point)) {
       __Pyx_XDECREF(__pyx_r);
@@ -5474,21 +5442,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 184, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 187, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 184, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 187, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 184, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 187, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 184, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 187, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5497,28 +5465,28 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":185
+  /* "app/helpers/transform.pyx":188
  * 
  *     cpdef dict multi_point(self, dict geometry):
  *         geometry['coordinates'] = [self.convert_point(geom) for geom in geometry['coordinates']]             # <<<<<<<<<<<<<<
  *         return  geometry
  * 
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 185, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 185, __pyx_L1_error)
+    __PYX_ERR(0, 188, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_coordinates); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
     __pyx_t_3 = __pyx_t_2; __Pyx_INCREF(__pyx_t_3); __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 185, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 188, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 185, __pyx_L1_error)
+    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 188, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -5526,17 +5494,17 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
       if (likely(PyList_CheckExact(__pyx_t_3))) {
         if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 185, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 188, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 185, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 188, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -5546,7 +5514,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 185, __pyx_L1_error)
+          else __PYX_ERR(0, 188, __pyx_L1_error)
         }
         break;
       }
@@ -5554,20 +5522,20 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
     }
     __Pyx_XDECREF_SET(__pyx_v_geom, __pyx_t_2);
     __pyx_t_2 = 0;
-    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->convert_point(__pyx_v_self, __pyx_v_geom, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
+    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->convert_point(__pyx_v_self, __pyx_v_geom, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 185, __pyx_L1_error)
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 188, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 185, __pyx_L1_error)
+    __PYX_ERR(0, 188, __pyx_L1_error)
   }
-  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 185, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/transform.pyx":186
+  /* "app/helpers/transform.pyx":189
  *     cpdef dict multi_point(self, dict geometry):
  *         geometry['coordinates'] = [self.convert_point(geom) for geom in geometry['coordinates']]
  *         return  geometry             # <<<<<<<<<<<<<<
@@ -5579,7 +5547,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_point(stru
   __pyx_r = __pyx_v_geometry;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":184
+  /* "app/helpers/transform.pyx":187
  *         return geometry
  * 
  *     cpdef dict multi_point(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5609,7 +5577,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_9multi_point(Py
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("multi_point (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 184, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 187, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_8multi_point(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -5627,7 +5595,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_8multi_point(st
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("multi_point", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_point(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_point(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 187, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5644,7 +5612,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_8multi_point(st
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":188
+/* "app/helpers/transform.pyx":191
  *         return  geometry
  * 
  *     cpdef dict line_string(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5666,7 +5634,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_line_string); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 188, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_line_string); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 191, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_11line_string)) {
       __Pyx_XDECREF(__pyx_r);
@@ -5682,21 +5650,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 191, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 188, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 191, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 191, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 188, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 191, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5705,7 +5673,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":189
+  /* "app/helpers/transform.pyx":192
  * 
  *     cpdef dict line_string(self, dict geometry):
  *         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])             # <<<<<<<<<<<<<<
@@ -5714,22 +5682,22 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 189, __pyx_L1_error)
+    __PYX_ERR(0, 192, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (!(likely(PyList_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 189, __pyx_L1_error)
-  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stitch_arcs(__pyx_v_self, ((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 189, __pyx_L1_error)
+  if (!(likely(PyList_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stitch_arcs(__pyx_v_self, ((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 189, __pyx_L1_error)
+    __PYX_ERR(0, 192, __pyx_L1_error)
   }
-  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 189, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/transform.pyx":190
+  /* "app/helpers/transform.pyx":193
  *     cpdef dict line_string(self, dict geometry):
  *         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
  *         del geometry['arcs']             # <<<<<<<<<<<<<<
@@ -5738,11 +5706,11 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 190, __pyx_L1_error)
+    __PYX_ERR(0, 193, __pyx_L1_error)
   }
-  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 190, __pyx_L1_error)
+  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 193, __pyx_L1_error)
 
-  /* "app/helpers/transform.pyx":191
+  /* "app/helpers/transform.pyx":194
  *         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
  *         del geometry['arcs']
  *         return geometry             # <<<<<<<<<<<<<<
@@ -5754,7 +5722,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_line_string(stru
   __pyx_r = __pyx_v_geometry;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":188
+  /* "app/helpers/transform.pyx":191
  *         return  geometry
  * 
  *     cpdef dict line_string(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5783,7 +5751,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_11line_string(P
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("line_string (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 188, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 191, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_10line_string(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -5801,7 +5769,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_10line_string(s
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("line_string", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_line_string(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 188, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_line_string(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5818,7 +5786,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_10line_string(s
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":193
+/* "app/helpers/transform.pyx":196
  *         return geometry
  * 
  *     cpdef dict multi_line_string_poly(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5840,7 +5808,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_line_string_poly); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 193, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_line_string_poly); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 196, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_13multi_line_string_poly)) {
       __Pyx_XDECREF(__pyx_r);
@@ -5856,21 +5824,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 193, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 196, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 193, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 196, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 193, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 196, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 193, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 196, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5879,7 +5847,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":194
+  /* "app/helpers/transform.pyx":197
  * 
  *     cpdef dict multi_line_string_poly(self, dict geometry):
  *         geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])             # <<<<<<<<<<<<<<
@@ -5888,21 +5856,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 194, __pyx_L1_error)
+    __PYX_ERR(0, 197, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 194, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 197, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stich_multi_arcs(__pyx_v_self, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 194, __pyx_L1_error)
+  __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stich_multi_arcs(__pyx_v_self, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 197, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 194, __pyx_L1_error)
+    __PYX_ERR(0, 197, __pyx_L1_error)
   }
-  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 194, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_2) < 0)) __PYX_ERR(0, 197, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/transform.pyx":195
+  /* "app/helpers/transform.pyx":198
  *     cpdef dict multi_line_string_poly(self, dict geometry):
  *         geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])
  *         del geometry['arcs']             # <<<<<<<<<<<<<<
@@ -5911,11 +5879,11 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 195, __pyx_L1_error)
+    __PYX_ERR(0, 198, __pyx_L1_error)
   }
-  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 195, __pyx_L1_error)
+  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 198, __pyx_L1_error)
 
-  /* "app/helpers/transform.pyx":196
+  /* "app/helpers/transform.pyx":199
  *         geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])
  *         del geometry['arcs']
  *         return geometry             # <<<<<<<<<<<<<<
@@ -5927,7 +5895,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_line_strin
   __pyx_r = __pyx_v_geometry;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":193
+  /* "app/helpers/transform.pyx":196
  *         return geometry
  * 
  *     cpdef dict multi_line_string_poly(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -5956,7 +5924,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_13multi_line_st
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("multi_line_string_poly (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 193, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 196, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_12multi_line_string_poly(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -5974,7 +5942,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_12multi_line_st
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("multi_line_string_poly", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_line_string_poly(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 193, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_line_string_poly(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5991,7 +5959,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_12multi_line_st
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":198
+/* "app/helpers/transform.pyx":201
  *         return geometry
  * 
  *     cpdef dict multi_poly(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -6016,7 +5984,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_poly); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 198, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_multi_poly); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 201, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_15multi_poly)) {
       __Pyx_XDECREF(__pyx_r);
@@ -6032,21 +6000,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 198, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 201, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 198, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 201, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 198, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 201, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 198, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 201, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -6055,28 +6023,28 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":200
+  /* "app/helpers/transform.pyx":203
  *     cpdef dict multi_poly(self, dict geometry):
  *         cdef list a
  *         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]             # <<<<<<<<<<<<<<
  *         del geometry['arcs']
  *         return geometry
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 200, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 200, __pyx_L1_error)
+    __PYX_ERR(0, 203, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 200, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_arcs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
     __pyx_t_3 = __pyx_t_2; __Pyx_INCREF(__pyx_t_3); __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 200, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 203, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 200, __pyx_L1_error)
+    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 203, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -6084,17 +6052,17 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
       if (likely(PyList_CheckExact(__pyx_t_3))) {
         if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 200, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 203, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 200, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 200, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 203, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 200, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -6104,29 +6072,29 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 200, __pyx_L1_error)
+          else __PYX_ERR(0, 203, __pyx_L1_error)
         }
         break;
       }
       __Pyx_GOTREF(__pyx_t_2);
     }
-    if (!(likely(PyList_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 200, __pyx_L1_error)
+    if (!(likely(PyList_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 203, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_a, ((PyObject*)__pyx_t_2));
     __pyx_t_2 = 0;
-    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stich_multi_arcs(__pyx_v_self, __pyx_v_a); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 200, __pyx_L1_error)
+    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->stich_multi_arcs(__pyx_v_self, __pyx_v_a); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 200, __pyx_L1_error)
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 203, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 200, __pyx_L1_error)
+    __PYX_ERR(0, 203, __pyx_L1_error)
   }
-  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 200, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_geometry, __pyx_n_s_coordinates, __pyx_t_1) < 0)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/transform.pyx":201
+  /* "app/helpers/transform.pyx":204
  *         cdef list a
  *         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
  *         del geometry['arcs']             # <<<<<<<<<<<<<<
@@ -6135,11 +6103,11 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
  */
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 201, __pyx_L1_error)
+    __PYX_ERR(0, 204, __pyx_L1_error)
   }
-  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 201, __pyx_L1_error)
+  if (unlikely(PyDict_DelItem(__pyx_v_geometry, __pyx_n_s_arcs) < 0)) __PYX_ERR(0, 204, __pyx_L1_error)
 
-  /* "app/helpers/transform.pyx":202
+  /* "app/helpers/transform.pyx":205
  *         geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
  *         del geometry['arcs']
  *         return geometry             # <<<<<<<<<<<<<<
@@ -6151,7 +6119,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(struc
   __pyx_r = __pyx_v_geometry;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":198
+  /* "app/helpers/transform.pyx":201
  *         return geometry
  * 
  *     cpdef dict multi_poly(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -6181,7 +6149,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_15multi_poly(Py
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("multi_poly (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 198, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 201, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_14multi_poly(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -6199,7 +6167,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_14multi_poly(st
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("multi_poly", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 198, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_multi_poly(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 201, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6216,7 +6184,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_14multi_poly(st
   return __pyx_r;
 }
 
-/* "app/helpers/transform.pyx":204
+/* "app/helpers/transform.pyx":207
  *         return geometry
  * 
  *     cpdef dict geometry_collection(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -6242,7 +6210,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_geometry_collection); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 204, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_geometry_collection); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 207, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_9transform_11Transformer_17geometry_collection)) {
       __Pyx_XDECREF(__pyx_r);
@@ -6258,21 +6226,21 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 204, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_geometry); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 207, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 204, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 207, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_geometry);
         __Pyx_GIVEREF(__pyx_v_geometry);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_geometry);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 204, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 207, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 204, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 207, __pyx_L1_error)
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -6281,40 +6249,40 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/transform.pyx":205
+  /* "app/helpers/transform.pyx":208
  * 
  *     cpdef dict geometry_collection(self, dict geometry):
  *         out = {'type': 'FeatureCollection'}             # <<<<<<<<<<<<<<
  *         out['features'] = [self.feature(geom) for geom in geometry['geometries']]
  *         return out
  */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 205, __pyx_L1_error)
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_n_s_FeatureCollection) < 0) __PYX_ERR(0, 205, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, __pyx_n_s_FeatureCollection) < 0) __PYX_ERR(0, 208, __pyx_L1_error)
   __pyx_v_out = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/transform.pyx":206
+  /* "app/helpers/transform.pyx":209
  *     cpdef dict geometry_collection(self, dict geometry):
  *         out = {'type': 'FeatureCollection'}
  *         out['features'] = [self.feature(geom) for geom in geometry['geometries']]             # <<<<<<<<<<<<<<
  *         return out
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_geometry == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    __PYX_ERR(0, 206, __pyx_L1_error)
+    __PYX_ERR(0, 209, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_geometries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_geometry, __pyx_n_s_geometries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
     __pyx_t_3 = __pyx_t_2; __Pyx_INCREF(__pyx_t_3); __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 206, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 206, __pyx_L1_error)
+    __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 209, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -6322,17 +6290,17 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
       if (likely(PyList_CheckExact(__pyx_t_3))) {
         if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 206, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 209, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 206, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 209, __pyx_L1_error)
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -6342,7 +6310,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 206, __pyx_L1_error)
+          else __PYX_ERR(0, 209, __pyx_L1_error)
         }
         break;
       }
@@ -6350,17 +6318,17 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
     }
     __Pyx_XDECREF_SET(__pyx_v_geom, __pyx_t_2);
     __pyx_t_2 = 0;
-    if (!(likely(PyDict_CheckExact(__pyx_v_geom))||((__pyx_v_geom) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_v_geom)->tp_name), 0))) __PYX_ERR(0, 206, __pyx_L1_error)
-    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->feature(__pyx_v_self, ((PyObject*)__pyx_v_geom)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+    if (!(likely(PyDict_CheckExact(__pyx_v_geom))||((__pyx_v_geom) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "dict", Py_TYPE(__pyx_v_geom)->tp_name), 0))) __PYX_ERR(0, 209, __pyx_L1_error)
+    __pyx_t_2 = ((struct __pyx_vtabstruct_3app_7helpers_9transform_Transformer *)__pyx_v_self->__pyx_vtab)->feature(__pyx_v_self, ((PyObject*)__pyx_v_geom)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 206, __pyx_L1_error)
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) __PYX_ERR(0, 209, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_n_s_features, __pyx_t_1) < 0)) __PYX_ERR(0, 206, __pyx_L1_error)
+  if (unlikely(PyDict_SetItem(__pyx_v_out, __pyx_n_s_features, __pyx_t_1) < 0)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/transform.pyx":207
+  /* "app/helpers/transform.pyx":210
  *         out = {'type': 'FeatureCollection'}
  *         out['features'] = [self.feature(geom) for geom in geometry['geometries']]
  *         return out             # <<<<<<<<<<<<<<
@@ -6370,7 +6338,7 @@ static PyObject *__pyx_f_3app_7helpers_9transform_11Transformer_geometry_collect
   __pyx_r = __pyx_v_out;
   goto __pyx_L0;
 
-  /* "app/helpers/transform.pyx":204
+  /* "app/helpers/transform.pyx":207
  *         return geometry
  * 
  *     cpdef dict geometry_collection(self, dict geometry):             # <<<<<<<<<<<<<<
@@ -6401,7 +6369,7 @@ static PyObject *__pyx_pw_3app_7helpers_9transform_11Transformer_17geometry_coll
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("geometry_collection (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 204, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_geometry), (&PyDict_Type), 1, "geometry", 1))) __PYX_ERR(0, 207, __pyx_L1_error)
   __pyx_r = __pyx_pf_3app_7helpers_9transform_11Transformer_16geometry_collection(((struct __pyx_obj_3app_7helpers_9transform_Transformer *)__pyx_v_self), ((PyObject*)__pyx_v_geometry));
 
   /* function exit code */
@@ -6419,7 +6387,7 @@ static PyObject *__pyx_pf_3app_7helpers_9transform_11Transformer_16geometry_coll
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("geometry_collection", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_geometry_collection(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 204, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3app_7helpers_9transform_11Transformer_geometry_collection(__pyx_v_self, __pyx_v_geometry, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 207, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6793,14 +6761,14 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_slice__3);
   __Pyx_GIVEREF(__pyx_slice__3);
 
-  /* "app/helpers/transform.pyx":171
- *         elif feature['type'] == 'GeometryCollection':
- *             out['geometry']['geometries'] = feature['geometries']
+  /* "app/helpers/transform.pyx":175
+ *         geom_ = self.geom_dispatch(geom_)
+ *         out = {'type':'Feature', 'geometry': geom_}
  *         for key in ('properties','bbox','id'):             # <<<<<<<<<<<<<<
  *             if key in feature:
  *                 out[key] = feature[key]
  */
-  __pyx_tuple__4 = PyTuple_Pack(3, __pyx_n_s_properties, __pyx_n_s_bbox, __pyx_n_s_id); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 171, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(3, __pyx_n_s_properties, __pyx_n_s_bbox, __pyx_n_s_id); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 175, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
   __Pyx_RefNannyFinishContext();

@@ -12,25 +12,36 @@ function Textbox(parent, new_id_txt_annot) {
             d3.event.preventDefault();
             focused.text = focused.text.substring(0,text.length-1);
         } else if (code == 13) { // Enter
-            focused.stroke = d3.rgb(240,240,240);
             focused.callback();
         }
-    }
+    };
 
     var keypress_txt_annot = function() {
         if(!focused) return;
         let code = d3.event.keyCode;
         focused.text = [focused.text, String.fromCodePoint(code)].join('');
-    }
+    };
+
+    var drag_txt_annot = d3.behavior.drag()
+                .on("dragstart", function(){
+                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                    d3.event.sourceEvent.stopPropagation();
+                    d3.event.sourceEvent.preventDefault();
+                  })
+                .on("dragend", function(){
+                    if(d3.select("#hand_button").classed("active"))
+                        zoom.on("zoom", zoom_without_redraw);
+                  })
+                .on("drag", function() {
+                    textgroup.attr('transform', 'translate(' + [-textbox.x + textbox.height / 2 + d3.event.x, -textbox.y + textbox.width / 2 + d3.event.y] + ')');
+                  });
 
     var text = "Enter your text...",
         fontsize = 12,
         x = 10,
         y = 30,
         width = 100,
-        height = 20,
-        stroke = d3.rgb(240,240,240),
-        fill = d3.rgb(255,255,255);
+        height = 20;
 
     var textgroup = parent.append("g")
             .attr("class", "txt_annot");
@@ -152,7 +163,16 @@ function Textbox(parent, new_id_txt_annot) {
     });
 
     textgroup.on("mouseover", () => { rct.style("fill-opacity", 0.5); });
-    textgroup.on("mouseout", () => { rct.style("fill-opacity", 0); });
-
+    textgroup.on("mouseout", () => { 
+        rct.style("fill-opacity", 0);
+        if(focused){
+            focused = null;
+            rct.style("stroke", null);
+            rct.classed("active", false);
+            d3.select("body").on("keydown", null)
+                             .on("keypress", null);
+        }
+    });
+    textgroup.call(drag_txt_annot);
     return textbox;
 }

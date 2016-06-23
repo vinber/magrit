@@ -787,10 +787,10 @@ function display_categorical_box(layer, field){
     newbox.append("h3").html("")
     newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
 
-    newbox.append("div")
-            .selectAll("p")
+    newbox.append("ul")
+            .selectAll("li")
             .data(cats).enter()
-            .append("p")
+            .append("li")
                 .style("margin", "auto")
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'))

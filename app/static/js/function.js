@@ -2424,6 +2424,7 @@ function render_categorical(layer, rendering_params){
     current_layers[layer].fill_color = {"class": rendering_params['colorByFeature']};
     current_layers[layer]['stroke-width-const'] = 0.75;
     current_layers[layer].is_result = true;
+    current_layers[layer].color_map = color_map;
     zoom_without_redraw();
 }
 
