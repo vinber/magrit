@@ -1,178 +1,203 @@
 "use strict";
 
-// Largely inspired by http://jsfiddle.net/eforgy/ppoakf0k/
-function Textbox(parent, new_id_txt_annot) {
-
-    var focused = null;
-
-    var keydown_txt_annot = function() {
-        if(!focused) return
-        let code = d3.event.keyCode;
-        if (code == 8) { // Backspace
-            d3.event.preventDefault();
-            focused.text = focused.text.substring(0,text.length-1);
-        } else if (code == 13) { // Enter
-            focused.callback();
-        }
-    };
-
-    var keypress_txt_annot = function() {
-        if(!focused) return;
-        let code = d3.event.keyCode;
-        focused.text = [focused.text, String.fromCodePoint(code)].join('');
-    };
-
-    var drag_txt_annot = d3.behavior.drag()
-                .on("dragstart", function(){
+class Textbox2 {
+    // woo lets use ES2015 classes !
+    constructor(parent, new_id_txt_annot){
+        this._text = "Enter your text...";
+        this.drag_txt_annot = d3.behavior.drag()
+                .on("dragstart", () => {
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
                     d3.event.sourceEvent.stopPropagation();
                     d3.event.sourceEvent.preventDefault();
                   })
-                .on("dragend", function(){
+                .on("dragend", () => {
                     if(d3.select("#hand_button").classed("active"))
                         zoom.on("zoom", zoom_without_redraw);
                   })
-                .on("drag", function() {
-                    textgroup.attr('transform', 'translate(' + [-textbox.x + textbox.height / 2 + d3.event.x, -textbox.y + textbox.width / 2 + d3.event.y] + ')');
+                .on("drag", () => {
+                    console.log(d3.event.x);console.log(d3.event.y);console.log([this._width, this._height]);
+                    this.textgroup.attr('transform', 'translate(' + [d3.event.x - this._width / 2, d3.event.y - this._height / 2] + ')');
                   });
+        this.fontsize = 12;
+        this.x = 10;
+        this.y = 30;
+        this._width = 100;
+        this._height = 20;
+        this.focused = null;
 
-    var text = "Enter your text...",
-        fontsize = 12,
-        x = 10,
-        y = 30,
-        width = 100,
-        height = 20;
+        this.textgroup = parent.append("g")
+                .attr("class", "txt_annot");
 
-    var textgroup = parent.append("g")
-            .attr("class", "txt_annot");
+        this.rct = this.textgroup.append("rect")
+        		.attr("width", this._width)
+        		.attr("height", this._height)
+        		.style("fill", "beige")
+        		.style("fill-opactiy", 0)
+                .on("click", () => { this.focus_on() });
 
-	var rct = textgroup.append("rect")
-		.attr("width", width)
-		.attr("height", height)
-		.style("fill", "beige")
-		.style("fill-opactiy", 0);
+        this.txt = this.textgroup.append("text")
+                .attr("id", new_id_txt_annot)
+                .text(this._text)
+                .style("fill","black")
+                .style("font-family", "'Helvetica Neue'")
+                .style("font-size", this.fontsize + "px")
+                .on("click", () => { this.focus_on() });
 
-	var txt = textgroup.append("text")
-            .attr("id", new_id_txt_annot)
-            .text(text)
-            .style("fill","black")
-            .style("font", "12px 'Helvetica Neue'");
+        this.txt_width = this.txt.node().getComputedTextLength();
+        this.txt.attr("x",.5*(this._width-this.txt_width));
+        this.txt.attr("y",.5*(this._height+this.fontsize)-2);
 
-	var txt_width = txt.node().getComputedTextLength();
-	txt.attr("x",.5*(width-txt_width));
-	txt.attr("y",.5*(height+fontsize)-2);
+        this.context_menu = new ContextMenu();
 
-	var callback = function() {
-		console.log("Text: " + txt.text());
-	}
+        this.textgroup.on("mouseover", () => { this.rct.style("fill-opacity", 0.5); });
+        this.textgroup.on("mouseout", () => {
+            this.rct.style("fill-opacity", 0);
+//                if(this.focused){
+//                    this.focused = null;
+//                    this.rct.style("stroke", null);
+//                    this.rct.classed("active", false);
+//                    d3.select("body").on("keydown", null)
+//                                     .on("keypress", null);
+//                }
+            });
 
-	var aligntext = function() {
-		txt.attr("x", 0.5*(width-txt_width));
-		txt.attr("y", 0.5*(height+fontsize)-2);
-	};
+        var getItems = () =>  [
+                {"name": "Edit style...", "action": () => { this.make_style_box(); }},
+                {"name": "Delete", "action": () => { this.txt.node().parentElement.remove(); }}
+            ];
 
-	function textbox() {}
+        this.textgroup.on("contextmenu", (d,i) => {
+            d3.event.preventDefault();
+            return this.context_menu
+                       .showMenu(d3.event, document.querySelector("body"), getItems());
+        });
 
-	Object.defineProperty(textbox,"text",{
-		get: function() {return text;},
-		set: function(_) {
-			text = _;
-			txt.text(_);
-			txt_width = txt.node().getComputedTextLength();
-			aligntext();
-		},
-		enumerable: true,
-		cofigurable: true
-	});
+        this.textgroup.call(this.drag_txt_annot);
 
-	Object.defineProperty(textbox,"x",{
-		get: function() {return x;},
-		set: function(_) {
-			x = _;
-			textgroup.attr("transform", "translate(" + x + "," + y + ")");
-		},
-		enumerable: true,
-		cofigurable: true
-	});
-		Object.defineProperty(textbox,"y",{
-		get: function() {return y;},
-		set: function(_) {
-			y = _;
-			textgroup.attr("transform", "translate(" + x + "," + y + ")");
-		},
-		enumerable: true,
-		cofigurable: true
-	});
+        this.keydown_txt_annot = () => {
+    //        if(!this.focused) return
+            console.log(d3.event)
+            let code = d3.event.keyCode;
+            if (code == 8) { // Backspace
+                d3.event.preventDefault();
+                this._text = this._text.substring(0, this._text.length-1);
+                this.setText(this._text);
+            } else if (code == 46){
+                let tmp = make_confirm_dialog("Delete selected text annotation ?").then(confirmed => {
+                    if(confirmed){
+                        this.txt.node().parentElement.remove();
+                    }
+                });
+                return;
+            } else if (code == 13) { // Enter
+                this.callback();
+            }
+        };
 
-	Object.defineProperty(textbox,"width",{
-		get: function() {return width;},
-		set: function(_) {
-			width = _;
-				rct.attr("width",_);
-				aligntext();
-			},
-			enumerable: true,
-			cofigurable: true
-	});
+        this.keypress_txt_annot = () => {
+    //        if(!this.focused) return;
+            let code = d3.event.charCode;
+            console.log(this._text)
+            this._text = [this._text, String.fromCodePoint(code)].join('');
+            this.setText(this._text);
+        };
 
-    Object.defineProperty(textbox,"height",{
-		get: function() {return height;},
-		set: function(_) {
-			height = _;
-			rct.attr("height",_);
-			aligntext();
-		},
-		enumerable: true,
-		cofigurable: true
-	});
+        this.aligntext = () => {
+            this._width = this.txt_width + 5;
+            this.txt.attr("x", 0.5*(this._width-this.txt_width));
+            this.txt.attr("y", 0.5*(this._height+this.fontsize)-2);
+            this.rct.attr("width", +this._width)
+                    .attr("height", this.fontsize + 8);
+        };
 
-    Object.defineProperty(textbox,"position",{
-		get: function() {return [x, y, width, height];},
-		set: function(_) {
-			textbox.x = _[0];
-			textbox.y = _[1];
-			textbox.width = _[2];
-			textbox.height = _[3];
-		},
-		enumerable: true,
-		cofigurable: true
-	})
+        this.setText = str => {
+            if(this._text.length == 0)
+                this._text = " ";
+            else if (this._text.indexOf(" ") == 0)
+                this._text = this._text.substr(1)
+            this.txt.text(this._text);
+            this.txt_width = this.txt.node().getComputedTextLength();
+            this.aligntext();
+        };
+    }
 
-    Object.defineProperty(textbox,"callback",{
-        get: function() {return callback;},
-        set: function(_) { callback = _; },
-        enumerable: true,
-        cofigurable: true
-    });
 
-    txt.on("click", function() {
-        if(rct.classed("active")){
-            focused = null;
-            rct.style("stroke", null);
-            rct.classed("active", false);
+    get callback(){
+        return callback;
+    }
+
+    set callback(_){
+        this.callback = _;
+    }
+
+    get width(){
+        return this._width;
+    }
+
+    set width(_){
+		 this.rct.attr("width",_);
+		 this.aligntext();
+        this._width = _;
+    }
+
+    get height(){
+        return this._height;
+    }
+
+    set height(_){
+        this.rct.attr("height",_);
+        this.aligntext();
+        this._height = _;
+    }
+
+    make_style_box(){
+        let current_options = {size: this.fontsize,
+                               content: this._text,
+                               font: ""};
+        let self = this;
+        var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "styleTextAnnotation")
+                .then(function(confirmed){
+                    let box_ = document.querySelector(".styleTextAnnotation");
+                    let font_size = box_.querySelector("#font_size"),
+                        content = box_.querySelector("#annotation_content");
+                    if(confirmed){
+                        null;
+                    } else {
+                        self._text = current_options.content;
+                        self.fontsize = current_options.size;
+                    }
+        });
+        let box_content = d3.select(".styleTextAnnotation").insert("div");
+        box_content.append("p").html("Font size ")
+                .append("input").attr({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+                .on("change", function(){
+                    self.fontsize = +this.value;
+                    self.txt.style("font-size", self.fontsize + "px");
+                    self.setText(self._text);
+                });
+        box_content.append("p").html("Content ")
+                .append("input").attr({"value": this._text, id: "annotation_content"})
+                .on("keypress", function(){
+                    self._text = this.value;
+                    self.setText(self._text);
+                });
+    }
+
+    focus_on(){
+        if(this.rct.classed("active")){
+            this.focused = null;
+            this.rct.style("stroke", null);
+            this.rct.classed("active", false);
             d3.select("body").on("keydown", null)
                              .on("keypress", null);
         } else {
-            focused = textbox;
-            d3.select("body").on("keydown", keydown_txt_annot)
-                .on("keypress", keypress_txt_annot);
-            rct.style("stroke","#347bbe");
-            rct.classed("active", true);
+            this.focused = true;
+            d3.select("body").on("keydown", this.keydown_txt_annot)
+                .on("keypress", this.keypress_txt_annot);
+            this.rct.style("stroke","#347bbe");
+            this.rct.classed("active", true);
             d3.event.stopPropagation();
         }
-    });
+    }
 
-    textgroup.on("mouseover", () => { rct.style("fill-opacity", 0.5); });
-    textgroup.on("mouseout", () => { 
-        rct.style("fill-opacity", 0);
-        if(focused){
-            focused = null;
-            rct.style("stroke", null);
-            rct.classed("active", false);
-            d3.select("body").on("keydown", null)
-                             .on("keypress", null);
-        }
-    });
-    textgroup.call(drag_txt_annot);
-    return textbox;
 }

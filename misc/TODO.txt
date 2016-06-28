@@ -7,4 +7,3 @@ TODO list:
 - Allow the user to display label of features on its map (based, or not on some criteria)
 - Choose some fonts (to be upload on the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts int the current browser.
 - Make a "style box" dedicated to the label layer.
-- Improve default displayed colors in the "categorical box".

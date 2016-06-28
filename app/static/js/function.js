@@ -127,16 +127,16 @@ var fields_Discont = {
             field_discont = d3.select("#field_Discont"),
             field_id = d3.select("#field_id_Discont");
         fields_num.forEach(function(field){
-                field_discont.append("option").text(field).attr("value", field)
+                field_discont.append("option").text(field).attr("value", field);
         });
         fields_all.forEach(function(field){
-                field_id.append("option").text(field).attr("value", field)
+                field_id.append("option").text(field).attr("value", field);
         });
         d3.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
-        unfillSelectInput(document.getElementById("field_Discont"))
-        unfillSelectInput(document.getElementById("field_id_Discont"))
+        unfillSelectInput(document.getElementById("field_Discont"));
+        unfillSelectInput(document.getElementById("field_id_Discont"));
         d3.selectAll(".params").attr("disabled", true);
     }
 }
@@ -2778,4 +2778,21 @@ function switch_accordion_section(){
         section2.dispatchEvent(new Event("click"));
     if(section3.getAttribute("aria-expanded") == "false")
         section3.dispatchEvent(new Event("click"));
+}
+
+function haversine_dist(A, B){
+    let pi_dr = Math.PI / 180;
+
+    let lat1 = A[0], lon1 = A[1],
+        lat2 = B[0], lon2 = B[1];
+
+    let x1 = lat2 - lat1,
+        dLat = x1 * pi_dr,
+        x2 = lon2 - lon1,
+        dLon = x2 * pi_dr;
+
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }

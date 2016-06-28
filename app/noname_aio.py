@@ -554,6 +554,8 @@ async def call_mta_simpl(posted_data, user_id, *args):
         return '{"Error":"Something went wrong... : %s"}' % content \
             if content else "Unknown Error"
 
+async def make_discont_lines(posted_data, user_id, *args):
+
 
 async def call_mta_geo(posted_data, user_id, *args):
     s_t = time.time()

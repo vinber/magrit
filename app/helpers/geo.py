@@ -21,7 +21,8 @@ def reproj_convert_layer(geojson_path, output_path,
 
     outSpRef = SpatialReference()
     ret_val = outSpRef.ImportFromProj4(output_crs)
-    assert ret_val == 0
+    if not ret_val == 0:
+        raise ValueError("Error when importing the output crs")
 
     coords_transform = CoordinateTransformation(inSpRef, outSpRef)
 

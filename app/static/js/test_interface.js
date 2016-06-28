@@ -208,8 +208,9 @@ function handle_dataset(f){
         joined_dataset.push(tmp_dataset);
         let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
             nb_features = joined_dataset[0].length;
+
         d3.select('#data_ext')
-            .attr("name-tooltip", dataset_name + '.csv')
+            .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
             .html([' <b>', d_name,
                    '</b> - <i><span style="font-size:9.5px;"> ',
                    nb_features, ' features - ',
@@ -225,7 +226,16 @@ function handle_dataset(f){
         }
         fields_handler.fill();
         if(browse_table.node().disabled === true) browse_table.node().disabled = false;
-        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
+        $("[layer-target-tooltip!='']").qtip({
+            content: { attr: "layer-target-tooltip" },
+            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+            events: {
+                show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+                hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+            }
+        });
+
+//        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
     };
     reader.readAsText(f);
 }
@@ -514,7 +524,7 @@ function add_layout_feature(selected_feature){
             existing_id = [],
             new_id;
         if(existing_annotation)
-            existing_id = Array.prototype.map.call(existing_annotation, elem => +elem.id.split('text_annotation_')[1]);
+            existing_id = Array.prototype.map.call(existing_annotation, elem => +elem.childNodes[1].id.split('text_annotation_')[1]);
         for(let i in range(25)){
             i = +i;
             if(existing_id.indexOf(i) == -1){
@@ -523,11 +533,11 @@ function add_layout_feature(selected_feature){
                 break;
             } else continue;
         }
-        if(!(new_id_nb)){
+        if(!(new_id)){
             alert("Maximum number of text annotations has been reached")
             return;
         }
-        let t = new Textbox(map, new_id);
+        let txt_box = new Textbox2(map, new_id);
 
     } else if (selected_feature == "Sphere background"){
         if(current_layers.Sphere) return;
@@ -569,10 +579,67 @@ function add_layout_feature(selected_feature){
        layers_listed.insertBefore(li, layers_listed.childNodes[0])
        zoom_without_redraw();
        binds_layers_buttons();
+    } else if (selected_feature == "Scale"){
+        handle_scale_bar();
     } else {
         alert("Not available yet..!")
     }
 }
+
+function handle_scale_bar(){
+    let scale_gp = map.append("g").attr("id", "scale_bar").attr("class", "legend scale"),
+        x_pos = 40,
+        y_pos = h - 100,
+        z_trans = zoom.translate(),
+        z_scale = zoom.scale();
+
+    let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
+        pt2 = proj.invert([(x_pos + 50 - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
+
+    let dist = haversine_dist(pt1, pt2),
+        dist_txt = dist > 0 ? dist.toFixed(0) : dist.toFixed(2);
+
+    let drag_scale = d3.behavior.drag()
+            .on("dragstart", () => {
+                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                d3.event.sourceEvent.stopPropagation();
+                d3.event.sourceEvent.preventDefault();
+              })
+            .on("dragend", () => {
+                if(d3.select("#hand_button").classed("active"))
+                    zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", () => {
+                scale_gp.attr('transform', 'translate(' + [d3.event.x - x_pos, d3.event.y - y_pos] + ')');
+              });
+
+    let getItems = () => [
+        {"name": "Resize", "action": () => { alert('foo')}},
+        {"name": "Edit Style...", "action": () => { alert("bar"); }},
+        {"name": "Delete", "action": () => { scale_gp.remove(); }}
+    ];
+
+    let scale_context_menu = new ContextMenu();
+
+    scale_gp.insert("rect")
+        .attr({x: x_pos, y: y_pos, height: 2, width: 50})
+        .style("fill", "black");
+    scale_gp.insert("text")
+        .attr({x: x_pos - 4, y: y_pos - 5})
+        .text("0");
+    scale_gp.insert("text")
+        .attr({x: x_pos + 50, y: y_pos - 5})
+        .text(dist_txt + " km");
+
+    scale_gp.call(drag_scale);
+    scale_gp.on("contextmenu", (d,i) => {
+                d3.event.preventDefault();
+                return scale_context_menu
+                   .showMenu(d3.event, document.querySelector("body"), getItems());
+            });
+
+}
+
 
 function add_layout_layers(){
     var selec = {layout: null};
@@ -651,7 +718,7 @@ function add_sample_layer(){
                             d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
                             nb_features = joined_dataset[0].length;
                         d3.select('#data_ext')
-                            .attr("name-tooltip", dataset_name + '.csv')
+                            .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
                             .html([' <b>', d_name,
                                    '</b> - <i><span style="font-size:9.5px;"> ',
                                    nb_features, ' features - ',
@@ -661,14 +728,19 @@ function add_sample_layer(){
                             document.getElementById("join_button").disabled = false;
                             d3.select(".s1").html("").on("click", null)
                             d3.select("#sample_link").html("").on("click", null);
-                           //d3.select("#section1").style({"height": "145px", "padding-top": "25px"})
                             section1.style({"padding-top": "25px"})
                         } else {
                             document.getElementById("join_button").disabled = true;
-                            //d3.select("#section1").style("height", "165px");
                         }
                         fields_handler.fill();
-                        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
+                        $("[layer-target-tooltip!='']").qtip({
+                            content: { attr: "layer-target-tooltip" },
+                            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+                            events: {
+                                show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+                                hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+                            }
+                        });
                     });
                 }
             }
