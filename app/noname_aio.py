@@ -554,8 +554,24 @@ async def call_mta_simpl(posted_data, user_id, *args):
         return '{"Error":"Something went wrong... : %s"}' % content \
             if content else "Unknown Error"
 
-async def make_discont_lines(posted_data, user_id, *args):
-
+async def receiv_layer(request):
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis)
+    layer_type = request.match_info['expr']
+    quantize = "-q 1e10" if layer_type == "discont" else "--no-quantization"
+    layer_name = posted_data['layer_name']
+    f_name = '_'.join([user_id, layer_name, quantize])
+    data = posted_data['geojson']
+    tmp_part = get_name()
+    filepath = "".join(['/tmp/', tmp_part, '.geojson'])
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(data)
+    res = await geojson_to_topojson(filepath, quantize)
+    res = res.replace(tmp_part, layer_name)
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set(f_name, res))
+    return web.Response(text="")
 
 async def call_mta_geo(posted_data, user_id, *args):
     s_t = time.time()
@@ -829,6 +845,7 @@ async def init(loop, port=9999):
     app.router.add_route('POST', '/convert_csv_geo', convert_csv_geo)
     app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     app.router.add_route('POST', '/save_user_pref', user_pref)
+    app.router.add_route('POST', '/add_layer/{expr}', receiv_layer)
 #    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')

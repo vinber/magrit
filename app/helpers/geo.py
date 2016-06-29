@@ -44,7 +44,8 @@ def reproj_convert_layer(geojson_path, output_path,
         outFeature = OgrFeature(output_lyr_defn)
         outFeature.SetGeometry(geom)
         for i in range(output_lyr_defn.GetFieldCount()):
-            outFeature.SetField(output_lyr_defn.GetFieldDefn(i).GetNameRef(), inFeature.GetField(i))
+            outFeature.SetField(output_lyr_defn.GetFieldDefn(i).GetNameRef(),
+                                inFeature.GetField(i))
         output_layer.CreateFeature(outFeature)
         outFeature.Destroy()
         inFeature.Destroy()

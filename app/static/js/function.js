@@ -282,13 +282,14 @@ function fillMenu_Discont(layer){
                 p_size = class_size[serie.getClass(val)],
                 size = val >= threshold ? p_size : 0;
             data_result[i] =  {id: id_ft, disc_value: val, prop_value: size};
-            result_layer .append("path")
+            result_layer.append("path")
                 .datum(topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
                     return a != b
                         && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
                 .attr({d: path, id: ["feature", i].join('_')})
-                .style({stroke: user_color, "stroke-width": size, "fill": "transparent"})
+                .style({stroke: user_color, "stroke-width": size, "fill": "transparent"});
+            result_layer.node().querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
         }
 
         let _list_display_name = get_display_name_on_layer_list(new_layer_name),
@@ -314,9 +315,26 @@ function fillMenu_Discont(layer){
             "n_features": arr_disc.length,
             "result": result_value
             };
+        send_layer_server(new_layer_name, "/add_layer/discont");
         binds_layers_buttons();
         zoom_without_redraw();
         switch_accordion_section();
+        });
+}
+
+function send_layer_server(layer_name, url){
+    var formToSend = new FormData();
+    var JSON_layer = path_to_geojson(layer_name);
+    formToSend.append("geojson", JSON_layer);
+    formToSend.append("layer_name", layer_name);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        url: url,
+        data: formToSend,
+        type: 'POST',
+        error: function(error) { console.log(error); },
+        success: function(data){ console.log(data); }
         });
 }
 
@@ -1752,6 +1770,7 @@ function fillMenu_Anamorphose(){
                 binds_layers_buttons();
                 zoom_without_redraw();
                 switch_accordion_section();
+                send_layer_server(new_layer_name, "/add_layer/olson")
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -1779,9 +1798,7 @@ function fillMenu_Anamorphose(){
                     error: function(error) { console.log(error); },
                     success: function(data){
                         let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
-                        current_layers[n_layer_name] = new Object();
                         current_layers[n_layer_name].fill_color = { "random": true };
-                        current_layers[n_layer_name].type = "Polygon";
                         current_layers[n_layer_name].is_result = true;
                         current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                         current_layers[n_layer_name].renderer = "Carto_doug";
@@ -2796,3 +2813,66 @@ function haversine_dist(A, B){
                 Math.sin(dLon/2) * Math.sin(dLon/2);
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+
+function path_to_geojson(id_layer){
+    if(id_layer.indexOf('#') != 0)
+        id_layer = ["#", id_layer].join('');
+    var result_geojson = [];
+    d3.select(id_layer)
+        .selectAll("path")
+        .each(function(d,i){
+            result_geojson.push({
+                type: "Feature",
+                id: i,
+                properties: d.properties,
+                geometry: {type: d.type, coordinates: d.coordinates}
+            })
+        });
+    return JSON.stringify({
+        type: "FeatureCollection",
+        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+        features: result_geojson
+    });
+}
+
+function path_to_geojson2(id_layer){
+    if(id_layer.indexOf('#') != 0)
+        id_layer = ["#", id_layer].join('');
+    var result_geojson = [];
+    d3.select(id_layer)
+        .selectAll("path")
+        .each(function(d,i){
+            result_geojson.push({
+                type: "Feature",
+                id: i,
+                properties: d.properties,
+                geometry: d.geometry
+            })
+        });
+    return JSON.stringify({
+        type: "FeatureCollection",
+        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+        features: result_geojson
+    });
+}
+
+//function path_to_geojson2(id_layer){
+//    if(id_layer.indexOf('#') == 0)
+//        id_layer = id_layer.substr(1);
+//    var result_geojson = [],
+//        paths = document.getElementById(id_layer).querySelectorAll('path');
+//    for(let i=0, len_i = paths.length; i<len_i; ++i){
+//        data = paths[i].__data__;
+//        result_geojson.push({
+//             type: "Feature",
+//             id: i,
+//             properties: data.properties,
+//             geometry: {type: data.type, coordinates: data.coordinates}
+//        });
+//    }
+//    return JSON.stringify({
+//        type: "FeatureCollection",
+//        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+//        features: result_geojson
+//    });
+//}
