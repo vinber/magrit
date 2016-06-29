@@ -77,7 +77,7 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", 
         setSelected(field_selec.node(), fill_prev.categorical[0])
     field_selec.on("change", function(){
         let field_name = this.value,
-            data_layer = ref_layer ? user_data[ref_layer] : user_data[layer],
+            data_layer = ref_layer ? user_data[ref_layer] : current_layers[layer].is_result ? result_data[layer] : user_data[layer],
             values = data_layer.map(i => i[field_name]),
             cats = new Set(values),
             txt = [cats.size, " cat."].join('');
@@ -187,7 +187,7 @@ function createStyleBox(layer_name){
                                  .style('stroke', stroke_prev);
                     } else if(fill_meth == "class") {
                         selection.style('fill-opacity', opacity)
-                               .style("fill", function(d, i){ return current_layers[layer_name].fill_color.class[i] })
+                               .style("fill", function(d, i){ return fill_prev.class[i] })
                                .style('stroke-opacity', previous_stroke_opacity)
                                .style("stroke", stroke_prev);
                     } else if(fill_meth == "random"){
@@ -215,7 +215,7 @@ function createStyleBox(layer_name){
                    'Geometry type : <b><i>', type, '</b></i>'].join(''));
 
      if(type !== 'Line'){
-        if(current_layers[layer_name].colors_breaks == undefined){
+        if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
             if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
                 let fields = type_col(layer_name, "string");
                 let fill_method = popup.append("p").html("Fill color").insert("select");
@@ -238,7 +238,40 @@ function createStyleBox(layer_name){
                 popup.append('div').attr({id: "fill_color_section"})
                 make_single_color_menu(layer_name, fill_prev);
             }
-         } else if (renderer != "Stewart"){
+        } else if (renderer == "Categorical"){
+            let renderer_field = current_layers[layer_name].rendered_field,
+                fields_layer = type_col(layer_name),
+                fields_name = Object.getOwnPropertyNames(fields_layer),
+                field_to_render;
+
+            var field_selec = popup.append('p').html('Field to render ')
+                                    .insert('select').attr('class', 'params')
+                                    .on("change", function(){ field_to_render = this.value; });
+
+            fields_name.forEach(f_name => {
+                field_selec.append("option").text(f_name).attr("value", f_name);
+            });
+
+            popup.insert('p').style("margin", "auto").html("")
+                .append("button")
+                .attr({class: "button_disc"})
+                .style({"font-size": "0.8em", "text-align": "center"})
+                .html("Choose colors")
+                .on("click", function(){
+                    display_categorical_box(layer_name, field_selec.node().value)
+                        .then(function(confirmed){
+                            if(confirmed){
+                                rendering_params = {
+                                        nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                        renderer:"Categorical", rendered_field: field_selec.node().value
+                                    };
+                                render_categorical(layer_name, rendering_params);
+                            }
+                        });
+                });
+
+
+        } else if (renderer != "Stewart"){
             let field_to_discretize;
             if(renderer == "Gridded")
                 field_to_discretize = "densitykm";

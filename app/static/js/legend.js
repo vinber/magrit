@@ -382,9 +382,9 @@ function createLegend_choro(layer, field, title, subtitle){
     if(current_layers[layer].renderer.indexOf('Categorical') > -1){
         data_colors_label = [];
         current_layers[layer].color_map.forEach( (v,k) => {
-            data_colors_label.push({value: k, color: v}); } );
+            data_colors_label.push({value: v[1], color: v[0]}); } );
         nb_class = current_layers[layer].color_map.size;
-    } else { 
+    } else {
         data_colors_label = current_layers[layer].colors_breaks.map(obj => {
             return {value: obj[0], color: obj[1]};
         });
@@ -477,7 +477,7 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.textContent = this.value
             });
 
-    if(legend_boxes[0].length > 0){
+    if(legend_boxes[0].length > 0 && current_layers[layer_name].renderer != "Categorical"){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)
@@ -529,6 +529,12 @@ function createlegendEditBox(legend_id, layer_name){
                     });
         }
     }
+
+    box_body.insert("p").html("Display features count ")
+            .insert("input").attr("type", "checkbox")
+            .on("change", function(){
+                alert("to be done!");
+            });
 
     box_body.insert('p').html('Additionnal legend notes<br>')
             .insert('input').attr("value", note_content.textContent)

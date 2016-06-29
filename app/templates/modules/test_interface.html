@@ -498,7 +498,7 @@ prepare_drop_section();
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
 
-$(function() {
+//$(function() {
   $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
     update: function(a){
@@ -532,7 +532,7 @@ $(function() {
      }
   });
   $( "#sortable" ).disableSelection();
-});
+//});
 
 // Display a progress bar during the ajaxRequest
 // (can be unset locally by using the `"global": false` param when making an ajax request)
@@ -1033,7 +1033,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
-            layers_style[i].cache_url = [user_id, layer_name].join('_');
+            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
@@ -1041,6 +1041,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
             layers_style[i].size = current_layers[layer_name].size;

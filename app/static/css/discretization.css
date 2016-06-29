@@ -1,20 +1,13 @@
-#discretization_panel {
-    margin-top: 30px;
-    width: 30%;
+#discretization_panel, #histo_options {
+    width: 22%;
     float: left;
-}
-
-#histo_options {
-    margin-top: 50px;
-    width: 30%;
-    float: left;
-    margin-left: 5%
+    margin-top: 20px;
 }
 
 #ref_histo_box {
-    margin-top: 30px;
-    width: 30%;
     float: right;
+    margin-top: 20px;
+    font-size: 11px;
 }
 
 #svg_ref_histo .axis label{

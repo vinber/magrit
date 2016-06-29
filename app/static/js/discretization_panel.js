@@ -196,9 +196,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var make_box_histo_option = function(){
         var histo_options = newBox.append('div').attr("id", "histo_options");
 
-        var a = histo_options.append("p").style("margin", 0);
-        var b = histo_options.append("p").style("margin", 0);
-        var c = histo_options.append("p").style("margin", 0);
+        var a = histo_options.append("p").style("margin", 0).style("display", "inline");
+        var b = histo_options.append("p").style("margin", 0).style("display", "inline");
+        var c = histo_options.append("p").style("margin", 0).style("display", "inline");
 
         a.insert("input")
             .attr({type: "checkbox", value: "mean"})
@@ -255,7 +255,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     };
 
     var display_ref_histo = function(){
-        var svg_h = h / 7.75,
+        var svg_h = h / 7.25,
             svg_w = w / 4.75,
             nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
 
@@ -269,7 +269,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             height = svg_h - margin.top - margin.bottom;
 
         var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
-        ref_histo.append('p').html('<i>Distribution reference histogram</i>');
+        ref_histo.append('p').style("margin", "auto")
+                  .html('<b>Distribution reference histogram</b>');
 
         var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
             .attr("width", svg_w + margin.left + margin.right)
@@ -324,6 +325,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .scale(y)
                 .ticks(5)
                 .orient("left"));
+    }
+
+    var make_summary = function(){
+        console.log(serie);
+        let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
+        newBox.append("div").attr("id","summary")
+                        .style("font-size", "10px").style("float", "right")
+                        .style({"margin-left": "25px", "margin-right": "50px"})
+                        .insert("p").html(["<b>Summary</b><br>", content_summary].join(""));
     }
 
     var redisplay = {
@@ -485,7 +495,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
-    var discretization = newBox.append('div').style({"margin-top": "30px", "padding-top": "10px"})
+    var discretization = newBox.append('div') // .style({"margin-top": "30px", "padding-top": "10px"})
                                 .attr("id", "discretization_panel")
                                 .insert("p").html("Type ")
                                 .insert("select").attr("class", "params")
@@ -506,6 +516,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     discretization.node().value = type;
     make_box_histo_option();
+    make_summary();
     display_ref_histo();
 
     var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
@@ -645,9 +656,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var to_reverse = false;
     document.getElementById("button_Sequential").checked = true;
 
-    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion_disc"});
-    accordion_summ.append("h3").html("<b>Summary</b>");
-    var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
+//    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion_disc"});
+//    accordion_summ.append("h3").html("<b>Summary</b>");
+//    var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
 
     var accordion_breaks = newBox.append("div")
                                 .attr({id: "accordion_breaks_vals",
@@ -755,7 +766,9 @@ function fetch_categorical_colors(){
     let categ = document.querySelectorAll(".typo_class"),
         color_map = new Map();
     for(let i = 0; i < categ.length; i++){
-        color_map.set(categ[i].__data__.name, rgb2hex(categ[i].querySelector(".color_square").style.backgroundColor));
+        let color = rgb2hex(categ[i].querySelector(".color_square").style.backgroundColor),
+            new_name = categ[i].querySelector(".typo_name").value;
+        color_map.set(categ[i].__data__.name, [color, new_name]);
     }
     return color_map;
 }
@@ -788,7 +801,7 @@ function display_categorical_box(layer, field){
     newbox.append("h3").html("")
     newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
 
-    newbox.append("ul").style("padding", "unset")
+    newbox.append("ul").style("padding", "unset").attr("id", "sortable_typo_name")
             .selectAll("li")
             .data(cats).enter()
             .append("li")
@@ -796,9 +809,16 @@ function display_categorical_box(layer, field){
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'));
 
+//    newbox.selectAll(".typo_class")
+//            .append("p").style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle"})
+//            .html(d => "<b>" + d.name + " </b>");
+
     newbox.selectAll(".typo_class")
-            .append("p").style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle"})
-            .html(d => "<b>" + d.name + " </b>");
+            .append("input")
+            .style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
+            .attr("class", "typo_name")
+            .attr("value", d => d.name)
+            .attr("id", d => d.name);
 
     newbox.selectAll(".typo_class")
             .insert("p").attr("class", "color_square")
@@ -822,7 +842,7 @@ function display_categorical_box(layer, field){
 
     newbox.selectAll(".typo_class")
             .insert("span")
-            .style("float", "right")
+//            .style("float", "right")
             .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
 
     newbox.insert("p")
@@ -836,6 +856,12 @@ function display_categorical_box(layer, field){
             }
         });
 
+      $( "#sortable_typo_name" ).sortable({
+        placeholder: "ui-state-highlight",
+        update: function(a){  console.log(a);  }
+      });
+
+
     var deferred = Q.defer();
     $("#categorical_box").dialog({
         modal: true,
@@ -844,7 +870,7 @@ function display_categorical_box(layer, field){
             text: "Confirm",
             click: function(){
                     let color_map = fetch_categorical_colors();
-                    let colorByFeature = data_layer.map( ft => color_map.get(ft[field]) );
+                    let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
                     deferred.resolve([nb_class, color_map, colorByFeature]);
                     $(this).dialog("close");
                     }

@@ -324,7 +324,8 @@ function fillMenu_Discont(layer){
 
 function send_layer_server(layer_name, url){
     var formToSend = new FormData();
-    var JSON_layer = path_to_geojson(layer_name);
+
+    var JSON_layer = url.indexOf("olson") > -1 ? path_to_geojson2(layer_name) : path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
     $.ajax({
@@ -332,6 +333,7 @@ function send_layer_server(layer_name, url){
         contentType: false,
         url: url,
         data: formToSend,
+        global: false,
         type: 'POST',
         error: function(error) { console.log(error); },
         success: function(data){ console.log(data); }
@@ -1763,6 +1765,7 @@ function fillMenu_Anamorphose(){
                     "scale_max": scale_max,
                     "stroke-width-const": 1,
                     "is_result": true,
+                    "n_features": nb_ft,
                     "ref_layer_name": layer,
                     "fill_color": { "random": true },
                     "scale_byFeature": transform
