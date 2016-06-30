@@ -1723,41 +1723,53 @@ function fillMenu_Anamorphose(){
 
                 }
                 console.log(transform);
-                result_data[new_layer_name] = new Array();
-                map.append("g").attr("id", new_layer_name)
-                      .attr("class", "result_layer layer")
-                      .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-                      .selectAll(".subunit")
-                      .data(topojson.feature(_target_layer_file, _target_layer_file.objects[layer]).features)
-                      .enter().append("path")
-                      .attr("d", path)
-                      .attr("id", function(d,ix) {
-                            result_data[new_layer_name].push(d.properties);
-                            return ["feature", ix].join('_');
-                        })
-                      .style("stroke", "rgb(0, 0, 0)")
-                      .style("stroke-opacity", .4)
-                      .style("fill", Colors.names[Colors.random()])
-                      .style("fill-opacity", 0.6)
-                      .attr("transform", function(d,i) {
-                            let centroid = path.centroid(d),
-                                x = centroid[0],
-                                y = centroid[1];
-                            return ["translate(", x, ",", y, ")",
-                                    "scale(", transform[i], ")",
-                                    "translate(", -x, ",", -y, ")"].join("");
-                        });
+                let formToSend = new FormData();
+                formToSend.append("json", JSON.stringify({topojson: layer, scale_values: transform}))
+                let result_tmp = sync_request_return("POST", "/R_compute/olson", formToSend);
+                console.log(result_tmp);
+                let n_layer_name = add_layer_topojson(result_tmp, {result_layer_on_add: true});
+                d3.select("#" + n_layer_name)
+                            .selectAll("path")
+                            .style("fill", function(){ return Colors.random(); })
+                            .style("fill-opacity", 0.8)
+                            .style("stroke", "black")
+                            .style("stroke-opacity", 0.8)
 
-                let class_name = "ui-state-default sortable_result " + new_layer_name,
-                    _list_display_name = get_display_name_on_layer_list(new_layer_name),
-                    layers_listed = layer_list.node(),
-                    li = document.createElement("li");
+//                result_data[new_layer_name] = new Array();
+//                map.append("g").attr("id", new_layer_name)
+//                      .attr("class", "result_layer layer")
+//                      .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+//                      .selectAll(".subunit")
+//                      .data(topojson.feature(_target_layer_file, _target_layer_file.objects[layer]).features)
+//                      .enter().append("path")
+//                      .attr("d", path)
+//                      .attr("id", function(d,ix) {
+//                            result_data[new_layer_name].push(d.properties);
+//                            return ["feature", ix].join('_');
+//                        })
+//                      .style("stroke", "rgb(0, 0, 0)")
+//                      .style("stroke-opacity", .4)
+//                      .style("fill", Colors.names[Colors.random()])
+//                      .style("fill-opacity", 0.6)
+//                      .attr("transform", function(d,i) {
+//                            let centroid = path.centroid(d),
+//                                x = centroid[0],
+//                                y = centroid[1];
+//                            return ["translate(", x, ",", y, ")",
+//                                    "scale(", transform[i], ")",
+//                                    "translate(", -x, ",", -y, ")"].join("");
+//                        });
 
-                li.setAttribute("layer_name", new_layer_name);
-                li.setAttribute("class", class_name);
-                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
-                layers_listed.insertBefore(li, layers_listed.childNodes[0])
+//                let class_name = "ui-state-default sortable_result " + new_layer_name,
+//                    _list_display_name = get_display_name_on_layer_list(new_layer_name),
+//                    layers_listed = layer_list.node(),
+//                    li = document.createElement("li");
+//
+//                li.setAttribute("layer_name", new_layer_name);
+//                li.setAttribute("class", class_name);
+//                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
+//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
+//                layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[new_layer_name] = {
                     "renderer": "OlsonCarto",
                     "type": "Polygon",
@@ -1770,10 +1782,10 @@ function fillMenu_Anamorphose(){
                     "fill_color": { "random": true },
                     "scale_byFeature": transform
                     };
-                binds_layers_buttons();
-                zoom_without_redraw();
-                switch_accordion_section();
-                send_layer_server(new_layer_name, "/add_layer/olson")
+//                binds_layers_buttons();
+//                zoom_without_redraw();
+//                switch_accordion_section();
+//                send_layer_server(new_layer_name, "/add_layer/olson")
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -1788,7 +1800,8 @@ function fillMenu_Anamorphose(){
 
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
-                    "var_name": JSON.stringify(var_to_send),
+                    "var_name": var_to_send,
+//                    "var_name": JSON.stringify(var_to_send),
                     "iterations": nb_iter }))
 
                 $.ajax({
@@ -2719,9 +2732,25 @@ function add_table_field(table, layer_name, parent){
                     operation = chooses_handler.operator;
 
                 if(chooses_handler.type_operation === "math_compute"){
-                    for(let i=0; i<table.length; i++)
-                        table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
-
+                    if(table.length < 3200){
+                        for(let i=0; i<table.length; i++)
+                            table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
+                    } else {
+                        let request = new XMLHttpRequest(),
+                            formToSend = new FormData();
+                        formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
+                        formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
+                        formToSend.append('operator', operation);
+                        data = sync_request_return("POST", "/calc", formToSend);
+                        data = JSON.parse(data);
+//                        request.open("POST", "/calc", false);
+//                        request.send(formToSend);
+//                        if (request.status === 200) {
+//                            let data = JSON.parse(request.responseText);
+                        for(let i=0; i<table.length; i++)
+                            table[i][new_name_field] = data[i];
+//                        }
+                    }
                 } else {
                     let opt_val = chooses_handler.opt_val;
                     if(operation == "Truncate"){
@@ -2859,23 +2888,9 @@ function path_to_geojson2(id_layer){
     });
 }
 
-//function path_to_geojson2(id_layer){
-//    if(id_layer.indexOf('#') == 0)
-//        id_layer = id_layer.substr(1);
-//    var result_geojson = [],
-//        paths = document.getElementById(id_layer).querySelectorAll('path');
-//    for(let i=0, len_i = paths.length; i<len_i; ++i){
-//        data = paths[i].__data__;
-//        result_geojson.push({
-//             type: "Feature",
-//             id: i,
-//             properties: data.properties,
-//             geometry: {type: data.type, coordinates: data.coordinates}
-//        });
-//    }
-//    return JSON.stringify({
-//        type: "FeatureCollection",
-//        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-//        features: result_geojson
-//    });
-//}
+function sync_request_return(method, url, data){
+    var request = new XMLHttpRequest();
+    request.open(method, url, false);
+    request.send(data);
+    return request.responseText;
+}

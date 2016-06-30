@@ -6,7 +6,30 @@ from osgeo.osr import SpatialReference, CoordinateTransformation
 from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
 from shapely.geometry import shape, mapping
 from shapely.ops import transform
+from shapely.affinity import scale
 
+def olson_transform(geojson, scale_values):
+    """
+    Inplace scaling transformation of each polygon of the geojson provided 
+    according to the "scale values" also provided.
+
+    Args:
+        geojson, dict:
+            The geojson of polygon to transform
+            (it might be useful to have choosen an appropriate projection as we
+            want to deal with the area)
+        scale_values: 
+            The pre-computed scale values for olson transformation
+            (1 = no transformation)
+    Return:
+        Nothing
+    """
+    if len(geojson["features"]) != len(scale_values):
+        raise ValueError("Inconsistent number of features/values")
+    for ix, feature in enumerate(geojson["features"]):
+        geom = shape(feature["geometry"])
+        val = scale_values[ix]
+        feature["geometry"] = mapping(scale(geom, xfact=val, yfact=val))
 
 def reproj_convert_layer(geojson_path, output_path,
                          file_format, output_crs, input_crs="epsg:4326"):

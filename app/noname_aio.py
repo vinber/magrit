@@ -11,6 +11,7 @@ import time
 import asyncio
 import zmq.asyncio
 import pandas as pd
+import numpy as np
 import base64
 
 from contextlib import closing
@@ -32,10 +33,11 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 # Helpers :
 from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder
-from helpers.geo import reproj_convert_layer, reproj_layer, check_projection
 from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
 from helpers.topo_to_geo import convert_from_topo
+from helpers.geo import (
+    reproj_convert_layer, reproj_layer, check_projection, olson_transform)
 
 from geopandas import GeoDataFrame
 
@@ -392,10 +394,13 @@ async def carto_doug(posted_data, user_id, loop):
 #    ref_layer = json.loads(ref_layer.decode())
 #    new_field = json.loads(posted_data['var_name'])
 #    iterations = json.loads(posted_data['iterations'])
-    ref_layer, new_field, iterations = \
-        await asyncio.gather(*[ajson_loads(ref_layer.decode()),
-                               ajson_loads(posted_data['var_name']),
-                               ajson_loads(posted_data['iterations'])])
+#    ref_layer, new_field, iterations = \
+#        await asyncio.gather(*[ajson_loads(ref_layer.decode()),
+#                               ajson_loads(posted_data['var_name']),
+#                               ajson_loads(posted_data['iterations'])])
+    ref_layer = await ajson_loads(ref_layer.decode())
+    new_field = posted_data['var_name']
+    iterations = int(posted_data['iterations'])
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
         join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
@@ -518,6 +523,25 @@ async def carto_gridded(posted_data, user_id, *args):
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return res
 
+async def compute_olson(posted_data, user_id, *args):
+    posted_data = json.loads(posted_data.get("json"))
+    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    ref_layer = await app_glob['redis_conn'].get(f_name)
+    ref_layer = await ajson_loads(ref_layer.decode())
+    scale_values = posted_data['scale_values']
+    ref_layer_geojson = convert_from_topo(ref_layer)
+    olson_transform(ref_layer_geojson, scale_values)
+    tmp_part = get_name()
+    f_name = "".join(["/tmp/", tmp_part, ".geojson"])
+    savefile(f_name, json.dumps(ref_layer_geojson).encode())
+    res = await geojson_to_topojson(f_name)
+    new_name = "Olson_carto_123"
+    res = res.replace(tmp_part, new_name)
+    asyncio.ensure_future(
+        app_glob['redis_conn'].set('_'.join([
+            user_id, new_name, "--no-quantization"]), res))
+    return res
+
 
 async def call_mta_simpl(posted_data, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
@@ -614,7 +638,6 @@ async def call_mta_geo(posted_data, user_id, *args):
     except:
         return '{"Error":"Something went wrong... : %s"}' % content \
             if content else "Unknown Error"
-
 
 async def call_stewart(posted_data, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
@@ -778,6 +801,19 @@ async def rawcsv_to_geo(data):
         """]}"""
         ])
 
+async def calc_helper(request):
+    posted_data = await request.post()
+#    val1 = np.array(json.loads(posted_data['var1']))
+#    val2 = np.array(json.loads(posted_data['var2']))
+    func_operator = {
+            "+": np.add, "-": np.subtract,
+            "*": np.multiply, "/": np.true_divide
+        }[posted_data['operator']]
+    return web.Response(text=json.dumps(
+        func_operator(np.array(json.loads(posted_data['var1'])),
+                      np.array(json.loads(posted_data['var2']))).tolist()
+        ))
+
 async def convert_csv_geo(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
@@ -846,6 +882,7 @@ async def init(loop, port=9999):
     app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_route('POST', '/add_layer/{expr}', receiv_layer)
+    app.router.add_route('POST', '/calc', calc_helper)
 #    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
@@ -917,7 +954,7 @@ if __name__ == '__main__':
     app_glob['R_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,
-        "carto_doug": carto_doug, "nothing": nothing }
+        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson }
     print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()
