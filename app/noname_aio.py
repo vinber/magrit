@@ -13,6 +13,7 @@ import zmq.asyncio
 import pandas as pd
 import numpy as np
 import base64
+import json as _json
 
 from contextlib import closing
 from zipfile import ZipFile
@@ -803,16 +804,25 @@ async def rawcsv_to_geo(data):
 
 async def calc_helper(request):
     posted_data = await request.post()
-#    val1 = np.array(json.loads(posted_data['var1']))
-#    val2 = np.array(json.loads(posted_data['var2']))
-    func_operator = {
-            "+": np.add, "-": np.subtract,
-            "*": np.multiply, "/": np.true_divide
+    val1 = np.array(json.loads(posted_data['var1']))
+    val2 = np.array(json.loads(posted_data['var2']))
+    allowed_types = {"i", "f"}
+    if val1.dtype.kind not in allowed_types:
+        try:
+            val1 = val1.astype(float, copy=False)
+        except:
+            return web.Response(text='{"Error":"Invalid datatype"}')
+    if val2.dtype.kind not in allowed_types:
+        try:
+            val2 = val2.astype(float, copy=False)
+        except:
+            return web.Response(text='{"Error":"Invalid datatype"}')
+    func_operation =  {
+            "+": val1.__add__, "-": val1.__sub__,
+            "*": val1.__mul__, "/": val1.__truediv__
         }[posted_data['operator']]
-    return web.Response(text=json.dumps(
-        func_operator(np.array(json.loads(posted_data['var1'])),
-                      np.array(json.loads(posted_data['var2']))).tolist()
-        ))
+    result = func_operation(val2).tolist()
+    return web.Response(text=_json.dumps(result))
 
 async def convert_csv_geo(request):
     posted_data, session_redis = \
@@ -926,6 +936,11 @@ if __name__ == '__main__':
         print("Error : Selected port is already in use")
         display_usage(sys.argv[0])
         sys.exit()
+
+    # Set the correct current directory :
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if app_real_path != os.getcwd():
+        os.chdir(app_real_path)
     # The mutable mapping provided by web.Application will be used to store (safely ?)
     # some global variables :
     # Todo : create only one web.Application object instead of app + app_glob
@@ -941,12 +956,11 @@ if __name__ == '__main__':
     zmq.asyncio.install()
     app_glob['async_ctx'] = zmq.asyncio.Context(2)
     app_glob['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-#    path = os.path.dirname(os.path.realpath(__file__))
-#    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     app_glob['app_users'] = set()
     loop = asyncio.get_event_loop()
     srv, redis_conn = loop.run_until_complete(init(loop, port))
     app_glob['redis_conn'] = redis_conn
+#    app_glob['app_real_path'] = path[:-path[::-1].find(os.path.sep)-1]
     with open('static/json/sample_layers.json', 'r') as f:
         data = f.read()
         app_glob['db_layers'] = json.loads(data.replace('/da', '../da'))[0]

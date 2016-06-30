@@ -966,7 +966,8 @@ function get_map_template(){
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
         user_id = document.getElementById('user_id').innerHTML,
-        displayed_legend = d3.selectAll(".legend_feature:not(.title)");
+        displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
+        fetch_layers = [];
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
@@ -1006,7 +1007,6 @@ function get_map_template(){
 
         if(current_layers[layer_name].colors_breaks)
             layers_style[i].colors_breaks = JSON.stringify(current_layers[layer_name].colors_breaks);
-
 
         if(layer_name.indexOf('PropSymbols') !== -1){
             let type_symbol = current_layers[layer_name].symbol;
@@ -1058,9 +1058,21 @@ function get_map_template(){
             selection = map.select("#" + layer_name).selectAll("path");
         }
         layers_style[i].stroke_opacity = selection.style("stroke-opacity");
-        layers_style[i].fill_opacity = selection.style("fill-opacity")
+        layers_style[i].fill_opacity = selection.style("fill-opacity");
+        fetch_layers.push(layers_style[i].cache_url ? request_data("GET", "/get_layer/" + layers_style[i].cache_url, null) : null);
     }
-    return JSON.stringify({"map_config": map_config, "layers": layers_style})
+    console.log(fetch_layers);
+    let json_result = JSON.stringify({"map_config": map_config, "layers": layers_style});
+    Q.all([fetch_layers]).done(function(result){
+        for(let i = 0; i < fetch_layers.length; i++){
+            if(result[i] && result[i].target){
+                console.log(result[i].target.responseText)
+                json_result = json_result.replace(layers_style[i].cache_url, result[i].target.responseText)
+            }
+        }
+        console.log(json_result);
+    });
+    return json_result;
 }
 
 // Function triggered when the user request a download of its map preferences

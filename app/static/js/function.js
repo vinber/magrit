@@ -2726,46 +2726,19 @@ function add_table_field(table, layer_name, parent){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
                 console.log(chooses_handler)
-                let fi1 = chooses_handler.field1,
-                    fi2 = chooses_handler.field2,
-                    new_name_field = chooses_handler.new_name,
-                    operation = chooses_handler.operator;
-
-                if(chooses_handler.type_operation === "math_compute"){
-                    if(table.length < 3200){
-                        for(let i=0; i<table.length; i++)
-                            table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
-                    } else {
-                        let request = new XMLHttpRequest(),
-                            formToSend = new FormData();
-                        formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
-                        formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
-                        formToSend.append('operator', operation);
-                        data = sync_request_return("POST", "/calc", formToSend);
-                        data = JSON.parse(data);
-//                        request.open("POST", "/calc", false);
-//                        request.send(formToSend);
-//                        if (request.status === 200) {
-//                            let data = JSON.parse(request.responseText);
-                        for(let i=0; i<table.length; i++)
-                            table[i][new_name_field] = data[i];
-//                        }
-                    }
-                } else {
-                    let opt_val = chooses_handler.opt_val;
-                    if(operation == "Truncate"){
-                        for(let i=0; i < table.length; i++)
-                            table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
-
-                    } else if (operation == "Concatenate"){
-                        for(let i=0; i < table.length; i++)
-                            table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
-                    }
-                }
-                fields_handler.unfill();
-                fields_handler.fill(layer_name);
-                if(parent)
-                    parent.display_table(layer_name);
+                chooses_handler.table = table;
+                let tmp = compute_and_add(chooses_handler);
+                console.log(tmp);
+                tmp.then(function(resolved){
+                        if(resolved){
+                            fields_handler.unfill();
+                            fields_handler.fill(layer_name);
+                            if(parent)
+                                parent.display_table(layer_name);
+                        }
+                    }, function(error){
+                        alert("Somethng wrong happened");
+                });
             }
         });
 
@@ -2810,6 +2783,46 @@ function add_table_field(table, layer_name, parent){
     }
 
     return box;
+}
+
+
+function compute_and_add(options){
+    let fi1 = options.field1,
+        fi2 = options.field2,
+        new_name_field = options.new_name,
+        operation = options.operator,
+        table = options.table;
+
+    if(options.type_operation === "math_compute" && table.length > 3200){
+        let formToSend = new FormData();
+        formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
+        formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
+        formToSend.append('operator', operation);
+        return request_data("POST", "/calc", formToSend).then(function(e){
+            let data = JSON.parse(e.target.responseText);
+            console.log(e.target.responseText)
+            for(let i=0; i<table.length; i++)
+                table[i][new_name_field] = data[i];
+            return true;
+        });
+    }
+    else if(options.type_operation === "math_compute"){
+        for(let i=0; i<table.length; i++)
+            table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
+        return Promise.resolve(true);
+    } else {
+        let opt_val = options.opt_val;
+        if(operation == "Truncate"){
+            for(let i=0; i < table.length; i++)
+                table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
+
+        } else if (operation == "Concatenate"){
+            for(let i=0; i < table.length; i++)
+                table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
+        }
+        return Promise.resolve(true);
+    }
+    return Promise.reject("Unknown error")
 }
 
 var contains_empty_val = function(arr){
@@ -2888,9 +2901,12 @@ function path_to_geojson2(id_layer){
     });
 }
 
-function sync_request_return(method, url, data){
-    var request = new XMLHttpRequest();
-    request.open(method, url, false);
-    request.send(data);
-    return request.responseText;
+function request_data(method, url, data){
+    return new Promise(function(resolve, reject){
+        var request = new XMLHttpRequest();
+        request.open(method, url, true);
+        request.onload = resolve;
+        request.onerror = reject;
+        request.send(data);
+    });
 }
