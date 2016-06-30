@@ -1,6 +1,5 @@
 #!/bin/sh
-cd ..
-sudo apt-get install libgdal-dev libproj-dev libv8-dev libffi-dev libpython3.5-dev r-base redis-server nodejs npm libfftw3-dev libzmq-dev python3.5-numpy python3.5-gdal
+sudo apt-get -y install libgdal-dev libproj-dev libv8-dev libffi-dev libpython3.5-dev r-base redis-server nodejs npm libfftw3-dev libzmq-dev python3.5-numpy python3.5-gdal
 sudo npm -g install topojson
 sudo -H python3.5 -m pip install -r requirements.txt
 mkdir tmpdir
