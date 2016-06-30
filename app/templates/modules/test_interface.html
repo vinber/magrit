@@ -486,8 +486,10 @@ binds_layers_buttons();
 zoom.scale(0.5).translate([400, 250]);
 zoom_without_redraw();
 
-// Trigger a periodical call to a function sending current map preference to the server :
-setInterval(sendPreferences, 300000);
+/*
+    // Trigger a periodical call to a function sending current map preference to the server :
+    setInterval(sendPreferences, 300000);
+*/
 
 prepare_drop_section();
 /////////////////////////////////////////////////////////////////////////////
@@ -966,8 +968,7 @@ function get_map_template(){
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
         user_id = document.getElementById('user_id').innerHTML,
-        displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
-        fetch_layers = [];
+        displayed_legend = d3.selectAll(".legend_feature:not(.title)");
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
@@ -1022,7 +1023,7 @@ function get_map_template(){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_opacity = selection.style("fill-opacity");
             layers_style[i].targeted = true;
-            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             if(current_layers[layer_name].renderer && current_layers[layer_name].renderer.startsWith("Choro")){
                 layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -1033,7 +1034,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
-            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
@@ -1041,7 +1042,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
-            layers_style[i].cache_url = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
             layers_style[i].size = current_layers[layer_name].size;
@@ -1051,7 +1052,7 @@ function get_map_template(){
                 for(let j = 0; j < nb_ft; j++)
                     layers_style[i].result[j] = nb_ft;
             } else {
-                layers_style[i].cache_url = [user_id, layer_name].join('_');
+                layers_style[i].topo_geom = [user_id, layer_name].join('_');
                 layers_style[i].linksById = current_layers[layer_name].linksById.splice(0, nb_ft)
             }
         } else {
@@ -1059,48 +1060,52 @@ function get_map_template(){
         }
         layers_style[i].stroke_opacity = selection.style("stroke-opacity");
         layers_style[i].fill_opacity = selection.style("fill-opacity");
-        fetch_layers.push(layers_style[i].cache_url ? request_data("GET", "/get_layer/" + layers_style[i].cache_url, null) : null);
     }
-    console.log(fetch_layers);
+
     let json_result = JSON.stringify({"map_config": map_config, "layers": layers_style});
-    Q.all([fetch_layers]).done(function(result){
-        for(let i = 0; i < fetch_layers.length; i++){
-            if(result[i] && result[i].target){
-                console.log(result[i].target.responseText)
-                json_result = json_result.replace(layers_style[i].cache_url, result[i].target.responseText)
-            }
-        }
-        console.log(json_result);
-    });
-    return json_result;
+
+    return Q.all(layers_style.map( obj => {return obj.topo_geom ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null}))
+        .then(function(result){
+            for(let i = 0; i < layers_style.length; i++){
+                    if(result[i] && result[i].target){
+                        console.log(result[i].target.responseText);console.log(layers_style[i].topo_geom)
+                        json_result = json_result.replace(['"', layers_style[i].topo_geom, '"'].join(''), result[i].target.responseText)
+                    }
+                }
+            return json_result;
+        });
 }
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template(){
-    var json_params = get_map_template(),
-        dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params),
-        dlAnchorElem = document.getElementById('downloadAnchorElem');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", "noname_properties.json");
-    dlAnchorElem.click();
+    get_map_template().then(
+        function(json_params){
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params),
+                dlAnchorElem = document.getElementById('downloadAnchorElem');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "noname_properties.json");
+            dlAnchorElem.click();
+    });
 }
 
-// Function triggered each 5 minutes and when a major modification (like style modification on a layer)
-// is done in order to keep basic informations about the map properties user (zoom, position, layers & styles, etc.)
-function sendPreferences(){
-    var json_params = get_map_template(),
-        FormToSend = new FormData();
-    FormToSend.append("config", json_params)
-    $.ajax({
-       type: 'POST',
-       url: '/save_user_pref',
-       processData: false,
-       contentType: false,
-       data: FormToSend,
-       global: false,
-       success: function(d) {console.log(d);}
-    }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
-}
+/*
+    // Function triggered each 5 minutes and when a major modification (like style modification on a layer)
+    // is done in order to keep basic informations about the map properties user (zoom, position, layers & styles, etc.)
+    function sendPreferences(){
+        var json_params = get_map_template(),
+            FormToSend = new FormData();
+        FormToSend.append("config", json_params)
+        $.ajax({
+           type: 'POST',
+           url: '/save_user_pref',
+           processData: false,
+           contentType: false,
+           data: FormToSend,
+           global: false,
+           success: function(d) {console.log(d);}
+        }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
+    }
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // Zooming functions (some from http://bl.ocks.org/linssen/7352810)
@@ -1491,8 +1496,8 @@ function apply_user_preferences(json_pref){
         let fill_opacity = layers[i].fill_opacity,
             stroke_opacity = layers[i].stroke_opacity;
 
-        if(layers[i].cache_url && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
-            let url = "/get_layer/"+layers[i].cache_url;
+        if(layers[i].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
+            let url = "/get_layer/"+layers[i].topo_geom;
             d3.text(url, function(data){
                 let tmp = {skip_alert: true};
                 if(layers[i].targeted) target_layer_on_add = true;

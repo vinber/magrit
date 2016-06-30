@@ -235,14 +235,14 @@ async def ajson_loads(str_data):
     """
     return json.loads(str_data)
 
-async def user_pref(request):
-    last_pref = await request.post()
-    session_redis = await get_session(request)
-    user_id = get_user_id(session_redis)
-    key = '_'.join([user_id, "lastPref"])
-    await app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
-    return web.Response(text=json.dumps(
-        {'Info': "Preferences saved!"}))
+#async def user_pref(request):
+#    last_pref = await request.post()
+#    session_redis = await get_session(request)
+#    user_id = get_user_id(session_redis)
+#    key = '_'.join([user_id, "lastPref"])
+#    await app_glob['redis_conn'].set(key, json.dumps(last_pref['config']))
+#    return web.Response(text=json.dumps(
+#        {'Info': "Preferences saved!"}))
 
 
 async def convert(request):
@@ -392,13 +392,6 @@ async def carto_doug(posted_data, user_id, loop):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app_glob['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = json.loads(posted_data['var_name'])
-#    iterations = json.loads(posted_data['iterations'])
-#    ref_layer, new_field, iterations = \
-#        await asyncio.gather(*[ajson_loads(ref_layer.decode()),
-#                               ajson_loads(posted_data['var_name']),
-#                               ajson_loads(posted_data['iterations'])])
     ref_layer = await ajson_loads(ref_layer.decode())
     new_field = posted_data['var_name']
     iterations = int(posted_data['iterations'])
@@ -409,11 +402,11 @@ async def carto_doug(posted_data, user_id, loop):
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 #    gdf = GeoDataFrame.from_file(tmp_path)
+#    result = await make_cartogram(gdf, n_field_name, iterations)
     result = await loop.run_in_executor(
         app_glob["ThreadPool"],
         make_cartogram,
         GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
-#    result = await make_cartogram(gdf, n_field_name, iterations)
     os.remove(tmp_path)
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
@@ -536,7 +529,9 @@ async def compute_olson(posted_data, user_id, *args):
     f_name = "".join(["/tmp/", tmp_part, ".geojson"])
     savefile(f_name, json.dumps(ref_layer_geojson).encode())
     res = await geojson_to_topojson(f_name)
-    new_name = "Olson_carto_123"
+    new_name = "_".join(["Olson_carto",
+                        str(posted_data["field_name"]),
+                        str(int(posted_data["scale_max"]*100))])
     res = res.replace(tmp_part, new_name)
     asyncio.ensure_future(
         app_glob['redis_conn'].set('_'.join([
@@ -817,12 +812,33 @@ async def calc_helper(request):
             val2 = val2.astype(float, copy=False)
         except:
             return web.Response(text='{"Error":"Invalid datatype"}')
-    func_operation =  {
-            "+": val1.__add__, "-": val1.__sub__,
-            "*": val1.__mul__, "/": val1.__truediv__
-        }[posted_data['operator']]
-    result = func_operation(val2).tolist()
-    return web.Response(text=_json.dumps(result))
+    result = {
+                "+": val1.__add__, "-": val1.__sub__,
+                "*": val1.__mul__, "/": val1.__truediv__
+            }[posted_data['operator']](val2).tolist()
+    return web.Response(text=json.dumps(result))
+
+async def charmod_helper(request):
+    posted_data = await request.post()
+    val1 = json.loads(posted_data['var1'])
+    operator = posted_data["operator"]
+
+    if "truncate" in operator:
+        size = posted_data['opt']
+        if size < 0:
+            result = [val[len(val)+size:] for val in val1]
+        else:
+            result = [val[:size] for val in val1]
+    else:  # operator == "concatenate"
+        sep = posted_data['opt']
+        val2 = json.loads(posted_data['var2'])
+        if sep:
+            sep = str(sep)
+            result = [sep.join(pair_values) for pair_values in zip(val1, val2)]
+        else:
+            result = [''.join(pair_values) for pair_values in zip(val1, val2)]
+    return web.Response(
+        text=json.dumps(result) if result else '{"Error": "Unknown error"}')
 
 async def convert_csv_geo(request):
     posted_data, session_redis = \
@@ -890,9 +906,10 @@ async def init(loop, port=9999):
     app.router.add_route('POST', '/convert_to_topojson', convert)
     app.router.add_route('POST', '/convert_csv_geo', convert_csv_geo)
     app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
-    app.router.add_route('POST', '/save_user_pref', user_pref)
+#    app.router.add_route('POST', '/save_user_pref', user_pref)
     app.router.add_route('POST', '/add_layer/{expr}', receiv_layer)
-    app.router.add_route('POST', '/calc', calc_helper)
+    app.router.add_route('POST', '/helpers/calc', calc_helper)
+    app.router.add_route('POST', '/helpers/calc_char', charmod_helper)
 #    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')

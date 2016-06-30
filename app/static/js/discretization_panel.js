@@ -809,10 +809,6 @@ function display_categorical_box(layer, field){
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'));
 
-//    newbox.selectAll(".typo_class")
-//            .append("p").style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle"})
-//            .html(d => "<b>" + d.name + " </b>");
-
     newbox.selectAll(".typo_class")
             .append("input")
             .style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
@@ -842,7 +838,6 @@ function display_categorical_box(layer, field){
 
     newbox.selectAll(".typo_class")
             .insert("span")
-//            .style("float", "right")
             .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
 
     newbox.insert("p")
@@ -858,7 +853,7 @@ function display_categorical_box(layer, field){
 
       $( "#sortable_typo_name" ).sortable({
         placeholder: "ui-state-highlight",
-        update: function(a){  console.log(a);  }
+        helper: 'clone'  // Avoid propagation of the click event to the color button (if clicked on it the move the feature)
       });
 
 

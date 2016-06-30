@@ -1613,14 +1613,14 @@ function fillMenu_Anamorphose(){
         option1_txt.html("Scale reference size on : ");
         option2_txt.html("Maximum size modification (%) ");
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
-        [["Mean value (may cause overlapping)", "mean"],
-         ["Max. value (prevent overlapping)", "max"]].forEach(function(opt_field){
+        [["Max. value (prevent overlapping)", "max"],
+         ["Mean value (may cause overlapping)", "mean"]].forEach(function(opt_field){
             option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
         });
 
         option2_val = option2_txt.insert('input')
                         .style("width", "60px")
-                        .attr({type: 'number', class: 'params', id: "Anamorph_opt2", value: 10, min: 0, max: 100, step: 1});
+                        .attr({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
     };
 
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
@@ -1674,10 +1674,7 @@ function fillMenu_Anamorphose(){
                     ref_size = option1_val.node().value,
                     scale_max = +option2_val.node().value / 100,
                     nb_ft = current_layers[layer].n_features,
-                    dataset = user_data[layer],
-                    new_layer_name = check_layer_name(["CartogramOlson", layer, field_n].join('_'));
-
-                //console.log(ref_size); console.log(scale_max);
+                    dataset = user_data[layer];
 
                 let layer_select = map.select("#"+layer).selectAll("path")[0],
                     d_values = new Array(nb_ft),
@@ -1722,18 +1719,31 @@ function fillMenu_Anamorphose(){
                     }
 
                 }
-                console.log(transform);
                 let formToSend = new FormData();
-                formToSend.append("json", JSON.stringify({topojson: layer, scale_values: transform}))
-                let result_tmp = sync_request_return("POST", "/R_compute/olson", formToSend);
-                console.log(result_tmp);
-                let n_layer_name = add_layer_topojson(result_tmp, {result_layer_on_add: true});
-                d3.select("#" + n_layer_name)
-                            .selectAll("path")
-                            .style("fill", function(){ return Colors.random(); })
-                            .style("fill-opacity", 0.8)
-                            .style("stroke", "black")
-                            .style("stroke-opacity", 0.8)
+                formToSend.append("json", JSON.stringify({topojson: layer, scale_values: transform, field_name: field_n, scale_max: scale_max}));
+                $.ajax({
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    url: '/R_compute/olson',
+                    data: formToSend,
+                    type: 'POST',
+                    error: function(error) { console.log(error); },
+                    success: function(result){
+                        let n_layer_name = add_layer_topojson(result, {result_layer_on_add: true});
+                        current_layers[n_layer_name].renderer = "OlsonCarto";
+                        current_layers[n_layer_name].rendered_field = field_n;
+                        current_layers[n_layer_name].scale_max = scale_max;
+                        current_layers[n_layer_name].ref_layer_name = layer;
+                        current_layers[n_layer_name].scale_byFeature = transform;
+                        d3.select("#" + n_layer_name)
+                                .selectAll("path")
+                                //.style("fill", function(){ return Colors.random(); })
+                                .style("fill-opacity", 0.8)
+                                .style("stroke", "black")
+                                .style("stroke-opacity", 0.8);
+                    }
+                });
 
 //                result_data[new_layer_name] = new Array();
 //                map.append("g").attr("id", new_layer_name)
@@ -1770,18 +1780,7 @@ function fillMenu_Anamorphose(){
 //                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
 //                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
 //                layers_listed.insertBefore(li, layers_listed.childNodes[0])
-                current_layers[new_layer_name] = {
-                    "renderer": "OlsonCarto",
-                    "type": "Polygon",
-                    "rendered_field": field_n,
-                    "scale_max": scale_max,
-                    "stroke-width-const": 1,
-                    "is_result": true,
-                    "n_features": nb_ft,
-                    "ref_layer_name": layer,
-                    "fill_color": { "random": true },
-                    "scale_byFeature": transform
-                    };
+
 //                binds_layers_buttons();
 //                zoom_without_redraw();
 //                switch_accordion_section();
@@ -2549,11 +2548,11 @@ function prop_sizer(arr, min_size, max_size){
 function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         arr_len = arr.length,
-        p_scale = proj.scale(),
+//        p_scale = proj.scale(),
         z_scale = zoom.scale(),
         res = [];
 
-    fixed_value = Math.sqrt(fixed_value);
+    fixed_value = Math.sqrt(fixed_value / z_scale);
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i){
@@ -2575,11 +2574,11 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         arr_len = arr.length,
-        p_scale = proj.scale(),
+//        p_scale = proj.scale(),
         z_scale = zoom.scale(),
         res = [];
 
-    fixed_value = Math.sqrt(fixed_value);
+    fixed_value = Math.sqrt(fixed_value / z_scale);
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i)
@@ -2668,6 +2667,46 @@ function add_table_field(table, layer_name, parent){
         }
     };
 
+    function compute_and_add(){
+        let options = chooses_handler;
+        let fi1 = options.field1,
+            fi2 = options.field2,
+            new_name_field = options.new_name,
+            operation = options.operator;
+    
+        if(options.type_operation === "math_compute" && table.length > 3200){
+            let formToSend = new FormData();
+            formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
+            formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
+            formToSend.append('operator', operation);
+            return request_data("POST", "/helpers/calc", formToSend).then(function(e){
+                let data = JSON.parse(e.target.responseText);
+//                console.log(e.target.responseText)
+                for(let i=0; i<table.length; i++)
+                    table[i][new_name_field] = data[i];
+                return true;
+            });
+        }
+        else if(options.type_operation === "math_compute"){
+            for(let i=0; i<table.length; i++)
+                table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
+            return Promise.resolve(true);
+        } else {
+            let opt_val = options.opt_val;
+            if(operation == "Truncate"){
+                for(let i=0; i < table.length; i++)
+                    table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
+    
+            } else if (operation == "Concatenate"){
+                for(let i=0; i < table.length; i++)
+                    table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
+            }
+            return Promise.resolve(true);
+        }
+        return Promise.reject("Unknown error")
+    };
+
+
     function refresh_type_content(type){
         field1.node().remove(); operator.node().remove(); field2.node().remove();
         field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; });
@@ -2725,10 +2764,9 @@ function add_table_field(table, layer_name, parent){
                     "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
-                console.log(chooses_handler)
-                chooses_handler.table = table;
+//                console.log(chooses_handler);
                 let tmp = compute_and_add(chooses_handler);
-                console.log(tmp);
+//                console.log(tmp);
                 tmp.then(function(resolved){
                         if(resolved){
                             fields_handler.unfill();
@@ -2783,46 +2821,6 @@ function add_table_field(table, layer_name, parent){
     }
 
     return box;
-}
-
-
-function compute_and_add(options){
-    let fi1 = options.field1,
-        fi2 = options.field2,
-        new_name_field = options.new_name,
-        operation = options.operator,
-        table = options.table;
-
-    if(options.type_operation === "math_compute" && table.length > 3200){
-        let formToSend = new FormData();
-        formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
-        formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
-        formToSend.append('operator', operation);
-        return request_data("POST", "/calc", formToSend).then(function(e){
-            let data = JSON.parse(e.target.responseText);
-            console.log(e.target.responseText)
-            for(let i=0; i<table.length; i++)
-                table[i][new_name_field] = data[i];
-            return true;
-        });
-    }
-    else if(options.type_operation === "math_compute"){
-        for(let i=0; i<table.length; i++)
-            table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
-        return Promise.resolve(true);
-    } else {
-        let opt_val = options.opt_val;
-        if(operation == "Truncate"){
-            for(let i=0; i < table.length; i++)
-                table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
-
-        } else if (operation == "Concatenate"){
-            for(let i=0; i < table.length; i++)
-                table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
-        }
-        return Promise.resolve(true);
-    }
-    return Promise.reject("Unknown error")
 }
 
 var contains_empty_val = function(arr){
