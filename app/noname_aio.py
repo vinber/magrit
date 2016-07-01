@@ -13,7 +13,6 @@ import zmq.asyncio
 import pandas as pd
 import numpy as np
 import base64
-import json as _json
 
 from contextlib import closing
 from zipfile import ZipFile

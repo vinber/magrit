@@ -7,6 +7,7 @@ class Textbox2 {
         this.drag_txt_annot = d3.behavior.drag()
                 .on("dragstart", () => {
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                    console.log(d3.event)
                     d3.event.sourceEvent.stopPropagation();
                     d3.event.sourceEvent.preventDefault();
                   })
@@ -151,22 +152,31 @@ class Textbox2 {
     }
 
     make_style_box(){
+        // Deactivate the "focus" on the text annotation
+        // when opening its properties box to avoid fetching input in both boxes
+        let start_focused = this.focused;
+        if(start_focused)
+            this.focus_on();
+
         let current_options = {size: this.fontsize,
                                content: this._text,
                                font: ""};
         let self = this;
         var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "styleTextAnnotation")
-                .then(function(confirmed){
-                    let box_ = document.querySelector(".styleTextAnnotation");
-                    let font_size = box_.querySelector("#font_size"),
-                        content = box_.querySelector("#annotation_content");
-                    if(confirmed){
-                        null;
-                    } else {
-                        self._text = current_options.content;
-                        self.fontsize = current_options.size;
-                    }
-        });
+            .then(function(confirmed){
+                let box_ = document.querySelector(".styleTextAnnotation");
+                let font_size = box_.querySelector("#font_size"),
+                    content = box_.querySelector("#annotation_content");
+                if(confirmed){
+                    null;
+                } else {
+                    self._text = current_options.content;
+                    self.fontsize = current_options.size;
+                }
+                // Re-activate focus on the text annotation is previously set:
+                if(start_focused)
+                    this.focus_on();
+            });
         let box_content = d3.select(".styleTextAnnotation").insert("div");
         box_content.append("p").html("Font size ")
                 .append("input").attr({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
@@ -177,7 +187,7 @@ class Textbox2 {
                 });
         box_content.append("p").html("Content ")
                 .append("input").attr({"value": this._text, id: "annotation_content"})
-                .on("keypress", function(){
+                .on("keyup", function(){
                     self._text = this.value;
                     self.setText(self._text);
                 });

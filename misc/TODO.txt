@@ -5,7 +5,6 @@ TODO list:
 - Choose some fonts (to be upload on the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts int the current browser.
 - Allow to move each label on "label map" functionnality
 - Change the bar chart in the discretization panel
-- Change the "export preference" behavior in order to export geometries as well as rendering params
 - Add more options to modify discontinuties layer after computation (change size, threshold, etc.)
-- Fix some undefined behaviors when trying to make a new jointure on some "edge" cases
 - Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, etc.)
+-(Fixed ?) Fix some undefined behaviors when trying to make a new jointure on some "edge" cases

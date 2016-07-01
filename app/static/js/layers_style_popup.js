@@ -352,18 +352,32 @@ function createStyleBox(layer_name){
         popup.append('p').html('Only display flows larger than ...')
                         .insert('input').attr({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
                         .on("change", function(){
-                            let val = this.value;
-                            d3.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                            let val = +this.value;
+                            popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
                             selection.style("stroke-opacity", function(d, i){
-                                if(+d.properties.fij > +val)
+                                if(+d.properties.fij > val)
                                     return 1;
                                 return 0;
                             });
                             current_layers[layer_name].min_display = val;
                         });
-        popup.append('label').attr("id", "larger_than").html('<i> 0 </i>')
-     }
+        popup.append('label').attr("id", "larger_than").html("<i> ", prev_min_display, " </i>"].join(''));
 
+     } else if (type === "Line" && renderer == "DiscLayer"){
+        var prev_min_display = current_layers[layer_name].min_display || 0;
+        let max_val = Math.max.apply(null, user_data[layer_name].map( i => i.disc_value));
+        popup.append("p").html("Discontinuity threshold ')
+                .insert("input").attr({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
+                .on("change", function(){
+                    let val = +this.value;
+                    popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
+                    selection.style("stroke-opacity", (d,i) => +d.properties.disc_value > max_val ? 1 : 0 );
+                    current_layers[layer_name].min_display = val;
+                });
+        popup.append("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
+        popup.append("p").html("Reference max. size (px) ")
+                    .insert("input").attr({type: "number", min: 0.1, max: max_val, step: 0.1, value: current_layers[layer_name].size[1]});
+    }
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
                       .on('change', function(){selection.style("stroke", this.value)});

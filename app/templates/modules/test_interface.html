@@ -795,7 +795,6 @@ function log_coordinates(t){
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
-    //name = name || this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
     var txt_dialog = "Remove layer '" + name + "' ?";
     make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
         if(confirmed){
@@ -812,8 +811,7 @@ function remove_layer_cleanup(name){
 
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
-        d3.selectAll("#legend_root").remove();
-        d3.selectAll("#legend_root2").remove();
+        d3.selectAll([".lgdf_", name].join('')).remove();
         d3.selectAll(".source_block").remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
@@ -845,16 +843,16 @@ function remove_layer_cleanup(name){
         d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
         section1.style("padding-top", null);
         d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
-        //d3.select("#section1").style({"height": joined_dataset.length == 0 ? "135px" : "165px"})
+
+        // Restore the state of the bottom of the section 1 :
+        if(d3.select("#join_button").node() != null)
+            valid_join_check_display();
+
+        // If after this removal there isn't nor a targeted layer neither an external dataset :
+        if(joined_dataset.length == 0)
+            browse_table.node().disabled = true;
     }
 
-    // Restore the state of the bottom of the section 1 :
-    if(d3.select("#join_button").node() != null && current_layers[name].targeted)
-        valid_join_check_display();
-
-    // If there isn't nor a targeted layer neither an external dataset :
-    if(joined_dataset.length == 0 && current_layers[name].targeted)
-        browse_table.node().disabled = true;
 
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :

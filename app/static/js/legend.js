@@ -176,6 +176,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
 
     var drag_lgd = d3.behavior.drag()
                 .on("dragstart", function(){
+                    console.log(d3.event)
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
                     d3.event.sourceEvent.stopPropagation();
                     d3.event.sourceEvent.preventDefault();
@@ -259,12 +260,12 @@ function createLegend_symbol(layer, field, title, subtitle){
         ref_symbols_params = [];
 
     let prop_values = prop_sizer3_e(d_values, current_layers[layer].size[0], current_layers[layer].size[1], symbol_type);
-    console.log(prop_values)
+
     prop_values.forEach((val,i) => {
         ref_symbols_params.push({value: d_values[i].toFixed(nb_decimals),
                                  size: val * z_scale});
     });
-    console.log(ref_symbols_params);
+
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
@@ -325,6 +326,7 @@ function createLegend_symbol(layer, field, title, subtitle){
 
     var drag_lgd = d3.behavior.drag()
                 .on("dragstart", function(){
+                    console.log(d3.event);
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
                     d3.event.sourceEvent.stopPropagation();
                     d3.event.sourceEvent.preventDefault();

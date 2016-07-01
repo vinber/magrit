@@ -684,7 +684,7 @@ var fields_PropSymbolChoro = {
                 ref_value_field = document.getElementById("PropSymbolChoro_ref_value");
 
             ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field / 2);
+            ref_value_field.setAttribute("value", max_val_field);
         });
     },
 
@@ -2168,7 +2168,7 @@ var fields_PropSymbol = {
                 max_val_field = Math.max.apply(null, field_values),
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
             ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field / 2);
+            ref_value_field.setAttribute("value", max_val_field);
         })
     },
 
@@ -2205,7 +2205,7 @@ function fillMenu_PropSymbol(layer){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
     var fill_color = dialog_content.append('p').html('Symbol color ')
-              .insert('input').attr('type', 'color').attr({class: "params", "value": Colors.random()});
+              .insert('input').attr('type', 'color').attr({class: "params", "value": Colors.names[Colors.random()]});
 
     var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
                                 .insert("input").attr({type: "checkbox", class: "params"});
@@ -2673,7 +2673,7 @@ function add_table_field(table, layer_name, parent){
             fi2 = options.field2,
             new_name_field = options.new_name,
             operation = options.operator;
-    
+
         if(options.type_operation === "math_compute" && table.length > 3200){
             let formToSend = new FormData();
             formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
@@ -2696,7 +2696,7 @@ function add_table_field(table, layer_name, parent){
             if(operation == "Truncate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
-    
+
             } else if (operation == "Concatenate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
