@@ -1060,17 +1060,14 @@ function get_map_template(){
         layers_style[i].fill_opacity = selection.style("fill-opacity");
     }
 
-    let json_result = JSON.stringify({"map_config": map_config, "layers": layers_style});
-
     return Q.all(layers_style.map( obj => {return obj.topo_geom ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null}))
         .then(function(result){
             for(let i = 0; i < layers_style.length; i++){
                     if(result[i] && result[i].target){
-                        console.log(result[i].target.responseText);console.log(layers_style[i].topo_geom)
-                        json_result = json_result.replace(['"', layers_style[i].topo_geom, '"'].join(''), result[i].target.responseText)
+                        layers_style[i].topo_geom = result[i].target.responseText;
                     }
                 }
-            return json_result;
+            return JSON.stringify({"map_config": map_config, "layers": layers_style});;
         });
 }
 
@@ -1495,53 +1492,50 @@ function apply_user_preferences(json_pref){
             stroke_opacity = layers[i].stroke_opacity;
 
         if(layers[i].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
-            let url = "/get_layer/"+layers[i].topo_geom;
-            d3.text(url, function(data){
-                let tmp = {skip_alert: true};
-                if(layers[i].targeted) target_layer_on_add = true;
-                else if(layers[i].renderer)tmp['result_layer_on_add'] = true;
-                add_layer_topojson(data, tmp);
+            let tmp = {skip_alert: true};
+            if(layers[i].targeted) target_layer_on_add = true;
+            else if(layers[i].renderer)tmp['result_layer_on_add'] = true;
+            add_layer_topojson(layers[i].topo_geom, tmp);
 
-                symbol = "path";
-                layer_selec = map.select("#" + layer_name);
+            symbol = "path";
+            layer_selec = map.select("#" + layer_name);
 
-                current_layers[layer_name].renderer = layers[i].renderer;
-                current_layers[layer_name].rendered_field = layers[i].rendered_field;
-                current_layers[layer_name]['stroke-width-const'] = layers[i]['stroke-width-const'];
-                current_layers[layer_name].fixed_stroke = layers[i].fixed_stroke;
-                if(layers[i].ref_layer_name)
-                    current_layers[layer_name].ref_layer_name = layers[i].ref_layer_name;
-                if(layers[i].size)
-                    current_layers[layer_name].size = layers[i].size;
-                if(layers[i].colors_breaks)
-                    current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
-                if(layers[i].fill_color)
-                    current_layers[layer_name].fill_color = layers[i].fill_color;
+            current_layers[layer_name].renderer = layers[i].renderer;
+            current_layers[layer_name].rendered_field = layers[i].rendered_field;
+            current_layers[layer_name]['stroke-width-const'] = layers[i]['stroke-width-const'];
+            current_layers[layer_name].fixed_stroke = layers[i].fixed_stroke;
+            if(layers[i].ref_layer_name)
+                current_layers[layer_name].ref_layer_name = layers[i].ref_layer_name;
+            if(layers[i].size)
+                current_layers[layer_name].size = layers[i].size;
+            if(layers[i].colors_breaks)
+                current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
+            if(layers[i].fill_color)
+                current_layers[layer_name].fill_color = layers[i].fill_color;
 
-                if(layers[i].renderer == "Choropleth"
-                    || layers[i].renderer == "Stewart"
-                    || layers[i].renderer == "Gridded"){
-                    layer_selec.selectAll("path")
-                            .style("fill", (d,j) => layers[i].fill_color.class[j])
-                    if(layers[i].renderer == "Choropleth"){
-                        insert_legend_button(layer_name);
-                        binds_layers_buttons(layer_name);
-                    }
-                } else if (layers[i].renderer == "Links"){
-                    current_layers[layer_name].LinksById = layers[i].LinksById;
-                    current_layers[layer_name].min_display = layers[i].min_display;
-                } else if (layers[i].renderer == "DiscLayer"){
-                    current_layers[layer_name].result = new Map(layers[i].result);
-                    layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
+            if(layers[i].renderer == "Choropleth"
+                || layers[i].renderer == "Stewart"
+                || layers[i].renderer == "Gridded"){
+                layer_selec.selectAll("path")
+                        .style("fill", (d,j) => layers[i].fill_color.class[j])
+                if(layers[i].renderer == "Choropleth"){
+                    insert_legend_button(layer_name);
+                    binds_layers_buttons(layer_name);
                 }
-            layer_selec.selectAll(symbol)
-                    .style("fill-opacity", fill_opacity)
-                    .style("stroke-opacity", stroke_opacity)
-            if(layers[i].fill_color.random)
-                layer_selec
-                    .selectAll(symbol)
-                    .style("fill", () => Colors.names[Colors.random()]);
-            });
+            } else if (layers[i].renderer == "Links"){
+                current_layers[layer_name].LinksById = layers[i].LinksById;
+                current_layers[layer_name].min_display = layers[i].min_display;
+            } else if (layers[i].renderer == "DiscLayer"){
+                current_layers[layer_name].result = new Map(layers[i].result);
+                layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
+            }
+        layer_selec.selectAll(symbol)
+                .style("fill-opacity", fill_opacity)
+                .style("stroke-opacity", stroke_opacity)
+        if(layers[i].fill_color.random)
+            layer_selec
+                .selectAll(symbol)
+                .style("fill", () => Colors.names[Colors.random()]);
         } else if (layer_name == "Sphere" || layer_name == "Simplified_land_polygons"){
             layer_selec = map.select("#"+layer_name);
             symbol = "path";

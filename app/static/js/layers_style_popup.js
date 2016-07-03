@@ -361,17 +361,17 @@ function createStyleBox(layer_name){
                             });
                             current_layers[layer_name].min_display = val;
                         });
-        popup.append('label').attr("id", "larger_than").html("<i> ", prev_min_display, " </i>"].join(''));
+        popup.append('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
 
      } else if (type === "Line" && renderer == "DiscLayer"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
-        let max_val = Math.max.apply(null, user_data[layer_name].map( i => i.disc_value));
-        popup.append("p").html("Discontinuity threshold ')
+        let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
+        popup.append("p").html("Discontinuity threshold ")
                 .insert("input").attr({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
                 .on("change", function(){
                     let val = +this.value;
                     popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
-                    selection.style("stroke-opacity", (d,i) => +d.properties.disc_value > max_val ? 1 : 0 );
+                    selection.style("stroke-opacity", (d,i) => +d.properties.disc_value > val ? 1 : 0 );
                     current_layers[layer_name].min_display = val;
                 });
         popup.append("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
