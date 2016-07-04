@@ -2558,7 +2558,7 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
-                [val[0], Math.sqrt(pi * val[1] * fixed_size / fixed_value), val[2]]
+                [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
                 )
         }
     else
@@ -2582,7 +2582,7 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i)
-            res.push(Math.sqrt(pi * arr[i] * fixed_size / fixed_value));
+            res.push(Math.sqrt(arr[i] * fixed_size / fixed_value));
 
     else
         for(let i=0; i < arr_len; ++i)
@@ -2668,8 +2668,8 @@ function add_table_field(table, layer_name, parent){
     };
 
     function compute_and_add(){
-        let options = chooses_handler;
-        let fi1 = options.field1,
+        let options = chooses_handler,
+            fi1 = options.field1,
             fi2 = options.field2,
             new_name_field = options.new_name,
             operation = options.operator;
@@ -2681,9 +2681,9 @@ function add_table_field(table, layer_name, parent){
             formToSend.append('operator', operation);
             return request_data("POST", "/helpers/calc", formToSend).then(function(e){
                 let data = JSON.parse(e.target.responseText);
-//                console.log(e.target.responseText)
                 for(let i=0; i<table.length; i++)
                     table[i][new_name_field] = data[i];
+
                 return true;
             });
         }
@@ -2764,19 +2764,17 @@ function add_table_field(table, layer_name, parent){
                     "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
-//                console.log(chooses_handler);
                 let tmp = compute_and_add(chooses_handler);
-//                console.log(tmp);
                 tmp.then(function(resolved){
-                        if(resolved){
-                            fields_handler.unfill();
-                            fields_handler.fill(layer_name);
-                            if(parent)
-                                parent.display_table(layer_name);
-                        }
+//                        if(resolved){
+                        fields_handler.unfill();
+                        fields_handler.fill(layer_name);
+                        if(parent)
+                            parent.display_table(layer_name);
+//                        }
                     }, function(error){
                         alert("Somethng wrong happened");
-                });
+                }).done(()=> { document.querySelector("body").style.cursor = ""; });
             }
         });
 

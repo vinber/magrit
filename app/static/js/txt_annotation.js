@@ -4,20 +4,21 @@ class Textbox2 {
     // woo lets use ES2015 classes !
     constructor(parent, new_id_txt_annot){
         this._text = "Enter your text...";
-        this.drag_txt_annot = d3.behavior.drag()
+        var drag_txt_annot = d3.behavior.drag()
                 .on("dragstart", () => {
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
                     console.log(d3.event)
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
+                    if(d3.event.sourceEvent.buttons == 2 && d3.event.sourceEvent.button == 2){
+                        d3.event.sourceEvent.stopPropagation();
+                        d3.event.sourceEvent.preventDefault();
+                    }
                   })
                 .on("dragend", () => {
                     if(d3.select("#hand_button").classed("active"))
                         zoom.on("zoom", zoom_without_redraw);
                   })
                 .on("drag", () => {
-                    console.log(d3.event.x);console.log(d3.event.y);console.log([this._width, this._height]);
-                    this.textgroup.attr('transform', 'translate(' + [d3.event.x - this._width / 2, d3.event.y - this._height / 2] + ')');
+                    textgroup.attr('transform', 'translate(' + [d3.event.x - this._width / 2, d3.event.y - this._height / 2] + ')');
                   });
         this.fontsize = 12;
         this.x = 10;
@@ -26,17 +27,21 @@ class Textbox2 {
         this._height = 20;
         this.focused = null;
 
-        this.textgroup = parent.append("g")
-                .attr("class", "txt_annot");
+        var textgroup = parent.append("g").attr("class", "txt_annot"),
+            context_menu = new ContextMenu(),
+            getItems = () =>  [
+                {"name": "Edit style...", "action": () => { this.make_style_box(); }},
+                {"name": "Delete", "action": () => { this.txt.node().parentElement.remove(); }}
+            ];
 
-        this.rct = this.textgroup.append("rect")
+        this.rct = textgroup.append("rect")
         		.attr("width", this._width)
         		.attr("height", this._height)
         		.style("fill", "beige")
         		.style("fill-opactiy", 0)
                 .on("click", () => { this.focus_on() });
 
-        this.txt = this.textgroup.append("text")
+        this.txt = textgroup.append("text")
                 .attr("id", new_id_txt_annot)
                 .text(this._text)
                 .style("fill","black")
@@ -48,36 +53,25 @@ class Textbox2 {
         this.txt.attr("x",.5*(this._width-this.txt_width));
         this.txt.attr("y",.5*(this._height+this.fontsize)-2);
 
-        this.context_menu = new ContextMenu();
-
-        this.textgroup.on("mouseover", () => { this.rct.style("fill-opacity", 0.5); });
-        this.textgroup.on("mouseout", () => {
-            this.rct.style("fill-opacity", 0);
-//                if(this.focused){
-//                    this.focused = null;
-//                    this.rct.style("stroke", null);
-//                    this.rct.classed("active", false);
-//                    d3.select("body").on("keydown", null)
-//                                     .on("keypress", null);
-//                }
+        textgroup.on("mouseover", () => {
+            if(this.t){
+                clearTimeout(this.t);
+                this.t = undefined;
+            }
+            this.rct.style("fill-opacity", 0.5);
             });
-
-        var getItems = () =>  [
-                {"name": "Edit style...", "action": () => { this.make_style_box(); }},
-                {"name": "Delete", "action": () => { this.txt.node().parentElement.remove(); }}
-            ];
-
-        this.textgroup.on("contextmenu", (d,i) => {
-            d3.event.preventDefault();
-            return this.context_menu
-                       .showMenu(d3.event, document.querySelector("body"), getItems());
-        });
-
-        this.textgroup.call(this.drag_txt_annot);
-
+        textgroup.on("mouseout", () => {
+            this.rct.style("fill-opacity", 0);
+            if(this.focused)
+                this.t = setTimeout(()=>{this.focus_on()}, 3000);
+            });
+        textgroup.call(drag_txt_annot);
+        textgroup.on("contextmenu", (d,i) => {
+            return context_menu.showMenu(d3.event,
+                                         document.querySelector("body"),
+                                         getItems());
+            });
         this.keydown_txt_annot = () => {
-    //        if(!this.focused) return
-            console.log(d3.event)
             let code = d3.event.keyCode;
             if (code == 8) { // Backspace
                 d3.event.preventDefault();
@@ -206,8 +200,8 @@ class Textbox2 {
                 .on("keypress", this.keypress_txt_annot);
             this.rct.style("stroke","#347bbe");
             this.rct.classed("active", true);
-            d3.event.stopPropagation();
         }
+        this.t = undefined;
     }
 
 }

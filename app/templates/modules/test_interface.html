@@ -14,7 +14,6 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
-    <script  src="/static/js/lib/cartogram.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/txt_annotation.js"></script>
@@ -396,7 +395,17 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
         map.selectAll("path").attr("d", path);
     });
 
-    let p = dv5.append("select").attr("id","form_projection").style("align", "center").on("change", function(){ change_projection(this.value); });
+    let p = dv5.append("select")
+                .attr("id","form_projection")
+                .style("align", "center")
+                .on("change", function(){
+                    change_projection(this.value);
+                    let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+                    if(layer_name){
+                        center_map(layer_name);
+                        zoom_without_redraw();
+                    }
+                });
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             available_projections.set(d.name, d.projection);
@@ -486,11 +495,6 @@ binds_layers_buttons();
 zoom.scale(0.5).translate([400, 250]);
 zoom_without_redraw();
 
-/*
-    // Trigger a periodical call to a function sending current map preference to the server :
-    setInterval(sendPreferences, 300000);
-*/
-
 prepare_drop_section();
 /////////////////////////////////////////////////////////////////////////////
 // JQuery menu, tooltips and progress bar related functions :
@@ -518,10 +522,7 @@ $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" }
           layers = d3.selectAll("svg").node();
 
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
-          console.log(a.target.childNodes[i]);
-          //let n = (a.target.childNodes[i].innerHTML.split("</div> ")[1]).split(" - ");
           let n = a.target.childNodes[i].getAttribute("layer_name");
-          //console.log(n)
           desired_order[i] = n;
           actual_order[i] = layers.children[i].id;
       }
@@ -1270,6 +1271,7 @@ function change_projection(proj_name) {
     d3.select("svg").on("mousedown", null)
                     .on("mousemove", function(){log_coordinates(this)})
                     .on("mouseup", null);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////

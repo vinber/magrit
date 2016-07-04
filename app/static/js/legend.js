@@ -10,7 +10,7 @@ function handle_legend(layer){
             d3.selectAll(".source_block").remove();
             rml = true;
         } else {
-            createLegend(layer, "Legend")
+            createLegend(layer, "")
         }
     }
 }
@@ -26,7 +26,7 @@ function createLegend(layer, title){
     // Specific parts :
     if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
         let field2 = current_layers[layer].rendered_field2;
-        createLegend_choro(layer, field2, "Legend");
+        createLegend_choro(layer, field2, title);
         createLegend_symbol(layer, field);
     }
     else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1
@@ -67,12 +67,6 @@ function createLegend_nothing(layer, field, title, subtitle){
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
 
-    legend_root.insert("svg:image").attr("id", "move_legend")
-        .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("title", "Double-click here to drag the legend")
-        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  legend_root.call(drag_lgd);  });
-
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
@@ -89,7 +83,7 @@ function createLegend_nothing(layer, field, title, subtitle){
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
 
-    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.call(drag_lgd);
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -119,12 +113,6 @@ function createLegend_discont_links(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
-
-    legend_root.insert("svg:image").attr("id", "move_legend")
-        .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("title", "Double-click here to drag the legend")
-        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  legend_root.call(drag_lgd);  });
 
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
@@ -184,9 +172,9 @@ function createLegend_discont_links(layer, field, title, subtitle){
                 .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
                 .on("drag", function() {
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                        });
+                });
 
-    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.call(drag_lgd);
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -218,36 +206,14 @@ function createLegend_symbol(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
-
-    legend_root.insert("svg:image").attr("id", "move_legend")
-        .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("title", "Double-click here to drag the legend")
-        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  legend_root.call(drag_lgd);  });
-
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ createlegendEditBox('legend_root2', layer); });
 
-//    let breaks_elem = [0].concat([4,3,2,1].map(i => Math.round((nb_features-1)/i))),
-//        ref_symbols = d3.select("#" + layer).selectAll(symbol_type)[0],
-//        type_param = symbol_type === 'circle' ? 'r' : 'width',
-//        ref_symbols_params = new Array();
-//
-//    for(let i of breaks_elem){
-//        let ft_id = +ref_symbols[i].id.split(' ')[1].split('_')[1],
-//            value = user_data[ref_layer_name][ft_id][field],
-//            size = +ref_symbols[i].getAttribute(type_param) * zoom.scale();
-//        ref_symbols_params.push({value:value, size:size})
-//    }
-
     let ref_symbols = document.getElementById(layer).querySelectorAll(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width';
 
-//    for(let i = 0; i < ref_symbols.length; ++i){
-//        ref_symbols_size.push(ref_symbols[i].getAttribute(type_param));
-//    }
     let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
         id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
         val_min = +user_data[ref_layer_name][id_ft_val_min][field],
@@ -335,8 +301,7 @@ function createLegend_symbol(layer, field, title, subtitle){
                 .on("drag", function() {
                     legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
                         });
-
-    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.call(drag_lgd);
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -369,12 +334,6 @@ function createLegend_choro(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + boxheight * 2 + boxgap)
             .attr("y", ypos + 15);
-
-    legend_root.insert("svg:image").attr("id", "move_legend")
-        .attr({x: xpos-6, y: ypos-6, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("title", "Double-click here to drag the legend")
-        .attr("xlink:href", "/static/img/Simpleicons_Interface_arrows-cross.svg")
-        .on("click", function(){  legend_root.call(drag_lgd);  });
 
     legend_root.insert("svg:image").attr("id", "edit_legend")
         .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
@@ -422,8 +381,7 @@ function createLegend_choro(layer, field, title, subtitle){
     var drag_lgd = d3.behavior.drag()
                 .on("dragstart", function(){
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
+                    console.log(d3.event)
                     })
                 .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
                 .on("drag", function() {
@@ -435,7 +393,7 @@ function createLegend_choro(layer, field, title, subtitle){
             .attr({x: xpos, y: last_pos + 2*boxheight})
             .html('');
 
-    legend_root.node().querySelector("#move_legend").dispatchEvent(new MouseEvent("click"))
+    legend_root.call(drag_lgd);
 }
 
 function createlegendEditBox(legend_id, layer_name){

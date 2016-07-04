@@ -96,47 +96,6 @@
 	<td>id=precision_range</td>
 	<td>1</td>
 </tr>
-<tr>
-	<td>click</td>
-	<td>css=img.style_target_layer</td>
-	<td></td>
-</tr>
-<tr>
-	<td>waitForConfirmation</td>
-	<td>The selected layer seems to have been already rendered (with DiscLayer method). Want to continue ?</td>
-	<td></td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.8</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.6</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.5</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.4</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>0.1</td>
-</tr>
-<tr>
-	<td>type</td>
-	<td>//input[@value='1']</td>
-	<td>1</td>
-</tr>
-
 </tbody></table>
 </body>
 </html>
