@@ -137,3 +137,27 @@ var Colors = {
         return result;
         }
     };
+
+var ColorsSelected = {
+    // These colors came from "Pastel1" and "Pastel2" coloramps from ColorBrewer
+    colorCodes: ["#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4", "#e6f5c9", "#fff2ae", "#f1e2cc", "#cccccc",
+                 "#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4", "#fed9a6", "#ffffcc", "#e5d8bd", "#fddaec", "#f2f2f2"],
+    seen: new Set(),  // In order to avoid randomly returning the same color as the last one, at least for the first layers
+    random: function(to_rgb=false) {
+        let nb_color = this.colorCodes.length,
+            seen = this.seen,
+            result_color = this.colorCodes[0],
+            attempts = 40; // To avoid a while(true) if it went wrong for any reason
+        if(seen.size == nb_color)
+           seen = new Set();
+        while(attempts > 0){
+            let ix = Math.round(Math.random() * (nb_color - 1));
+            result_color = this.colorCodes[ix];
+            if(!(seen.has(result_color))){
+                seen.add(result_color);
+                break;
+            } else { --attempts; }
+        }
+        return to_rgb ? hexToRgb(result_color) : result_color;
+    }
+};

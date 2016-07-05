@@ -20,7 +20,7 @@ function ContextMenu() {
 	};
 
 	this.removeItemByName = function(name) {
-		for (var i = 0; i < this.items.length; i++) {
+		for (let i = items.length - 1; i > 0; i--) {
 			if (this.items[i].name.valueOf() == name.valueOf()) {
 				this.items.splice(i, 1);
 				break;
@@ -30,37 +30,25 @@ function ContextMenu() {
 
 	this.setItems = function(items) {
 		this.items = new Array();
-		for (var i = 0; i < items.length; i++) {
+		for (let i = 0; i < items.length; i++) {
 			if (items[i]["name"]) {
-				if (items[i].action) {
+				if (items[i].action)
 					this.addItem(items[i]);
-				}
-				else if(items[i].items) {
+				else if(items[i].items)
 					this.addSubMenu(items[i]);
-				}
 			}
 		}
 	};
 
 	this.showMenu = function(event, parent, items) {
-		if (items) {
+		if(items)
 			this.setItems(items);
-		}
 
-		event = event || window.event;
-		if (event.preventDefault) {
+		if(event.preventDefault)
 			event.preventDefault();
-		}
-		else {
+		else
 			event.returnValue = false;
-		}
-		if (event.stopPropagation) {
-			event.stopPropagation();
-		} else {
-               try {
-                    event.cancelBubble = True;
-                } catch(err){ null; };
-           }
+
 		this.initMenu(parent);
 		this.DOMObj.style.top = (event.clientY+document.body.scrollTop)+"px";
 		this.DOMObj.style.left = event.clientX+"px";
@@ -71,10 +59,10 @@ function ContextMenu() {
 			}
 			this.onclick = undefined;
 			document.removeEventListener("click", hideMenu);
-			document.removeEventListener("keydown", hideMenu);
 		};
-		document.addEventListener("click", hideMenu);
-		document.addEventListener("keydown", hideMenu);
+		setTimeout(()=> {
+              document.addEventListener("click", hideMenu);
+           }, 100);
 	};
 
 	this.initMenu = function(parent) {
@@ -86,7 +74,7 @@ function ContextMenu() {
 		menu.className = "context-menu";
 		var list = document.createElement("ul");
 		menu.appendChild(list);
-		for (var i = 0; i < this.items.length; i++) {
+		for (let i = 0; i < this.items.length; i++) {
 			var item = document.createElement("li");
 			list.appendChild(item);
 			item.setAttribute("data-index",i);
@@ -96,27 +84,25 @@ function ContextMenu() {
 			item.appendChild(name);
 			if (this.items[i].isSimpleItem) {
 				item.onclick = function() {
-					var ix = this.getAttribute("data-index");
+					let ix = this.getAttribute("data-index");
 					self.items[ix].action();
 				};
 			}
 			else {
-				var arrow = document.createElement("span");
+				let arrow = document.createElement("span");
 				arrow.className = "arrow";
 				arrow.innerHTML = "&#9658;";
 				name.appendChild(arrow);
 				this.items[i]["menu"].initMenu(item);
 				this.items[i]["menu"].DOMObj.style.display = "none";
 				item.onmouseover = function() {
-					var self = this;
-					setTimeout(function() {
-						self.getElementsByClassName("context-menu")[0].style.display = "";
+					setTimeout(() => {
+						this.getElementsByClassName("context-menu")[0].style.display = "";
 					}, 500);
 				};
 				item.onmouseout = function() {
-					var self = this;
-					setTimeout(function() {
-						self.getElementsByClassName("context-menu")[0].style.display = "none";
+					setTimeout(() => {
+						this.getElementsByClassName("context-menu")[0].style.display = "none";
 					}, 500);
 				};
 			}

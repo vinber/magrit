@@ -1,30 +1,5 @@
 "use strict";
 
-//function get_color_array(col_scheme, nb_class, selected_palette){
-//    var color_array = new Array;
-//    if(col_scheme === "Sequential"){
-//        color_array = getColorBrewerArray(nb_class, selected_palette);
-//    } else if(col_scheme === "Diverging"){
-//        var left_palette = selected_palette.left,
-//            right_palette = selected_palette.right,
-//            ctl_class_value = selected_palette.ctl_class,
-//            class_right = nb_class - ctl_class_value;
-//
-//        if(ctl_class_value <= class_right){
-//            var right_pal = getColorBrewerArray(class_right, right_palette),
-//                left_pal = getColorBrewerArray(class_right, left_palette);
-//            left_pal = left_pal.slice(0, ctl_class_value)
-//        } else {
-//            var right_pal = getColorBrewerArray(ctl_class_value, right_palette),
-//                left_pal = getColorBrewerArray(ctl_class_value, left_palette);
-//            right_pal = right_pal.slice(0, ctl_class_value);
-//        }
-//        left_pal = left_pal.reverse()
-//        color_array = left_pal.concat(right_pal);
-//    }
-//    return color_array;
-//}
-
 function discretize_to_size(values, type, nb_class, min_size, max_size){
     var func_switch = {
         to: function(name){return this.target[name];},
@@ -262,8 +237,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
         nb_bins = nb_bins > values.length ? nb_bins : values.length;
 
-        console.log(nb_bins)
-
         var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
@@ -285,8 +258,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var data = d3.layout.histogram()
             .bins(x.ticks(nb_bins))
             (values);
-
-        console.log(data)
 
         var y = d3.scale.linear()
             .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
@@ -328,7 +299,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     }
 
     var make_summary = function(){
-        console.log(serie);
         let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
         newBox.append("div").attr("id","summary")
                         .style("font-size", "10px").style("float", "right")
@@ -349,7 +319,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = eval(val);
-                console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 serie.setClassManually(breaks);
@@ -655,10 +624,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     });
     var to_reverse = false;
     document.getElementById("button_Sequential").checked = true;
-
-//    var accordion_summ = newBox.append("div").attr({id: "accordion_summary", class: "accordion_disc"});
-//    accordion_summ.append("h3").html("<b>Summary</b>");
-//    var summary =  d3.select("#accordion_summary").append("div").attr("id","summary").insert("p").html((serie.info()).split("-").join("<br>").split(']').join("]<br>"));
 
     var accordion_breaks = newBox.append("div")
                                 .attr({id: "accordion_breaks_vals",

@@ -234,8 +234,6 @@ function handle_dataset(f){
                 hide: function(){ $('.qtip.qtip-section1').qtip("show") }
             }
         });
-
-//        $("[name-tooltip!='']").qtip( {content: { attr: "name-tooltip" }, style: { classes: 'qtip-tipsy' } } );
     };
     reader.readAsText(f);
 }
@@ -301,15 +299,15 @@ function add_layer_topojson(text, options){
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
     for(let i=0; i < layers_names.length; i++){
-        var random_color1 = Colors.names[Colors.random()],
+        var random_color1 = ColorsSelected.random(),
             lyr_name = layers_names[i],
             lyr_name_to_add = check_layer_name(lyr_name),
             nb_ft = parsedJSON.objects[lyr_name].geometries.length,
             field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
 
-        if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'oint')) type = 'Point';
-        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'tring')) type = 'Line';
-        else if(strContains(parsedJSON.objects[lyr_name].geometries[0].type, 'olygon')) type = 'Polygon';
+        if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('Point') > -1) type = 'Point';
+        else if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('LineString') > -1) type = 'Line';
+        else if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
         current_layers[lyr_name_to_add] = {
             "type": type,
@@ -337,10 +335,8 @@ function add_layer_topojson(text, options){
               .attr("id", function(d, ix) {
                     if(data_to_load){
                         if(field_names.length > 0){
-                            //if(d.properties.hasOwnProperty('id') && d.id !== d.properties.id)
                             if(d.id != ix){
                                 d.properties["_uid"] = d.id;
-                            //d.properties["pkuid"] = ix;
                                 d.id = +ix;
                             }
                             user_data[lyr_name_to_add].push(d.properties);
@@ -499,22 +495,21 @@ function select_layout_features(){
         selected_ft = undefined;
 
     make_confirm_dialog("", "Valid", "Cancel", "Layout features", "sampleLayoutFtDialogBox").then(
-        function(confirmed){
-            if(confirmed){
-                add_layout_feature(selected_ft);
-            }
+            confirmed => { if(confirmed) add_layout_feature(selected_ft);
         });
 
     var box_body = d3.select(".sampleLayoutFtDialogBox");
     box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html("Choose features to be added : ");
 
-    var layout_ft_selec = box_body.append('p').html('').insert('select').attr({class: 'sample_layout', size: available_features.length});
-    available_features.forEach(function(ft){layout_ft_selec.append("option").html(ft).attr("value", ft);});
-    layout_ft_selec.on("change", function(){
-        console.log(this);
-        selected_ft = this.value;
+    var layout_ft_selec = box_body.append('p').html('')
+                            .insert('select').attr({class: 'sample_layout',
+                                                    size: available_features.length});
+
+    available_features.forEach(function(ft){
+        layout_ft_selec.append("option").html(ft).attr("value", ft);
     });
+    layout_ft_selec.on("change", function(){ selected_ft = this.value; });
 }
 
 
@@ -524,7 +519,10 @@ function add_layout_feature(selected_feature){
             existing_id = [],
             new_id;
         if(existing_annotation)
-            existing_id = Array.prototype.map.call(existing_annotation, elem => +elem.childNodes[1].id.split('text_annotation_')[1]);
+            existing_id = Array.prototype.map.call(
+                            existing_annotation,
+                            elem => +elem.childNodes[1].id.split('text_annotation_')[1]
+                            );
         for(let i in range(25)){
             i = +i;
             if(existing_id.indexOf(i) == -1){

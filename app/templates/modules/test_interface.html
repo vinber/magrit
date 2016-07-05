@@ -360,19 +360,8 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 // These variables (background, p, const_options, etc.) are not needed anymore
 // after being used here so they are put into curly braces to ensure garbage collection (?):
 {
-    /*
-    // Actually the graticule seems to consume a lot of ressources
-    // .. so maybe the user will add it if needed (in "layout features")
-    // .. but it wont be displayed on page opening :
-    map.append("g").attr({id: "Graticule", class: "layer"})
-                   .append("path")
-                   .attr("class", "graticule")
-                   .datum(d3.geo.graticule())
-                   .attr("d", path);
-    */
 
-    // Instead the path of the sphere should be efficient enough to spot
-    // .. the earth limits :
+    // Use the path of the sphere to spot the earth limits :
     map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
         .append("path")
         .datum({type: "Sphere"})
@@ -735,10 +724,6 @@ function reproj_symbol_layer(){
   }
 }
 
-function qs(str){
-    return document.querySelector(str);
-};
-
 // Convenience function to make a confirm dialog returning a defered promise
 // which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
 var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height, top){
@@ -853,7 +838,6 @@ function remove_layer_cleanup(name){
         if(joined_dataset.length == 0)
             browse_table.node().disabled = true;
     }
-
 
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
@@ -1084,25 +1068,6 @@ function save_map_template(){
     });
 }
 
-/*
-    // Function triggered each 5 minutes and when a major modification (like style modification on a layer)
-    // is done in order to keep basic informations about the map properties user (zoom, position, layers & styles, etc.)
-    function sendPreferences(){
-        var json_params = get_map_template(),
-            FormToSend = new FormData();
-        FormToSend.append("config", json_params)
-        $.ajax({
-           type: 'POST',
-           url: '/save_user_pref',
-           processData: false,
-           contentType: false,
-           data: FormToSend,
-           global: false,
-           success: function(d) {console.log(d);}
-        }); // 'global' is set to false to prevent the ajaxStart event to display the progress bar requested on other ajax calls
-    }
-*/
-
 //////////////////////////////////////////////////////////////////////////////
 // Zooming functions (some from http://bl.ocks.org/linssen/7352810)
 //////////////////////////////////////////////////////////////////////////////
@@ -1162,65 +1127,6 @@ function zoomClick() {
     interpolateZoom([view.x, view.y], view.k);
 }
 
-/*
-////
-// Old zooming functions - too use when redrawing on zooming
-/////
-
-function redraw(sc, tr) {
-  sc = sc || d3.event.scale;
-  tr  = tr || d3.event.translate;
-  let tx = t[0] * sc + tr[0],
-      ty = t[1] * sc + tr[1];
-  proj.translate([tx, ty])
-    .scale(s * sc);
-  map.selectAll(".layer").selectAll("path").attr("d", path);
-  return [sc, tr];
-}
-
-function interpolateZoom(translate, scale) {
-    return d3.transition().duration(225).tween("zoom", function () {
-        var iTranslate = d3.interpolate(proj.translate(), translate),
-            iScale = d3.interpolate(proj.scale(), scale);
-        return function (t) {
-            proj.scale(iScale(t)).translate(iTranslate(t));
-            zoom.scale(scale/s);
-            map.selectAll(".layer").selectAll("path").attr("d", path);
-        };
-    });
-}
-
-function zoomClick() {
-    var clicked = d3.event.target,
-        direction = 1,
-        factor = 0.1,
-        target_zoom = 1,
-        extent = zoom.scaleExtent(),
-        translate = proj.translate(),
-        translate0 = [], l = [],
-        p_scale = proj.scale();
-
-    d3.event.preventDefault();
-    direction = (this.id === 'zoom_in') ? 1 : -1;
-    target_zoom = zoom.scale() * (1 + factor * direction);
-
-    if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
-
-    translate0 = [(translate[0] - t[0]) / p_scale, (translate[1] - t[1]) / p_scale];
-    l = [translate0[0] * p_scale + t[0], translate0[1] * p_scale + t[1]];
-    target_zoom = target_zoom * s // 's' is the reference proj.scale
-
-    interpolateZoom(l, target_zoom);
-}
-
-function rotate_global(angle){
-    d3.selectAll("svg").selectAll("g:not(.legend_feature)")
-      .transition()
-      .duration(10)
-      .attr("transform", canvas_rotation_value);
-};
-
-*/
 
 
 //////////////////////////////////////////////////////////////////////////////

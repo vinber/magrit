@@ -7,7 +7,6 @@ class Textbox2 {
         var drag_txt_annot = d3.behavior.drag()
                 .on("dragstart", () => {
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    console.log(d3.event)
                     if(d3.event.sourceEvent.buttons == 2 && d3.event.sourceEvent.button == 2){
                         d3.event.sourceEvent.stopPropagation();
                         d3.event.sourceEvent.preventDefault();
@@ -63,13 +62,13 @@ class Textbox2 {
         textgroup.on("mouseout", () => {
             this.rct.style("fill-opacity", 0);
             if(this.focused)
-                this.t = setTimeout(()=>{this.focus_on()}, 3000);
+                this.t = setTimeout(()=>{this.focus_on()}, 2000);
             });
         textgroup.call(drag_txt_annot);
-        textgroup.on("contextmenu", (d,i) => {
-            return context_menu.showMenu(d3.event,
-                                         document.querySelector("body"),
-                                         getItems());
+        textgroup.on("contextmenu", () => {
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems());
             });
         this.keydown_txt_annot = () => {
             let code = d3.event.keyCode;
@@ -90,7 +89,6 @@ class Textbox2 {
         };
 
         this.keypress_txt_annot = () => {
-    //        if(!this.focused) return;
             let code = d3.event.charCode;
             console.log(this._text)
             this._text = [this._text, String.fromCodePoint(code)].join('');

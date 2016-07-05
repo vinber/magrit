@@ -194,3 +194,77 @@ prepflows_json <- function(mat, i, j, fij, remove_diag=FALSE, direct_stat=FALSE)
     return(jsonlite::toJSON(summary))
   }
 }
+
+# Function slightly adapted from Rcartogram package (comments are from the package author)
+prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols = 2^8){
+  spdf <- geojsonio::geojson_read(json_polygons, what='sp', stringsAsFactors = FALSE)
+
+  if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
+  if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS("+proj=natearth"))
+
+  if (!class(spdf) == "SpatialPolygonsDataFrame")
+    stop("argument 'spdf' must be an object of class 'SpatialPolygonsDataFrame'")
+  
+  if (length(variable) != 1)
+    stop("argument 'variable' must have length 1")
+  ## - must be of type numeric or character
+  if (!(is.numeric(variable) | is.character(variable)))
+    stop("argument 'variable' must be of type 'numeric' or 'character'")
+  ## - must refer to a column in spdf
+  check <- try(!spdf@data[, variable], silent = TRUE)
+  if (class(check) == "try-error")
+    stop("argument 'variable' is not a valid data.frame column of argument 'spdf'")
+  
+  ## nrows, ncols
+  ## - must be coercable to type integer
+  nrows <- as.integer(nrows)
+  ncols <- as.integer(ncols)
+  ## - should be power of 2, otherwise FFTW is slow
+  if (!isTRUE(all.equal(log(nrows, 2), floor(log(nrows, 2)))))
+    warning("argument 'nrows' should be a power of 2 for faster calculation")
+  if (!isTRUE(all.equal(log(ncols, 2), floor(log(ncols, 2)))))
+    warning("argument 'nrows' should be a power of 2 for faster calculation")
+
+  ## create a grid
+  
+  ## The algorithm by Newman works best if there is a generous "sea" around
+  ## the "land", thus by default, add 50% of the x/y ranges to each side and
+  ## define a grid of 512x512 points. Because the C code of Mark Newman uses
+  ## FFTW, the number of grid points should be a power of two in order for FFTW
+  ## to work faster.
+  bb <- bbox(spdf)
+  range <- diff(t(bbox(spdf)))
+  shift <- 0.5 * range  ## FIXME: If one wants to interpolate a coordinate that lies outside
+  ##        this region, function "interpolate" will fail!
+  dim <- c(x = ncols, y = nrows)
+  grid <- SpatialGrid(GridTopology(cellcentre.offset = as.numeric(bb[, "min"] - shift),
+                                   cellsize = as.numeric(diff(t(bb + t(rbind(-shift, shift)))) / (dim - 1)),
+                                   cells.dim = dim), proj4string = spdf@proj4string)
+  
+  ## overlay grid and polygons
+  
+  ## This is an extension of the point-in-polygon problem. We obtain a vector of
+  ## indices of the polygons in spdf.
+  ind <- sp::over(grid,as(spdf,"SpatialPolygons"))
+  
+  ## calculate "density"
+  
+  ## For each grid cell, we need to determine the fraction of the units of
+  ## "variable" as the number of units per cell. For NAs, i.e. for the "sea",
+  ## insert the mean value for the whole "land" mass. For the tabulation, the
+  ## levels need to be enforced because there might be polygons with count zero.
+  ## For these cells, division by zero is corrected by replacing the resulting
+  ## infinite result by zero.
+  tab <- xtabs(~ factor(ind, levels = seq(along = spdf@polygons)))
+  var <- spdf@data[, variable]
+  indVar <- var[as.numeric(names(tab))] / tab
+  indVar[is.infinite(indVar)] <- 0
+  mean <- sum(tab * indVar[as.numeric(names(tab))]) / sum(tab)
+  ind[is.na(ind)] <- length(var) + 1
+  indVar[length(var) + 1] <- mean
+  #dens <- matrix(indVar[ind], byrow = TRUE, ncol = dim["x"])
+  return(jsonlite::toJSON(as.double(t(
+      matrix(indVar[ind], byrow = TRUE, ncol = dim["x"])[rev(seq(along = dens[, 1])), ]
+      ))))
+}
+

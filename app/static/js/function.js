@@ -299,7 +299,10 @@ function fillMenu_Discont(layer){
         li.setAttribute("layer_name", new_layer_name);
         li.setAttribute("class", "ui-state-default sortable_result " + new_layer_name);
         li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Line'], "</div> ", _list_display_name].join('')
+        li.innerHTML = [
+            '<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit,
+            button_legend, button_active, button_type_blank['Line'], "</div> ", _list_display_name
+            ].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
@@ -473,9 +476,12 @@ function fillMenu_FlowMap(){
     var dv2 = section2.append("p").attr("class", "form-rendering");
     dv2.append('p').html('<b>Links dataset fields :</b>');
 
-    var field_i = dv2.append('p').html('<b><i> i </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_i"),
-        field_j = dv2.append('p').html('<b><i> j </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_j"),
-        field_fij = dv2.append('p').html('<b><i> fij </i></b> field ').insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
+    var field_i = dv2.append('p').html('<b><i> i </i></b> field ')
+                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_i"),
+        field_j = dv2.append('p').html('<b><i> j </i></b> field ')
+                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_j"),
+        field_fij = dv2.append('p').html('<b><i> fij </i></b> field ')
+                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
 
 //    var disc_type = dv2.append('p').html(' Discretization type ').insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
 //    ["Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
@@ -515,10 +521,13 @@ function fillMenu_FlowMap(){
         make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size)
     })
 
-    dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('')
-
+    dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('');
     dv2.append('p').html('<b>Reference layer fields :</b>');
-    var join_field = dv2.append('p').html('join field :').insert('select').attr('class', 'params').attr("id", "FlowMap_field_join");
+
+    var join_field = dv2.append('p').html('join field :')
+                        .insert('select')
+                        .attr('class', 'params')
+                        .attr("id", "FlowMap_field_join");
 
     let ok_button = dv2.append('button')
                         .attr('id', 'yes')
@@ -557,7 +566,6 @@ function fillMenu_FlowMap(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                cache: false,
                 url: '/R_compute/links',
                 data: formToSend,
                 type: 'POST',
@@ -629,7 +637,8 @@ var fields_Test = {
 function fillMenu_Test(){
     let random_color = Colors.random();
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Test_field'});
+        field_selec = dialog_content.append('p').html('Field :')
+                        .insert('select').attr({class: 'params', id: 'Test_field'});
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append("button")
@@ -650,7 +659,6 @@ function fillMenu_Test(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                cache: false,
                 url: '/R_compute/nothing',
                 data: formToSend,
                 type: 'POST',
@@ -733,7 +741,8 @@ function fillMenu_PropSymbolChoro(layer){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
     });
 
-    var field2_selec = dv2.append('p').html('Field 2 (symbol color) ').insert('select').attr('class', 'params').attr('id', 'PropSymbolChoro_field_2');
+    var field2_selec = dv2.append('p').html('Field 2 (symbol color) ')
+                        .insert('select').attr({class, 'params', id: 'PropSymbolChoro_field_2'});
 
     dv2.insert('p').style("margin", "auto").html("")
                 .append("button").attr('class', 'params button_disc')
@@ -787,7 +796,10 @@ function fillMenu_PropSymbolChoro(layer){
                 colors_breaks = [];
 
             for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
-                colors_breaks.push([rendering_params['breaks'][i] + " - " + rendering_params['breaks'][i+1], rendering_params['colors'][i]]);
+                colors_breaks.push([
+                    [rendering_params['breaks'][i], " - ", rendering_params['breaks'][i+1]].join(''),
+                    rendering_params['colors'][i]
+                    ]);
 
             current_layers[new_layer_name] = {
                 renderer: "PropSymbolsChoro",
@@ -1211,25 +1223,38 @@ function fillMenu_MTA(){
 
     var method_selec = dv2.append("p").style("margin", "auto").html("Analysis method")
                             .insert("select").attr("class", "params");
-    MTA_methods.forEach(function(method){ method_selec.append("option").text(method[0]).attr("value", method[1]) });
+    MTA_methods.forEach(method => { method_selec.append("option").text(method[0]).attr("value", method[1]) });
     // TODO : (de)activate the appropriates options according to the selected method (key / ref / etc.)
-    var field1_selec = dv2.append("p").html("First field :").insert("select").attr("class", "params").attr("id", "MTA_field_1");
-    var field2_selec = dv2.append("p").html("Second field :").insert("select").attr("class", "params").attr("id", "MTA_field_2");
-    var field_key_agg = dv2.append("p").html("Aggregation key field :").insert("select").attr("class", "params").attr("id", "MTA_field_key_agg").attr("disabled", true);
+    var field1_selec = dv2.append("p").html("First field :")
+                            .insert("select").attr("class", "params").attr("id", "MTA_field_1");
+    var field2_selec = dv2.append("p").html("Second field :")
+                            .insert("select").attr("class", "params").attr("id", "MTA_field_2");
+    var field_key_agg = dv2.append("p").html("Aggregation key field :")
+                            .insert("select").attr("class", "params").attr("id", "MTA_field_key_agg").attr("disabled", true);
     var ref_ratio = dv2.append("p").html("Reference ratio :")
-                                    .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1});
-    var type_deviation = dv2.append("p").html("Type of deviation").insert("select").attr("class", "params");
+                            .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1});
+    var type_deviation = dv2.append("p").html("Type of deviation")
+                            .insert("select").attr("class", "params");
     [["Relative deviation", "rel"],
      ["Absolute deviation", "abs"],
-     ["Compute both", "both"]].forEach(function(type_dev){ type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1])});
+     ["Compute both", "both"]].forEach(type_dev => {
+        type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1]) });
 
     var a = dv2.append('div').style("margin-bottom", "15px");
 
-    var param_global_dev = a.insert("select").attr("class", "params").attr("disabled", true).style({"background-color": "#e5e5e5", "border-color": "transparent"});
-    [["Distance defining the contiguity", "dist"],
-     ["Contiguity order", "order"]].forEach(function(param){  param_global_dev.append("option").text(param[0]).attr("value", param[1])  });
+    var param_global_dev = a.insert("select")
+                                .style({"background-color": "#e5e5e5", "border-color": "transparent"})
+                                .attr("class", "params")
+                                .attr("disabled", true);
 
-    var val_param_global_dev = a.insert('input').style("width", "85px").attr({type: "number", min: 0, max:1000000, step:1}).attr("disabled", true);
+    [["Distance defining the contiguity", "dist"],
+     ["Contiguity order", "order"]].forEach( param => {
+            param_global_dev.append("option").text(param[0]).attr("value", param[1])  });
+
+    var val_param_global_dev = a.insert('input')
+                                    .style("width", "85px")
+                                    .attr({type: "number", min: 0, max:1000000, step:1})
+                                    .attr("disabled", true);
 
     // Each MTA method (global/local/medium) is associated with some
     // specific arguments to enable/disabled accordingly
@@ -1526,7 +1551,6 @@ function fillMenu_Stewart(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                cache: false,
                 url: '/R_compute/stewart',
                 data: formToSend,
                 type: 'POST',
@@ -1720,11 +1744,16 @@ function fillMenu_Anamorphose(){
 
                 }
                 let formToSend = new FormData();
-                formToSend.append("json", JSON.stringify({topojson: layer, scale_values: transform, field_name: field_n, scale_max: scale_max}));
+                formToSend.append("json",
+                    JSON.stringify({
+                        topojson: layer,
+                        scale_values: transform,
+                        field_name: field_n,
+                        scale_max: scale_max})
+                    );
                 $.ajax({
                     processData: false,
                     contentType: false,
-                    cache: false,
                     url: '/R_compute/olson',
                     data: formToSend,
                     type: 'POST',
@@ -1738,7 +1767,6 @@ function fillMenu_Anamorphose(){
                         current_layers[n_layer_name].scale_byFeature = transform;
                         d3.select("#" + n_layer_name)
                                 .selectAll("path")
-                                //.style("fill", function(){ return Colors.random(); })
                                 .style("fill-opacity", 0.8)
                                 .style("stroke", "black")
                                 .style("stroke-opacity", 0.8);
@@ -1800,13 +1828,11 @@ function fillMenu_Anamorphose(){
                 formToSend.append("json", JSON.stringify({
                     "topojson": layer,
                     "var_name": var_to_send,
-//                    "var_name": JSON.stringify(var_to_send),
                     "iterations": nb_iter }))
 
                 $.ajax({
                     processData: false,
                     contentType: false,
-                    cache: false,
                     url: '/R_compute/carto_doug',
                     data: formToSend,
                     type: 'POST',
@@ -1912,7 +1938,6 @@ function fillMenu_Anamorphose(){
 
 
 function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
-//    let ref_layer_selection  = d3.select("#"+layer).selectAll("path"),
     let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
@@ -2180,9 +2205,11 @@ var fields_PropSymbol = {
 };
 
 function fillMenu_PropSymbol(layer){
-    var dialog_content = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field ').insert('select').attr({class: 'params', 'id': "PropSymbol_field_1"}),
-        max_allowed_size = Math.round(h/2 - h/20),
+    var max_allowed_size = Math.round(h/2 - h/20),
+        dialog_content = section2.append("p").attr("class", "form-rendering"),
+        field_selec = dialog_content.append('p').html('Field ')
+                          .insert('select')
+                          .attr({class: 'params', 'id': "PropSymbol_field_1"}),
         ref_size = dialog_content.append('p').style("display", "inline").html('Fixed size ')
                          .insert('input')
                          .attr({type: 'number', class: 'params'})
@@ -2205,7 +2232,7 @@ function fillMenu_PropSymbol(layer){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
     var fill_color = dialog_content.append('p').html('Symbol color ')
-              .insert('input').attr('type', 'color').attr({class: "params", "value": Colors.names[Colors.random()]});
+              .insert('input').attr('type', 'color').attr({class: "params", "value": ColorsSelected.random()});
 
     var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
                                 .insert("input").attr({type: "checkbox", class: "params"});
@@ -2375,15 +2402,19 @@ var fields_griddedMap = {
 }
 
 function fillMenu_griddedMap(layer){
-    var dialog_content = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p').html('Field ').insert('select').attr({class: 'params', id: "Gridded_field"}),
-        cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i> ').insert('input').attr({type: 'number', class: 'params', value: 0, min: 1000, max: 700000, step: 0.1}),
-        col_pal = dialog_content.append('p').html('Colorramp ').insert('select').attr('class', 'params');
+    var dialog_content = section2.append("p").attr("class", "form-rendering");
+    var field_selec = dialog_content.append('p').html('Field ')
+                        .insert('select').attr({class: 'params', id: "Gridded_field"});
+    var cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i> ')
+                        .insert('input').attr({
+                            type: 'number', class: 'params', value: 0,
+                            min: 1000, max: 700000, step: 0.1});
+    var col_pal = dialog_content.append('p').html('Colorramp ')
+                        .insert('select').attr('class', 'params');
 
     ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
-    'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(d, i){
-            col_pal.append("option").text(d).attr("value", d);
-    });
+    'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds']
+    .forEach( d => { col_pal.append("option").text(d).attr("value", d); });
 
     dialog_content.insert("p")
         .style({"text-align": "right", margin: "auto"})
@@ -2400,17 +2431,16 @@ function fillMenu_griddedMap(layer){
             if(current_layers[layer].original_fields.has(field_n))
                 var_to_send[field_n] = [];
             else
-                var_to_send[field_n] = user_data[layer].map(i => +i[field_n])
+                var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
 
             formToSend.append("json", JSON.stringify({
                 "topojson": layer,
                 "var_name": JSON.stringify(var_to_send),
                 "cellsize": cellsize.node().value
-                }))
+                }));
             $.ajax({
                 processData: false,
                 contentType: false,
-                cache: false,
                 url: '/R_compute/gridded',
                 data: formToSend,
                 type: 'POST',
@@ -2709,9 +2739,15 @@ function add_table_field(table, layer_name, parent){
 
     function refresh_type_content(type){
         field1.node().remove(); operator.node().remove(); field2.node().remove();
-        field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; });
-        operator = div1.append("select").on("change", function(){ chooses_handler.operator=this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);});
-        field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });
+        field1 = div1.append("select")
+                    .on("change", function(){ chooses_handler.field1 = this.value; });
+        operator = div1.append("select")
+                    .on("change", function(){
+                        chooses_handler.operator=this.value;
+                        refresh_subtype_content(chooses_handler.type_operation, this.value);
+                        });
+        field2 = div1.append("select")
+                    .on("change", function(){ chooses_handler.field2 = this.value; });
         if(type == "math_compute"){
             math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
             for(let k in fields_type){
@@ -2766,12 +2802,10 @@ function add_table_field(table, layer_name, parent){
                 document.querySelector("body").style.cursor = "wait";
                 let tmp = compute_and_add(chooses_handler);
                 tmp.then(function(resolved){
-//                        if(resolved){
                         fields_handler.unfill();
                         fields_handler.fill(layer_name);
                         if(parent)
                             parent.display_table(layer_name);
-//                        }
                     }, function(error){
                         alert("Somethng wrong happened");
                 }).done(()=> { document.querySelector("body").style.cursor = ""; });
@@ -2780,22 +2814,30 @@ function add_table_field(table, layer_name, parent){
 
     var current_fields = Object.getOwnPropertyNames(table),
         fields_type = type_col(layer_name),
+        regexp_name = new RegExp(/^[a-z0-9_]+$/i), // Only allow letters (lower & upper cases), number and underscore in the field name
         box_content = d3.select(".addFieldBox").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
-        div2 = box_content.append("div").attr("id", "field_div2"),
-        new_name = div1.append("p").html("New field name :<br>").insert("input").attr('value', 'NewFieldName').on("keyup", check_name),
-        type_content = div1.append("p").html("New field content :<br>")
+        div2 = box_content.append("div").attr("id", "field_div2");
+
+    var new_name = div1.append("p").html("New field name :<br>")
+                            .insert("input").attr('value', 'NewFieldName')
+                            .on("keyup", check_name);
+    var type_content = div1.append("p").html("New field content :<br>")
                             .insert("select").attr("id", "type_content_select")
-                            .on("change", function(){ chooses_handler.type_operation = this.value; refresh_type_content(this.value);}),
-        regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
+                            .on("change", function(){
+                                chooses_handler.type_operation = this.value;
+                                refresh_type_content(this.value); });
 
     [["Computation based on two existing numerical fields", "math_compute"],
      ["Modification on a character field", "string_field"]]
         .forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
 
-    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; console.log(this.value) }),
-        operator = div1.append("select").on("change", function(){ chooses_handler.operator = this.value; refresh_subtype_content(chooses_handler.type_operation, this.value);}),
-        field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });;
+    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
+        operator = div1.append("select").on("change", function(){
+                            chooses_handler.operator = this.value;
+                            refresh_subtype_content(chooses_handler.type_operation, this.value);
+                            }),
+        field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });
 
     var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
         val_opt = div2.append("input").attr("id", "val_opt")

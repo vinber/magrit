@@ -13,13 +13,13 @@ cdef extern from "embed.h":
 cdef extern from "cart.h":
     void cart_velocity(double rx, double ry, int s, int xsize, int ysize,
                        double *vxp, double *vyp)
-    double** cart_dmalloc(int xsize, int ysize);
-    void cart_dfree(double **userrho);
-    void cart_makews(int xsize, int ysize);
-    void cart_freews(int xsize, int ysize);
+    double** cart_dmalloc(int xsize, int ysize)
+    void cart_dfree(double **userrho)
+    void cart_makews(int xsize, int ysize)
+    void cart_freews(int xsize, int ysize)
     void cart_transform(double **userrho, int xsize, int ysize);
     void cart_makecart(double *pointx, double *pointy, int npoints,
-    		   int xsize, int ysize, double blur);
+    		   int xsize, int ysize, double blur)
 
 cdef extern from "interp_mat.h":
     double* transform_coords(double **gridx, double **gridy,
@@ -27,7 +27,7 @@ cdef extern from "interp_mat.h":
                              double xin, double yin)
     void reconstruct_grid(double *list_x, double *list_y,
                           double **gridx, double **gridy,
-            	          int xsize, int ysize)
+            	          unsigned int xsize, unsigned int ysize)
 cdef extern from *:
     pass
 
@@ -113,12 +113,29 @@ def construct_new_gdf(input_gdf, transformed_geoms):
     for ix, d in enumerate(transformed_geoms):
         try:
             if isinstance([0], list) and isinstance(d[0][0], tuple) and len(d) == 1:
-                new_geom = Polygon(shell=[g for g in d[0] if isinstance(g, tuple)], holes=[g for g in d[0] if isinstance(g, list)] if isinstance(d[0][-1], list) else None)
+                new_geom = Polygon(
+                    shell=[g for g in d[0] if isinstance(g, tuple)],
+                    holes=[g for g in d[0] if isinstance(g, list)] if isinstance(d[0][-1], list) else None)
                 gdf.geometry.loc[ix] = new_geom
             elif isinstance(d[0], list) and len(d) > 1:
                 polys = []
                 for poly in d[0]:
-                    polys.append(Polygon(shell=[g for g in poly if isinstance(g, tuple)], holes=[g for g in poly if isinstance(g, list)] if isinstance(poly[-1], list) else None))
+                    polys.append(Polygon(
+                        shell=[g for g in poly if isinstance(g, tuple)],
+                        holes=[g for g in poly if isinstance(g, list)] if isinstance(poly[-1], list) else None))
                 gdf.geometry.loc[ix] = MultiPolygon(polys)
-        except: print("Error on ", ix)
+        except:
+            print("Error on ", ix)
     return gdf
+
+def make_cart_from_density(layer_path, density, grid_size=(256, 256), output_geojson=True):
+    ## TODO: avoid going back and forth between python and C variables
+    list_x, listy = compute_xy2(grid_size[0], grid_size[1], density)
+    gdf = GeoDataFrame.from_file(layer_path)
+    poly_pts = dump_poly_coords(gdf)
+    res_pts = interpolate_poly(list_x, listy, poly_pts, grid_size[0], grid_size[1])
+    res_carto = cycart.construct_new_gdf(gdf, res_pts)
+    if output_geojson :
+        res_carto.to_json(output_geojson)
+    else:
+        return res_carto
