@@ -742,7 +742,7 @@ function fillMenu_PropSymbolChoro(layer){
     });
 
     var field2_selec = dv2.append('p').html('Field 2 (symbol color) ')
-                        .insert('select').attr({class, 'params', id: 'PropSymbolChoro_field_2'});
+                        .insert('select').attr({class: 'params', id: 'PropSymbolChoro_field_2'});
 
     dv2.insert('p').style("margin", "auto").html("")
                 .append("button").attr('class', 'params button_disc')

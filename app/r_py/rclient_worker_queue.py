@@ -5,8 +5,8 @@ import sys
 import os
 from collections import deque
 from psutil import Popen
-from zmq.asyncio import Context, Poller, ZMQEventLoop
-
+from zmq.asyncio import Context, Poller  # , ZMQEventLoop
+from uvloop.loop import Loop
 
 url_worker = 'ipc:///tmp/feeds/workers'
 url_client = 'ipc:///tmp/feeds/clients'
@@ -49,7 +49,8 @@ class RWorkerQueue:
         return len(self.available_workers)
 
     def start_broker(self, nb_r_process):
-        self.loop = ZMQEventLoop()
+#        self.loop = ZMQEventLoop()
+        self.loop = Loop()
         asyncio.set_event_loop(self.loop)
 
         @asyncio.coroutine
@@ -86,7 +87,7 @@ class RWorkerQueue:
             self.launch_r_worker(init_r_process)
 
         while True:
-            socks = yield from poller.poll(5*1000)
+            socks = yield from poller.poll(5000)
             socks = dict(socks)
             # poll on backend (msg/reply from workers) :
             if backend in socks and socks[backend] == zmq.POLLIN:

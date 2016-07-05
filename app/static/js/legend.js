@@ -47,6 +47,25 @@ function createLegend(layer, title){
         createLegend_nothing(layer, field, title, field);
 }
 
+var drag_legend_func = function(legend_group){
+    return d3.behavior.drag()
+            .origin(function() {
+                let t = d3.select(this);
+                return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                        y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+            })
+            .on("dragstart", () => {
+                d3.event.sourceEvent.stopPropagation();
+                d3.event.sourceEvent.preventDefault();
+                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                })
+            .on("dragend", () => {
+                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
+            .on("drag", function() {
+                legend_group.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
+                });
+}
+
 function createLegend_nothing(layer, field, title, subtitle){
     var title = title || "",
         subtitle = subtitle || field,
@@ -72,18 +91,7 @@ function createLegend_nothing(layer, field, title, subtitle){
         .attr("xlink:href", "/static/img/Edit_icon.svg")
         .on('click', function(){ createlegendEditBox('legend_root_nothing', layer); });
 
-    var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
-                })
-                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
-                .on("drag", function() {
-                    legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                        });
-
-    legend_root.call(drag_lgd);
+    legend_root.call(drag_legend_func(legend_root));
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -161,20 +169,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
         .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
         .text(function(d, i){return d.value;});
 
-
-    var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){
-                    console.log(d3.event)
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
-                })
-                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
-                .on("drag", function() {
-                    legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                });
-
-    legend_root.call(drag_lgd);
+    legend_root.call(drag_legend_func(legend_root));
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
@@ -290,25 +285,13 @@ function createLegend_symbol(layer, field, title, subtitle){
 
     }
 
-    var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){
-                    console.log(d3.event);
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
-                })
-                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
-                .on("drag", function() {
-                    legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                        });
-    legend_root.call(drag_lgd);
+    legend_root.call(drag_legend_func(legend_root));
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
             .attr({x: xpos, y: last_pos + 2*space_elem})
             .html('');
 }
-
 
 function createLegend_choro(layer, field, title, subtitle){
     var title = title || "",
@@ -378,22 +361,12 @@ function createLegend_choro(layer, field, title, subtitle){
       .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
       .text(function(d) { return d.value; });
 
-    var drag_lgd = d3.behavior.drag()
-                .on("dragstart", function(){
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    console.log(d3.event)
-                    })
-                .on("dragend", function(){  if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);  })
-                .on("drag", function() {
-                    legend_root.attr('transform', 'translate(' + [-xpos + d3.event.x, -ypos + d3.event.y] + ')');
-                    });
-
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
             .attr({x: xpos, y: last_pos + 2*boxheight})
             .html('');
 
-    legend_root.call(drag_lgd);
+    legend_root.call(drag_legend_func(legend_root));
 }
 
 function createlegendEditBox(legend_id, layer_name){

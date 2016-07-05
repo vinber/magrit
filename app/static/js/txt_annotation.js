@@ -5,19 +5,23 @@ class Textbox2 {
     constructor(parent, new_id_txt_annot){
         this._text = "Enter your text...";
         var drag_txt_annot = d3.behavior.drag()
+                .origin(function() {
+                    let t = d3.select(this);
+                    return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                            y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+                })
                 .on("dragstart", () => {
+                    d3.event.sourceEvent.stopPropagation();
+                    d3.event.sourceEvent.preventDefault();
                     if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                    if(d3.event.sourceEvent.buttons == 2 && d3.event.sourceEvent.button == 2){
-                        d3.event.sourceEvent.stopPropagation();
-                        d3.event.sourceEvent.preventDefault();
-                    }
+
                   })
                 .on("dragend", () => {
                     if(d3.select("#hand_button").classed("active"))
                         zoom.on("zoom", zoom_without_redraw);
                   })
                 .on("drag", () => {
-                    textgroup.attr('transform', 'translate(' + [d3.event.x - this._width / 2, d3.event.y - this._height / 2] + ')');
+                    textgroup.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
                   });
         this.fontsize = 12;
         this.x = 10;

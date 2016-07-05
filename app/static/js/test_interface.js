@@ -578,66 +578,110 @@ function add_layout_feature(selected_feature){
        zoom_without_redraw();
        binds_layers_buttons();
     } else if (selected_feature == "Scale"){
-        handle_scale_bar();
+        if(!(scaleBar.displayed))
+            scaleBar.create();
+        else
+            alert("Only one scale bar can be added - Use right click to change its properties");
     } else {
         alert("Not available yet..!")
     }
 }
 
-function handle_scale_bar(){
-    let scale_gp = map.append("g").attr("id", "scale_bar").attr("class", "legend scale"),
-        x_pos = 40,
-        y_pos = h - 100,
-        z_trans = zoom.translate(),
-        z_scale = zoom.scale();
+var scaleBar = {
+    create: function(){
+        let scale_gp = map.append("g").attr("id", "scale_bar").attr("class", "legend scale"),
+            x_pos = 40,
+            y_pos = h - 100,
+            bar_size = 50,
+            self = this;
 
-    let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
-        pt2 = proj.invert([(x_pos + 50 - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
+        this.x = x_pos;
+        this.y = y_pos;
+        this.bar_size = bar_size;
+        this.getDist();
 
-    let dist = haversine_dist(pt1, pt2),
-        dist_txt = dist > 0 ? dist.toFixed(0) : dist.toFixed(2);
+        let drag_scale = d3.behavior.drag()
+                .origin(function() {
+                    let t = d3.select(this);
+                    return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                            y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+                })
+                .on("dragstart", () => {
+                    d3.event.sourceEvent.stopPropagation();
+                    d3.event.sourceEvent.preventDefault();
+                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                  })
+                .on("dragend", function(){
+                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+                  })
+                .on("drag", function(){
+                    d3.select(this)
+                        .attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
+                    let t = d3.select(this);
+                    self.x = t.attr("x") + d3.transform(t.attr("transform")).translate[0];
+                    self.y = t.attr("y") + d3.transform(t.attr("transform")).translate[1];
+                    self.changeText();
+                  });
 
-    let drag_scale = d3.behavior.drag()
-            .on("dragstart", () => {
-                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                d3.event.sourceEvent.stopPropagation();
-                d3.event.sourceEvent.preventDefault();
-              })
-            .on("dragend", () => {
-                if(d3.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
-              })
-            .on("drag", () => {
-                scale_gp.attr('transform', 'translate(' + [d3.event.x - x_pos, d3.event.y - y_pos] + ')');
-              });
+        let getItems = () => [
+            {"name": "Resize", "action": () => { alert('foo')}},
+            {"name": "Edit Style...", "action": () => { alert("bar"); }},
+            {"name": "Delete", "action": () => { scale_gp.remove(); }}
+        ];
 
-    let getItems = () => [
-        {"name": "Resize", "action": () => { alert('foo')}},
-        {"name": "Edit Style...", "action": () => { alert("bar"); }},
-        {"name": "Delete", "action": () => { scale_gp.remove(); }}
-    ];
+        let scale_context_menu = new ContextMenu();
+        scale_gp.insert("rect")
+            .attr({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
+            .style("fill", "transparent");
+        scale_gp.insert("rect").attr("id", "rect_scale")
+            .attr({x: x_pos, y: y_pos, height: 2, width: bar_size})
+            .style("fill", "black");
+        scale_gp.insert("text")
+            .attr({x: x_pos - 4, y: y_pos - 5})
+            .text("0");
+        scale_gp.insert("text").attr("id", "text_limit_sup_scale")
+            .attr({x: x_pos + bar_size, y: y_pos - 5})
+            .text(this.dist_txt + " km");
 
-    let scale_context_menu = new ContextMenu();
+        scale_gp.call(drag_scale);
+        scale_gp.on("contextmenu", (d,i) => {
+                    d3.event.preventDefault();
+                    return scale_context_menu
+                       .showMenu(d3.event, document.querySelector("body"), getItems());
+                });
+        this.Scale = scale_gp;
+        this.displayed = true;
+    },
+    getDist: function(){
+        let x_pos = this.x,
+            y_pos = this.y,
+            z_trans = zoom.translate(),
+            z_scale = zoom.scale();
 
-    scale_gp.insert("rect")
-        .attr({x: x_pos, y: y_pos, height: 2, width: 50})
-        .style("fill", "black");
-    scale_gp.insert("text")
-        .attr({x: x_pos - 4, y: y_pos - 5})
-        .text("0");
-    scale_gp.insert("text")
-        .attr({x: x_pos + 50, y: y_pos - 5})
-        .text(dist_txt + " km");
+        let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
+            pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
 
-    scale_gp.call(drag_scale);
-    scale_gp.on("contextmenu", (d,i) => {
-                d3.event.preventDefault();
-                return scale_context_menu
-                   .showMenu(d3.event, document.querySelector("body"), getItems());
-            });
+        let dist = haversine_dist(pt1, pt2);
+        this.dist_txt = dist > 0 ? dist.toFixed(0) : dist.toFixed(2);
+        this.dist = dist;
 
-}
+    },
+    resize: function(){
+        let z_scale = zoom.scale();
+        this.Scale.select("#rect_scale");
 
+    },
+    changeText: function(){
+        this.getDist();
+        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " km");
+    },
+    remove: function(){
+        this.scale_gp.remove();
+        this.Scale = null;
+        this.displayed = false;
+    },
+    displayed: false
+};
 
 function add_layout_layers(){
     var selec = {layout: null};
@@ -646,7 +690,6 @@ function add_layout_layers(){
                          ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
                          ["World countries simplified <i>(Polygons)</i>", "world_country"],
                          ["World country capitals <i>(Points)</i>", "world_cities"],
-//                         ["Water coverage (sea, lakes and major rivers) <i>(Polygons)</i>", "water_coverage"],
                          ];
 
 
