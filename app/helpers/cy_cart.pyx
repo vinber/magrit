@@ -136,6 +136,6 @@ def make_cart_from_density(layer_path, density, grid_size=(256, 256), output_geo
     res_pts = interpolate_poly(list_x, listy, poly_pts, grid_size[0], grid_size[1])
     res_carto = cycart.construct_new_gdf(gdf, res_pts)
     if output_geojson :
-        res_carto.to_json(output_geojson)
+        return res_carto.to_json()
     else:
         return res_carto

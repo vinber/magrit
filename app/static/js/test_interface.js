@@ -620,13 +620,12 @@ var scaleBar = {
                     let t = d3.select(this);
                     self.x = t.attr("x") + d3.transform(t.attr("transform")).translate[0];
                     self.y = t.attr("y") + d3.transform(t.attr("transform")).translate[1];
-                    self.changeText();
                   });
 
         let getItems = () => [
             {"name": "Resize", "action": () => { alert('foo')}},
             {"name": "Edit Style...", "action": () => { alert("bar"); }},
-            {"name": "Delete", "action": () => { scale_gp.remove(); }}
+            {"name": "Delete", "action": () => { this.remove(); }}
         ];
 
         let scale_context_menu = new ContextMenu();
@@ -653,8 +652,8 @@ var scaleBar = {
         this.displayed = true;
     },
     getDist: function(){
-        let x_pos = this.x,
-            y_pos = this.y,
+        let x_pos = w / 2,
+            y_pos = h / 2,
             z_trans = zoom.translate(),
             z_scale = zoom.scale();
 
@@ -676,7 +675,7 @@ var scaleBar = {
         this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " km");
     },
     remove: function(){
-        this.scale_gp.remove();
+        this.Scale.remove();
         this.Scale = null;
         this.displayed = false;
     },

@@ -10,7 +10,7 @@ from shapely.affinity import scale
 
 def olson_transform(geojson, scale_values):
     """
-    Inplace scaling transformation of each polygon of the geojson provided 
+    Inplace scaling transformation of each polygon of the geojson provided
     according to the "scale values" also provided.
 
     Args:
@@ -18,7 +18,7 @@ def olson_transform(geojson, scale_values):
             The geojson of polygon to transform
             (it might be useful to have choosen an appropriate projection as we
             want to deal with the area)
-        scale_values: 
+        scale_values:
             The pre-computed scale values for olson transformation
             (1 = no transformation)
     Return:

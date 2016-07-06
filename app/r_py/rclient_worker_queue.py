@@ -5,8 +5,7 @@ import sys
 import os
 from collections import deque
 from psutil import Popen
-from zmq.asyncio import Context, Poller  # , ZMQEventLoop
-from uvloop.loop import Loop
+from zmq.asyncio import Context, Poller, ZMQEventLoop
 
 url_worker = 'ipc:///tmp/feeds/workers'
 url_client = 'ipc:///tmp/feeds/clients'
@@ -24,6 +23,7 @@ async def R_client_fuw_async(client_url, request, data, context, i):
     reply = await socket.recv()
     socket.close()
     return reply
+
 
 class RWorkerQueue:
     # TODO: write some tests
@@ -49,8 +49,7 @@ class RWorkerQueue:
         return len(self.available_workers)
 
     def start_broker(self, nb_r_process):
-#        self.loop = ZMQEventLoop()
-        self.loop = Loop()
+        self.loop = ZMQEventLoop()
         asyncio.set_event_loop(self.loop)
 
         @asyncio.coroutine
@@ -68,6 +67,7 @@ class RWorkerQueue:
             id_ = str(len(self.r_process)+1)
             p = Popen(['Rscript', '--vanilla',
                        'R/R_worker_class.R', id_])
+            # TODO: Use something like prlimit to control processus ressource
             self.r_process[id_] = p
 
     @asyncio.coroutine
@@ -77,7 +77,8 @@ class RWorkerQueue:
         frontend.bind(url_client)
         backend = self.context.socket(zmq.ROUTER)
         backend.bind(url_worker)
-        print('(async_broker) is ON - Starting with {} R workers'.format(self.init_nb))
+        print('(async_broker) is ON - Starting with {} R workers'
+              .format(self.init_nb))
 
         poller = Poller()
         poller.register(backend, zmq.POLLIN)
@@ -130,6 +131,7 @@ def start_queue(nb_process=4):
     Q = RWorkerQueue(nb_process, True)
     # Penser a changer la limite du nombre de descripteurs de fichiers et du
     # nombre de fichiers ouverts pour l'utitilisateur qui execute ce programme
+    # si beaucoup de workers R sont lancés
     # ... Changement dans /etc/security/limits.conf et dans /etc/sysctl.conf
 
 if __name__ == "__main__":

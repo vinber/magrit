@@ -3,13 +3,27 @@
 @author: mz
 """
 import os
-import zipfile
+from contextlib import ContextDecorator
 from io import BytesIO
 from hashlib import md5
 from random import choice
+from time import time
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from .cy_misc import get_name
 
+
+class TimedCall(ContextDecorator):
+    def __init__(self, prefix=None):
+        self.prefix = prefix if prefix else ""
+
+    def __enter__(self):
+        self.t = time()
+        return self
+
+    def __exit__(self, *exc):
+        print("{}{:.4f}s".format(self.prefix, time()-self.t))
+        return False
 
 def prepare_folder():
     for i in range(10):
@@ -94,10 +108,10 @@ def fetch_zip_clean(dir_path, layer_name):
         return raw_data, filenames[0]
     else:
         zip_stream = BytesIO()
-        myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
+        myZip = ZipFile(zip_stream, "w", compression=ZIP_DEFLATED)
         for filename in filenames:
             f_name = "".join([dir_path, "/", filename])
-            myZip.write(f_name, filename, zipfile.ZIP_DEFLATED)
+            myZip.write(f_name, filename, ZIP_DEFLATED)
             os.remove(f_name)
         myZip.close()
         zip_stream.seek(0)

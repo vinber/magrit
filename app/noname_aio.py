@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 """
 @author: mz
@@ -12,8 +12,8 @@ import asyncio
 import zmq.asyncio
 import pandas as pd
 import numpy as np
-import base64
 
+from base64 import b64encode
 from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
@@ -26,12 +26,11 @@ from concurrent.futures import ThreadPoolExecutor  #, ProcessPoolExecutor
 # Web related stuff :
 import jinja2
 import aiohttp_jinja2
-import aioredis
+from aioredis import create_pool, create_reconnecting_redis
 from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
-#from r_py.rclient_load_balance_auto_scale import R_client_fuw_async, url_client
 from r_py.rclient_worker_queue import R_client_fuw_async, url_client
 from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder
 from helpers.cy_misc import get_name, join_topojson_new_field2
@@ -97,7 +96,7 @@ async def geojson_to_topojson(filepath, quantization="--no-quantization"):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--spherical", quantization,
-                     "-p", "--", filepath], stdout=PIPE)
+                     "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     os.remove(filepath)
     return stdout.decode()
@@ -108,26 +107,6 @@ def topojson_to_geojson(data):
     (	through cython-written extension)
     """
     return json.dumps(convert_from_topo(data))
-
-#def topojson_to_geojson(data):
-#    """
-#    Topojson to geojson back-conversion
-#    (using "official" TopoJSON cli tool)
-#    """
-#    # Todo : Rewrite using asyncio.subprocess methods
-#    # Todo : Use topojson python port if possible to avoid writing a temp. file
-#    layer_name = list(data['objects'].keys())[0]
-#    f_path = ''.join(['/tmp/', layer_name, '.topojson'])
-#    with open(f_path, 'wb') as f:
-#        f.write(json.dumps(data).encode())
-#    new_path = f_path.replace('topojson', 'json')
-#    process = Popen(["topojson-geojson", f_path, "-o", '/tmp'])
-#    process.wait()
-#    with open(new_path, 'r') as f:
-#        data = f.read()
-#    os.remove(f_path)
-#    os.remove(new_path)
-#    return datathough
 
 async def remove_layer(request):
     posted_data, session_redis = \
@@ -234,15 +213,6 @@ async def ajson_loads(str_data):
         - parsed_json, dict : the JSON file loaded in a python dictionnary
     """
     return json.loads(str_data)
-
-#async def user_pref(request):
-#    last_pref = await request.post()
-#    session_redis = await get_session(request)
-#    user_id = get_user_id(session_redis)
-#    key = '_'.join([user_id, "lastPref"])
-#    await app['redis_conn'].set(key, json.dumps(last_pref['config']))
-#    return web.Response(text=json.dumps(
-#        {'Info': "Preferences saved!"}))
 
 
 async def convert(request):
@@ -360,12 +330,11 @@ async def convert(request):
 async def handle_app_functionality(request):
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis)
-#    lastPref = await app['redis_conn'].get('_'.join([user_id, "lastPref"]))
     return {"func": request.match_info['function'], "user_id": user_id}
 
 
 async def nothing(posted_data, user_id, *args):
-    s_t = time.time()
+#    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app['redis_conn'].get(f_name)
@@ -382,7 +351,7 @@ async def nothing(posted_data, user_id, *args):
     result = gdf.to_json()
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
-    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
+#    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res.replace(
         tmp_part, '_'.join(["Nope", n_field_name]))
 
@@ -517,6 +486,7 @@ async def carto_gridded(posted_data, user_id, *args):
     return res
 
 async def compute_olson(posted_data, user_id, *args):
+    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
     ref_layer = await app['redis_conn'].get(f_name)
@@ -535,6 +505,7 @@ async def compute_olson(posted_data, user_id, *args):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, new_name, "--no-quantization"]), res))
+    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return res
 
 
@@ -758,7 +729,7 @@ async def handler_exists_layer2(request):
             os.remove(output_path)
             raw_data, filename = fetch_zip_clean(tmp_path, layer_name)
             if ".zip" in filename:
-                b64_zip =  base64.b64encode(raw_data)
+                b64_zip =  b64encode(raw_data)
                 return web.Response(
                     body=b64_zip,
                     headers= MultiDict({
@@ -817,28 +788,6 @@ async def calc_helper(request):
             }[posted_data['operator']](val2).tolist()
     return web.Response(text=json.dumps(result))
 
-async def charmod_helper(request):
-    posted_data = await request.post()
-    val1 = json.loads(posted_data['var1'])
-    operator = posted_data["operator"]
-
-    if "truncate" in operator:
-        size = posted_data['opt']
-        if size < 0:
-            result = [val[len(val)+size:] for val in val1]
-        else:
-            result = [val[:size] for val in val1]
-    else:  # operator == "concatenate"
-        sep = posted_data['opt']
-        val2 = json.loads(posted_data['var2'])
-        if sep:
-            sep = str(sep)
-            result = [sep.join(pair_values) for pair_values in zip(val1, val2)]
-        else:
-            result = [''.join(pair_values) for pair_values in zip(val1, val2)]
-    return web.Response(
-        text=json.dumps(result) if result else '{"Error": "Unknown error"}')
-
 async def convert_csv_geo(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
@@ -886,29 +835,30 @@ def display_usage(file_name):
         """.format(file_name))
 
 async def init(loop, port=9999):
-    redis_cookie = await aioredis.create_pool(('localhost', 6379), db=0, maxsize=500)
-    redis_conn = await aioredis.create_reconnecting_redis(('localhost', 6379), db=1)
+    redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50)
+    redis_conn = await create_reconnecting_redis(('localhost', 6379), db=1)
     storage = redis_storage.RedisStorage(redis_cookie)
     app = web.Application(middlewares=[session_middleware(storage)])
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
-    app.router.add_route('GET', '/', handler)
-    app.router.add_route('GET', '/index', handler)
-    app.router.add_route('GET', '/modules', handler)
-    app.router.add_route('GET', '/modules/', handler)
-    app.router.add_route('GET', '/layers', list_user_layers)
-    app.router.add_route('POST', '/layers/delete', remove_layer)
-    app.router.add_route('GET', '/get_layer/{expr}', handler_exists_layer)
-    app.router.add_route('POST', '/get_layer2', handler_exists_layer2)
-    app.router.add_route('GET', '/modules/{function}', handle_app_functionality)
-    app.router.add_route('POST', '/R_compute/{function}', R_compute)
-    app.router.add_route('POST', '/convert_to_topojson', convert)
-    app.router.add_route('POST', '/convert_csv_geo', convert_csv_geo)
-    app.router.add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
+    add_route = app.router.add_route
+    add_route('GET', '/', handler)
+    add_route('GET', '/index', handler)
+    add_route('GET', '/modules', handler)
+    add_route('GET', '/modules/', handler)
+    add_route('GET', '/layers', list_user_layers)
+    add_route('POST', '/layers/delete', remove_layer)
+    add_route('GET', '/get_layer/{expr}', handler_exists_layer)
+    add_route('POST', '/get_layer2', handler_exists_layer2)
+    add_route('GET', '/modules/{function}', handle_app_functionality)
+    add_route('POST', '/R_compute/{function}', R_compute)
+    add_route('POST', '/convert_to_topojson', convert)
+    add_route('POST', '/convert_csv_geo', convert_csv_geo)
+    add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
 #    app.router.add_route('POST', '/save_user_pref', user_pref)
-    app.router.add_route('POST', '/add_layer/{expr}', receiv_layer)
-    app.router.add_route('POST', '/helpers/calc', calc_helper)
-    app.router.add_route('POST', '/helpers/calc_char', charmod_helper)
+    add_route('POST', '/add_layer/{expr}', receiv_layer)
+    add_route('POST', '/helpers/calc', calc_helper)
+#    app.router.add_route('POST', '/helpers/calc_char', charmod_helper)
 #    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
@@ -962,7 +912,7 @@ if __name__ == '__main__':
         # To be set to '0' when launching other instance of the noname app
         # as they all can use the same worker queue
         _p = Popen([
-            sys.executable,'r_py/rclient_load_balance_auto_scale.py', nb_r_workers
+            sys.executable,'r_py/rclient_worker_queue.py', nb_r_workers
             ])
 
     # In order to get an async zmq context object for the clients without using the zmq event loop:

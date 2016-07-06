@@ -46,11 +46,11 @@ body {
 
 #map {
     padding: 0px;
-    left: 375px;
-    margin-top: 40px;
+    left: 355px;
+    margin-top: 1px;
     background-color: white;
     position: relative;
-    border-style: solid;
+    border: 1px solid lightgrey;
 }
 
 
@@ -176,8 +176,8 @@ a.menu {
 
 .const_buttons {
     border-radius: 10%;
-    width: 38px;
-    height: 38px;
+    //width: 30px;
+    height: 30px;
     border-color:transparent;
 }
 
@@ -213,18 +213,11 @@ a.menu {
     color:#99a8c4;
     font-size:12px;
     margin: auto;
-    margin-right: 10px;
 }
 
 #Simplified_land_polygons {
     stroke-width: 0.5px;
     stroke-linecap: round;
-}
-
-#const_options{
-    position:absolute;
-    right:0px;
-    top:30px;
 }
 
 #info_features {

@@ -58,17 +58,17 @@ function get_approx_zoom(h, w){
 var func = document.getElementById('func').innerHTML;
 var menu_option = get_menu_option(func);
 
-{
-    let inn_width = window.innerWidth,
-        first_guess = Math.round((inn_width / 1.34 ) / 10)*10;
+//{
+//    let inn_width = window.innerWidth,
+//        first_guess = Math.round((inn_width / 1.34 ) / 10)*10;
+5
+var w = Math.round(window.innerWidth - 360),
+    h = Math.round(window.innerHeight / 1.24);
 
-    var w = first_guess < inn_width - 390 ? first_guess : Math.round((window.innerWidth - 395 ) / 10)*10,
-        h = Math.round((window.innerHeight / 1.34 ) / 10)*10;
+//    let proj_params = get_approx_zoom(h, w);
 
-    let proj_params = get_approx_zoom(h, w);
-
-    var proj = d3.geo.naturalEarth().scale(proj_params.approx_scale).translate(proj_params.approx_translate);
-}
+var proj = d3.geo.naturalEarth().scale(1).translate([0,0]);
+//}
 
 var path = d3.geo.path().projection(proj).pointRadius(4),
     t = proj.translate(),
@@ -146,12 +146,14 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 {
     let menu = d3.select("#menu"),
         accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
+        accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
         accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
         accordion3 = menu.append("div").attr("id","accordion3").attr("class", "accordion"),
         accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
         accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
 
     accordion1.append("h3").html("Add your data");
+    accordion2_pre.append("h3").html("Choose a function");
     accordion2.append("h3").html(menu_option.title);
     accordion3.append("h3").html("Layers");
     accordion4.append("h3").html("Basemap configuration");
@@ -229,11 +231,13 @@ layer_list.append("li")
         .attr("class", "ui-state-default Simplified_land_polygons")
         .attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer")
         .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons");
+/*
 layer_list.append("li")
         .attr("layer_name", "Sphere")
         .attr("class", "ui-state-default Sphere")
         .attr("layer-tooltip", "Sphere - Sample layout layer")
         .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere");
+*/
 
 var dv3 = section3.append("div")
                 .style("text-align", "center").html('');
@@ -362,13 +366,14 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 {
 
     // Use the path of the sphere to spot the earth limits :
+/*
     map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
         .append("path")
         .datum({type: "Sphere"})
         .style({fill: "lightblue", "fill-opacity": 0.2})
         .attr("id", "sphere")
         .attr("d", path);
-
+*/
     let background = map.append("g")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
                         .style({"stroke-width": "0.3px"});
@@ -382,6 +387,9 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .attr("d", path)
                   .style({stroke: "rgb(0,0,64)", fill: "lightgrey"});
         map.selectAll("path").attr("d", path);
+        scale_to_lyr("Simplified_land_polygons");
+        center_map("Simplified_land_polygons");
+        zoom_without_redraw();
     });
 
     let p = dv5.append("select")
@@ -402,16 +410,16 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
            });
     });
 
-    let const_options = d3.select("body").append("div").attr("id", "const_options")
+    let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline")
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export your composition")
-                  .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="24" height="24" alt="Export"/>')
+                  .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="20" height="20" alt="Export"/>')
                   .style("margin-top", "none")
                   .on("click", handle_export);
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export / Load your map preferences")
-                  .html('<img src="/static/img/High-contrast-system-run.svg" width="24" height="24" alt="export_load_preferences"/>')
+                  .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){
                       alert("Not implemented!");
@@ -419,7 +427,7 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Help")
-                  .html('<img src="/static/img/High-contrast-help-browser.svg" width="24" height="24" alt="export_load_preferences"/>')
+                  .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){alert('Emergency help!');});
 
@@ -427,8 +435,25 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
     let lm = map_div
                 .append("div")
                 .attr("class", "light-menu")
-                .style({position:"absolute", top:"-34px", left: "-4px"});
+                .style({position:"absolute", right:"0px", bottom: "0px"});
 
+    let lm_buttons = [
+        {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
+        {id: "zoom_in", title: "Zoom in", class: "zoom_button", html: "+"},
+        {id: "info_button", title: "Zoom out", class: "info_button", html: "i"},
+        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>'},
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>'}
+    ];
+
+    let selec = lm.selectAll("input")
+        .data(lm_buttons).enter()
+        .append('p').style("margin", "auto")
+            .insert("button")
+            .attr("class", d => d.class)
+            .attr("title", d => d.title)
+            .attr("id", d => d.id)
+            .html(d => d.html);
+/*
     lm.append("input")
         .attr("type", "button")
         .attr("class", "zoom_button")
@@ -458,8 +483,6 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
             .style('box-shadow', 'inset 2px 2px 1px black')
             .on("click", function(){handle_click_hand();});
 
-    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-
     lm.append("button")
             .attr("class", "brush_zoom_button")
             .attr("id", "brush_zoom_button")
@@ -467,6 +490,12 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
             .classed("active", false)
             .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>')
             .on("click", function(){brush_rect()});
+
+*/
+    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
+    document.getElementById("brush_zoom_button").onclick = function(){ brush_rect(); };
+
+
 }
 
 // Already append the div for displaying information on features,
@@ -480,11 +509,10 @@ d3.select("body").append("div")
 d3.selectAll(".zoom_button").on("click", zoomClick);
 d3.selectAll(".info_button").on("click", displayInfoOnMove);
 d3.select("svg").on("mousemove", function(){log_coordinates(this)});
-binds_layers_buttons();
-zoom.scale(0.5).translate([400, 250]);
-zoom_without_redraw();
 
+binds_layers_buttons();
 prepare_drop_section();
+
 /////////////////////////////////////////////////////////////////////////////
 // JQuery menu, tooltips and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////

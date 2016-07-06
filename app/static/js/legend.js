@@ -86,17 +86,13 @@ function createLegend_nothing(layer, field, title, subtitle){
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
 
-    legend_root.insert("svg:image").attr("id", "edit_legend")
-        .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ createlegendEditBox('legend_root_nothing', layer); });
-
     legend_root.call(drag_legend_func(legend_root));
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
             .attr({x: xpos, y: ypos + 2*space_elem})
             .html('');
+    make_legend_context_menu(legend_root, layer);
 }
 
 function createLegend_discont_links(layer, field, title, subtitle){
@@ -121,11 +117,6 @@ function createLegend_discont_links(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
-
-    legend_root.insert("svg:image").attr("id", "edit_legend")
-        .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ createlegendEditBox('legend_root_links', layer); });
 
     let ref_symbols_params = new Array();
 
@@ -175,6 +166,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
             .insert("text").attr("id", "legend_bottom_note")
             .attr({x: xpos, y: last_pos + 2*space_elem})
             .html('');
+    make_legend_context_menu(legend_root, layer);
 }
 
 function createLegend_symbol(layer, field, title, subtitle){
@@ -201,10 +193,6 @@ function createLegend_symbol(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem * 2 + boxgap)
             .attr("y", ypos + 15);
-    legend_root.insert("svg:image").attr("id", "edit_legend")
-        .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ createlegendEditBox('legend_root2', layer); });
 
     let ref_symbols = document.getElementById(layer).querySelectorAll(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width';
@@ -291,6 +279,7 @@ function createLegend_symbol(layer, field, title, subtitle){
             .insert("text").attr("id", "legend_bottom_note")
             .attr({x: xpos, y: last_pos + 2*space_elem})
             .html('');
+    make_legend_context_menu(legend_root, layer);
 }
 
 function createLegend_choro(layer, field, title, subtitle){
@@ -317,11 +306,6 @@ function createLegend_choro(layer, field, title, subtitle){
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + boxheight * 2 + boxgap)
             .attr("y", ypos + 15);
-
-    legend_root.insert("svg:image").attr("id", "edit_legend")
-        .attr({x: xpos-6, y: ypos + 20, width: 12, height: 12, "fill-opacity" : 0.5})
-        .attr("xlink:href", "/static/img/Edit_icon.svg")
-        .on('click', function(){ createlegendEditBox('legend_root', layer); });
 
     if(current_layers[layer].renderer.indexOf('Categorical') > -1){
         data_colors_label = [];
@@ -367,6 +351,20 @@ function createLegend_choro(layer, field, title, subtitle){
             .html('');
 
     legend_root.call(drag_legend_func(legend_root));
+    make_legend_context_menu(legend_root, layer);
+}
+
+function make_legend_context_menu(legend_node, layer){
+   let context_menu = new ContextMenu(),
+       getItems = () =>  [
+        {"name": "Edit style...", "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
+        {"name": "Delete", "action": () => { legend_node.remove(); }}
+    ];
+    legend_node.on("contextmenu", () => {
+        context_menu.showMenu(d3.event,
+                              document.querySelector("body"),
+                              getItems());
+        });
 }
 
 function createlegendEditBox(legend_id, layer_name){
