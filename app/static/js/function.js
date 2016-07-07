@@ -694,6 +694,7 @@ var fields_PropSymbolChoro = {
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
         });
+        setSelected(field1_selec.node(), fields[0]);
     },
 
     unfill: function(){

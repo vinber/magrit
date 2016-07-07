@@ -2,7 +2,7 @@
 
 class Textbox2 {
     // woo lets use ES2015 classes !
-    constructor(parent, new_id_txt_annot){
+    constructor(parent, new_id_txt_annot, position=[10, 30]){
         this._text = "Enter your text...";
         var drag_txt_annot = d3.behavior.drag()
                 .origin(function() {
@@ -24,8 +24,8 @@ class Textbox2 {
                     textgroup.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
                   });
         this.fontsize = 12;
-        this.x = 10;
-        this.y = 30;
+        this.x = position[0];
+        this.y = position[1];
         this._width = 100;
         this._height = 20;
         this.focused = null;

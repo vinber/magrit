@@ -427,7 +427,8 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons();
     target_layer_on_add = false;
-    if(!skip_alert) alert('Layer successfully added to the canvas');
+//    if(!skip_alert) alert('Layer successfully added to the canvas');
+    if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
     return lyr_name_to_add;
 };
 

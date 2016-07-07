@@ -47,6 +47,19 @@ function createLegend(layer, title){
         createLegend_nothing(layer, field, title, field);
 }
 
+function make_legend_context_menu(legend_node, layer){
+   let context_menu = new ContextMenu(),
+       getItems = () =>  [
+        {"name": "Edit style...", "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
+        {"name": "Delete", "action": () => { legend_node.remove(); }}
+    ];
+    legend_node.on("contextmenu", () => {
+        context_menu.showMenu(d3.event,
+                              document.querySelector("body"),
+                              getItems());
+        });
+}
+
 var drag_legend_func = function(legend_group){
     return d3.behavior.drag()
             .origin(function() {
@@ -352,19 +365,6 @@ function createLegend_choro(layer, field, title, subtitle){
 
     legend_root.call(drag_legend_func(legend_root));
     make_legend_context_menu(legend_root, layer);
-}
-
-function make_legend_context_menu(legend_node, layer){
-   let context_menu = new ContextMenu(),
-       getItems = () =>  [
-        {"name": "Edit style...", "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
-        {"name": "Delete", "action": () => { legend_node.remove(); }}
-    ];
-    legend_node.on("contextmenu", () => {
-        context_menu.showMenu(d3.event,
-                              document.querySelector("body"),
-                              getItems());
-        });
 }
 
 function createlegendEditBox(legend_id, layer_name){

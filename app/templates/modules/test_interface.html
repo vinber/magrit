@@ -15,6 +15,7 @@
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
+    <script  src="/static/js/lib/sweetalert.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/txt_annotation.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
@@ -31,6 +32,7 @@
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/sweetalert.css" rel="stylesheet" type="text/css">
     <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
   </head>
   <body>
@@ -378,7 +380,6 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
                         .style({"stroke-width": "0.3px"});
 
-
     d3.json("/database/topojson/simplified_land_polygons.topojson", function ready(error, json) {
         background.selectAll('.subunit')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
@@ -429,7 +430,25 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .attr("title", "Help")
                   .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
-                  .on("click", function(){alert('Emergency help!');});
+                  .on("click", function(){
+                  swal({
+                      title: "Emergency help !",
+                      text: "Write something to be searched in the documentation :",
+                      type: "input",
+                      showCancelButton: true,
+                      closeOnConfirm: false,
+                      animation: "slide-from-top",
+                      inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
+                      }, inputValue => {
+                          if (inputValue === false) return false;
+                          if (inputValue === "") {
+                            swal.showInputError("You need to write something!");
+                            return false;
+                      }
+
+                  swal("Nice!", "You wrote: " + inputValue, "success");
+                });
+                    });
 
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     let lm = map_div
@@ -453,49 +472,16 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
             .attr("title", d => d.title)
             .attr("id", d => d.id)
             .html(d => d.html);
-/*
-    lm.append("input")
-        .attr("type", "button")
-        .attr("class", "zoom_button")
-        .attr("value", "-")
-        .attr("title", "Zoom out")
-        .attr("id", "zoom_out");
 
-    lm.append("input")
-            .attr("type", "button")
-            .attr("class", "zoom_button")
-            .attr("value", "+")
-            .attr("title", "Zoom in")
-            .attr("id", "zoom_in");
-
-    lm.append("input")
-            .attr("type", "button")
-            .attr("class", "info_button")
-            .attr("value", "i")
-            .attr("title", "Display features informations")
-            .attr("id", "info_button");
-
-    lm.append("button")
-            .attr("class", "hand_button active")
-            .attr("id", "hand_button")
-            .attr("title", "Use the cursor to move on the map (default behavior)")
-            .html('<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>')
-            .style('box-shadow', 'inset 2px 2px 1px black')
-            .on("click", function(){handle_click_hand();});
-
-    lm.append("button")
-            .attr("class", "brush_zoom_button")
-            .attr("id", "brush_zoom_button")
-            .attr("title","Zoom on selection")
-            .classed("active", false)
-            .html('<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>')
-            .on("click", function(){brush_rect()});
-
-*/
+    // Trigger actions when buttons are clicked and set-up the initial view :
+    d3.selectAll(".zoom_button").on("click", zoomClick);
+    document.getElementById("info_button").onclick = displayInfoOnMove;
+    document.getElementById("hand_button").onclick = function(){handle_click_hand();};
+    document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
     let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
     document.getElementById("brush_zoom_button").onclick = function(){ brush_rect(); };
-
-
+    //d3.selectAll(".info_button").on("click", displayInfoOnMove);
+    //d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 }
 
 // Already append the div for displaying information on features,
@@ -504,11 +490,6 @@ d3.select("body").append("div")
               .attr("id", "info_features")
               .classed("active", false)
               .html("");
-
-// Trigger actions when buttons are clicked and set-up the initial view :
-d3.selectAll(".zoom_button").on("click", zoomClick);
-d3.selectAll(".info_button").on("click", displayInfoOnMove);
-d3.select("svg").on("mousemove", function(){log_coordinates(this)});
 
 binds_layers_buttons();
 prepare_drop_section();
@@ -807,6 +788,7 @@ function log_coordinates(t){
 };
 
 // Wrapper to obtain confirmation before actually removing a layer :
+/*
 function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     var txt_dialog = "Remove layer '" + name + "' ?";
@@ -815,6 +797,19 @@ function remove_layer(name){
             remove_layer_cleanup(name);
         }
     });
+}
+*/
+function remove_layer(name){
+    name = name || this.parentElement.parentElement.getAttribute("layer_name");
+    swal({
+        title: "Confirm ?",
+        text: ["Remove layer '", name, "?"].join(''),
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Delete!",
+        closeOnConfirm: false
+    }, () => { remove_layer_cleanup(name); });
 }
 
 // Do some clean-up when a layer is removed
@@ -870,6 +865,7 @@ function remove_layer_cleanup(name){
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
     delete current_layers[name];
+    swal("Deleted!", ["Layer ", name, " has been removed"].join(''), "success");
 }
 
 function load_map_template(){
@@ -1727,7 +1723,8 @@ function make_export_layer_box(){
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
                         if(data.indexOf("Error:") == 0){
-                            alert("Something went wrong : " + data.substring(6, data.length));
+                            //alert("Something went wrong : " + data.substring(6, data.length));
+                            swal("Oops...", "Something went wrong : " + data.substring(6, data.length), "error");
                             return;
                         }
                         let ext = extensions.get(type);
