@@ -15,7 +15,7 @@ import numpy as np
 
 from base64 import b64encode
 from contextlib import closing
-from zipfile import ZipFile
+from zipfile import ZipFile, crc32
 from datetime import datetime
 from io import StringIO
 from subprocess import Popen, PIPE
@@ -32,7 +32,7 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
 from r_py.rclient_worker_queue import R_client_fuw_async, url_client
-from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder
+from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, crc32_file
 from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
 from helpers.topo_to_geo import convert_from_topo
@@ -98,8 +98,16 @@ async def geojson_to_topojson(filepath, quantization="--no-quantization"):
     process = Popen(["topojson", "--spherical", quantization,
                      "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
-    os.remove(filepath)
+#    os.remove(filepath)
     return stdout.decode()
+
+async def store_non_quantized(filepath, f_name):
+    process = Popen(["topojson", "--spherical", "--no-quantization",
+                     "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
+    stdout, _ = process.communicate()
+    result = stdout.decode()
+    os.remove(filepath)
+    await app['redis_conn'].set(f_name, result)
 
 def topojson_to_geojson(data):
     """
@@ -112,11 +120,12 @@ async def remove_layer(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis)
-    name = posted_data.get('layer_name')
-    quantization = posted_data.get('quantization')
-    f_name = '_'.join([user_id, name, quantization])
-    asyncio.ensure_future(
-        app["redis_conn"].delete(f_name))
+    f_names = posted_data.getall('layer_name')
+    for f_name in f_names:
+        f_name = '_'.join([user_id, f_name, "NQ"])
+        print("Deleting  " + f_name)
+        asyncio.ensure_future(
+            app["redis_conn"].delete(f_name))
     return web.Response(text=json.dumps({"code": "Ok"}))
 
 async def list_user_layers(request):
@@ -141,48 +150,65 @@ async def cache_input_topojson(request):
     if "sample_data" in params:
         user_id = get_user_id(session_redis)
         name = posted_data.get('layer_name')
-        quantization = posted_data.get('quantization')
         path = app['db_layers'][name]
-        f_name = '_'.join([user_id, name, quantization])
-        result = await app['redis_conn'].get(f_name)
-        if not result:
+        hash_val = str(crc32(path.encode()))
+        f_name = '_'.join([user_id, hash_val])
+        f_nameQ = '_'.join([f_name, "Q"])
+        f_nameNQ = '_'.join([f_name, "NQ"])
+
+        result = await app['redis_conn'].get(f_nameNQ)
+        if result:
+            result = result.decode()
+            print("The TopoJSON was already cached !")
+            return web.Response(text=''.join(
+                ['{"key":', hash_val, ',"file":', result.replace(hash_val, name), '}']
+                ))
+        else:
             res = await ogr_to_geojson(path, to_latlong=True)
             print("Transform coordinates from GeoJSON")
             f_path = '/tmp/' + f_name
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, quantization)
+            result = await geojson_to_topojson(f_path, "-q 1e8")
             result = result.replace(f_name, name)
-            asyncio.ensure_future(app['redis_conn'].set(f_name, result))
+            asyncio.ensure_future(store_non_quantized(f_path, f_nameNQ))
+            asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
             print('Caching the TopoJSON')
-            return web.Response(text=result)
-        else:
-            print("The TopoJSON was already cached !")
-            return web.Response(text=result.decode())
+            return web.Response(text=''.join(
+                ['{"key":', hash_val, ',"file":', result, '}']
+                ))
 
     elif "user" in params:
         try:
             file_field = posted_data['file[]']
             name = file_field.filename
             data = file_field.file.read()
-            # Todo : compute the hash on client side to avoid re-sending the data ?
-#            hashed_input = sha512(data).hexdigest()
+
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
         user_id = get_user_id(session_redis)
-        f_name = '_'.join([user_id, name.split('.')[0]])
+        hash_val = str(crc32(data))
+        f_name = '_'.join([user_id, hash_val])
+        f_nameQ = '_'.join([f_name, "Q"])
+        f_nameNQ = '_'.join([f_name, "NQ"])
 
-        result = await app['redis_conn'].get(f_name)
+        result = await app['redis_conn'].get(f_nameNQ)
         if result:
+            result = result.decode()
             print("The TopoJSON was already cached !")
-            return web.Response(text='')
+            return web.Response(text=''.join(
+                ['{"key":', hash_val, ',"file":', result.replace(hash_val, name), '}']
+                ))
 
-        await app['redis_conn'].set(f_name, data.decode())
+        asyncio.ensure_future(app['redis_conn'].set(f_nameNQ, data))
+        asyncio.ensure_future(app['redis_conn'].set(f_nameQ, data))
         print('Caching the TopoJSON')
-        return web.Response(text='')
+        return web.Response(text=''.join(
+            ['{"key":', hash_val, ',"file":null}']
+            ))
 
 
 def get_user_id(session_redis):
@@ -229,7 +255,7 @@ async def convert(request):
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
-#        hashed_input = hash_md5_file(shp_path)
+        hashed_input = crc32_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
     # If there is a single file (geojson or zip) to handle :
@@ -239,7 +265,7 @@ async def convert(request):
             name = field[1]
             data = field[2].read()
             datatype = field[3]
-#            hashed_input = sha512(data).hexdigest()
+            hashed_input = crc32(data)
             filepath = ''.join(['/tmp/', name])
 #            tmp_part = get_name()
 #            filepath = ''.join(['/tmp/', tmp_part, name])
@@ -249,21 +275,28 @@ async def convert(request):
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
     user_id = get_user_id(session_redis)
-    quantize = posted_data.get('quantization')
-    f_name = '_'.join([user_id, name.split('.')[0], quantize])
+#    quantize = posted_data.get('quantization')
+    f_name = '_'.join([user_id, str(hashed_input)])
+    f_nameQ = '_'.join([f_name, "Q"])
+    f_nameNQ = '_'.join([f_name, "NQ"])
+#    f_name = '_'.join([user_id, name.split('.')[0], quantize])
 
-    result = await app['redis_conn'].get(f_name)
-    if result:
+    results = await app['redis_conn'].keys(f_name)
+    if results:
+        result = await app['redis_conn'].get(f_nameQ)
         print("Used cached result")
-        return web.Response(text=result.decode())
+        return web.Response(text=''.join(
+            ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
+            ))
 
     if "shp" in datatype:
         res = await ogr_to_geojson(shp_path, to_latlong=True)
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'w') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, quantize)
-        asyncio.ensure_future(app['redis_conn'].set(f_name, result))
+        result = await geojson_to_topojson(filepath2, "-q 1e8")
+        asyncio.ensure_future(store_non_quantized(filepath2, f_nameNQ))
+        asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
         [os.remove(file) for file in list_files]
 
     elif 'zip' in datatype:
@@ -279,8 +312,10 @@ async def convert(request):
             filepath2 = '/tmp/' + layer_name.replace('.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, quantize)
-            asyncio.ensure_future(app['redis_conn'].set(f_name, result))
+#            result = await geojson_to_topojson(filepath2, quantize)
+            result = await geojson_to_topojson(filepath2, "-q 1e8")
+            asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
+            asyncio.ensure_future(store_non_quantized(filepath2, f_nameNQ))
         os.remove(filepath+'archive')
         [os.remove(file) for file in list_files]
 
@@ -300,11 +335,14 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
 
-        result = await geojson_to_topojson(filepath, quantize)
+#        result = await geojson_to_topojson(filepath, quantize)
+        result = await geojson_to_topojson(filepath, "-q 1e8")
+
         if len(result) == 0 and not crs:
             result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
         else:
-            asyncio.ensure_future(app['redis_conn'].set(f_name, result))
+            asyncio.ensure_future(store_non_quantized(filepath, f_nameNQ))
+            asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
 
     elif 'kml' in datatype:
         print(datatype)
@@ -314,16 +352,20 @@ async def convert(request):
         os.remove(filepath)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, quantize)
+#        result = await geojson_to_topojson(filepath, quantize)
+        result = await geojson_to_topojson(filepath, "-q 1e8")
         if len(result) == 0:
             result = json.dumps({'Error': 'Error converting reading kml file'})
         else:
-            asyncio.ensure_future(app['redis_conn'].set(f_name, result))
+            asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
+            asyncio.ensure_future(store_non_quantized(filepath, f_nameNQ))
 
     else:
-        result = json.dumps({'Error': 'Incorrect datatype'})
+        return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
-    return web.Response(text=result)
+    return web.Response(text=''.join(
+        ['{"key":', str(hashed_input), ',"file":', result, '}']
+        ))
 
 
 @aiohttp_jinja2.template('modules/test_interface.html')
@@ -336,10 +378,11 @@ async def handle_app_functionality(request):
 async def nothing(posted_data, user_id, *args):
 #    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    key = posted_data['topojson']
+    f_name = '_'.join([user_id, str(key), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
     ref_layer = json.loads(ref_layer.decode())
-    new_field = json.loads(posted_data['var_name'])
+    new_field = posted_data['var_name']
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
         join_topojson_new_field2(ref_layer, new_field[n_field_name], n_field_name)
@@ -351,14 +394,20 @@ async def nothing(posted_data, user_id, *args):
     result = gdf.to_json()
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
+    hash_val = crc32(res.encode())
 #    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    return res.replace(
-        tmp_part, '_'.join(["Nope", n_field_name]))
+    return ''.join([
+             '{"key":',
+             str(hash_val),
+             ',"file":',
+             res.replace(tmp_part, '_'.join(["Nope", n_field_name])),
+             '}'
+         ])
 
 async def carto_doug(posted_data, user_id, loop):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "Q"])
     ref_layer = await app['redis_conn'].get(f_name)
     ref_layer = await ajson_loads(ref_layer.decode())
     new_field = posted_data['var_name']
@@ -380,16 +429,17 @@ async def carto_doug(posted_data, user_id, loop):
     res = await geojson_to_topojson(tmp_path)
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
+    hash_val = crc32(res.encode())
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    return res
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 async def links_map(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
 #    ref_layer = json.loads(ref_layer.decode())
 #    new_field = json.loads(posted_data['join_field'])
@@ -431,17 +481,18 @@ async def links_map(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
+    hash_val = crc32(res.encode())
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
-    return res
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def carto_gridded(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
 
 #    ref_layer = json.loads(ref_layer.decode())
@@ -480,15 +531,16 @@ async def carto_gridded(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     res = res.replace(tmp_part, new_name)
+    hash_val = crc32(res.encode())
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
-    return res
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 async def compute_olson(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    f_name = '_'.join([user_id, posted_data['topojson'], "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
     ref_layer = await ajson_loads(ref_layer.decode())
     scale_values = posted_data['scale_values']
@@ -502,11 +554,12 @@ async def compute_olson(posted_data, user_id, *args):
                         str(posted_data["field_name"]),
                         str(int(posted_data["scale_max"]*100))])
     res = res.replace(tmp_part, new_name)
+    hash_val = crc32(res.encode())
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, new_name, "--no-quantization"]), res))
+            user_id, str(hash_val), "NQ"]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    return res
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def call_mta_simpl(posted_data, user_id, *args):
@@ -548,20 +601,22 @@ async def receiv_layer(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis)
-    layer_type = request.match_info['expr']
-    quantize = "-q 1e10" if layer_type == "discont" else "--no-quantization"
+#    layer_type = request.match_info['expr']
     layer_name = posted_data['layer_name']
-    f_name = '_'.join([user_id, layer_name, quantize])
     data = posted_data['geojson']
+    h_val = crc32(data.encode())
+    f_name = '_'.join([user_id, str(h_val)])
+#    f_nameQ = '_'.join([f_name, "Q"])
+    f_nameNQ = '_'.join([f_name, "NQ"])
     tmp_part = get_name()
     filepath = "".join(['/tmp/', tmp_part, '.geojson'])
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(data)
-    res = await geojson_to_topojson(filepath, quantize)
+    res = await geojson_to_topojson(filepath)
     res = res.replace(tmp_part, layer_name)
     asyncio.ensure_future(
-        app['redis_conn'].set(f_name, res))
-    return web.Response(text="")
+        app['redis_conn'].set(f_nameNQ, res))
+    return web.Response(text=''.join(['{"key":', str(h_val), '}']))
 
 async def call_mta_geo(posted_data, user_id, *args):
     s_t = time.time()
@@ -607,7 +662,7 @@ async def call_mta_geo(posted_data, user_id, *args):
 
 async def call_stewart(posted_data, user_id, *args):
     posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     point_layer = await app['redis_conn'].get(f_name)
     point_layer = json.loads(point_layer.decode())
     new_field = json.loads(posted_data['var_name'])
@@ -617,7 +672,7 @@ async def call_stewart(posted_data, user_id, *args):
         join_topojson_new_field2(point_layer, new_field[n_field_name], n_field_name)
 
     if posted_data['mask_layer']:
-        f_name = '_'.join([user_id, posted_data['mask_layer'], "--no-quantization"])
+        f_name = '_'.join([user_id, str(posted_data['mask_layer']), "NQ"])
         result_mask = await app['redis_conn'].get(f_name)
 
     tmp_part = get_name()
@@ -662,9 +717,14 @@ async def call_stewart(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['StewartPot', n_field_name])
     res = res.replace(tmp_part, new_name)
+    hash_val = crc32(res.encode())
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, new_name, "--no-quantization"]), res))
-    return '|||'.join([res, json.dumps(content['breaks'])])
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+    return "|||".join([
+        ''.join(['{"key":', str(hash_val), ',"file":', res, '}']),
+        json.dumps(content['breaks'])
+        ])
+
 
 async def R_compute(request):
     s_t = time.time()
@@ -698,7 +758,7 @@ async def handler_exists_layer2(request):
     file_format = posted_data.get('format')
     projection = json.loads(posted_data.get('projection'))
     res = await app['redis_conn'].get(
-            '_'.join([user_id, layer_name_redis])
+            '_'.join([user_id, layer_name_redis, "NQ"])
             )
     if not res:
         return web.Response(text="Error: Unable to fetch the layer on the server")
@@ -855,11 +915,8 @@ async def init(loop, port=9999):
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
-#    app.router.add_route('POST', '/save_user_pref', user_pref)
     add_route('POST', '/add_layer/{expr}', receiv_layer)
     add_route('POST', '/helpers/calc', calc_helper)
-#    app.router.add_route('POST', '/helpers/calc_char', charmod_helper)
-#    app.router.add_static('/foo/', path='templates/modules', name='modules')
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
 

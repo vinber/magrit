@@ -7,35 +7,30 @@ function get_menu_option(func){
             "desc": "Testing functionnality...",
             "menu_factory": "fillMenu_Test",
             "fields_handler": "fields_Test",
-            "quantization_default" : "--no-quantization"
         },
         "stewart":{
             "title":"Stewart potentials",
             "desc":"Compute stewart potentials...",
             "menu_factory": "fillMenu_Stewart",
             "fields_handler": "fields_Stewart",
-            "quantization_default" : "--no-quantization"
             },
         "prop_symbol":{
             "title":"Proportional symbols",
             "menu_factory": "fillMenu_PropSymbol",
             "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data",
             "fields_handler": "fields_PropSymbol",
-            "quantization_default" : "-q 1e8"
             },
         "prop_symbol_choro":{
             "title":"Proportional colored symbols",
             "menu_factory": "fillMenu_PropSymbolChoro",
             "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
             "fields_handler": "fields_PropSymbolChoro",
-            "quantization_default" : "-q 1e8"
             },
         "choropleth":{
             "title":"Choropleth map",
             "menu_factory": "fillMenu_Choropleth",
             "desc":"Render a choropleth map on a numerical field of your data",
             "fields_handler": "fields_Choropleth",
-            "quantization_default" : "-q 1e8"
             },
         "cartogram":{
             "title":"Anamorphose map",
@@ -43,28 +38,24 @@ function get_menu_option(func){
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "fields_handler": "fields_Anamorphose",
             "add_options": "keep_file",
-            "quantization_default" : "--no-quantization"
             },
         "grid_map":{
             "title":"Gridded map",
             "menu_factory": "fillMenu_griddedMap",
             "desc":"Render a gridded map on a numerical field of your data",
             "fields_handler": "fields_griddedMap",
-            "quantization_default" : "--no-quantization"
             },
         "mta":{
             "title":"Multiscalar Territorial Analysis",
             "menu_factory": "fillMenu_MTA",
             "desc":"Compute and render various methods of multiscalar territorial analysis",
             "fields_handler": "fields_MTA",
-            "quantization_default" : "--no-quantization"
             },
         "flows_map":{
             "title":"Link/FLow map",
             "menu_factory": "fillMenu_FlowMap",
             "desc": "Render a map displaying links between features with graduated sizes",
             "fields_handler": "fields_FlowMap",
-            "quantization_default" : "--no-quantization"
             },
         "discontinuities":{
             "title":"Discontinuities map",
@@ -72,21 +63,18 @@ function get_menu_option(func){
             "desc": "Render a map displaying discontinuities between polygons features",
             "fields_handler": "fields_Discont",
             "add_options": "keep_file",
-            "quantization_default" : "-q 1e10"
             },
         "categorical":{
             "title":"Categorical map",
             "menu_factory": "fillMenu_Typo",
             "desc":"Render a categorical map with an attribute field of your dataset",
             "fields_handler": "fields_Typo",
-            "quantization_default" : "-q 1e8"
             },
         "label":{
             "title":"Label map",
             "menu_factory": "fillMenu_Label",
             "desc":"Render a map with optimal label positionning",
             "fields_handler": "fields_Label",
-            "quantization_default" : "-q 1e8"
             },
 
     };
@@ -102,6 +90,14 @@ function get_menu_option(func){
 // Returns:
 //     - new_name : the input name if not already in use or a new name
 //                  to safely add the layer.
+
+function clean_menu_function(){
+    let s2 = section2.node();
+    for(let i = s2.childElementCount - 1; i > -1 ; i--){
+        s2.removeChild(s2.childNodes[i]);
+    }
+}
+
 function check_layer_name(name){
     if(!(current_layers.hasOwnProperty(name)))
         return name;
@@ -339,7 +335,10 @@ function send_layer_server(layer_name, url){
         global: false,
         type: 'POST',
         error: function(error) { console.log(error); },
-        success: function(data){ console.log(data); }
+        success: function(data){
+                let key = JSON.parse(data).key;
+                current_layers[layer_name].key_name = key;
+            }
         });
 }
 
@@ -653,8 +652,8 @@ function fillMenu_Test(){
 
             var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
             formToSend.append("json", JSON.stringify({
-                "topojson": layer,
-                "var_name": JSON.stringify(var_to_send) }))
+                "topojson": current_layers[layer].key_name,
+                "var_name": var_to_send }))
 
             $.ajax({
                 processData: false,
@@ -1207,7 +1206,7 @@ function fillMenu_MTA(){
             else
                 val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
 
-            object_to_send["topojson"] = layer;
+            object_to_send["topojson"] = current_layers[layer].key_name;
             object_to_send["var1"] = JSON.stringify(val1_to_send);
             object_to_send["var2"] = JSON.stringify(val2_to_send);
             object_to_send["order"] = (param_name == "order") ? val : null;
@@ -1539,7 +1538,7 @@ function fillMenu_Stewart(){
                 var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
 
             formToSend.append("json", JSON.stringify({
-                "topojson": layer,
+                "topojson": current_layers[layer].key_name,
                 "var_name": JSON.stringify(var_to_send),
                 "span": +span.node().value * 1000,
                 "beta": +beta.node().value,
@@ -1747,7 +1746,7 @@ function fillMenu_Anamorphose(){
                 let formToSend = new FormData();
                 formToSend.append("json",
                     JSON.stringify({
-                        topojson: layer,
+                        topojson: current_layers[layer].key_name,
                         scale_values: transform,
                         field_name: field_n,
                         scale_max: scale_max})
@@ -1827,7 +1826,7 @@ function fillMenu_Anamorphose(){
                     var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
 
                 formToSend.append("json", JSON.stringify({
-                    "topojson": layer,
+                    "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
                     "iterations": nb_iter }))
 
@@ -2435,7 +2434,7 @@ function fillMenu_griddedMap(layer){
                 var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
 
             formToSend.append("json", JSON.stringify({
-                "topojson": layer,
+                "topojson": current_layers[layer].key_name,
                 "var_name": JSON.stringify(var_to_send),
                 "cellsize": cellsize.node().value
                 }));

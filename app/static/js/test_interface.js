@@ -174,14 +174,18 @@ function handle_TopoJSON_files(files) {
         url: '/cache_topojson/user',
         data: ajaxData,
         type: 'POST',
-        error: function(error) { console.log(error); }
-    });
-
-    reader.onloadend = function(){
-        var text = reader.result;
-        add_layer_topojson(text);
+        error: function(error) { console.log(error);},
+        success: function(res){
+            let key = JSON.parse(res).key;
+            reader.onloadend = function(){
+                let text = reader.result;
+                let topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
+                console.log(topoObjText)
+                add_layer_topojson(topoObjText);
+                }
+            reader.readAsText(f);
         }
-    reader.readAsText(f);
+    });
 };
 
 function handle_dataset(f){
@@ -283,18 +287,19 @@ function get_display_name_on_layer_list(layer_name_to_add){
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options){
+
     var parsedJSON = JSON.parse(text),
         result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
         skip_alert = (options && options.skip_alert) ? true : false;
-
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
         return;
     }
     var type = "",
+        topoObj = parsedJSON.file,
         data_to_load = false,
-        layers_names = Object.getOwnPropertyNames(parsedJSON.objects);
+        layers_names = Object.getOwnPropertyNames(topoObj.objects);
 
     // Loop over the layers to add them all ?
     // Probably better open an alert asking to the user which one to load ?
@@ -302,18 +307,19 @@ function add_layer_topojson(text, options){
         var random_color1 = ColorsSelected.random(),
             lyr_name = layers_names[i],
             lyr_name_to_add = check_layer_name(lyr_name),
-            nb_ft = parsedJSON.objects[lyr_name].geometries.length,
-            field_names = parsedJSON.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(parsedJSON.objects[lyr_name].geometries[0].properties) : [];
+            nb_ft = topoObj.objects[lyr_name].geometries.length,
+            field_names = topoObj.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(topoObj.objects[lyr_name].geometries[0].properties) : [];
 
-        if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('Point') > -1) type = 'Point';
-        else if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('LineString') > -1) type = 'Line';
-        else if(parsedJSON.objects[lyr_name].geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
+        if(topoObj.objects[lyr_name].geometries[0].type.indexOf('Point') > -1) type = 'Point';
+        else if(topoObj.objects[lyr_name].geometries[0].type.indexOf('LineString') > -1) type = 'Line';
+        else if(topoObj.objects[lyr_name].geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
         current_layers[lyr_name_to_add] = {
             "type": type,
             "n_features": nb_ft,
             "stroke-width-const": 0.4,
             "fill_color":  {"single": random_color1},
+            "key_name": parsedJSON.key
             };
 
         if(target_layer_on_add){
@@ -329,7 +335,7 @@ function add_layer_topojson(text, options){
               .attr("class", data_to_load ? "targeted_layer layer" : "layer")
               .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
-              .data(topojson.feature(parsedJSON, parsedJSON.objects[lyr_name]).features)
+              .data(topojson.feature(topoObj, topoObj.objects[lyr_name]).features)
               .enter().append("path")
               .attr("d", path)
               .attr("id", function(d, ix) {
@@ -417,7 +423,7 @@ function add_layer_topojson(text, options){
 
     if(target_layer_on_add) {
         if(menu_option.add_options && menu_option.add_options == "keep_file")
-            window._target_layer_file = parsedJSON;
+            window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
     } else if (result_layer_on_add) {
@@ -809,8 +815,7 @@ function add_sample_layer(){
 
 function add_sample_geojson(name){
     var formToSend = new FormData();
-    formToSend.append("layer_name", name)
-    formToSend.append("quantization", menu_option.quantization_default);
+    formToSend.append("layer_name", name);
     $.ajax({
         processData: false,
         contentType: false,
@@ -824,8 +829,7 @@ function add_sample_geojson(name){
 
 function send_remove_server(layer_name){
     let formToSend = new FormData();
-    formToSend.append("layer_name", layer_name);
-    formToSend.append("quantization", menu_option.quantization_default);
+    formToSend.append("layer_name", current_layers[layer_name].key_name);
     $.ajax({
         processData: false,
         contentType: false,

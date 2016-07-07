@@ -15,7 +15,7 @@
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
-    <script  src="/static/js/lib/sweetalert.min.js"></script>
+    <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/txt_annotation.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
@@ -32,7 +32,7 @@
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/sweetalert.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
     <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
   </head>
   <body>
@@ -46,31 +46,13 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
-
-function get_approx_zoom(h, w){
-    let _tmp = Math.min(+h, +w),
-        approx_scale = _tmp > 860 ? 600 :
-                       _tmp > 540 ? 400 :
-                       _tmp > 250 ? 200 : 100,
-        trans_0 = +w / 2 - (approx_scale >= 400 ? 200 : approx_scale >= 200 ? _tmp : _tmp * 2),
-        trans_1 = +h / 2 - 250;
-    return {approx_scale: approx_scale, approx_translate: [trans_0, trans_1]};
-}
-
 var func = document.getElementById('func').innerHTML;
 var menu_option = get_menu_option(func);
 
-//{
-//    let inn_width = window.innerWidth,
-//        first_guess = Math.round((inn_width / 1.34 ) / 10)*10;
-5
 var w = Math.round(window.innerWidth - 360),
     h = Math.round(window.innerHeight / 1.24);
 
-//    let proj_params = get_approx_zoom(h, w);
-
 var proj = d3.geo.naturalEarth().scale(1).translate([0,0]);
-//}
 
 var path = d3.geo.path().projection(proj).pointRadius(4),
     t = proj.translate(),
@@ -78,18 +60,7 @@ var path = d3.geo.path().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Map();
-
-sample_no_values.set("Sphere", true);
-sample_no_values.set("Graticule", true);
-
-/*
-//Seems to work with gecko & chromium :
-var sample_no_values = new Map([
-    ["Sphere", true],
-    ["Graticule", true],
-    ["Simplified_land_polygons", true] ]);
-*/
+    sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -139,7 +110,7 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
 
 
 //current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1}
-current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}}
+//current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -163,6 +134,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 
     var section1 =  accordion1.append("div").attr("id","section1")
                         .attr("data-tooltip", "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here"),
+        section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0"),
         section2 =  accordion2.append("div").attr("id","section2"),
         section3 =  accordion3.append("div").attr({"id": "section3",
                                 "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"}),
@@ -219,6 +191,38 @@ var browse_table = d3.select("#browse_section")
                         .style("font-size", "12px")
                         .html("Explore your table(s)")
                         .on("click", function(){  boxExplore.create();  });
+
+{
+    let list_fun_ico = ['icon_label.png',
+                         'icone_choroprop.png',
+                         'icon_grid.png',
+                         'icon_typo.png',
+                         'icon_prop.png',
+                         'icon_flow.png',
+                         'icon_cartogram.png',
+                         'icon_mta.png',
+                         'icon_choro.png',
+                         'icon_smooth.png',
+                         'icon_symbol.png',
+                         'icon_disc.png'];
+    let function_panel = section2_pre.append("p")
+                            .style("text-align", "center")
+                            .style("margin-top", "1px")
+                            .style("margin-bottom", "1px");
+    for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
+        let ico_name = list_fun_ico[i],
+            func_name = ico_name.split('.')[0].split("_")[1];
+        function_panel.append("img")
+            .attr("src", ["/static/img/func_icons/", ico_name].join(''))
+            .style("margin", "1px")
+            .on("click", function(){
+                let menu_factory = eval(get_menu_option(func_name).menu_factory);
+                menu_factory();
+                fields_handler = eval(get_menu_option(func_name).fields_handler);
+            });
+    }
+
+}
 
 if(menu_option.menu_factory){
     var fill_menu = eval(menu_option.menu_factory),
@@ -431,23 +435,17 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
                   .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){
-                  swal({
-                      title: "Emergency help !",
-                      text: "Write something to be searched in the documentation :",
-                      type: "input",
-                      showCancelButton: true,
-                      closeOnConfirm: false,
-                      animation: "slide-from-top",
-                      inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
-                      }, inputValue => {
-                          if (inputValue === false) return false;
-                          if (inputValue === "") {
-                            swal.showInputError("You need to write something!");
-                            return false;
-                      }
-
-                  swal("Nice!", "You wrote: " + inputValue, "success");
-                });
+                      swal({
+                          title: "Emergency help !",
+                          text: "Write something to be searched in the documentation :",
+                          input: "text",
+                          showCancelButton: true,
+                          closeOnConfirm: false,
+                          animation: "slide-from-top",
+                          inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
+                       }).then(inputValue => {
+                              swal("Nice!", "You wrote: " + inputValue, "success");
+                        })
                     });
 
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
@@ -809,7 +807,9 @@ function remove_layer(name){
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
         closeOnConfirm: false
-    }, () => { remove_layer_cleanup(name); });
+    }).then(confirm => {
+        if(confirm) remove_layer_cleanup(name);
+    });
 }
 
 // Do some clean-up when a layer is removed
@@ -1628,10 +1628,8 @@ function make_export_layer_box(){
         close: function(event, ui){ $(this).dialog("destroy").remove(); }
       });
 
-    let unwanted = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
-
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-        if(unwanted.has(name))
+        if(sample_no_values.has(name))
             return 0;
         else if(current_layers[name].renderer
                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
@@ -1708,7 +1706,7 @@ function make_export_layer_box(){
                 //console.log([layer, type, projec, [layer, menu_option.quantization_default].join('_')]);
                 let formToSend = new FormData();
                 formToSend.append("layer", layer);
-                formToSend.append("layer_name", [layer, menu_option.quantization_default].join('_'));
+                formToSend.append("layer_name", current_layers[layer].key_name);
                 formToSend.append("format", type);
                 if(projec == "proj4string")
                     formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
@@ -1752,6 +1750,30 @@ function make_export_layer_box(){
                 dialogBox.dialog("destroy").remove();
             });
 }
+
+window.addEventListener("beforeunload", function (event) {
+    event.returnValue = "Confirm exit";
+});
+
+window.addEventListener("unload", function(){
+    let formToSend = new FormData();
+    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+        if(sample_no_values.has(name))
+            return 0;
+        else if(current_layers[name].targeted)
+            return 0;
+        else if(current_layers[name].renderer
+                && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+                    || current_layers[name].renderer.indexOf("Dorling") > -1))
+            return 0;
+        return 1;
+    });
+    layer_names.forEach(function(name){
+        formToSend.append("layer_name", current_layers[name].key_name);
+    });
+    if(layer_names.length)
+        navigator.sendBeacon("/layers/delete", formToSend);
+}, false);
 
 </script>
 </body>

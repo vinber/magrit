@@ -8,7 +8,7 @@ from io import BytesIO
 from hashlib import md5
 from random import choice
 from time import time
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZIP_DEFLATED, crc32
 
 from .cy_misc import get_name
 
@@ -54,6 +54,12 @@ def hash_md5_file(path):
             H.update(buf)
             buf = f.read(65536)
     return H.hexdigest()
+
+def crc32_file(path):
+    with open(path, 'rb') as f:
+        buf = f.read()
+    return crc32(buf)
+
 
 def get_key(var):
     """Find and return an available key (ie. which is not in 'var')"""
