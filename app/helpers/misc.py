@@ -5,12 +5,18 @@
 import os
 from contextlib import ContextDecorator
 from io import BytesIO
-from hashlib import md5
+#from hashlib import md5
 from random import choice
 from time import time
-from zipfile import ZipFile, ZIP_DEFLATED, crc32
+from zipfile import ZipFile, ZIP_DEFLATED
+from mmh3 import hash as mmh3_hash
 
 from .cy_misc import get_name
+
+
+LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
+             101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
+             113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
 
 
 class TimedCall(ContextDecorator):
@@ -36,39 +42,35 @@ def prepare_folder():
     raise ValueError("Unable to create folder")
 
 
-def try_float(val):
-    try:
-        return float(val)
-    except ValueError:
-        return val
+#def try_float(val):
+#    try:
+#        return float(val)
+#    except ValueError:
+#        return val
 
 def savefile(path, raw_data):
     with open(path, 'wb') as f:
         f.write(raw_data)
 
-def hash_md5_file(path):
-    H = md5()
-    with open(path, 'rb') as f:
-        buf = f.read(65536)
-        while len(buf) > 0:
-            H.update(buf)
-            buf = f.read(65536)
-    return H.hexdigest()
+#def hash_md5_file(path):
+#    H = md5()
+#    with open(path, 'rb') as f:
+#        buf = f.read(65536)
+#        while len(buf) > 0:
+#            H.update(buf)
+#            buf = f.read(65536)
+#    return H.hexdigest()
 
-def crc32_file(path):
+def mmh3_file(path):
     with open(path, 'rb') as f:
         buf = f.read()
-    return crc32(buf)
+    return mmh3_hash(buf)
 
 
 def get_key(var):
     """Find and return an available key (ie. which is not in 'var')"""
-    choice_list = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
-                   101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
-                   113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
-
     while True:
-        k = ''.join([chr(choice(choice_list))
+        k = ''.join([chr(choice(LIST_CHAR))
                     for i in range(25)])
         if k not in var:
             return k

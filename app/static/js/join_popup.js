@@ -26,7 +26,7 @@ function handle_join(){
 function valid_join_check_display(val, prop){
     if(!val){
         d3.select("#img_data_ext")
-            .attr({"src": "/static/img/qgis_no_relation_mod.svg", alt: "Non-validated join"})
+            .attr({"src": "/static/img/b/joinfalse.svg", alt: "Non-validated join"})
             .style({"width": "28px", "height": "28px"})
             .on("click", handle_join);
         let join_sec = d3.select("#join_section")
@@ -34,7 +34,7 @@ function valid_join_check_display(val, prop){
         join_sec.append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
     } else {
         d3.select("#img_data_ext")
-            .attr({"src": "/static/img/qgis_relation_mod.svg", alt: "Validated join"})
+            .attr({"src": "/static/img/b/jointrue.svg", alt: "Validated join"})
             .style({"width": "28px", "height": "28px"})
             .on("click", null);
         let join_sec = d3.select("#join_section").html([' <b>', prop, ' matches</b>'].join(''));

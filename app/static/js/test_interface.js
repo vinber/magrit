@@ -4,16 +4,23 @@
 ////////////////////////////////////////////////////////////////////////
 const MAX_INPUT_SIZE = 12582912; // max allowed input size in bytes
 
-function add_layer(d){
+/**
+* Function triggered when some images of the interface are clicked
+* in order to create an <input> element, simulate a click on it, let the user
+* browse its file and dispatch the files to the appropriate handler according
+* to the file type
+*/
+function click_button_add_layer(){
     var res = [],
         input = d3.select(document.createElement('input'))
                     .attr("type", "file").attr("multiple", "").attr("name", "file[]")
                     .attr("enctype", "multipart/form-data")
                     .on('change', function(){ prepareUpload(d3.event) });
-
-    target_layer_on_add = (this.id === "img_in_geom_big") ? true :
+    console.log(this.id);
+    target_layer_on_add = (this.id === "input_geom") ? true :
                           (this.id === "img_in_geom") ? true :
-                          (this.id === "img_data_ext") ? true : false;
+                          (this.id === "img_data_ext") ? true :
+                          (this.id === "data_ext") ? true : false;
 
     function prepareUpload(event){
         let files = event.target.files;
@@ -48,7 +55,10 @@ function add_layer(d){
     input.node().dispatchEvent(new MouseEvent("click"))
 }
 
-
+/**
+* Function called to bind the "drop zone" on the 2 desired menu elements
+*
+*/
 function prepare_drop_section(){
     Array.prototype.forEach.call(
         document.querySelectorAll("#section1,#section3"),
@@ -137,13 +147,9 @@ function prepare_drop_section(){
     });
 }
 
-////////////////////////////////////////////////////////////////////////
-// Functions to handles files according to their type
-////////////////////////////////////////////////////////////////////////
 
 function handle_shapefile(files){
     var ajaxData = new FormData();
-    ajaxData.append("quantization", menu_option.quantization_default);
     ajaxData.append("action", "submit_form");
     for(let j=0; j<files.length; j++){
         ajaxData.append('file['+j+']', files[j]);
@@ -160,7 +166,6 @@ function handle_shapefile(files){
 
 }
 
-// - By trying directly to add it if it's a TopoJSON :
 function handle_TopoJSON_files(files) {
     var f = files[0],
         name = files[0].name,
@@ -188,6 +193,12 @@ function handle_TopoJSON_files(files) {
     });
 };
 
+/**
+* Handle a csv dataset by parsing it as an array of Object (ie features) or by
+* converting it to topojson if it contains valid x/y/lat/lon/etc. columns and
+* adding it to the map
+* @param {File} f - The input csv file
+*/
 function handle_dataset(f){
     if(joined_dataset.length !== 0){
         var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
@@ -213,6 +224,9 @@ function handle_dataset(f){
         let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
             nb_features = joined_dataset[0].length;
 
+        d3.select("#img_data_ext")
+            .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"});
+
         d3.select('#data_ext')
             .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
             .html([' <b>', d_name,
@@ -222,14 +236,13 @@ function handle_dataset(f){
         valid_join_check_display(false);
         if(targeted_layer_added){
             document.getElementById("join_button").disabled = false;
-            d3.select(".s1").html("").on("click", null)
-            d3.select("#sample_link").html("").on("click", null);
-            section1.style({"padding-top": "25px"});
+            document.getElementById('sample_zone').style.display = "none";
         } else {
             document.getElementById("join_button").disabled = true;
         }
-        fields_handler.fill();
-        if(browse_table.node().disabled === true) browse_table.node().disabled = false;
+//        fields_handler.fill();
+        if(document.getElementById("browse_button").disabled === true)
+            document.getElementById("browse_button").disabled = false;
         $("[layer-target-tooltip!='']").qtip({
             content: { attr: "layer-target-tooltip" },
             style: { classes: 'qtip-rounded qtip-light qtip_layer'},
@@ -262,11 +275,14 @@ function add_csv_geom(file, name){
     });
 }
 
-// - By sending it to the server for conversion (GeoJSON to TopoJSON)
+/**
+* Send a single file (.zip / .kml / .geojson) to the server in order to get
+* the converted layer added to the map
+* @param {File} file
+*/
 function handle_single_file(file) {
     var ajaxData = new FormData();
     ajaxData.append("action", "single_file");
-    ajaxData.append("quantization", menu_option.quantization_default);
     ajaxData.append('file[]', file);
     $.ajax({
         processData: false,
@@ -378,14 +394,13 @@ function add_layer_topojson(text, options){
         li.setAttribute("layer-tooltip", layer_tooltip_content)
         if(target_layer_on_add){
             current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-            if(browse_table.node().disabled === true)
-                browse_table.node().disabled = false;
+            if(document.getElementById("browse_button").disabled === true)
+                document.getElementById("browse_button").disabled = false;
 
             if(joined_dataset.length != 0){
                 document.getElementById("join_button").disabled = false;
-                d3.select(".s1").html("").on("click", null)
-                d3.select("#sample_link").html("").on("click", null);
-                section1.style({"padding-top": "25px"})
+                section1.select(".s1").html("").on("click", null);
+                document.getElementById('sample_zone').style.display = "none";
             }
 
             let _button = button_type[type],
@@ -395,14 +410,13 @@ function add_layer_topojson(text, options){
 
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom")
-                .attr({"src": _button, "width": "23", "height": "23"})
+                .attr({"src": _button, "width": "26", "height": "26"})
                 .on("click", null);
             d3.select('#input_geom')
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', nb_fields, ' fields</i></span>'].join(''));
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank[type], "</div> ",_lyr_name_display_menu].join('')
-            fields_handler.fill(lyr_name_to_add);
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type2[type], "</div> ",_lyr_name_display_menu].join('')
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
                 style: { classes: 'qtip-rounded qtip-light qtip_layer'},
@@ -412,18 +426,15 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank[type], "</div> ",_lyr_name_display_menu].join('')
-            fields_handler.fill();
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_legend, button_result_type[current_functionnality.name], "</div> ",_lyr_name_display_menu].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type[type], "</div> ",_lyr_name_display_menu].join('')
-            fields_handler.fill();
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type2[type], "</div> ",_lyr_name_display_menu].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
 
     if(target_layer_on_add) {
-        if(menu_option.add_options && menu_option.add_options == "keep_file")
-            window._target_layer_file = topoObj;
+        window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
     } else if (result_layer_on_add) {
@@ -438,6 +449,12 @@ function add_layer_topojson(text, options){
     return lyr_name_to_add;
 };
 
+/**
+* Change the projection scale and translate properties in order to fit the layer.
+* Redraw the path from all the current layers to reflect the change.
+*
+* @param {string} name - The name of layer to scale on
+*/
 function scale_to_lyr(name){
     name = current_layers[name].ref_layer_name || name;
     var bbox_layer_path = undefined;
@@ -460,7 +477,12 @@ function scale_to_lyr(name){
     map.selectAll("g.layer").selectAll("path").attr("d", path);
 };
 
-
+/**
+* Center and zoom to a layer (using zoom scale and translate properties).
+* Projection properties stay unchanged.
+*
+* @param {string} name - The name of layer to zoom on
+*/
 function center_map(name){
     var bbox_layer_path = undefined;
     name = current_layers[name].ref_layer_name || name;
@@ -594,6 +616,10 @@ function add_layout_feature(selected_feature){
     }
 }
 
+/**
+* Handler for the scale bar (only designed for one scale bar)
+*
+*/
 var scaleBar = {
     create: function(){
         let scale_gp = map.append("g").attr("id", "scale_bar").attr("class", "legend scale"),
@@ -764,22 +790,23 @@ function add_sample_layer(){
                         let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]),
                             d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
                             nb_features = joined_dataset[0].length;
+                        d3.select("#img_data_ext")
+                            .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"})
+                            .on("click", null);
                         d3.select('#data_ext')
                             .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
                             .html([' <b>', d_name,
                                    '</b> - <i><span style="font-size:9.5px;"> ',
                                    nb_features, ' features - ',
-                                   field_name.length, " fields</i></span>"].join(''));
+                                   field_name.length, " fields</i></span>"].join(''))
+                            .on("click", null);
                         valid_join_check_display(false);
                         if(targeted_layer_added){
                             document.getElementById("join_button").disabled = false;
-                            d3.select(".s1").html("").on("click", null)
-                            d3.select("#sample_link").html("").on("click", null);
-                            section1.style({"padding-top": "25px"})
+                            document.getElementById('sample_zone').style.display = "none";
                         } else {
                             document.getElementById("join_button").disabled = true;
                         }
-                        fields_handler.fill();
                         $("[layer-target-tooltip!='']").qtip({
                             content: { attr: "layer-target-tooltip" },
                             style: { classes: 'qtip-rounded qtip-light qtip_layer'},

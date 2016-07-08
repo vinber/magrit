@@ -3,93 +3,102 @@
 function get_menu_option(func){
     var menu_option = {
         "test":{
+            "name": "test",
             "title": "test",
             "desc": "Testing functionnality...",
             "menu_factory": "fillMenu_Test",
             "fields_handler": "fields_Test",
         },
-        "stewart":{
-            "title":"Stewart potentials",
+        "smooth":{
+            "name": "smooth",
+            "title":"Smoothed map (Stewart potentials)",
             "desc":"Compute stewart potentials...",
             "menu_factory": "fillMenu_Stewart",
             "fields_handler": "fields_Stewart",
             },
-        "prop_symbol":{
+        "prop":{
+            "name": "prop",
             "title":"Proportional symbols",
             "menu_factory": "fillMenu_PropSymbol",
             "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data",
             "fields_handler": "fields_PropSymbol",
             },
-        "prop_symbol_choro":{
+        "choroprop":{
+            "name": "choroprop",
             "title":"Proportional colored symbols",
             "menu_factory": "fillMenu_PropSymbolChoro",
             "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
             "fields_handler": "fields_PropSymbolChoro",
             },
-        "choropleth":{
+        "choro":{
+            "name": "choro",
             "title":"Choropleth map",
             "menu_factory": "fillMenu_Choropleth",
             "desc":"Render a choropleth map on a numerical field of your data",
             "fields_handler": "fields_Choropleth",
             },
         "cartogram":{
+            "name": "cartogram",
             "title":"Anamorphose map",
             "menu_factory": "fillMenu_Anamorphose",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "fields_handler": "fields_Anamorphose",
             "add_options": "keep_file",
             },
-        "grid_map":{
+        "grid":{
+            "name": "grid",
             "title":"Gridded map",
             "menu_factory": "fillMenu_griddedMap",
             "desc":"Render a gridded map on a numerical field of your data",
             "fields_handler": "fields_griddedMap",
             },
         "mta":{
+            "name": "mta",
             "title":"Multiscalar Territorial Analysis",
             "menu_factory": "fillMenu_MTA",
             "desc":"Compute and render various methods of multiscalar territorial analysis",
             "fields_handler": "fields_MTA",
             },
-        "flows_map":{
+        "flow":{
+            "name": "flow",
             "title":"Link/FLow map",
             "menu_factory": "fillMenu_FlowMap",
             "desc": "Render a map displaying links between features with graduated sizes",
             "fields_handler": "fields_FlowMap",
             },
-        "discontinuities":{
+        "discont":{
+            "name": "discont",
             "title":"Discontinuities map",
             "menu_factory": "fillMenu_Discont",
             "desc": "Render a map displaying discontinuities between polygons features",
             "fields_handler": "fields_Discont",
             "add_options": "keep_file",
             },
-        "categorical":{
+        "typo":{
+            "name": "typo",
             "title":"Categorical map",
             "menu_factory": "fillMenu_Typo",
             "desc":"Render a categorical map with an attribute field of your dataset",
             "fields_handler": "fields_Typo",
             },
         "label":{
+            "name": "label",
             "title":"Label map",
             "menu_factory": "fillMenu_Label",
             "desc":"Render a map with optimal label positionning",
             "fields_handler": "fields_Label",
             },
-
+        "symbol":{
+            "name": "symbol",
+            "title":"Symbol map",
+            "menu_factory": "fillMenu_Symbol",
+            "desc":"Render a map with optimal label positionning",
+            "fields_handler": "fields_Symbol",
+            },
     };
     return menu_option[func.toLowerCase()] || {}
 }
 
-// Function trying to avoid layer name collision by adding a suffix
-// to the layer name if already exists and incrementing it if necessary
-// (MyLayer -> MyLayer_1 -> MyLayer_2 etc.)
-// Args:
-//     - name : the original name of the layer to add
-//
-// Returns:
-//     - new_name : the input name if not already in use or a new name
-//                  to safely add the layer.
 
 function clean_menu_function(){
     let s2 = section2.node();
@@ -98,6 +107,15 @@ function clean_menu_function(){
     }
 }
 
+/** Function trying to avoid layer name collision by adding a suffix
+* to the layer name if already exists and incrementing it if necessary
+* (MyLayer -> MyLayer_1 -> MyLayer_2 etc.)
+*
+* @param {string} name - The original wanted name of the layer to add
+* @return {string} new_name - An available name to safely add the layer
+*     (the input name if possible or a slightly modified
+*        one to avoid collision or unwanted characters)
+*/
 function check_layer_name(name){
     if(!(current_layers.hasOwnProperty(name)))
         return name;
@@ -187,12 +205,7 @@ function fillMenu_Discont(layer){
     dv2.append('p').html('Color ')
                 .insert('input')
                 .attr({class: 'params', id: "color_Discont",
-                       type: "color", value: Colors.names[Colors.random()]});
-
-    dv2.append("span")
-            .html("Simplify borders before rendering ")
-          .insert("input").attr({type: "checkbox", class: "params"})
-            .attr('id', 'simplify_disc');
+                       type: "color", value: ColorsSelected.random()});
 
     let ok_button = dv2.append("p")
                       .style({"text-align": "right", margin: "auto"})
@@ -275,16 +288,16 @@ function fillMenu_Discont(layer){
         for(let i=0; i<nb_ft; i++){
             let id_ft = arr_disc[i][0],
                 val = arr_disc[i][1],
-                p_size = class_size[serie.getClass(val)],
-                size = val >= threshold ? p_size : 0;
-            data_result[i] =  {id: id_ft, disc_value: val, prop_value: size};
+                p_size = class_size[serie.getClass(val)];
+            data_result[i] =  {id: id_ft, disc_value: val, prop_value: p_size};
             result_layer.append("path")
                 .datum(topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
                     return a != b
                         && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
                 .attr({d: path, id: ["feature", i].join('_')})
-                .style({stroke: user_color, "stroke-width": size, "fill": "transparent"});
+                .style({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
+                .style("stroke-opacity", val >= threshold ? 1 : 0);
             result_layer.node().querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
         }
 
@@ -297,7 +310,7 @@ function fillMenu_Discont(layer){
         li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
         li.innerHTML = [
             '<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit,
-            button_legend, button_active, button_type_blank['Line'], "</div> ", _list_display_name
+            button_active, button_legend, button_type['Line'], "</div> ", _list_display_name
             ].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[new_layer_name] = {
@@ -314,16 +327,21 @@ function fillMenu_Discont(layer){
             "n_features": arr_disc.length,
             "result": result_value
             };
-        send_layer_server(new_layer_name, "/add_layer/discont");
+        send_layer_server(new_layer_name, "/layers/add");
         binds_layers_buttons();
         zoom_without_redraw();
         switch_accordion_section();
         });
 }
 
+/**
+* Send a geo result layer computed client-side (currently only discontinuities)
+* to the server in order to use it as other result layers computed server side
+* @param {string} layer_name
+* @param {string} url
+*/
 function send_layer_server(layer_name, url){
     var formToSend = new FormData();
-
     var JSON_layer = url.indexOf("olson") > -1 ? path_to_geojson2(layer_name) : path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
@@ -441,8 +459,8 @@ function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size)
 
 function fetch_min_max_table_value(parent_node){
     if(!parent_node){
-        if(func == "flows_map") parent_node = document.getElementById("FlowMap_discTable");
-        else if (func == "discontinuities") parent_node = document.getElementById("Discont_discTable");
+        if(current_functionnality.name == "flow") parent_node = document.getElementById("FlowMap_discTable");
+        else if (current_functionnality.name == "discont") parent_node = document.getElementById("Discont_discTable");
         else return false;
     }
 
@@ -1016,7 +1034,7 @@ var render_label = function(layer, rendering_params){
     li.setAttribute("class", class_name);
     li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
                     button_trash, button_zoom_fit,
-                    button_active, button_type_blank['Point'],
+                    button_active, button_type['Point'],
                     "</div> ", _list_display_name].join('')
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
@@ -1546,7 +1564,7 @@ function fillMenu_Stewart(){
                 "resolution": reso > 0 ? reso : null,
                 "nb_class": nb_class.node().value,
                 "user_breaks": bval,
-                "mask_layer": mask_selec.node().value !== "None" ? mask_selec.node().value : ""}))
+                "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
 
             $.ajax({
                 processData: false,
@@ -1812,7 +1830,7 @@ function fillMenu_Anamorphose(){
 //                binds_layers_buttons();
 //                zoom_without_redraw();
 //                switch_accordion_section();
-//                send_layer_server(new_layer_name, "/add_layer/olson")
+//                send_layer_server(new_layer_name, "/layers/add")
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -1913,7 +1931,7 @@ function fillMenu_Anamorphose(){
                 li.setAttribute("layer_name", layer_to_add);
                 li.setAttribute("class", class_name);
                 li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", current_layers[layer].n_features, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", _list_display_name].join('')
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_legend, button_type['Point'], "</div> ", _list_display_name].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
@@ -2361,9 +2379,8 @@ function make_prop_symbols(rendering_params){
     li.setAttribute("layer-tooltip",
             ["<b>", layer_to_add, "</b> - Point - ", nb_features, " features"].join(''))
     li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                    button_trash, button_zoom_fit, button_legend,
-                    button_active, button_type_blank['Point'],
-                    "</div> ", _list_display_name].join('')
+                    button_trash, button_zoom_fit, button_active, button_legend,
+                    button_type['Point'], "</div> ", _list_display_name].join('')
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
     let fill_color = rendering_params.fill_color instanceof Array
@@ -2871,9 +2888,9 @@ var contains_empty_val = function(arr){
 
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
-function switch_accordion_section(){
-    let section2 = document.getElementById("accordion2").firstChild,
-        section3 = document.getElementById("accordion3").firstChild;
+function switch_accordion_section(id_to_close="accordion2", id_to_open="accordion3"){
+    let section2 = document.getElementById(id_to_close).firstChild,
+        section3 = document.getElementById(id_to_open).firstChild;
     if(section2.getAttribute("aria-expanded") == "true")
         section2.dispatchEvent(new Event("click"));
     if(section3.getAttribute("aria-expanded") == "false")

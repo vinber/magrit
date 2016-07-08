@@ -46,8 +46,51 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
-var func = document.getElementById('func').innerHTML;
-var menu_option = get_menu_option(func);
+
+function make_ico_choice()
+{
+    let list_fun_ico = ['icon_label.png',
+                        'icon_choroprop.png',
+                        'icon_grid.png',
+                        'icon_typo.png',
+                        'icon_prop.png',
+                        'icon_flow.png',
+                        'icon_cartogram.png',
+                        'icon_mta.png',
+                        'icon_choro.png',
+                        'icon_smooth.png',
+                        'icon_symbol.png',
+                        'icon_discont.png'];
+    let function_panel = section2_pre.append("p")
+                            .style("text-align", "center")
+                            .style("margin-top", "1px")
+                            .style("margin-bottom", "1px");
+    for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
+        let ico_name = list_fun_ico[i],
+            func_name = ico_name.split('.')[0].split("_")[1];
+        function_panel.append("img")
+            .attr("src", ["/static/img/func_icons/", ico_name].join(''))
+            .style("margin", "1px")
+            .on("click", function(){
+                current_functionnality = get_menu_option(func_name);
+                let make_menu = eval(current_functionnality.menu_factory);
+                window.fields_handler = eval(current_functionnality.fields_handler);
+                document.getElementById("accordion2").querySelector("h3").innerText = current_functionnality.title;
+                clean_menu_function();
+                make_menu();
+
+                if(targeted_layer_added){
+                    let target_layer = Object.getOwnPropertyNames(user_data)[0];
+                    fields_handler.fill(target_layer);
+                }
+                if(func_name == "flow" && joined_dataset){
+                    fields_handler.fill();
+                }
+                switch_accordion_section("accordion2_pre", "accordion2");
+            });
+    }
+
+}
 
 var w = Math.round(window.innerWidth - 360),
     h = Math.round(window.innerHeight / 1.24);
@@ -85,7 +128,8 @@ var user_data = new Object(),
     dataset_name = undefined,
     join_button = null,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map");
+    map_div = d3.select("#map"),
+    current_functionnality = undefined;
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
@@ -102,15 +146,36 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
     button_legend = ' <img src="/static/img/qgis_legend.svg" class="legend_button" width="17" height="17" alt="submit"/>',
     button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" class="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
     button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">',
-    button_polygon = '<img src="/static/img/qgis_mIconPolygonLayer.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_line = '<img src="/static/img/qgis_mIconLineLayer.svg" class="ico_type" width="17" height="17" alt="Line"/>',
-    button_point = '<img src="/static/img/qgis_mIconPointLayer.svg" class="ico_type" width="17" height="17" alt="Point"/>',
-    button_type = {"Point": button_point, "Line": button_line, "Polygon": button_polygon},
-    button_type_blank = {"Point": button_point.replace(".svg", "_blank.svg"), "Line": button_line.replace(".svg", "_blank.svg"), "Polygon": button_polygon.replace(".svg", "_blank.svg")};
+    button_polygon = '<img src="/static/img/type_geom/poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_line = '<img src="/static/img/type_geom/line.svg" class="ico_type" width="17" height="17" alt="Line"/>',
+    button_point = '<img src="/static/img/type_geom/dot.svg" class="ico_type" width="17" height="17" alt="Point"/>',
+    button_type = {"Point": button_point, "Line": button_line, "Polygon": button_polygon};
+
+var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_symbol = '<img src="/static/img/type_geom/layer_symbol.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_mta = '<img src="/static/img/type_geom/layer_mta.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_propchoro = '<img src="/static/img/type_geom/layer_propchoro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_typo = '<img src="/static/img/type_geom/layer_typo.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_disc = '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_cartogram = '<img src="/static/img/type_geom/layer_cartogram.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_label = '<img src="/static/img/type_geom/layer_label.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_grid = '<img src="/static/img/type_geom/layer_grid.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_choro = '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_smooth = '<img src="/static/img/type_geom/layer_smooth.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_prop = '<img src="/static/img/type_geom/layer_prop.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_result_type = {
+        "flow": button_flow, "symbol": button_symbol, "grid": button_grid,
+        "MTA": button_mta, "propchoro": button_propchoro, "typo": button_typo,
+        "disc": button_disc, "cartogram": button_cartogram, "label": button_label,
+        "choro": button_choro, "smooth": button_smooth, "prop": button_prop
+        };
+
+var button_polygon2 = '<img src="/static/img/type_geom/layer_poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
+    button_line2 = '<img src="/static/img/type_geom/layer_line.svg" class="ico_type" width="17" height="17" alt="Line"/>',
+    button_point2 = '<img src="/static/img/type_geom/layer_dot.svg" class="ico_type" width="17" height="17" alt="Point"/>',
+    button_type2 = {"Point": button_point2, "Line": button_line2, "Polygon": button_polygon2};
 
 
-//current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1}
-//current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}}
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -127,7 +192,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 
     accordion1.append("h3").html("Add your data");
     accordion2_pre.append("h3").html("Choose a function");
-    accordion2.append("h3").html(menu_option.title);
+    accordion2.append("h3").html("Function options");
     accordion3.append("h3").html("Layers");
     accordion4.append("h3").html("Basemap configuration");
     accordion5.append("h3").html("Projection options");
@@ -143,107 +208,70 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 
 }
 
-section1.insert("p")
-        .attr("id", "sample_link")
-        .style({"margin": "-6px 0px 1px 0px", "text-align": "right", "font-size": "10.5px", "cursor": "pointer"})
-        .html('<i>Add sample data...</i>')
-        .on('click', add_sample_layer);
-
-section1.append("div")
-            .attr({"class": "s1"})
-        .insert("img")
-          .attr({"src": "/static/img/drop_section1_small.svg", "alt": "Drop_zone_section1", "id": "img_in_geom_big"})
-          .style({display: "block", "margin-left": "auto", "margin-right": "auto", height: "30px", cursor: "pointer"})
-          .on('click',  add_layer);
-
 {
     let dv1 = section1.append("div"),
-        dv11 = dv1.append("div");
+        dv11 = dv1.append("div").style("width", "auto");
 
     dv11.append("img")
-        .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"})
+        .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "26", "height": "26",  "alt": "Geometry layer"})
         .style("cursor", "pointer")
-        .on('click',  add_layer);
+        .on('click',  click_button_add_layer);
+
     dv11.append("p")
         .attr({id: "input_geom", class: "user_panel"})
-        .style("display", "inline")
-        .html("<i>No layer</i>");
+        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .html("<b>Add geometry layer <i>(or drop it)</i></b>")
+        .on('click',  click_button_add_layer);
 
     let dv12 = dv1.append("div");
     dv12.append("img")
-        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/add_dataset.svg", "width": "22", "height": "22",  "alt": "Additional dataset"})
+        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"})
         .style("cursor", "pointer")
-        .on('click',  add_layer);
+        .on('click',  click_button_add_layer);
     dv12.append("p")
         .attr({"id": "data_ext", "class": "user_panel"})
-        .style("display", "inline")
-        .html('<i>No additional dataset</i></b>');
+        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .html('<b>Add additional dataset <i>(or drop it)</i></b>')
+        .on('click',  click_button_add_layer);
+
+    let div_sample = dv1.append("div").attr("id", "sample_zone");
+    div_sample.append("img")
+        .attr({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.svg", "width": "26", "height": "26",  "alt": "Sample layers"})
+        .style("cursor", "pointer")
+        .on('click', add_sample_layer);
+    div_sample.append("span")
+        .attr({"id": "sample_link", "class": "user_panel"})
+        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .html("<b>Select available sample dataset</b>")
+        .on('click', add_sample_layer);
+
     dv1.append("p")
         .attr("id", "join_section")
         .style({"text-align": "center", "margin-top": "2px"})
         .html("");
-    dv1.append("p").attr("id", "browse_section").attr("align", "center").html("");
+    dv1.append("p")
+        .attr("id", "browse_section")
+        .attr("align", "center")
+        .html("")
+        .append("button")
+        .attr({id: "browse_button", class: "button_st3", disabled: true})
+        .style("font-size", "12px")
+        .html("Explore your table(s)")
+        .on("click", function(){  boxExplore.create();  });
 }
 
-var browse_table = d3.select("#browse_section")
-                        .append("button")
-                        .attr({id: "browse_button", class: "button_st3", disabled: true})
-                        .style("font-size", "12px")
-                        .html("Explore your table(s)")
-                        .on("click", function(){  boxExplore.create();  });
-
-{
-    let list_fun_ico = ['icon_label.png',
-                         'icone_choroprop.png',
-                         'icon_grid.png',
-                         'icon_typo.png',
-                         'icon_prop.png',
-                         'icon_flow.png',
-                         'icon_cartogram.png',
-                         'icon_mta.png',
-                         'icon_choro.png',
-                         'icon_smooth.png',
-                         'icon_symbol.png',
-                         'icon_disc.png'];
-    let function_panel = section2_pre.append("p")
-                            .style("text-align", "center")
-                            .style("margin-top", "1px")
-                            .style("margin-bottom", "1px");
-    for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
-        let ico_name = list_fun_ico[i],
-            func_name = ico_name.split('.')[0].split("_")[1];
-        function_panel.append("img")
-            .attr("src", ["/static/img/func_icons/", ico_name].join(''))
-            .style("margin", "1px")
-            .on("click", function(){
-                let menu_factory = eval(get_menu_option(func_name).menu_factory);
-                menu_factory();
-                fields_handler = eval(get_menu_option(func_name).fields_handler);
-            });
-    }
-
-}
-
-if(menu_option.menu_factory){
-    var fill_menu = eval(menu_option.menu_factory),
-        fields_handler = eval(menu_option.fields_handler);
-    fill_menu();
-}
+make_ico_choice();
+section2.append("p")
+        .style("font-size", "18px")
+        .html("No choosen functionnality ...");
 
 var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
-//layer_list.append("li").attr("class", "ui-state-default Graticule").attr("layer-tooltip", "Graticule - Sample layout layer").html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_line + "</div> Graticule")
+
 layer_list.append("li")
         .attr("layer_name", "Simplified_land_polygons")
         .attr("class", "ui-state-default Simplified_land_polygons")
         .attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer")
-        .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Simplified_land_polygons");
-/*
-layer_list.append("li")
-        .attr("layer_name", "Sphere")
-        .attr("class", "ui-state-default Sphere")
-        .attr("layer-tooltip", "Sphere - Sample layout layer")
-        .html('<div class="layer_buttons">'+ button_style + button_trash + button_active + button_polygon + "</div> Sphere");
-*/
+        .html('<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + button_polygon + "</div> Simplified_land_polygons");
 
 var dv3 = section3.append("div")
                 .style("text-align", "center").html('');
@@ -251,7 +279,7 @@ var dv3 = section3.append("div")
 
 dv3.append("img")
     .attr("src", "/static/img/mActionAdd.svg")
-    .on("click", add_layer);
+    .on("click", click_button_add_layer);
 
 dv3.append('p').style({margin: "auto", cursor: "pointer", "font-size": "10.5px", "text-align": "right"})
         .html('<i>Add sample layout layers...</i>')
@@ -333,7 +361,13 @@ section5.append("div").insert("button")
             document.getElementById('form_projection_center').value = 0;
             document.getElementById('form_rotate').value = 0;
             proj.rotate([0,,]);
-            if(func == "cartogram"){
+            let current_renderings = [];
+            for(let lyr_name in current_layers){
+                if(current_layers[lyr_name].renderer){
+                    current_renderings.push(current_layers[lyr_name].renderer)
+                }
+            }
+            if(current_renderings.indexOf("cartogram")){
                 map.selectAll("path:not([transform])").attr("d", path);
                 let selec = map.selectAll("path[transform]");
                 let layer_names = selec[0].map( d => d.parentElement.id);
@@ -370,16 +404,6 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
 // These variables (background, p, const_options, etc.) are not needed anymore
 // after being used here so they are put into curly braces to ensure garbage collection (?):
 {
-
-    // Use the path of the sphere to spot the earth limits :
-/*
-    map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
-        .append("path")
-        .datum({type: "Sphere"})
-        .style({fill: "lightblue", "fill-opacity": 0.2})
-        .attr("id", "sphere")
-        .attr("d", path);
-*/
     let background = map.append("g")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
                         .style({"stroke-width": "0.3px"});
@@ -457,9 +481,9 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
     let lm_buttons = [
         {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
         {id: "zoom_in", title: "Zoom in", class: "zoom_button", html: "+"},
-        {id: "info_button", title: "Zoom out", class: "info_button", html: "i"},
-        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject.svg" width="18" height="18" alt="Hand_closed"/>'},
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection.svg" width="18" height="18" alt="Zoom_select"/>'}
+        {id: "info_button", title: "Feature information", class: "info_button", html: "i"},
+        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
     ];
 
     let selec = lm.selectAll("input")
@@ -474,12 +498,10 @@ var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
     // Trigger actions when buttons are clicked and set-up the initial view :
     d3.selectAll(".zoom_button").on("click", zoomClick);
     document.getElementById("info_button").onclick = displayInfoOnMove;
-    document.getElementById("hand_button").onclick = function(){handle_click_hand();};
+    document.getElementById("hand_button").onclick = handle_click_hand;
     document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
     let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-    document.getElementById("brush_zoom_button").onclick = function(){ brush_rect(); };
-    //d3.selectAll(".info_button").on("click", displayInfoOnMove);
-    //d3.select("svg").on("mousemove", function(){log_coordinates(this)});
+    document.getElementById("brush_zoom_button").onclick = brush_rect;
 }
 
 // Already append the div for displaying information on features,
@@ -500,8 +522,7 @@ prepare_drop_section();
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
 
-//$(function() {
-  $( "#sortable" ).sortable({
+$( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
     update: function(a){
       // Set the layer order on the map in concordance with the user changes
@@ -513,9 +534,9 @@ $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" }
         displayInfoOnMove();
         at_end = true;
       }
-      var desired_order = [],
+      let desired_order = [],
           actual_order = [],
-          layers = d3.selectAll("svg").node();
+          layers = svg_map;
 
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
           let n = a.target.childNodes[i].getAttribute("layer_name");
@@ -523,15 +544,14 @@ $("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" }
           actual_order[i] = layers.children[i].id;
       }
       for(let i = 0, len = desired_order.length; i < len; i++){
-          let lyr1 = d3.select("#"+desired_order[i]).node(),
-              lyr2 = d3.select("#"+desired_order[i+1]).node() || d3.select("#"+desired_order[i]).node();
+          let lyr1 = document.getElementById(desired_order[i]),
+              lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
           layers.insertBefore(lyr2, lyr1);
       }
      if(at_end) displayInfoOnMove();
      }
   });
-  $( "#sortable" ).disableSelection();
-//});
+$( "#sortable" ).disableSelection();
 
 // Display a progress bar during the ajaxRequest
 // (can be unset locally by using the `"global": false` param when making an ajax request)
@@ -764,39 +784,7 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
     return deferred.promise;
 };
 
-
-function log_coordinates(t){
-  var coords = d3.mouse(t),
-      txt = [],
-      zt = zoom.translate(),
-      zs = zoom.scale();
-
-  coords = proj.invert([(coords[0]-zt[0])/zs, (coords[1]-zt[1])/zs]);
-  if(!coords || isNaN(coords[0]) || isNaN(coords[1])){
-      info_coords.node().innerHTML = "";
-      return;
-  } else {
-      if(coords[0]>0) txt.push("E")
-      else txt.push("W")
-
-      if(coords[1]>0) txt.push("N")
-      else txt.push("S")
-      info_coords.node().innerHTML = [txt[0], coords[0].toFixed(6), ' - ', txt[1], coords[1].toFixed(6)].join(' ');
-  }
-};
-
 // Wrapper to obtain confirmation before actually removing a layer :
-/*
-function remove_layer(name){
-    name = name || this.parentElement.parentElement.getAttribute("layer_name");
-    var txt_dialog = "Remove layer '" + name + "' ?";
-    make_confirm_dialog(txt_dialog, "Confirm", "Cancel", "Confirm deletion").then(function(confirmed){
-        if(confirmed){
-            remove_layer_cleanup(name);
-        }
-    });
-}
-*/
 function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     swal({
@@ -837,8 +825,10 @@ function remove_layer_cleanup(name){
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :
         $("#input_geom").qtip("destroy");
-        d3.select("#img_in_geom").attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/qgis_mActionAddLayer.svg", "width": "24", "height": "24",  "alt": "Geometry layer"}).on('click',  add_layer);
-        document.getElementById("input_geom").innerHTML = "<b><i>No layer</i></b>";
+        d3.select("#img_in_geom")
+            .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "24", "height": "24",  "alt": "Geometry layer"})
+            .on('click',  click_button_add_layer);
+        document.getElementById("input_geom").innerHTML = "<b>Add geometry layer <i>(or drop it)</i></b>";
 
         // Unfiling the fields related to the targeted functionnality:
         fields_handler.unfill()
@@ -849,7 +839,7 @@ function remove_layer_cleanup(name){
         targeted_layer_added = false;
 
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
-        d3.select("#sample_link").html("<i>Add sample data...</i>").on("click", add_sample_layer)
+        d3.select("#sample_link").html("<b>Select available sample dataset</b>").on("click", add_sample_layer)
         section1.style("padding-top", null);
         d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
 
@@ -859,7 +849,7 @@ function remove_layer_cleanup(name){
 
         // If after this removal there isn't nor a targeted layer neither an external dataset :
         if(joined_dataset.length == 0)
-            browse_table.node().disabled = true;
+            document.getElementById("browse_button").disabled = true;
     }
 
     // There is probably better ways in JS to delete the object,
@@ -1320,20 +1310,21 @@ function handle_proj_center_button(param){
     reproj_symbol_layer();
 }
 
-// Function triggered by the change of map/canvas size
-// Args :
-//   - param (Array of two elements : width and height to use; generally only used
-//            once at the time so `param` values are like [null, 750] or [800, null]
-//            but also works with the 2 params together like [800, 750])
-function canvas_mod_size(param){
-    if(param[0]){
-        w = +param[0];
+/** Function triggered by the change of map/canvas size
+* @param {Array} shape - An Array of two elements : [width, height] to use;
+*                generally only used once at the time so `shape` values
+*                are like [null, 750] or [800, null]
+*                but also works with the 2 params together like [800, 750])
+*/
+function canvas_mod_size(shape){
+    if(shape[0]){
+        w = +shape[0];
         map.attr("width", w)
             .call(zoom_without_redraw);
         map_div.style("width", w + "px");
     }
-    if(param[1]){
-        h = +param[1];
+    if(shape[1]){
+        h = +shape[1];
         map.attr("height", h)
             .call(zoom_without_redraw);
         map_div.style("height", h + "px");
@@ -1751,12 +1742,17 @@ function make_export_layer_box(){
             });
 }
 
-window.addEventListener("beforeunload", function (event) {
-    event.returnValue = "Confirm exit";
+// Only ask for confirmation before leaving page if things have been done
+// (layer added, etc..)
+window.addEventListener("beforeunload", event => {
+    event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0) ? "Confirm exit" : "";
 });
 
+
+// Remove some layers from the server when user leave the page
+// (ie. result layers are removed but targeted layer and layout layers stay
+// in cache as they have more chance to be added again)
 window.addEventListener("unload", function(){
-    let formToSend = new FormData();
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
         if(sample_no_values.has(name))
             return 0;
@@ -1768,11 +1764,13 @@ window.addEventListener("unload", function(){
             return 0;
         return 1;
     });
-    layer_names.forEach(function(name){
-        formToSend.append("layer_name", current_layers[name].key_name);
-    });
-    if(layer_names.length)
+    if(layer_names.length){
+        let formToSend = new FormData();
+        layer_names.forEach(function(name){
+            formToSend.append("layer_name", current_layers[name].key_name);
+        });
         navigator.sendBeacon("/layers/delete", formToSend);
+    }
 }, false);
 
 </script>

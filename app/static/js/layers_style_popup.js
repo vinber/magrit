@@ -150,7 +150,7 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
                 }
                 // Also change the legend if there is one displayed :
-                let lgd_choro = document.getElementById("legend_root");
+                let lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                 if(lgd_choro){
                     let transform_param = lgd_choro.getAttribute("transform"),
                         lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
@@ -452,7 +452,7 @@ function createStyleBox_ProbSymbol(layer_name){
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
-                    let lgd_prop_symb = document.getElementById("legend_root2");
+                    let lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
                     if(lgd_prop_symb){
                         let transform_param = lgd_prop_symb.getAttribute("transform"),
                             lgd_title = lgd_prop_symb.querySelector("#legendtitle").innerHTML,

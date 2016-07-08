@@ -13,7 +13,7 @@ body {
     font-weight: bold;
     color: rgb(0, 0, 0);
     box-sizing: border-box;
-    background-color : #2e91ce;
+    background-color : #173a50;
     line-height: 30px;
     text-align: left;
     font-family: Verdana, Tahoma;
@@ -143,7 +143,7 @@ a.menu {
 }
 
 #section3 {
-    padding: 0.9em 0.9em 0.9em 0.9em;
+    padding: 0.8em 0.7em 0.8em 0.7em;
 }
 
 #section4 {
@@ -166,12 +166,15 @@ a.menu {
 }
 
 .zoom_button,.info_button,.hand_button,.brush_zoom_button {
-    border-radius: 10%;
     font-size: 18px;
     font-weight: bold;
     width: 30px;
     height: 30px;
     text-align: center;
+    background-color: #173a50;
+    color: #ffffff;
+    border-radius: 10%;
+    border: solid 0px;
 }
 
 .const_buttons {
@@ -183,7 +186,7 @@ a.menu {
 
 .trash_button,.zoom_fit_button,.style_button,.style_target_layer,.legend_button {
     margin-top: 4px;
-    margin-left: 2px;
+    margin-left: 1.5px;
     float: right;
 }
 
@@ -193,8 +196,8 @@ a.menu {
 }
 
 .ico_type {
-    margin-top: 4px;
-    margin-right: 4px;
+    margin-top: 2px;
+    margin-right: 3px;
     float: left;
 }
 
@@ -269,16 +272,16 @@ a.menu {
     font-size: 10.5px;
     line-height: 2em;
     font-weight: bold;
-    background: #f3f3f3;
-    border-radius: 4%;
+    background: #ffffff;
+    //border-radius: 4%;
+    border: unset;
     color: black;
+    cursor: pointer;
 }
 
-#sortable li.sortable_target, #sortable li.sortable_result {
-    border: 2px solid;
-    background: #7b98ce;
-    color: white;
-    border-radius: 9%;
+#sortable li:hover{
+    background: #e8e8e8;
+    border-radius: 4%;
 }
 
 #table_intro{

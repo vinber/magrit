@@ -15,11 +15,12 @@ import numpy as np
 
 from base64 import b64encode
 from contextlib import closing
-from zipfile import ZipFile, crc32
+from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
+from mmh3 import hash as mmh3_hash
 #from hashlib import sha512
 from concurrent.futures import ThreadPoolExecutor  #, ProcessPoolExecutor
 
@@ -32,7 +33,7 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
 from r_py.rclient_worker_queue import R_client_fuw_async, url_client
-from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, crc32_file
+from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file
 from helpers.cy_misc import get_name, join_topojson_new_field2
 from helpers.cartogram_doug import make_cartogram
 from helpers.topo_to_geo import convert_from_topo
@@ -151,7 +152,7 @@ async def cache_input_topojson(request):
         user_id = get_user_id(session_redis)
         name = posted_data.get('layer_name')
         path = app['db_layers'][name]
-        hash_val = str(crc32(path.encode()))
+        hash_val = str(mmh3_hash(path))
         f_name = '_'.join([user_id, hash_val])
         f_nameQ = '_'.join([f_name, "Q"])
         f_nameNQ = '_'.join([f_name, "NQ"])
@@ -161,7 +162,7 @@ async def cache_input_topojson(request):
             result = result.decode()
             print("The TopoJSON was already cached !")
             return web.Response(text=''.join(
-                ['{"key":', hash_val, ',"file":', result.replace(hash_val, name), '}']
+                ['{"key":', hash_val, ',"file":', result.replace(f_name, name), '}']
                 ))
         else:
             res = await ogr_to_geojson(path, to_latlong=True)
@@ -190,7 +191,7 @@ async def cache_input_topojson(request):
             return web.Response(text=json.dumps({'Error': 'Incorrect datatype'}))
 
         user_id = get_user_id(session_redis)
-        hash_val = str(crc32(data))
+        hash_val = str(mmh3_hash(data))
         f_name = '_'.join([user_id, hash_val])
         f_nameQ = '_'.join([f_name, "Q"])
         f_nameNQ = '_'.join([f_name, "NQ"])
@@ -255,7 +256,7 @@ async def convert(request):
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
-        hashed_input = crc32_file(shp_path)
+        hashed_input = mmh3_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
     # If there is a single file (geojson or zip) to handle :
@@ -265,7 +266,7 @@ async def convert(request):
             name = field[1]
             data = field[2].read()
             datatype = field[3]
-            hashed_input = crc32(data)
+            hashed_input = mmh3_hash(data)
             filepath = ''.join(['/tmp/', name])
 #            tmp_part = get_name()
 #            filepath = ''.join(['/tmp/', tmp_part, name])
@@ -339,7 +340,8 @@ async def convert(request):
         result = await geojson_to_topojson(filepath, "-q 1e8")
 
         if len(result) == 0 and not crs:
-            result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
+            return web.Response(text=json.dumps(
+                {'Error': 'GeoJSON layer provided without CRS'}))
         else:
             asyncio.ensure_future(store_non_quantized(filepath, f_nameNQ))
             asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
@@ -352,10 +354,9 @@ async def convert(request):
         os.remove(filepath)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(res)
-#        result = await geojson_to_topojson(filepath, quantize)
         result = await geojson_to_topojson(filepath, "-q 1e8")
         if len(result) == 0:
-            result = json.dumps({'Error': 'Error converting reading kml file'})
+            return web.Response(text=json.dumps({'Error': 'Error converting reading kml file'}))
         else:
             asyncio.ensure_future(app['redis_conn'].set(f_nameQ, result))
             asyncio.ensure_future(store_non_quantized(filepath, f_nameNQ))
@@ -394,7 +395,7 @@ async def nothing(posted_data, user_id, *args):
     result = gdf.to_json()
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
 #    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     return ''.join([
              '{"key":',
@@ -429,7 +430,7 @@ async def carto_doug(posted_data, user_id, loop):
     res = await geojson_to_topojson(tmp_path)
     new_name =  '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
@@ -481,7 +482,7 @@ async def links_map(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
@@ -531,7 +532,7 @@ async def carto_gridded(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     res = res.replace(tmp_part, new_name)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     print('Python - p3 : {:.4f}'.format(time.time()-s_t))
@@ -554,7 +555,7 @@ async def compute_olson(posted_data, user_id, *args):
                         str(posted_data["field_name"]),
                         str(int(posted_data["scale_max"]*100))])
     res = res.replace(tmp_part, new_name)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, str(hash_val), "NQ"]), res))
@@ -601,12 +602,10 @@ async def receiv_layer(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis)
-#    layer_type = request.match_info['expr']
     layer_name = posted_data['layer_name']
     data = posted_data['geojson']
-    h_val = crc32(data.encode())
+    h_val = mmh3_hash(data)
     f_name = '_'.join([user_id, str(h_val)])
-#    f_nameQ = '_'.join([f_name, "Q"])
     f_nameNQ = '_'.join([f_name, "NQ"])
     tmp_part = get_name()
     filepath = "".join(['/tmp/', tmp_part, '.geojson'])
@@ -717,7 +716,7 @@ async def call_stewart(posted_data, user_id, *args):
     res = await geojson_to_topojson(content['geojson_path'])
     new_name = '_'.join(['StewartPot', n_field_name])
     res = res.replace(tmp_part, new_name)
-    hash_val = crc32(res.encode())
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     return "|||".join([
@@ -907,6 +906,7 @@ async def init(loop, port=9999):
     add_route('GET', '/modules', handler)
     add_route('GET', '/modules/', handler)
     add_route('GET', '/layers', list_user_layers)
+    add_route('POST', '/layers/add', receiv_layer)
     add_route('POST', '/layers/delete', remove_layer)
     add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     add_route('POST', '/get_layer2', handler_exists_layer2)
@@ -915,7 +915,6 @@ async def init(loop, port=9999):
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
-    add_route('POST', '/add_layer/{expr}', receiv_layer)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
     app.router.add_static('/database/', path='../database', name='database')
