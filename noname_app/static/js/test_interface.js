@@ -416,7 +416,7 @@ function add_layer_topojson(text, options){
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', nb_fields, ' fields</i></span>'].join(''));
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type2[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_type[type], "</div> ",_lyr_name_display_menu].join('')
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
                 style: { classes: 'qtip-rounded qtip-light qtip_layer'},
@@ -426,9 +426,9 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_legend, button_result_type[current_functionnality.name], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, button_active, button_type2[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open, button_type[type], "</div> ",_lyr_name_display_menu].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
@@ -580,7 +580,7 @@ function add_layout_feature(selected_feature){
        li.setAttribute("layer_name", "Sphere");
        li.setAttribute("class", "ui-state-default Sphere");
        li.setAttribute("layer-tooltip", "<b>Sphere</b> - Sample layout layer");
-       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, button_type["Polygon"], "</div> Sphere"].join('');
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open, button_type["Polygon"], "</div> Sphere"].join('');
        layers_listed.insertBefore(li, layers_listed.childNodes[0])
        zoom_without_redraw();
        binds_layers_buttons();
@@ -602,7 +602,7 @@ function add_layout_feature(selected_feature){
        li.setAttribute("layer_name", "Graticule");
        li.setAttribute("class", "ui-state-default Graticule");
        li.setAttribute("layer-tooltip", "<b>Graticule</b> - Sample layout layer");
-       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_active, button_type["Line"], "</div> Graticule"].join('');
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open, button_type["Line"], "</div> Graticule"].join('');
        layers_listed.insertBefore(li, layers_listed.childNodes[0])
        zoom_without_redraw();
        binds_layers_buttons();

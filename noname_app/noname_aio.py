@@ -894,10 +894,11 @@ def display_usage(file_name):
         """.format(file_name))
 
 async def init(loop, port=9999):
+    global app
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50)
     redis_conn = await create_reconnecting_redis(('localhost', 6379), db=1)
-    storage = redis_storage.RedisStorage(redis_cookie)
-    app = web.Application(middlewares=[session_middleware(storage)])
+    app = web.Application(middlewares=[
+        session_middleware(redis_storage.RedisStorage(redis_cookie))])
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
@@ -922,6 +923,35 @@ async def init(loop, port=9999):
     srv = await loop.create_server(
         app.make_handler(), '0.0.0.0', port)
     return srv, redis_conn, app
+
+
+def main(r_worker=2):
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if app_real_path != os.getcwd():
+        os.chdir(app_real_path)
+    _p = Popen([ sys.executable,'r_py/rclient_worker_queue.py', r_worker ])
+    zmq.asyncio.install()
+    loop = asyncio.get_event_loop()
+    srv, redis_conn, app = loop.run_until_complete(init(loop, port))
+    app['async_ctx'] = zmq.asyncio.Context(2)
+    app['UPLOAD_FOLDER'] = 'tmp/users_uploads'
+    app['redis_conn'] = redis_conn
+    app['broker'] = _p
+    app['app_users'] = set()
+    with open('static/json/sample_layers.json', 'r') as f:
+        app['db_layers'] = json.loads(f.read().replace('/da', '../da'))[0]
+    app['ThreadPool'] = ThreadPoolExecutor(4)
+    app['R_function'] = {
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,
+        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson }
+    print(pp, 'serving on', srv.sockets[0].getsockname())
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+
+
 
 if __name__ == '__main__':
     if not os.path.isdir('/tmp/feeds'):
@@ -959,36 +989,37 @@ if __name__ == '__main__':
         display_usage(sys.argv[0])
         sys.exit()
 
-    # Set the correct current directory :
-    app_real_path = os.path.dirname(os.path.realpath(__file__))
-    if app_real_path != os.getcwd():
-        os.chdir(app_real_path)
-
-    if not nb_r_workers == '0':
-        # To be set to '0' when launching other instance of the noname app
-        # as they all can use the same worker queue
-        _p = Popen([
-            sys.executable,'r_py/rclient_worker_queue.py', nb_r_workers
-            ])
-
-    # In order to get an async zmq context object for the clients without using the zmq event loop:
-    zmq.asyncio.install()
-    loop = asyncio.get_event_loop()
-    srv, redis_conn, app = loop.run_until_complete(init(loop, port))
-    app['async_ctx'] = zmq.asyncio.Context(2)
-    app['UPLOAD_FOLDER'] = 'tmp/users_uploads'
-    app['redis_conn'] = redis_conn
-    app['broker'] = _p
-    app['app_users'] = set()
-    with open('static/json/sample_layers.json', 'r') as f:
-        app['db_layers'] = json.loads(f.read().replace('/da', '../da'))[0]
-    app['ThreadPool'] = ThreadPoolExecutor(4)
-    app['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
-        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,
-        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson }
-    print(pp, 'serving on', srv.sockets[0].getsockname())
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
+    main(nb_r_workers)
+#    # Set the correct current directory :
+#    app_real_path = os.path.dirname(os.path.realpath(__file__))
+#    if app_real_path != os.getcwd():
+#        os.chdir(app_real_path)
+#
+#    if not nb_r_workers == '0':
+#        # To be set to '0' when launching other instance of the noname app
+#        # as they all can use the same worker queue
+#        _p = Popen([
+#            sys.executable,'r_py/rclient_worker_queue.py', nb_r_workers
+#            ])
+#
+#    # In order to get an async zmq context object for the clients without using the zmq event loop:
+#    zmq.asyncio.install()
+#    loop = asyncio.get_event_loop()
+#    srv, redis_conn, app = loop.run_until_complete(init(loop, port))
+#    app['async_ctx'] = zmq.asyncio.Context(2)
+#    app['UPLOAD_FOLDER'] = 'tmp/users_uploads'
+#    app['redis_conn'] = redis_conn
+#    app['broker'] = _p
+#    app['app_users'] = set()
+#    with open('static/json/sample_layers.json', 'r') as f:
+#        app['db_layers'] = json.loads(f.read().replace('/da', '../da'))[0]
+#    app['ThreadPool'] = ThreadPoolExecutor(4)
+#    app['R_function'] = {
+#        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+#        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo ,
+#        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson }
+#    print(pp, 'serving on', srv.sockets[0].getsockname())
+#    try:
+#        loop.run_forever()
+#    except KeyboardInterrupt:
+#        pass

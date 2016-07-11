@@ -142,10 +142,9 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
 var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="style_button" width="17" height="17" alt="submit"/>',
-    button_trash = ' <img src="/static/img/Trash_font_awesome.svg" class="trash_button" width="17" height="17" alt="submit"/>',
-    button_legend = ' <img src="/static/img/qgis_legend.svg" class="legend_button" width="17" height="17" alt="submit"/>',
-    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" class="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
-    button_active = ' <input type="checkbox" class="active_button" name="active_button" id="active_button" checked="checked">',
+    button_trash = ' <img src="/static/img/Trash_font_awesome.svg" id="trash_button" width="17" height="17" alt="submit"/>',
+    button_legend = ' <img src="/static/img/qgis_legend.svg" id="legend_button" width="17" height="17" alt="submit"/>',
+    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" id="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
     button_polygon = '<img src="/static/img/type_geom/poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
     button_line = '<img src="/static/img/type_geom/line.svg" class="ico_type" width="17" height="17" alt="Line"/>',
     button_point = '<img src="/static/img/type_geom/dot.svg" class="ico_type" width="17" height="17" alt="Point"/>',
@@ -163,17 +162,15 @@ var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_ty
     button_choro = '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
     button_smooth = '<img src="/static/img/type_geom/layer_smooth.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
     button_prop = '<img src="/static/img/type_geom/layer_prop.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_result_type = {
-        "flow": button_flow, "symbol": button_symbol, "grid": button_grid,
-        "MTA": button_mta, "propchoro": button_propchoro, "typo": button_typo,
-        "disc": button_disc, "cartogram": button_cartogram, "label": button_label,
-        "choro": button_choro, "smooth": button_smooth, "prop": button_prop
-        };
+    button_result_type = new Map([
+        ["flow", button_flow], ["symbol", button_symbol], ["grid", button_grid],
+        ["MTA", button_mta], ["propchoro", button_propchoro], ["typo", button_typo],
+        ["disc", button_disc], ["cartogram", button_cartogram], ["label", button_label],
+        ["choro", button_choro], ["smooth", button_smooth], ["prop", button_prop]
+        ]);
 
-var button_polygon2 = '<img src="/static/img/type_geom/layer_poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_line2 = '<img src="/static/img/type_geom/layer_line.svg" class="ico_type" width="17" height="17" alt="Line"/>',
-    button_point2 = '<img src="/static/img/type_geom/layer_dot.svg" class="ico_type" width="17" height="17" alt="Point"/>',
-    button_type2 = {"Point": button_point2, "Line": button_line2, "Polygon": button_polygon2};
+var eye_open = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>',
+    eye_closed = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_closed"  width="17" height="17" alt="Visible"/>';
 
 
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
@@ -271,7 +268,7 @@ layer_list.append("li")
         .attr("layer_name", "Simplified_land_polygons")
         .attr("class", "ui-state-default Simplified_land_polygons")
         .attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer")
-        .html('<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + button_active + button_polygon + "</div> Simplified_land_polygons");
+        .html('<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + eye_open + button_polygon + "</div> Simplified_land_polygons");
 
 var dv3 = section3.append("div")
                 .style("text-align", "center").html('');
@@ -592,9 +589,9 @@ function binds_layers_buttons(layer_name){
     if(layer_name != undefined){
         let cl_layer = '.' + layer_name,
             sortable_li = d3.select("#sortable");
-        sortable_li.select(cl_layer).select(".trash_button").on("click", function(){ remove_layer(layer_name); });
+        sortable_li.select(cl_layer).select("#trash_button").on("click", function(){ remove_layer(layer_name); });
         sortable_li.select(cl_layer).select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
-        sortable_li.select(cl_layer).select(".zoom_fit_button").on("click", function(){
+        sortable_li.select(cl_layer).select("#zoom_fit_button").on("click", function(){
             center_map(layer_name);
             zoom_without_redraw();
         });
@@ -604,29 +601,25 @@ function binds_layers_buttons(layer_name){
         sortable_li.select(cl_layer).select(".style_target_layer").on("click", function(){
             handle_click_layer(layer_name)
         });
-        sortable_li.select(cl_layer).select(".legend_button").on("click", function(){
+        sortable_li.select(cl_layer).select("#legend_button").on("click", function(){
             handle_legend(layer_name);
         });
     } else {
         let selec = d3.select('#sortable');
-        selec.selectAll(".trash_button").on("click", remove_layer);
-        selec.selectAll(".active_button").on("change", handle_active_layer);
-        selec.selectAll(".zoom_fit_button").on("click", function(){
-            //let layer_name = this.parentElement.parentElement.innerHTML.split("</div> ")[1];
+        selec.selectAll("#trash_button").on("click", remove_layer);
+        selec.selectAll(".active_button").on("click", handle_active_layer);
+        selec.selectAll("#zoom_fit_button").on("click", function(){
             let layer_name = this.parentElement.parentElement.getAttribute("layer_name");
             center_map(layer_name);
             zoom_without_redraw();
         });
         selec.selectAll(".style_button").on("click", function(){
-            //handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
             handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
         });
         selec.selectAll(".style_target_layer").on("click", function(){
-            //handle_click_layer(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
             handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
         });
-        selec.selectAll(".legend_button").on("click", function(){
-            //handle_legend(this.parentElement.parentElement.innerHTML.split("></div> ")[1])
+        selec.selectAll("#legend_button").on("click", function(){
             handle_legend(this.parentElement.parentElement.getAttribute("layer_name"))
         });
         $("[layer-tooltip!='']").qtip({
@@ -1213,13 +1206,26 @@ function handle_active_layer(name){
     let fill_value;
     if(!name) {
         name = this.parentElement.parentElement.getAttribute("layer_name");
-        //name = this.parentElement.parentElement.innerHTML.split("></div> ")[1].trim();
-        fill_value = this.checked ? 1 : 0;
+        if(this.id == "eye_closed"){
+            fill_value = 1;
+            this.parentElement.innerHTML = this.parentElement.innerHTML.replace("closed", "open");
+        } else {
+            fill_value = 0;
+            this.parentElement.innerHTML = this.parentElement.innerHTML.replace("open", "closed");
+        }
     } else {
-        fill_value = d3.select("#sortable").select('.' + name).select("#active_button").node().checked ? 1 : 0;
+        let selec = d3.select("#sortable").select('.' + name).select(".active_button");
+        if(selec.attr("id") == "eye_closed"){
+            fill_value = 1;
+            selec.node().parentElement.innerHTML = selec.node().parentElement.innerHTML.replace("closed", "open");
+        } else {
+            fill_value = 0;
+            selec.node().parentElement.innerHTML = selec.node().parentElement.innerHTML.replace("open", "closed");
+        }
     }
-    map.selectAll("#"+name).style("opacity", fill_value);
-    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial")
+    map.select("#"+name).style("opacity", fill_value);
+    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    binds_layers_buttons(name);
 }
 
 // Function to handle the title add and changes
@@ -1532,7 +1538,7 @@ function apply_user_preferences(json_pref){
             li.setAttribute("layer_name", layer_name)
             li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
             li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''))
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Point'], "</div> ", layer_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open, button_type_blank['Point'], "</div> ", layer_name].join('')
             layers_listed.insertBefore(li, layers_listed.childNodes[0])
             binds_layers_buttons();
 

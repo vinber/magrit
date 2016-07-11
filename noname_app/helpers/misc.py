@@ -5,7 +5,6 @@
 import os
 from contextlib import ContextDecorator
 from io import BytesIO
-#from hashlib import md5
 from random import choice
 from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -42,24 +41,10 @@ def prepare_folder():
     raise ValueError("Unable to create folder")
 
 
-#def try_float(val):
-#    try:
-#        return float(val)
-#    except ValueError:
-#        return val
-
 def savefile(path, raw_data):
     with open(path, 'wb') as f:
         f.write(raw_data)
 
-#def hash_md5_file(path):
-#    H = md5()
-#    with open(path, 'rb') as f:
-#        buf = f.read(65536)
-#        while len(buf) > 0:
-#            H.update(buf)
-#            buf = f.read(65536)
-#    return H.hexdigest()
 
 def mmh3_file(path):
     with open(path, 'rb') as f:
@@ -74,6 +59,7 @@ def get_key(var):
                     for i in range(25)])
         if k not in var:
             return k
+
 
 def guess_separator(file):
     """
@@ -125,15 +111,3 @@ def fetch_zip_clean(dir_path, layer_name):
         zip_stream.seek(0)
         os.removedirs(dir_path)
         return zip_stream.read(), ''.join([filename.split(".")[0], ".zip"])
-
-#def zip_and_clean(dir_path, layer_name):
-#    zip_stream = BytesIO()
-#    myZip = zipfile.ZipFile(zip_stream, "w", compression=zipfile.ZIP_DEFLATED)
-#    for ext in [".shp", ".dbf", ".prj", ".shx"]:
-#        f_name = "".join([dir_path, "/", layer_name, ext])
-#        myZip.write(f_name, ''.join([layer_name, ext]), zipfile.ZIP_DEFLATED)
-#        os.remove(f_name)
-#    myZip.close()
-#    zip_stream.seek(0)
-#    os.removedirs(dir_path)
-#    return zip_stream, ''.join([layer_name, ".zip"])
