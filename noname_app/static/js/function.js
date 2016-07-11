@@ -310,7 +310,7 @@ function fillMenu_Discont(layer){
         li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
         li.innerHTML = [
             '<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit,
-            button_active, button_legend, button_type['Line'], "</div> ", _list_display_name
+            eye_open, button_legend, button_type['Line'], "</div> ", _list_display_name
             ].join('')
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[new_layer_name] = {
@@ -572,7 +572,7 @@ function fillMenu_FlowMap(){
             join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
 
             formToSend.append("json", JSON.stringify({
-                "topojson": ref_layer,
+                "topojson": current_layers[ref_layer].key_name,
                 "csv_table": JSON.stringify(joined_dataset[0]),
                 "field_i": field_i.node().value,
                 "field_j": field_j.node().value,
@@ -1034,7 +1034,7 @@ var render_label = function(layer, rendering_params){
     li.setAttribute("class", class_name);
     li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
                     button_trash, button_zoom_fit,
-                    button_active, button_type['Point'],
+                    eye_open, button_type['Point'],
                     "</div> ", _list_display_name].join('')
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
@@ -1123,7 +1123,8 @@ function fillMenu_Choropleth(){
                                 nb_class: confirmed[0], type: confirmed[1],
                                 breaks: confirmed[2], colors:confirmed[3],
                                 colorsByFeature: confirmed[4], renderer:"Choropleth",
-                                rendered_field: field_selec.node().value
+                                rendered_field: field_selec.node().value,
+                                new_name: check_layer_name([layer_name, field_selec.node().value, "Choro"].join('_'))
                             }
                     }
                 });
@@ -1348,7 +1349,8 @@ function fillMenu_MTA(){
                                 colors: disc_result[3],
                                 colorsByFeature: disc_result[4],
                                 renderer:  ["Choropleth", "MTA", choosen_method].join('_'),
-                                rendered_field: field_name
+                                rendered_field: field_name,
+                                new_name: chech_layer_name([layer, "MTA", field_name].join('_'))
                                     };
                             render_choro(layer, rendering_params);
                             current_layers[layer].colors_breaks = disc_result[2];
@@ -1824,7 +1826,7 @@ function fillMenu_Anamorphose(){
 //                li.setAttribute("layer_name", new_layer_name);
 //                li.setAttribute("class", class_name);
 //                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
-//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, button_active, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
+//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
 //                layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
 //                binds_layers_buttons();
@@ -1902,7 +1904,7 @@ function fillMenu_Anamorphose(){
 //                    li = document.createElement("li");
 //
 //                li.setAttribute("class", class_name);
-//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
+//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
 //                layers_listed.insertBefore(li, layers_listed.childNodes[0])
 //                current_layers[new_layer_name] = {
 //                    "renderer": "DougenikCarto",
@@ -1931,7 +1933,7 @@ function fillMenu_Anamorphose(){
                 li.setAttribute("layer_name", layer_to_add);
                 li.setAttribute("class", class_name);
                 li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", current_layers[layer].n_features, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_active, button_legend, button_type['Point'], "</div> ", _list_display_name].join('')
+                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_legend, button_type['Point'], "</div> ", _list_display_name].join('')
                 layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
@@ -2379,7 +2381,7 @@ function make_prop_symbols(rendering_params){
     li.setAttribute("layer-tooltip",
             ["<b>", layer_to_add, "</b> - Point - ", nb_features, " features"].join(''))
     li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                    button_trash, button_zoom_fit, button_active, button_legend,
+                    button_trash, button_zoom_fit, eye_open0, button_legend,
                     button_type['Point'], "</div> ", _list_display_name].join('')
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
 
@@ -2479,7 +2481,7 @@ function fillMenu_griddedMap(layer){
                             colors: disc_result[3],
                             colorsByFeature: disc_result[4],
                             renderer: "Gridded",
-                            rendered_field: "densitykm"
+                            rendered_field: "densitykm",
                                 };
                     render_choro(n_layer_name, rendering_params);
                 }
@@ -2511,9 +2513,19 @@ function render_categorical(layer, rendering_params){
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
-    console.log(rendering_params);
-    var layer_to_render = d3.select("#"+layer).selectAll("path");
-    d3.select("#"+layer).style("stroke-width", 0.75/zoom.scale() + "px");
+    if(rendering_params.new_name){
+        svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+layer).cloneNode(true));
+        var ref_layer = layer;
+        layer = rendering_params.new_name;
+        svg_map.lastChild.setAttribute("id", layer);
+        var layer_to_render = map.select("#"+layer).selectAll("path");
+        current_layers[layer] = {n_features: current_layers[ref_layer].n_features,
+                                 type: current_layers[ref_layer].type,
+                                key_name: current_layers[ref_layer].key_name};
+    } else {
+        var layer_to_render = map.select("#"+layer).selectAll("path");
+    }
+    map.select("#"+layer).style("stroke-width", 0.75/zoom.scale() + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
@@ -2528,7 +2540,7 @@ function render_choro(layer, rendering_params){
         colors_breaks.push([
                 [rendering_params['breaks'][i], " - ", rendering_params['breaks'][i+1]].join(''),
                 rendering_params['colors'][i]
-            ])
+            ]);
         }
     current_layers[layer].colors_breaks = colors_breaks;
     zoom_without_redraw();

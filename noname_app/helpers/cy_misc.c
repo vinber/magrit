@@ -3,7 +3,13 @@
 /* BEGIN: Cython Metadata
 {
     "distutils": {
-        "depends": []
+        "depends": [],
+        "extra_compile_args": [
+            "-O3"
+        ],
+        "include_dirs": [
+            "."
+        ]
     }
 }
 END: Cython Metadata */
@@ -266,8 +272,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__app__helpers__cy_misc
-#define __PYX_HAVE_API__app__helpers__cy_misc
+#define __PYX_HAVE__noname_app__helpers__cy_misc
+#define __PYX_HAVE_API__noname_app__helpers__cy_misc
 #include "string.h"
 #include "stdio.h"
 #include "pythread.h"
@@ -486,11 +492,11 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "app/helpers/cy_misc.pyx",
-  "array.pxd",
-  "type.pxd",
-  "bool.pxd",
-  "complex.pxd",
+  "noname_app/helpers/cy_misc.pyx",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/array.pxd",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/type.pxd",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/bool.pxd",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/complex.pxd",
 };
 
 /*--- Type declarations ---*/
@@ -498,16 +504,16 @@ static const char *__pyx_f[] = {
 struct arrayobject;
 typedef struct arrayobject arrayobject;
 #endif
-struct __pyx_opt_args_3app_7helpers_7cy_misc_get_name;
+struct __pyx_opt_args_10noname_app_7helpers_7cy_misc_get_name;
 
-/* "app/helpers/cy_misc.pyx":5
+/* "noname_app/helpers/cy_misc.pyx":5
  * from random import choice
  * 
  * cpdef get_name(unsigned int length=25):             # <<<<<<<<<<<<<<
  *     """
  *     Find a temporary random name to share object
  */
-struct __pyx_opt_args_3app_7helpers_7cy_misc_get_name {
+struct __pyx_opt_args_10noname_app_7helpers_7cy_misc_get_name {
   int __pyx_n;
   unsigned int length;
 };
@@ -1098,17 +1104,17 @@ static PyTypeObject *__pyx_ptype_7cpython_7complex_complex = 0;
 static PyTypeObject *__pyx_ptype_7cpython_5array_array = 0;
 static CYTHON_INLINE int __pyx_f_7cpython_5array_extend_buffer(arrayobject *, char *, Py_ssize_t); /*proto*/
 
-/* Module declarations from 'app.helpers.cy_misc' */
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(int __pyx_skip_dispatch, struct __pyx_opt_args_3app_7helpers_7cy_misc_get_name *__pyx_optional_args); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *, PyObject *); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject *, int __pyx_skip_dispatch); /*proto*/
-#define __Pyx_MODULE_NAME "app.helpers.cy_misc"
-int __pyx_module_is_main_app__helpers__cy_misc = 0;
+/* Module declarations from 'noname_app.helpers.cy_misc' */
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_name(int __pyx_skip_dispatch, struct __pyx_opt_args_10noname_app_7helpers_7cy_misc_get_name *__pyx_optional_args); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_join_topojson_new_field2(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_comm(PyObject *, PyObject *); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_flatten_arc(PyObject *); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_common_arcs(PyObject *); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_borders_to_geojson(PyObject *, int __pyx_skip_dispatch); /*proto*/
+#define __Pyx_MODULE_NAME "noname_app.helpers.cy_misc"
+int __pyx_module_is_main_noname_app__helpers__cy_misc = 0;
 
-/* Implementation of 'app.helpers.cy_misc' */
+/* Implementation of 'noname_app.helpers.cy_misc' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_chr;
 static PyObject *__pyx_builtin_enumerate;
@@ -1180,9 +1186,9 @@ static PyObject *__pyx_n_s_tounicode;
 static PyObject *__pyx_kp_s_type_FeatureCollection_features;
 static PyObject *__pyx_kp_s_type_Feature_geometry_type_Mult;
 static PyObject *__pyx_n_s_u;
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject *__pyx_self, unsigned int __pyx_v_length); /* proto */
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name); /* proto */
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_4get_borders_to_geojson(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson); /* proto */
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject *__pyx_self, unsigned int __pyx_v_length); /* proto */
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name); /* proto */
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_4get_borders_to_geojson(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson); /* proto */
 static int __pyx_pf_7cpython_5array_5array___getbuffer__(arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info, CYTHON_UNUSED int __pyx_v_flags); /* proto */
 static void __pyx_pf_7cpython_5array_5array_2__releasebuffer__(CYTHON_UNUSED arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items = {0, &__pyx_n_s_items, 0, 0, 0};
@@ -1249,7 +1255,7 @@ static PyObject *__pyx_int_120;
 static PyObject *__pyx_int_121;
 static PyObject *__pyx_int_122;
 
-/* "app/helpers/cy_misc.pyx":5
+/* "noname_app/helpers/cy_misc.pyx":5
  * from random import choice
  * 
  * cpdef get_name(unsigned int length=25):             # <<<<<<<<<<<<<<
@@ -1257,8 +1263,8 @@ static PyObject *__pyx_int_122;
  *     Find a temporary random name to share object
  */
 
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_3app_7helpers_7cy_misc_get_name *__pyx_optional_args) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_10noname_app_7helpers_7cy_misc_get_name *__pyx_optional_args) {
   unsigned int __pyx_v_length = ((unsigned int)25);
   arrayobject *__pyx_v_arr = 0;
   unsigned int __pyx_v_i;
@@ -1278,7 +1284,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
     }
   }
 
-  /* "app/helpers/cy_misc.pyx":12
+  /* "noname_app/helpers/cy_misc.pyx":12
  *     """
  *     cdef:
  *         array.array arr = array.array('u', [u'0']* length)             # <<<<<<<<<<<<<<
@@ -1308,7 +1314,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
   __pyx_v_arr = ((arrayobject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":13
+  /* "noname_app/helpers/cy_misc.pyx":13
  *     cdef:
  *         array.array arr = array.array('u', [u'0']* length)
  *         unsigned int i = 0             # <<<<<<<<<<<<<<
@@ -1317,7 +1323,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
  */
   __pyx_v_i = 0;
 
-  /* "app/helpers/cy_misc.pyx":14
+  /* "noname_app/helpers/cy_misc.pyx":14
  *         array.array arr = array.array('u', [u'0']* length)
  *         unsigned int i = 0
  *         list choice_list = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68,             # <<<<<<<<<<<<<<
@@ -1515,7 +1521,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
   __pyx_v_choice_list = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":20
+  /* "noname_app/helpers/cy_misc.pyx":20
  *                    115, 116, 117, 118, 119, 120, 121, 122]
  * 
  *     for i in range(length):             # <<<<<<<<<<<<<<
@@ -1526,7 +1532,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "app/helpers/cy_misc.pyx":21
+    /* "noname_app/helpers/cy_misc.pyx":21
  * 
  *     for i in range(length):
  *         arr[i] = chr(choice(choice_list))             # <<<<<<<<<<<<<<
@@ -1572,7 +1578,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/cy_misc.pyx":22
+  /* "noname_app/helpers/cy_misc.pyx":22
  *     for i in range(length):
  *         arr[i] = chr(choice(choice_list))
  *     return arr.tounicode()             # <<<<<<<<<<<<<<
@@ -1604,7 +1610,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "app/helpers/cy_misc.pyx":5
+  /* "noname_app/helpers/cy_misc.pyx":5
  * from random import choice
  * 
  * cpdef get_name(unsigned int length=25):             # <<<<<<<<<<<<<<
@@ -1618,7 +1624,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_arr);
@@ -1629,9 +1635,9 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED int __pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_3app_7helpers_7cy_misc_get_name[] = "\n    Find a temporary random name to share object\n    with some external soft used ( R / ogr2ogr / topojson / etc.)\n    Aimed to be remplaced by something better\n    ";
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_10noname_app_7helpers_7cy_misc_get_name[] = "\n    Find a temporary random name to share object\n    with some external soft used ( R / ogr2ogr / topojson / etc.)\n    Aimed to be remplaced by something better\n    ";
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   unsigned int __pyx_v_length;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1675,27 +1681,27 @@ static PyObject *__pyx_pw_3app_7helpers_7cy_misc_1get_name(PyObject *__pyx_self,
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("get_name", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 5, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3app_7helpers_7cy_misc_get_name(__pyx_self, __pyx_v_length);
+  __pyx_r = __pyx_pf_10noname_app_7helpers_7cy_misc_get_name(__pyx_self, __pyx_v_length);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject *__pyx_self, unsigned int __pyx_v_length) {
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject *__pyx_self, unsigned int __pyx_v_length) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
-  struct __pyx_opt_args_3app_7helpers_7cy_misc_get_name __pyx_t_2;
+  struct __pyx_opt_args_10noname_app_7helpers_7cy_misc_get_name __pyx_t_2;
   __Pyx_RefNannySetupContext("get_name", 0);
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2.__pyx_n = 1;
   __pyx_t_2.length = __pyx_v_length;
-  __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_get_name(0, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 5, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_get_name(0, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 5, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1704,7 +1710,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1712,7 +1718,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject
   return __pyx_r;
 }
 
-/* "app/helpers/cy_misc.pyx":24
+/* "noname_app/helpers/cy_misc.pyx":24
  *     return arr.tounicode()
  * 
  * cpdef join_topojson_new_field2(dict topojson, list new_field, str new_field_name):             # <<<<<<<<<<<<<<
@@ -1720,8 +1726,8 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_get_name(CYTHON_UNUSED PyObject
  *         unsigned int ix = 0
  */
 
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_join_topojson_new_field2(PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name, CYTHON_UNUSED int __pyx_skip_dispatch) {
   unsigned int __pyx_v_ix;
   PyObject *__pyx_v_geom = 0;
   PyObject *__pyx_v_layer_name = 0;
@@ -1742,7 +1748,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
   PyObject *__pyx_t_13 = NULL;
   __Pyx_RefNannySetupContext("join_topojson_new_field2", 0);
 
-  /* "app/helpers/cy_misc.pyx":26
+  /* "noname_app/helpers/cy_misc.pyx":26
  * cpdef join_topojson_new_field2(dict topojson, list new_field, str new_field_name):
  *     cdef:
  *         unsigned int ix = 0             # <<<<<<<<<<<<<<
@@ -1751,7 +1757,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
  */
   __pyx_v_ix = 0;
 
-  /* "app/helpers/cy_misc.pyx":28
+  /* "noname_app/helpers/cy_misc.pyx":28
  *         unsigned int ix = 0
  *         dict geom
  *         str layer_name = list(topojson['objects'].keys())[0]             # <<<<<<<<<<<<<<
@@ -1795,7 +1801,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
   __pyx_v_layer_name = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":30
+  /* "noname_app/helpers/cy_misc.pyx":30
  *         str layer_name = list(topojson['objects'].keys())[0]
  * 
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):             # <<<<<<<<<<<<<<
@@ -1861,7 +1867,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
     __pyx_v_ix = __pyx_t_4;
     __pyx_t_4 = (__pyx_t_4 + 1);
 
-    /* "app/helpers/cy_misc.pyx":31
+    /* "noname_app/helpers/cy_misc.pyx":31
  * 
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
  *         try:             # <<<<<<<<<<<<<<
@@ -1877,7 +1883,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
       __Pyx_XGOTREF(__pyx_t_9);
       /*try:*/ {
 
-        /* "app/helpers/cy_misc.pyx":32
+        /* "noname_app/helpers/cy_misc.pyx":32
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
  *         try:
  *             geom['properties'][new_field_name] = new_field[ix]             # <<<<<<<<<<<<<<
@@ -1900,7 +1906,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "app/helpers/cy_misc.pyx":31
+        /* "noname_app/helpers/cy_misc.pyx":31
  * 
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
  *         try:             # <<<<<<<<<<<<<<
@@ -1917,7 +1923,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "app/helpers/cy_misc.pyx":33
+      /* "noname_app/helpers/cy_misc.pyx":33
  *         try:
  *             geom['properties'][new_field_name] = new_field[ix]
  *         except KeyError:             # <<<<<<<<<<<<<<
@@ -1926,13 +1932,13 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
  */
       __pyx_t_10 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_KeyError);
       if (__pyx_t_10) {
-        __Pyx_AddTraceback("app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
+        __Pyx_AddTraceback("noname_app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
         if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_11) < 0) __PYX_ERR(0, 33, __pyx_L7_except_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_GOTREF(__pyx_t_11);
 
-        /* "app/helpers/cy_misc.pyx":34
+        /* "noname_app/helpers/cy_misc.pyx":34
  *             geom['properties'][new_field_name] = new_field[ix]
  *         except KeyError:
  *             geom['properties'] = {new_field_name: new_field[ix]}             # <<<<<<<<<<<<<<
@@ -1963,7 +1969,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
       goto __pyx_L7_except_error;
       __pyx_L7_except_error:;
 
-      /* "app/helpers/cy_misc.pyx":31
+      /* "noname_app/helpers/cy_misc.pyx":31
  * 
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):
  *         try:             # <<<<<<<<<<<<<<
@@ -1985,7 +1991,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
       __pyx_L12_try_end:;
     }
 
-    /* "app/helpers/cy_misc.pyx":30
+    /* "noname_app/helpers/cy_misc.pyx":30
  *         str layer_name = list(topojson['objects'].keys())[0]
  * 
  *     for ix, geom in enumerate(topojson['objects'][layer_name]['geometries']):             # <<<<<<<<<<<<<<
@@ -1995,7 +2001,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "app/helpers/cy_misc.pyx":24
+  /* "noname_app/helpers/cy_misc.pyx":24
  *     return arr.tounicode()
  * 
  * cpdef join_topojson_new_field2(dict topojson, list new_field, str new_field_name):             # <<<<<<<<<<<<<<
@@ -2013,7 +2019,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
   __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_AddTraceback("app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_geom);
@@ -2024,8 +2030,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(PyObjec
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_3join_topojson_new_field2(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_topojson = 0;
   PyObject *__pyx_v_new_field = 0;
   PyObject *__pyx_v_new_field_name = 0;
@@ -2079,14 +2085,14 @@ static PyObject *__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2(PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("join_topojson_new_field2", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 24, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_topojson), (&PyDict_Type), 1, "topojson", 1))) __PYX_ERR(0, 24, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_field), (&PyList_Type), 1, "new_field", 1))) __PYX_ERR(0, 24, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_field_name), (&PyString_Type), 1, "new_field_name", 1))) __PYX_ERR(0, 24, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(__pyx_self, __pyx_v_topojson, __pyx_v_new_field, __pyx_v_new_field_name);
+  __pyx_r = __pyx_pf_10noname_app_7helpers_7cy_misc_2join_topojson_new_field2(__pyx_self, __pyx_v_topojson, __pyx_v_new_field, __pyx_v_new_field_name);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2097,13 +2103,13 @@ static PyObject *__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2(PyObj
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name) {
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson, PyObject *__pyx_v_new_field, PyObject *__pyx_v_new_field_name) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("join_topojson_new_field2", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_join_topojson_new_field2(__pyx_v_topojson, __pyx_v_new_field, __pyx_v_new_field_name, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_join_topojson_new_field2(__pyx_v_topojson, __pyx_v_new_field, __pyx_v_new_field_name, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2112,7 +2118,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHO
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.join_topojson_new_field2", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2120,7 +2126,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHO
   return __pyx_r;
 }
 
-/* "app/helpers/cy_misc.pyx":36
+/* "noname_app/helpers/cy_misc.pyx":36
  *             geom['properties'] = {new_field_name: new_field[ix]}
  * 
  * cdef list get_comm(list arc_a, list arc_b):             # <<<<<<<<<<<<<<
@@ -2128,7 +2134,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_2join_topojson_new_field2(CYTHO
  *         list comm = []
  */
 
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a, PyObject *__pyx_v_arc_b) {
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a, PyObject *__pyx_v_arc_b) {
   PyObject *__pyx_v_comm = 0;
   int __pyx_v_aa;
   int __pyx_v_bb;
@@ -2144,7 +2150,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   int __pyx_t_8;
   __Pyx_RefNannySetupContext("get_comm", 0);
 
-  /* "app/helpers/cy_misc.pyx":38
+  /* "noname_app/helpers/cy_misc.pyx":38
  * cdef list get_comm(list arc_a, list arc_b):
  *     cdef:
  *         list comm = []             # <<<<<<<<<<<<<<
@@ -2156,14 +2162,14 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   __pyx_v_comm = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":40
+  /* "noname_app/helpers/cy_misc.pyx":40
  *         list comm = []
  *         int aa, bb
  *     for aa in flatten_arc(arc_a):             # <<<<<<<<<<<<<<
  *         for bb in flatten_arc(arc_b):
  *             if aa < 0:
  */
-  __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_flatten_arc(__pyx_v_arc_a); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_flatten_arc(__pyx_v_arc_a); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_t_1 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
@@ -2183,14 +2189,14 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_aa = __pyx_t_4;
 
-    /* "app/helpers/cy_misc.pyx":41
+    /* "noname_app/helpers/cy_misc.pyx":41
  *         int aa, bb
  *     for aa in flatten_arc(arc_a):
  *         for bb in flatten_arc(arc_b):             # <<<<<<<<<<<<<<
  *             if aa < 0:
  *                 aa = ~aa
  */
-    __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_flatten_arc(__pyx_v_arc_b); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
+    __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_flatten_arc(__pyx_v_arc_b); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(__pyx_t_1 == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
@@ -2210,7 +2216,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_v_bb = __pyx_t_4;
 
-      /* "app/helpers/cy_misc.pyx":42
+      /* "noname_app/helpers/cy_misc.pyx":42
  *     for aa in flatten_arc(arc_a):
  *         for bb in flatten_arc(arc_b):
  *             if aa < 0:             # <<<<<<<<<<<<<<
@@ -2220,7 +2226,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
       __pyx_t_7 = ((__pyx_v_aa < 0) != 0);
       if (__pyx_t_7) {
 
-        /* "app/helpers/cy_misc.pyx":43
+        /* "noname_app/helpers/cy_misc.pyx":43
  *         for bb in flatten_arc(arc_b):
  *             if aa < 0:
  *                 aa = ~aa             # <<<<<<<<<<<<<<
@@ -2229,7 +2235,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  */
         __pyx_v_aa = (~__pyx_v_aa);
 
-        /* "app/helpers/cy_misc.pyx":42
+        /* "noname_app/helpers/cy_misc.pyx":42
  *     for aa in flatten_arc(arc_a):
  *         for bb in flatten_arc(arc_b):
  *             if aa < 0:             # <<<<<<<<<<<<<<
@@ -2238,7 +2244,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  */
       }
 
-      /* "app/helpers/cy_misc.pyx":44
+      /* "noname_app/helpers/cy_misc.pyx":44
  *             if aa < 0:
  *                 aa = ~aa
  *             if bb < 0:             # <<<<<<<<<<<<<<
@@ -2248,7 +2254,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
       __pyx_t_7 = ((__pyx_v_bb < 0) != 0);
       if (__pyx_t_7) {
 
-        /* "app/helpers/cy_misc.pyx":45
+        /* "noname_app/helpers/cy_misc.pyx":45
  *                 aa = ~aa
  *             if bb < 0:
  *                 bb = ~bb             # <<<<<<<<<<<<<<
@@ -2257,7 +2263,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  */
         __pyx_v_bb = (~__pyx_v_bb);
 
-        /* "app/helpers/cy_misc.pyx":44
+        /* "noname_app/helpers/cy_misc.pyx":44
  *             if aa < 0:
  *                 aa = ~aa
  *             if bb < 0:             # <<<<<<<<<<<<<<
@@ -2266,7 +2272,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  */
       }
 
-      /* "app/helpers/cy_misc.pyx":46
+      /* "noname_app/helpers/cy_misc.pyx":46
  *             if bb < 0:
  *                 bb = ~bb
  *             if aa == bb:             # <<<<<<<<<<<<<<
@@ -2276,7 +2282,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
       __pyx_t_7 = ((__pyx_v_aa == __pyx_v_bb) != 0);
       if (__pyx_t_7) {
 
-        /* "app/helpers/cy_misc.pyx":47
+        /* "noname_app/helpers/cy_misc.pyx":47
  *                 bb = ~bb
  *             if aa == bb:
  *                 comm.append(aa)             # <<<<<<<<<<<<<<
@@ -2288,7 +2294,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
         __pyx_t_8 = __Pyx_PyList_Append(__pyx_v_comm, __pyx_t_1); if (unlikely(__pyx_t_8 == -1)) __PYX_ERR(0, 47, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "app/helpers/cy_misc.pyx":46
+        /* "noname_app/helpers/cy_misc.pyx":46
  *             if bb < 0:
  *                 bb = ~bb
  *             if aa == bb:             # <<<<<<<<<<<<<<
@@ -2297,7 +2303,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  */
       }
 
-      /* "app/helpers/cy_misc.pyx":41
+      /* "noname_app/helpers/cy_misc.pyx":41
  *         int aa, bb
  *     for aa in flatten_arc(arc_a):
  *         for bb in flatten_arc(arc_b):             # <<<<<<<<<<<<<<
@@ -2307,7 +2313,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "app/helpers/cy_misc.pyx":40
+    /* "noname_app/helpers/cy_misc.pyx":40
  *         list comm = []
  *         int aa, bb
  *     for aa in flatten_arc(arc_a):             # <<<<<<<<<<<<<<
@@ -2317,7 +2323,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/cy_misc.pyx":48
+  /* "noname_app/helpers/cy_misc.pyx":48
  *             if aa == bb:
  *                 comm.append(aa)
  *     return comm             # <<<<<<<<<<<<<<
@@ -2329,7 +2335,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   __pyx_r = __pyx_v_comm;
   goto __pyx_L0;
 
-  /* "app/helpers/cy_misc.pyx":36
+  /* "noname_app/helpers/cy_misc.pyx":36
  *             geom['properties'] = {new_field_name: new_field[ix]}
  * 
  * cdef list get_comm(list arc_a, list arc_b):             # <<<<<<<<<<<<<<
@@ -2342,7 +2348,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_comm", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_comm", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_comm);
@@ -2351,7 +2357,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
   return __pyx_r;
 }
 
-/* "app/helpers/cy_misc.pyx":50
+/* "noname_app/helpers/cy_misc.pyx":50
  *     return comm
  * 
  * cdef list flatten_arc(list arcs):             # <<<<<<<<<<<<<<
@@ -2359,7 +2365,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_comm(PyObject *__pyx_v_arc_a
  *     for aa in arcs:
  */
 
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_arcs) {
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_arcs) {
   PyObject *__pyx_v_res = 0;
   PyObject *__pyx_v_aa = NULL;
   PyObject *__pyx_r = NULL;
@@ -2372,7 +2378,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   int __pyx_t_6;
   __Pyx_RefNannySetupContext("flatten_arc", 0);
 
-  /* "app/helpers/cy_misc.pyx":51
+  /* "noname_app/helpers/cy_misc.pyx":51
  * 
  * cdef list flatten_arc(list arcs):
  *     cdef list res = []             # <<<<<<<<<<<<<<
@@ -2384,7 +2390,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   __pyx_v_res = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":52
+  /* "noname_app/helpers/cy_misc.pyx":52
  * cdef list flatten_arc(list arcs):
  *     cdef list res = []
  *     for aa in arcs:             # <<<<<<<<<<<<<<
@@ -2407,7 +2413,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
     __Pyx_XDECREF_SET(__pyx_v_aa, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "app/helpers/cy_misc.pyx":53
+    /* "noname_app/helpers/cy_misc.pyx":53
  *     cdef list res = []
  *     for aa in arcs:
  *         if isinstance(aa, list):             # <<<<<<<<<<<<<<
@@ -2418,7 +2424,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
     __pyx_t_5 = (__pyx_t_4 != 0);
     if (__pyx_t_5) {
 
-      /* "app/helpers/cy_misc.pyx":54
+      /* "noname_app/helpers/cy_misc.pyx":54
  *     for aa in arcs:
  *         if isinstance(aa, list):
  *             res.extend(aa)             # <<<<<<<<<<<<<<
@@ -2427,7 +2433,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
  */
       __pyx_t_6 = __Pyx_PyList_Extend(__pyx_v_res, __pyx_v_aa); if (unlikely(__pyx_t_6 == -1)) __PYX_ERR(0, 54, __pyx_L1_error)
 
-      /* "app/helpers/cy_misc.pyx":53
+      /* "noname_app/helpers/cy_misc.pyx":53
  *     cdef list res = []
  *     for aa in arcs:
  *         if isinstance(aa, list):             # <<<<<<<<<<<<<<
@@ -2437,7 +2443,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
       goto __pyx_L5;
     }
 
-    /* "app/helpers/cy_misc.pyx":56
+    /* "noname_app/helpers/cy_misc.pyx":56
  *             res.extend(aa)
  *         else:
  *             res.append(aa)             # <<<<<<<<<<<<<<
@@ -2449,7 +2455,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
     }
     __pyx_L5:;
 
-    /* "app/helpers/cy_misc.pyx":52
+    /* "noname_app/helpers/cy_misc.pyx":52
  * cdef list flatten_arc(list arcs):
  *     cdef list res = []
  *     for aa in arcs:             # <<<<<<<<<<<<<<
@@ -2459,7 +2465,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":57
+  /* "noname_app/helpers/cy_misc.pyx":57
  *         else:
  *             res.append(aa)
  *     return res             # <<<<<<<<<<<<<<
@@ -2471,7 +2477,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "app/helpers/cy_misc.pyx":50
+  /* "noname_app/helpers/cy_misc.pyx":50
  *     return comm
  * 
  * cdef list flatten_arc(list arcs):             # <<<<<<<<<<<<<<
@@ -2483,7 +2489,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("app.helpers.cy_misc.flatten_arc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.flatten_arc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_res);
@@ -2493,7 +2499,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
   return __pyx_r;
 }
 
-/* "app/helpers/cy_misc.pyx":59
+/* "noname_app/helpers/cy_misc.pyx":59
  *     return res
  * 
  * cdef dict get_common_arcs(dict topojson):             # <<<<<<<<<<<<<<
@@ -2501,7 +2507,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_flatten_arc(PyObject *__pyx_v_ar
  *         dict geom_a, geom_b, common_borders = {}
  */
 
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_v_topojson) {
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_v_topojson) {
   PyObject *__pyx_v_geom_a = 0;
   PyObject *__pyx_v_geom_b = 0;
   PyObject *__pyx_v_common_borders = 0;
@@ -2529,7 +2535,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   Py_ssize_t __pyx_t_12;
   __Pyx_RefNannySetupContext("get_common_arcs", 0);
 
-  /* "app/helpers/cy_misc.pyx":61
+  /* "noname_app/helpers/cy_misc.pyx":61
  * cdef dict get_common_arcs(dict topojson):
  *     cdef:
  *         dict geom_a, geom_b, common_borders = {}             # <<<<<<<<<<<<<<
@@ -2541,7 +2547,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_v_common_borders = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":62
+  /* "noname_app/helpers/cy_misc.pyx":62
  *     cdef:
  *         dict geom_a, geom_b, common_borders = {}
  *         str layer_name = list(topojson['objects'].keys())[0]             # <<<<<<<<<<<<<<
@@ -2585,7 +2591,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_v_layer_name = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":63
+  /* "noname_app/helpers/cy_misc.pyx":63
  *         dict geom_a, geom_b, common_borders = {}
  *         str layer_name = list(topojson['objects'].keys())[0]
  *         list geoms = topojson['objects'][layer_name]['geometries']             # <<<<<<<<<<<<<<
@@ -2608,7 +2614,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_v_geoms = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":64
+  /* "noname_app/helpers/cy_misc.pyx":64
  *         str layer_name = list(topojson['objects'].keys())[0]
  *         list geoms = topojson['objects'][layer_name]['geometries']
  *         list arcs_ref = topojson['arcs']             # <<<<<<<<<<<<<<
@@ -2625,7 +2631,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_v_arcs_ref = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":65
+  /* "noname_app/helpers/cy_misc.pyx":65
  *         list geoms = topojson['objects'][layer_name]['geometries']
  *         list arcs_ref = topojson['arcs']
  *         set seen = set()             # <<<<<<<<<<<<<<
@@ -2637,7 +2643,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_v_seen = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":68
+  /* "noname_app/helpers/cy_misc.pyx":68
  *         str _id_arcs, _id_arcs_reverse
  * 
  *     for geom_a in geoms:             # <<<<<<<<<<<<<<
@@ -2661,7 +2667,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
     __Pyx_XDECREF_SET(__pyx_v_geom_a, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "app/helpers/cy_misc.pyx":69
+    /* "noname_app/helpers/cy_misc.pyx":69
  * 
  *     for geom_a in geoms:
  *         for geom_b in geoms:             # <<<<<<<<<<<<<<
@@ -2685,7 +2691,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
       __Pyx_XDECREF_SET(__pyx_v_geom_b, ((PyObject*)__pyx_t_2));
       __pyx_t_2 = 0;
 
-      /* "app/helpers/cy_misc.pyx":70
+      /* "noname_app/helpers/cy_misc.pyx":70
  *     for geom_a in geoms:
  *         for geom_b in geoms:
  *             if geom_a["id"] != geom_b["id"]:             # <<<<<<<<<<<<<<
@@ -2711,7 +2717,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       if (__pyx_t_8) {
 
-        /* "app/helpers/cy_misc.pyx":71
+        /* "noname_app/helpers/cy_misc.pyx":71
  *         for geom_b in geoms:
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])             # <<<<<<<<<<<<<<
@@ -2738,14 +2744,14 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         if (!(likely(PyList_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 71, __pyx_L1_error)
-        __pyx_t_7 = __pyx_f_3app_7helpers_7cy_misc_get_comm(((PyObject*)__pyx_t_6), ((PyObject*)__pyx_t_2)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 71, __pyx_L1_error)
+        __pyx_t_7 = __pyx_f_10noname_app_7helpers_7cy_misc_get_comm(((PyObject*)__pyx_t_6), ((PyObject*)__pyx_t_2)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 71, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_XDECREF_SET(__pyx_v_common_arcs, ((PyObject*)__pyx_t_7));
         __pyx_t_7 = 0;
 
-        /* "app/helpers/cy_misc.pyx":72
+        /* "noname_app/helpers/cy_misc.pyx":72
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:             # <<<<<<<<<<<<<<
@@ -2755,7 +2761,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
         __pyx_t_8 = (__pyx_v_common_arcs != Py_None) && (PyList_GET_SIZE(__pyx_v_common_arcs) != 0);
         if (__pyx_t_8) {
 
-          /* "app/helpers/cy_misc.pyx":73
+          /* "noname_app/helpers/cy_misc.pyx":73
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:
  *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])             # <<<<<<<<<<<<<<
@@ -2805,7 +2811,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           __Pyx_XDECREF_SET(__pyx_v__id_arcs, ((PyObject*)__pyx_t_2));
           __pyx_t_2 = 0;
 
-          /* "app/helpers/cy_misc.pyx":74
+          /* "noname_app/helpers/cy_misc.pyx":74
  *                 if common_arcs:
  *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
  *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])             # <<<<<<<<<<<<<<
@@ -2855,7 +2861,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           __Pyx_XDECREF_SET(__pyx_v__id_arcs_reverse, ((PyObject*)__pyx_t_6));
           __pyx_t_6 = 0;
 
-          /* "app/helpers/cy_misc.pyx":75
+          /* "noname_app/helpers/cy_misc.pyx":75
  *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
  *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :             # <<<<<<<<<<<<<<
@@ -2875,7 +2881,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
           __pyx_L10_bool_binop_done:;
           if (__pyx_t_8) {
 
-            /* "app/helpers/cy_misc.pyx":76
+            /* "noname_app/helpers/cy_misc.pyx":76
  *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
  *                         seen.add(_id_arcs)             # <<<<<<<<<<<<<<
@@ -2884,7 +2890,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  */
             __pyx_t_11 = PySet_Add(__pyx_v_seen, __pyx_v__id_arcs); if (unlikely(__pyx_t_11 == -1)) __PYX_ERR(0, 76, __pyx_L1_error)
 
-            /* "app/helpers/cy_misc.pyx":77
+            /* "noname_app/helpers/cy_misc.pyx":77
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :
  *                         seen.add(_id_arcs)
  *                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]             # <<<<<<<<<<<<<<
@@ -2921,7 +2927,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
             if (unlikely(PyDict_SetItem(__pyx_v_common_borders, __pyx_v__id_arcs, __pyx_t_6) < 0)) __PYX_ERR(0, 77, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-            /* "app/helpers/cy_misc.pyx":75
+            /* "noname_app/helpers/cy_misc.pyx":75
  *                     _id_arcs = "_".join([str(geom_a["id"]), str(geom_b["id"])])
  *                     _id_arcs_reverse = "_".join([str(geom_b["id"]), str(geom_a["id"])])
  *                     if not _id_arcs in seen and not _id_arcs_reverse in seen :             # <<<<<<<<<<<<<<
@@ -2930,7 +2936,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  */
           }
 
-          /* "app/helpers/cy_misc.pyx":72
+          /* "noname_app/helpers/cy_misc.pyx":72
  *             if geom_a["id"] != geom_b["id"]:
  *                 common_arcs = get_comm(geom_a["arcs"][0], geom_b["arcs"][0])
  *                 if common_arcs:             # <<<<<<<<<<<<<<
@@ -2939,7 +2945,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  */
         }
 
-        /* "app/helpers/cy_misc.pyx":70
+        /* "noname_app/helpers/cy_misc.pyx":70
  *     for geom_a in geoms:
  *         for geom_b in geoms:
  *             if geom_a["id"] != geom_b["id"]:             # <<<<<<<<<<<<<<
@@ -2948,7 +2954,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  */
       }
 
-      /* "app/helpers/cy_misc.pyx":69
+      /* "noname_app/helpers/cy_misc.pyx":69
  * 
  *     for geom_a in geoms:
  *         for geom_b in geoms:             # <<<<<<<<<<<<<<
@@ -2958,7 +2964,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "app/helpers/cy_misc.pyx":68
+    /* "noname_app/helpers/cy_misc.pyx":68
  *         str _id_arcs, _id_arcs_reverse
  * 
  *     for geom_a in geoms:             # <<<<<<<<<<<<<<
@@ -2968,7 +2974,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":78
+  /* "noname_app/helpers/cy_misc.pyx":78
  *                         seen.add(_id_arcs)
  *                         common_borders[_id_arcs] = [arcs_ref[j] for j in common_arcs]
  *     return common_borders             # <<<<<<<<<<<<<<
@@ -2980,7 +2986,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __pyx_r = __pyx_v_common_borders;
   goto __pyx_L0;
 
-  /* "app/helpers/cy_misc.pyx":59
+  /* "noname_app/helpers/cy_misc.pyx":59
  *     return res
  * 
  * cdef dict get_common_arcs(dict topojson):             # <<<<<<<<<<<<<<
@@ -2995,7 +3001,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_common_arcs", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_common_arcs", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_geom_a);
@@ -3014,7 +3020,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
   return __pyx_r;
 }
 
-/* "app/helpers/cy_misc.pyx":80
+/* "noname_app/helpers/cy_misc.pyx":80
  *     return common_borders
  * 
  * cpdef get_borders_to_geojson(dict topojson):             # <<<<<<<<<<<<<<
@@ -3022,8 +3028,8 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_common_arcs(PyObject *__pyx_
  *         list res_features = []
  */
 
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject *__pyx_v_topojson, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_7cy_misc_get_borders_to_geojson(PyObject *__pyx_v_topojson, CYTHON_UNUSED int __pyx_skip_dispatch) {
   PyObject *__pyx_v_res_features = 0;
   PyObject *__pyx_v_feature_st = 0;
   PyObject *__pyx_v_feature_middle = 0;
@@ -3044,7 +3050,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   int __pyx_t_9;
   __Pyx_RefNannySetupContext("get_borders_to_geojson", 0);
 
-  /* "app/helpers/cy_misc.pyx":82
+  /* "noname_app/helpers/cy_misc.pyx":82
  * cpdef get_borders_to_geojson(dict topojson):
  *     cdef:
  *         list res_features = []             # <<<<<<<<<<<<<<
@@ -3056,7 +3062,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __pyx_v_res_features = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":83
+  /* "noname_app/helpers/cy_misc.pyx":83
  *     cdef:
  *         list res_features = []
  *         str feature_st = '''{"type":"Feature","geometry":{"type": "MultiLineString","coordinates":'''             # <<<<<<<<<<<<<<
@@ -3066,7 +3072,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __Pyx_INCREF(__pyx_kp_s_type_Feature_geometry_type_Mult);
   __pyx_v_feature_st = __pyx_kp_s_type_Feature_geometry_type_Mult;
 
-  /* "app/helpers/cy_misc.pyx":84
+  /* "noname_app/helpers/cy_misc.pyx":84
  *         list res_features = []
  *         str feature_st = '''{"type":"Feature","geometry":{"type": "MultiLineString","coordinates":'''
  *         str feature_middle = '''},"properties":{"id":"'''             # <<<<<<<<<<<<<<
@@ -3076,7 +3082,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __Pyx_INCREF(__pyx_kp_s_properties_id);
   __pyx_v_feature_middle = __pyx_kp_s_properties_id;
 
-  /* "app/helpers/cy_misc.pyx":85
+  /* "noname_app/helpers/cy_misc.pyx":85
  *         str feature_st = '''{"type":"Feature","geometry":{"type": "MultiLineString","coordinates":'''
  *         str feature_middle = '''},"properties":{"id":"'''
  *         str feature_end = '''"}}'''             # <<<<<<<<<<<<<<
@@ -3086,19 +3092,19 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __Pyx_INCREF(__pyx_kp_s__2);
   __pyx_v_feature_end = __pyx_kp_s__2;
 
-  /* "app/helpers/cy_misc.pyx":86
+  /* "noname_app/helpers/cy_misc.pyx":86
  *         str feature_middle = '''},"properties":{"id":"'''
  *         str feature_end = '''"}}'''
  *         dict common_borders = get_common_arcs(topojson)             # <<<<<<<<<<<<<<
  * 
  *     for _id, geom in common_borders.items():
  */
-  __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_get_common_arcs(__pyx_v_topojson); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_get_common_arcs(__pyx_v_topojson); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_common_borders = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cy_misc.pyx":88
+  /* "noname_app/helpers/cy_misc.pyx":88
  *         dict common_borders = get_common_arcs(topojson)
  * 
  *     for _id, geom in common_borders.items():             # <<<<<<<<<<<<<<
@@ -3206,7 +3212,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
     __Pyx_XDECREF_SET(__pyx_v_geom, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "app/helpers/cy_misc.pyx":89
+    /* "noname_app/helpers/cy_misc.pyx":89
  * 
  *     for _id, geom in common_borders.items():
  *         res_features.append("".join([feature_st, str(geom), feature_middle, str(_id), feature_end]))             # <<<<<<<<<<<<<<
@@ -3252,7 +3258,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
     __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_res_features, __pyx_t_5); if (unlikely(__pyx_t_9 == -1)) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "app/helpers/cy_misc.pyx":88
+    /* "noname_app/helpers/cy_misc.pyx":88
  *         dict common_borders = get_common_arcs(topojson)
  * 
  *     for _id, geom in common_borders.items():             # <<<<<<<<<<<<<<
@@ -3262,7 +3268,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/cy_misc.pyx":90
+  /* "noname_app/helpers/cy_misc.pyx":90
  *     for _id, geom in common_borders.items():
  *         res_features.append("".join([feature_st, str(geom), feature_middle, str(_id), feature_end]))
  *     return "".join([             # <<<<<<<<<<<<<<
@@ -3271,7 +3277,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
  */
   __Pyx_XDECREF(__pyx_r);
 
-  /* "app/helpers/cy_misc.pyx":92
+  /* "noname_app/helpers/cy_misc.pyx":92
  *     return "".join([
  *             '''{"type":"FeatureCollection","features":[''',
  *             ','.join(res_features),             # <<<<<<<<<<<<<<
@@ -3281,7 +3287,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __pyx_t_2 = __Pyx_PyString_Join(__pyx_kp_s__4, __pyx_v_res_features); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 92, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "app/helpers/cy_misc.pyx":90
+  /* "noname_app/helpers/cy_misc.pyx":90
  *     for _id, geom in common_borders.items():
  *         res_features.append("".join([feature_st, str(geom), feature_middle, str(_id), feature_end]))
  *     return "".join([             # <<<<<<<<<<<<<<
@@ -3306,7 +3312,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "app/helpers/cy_misc.pyx":80
+  /* "noname_app/helpers/cy_misc.pyx":80
  *     return common_borders
  * 
  * cpdef get_borders_to_geojson(dict topojson):             # <<<<<<<<<<<<<<
@@ -3321,7 +3327,7 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_borders_to_geojson", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_borders_to_geojson", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_res_features);
@@ -3337,13 +3343,13 @@ static PyObject *__pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(PyObject 
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson); /*proto*/
-static PyObject *__pyx_pw_3app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson) {
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson); /*proto*/
+static PyObject *__pyx_pw_10noname_app_7helpers_7cy_misc_5get_borders_to_geojson(PyObject *__pyx_self, PyObject *__pyx_v_topojson) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_borders_to_geojson (wrapper)", 0);
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_topojson), (&PyDict_Type), 1, "topojson", 1))) __PYX_ERR(0, 80, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3app_7helpers_7cy_misc_4get_borders_to_geojson(__pyx_self, ((PyObject*)__pyx_v_topojson));
+  __pyx_r = __pyx_pf_10noname_app_7helpers_7cy_misc_4get_borders_to_geojson(__pyx_self, ((PyObject*)__pyx_v_topojson));
 
   /* function exit code */
   goto __pyx_L0;
@@ -3354,13 +3360,13 @@ static PyObject *__pyx_pw_3app_7helpers_7cy_misc_5get_borders_to_geojson(PyObjec
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3app_7helpers_7cy_misc_4get_borders_to_geojson(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson) {
+static PyObject *__pyx_pf_10noname_app_7helpers_7cy_misc_4get_borders_to_geojson(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_topojson) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_borders_to_geojson", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_7cy_misc_get_borders_to_geojson(__pyx_v_topojson, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_7cy_misc_get_borders_to_geojson(__pyx_v_topojson, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3369,7 +3375,7 @@ static PyObject *__pyx_pf_3app_7helpers_7cy_misc_4get_borders_to_geojson(CYTHON_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("app.helpers.cy_misc.get_borders_to_geojson", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cy_misc.get_borders_to_geojson", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4012,9 +4018,9 @@ static CYTHON_INLINE void __pyx_f_7cpython_5array_zero(arrayobject *__pyx_v_self
 }
 
 static PyMethodDef __pyx_methods[] = {
-  {"get_name", (PyCFunction)__pyx_pw_3app_7helpers_7cy_misc_1get_name, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3app_7helpers_7cy_misc_get_name},
-  {"join_topojson_new_field2", (PyCFunction)__pyx_pw_3app_7helpers_7cy_misc_3join_topojson_new_field2, METH_VARARGS|METH_KEYWORDS, 0},
-  {"get_borders_to_geojson", (PyCFunction)__pyx_pw_3app_7helpers_7cy_misc_5get_borders_to_geojson, METH_O, 0},
+  {"get_name", (PyCFunction)__pyx_pw_10noname_app_7helpers_7cy_misc_1get_name, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10noname_app_7helpers_7cy_misc_get_name},
+  {"join_topojson_new_field2", (PyCFunction)__pyx_pw_10noname_app_7helpers_7cy_misc_3join_topojson_new_field2, METH_VARARGS|METH_KEYWORDS, 0},
+  {"get_borders_to_geojson", (PyCFunction)__pyx_pw_10noname_app_7helpers_7cy_misc_5get_borders_to_geojson, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -4226,14 +4232,14 @@ PyMODINIT_FUNC PyInit_cy_misc(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_app__helpers__cy_misc) {
+  if (__pyx_module_is_main_noname_app__helpers__cy_misc) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "app.helpers.cy_misc")) {
-      if (unlikely(PyDict_SetItemString(modules, "app.helpers.cy_misc", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "noname_app.helpers.cy_misc")) {
+      if (unlikely(PyDict_SetItemString(modules, "noname_app.helpers.cy_misc", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -4263,7 +4269,7 @@ PyMODINIT_FUNC PyInit_cy_misc(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "app/helpers/cy_misc.pyx":3
+  /* "noname_app/helpers/cy_misc.pyx":3
  * # -*- coding: utf-8 -*-
  * from cpython cimport array
  * from random import choice             # <<<<<<<<<<<<<<
@@ -4284,7 +4290,7 @@ PyMODINIT_FUNC PyInit_cy_misc(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/cy_misc.pyx":1
+  /* "noname_app/helpers/cy_misc.pyx":1
  * # -*- coding: utf-8 -*-             # <<<<<<<<<<<<<<
  * from cpython cimport array
  * from random import choice
@@ -4310,11 +4316,11 @@ PyMODINIT_FUNC PyInit_cy_misc(void)
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init app.helpers.cy_misc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init noname_app.helpers.cy_misc", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init app.helpers.cy_misc");
+    PyErr_SetString(PyExc_ImportError, "init noname_app.helpers.cy_misc");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

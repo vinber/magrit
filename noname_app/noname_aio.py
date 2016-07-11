@@ -32,13 +32,22 @@ from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
-from r_py.rclient_worker_queue import R_client_fuw_async, url_client
-from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file
-from helpers.cy_misc import get_name, join_topojson_new_field2
-from helpers.cartogram_doug import make_cartogram
-from helpers.topo_to_geo import convert_from_topo
-from helpers.geo import (
-    reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+try:
+    from noname_app.r_py.rclient_worker_queue import R_client_fuw_async, url_client
+    from noname_app.helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file
+    from noname_app.helpers.cy_misc import get_name, join_topojson_new_field2
+    from noname_app.helpers.cartogram_doug import make_cartogram
+    from noname_app.helpers.topo_to_geo import convert_from_topo
+    from noname_app.helpers.geo import (
+        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+except:
+    from r_py.rclient_worker_queue import R_client_fuw_async, url_client
+    from helpers.misc import savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file
+    from helpers.cy_misc import get_name, join_topojson_new_field2
+    from helpers.cartogram_doug import make_cartogram
+    from helpers.topo_to_geo import convert_from_topo
+    from helpers.geo import (
+        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
 
 from geopandas import GeoDataFrame
 
@@ -541,7 +550,7 @@ async def carto_gridded(posted_data, user_id, *args):
 async def compute_olson(posted_data, user_id, *args):
     s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, posted_data['topojson'], "NQ"])
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
     ref_layer = await ajson_loads(ref_layer.decode())
     scale_values = posted_data['scale_values']
@@ -555,12 +564,12 @@ async def compute_olson(posted_data, user_id, *args):
                         str(posted_data["field_name"]),
                         str(int(posted_data["scale_max"]*100))])
     res = res.replace(tmp_part, new_name)
-    hash_val = mmh3_hash(res)
+    hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, str(hash_val), "NQ"]), res))
+            user_id, hash_val, "NQ"]), res))
     print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+    return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
 async def call_mta_simpl(posted_data, user_id, *args):
@@ -925,11 +934,46 @@ async def init(loop, port=9999):
     return srv, redis_conn, app
 
 
-def main(r_worker=2):
+def main(*args):
+    if not os.path.isdir('/tmp/feeds'):
+        try:
+            os.mkdir('/tmp/feeds')
+        except Exception as err:
+            print(err)
+            display_usage(args[0])
+            sys.exit()
+
+    if len(args) == 2:
+        try:
+            port = int(args[1])
+        except:
+            display_usage(args[0])
+            sys.exit()
+        nb_r_workers = '2'
+    elif len(args) == 3:
+        try:
+            port = int(args[1])
+        except:
+            display_usage(args[0])
+            sys.exit()
+        nb_r_workers = args[2]
+        if not nb_r_workers.isnumeric():
+            print("Error : The number of R instances have to be a number (<= 8)")
+            display_usage(args[0])
+            sys.exit()
+    else:
+        port = 9999
+        nb_r_workers = '2'
+
+    if not check_port_available(port):
+        print("Error : Selected port is already in use")
+        display_usage(sys.argv[0])
+        sys.exit()
+
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
-    _p = Popen([ sys.executable,'r_py/rclient_worker_queue.py', r_worker ])
+    _p = Popen([ sys.executable,'r_py/rclient_worker_queue.py', nb_r_workers ])
     zmq.asyncio.install()
     loop = asyncio.get_event_loop()
     srv, redis_conn, app = loop.run_until_complete(init(loop, port))
@@ -954,42 +998,7 @@ def main(r_worker=2):
 
 
 if __name__ == '__main__':
-    if not os.path.isdir('/tmp/feeds'):
-        try:
-            os.mkdir('/tmp/feeds')
-        except Exception as err:
-            print(err)
-            display_usage(sys.argv[0])
-            sys.exit()
-
-    if len(sys.argv) == 2:
-        try:
-            port = int(sys.argv[1])
-        except:
-            display_usage(sys.argv[0])
-            sys.exit()
-        nb_r_workers = '2'
-    elif len(sys.argv) == 3:
-        try:
-            port = int(sys.argv[1])
-        except:
-            display_usage(sys.argv[0])
-            sys.exit()
-        nb_r_workers = sys.argv[2]
-        if not nb_r_workers.isnumeric():
-            print("Error : The number of R instances have to be a number (<= 8)")
-            display_usage(sys.argv[0])
-            sys.exit()
-    else:
-        port = 9999
-        nb_r_workers = '2'
-
-    if not check_port_available(port):
-        print("Error : Selected port is already in use")
-        display_usage(sys.argv[0])
-        sys.exit()
-
-    main(nb_r_workers)
+    main(sys.argv)
 #    # Set the correct current directory :
 #    app_real_path = os.path.dirname(os.path.realpath(__file__))
 #    if app_real_path != os.getcwd():

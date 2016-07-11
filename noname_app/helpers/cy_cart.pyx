@@ -3,14 +3,15 @@
 @author: mthh
 """
 from libc.stdlib cimport malloc, free
+from geopandas import GeoDataFrame
 from shapely.geometry import MultiPolygon, Polygon
 import shapely.geometry.base
 
 
-cdef extern from "embed.h":
+cdef extern from "src/embed.h":
     void embed_main(int xsize, int ysize, double *dens, double *gridx, double *gridy)
 
-cdef extern from "cart.h":
+cdef extern from "src/cart.h":
     void cart_velocity(double rx, double ry, int s, int xsize, int ysize,
                        double *vxp, double *vyp)
     double** cart_dmalloc(int xsize, int ysize)
@@ -21,7 +22,7 @@ cdef extern from "cart.h":
     void cart_makecart(double *pointx, double *pointy, int npoints,
     		   int xsize, int ysize, double blur)
 
-cdef extern from "interp_mat.h":
+cdef extern from "src/interp_mat.h":
     double* transform_coords(double **gridx, double **gridy,
                              unsigned int xsize, unsigned int ysize,
                              double xin, double yin)
@@ -134,7 +135,7 @@ def make_cart_from_density(layer_path, density, grid_size=(256, 256), output_geo
     gdf = GeoDataFrame.from_file(layer_path)
     poly_pts = dump_poly_coords(gdf)
     res_pts = interpolate_poly(list_x, listy, poly_pts, grid_size[0], grid_size[1])
-    res_carto = cycart.construct_new_gdf(gdf, res_pts)
+    res_carto = construct_new_gdf(gdf, res_pts)
     if output_geojson :
         return res_carto.to_json()
     else:

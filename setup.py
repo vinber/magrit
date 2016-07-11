@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
-
+from setuptools import find_packages
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
@@ -20,8 +20,10 @@ exts = [Extension("noname_app.helpers.cy_misc",
                   ["noname_app/helpers/cartogram_doug.pyx"], ["."],
                   extra_compile_args=["-O3"]),
         Extension("noname_app.helpers.cy_cart",
-                  ["cy_cart.pyx", "embed.c", "cart.c", "interp_mat.c"], ["."],
-                  libraries=["fftw3"])
+                  ["noname_app/helpers/cy_cart.pyx", "noname_app/helpers/src/embed.c",
+                   "noname_app/helpers/src/cart.c", "noname_app/helpers/src/interp_mat.c"],
+                   ["."],
+                  libraries=["fftw3"], extra_compile_args=["-O2"])
         ]
 
 setup(
@@ -29,7 +31,7 @@ setup(
     version=noname_app.__version__,
     description="",
     url='https://github.com/mthh/noname-stuff',
-    packages=['noname_app'],
+    packages=find_packages(),
     package_dir={},
     ext_modules=cythonize(exts),
     cmdclass = {'build_ext': build_ext},

@@ -3,7 +3,13 @@
 /* BEGIN: Cython Metadata
 {
     "distutils": {
-        "depends": []
+        "depends": [],
+        "extra_compile_args": [
+            "-O3"
+        ],
+        "include_dirs": [
+            "."
+        ]
     }
 }
 END: Cython Metadata */
@@ -266,8 +272,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__app__helpers__cartogram_doug
-#define __PYX_HAVE_API__app__helpers__cartogram_doug
+#define __PYX_HAVE__noname_app__helpers__cartogram_doug
+#define __PYX_HAVE_API__noname_app__helpers__cartogram_doug
 #include "math.h"
 #include "string.h"
 #include "stdio.h"
@@ -489,12 +495,12 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "app/helpers/cartogram_doug.pyx",
-  "array.pxd",
-  "app/helpers/stringsource",
-  "type.pxd",
-  "bool.pxd",
-  "complex.pxd",
+  "noname_app/helpers/cartogram_doug.pyx",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/array.pxd",
+  "stringsource",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/type.pxd",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/bool.pxd",
+  "venvdev/lib/python3.5/site-packages/Cython/Includes/cpython/complex.pxd",
 };
 /* MemviewSliceStruct.proto */
 struct __pyx_memoryview_obj;
@@ -597,16 +603,16 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
 struct arrayobject;
 typedef struct arrayobject arrayobject;
 #endif
-struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram;
+struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram;
 struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 struct Holder;
 typedef struct Holder Holder;
-struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom;
+struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom;
 
-/* "app/helpers/cartogram_doug.pyx":56
+/* "noname_app/helpers/cartogram_doug.pyx":56
  *     return geodf.to_json()
  * 
  * ctypedef public struct Holder:             # <<<<<<<<<<<<<<
@@ -623,30 +629,30 @@ struct Holder {
   double dRadius;
 };
 
-/* "app/helpers/cartogram_doug.pyx":163
+/* "noname_app/helpers/cartogram_doug.pyx":163
  *         self.dForceReductionFactor = 1 / (dMean + 1)
  * 
  *     cdef object transform_geom(self, object geom,             # <<<<<<<<<<<<<<
  *                                Polygon=Polygon, MultiPolygon=MultiPolygon,
  *                                LineString=LineString):
  */
-struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom {
+struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom {
   int __pyx_n;
   PyObject *Polygon;
   PyObject *MultiPolygon;
   PyObject *LineString;
 };
 
-/* "app/helpers/cartogram_doug.pyx":65
+/* "noname_app/helpers/cartogram_doug.pyx":65
  *     double dRadius
  * 
  * cdef class Cartogram(object):             # <<<<<<<<<<<<<<
  *     cdef object geodf, temp_geo_serie
  *     cdef unsigned int iterations, total_features
  */
-struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram {
+struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram {
   PyObject_HEAD
-  struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *__pyx_vtab;
+  struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_vtab;
   PyObject *geodf;
   PyObject *temp_geo_serie;
   unsigned int iterations;
@@ -735,7 +741,7 @@ struct __pyx_memoryviewslice_obj {
 
 
 
-/* "app/helpers/cartogram_doug.pyx":65
+/* "noname_app/helpers/cartogram_doug.pyx":65
  *     double dRadius
  * 
  * cdef class Cartogram(object):             # <<<<<<<<<<<<<<
@@ -743,13 +749,13 @@ struct __pyx_memoryviewslice_obj {
  *     cdef unsigned int iterations, total_features
  */
 
-struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram {
-  PyObject *(*make)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *, int __pyx_skip_dispatch);
-  PyObject *(*cartogram)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *);
-  void (*getinfo)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *);
-  PyObject *(*transform_geom)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *, PyObject *, struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args);
+struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram {
+  PyObject *(*make)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *, int __pyx_skip_dispatch);
+  PyObject *(*cartogram)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *);
+  void (*getinfo)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *);
+  PyObject *(*transform_geom)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *, PyObject *, struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args);
 };
-static struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *__pyx_vtabptr_3app_7helpers_14cartogram_doug_Cartogram;
+static struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_vtabptr_10noname_app_7helpers_14cartogram_doug_Cartogram;
 
 
 /* "View.MemoryView":103
@@ -1424,10 +1430,10 @@ static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class
 /* InitStrings.proto */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto*/
-static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto*/
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geom, struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args); /* proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_make(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_cartogram(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto*/
+static void __pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geom, struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args); /* proto*/
 static PyObject *__pyx_array_get_memview(struct __pyx_array_obj *__pyx_v_self); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
@@ -1532,8 +1538,8 @@ static CYTHON_INLINE int __pyx_f_7cpython_5array_extend_buffer(arrayobject *, ch
 
 /* Module declarations from 'libc.stdlib' */
 
-/* Module declarations from 'app.helpers.cartogram_doug' */
-static PyTypeObject *__pyx_ptype_3app_7helpers_14cartogram_doug_Cartogram = 0;
+/* Module declarations from 'noname_app.helpers.cartogram_doug' */
+static PyTypeObject *__pyx_ptype_10noname_app_7helpers_14cartogram_doug_Cartogram = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1578,10 +1584,10 @@ static void __pyx_memoryview_refcount_objects_in_slice(char *, Py_ssize_t *, Py_
 static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size_t, void *, int); /*proto*/
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "app.helpers.cartogram_doug"
-int __pyx_module_is_main_app__helpers__cartogram_doug = 0;
+#define __Pyx_MODULE_NAME "noname_app.helpers.cartogram_doug"
+int __pyx_module_is_main_noname_app__helpers__cartogram_doug = 0;
 
-/* Implementation of 'app.helpers.cartogram_doug' */
+/* Implementation of 'noname_app.helpers.cartogram_doug' */
 static PyObject *__pyx_builtin_KeyError;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_MemoryError;
@@ -1672,12 +1678,11 @@ static const char __pyx_k_MemoryView_of_r_at_0x_x[] = "<MemoryView of %r at 0x%x
 static const char __pyx_k_contiguous_and_indirect[] = "<contiguous and indirect>";
 static const char __pyx_k_Cannot_index_with_type_s[] = "Cannot index with type '%s'";
 static const char __pyx_k_Invalid_shape_in_axis_d_d[] = "Invalid shape in axis %d: %d.";
-static const char __pyx_k_app_helpers_cartogram_doug[] = "app.helpers.cartogram_doug";
 static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.array";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_author_mz_To_build_as_a_python[] = "\n@author: mz\n\nTo build as a python extension :\n\n    $ cythonize cartogram_doug.pyx\n    $ gcc -shared -fPIC -fwrapv -O3 -Wall -fno-strict-aliasing             -I/usr/include/python3.5 -o cartogram_doug.so cartogram_doug.c\n\n";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_mz_code_noname_stuff_app_h[] = "/home/mz/code/noname-stuff/app/helpers/cartogram_doug.pyx";
+static const char __pyx_k_home_mz_code_noname_stuff_nonam[] = "/home/mz/code/noname-stuff/noname_app/helpers/cartogram_doug.pyx";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
 static const char __pyx_k_Empty_shape_tuple_for_cython_arr[] = "Empty shape tuple for cython.array";
@@ -1687,6 +1692,7 @@ static const char __pyx_k_Invalid_mode_expected_c_or_fortr[] = "Invalid mode, ex
 static const char __pyx_k_Out_of_bounds_on_buffer_access_a[] = "Out of bounds on buffer access (axis %d)";
 static const char __pyx_k_Unable_to_convert_item_to_object[] = "Unable to convert item to object";
 static const char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents in dimension %d (got %d and %d)";
+static const char __pyx_k_noname_app_helpers_cartogram_dou[] = "noname_app.helpers.cartogram_doug";
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static PyObject *__pyx_n_s_ASCII;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
@@ -1714,7 +1720,6 @@ static PyObject *__pyx_n_s_TypeError;
 static PyObject *__pyx_kp_s_Unable_to_convert_item_to_object;
 static PyObject *__pyx_n_s_ValueError;
 static PyObject *__pyx_n_s_allocate_buffer;
-static PyObject *__pyx_n_s_app_helpers_cartogram_doug;
 static PyObject *__pyx_n_s_area;
 static PyObject *__pyx_n_s_astype;
 static PyObject *__pyx_n_s_base;
@@ -1744,7 +1749,7 @@ static PyObject *__pyx_n_s_geom_type;
 static PyObject *__pyx_n_s_geometry;
 static PyObject *__pyx_n_s_get_loc;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_mz_code_noname_stuff_app_h;
+static PyObject *__pyx_kp_s_home_mz_code_noname_stuff_nonam;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_iloc;
 static PyObject *__pyx_n_s_import;
@@ -1761,6 +1766,7 @@ static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_name_2;
 static PyObject *__pyx_n_s_ndim;
+static PyObject *__pyx_n_s_noname_app_helpers_cartogram_dou;
 static PyObject *__pyx_n_s_obj;
 static PyObject *__pyx_n_s_pack;
 static PyObject *__pyx_n_s_pyx_getbuffer;
@@ -1785,9 +1791,9 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_values;
 static PyObject *__pyx_n_s_xy;
-static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_geodf, PyObject *__pyx_v_field_name, PyObject *__pyx_v_iterations); /* proto */
-static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geodf, int __pyx_v_field_idx, unsigned int __pyx_v_iterations); /* proto */
-static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10noname_app_7helpers_14cartogram_doug_make_cartogram(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_geodf, PyObject *__pyx_v_field_name, PyObject *__pyx_v_iterations); /* proto */
+static int __pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram___init__(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geodf, int __pyx_v_field_idx, unsigned int __pyx_v_iterations); /* proto */
+static PyObject *__pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram_2make(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self); /* proto */
 static int __pyx_pf_7cpython_5array_5array___getbuffer__(arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info, CYTHON_UNUSED int __pyx_v_flags); /* proto */
 static void __pyx_pf_7cpython_5array_5array_2__releasebuffer__(CYTHON_UNUSED arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1822,7 +1828,7 @@ static PyObject *__pyx_memoryview___pyx_pf_15View_dot_MemoryView_10memoryview_20
 static PyObject *__pyx_memoryview___pyx_pf_15View_dot_MemoryView_10memoryview_22copy_fortran(struct __pyx_memoryview_obj *__pyx_v_self); /* proto */
 static void __pyx_memoryviewslice___pyx_pf_15View_dot_MemoryView_16_memoryviewslice___dealloc__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_15View_dot_MemoryView_16_memoryviewslice_4base___get__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
-static PyObject *__pyx_tp_new_3app_7helpers_14cartogram_doug_Cartogram(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_10noname_app_7helpers_14cartogram_doug_Cartogram(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1857,7 +1863,7 @@ static PyObject *__pyx_tuple__24;
 static PyObject *__pyx_tuple__25;
 static PyObject *__pyx_codeobj__19;
 
-/* "app/helpers/cartogram_doug.pyx":21
+/* "noname_app/helpers/cartogram_doug.pyx":21
  * 
  * 
  * def make_cartogram(geodf, field_name, iterations=5):             # <<<<<<<<<<<<<<
@@ -1866,10 +1872,10 @@ static PyObject *__pyx_codeobj__19;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_1make_cartogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_3app_7helpers_14cartogram_doug_make_cartogram[] = "\n    Make a continuous cartogram on a geopandas.GeoDataFrame collection\n    of Polygon/MultiPolygon (wrapper to call the core functions\n    written in cython).\n    Based on the transformation of Dougenik and al.(1985).\n\n    Parameters\n    ----------\n    gdf: geopandas.GeoDataFrame\n        The GeoDataFrame containing the geometry and a field to use for the\n        transformation.\n    field_name: String\n        The label of the field containing the value to use.\n    iterations: Integer, default 5\n        The number of iteration to make.\n\n    Returns\n    -------\n    GeoJSON: The result as a GeoJSON\n        (input GeoDataFrame has also been modified inplace)\n\n    References\n    ----------\n        ```Dougenik, J. A, N. R. Chrisman, and D. R. Niemeyer. 1985.\n        \"An algorithm to construct continuous cartograms.\"\n        Professional Geographer 37:75-81```\n    ";
-static PyMethodDef __pyx_mdef_3app_7helpers_14cartogram_doug_1make_cartogram = {"make_cartogram", (PyCFunction)__pyx_pw_3app_7helpers_14cartogram_doug_1make_cartogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3app_7helpers_14cartogram_doug_make_cartogram};
-static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_1make_cartogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10noname_app_7helpers_14cartogram_doug_1make_cartogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_10noname_app_7helpers_14cartogram_doug_make_cartogram[] = "\n    Make a continuous cartogram on a geopandas.GeoDataFrame collection\n    of Polygon/MultiPolygon (wrapper to call the core functions\n    written in cython).\n    Based on the transformation of Dougenik and al.(1985).\n\n    Parameters\n    ----------\n    gdf: geopandas.GeoDataFrame\n        The GeoDataFrame containing the geometry and a field to use for the\n        transformation.\n    field_name: String\n        The label of the field containing the value to use.\n    iterations: Integer, default 5\n        The number of iteration to make.\n\n    Returns\n    -------\n    GeoJSON: The result as a GeoJSON\n        (input GeoDataFrame has also been modified inplace)\n\n    References\n    ----------\n        ```Dougenik, J. A, N. R. Chrisman, and D. R. Niemeyer. 1985.\n        \"An algorithm to construct continuous cartograms.\"\n        Professional Geographer 37:75-81```\n    ";
+static PyMethodDef __pyx_mdef_10noname_app_7helpers_14cartogram_doug_1make_cartogram = {"make_cartogram", (PyCFunction)__pyx_pw_10noname_app_7helpers_14cartogram_doug_1make_cartogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10noname_app_7helpers_14cartogram_doug_make_cartogram};
+static PyObject *__pyx_pw_10noname_app_7helpers_14cartogram_doug_1make_cartogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_geodf = 0;
   PyObject *__pyx_v_field_name = 0;
   PyObject *__pyx_v_iterations = 0;
@@ -1926,18 +1932,18 @@ static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_1make_cartogram(PyObjec
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("make_cartogram", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 21, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(__pyx_self, __pyx_v_geodf, __pyx_v_field_name, __pyx_v_iterations);
+  __pyx_r = __pyx_pf_10noname_app_7helpers_14cartogram_doug_make_cartogram(__pyx_self, __pyx_v_geodf, __pyx_v_field_name, __pyx_v_iterations);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_geodf, PyObject *__pyx_v_field_name, PyObject *__pyx_v_iterations) {
+static PyObject *__pyx_pf_10noname_app_7helpers_14cartogram_doug_make_cartogram(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_geodf, PyObject *__pyx_v_field_name, PyObject *__pyx_v_iterations) {
   PyObject *__pyx_v_f_idx = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -1954,7 +1960,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
   PyObject *__pyx_t_11 = NULL;
   __Pyx_RefNannySetupContext("make_cartogram", 0);
 
-  /* "app/helpers/cartogram_doug.pyx":49
+  /* "noname_app/helpers/cartogram_doug.pyx":49
  *         Professional Geographer 37:75-81```
  *     """
  *     try:             # <<<<<<<<<<<<<<
@@ -1970,7 +1976,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "app/helpers/cartogram_doug.pyx":50
+      /* "noname_app/helpers/cartogram_doug.pyx":50
  *     """
  *     try:
  *         f_idx = geodf.columns.get_loc(field_name)             # <<<<<<<<<<<<<<
@@ -2010,7 +2016,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
       __pyx_v_f_idx = __pyx_t_4;
       __pyx_t_4 = 0;
 
-      /* "app/helpers/cartogram_doug.pyx":49
+      /* "noname_app/helpers/cartogram_doug.pyx":49
  *         Professional Geographer 37:75-81```
  *     """
  *     try:             # <<<<<<<<<<<<<<
@@ -2029,7 +2035,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":51
+    /* "noname_app/helpers/cartogram_doug.pyx":51
  *     try:
  *         f_idx = geodf.columns.get_loc(field_name)
  *     except KeyError:             # <<<<<<<<<<<<<<
@@ -2038,13 +2044,13 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
  */
     __pyx_t_8 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_KeyError);
     if (__pyx_t_8) {
-      __Pyx_AddTraceback("app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_6, &__pyx_t_7) < 0) __PYX_ERR(0, 51, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "app/helpers/cartogram_doug.pyx":52
+      /* "noname_app/helpers/cartogram_doug.pyx":52
  *         f_idx = geodf.columns.get_loc(field_name)
  *     except KeyError:
  *         raise KeyError('Column name \'{}\' not found'.format(field_name))             # <<<<<<<<<<<<<<
@@ -2093,7 +2099,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "app/helpers/cartogram_doug.pyx":49
+    /* "noname_app/helpers/cartogram_doug.pyx":49
  *         Professional Geographer 37:75-81```
  *     """
  *     try:             # <<<<<<<<<<<<<<
@@ -2109,7 +2115,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
     __pyx_L10_try_end:;
   }
 
-  /* "app/helpers/cartogram_doug.pyx":53
+  /* "noname_app/helpers/cartogram_doug.pyx":53
  *     except KeyError:
  *         raise KeyError('Column name \'{}\' not found'.format(field_name))
  *     Cartogram(geodf, f_idx, iterations).make()             # <<<<<<<<<<<<<<
@@ -2127,15 +2133,15 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
   __Pyx_INCREF(__pyx_v_iterations);
   __Pyx_GIVEREF(__pyx_v_iterations);
   PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_v_iterations);
-  __pyx_t_6 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_3app_7helpers_14cartogram_doug_Cartogram), __pyx_t_7, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_10noname_app_7helpers_14cartogram_doug_Cartogram), __pyx_t_7, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = ((struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *)((struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_t_6)->__pyx_vtab)->make(((struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_t_6), 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __pyx_t_7 = ((struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *)((struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_t_6)->__pyx_vtab)->make(((struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_t_6), 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":54
+  /* "noname_app/helpers/cartogram_doug.pyx":54
  *         raise KeyError('Column name \'{}\' not found'.format(field_name))
  *     Cartogram(geodf, f_idx, iterations).make()
  *     return geodf.to_json()             # <<<<<<<<<<<<<<
@@ -2167,7 +2173,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
   __pyx_t_7 = 0;
   goto __pyx_L0;
 
-  /* "app/helpers/cartogram_doug.pyx":21
+  /* "noname_app/helpers/cartogram_doug.pyx":21
  * 
  * 
  * def make_cartogram(geodf, field_name, iterations=5):             # <<<<<<<<<<<<<<
@@ -2184,7 +2190,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_11);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.make_cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_f_idx);
@@ -2193,7 +2199,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
   return __pyx_r;
 }
 
-/* "app/helpers/cartogram_doug.pyx":72
+/* "noname_app/helpers/cartogram_doug.pyx":72
  *     cdef double[:] values
  * 
  *     def __init__(self, object geodf not None, int field_idx, unsigned int iterations):             # <<<<<<<<<<<<<<
@@ -2202,8 +2208,8 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_make_cartogram(CYTHON_U
  */
 
 /* Python wrapper */
-static int __pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_geodf = 0;
   int __pyx_v_field_idx;
   unsigned int __pyx_v_iterations;
@@ -2257,14 +2263,14 @@ static int __pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 72, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_geodf) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "geodf"); __PYX_ERR(0, 72, __pyx_L1_error)
   }
-  __pyx_r = __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(((struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self), __pyx_v_geodf, __pyx_v_field_idx, __pyx_v_iterations);
+  __pyx_r = __pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram___init__(((struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self), __pyx_v_geodf, __pyx_v_field_idx, __pyx_v_iterations);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2275,7 +2281,7 @@ static int __pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_1__init__(PyObject
   return __pyx_r;
 }
 
-static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geodf, int __pyx_v_field_idx, unsigned int __pyx_v_iterations) {
+static int __pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram___init__(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geodf, int __pyx_v_field_idx, unsigned int __pyx_v_iterations) {
   PyObject *__pyx_v_geom_type = 0;
   PyObject *__pyx_v_allowed = 0;
   int __pyx_r;
@@ -2290,7 +2296,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __Pyx_memviewslice __pyx_t_8 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "app/helpers/cartogram_doug.pyx":73
+  /* "noname_app/helpers/cartogram_doug.pyx":73
  * 
  *     def __init__(self, object geodf not None, int field_idx, unsigned int iterations):
  *         cdef set geom_type, allowed = {'MultiPolygon', 'Polygon'}             # <<<<<<<<<<<<<<
@@ -2304,7 +2310,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_v_allowed = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":75
+  /* "noname_app/helpers/cartogram_doug.pyx":75
  *         cdef set geom_type, allowed = {'MultiPolygon', 'Polygon'}
  * 
  *         geom_type = set(list(geodf.geom_type))             # <<<<<<<<<<<<<<
@@ -2322,7 +2328,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_v_geom_type = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":76
+  /* "noname_app/helpers/cartogram_doug.pyx":76
  * 
  *         geom_type = set(list(geodf.geom_type))
  *         if not geom_type.issubset(allowed):             # <<<<<<<<<<<<<<
@@ -2361,7 +2367,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_t_6 = ((!__pyx_t_5) != 0);
   if (__pyx_t_6) {
 
-    /* "app/helpers/cartogram_doug.pyx":77
+    /* "noname_app/helpers/cartogram_doug.pyx":77
  *         geom_type = set(list(geodf.geom_type))
  *         if not geom_type.issubset(allowed):
  *             raise ValueError(             # <<<<<<<<<<<<<<
@@ -2374,7 +2380,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __PYX_ERR(0, 77, __pyx_L1_error)
 
-    /* "app/helpers/cartogram_doug.pyx":76
+    /* "noname_app/helpers/cartogram_doug.pyx":76
  * 
  *         geom_type = set(list(geodf.geom_type))
  *         if not geom_type.issubset(allowed):             # <<<<<<<<<<<<<<
@@ -2383,7 +2389,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
   }
 
-  /* "app/helpers/cartogram_doug.pyx":80
+  /* "noname_app/helpers/cartogram_doug.pyx":80
  *                 "Geometry type doesn't match 'Polygon'/'MultiPolygon"
  *                 )
  *         self.geodf = geodf             # <<<<<<<<<<<<<<
@@ -2396,7 +2402,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __Pyx_DECREF(__pyx_v_self->geodf);
   __pyx_v_self->geodf = __pyx_v_geodf;
 
-  /* "app/helpers/cartogram_doug.pyx":81
+  /* "noname_app/helpers/cartogram_doug.pyx":81
  *                 )
  *         self.geodf = geodf
  *         self.temp_geo_serie = geodf.geometry[:]             # <<<<<<<<<<<<<<
@@ -2414,7 +2420,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_v_self->temp_geo_serie = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":82
+  /* "noname_app/helpers/cartogram_doug.pyx":82
  *         self.geodf = geodf
  *         self.temp_geo_serie = geodf.geometry[:]
  *         self.iterations = iterations             # <<<<<<<<<<<<<<
@@ -2423,7 +2429,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
   __pyx_v_self->iterations = __pyx_v_iterations;
 
-  /* "app/helpers/cartogram_doug.pyx":83
+  /* "noname_app/helpers/cartogram_doug.pyx":83
  *         self.temp_geo_serie = geodf.geometry[:]
  *         self.iterations = iterations
  *         self.total_features = <unsigned int>len(self.geodf)             # <<<<<<<<<<<<<<
@@ -2436,7 +2442,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_self->total_features = ((unsigned int)__pyx_t_7);
 
-  /* "app/helpers/cartogram_doug.pyx":84
+  /* "noname_app/helpers/cartogram_doug.pyx":84
  *         self.iterations = iterations
  *         self.total_features = <unsigned int>len(self.geodf)
  *         self.dForceReductionFactor = 0             # <<<<<<<<<<<<<<
@@ -2445,7 +2451,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
   __pyx_v_self->dForceReductionFactor = 0.0;
 
-  /* "app/helpers/cartogram_doug.pyx":85
+  /* "noname_app/helpers/cartogram_doug.pyx":85
  *         self.total_features = <unsigned int>len(self.geodf)
  *         self.dForceReductionFactor = 0
  *         self.values = geodf[[field_idx]].astype(float).values.T[0]             # <<<<<<<<<<<<<<
@@ -2507,7 +2513,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "app/helpers/cartogram_doug.pyx":86
+  /* "noname_app/helpers/cartogram_doug.pyx":86
  *         self.dForceReductionFactor = 0
  *         self.values = geodf[[field_idx]].astype(float).values.T[0]
  *         self.aLocal = <Holder *>malloc(self.total_features * sizeof(Holder))             # <<<<<<<<<<<<<<
@@ -2516,7 +2522,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
   __pyx_v_self->aLocal = ((Holder *)malloc((__pyx_v_self->total_features * (sizeof(Holder)))));
 
-  /* "app/helpers/cartogram_doug.pyx":87
+  /* "noname_app/helpers/cartogram_doug.pyx":87
  *         self.values = geodf[[field_idx]].astype(float).values.T[0]
  *         self.aLocal = <Holder *>malloc(self.total_features * sizeof(Holder))
  *         if not self.aLocal:             # <<<<<<<<<<<<<<
@@ -2526,7 +2532,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __pyx_t_6 = ((!(__pyx_v_self->aLocal != 0)) != 0);
   if (__pyx_t_6) {
 
-    /* "app/helpers/cartogram_doug.pyx":88
+    /* "noname_app/helpers/cartogram_doug.pyx":88
  *         self.aLocal = <Holder *>malloc(self.total_features * sizeof(Holder))
  *         if not self.aLocal:
  *             raise MemoryError()             # <<<<<<<<<<<<<<
@@ -2535,7 +2541,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
     PyErr_NoMemory(); __PYX_ERR(0, 88, __pyx_L1_error)
 
-    /* "app/helpers/cartogram_doug.pyx":87
+    /* "noname_app/helpers/cartogram_doug.pyx":87
  *         self.values = geodf[[field_idx]].astype(float).values.T[0]
  *         self.aLocal = <Holder *>malloc(self.total_features * sizeof(Holder))
  *         if not self.aLocal:             # <<<<<<<<<<<<<<
@@ -2544,7 +2550,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  */
   }
 
-  /* "app/helpers/cartogram_doug.pyx":72
+  /* "noname_app/helpers/cartogram_doug.pyx":72
  *     cdef double[:] values
  * 
  *     def __init__(self, object geodf not None, int field_idx, unsigned int iterations):             # <<<<<<<<<<<<<<
@@ -2561,7 +2567,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __PYX_XDEC_MEMVIEW(&__pyx_t_8, 1);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_geom_type);
@@ -2570,7 +2576,7 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
   return __pyx_r;
 }
 
-/* "app/helpers/cartogram_doug.pyx":90
+/* "noname_app/helpers/cartogram_doug.pyx":90
  *             raise MemoryError()
  * 
  *     cpdef object make(self):             # <<<<<<<<<<<<<<
@@ -2578,8 +2584,8 @@ static int __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram___init__(struct __
  * 
  */
 
-static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_make(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2593,7 +2599,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_make); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_3make)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_3make)) {
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -2622,18 +2628,18 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "app/helpers/cartogram_doug.pyx":93
+  /* "noname_app/helpers/cartogram_doug.pyx":93
  *         """Fetch the result and make it available"""
  * 
  *         self.cartogram()             # <<<<<<<<<<<<<<
  *         self.geodf.set_geometry(self.temp_geo_serie, inplace=True)
  *         free(self.aLocal)
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->cartogram(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->cartogram(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":94
+  /* "noname_app/helpers/cartogram_doug.pyx":94
  * 
  *         self.cartogram()
  *         self.geodf.set_geometry(self.temp_geo_serie, inplace=True)             # <<<<<<<<<<<<<<
@@ -2657,7 +2663,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":95
+  /* "noname_app/helpers/cartogram_doug.pyx":95
  *         self.cartogram()
  *         self.geodf.set_geometry(self.temp_geo_serie, inplace=True)
  *         free(self.aLocal)             # <<<<<<<<<<<<<<
@@ -2666,7 +2672,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
  */
   free(__pyx_v_self->aLocal);
 
-  /* "app/helpers/cartogram_doug.pyx":96
+  /* "noname_app/helpers/cartogram_doug.pyx":96
  *         self.geodf.set_geometry(self.temp_geo_serie, inplace=True)
  *         free(self.aLocal)
  *         return self.geodf             # <<<<<<<<<<<<<<
@@ -2678,7 +2684,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
   __pyx_r = __pyx_v_self->geodf;
   goto __pyx_L0;
 
-  /* "app/helpers/cartogram_doug.pyx":90
+  /* "noname_app/helpers/cartogram_doug.pyx":90
  *             raise MemoryError()
  * 
  *     cpdef object make(self):             # <<<<<<<<<<<<<<
@@ -2692,7 +2698,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.make", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.make", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2701,26 +2707,26 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(struct _
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static char __pyx_doc_3app_7helpers_14cartogram_doug_9Cartogram_2make[] = "Fetch the result and make it available";
-static PyObject *__pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_10noname_app_7helpers_14cartogram_doug_9Cartogram_2make[] = "Fetch the result and make it available";
+static PyObject *__pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_3make(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("make (wrapper)", 0);
-  __pyx_r = __pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(((struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram_2make(((struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
+static PyObject *__pyx_pf_10noname_app_7helpers_14cartogram_doug_9Cartogram_2make(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("make", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_make(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2729,7 +2735,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(struct
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.make", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.make", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2737,7 +2743,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(struct
   return __pyx_r;
 }
 
-/* "app/helpers/cartogram_doug.pyx":98
+/* "noname_app/helpers/cartogram_doug.pyx":98
  *         return self.geodf
  * 
  *     cdef object cartogram(self):             # <<<<<<<<<<<<<<
@@ -2745,7 +2751,7 @@ static PyObject *__pyx_pf_3app_7helpers_14cartogram_doug_9Cartogram_2make(struct
  *         Compute for transformation
  */
 
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_cartogram(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
   CYTHON_UNUSED unsigned int __pyx_v_ite;
   unsigned int __pyx_v_nbi;
   PyObject *__pyx_r = NULL;
@@ -2758,7 +2764,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("cartogram", 0);
 
-  /* "app/helpers/cartogram_doug.pyx":103
+  /* "noname_app/helpers/cartogram_doug.pyx":103
  *         (recursively, according to the specified iteration number)
  *         """
  *         cdef unsigned int ite=0, nbi=0             # <<<<<<<<<<<<<<
@@ -2768,7 +2774,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
   __pyx_v_ite = 0;
   __pyx_v_nbi = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":105
+  /* "noname_app/helpers/cartogram_doug.pyx":105
  *         cdef unsigned int ite=0, nbi=0
  * 
  *         for ite in range(self.iterations):             # <<<<<<<<<<<<<<
@@ -2779,16 +2785,16 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
   for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_ite = __pyx_t_2;
 
-    /* "app/helpers/cartogram_doug.pyx":106
+    /* "noname_app/helpers/cartogram_doug.pyx":106
  * 
  *         for ite in range(self.iterations):
  *             self.getinfo()             # <<<<<<<<<<<<<<
  *             for nbi in range(self.total_features):
  *                 self.temp_geo_serie[nbi] = self.transform_geom(
  */
-    ((struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->getinfo(__pyx_v_self);
+    ((struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->getinfo(__pyx_v_self);
 
-    /* "app/helpers/cartogram_doug.pyx":107
+    /* "noname_app/helpers/cartogram_doug.pyx":107
  *         for ite in range(self.iterations):
  *             self.getinfo()
  *             for nbi in range(self.total_features):             # <<<<<<<<<<<<<<
@@ -2799,7 +2805,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
     for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
       __pyx_v_nbi = __pyx_t_4;
 
-      /* "app/helpers/cartogram_doug.pyx":109
+      /* "noname_app/helpers/cartogram_doug.pyx":109
  *             for nbi in range(self.total_features):
  *                 self.temp_geo_serie[nbi] = self.transform_geom(
  *                     self.temp_geo_serie[nbi]             # <<<<<<<<<<<<<<
@@ -2809,14 +2815,14 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
       __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_self->temp_geo_serie, __pyx_v_nbi, unsigned int, 0, __Pyx_PyInt_From_unsigned_int, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 109, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
 
-      /* "app/helpers/cartogram_doug.pyx":108
+      /* "noname_app/helpers/cartogram_doug.pyx":108
  *             self.getinfo()
  *             for nbi in range(self.total_features):
  *                 self.temp_geo_serie[nbi] = self.transform_geom(             # <<<<<<<<<<<<<<
  *                     self.temp_geo_serie[nbi]
  *                     )
  */
-      __pyx_t_6 = ((struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->transform_geom(__pyx_v_self, __pyx_t_5, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 108, __pyx_L1_error)
+      __pyx_t_6 = ((struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram *)__pyx_v_self->__pyx_vtab)->transform_geom(__pyx_v_self, __pyx_t_5, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 108, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       if (unlikely(__Pyx_SetItemInt(__pyx_v_self->temp_geo_serie, __pyx_v_nbi, __pyx_t_6, unsigned int, 0, __Pyx_PyInt_From_unsigned_int, 0, 0, 0) < 0)) __PYX_ERR(0, 108, __pyx_L1_error)
@@ -2824,7 +2830,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
     }
   }
 
-  /* "app/helpers/cartogram_doug.pyx":98
+  /* "noname_app/helpers/cartogram_doug.pyx":98
  *         return self.geodf
  * 
  *     cdef object cartogram(self):             # <<<<<<<<<<<<<<
@@ -2838,7 +2844,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.cartogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2846,7 +2852,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
   return __pyx_r;
 }
 
-/* "app/helpers/cartogram_doug.pyx":112
+/* "noname_app/helpers/cartogram_doug.pyx":112
  *                     )
  * 
  *     cdef void getinfo(self):             # <<<<<<<<<<<<<<
@@ -2854,7 +2860,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram(str
  *         Gets the information required for calcualting size reduction factor
  */
 
-static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
+static void __pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self) {
   unsigned int __pyx_v_fid;
   unsigned int __pyx_v_i;
   unsigned int __pyx_v_featCount;
@@ -2886,7 +2892,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   float __pyx_t_12;
   __Pyx_RefNannySetupContext("getinfo", 0);
 
-  /* "app/helpers/cartogram_doug.pyx":116
+  /* "noname_app/helpers/cartogram_doug.pyx":116
  *         Gets the information required for calcualting size reduction factor
  *         """
  *         cdef unsigned int fid=0, i, featCount = self.total_features             # <<<<<<<<<<<<<<
@@ -2897,7 +2903,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   __pyx_t_1 = __pyx_v_self->total_features;
   __pyx_v_featCount = __pyx_t_1;
 
-  /* "app/helpers/cartogram_doug.pyx":118
+  /* "noname_app/helpers/cartogram_doug.pyx":118
  *         cdef unsigned int fid=0, i, featCount = self.total_features
  *         cdef float dPolygonValue, dPolygonArea, dFraction, dDesired, dRadius
  *         cdef float dSizeError=0.0, dMean, pi=3.14159265             # <<<<<<<<<<<<<<
@@ -2907,7 +2913,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   __pyx_v_dSizeError = 0.0;
   __pyx_v_pi = 3.14159265;
 
-  /* "app/helpers/cartogram_doug.pyx":119
+  /* "noname_app/helpers/cartogram_doug.pyx":119
  *         cdef float dPolygonValue, dPolygonArea, dFraction, dDesired, dRadius
  *         cdef float dSizeError=0.0, dMean, pi=3.14159265
  *         cdef float area_total, value_total, tmp, dSizeErrorTotal = 0.0             # <<<<<<<<<<<<<<
@@ -2916,7 +2922,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
   __pyx_v_dSizeErrorTotal = 0.0;
 
-  /* "app/helpers/cartogram_doug.pyx":121
+  /* "noname_app/helpers/cartogram_doug.pyx":121
  *         cdef float area_total, value_total, tmp, dSizeErrorTotal = 0.0
  * 
  *         area_total = sum(self.temp_geo_serie.area)             # <<<<<<<<<<<<<<
@@ -2937,7 +2943,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_area_total = __pyx_t_4;
 
-  /* "app/helpers/cartogram_doug.pyx":122
+  /* "noname_app/helpers/cartogram_doug.pyx":122
  * 
  *         area_total = sum(self.temp_geo_serie.area)
  *         value_total = sum(self.values)             # <<<<<<<<<<<<<<
@@ -2959,7 +2965,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_value_total = __pyx_t_4;
 
-  /* "app/helpers/cartogram_doug.pyx":123
+  /* "noname_app/helpers/cartogram_doug.pyx":123
  *         area_total = sum(self.temp_geo_serie.area)
  *         value_total = sum(self.values)
  *         for fid in range(featCount):             # <<<<<<<<<<<<<<
@@ -2970,7 +2976,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_1; __pyx_t_5+=1) {
     __pyx_v_fid = __pyx_t_5;
 
-    /* "app/helpers/cartogram_doug.pyx":124
+    /* "noname_app/helpers/cartogram_doug.pyx":124
  *         value_total = sum(self.values)
  *         for fid in range(featCount):
  *             geom = self.temp_geo_serie.iloc[fid]             # <<<<<<<<<<<<<<
@@ -2985,7 +2991,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
     __Pyx_XDECREF_SET(__pyx_v_geom, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":125
+    /* "noname_app/helpers/cartogram_doug.pyx":125
  *         for fid in range(featCount):
  *             geom = self.temp_geo_serie.iloc[fid]
  *             self.aLocal[fid].dArea = geom.area  # save area of this feature             # <<<<<<<<<<<<<<
@@ -2998,7 +3004,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     (__pyx_v_self->aLocal[__pyx_v_fid]).dArea = __pyx_t_6;
 
-    /* "app/helpers/cartogram_doug.pyx":126
+    /* "noname_app/helpers/cartogram_doug.pyx":126
  *             geom = self.temp_geo_serie.iloc[fid]
  *             self.aLocal[fid].dArea = geom.area  # save area of this feature
  *             self.aLocal[fid].lFID = fid  # save id for this feature             # <<<<<<<<<<<<<<
@@ -3007,7 +3013,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
     (__pyx_v_self->aLocal[__pyx_v_fid]).lFID = __pyx_v_fid;
 
-    /* "app/helpers/cartogram_doug.pyx":128
+    /* "noname_app/helpers/cartogram_doug.pyx":128
  *             self.aLocal[fid].lFID = fid  # save id for this feature
  *             # save weighted 'area' value for this feature :
  *             self.aLocal[fid].dValue = self.values[fid]             # <<<<<<<<<<<<<<
@@ -3018,7 +3024,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
     __pyx_t_7 = __pyx_v_fid;
     (__pyx_v_self->aLocal[__pyx_v_fid]).dValue = (*((double *) ( /* dim=0 */ (__pyx_v_self->values.data + __pyx_t_7 * __pyx_v_self->values.strides[0]) )));
 
-    /* "app/helpers/cartogram_doug.pyx":131
+    /* "noname_app/helpers/cartogram_doug.pyx":131
  *             # save centroid coord for the feature :
  *             (self.aLocal[fid].ptCenter_x, self.aLocal[fid].ptCenter_y) = \
  *                 (geom.centroid.coords.ctypes[0], geom.centroid.coords.ctypes[1])             # <<<<<<<<<<<<<<
@@ -3052,7 +3058,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
     __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_3); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 131, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":130
+    /* "noname_app/helpers/cartogram_doug.pyx":130
  *             self.aLocal[fid].dValue = self.values[fid]
  *             # save centroid coord for the feature :
  *             (self.aLocal[fid].ptCenter_x, self.aLocal[fid].ptCenter_y) = \             # <<<<<<<<<<<<<<
@@ -3063,7 +3069,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
     (__pyx_v_self->aLocal[__pyx_v_fid]).ptCenter_y = __pyx_t_8;
   }
 
-  /* "app/helpers/cartogram_doug.pyx":133
+  /* "noname_app/helpers/cartogram_doug.pyx":133
  *                 (geom.centroid.coords.ctypes[0], geom.centroid.coords.ctypes[1])
  * 
  *         dFraction = area_total / value_total             # <<<<<<<<<<<<<<
@@ -3072,7 +3078,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
   __pyx_v_dFraction = (__pyx_v_area_total / __pyx_v_value_total);
 
-  /* "app/helpers/cartogram_doug.pyx":134
+  /* "noname_app/helpers/cartogram_doug.pyx":134
  * 
  *         dFraction = area_total / value_total
  *         with nogil:             # <<<<<<<<<<<<<<
@@ -3086,7 +3092,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
       #endif
       /*try:*/ {
 
-        /* "app/helpers/cartogram_doug.pyx":135
+        /* "noname_app/helpers/cartogram_doug.pyx":135
  *         dFraction = area_total / value_total
  *         with nogil:
  *             for i in range(featCount):             # <<<<<<<<<<<<<<
@@ -3097,7 +3103,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
         for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_1; __pyx_t_5+=1) {
           __pyx_v_i = __pyx_t_5;
 
-          /* "app/helpers/cartogram_doug.pyx":136
+          /* "noname_app/helpers/cartogram_doug.pyx":136
  *         with nogil:
  *             for i in range(featCount):
  *                 dPolygonValue = self.aLocal[i].dValue             # <<<<<<<<<<<<<<
@@ -3107,7 +3113,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           __pyx_t_8 = (__pyx_v_self->aLocal[__pyx_v_i]).dValue;
           __pyx_v_dPolygonValue = __pyx_t_8;
 
-          /* "app/helpers/cartogram_doug.pyx":137
+          /* "noname_app/helpers/cartogram_doug.pyx":137
  *             for i in range(featCount):
  *                 dPolygonValue = self.aLocal[i].dValue
  *                 dPolygonArea = self.aLocal[i].dArea             # <<<<<<<<<<<<<<
@@ -3117,7 +3123,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           __pyx_t_8 = (__pyx_v_self->aLocal[__pyx_v_i]).dArea;
           __pyx_v_dPolygonArea = __pyx_t_8;
 
-          /* "app/helpers/cartogram_doug.pyx":138
+          /* "noname_app/helpers/cartogram_doug.pyx":138
  *                 dPolygonValue = self.aLocal[i].dValue
  *                 dPolygonArea = self.aLocal[i].dArea
  *                 if dPolygonArea < 0:  # area should never be less than zero             # <<<<<<<<<<<<<<
@@ -3127,7 +3133,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           __pyx_t_9 = ((__pyx_v_dPolygonArea < 0.0) != 0);
           if (__pyx_t_9) {
 
-            /* "app/helpers/cartogram_doug.pyx":139
+            /* "noname_app/helpers/cartogram_doug.pyx":139
  *                 dPolygonArea = self.aLocal[i].dArea
  *                 if dPolygonArea < 0:  # area should never be less than zero
  *                     dPolygonArea = 0             # <<<<<<<<<<<<<<
@@ -3136,7 +3142,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
             __pyx_v_dPolygonArea = 0.0;
 
-            /* "app/helpers/cartogram_doug.pyx":138
+            /* "noname_app/helpers/cartogram_doug.pyx":138
  *                 dPolygonValue = self.aLocal[i].dValue
  *                 dPolygonArea = self.aLocal[i].dArea
  *                 if dPolygonArea < 0:  # area should never be less than zero             # <<<<<<<<<<<<<<
@@ -3145,7 +3151,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
           }
 
-          /* "app/helpers/cartogram_doug.pyx":141
+          /* "noname_app/helpers/cartogram_doug.pyx":141
  *                     dPolygonArea = 0
  *                 # this is our 'desired' area...
  *                 dDesired = dPolygonValue * dFraction             # <<<<<<<<<<<<<<
@@ -3154,7 +3160,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
           __pyx_v_dDesired = (__pyx_v_dPolygonValue * __pyx_v_dFraction);
 
-          /* "app/helpers/cartogram_doug.pyx":143
+          /* "noname_app/helpers/cartogram_doug.pyx":143
  *                 dDesired = dPolygonValue * dFraction
  *                 # calculate radius, a zero area is zero radius
  *                 dRadius = sqrt(dPolygonArea / pi)             # <<<<<<<<<<<<<<
@@ -3163,7 +3169,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
           __pyx_v_dRadius = sqrt((__pyx_v_dPolygonArea / __pyx_v_pi));
 
-          /* "app/helpers/cartogram_doug.pyx":144
+          /* "noname_app/helpers/cartogram_doug.pyx":144
  *                 # calculate radius, a zero area is zero radius
  *                 dRadius = sqrt(dPolygonArea / pi)
  *                 self.aLocal[i].dRadius = dRadius             # <<<<<<<<<<<<<<
@@ -3172,7 +3178,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
           (__pyx_v_self->aLocal[__pyx_v_i]).dRadius = __pyx_v_dRadius;
 
-          /* "app/helpers/cartogram_doug.pyx":145
+          /* "noname_app/helpers/cartogram_doug.pyx":145
  *                 dRadius = sqrt(dPolygonArea / pi)
  *                 self.aLocal[i].dRadius = dRadius
  *                 tmp = dDesired / pi             # <<<<<<<<<<<<<<
@@ -3181,7 +3187,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
           __pyx_v_tmp = (__pyx_v_dDesired / __pyx_v_pi);
 
-          /* "app/helpers/cartogram_doug.pyx":146
+          /* "noname_app/helpers/cartogram_doug.pyx":146
  *                 self.aLocal[i].dRadius = dRadius
  *                 tmp = dDesired / pi
  *                 if tmp > 0:             # <<<<<<<<<<<<<<
@@ -3191,7 +3197,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           __pyx_t_9 = ((__pyx_v_tmp > 0.0) != 0);
           if (__pyx_t_9) {
 
-            /* "app/helpers/cartogram_doug.pyx":148
+            /* "noname_app/helpers/cartogram_doug.pyx":148
  *                 if tmp > 0:
  *                     # calculate area mass, don't think this should be negative
  *                     self.aLocal[i].dMass = sqrt(dDesired / pi) - dRadius             # <<<<<<<<<<<<<<
@@ -3200,7 +3206,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
             (__pyx_v_self->aLocal[__pyx_v_i]).dMass = (sqrt((__pyx_v_dDesired / __pyx_v_pi)) - __pyx_v_dRadius);
 
-            /* "app/helpers/cartogram_doug.pyx":146
+            /* "noname_app/helpers/cartogram_doug.pyx":146
  *                 self.aLocal[i].dRadius = dRadius
  *                 tmp = dDesired / pi
  *                 if tmp > 0:             # <<<<<<<<<<<<<<
@@ -3210,7 +3216,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
             goto __pyx_L11;
           }
 
-          /* "app/helpers/cartogram_doug.pyx":150
+          /* "noname_app/helpers/cartogram_doug.pyx":150
  *                     self.aLocal[i].dMass = sqrt(dDesired / pi) - dRadius
  *                 else:
  *                     self.aLocal[i].dMass = 0             # <<<<<<<<<<<<<<
@@ -3222,7 +3228,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           }
           __pyx_L11:;
 
-          /* "app/helpers/cartogram_doug.pyx":155
+          /* "noname_app/helpers/cartogram_doug.pyx":155
  *                 # calculate size error...
  *                 dSizeError = \
  *                     max(dPolygonArea, dDesired) / min(dPolygonArea, dDesired)             # <<<<<<<<<<<<<<
@@ -3245,7 +3251,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
           }
           __pyx_v_dSizeError = (__pyx_t_11 / __pyx_t_12);
 
-          /* "app/helpers/cartogram_doug.pyx":157
+          /* "noname_app/helpers/cartogram_doug.pyx":157
  *                     max(dPolygonArea, dDesired) / min(dPolygonArea, dDesired)
  *                 # this is the total size error for all polygons
  *                 dSizeErrorTotal += dSizeError             # <<<<<<<<<<<<<<
@@ -3256,7 +3262,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
         }
       }
 
-      /* "app/helpers/cartogram_doug.pyx":134
+      /* "noname_app/helpers/cartogram_doug.pyx":134
  * 
  *         dFraction = area_total / value_total
  *         with nogil:             # <<<<<<<<<<<<<<
@@ -3274,7 +3280,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
       }
   }
 
-  /* "app/helpers/cartogram_doug.pyx":159
+  /* "noname_app/helpers/cartogram_doug.pyx":159
  *                 dSizeErrorTotal += dSizeError
  *         # average error
  *         dMean = dSizeErrorTotal / featCount             # <<<<<<<<<<<<<<
@@ -3283,7 +3289,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
   __pyx_v_dMean = (__pyx_v_dSizeErrorTotal / __pyx_v_featCount);
 
-  /* "app/helpers/cartogram_doug.pyx":161
+  /* "noname_app/helpers/cartogram_doug.pyx":161
  *         dMean = dSizeErrorTotal / featCount
  *         # need to read up more on why this is done
  *         self.dForceReductionFactor = 1 / (dMean + 1)             # <<<<<<<<<<<<<<
@@ -3292,7 +3298,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  */
   __pyx_v_self->dForceReductionFactor = (1.0 / (__pyx_v_dMean + 1.0));
 
-  /* "app/helpers/cartogram_doug.pyx":112
+  /* "noname_app/helpers/cartogram_doug.pyx":112
  *                     )
  * 
  *     cdef void getinfo(self):             # <<<<<<<<<<<<<<
@@ -3305,13 +3311,13 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_WriteUnraisable("app.helpers.cartogram_doug.Cartogram.getinfo", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __Pyx_WriteUnraisable("noname_app.helpers.cartogram_doug.Cartogram.getinfo", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_geom);
   __Pyx_RefNannyFinishContext();
 }
 
-/* "app/helpers/cartogram_doug.pyx":163
+/* "noname_app/helpers/cartogram_doug.pyx":163
  *         self.dForceReductionFactor = 1 / (dMean + 1)
  * 
  *     cdef object transform_geom(self, object geom,             # <<<<<<<<<<<<<<
@@ -3319,7 +3325,7 @@ static void __pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo(struct __p
  *                                LineString=LineString):
  */
 
-static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geom, struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args) {
+static PyObject *__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *__pyx_v_self, PyObject *__pyx_v_geom, struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args) {
   PyObject *__pyx_v_Polygon = __pyx_k__3;
   PyObject *__pyx_v_MultiPolygon = __pyx_k__4;
   unsigned int __pyx_v_i;
@@ -3384,7 +3390,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   }
   __Pyx_INCREF(__pyx_v_geom);
 
-  /* "app/helpers/cartogram_doug.pyx":171
+  /* "noname_app/helpers/cartogram_doug.pyx":171
  *             about its geometry and about other feature geometries.
  *         """
  *         cdef unsigned int i, k, it_geom=0, it_bound=0, l_coord_bound=0             # <<<<<<<<<<<<<<
@@ -3395,7 +3401,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __pyx_v_it_bound = 0;
   __pyx_v_l_coord_bound = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":177
+  /* "noname_app/helpers/cartogram_doug.pyx":177
  *         cdef object boundarys
  *         cdef double[:] xs, ys
  *         cdef list tmp_bound, new_geom = []             # <<<<<<<<<<<<<<
@@ -3407,7 +3413,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __pyx_v_new_geom = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":179
+  /* "noname_app/helpers/cartogram_doug.pyx":179
  *         cdef list tmp_bound, new_geom = []
  * 
  *         if isinstance(geom, Polygon):             # <<<<<<<<<<<<<<
@@ -3418,7 +3424,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "app/helpers/cartogram_doug.pyx":180
+    /* "noname_app/helpers/cartogram_doug.pyx":180
  * 
  *         if isinstance(geom, Polygon):
  *             geom = [geom]             # <<<<<<<<<<<<<<
@@ -3433,7 +3439,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __Pyx_DECREF_SET(__pyx_v_geom, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":181
+    /* "noname_app/helpers/cartogram_doug.pyx":181
  *         if isinstance(geom, Polygon):
  *             geom = [geom]
  *             nb_geom = 1             # <<<<<<<<<<<<<<
@@ -3442,7 +3448,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
     __pyx_v_nb_geom = 1;
 
-    /* "app/helpers/cartogram_doug.pyx":179
+    /* "noname_app/helpers/cartogram_doug.pyx":179
  *         cdef list tmp_bound, new_geom = []
  * 
  *         if isinstance(geom, Polygon):             # <<<<<<<<<<<<<<
@@ -3452,7 +3458,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     goto __pyx_L3;
   }
 
-  /* "app/helpers/cartogram_doug.pyx":183
+  /* "noname_app/helpers/cartogram_doug.pyx":183
  *             nb_geom = 1
  *         else:
  *             nb_geom = len(geom)             # <<<<<<<<<<<<<<
@@ -3465,7 +3471,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   }
   __pyx_L3:;
 
-  /* "app/helpers/cartogram_doug.pyx":184
+  /* "noname_app/helpers/cartogram_doug.pyx":184
  *         else:
  *             nb_geom = len(geom)
  *         for it_geom in range(nb_geom):             # <<<<<<<<<<<<<<
@@ -3476,7 +3482,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_it_geom = __pyx_t_5;
 
-    /* "app/helpers/cartogram_doug.pyx":185
+    /* "noname_app/helpers/cartogram_doug.pyx":185
  *             nb_geom = len(geom)
  *         for it_geom in range(nb_geom):
  *             boundarys = geom[it_geom].boundary             # <<<<<<<<<<<<<<
@@ -3491,7 +3497,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __Pyx_XDECREF_SET(__pyx_v_boundarys, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":186
+    /* "noname_app/helpers/cartogram_doug.pyx":186
  *         for it_geom in range(nb_geom):
  *             boundarys = geom[it_geom].boundary
  *             tmp_bound = []             # <<<<<<<<<<<<<<
@@ -3503,7 +3509,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __Pyx_XDECREF_SET(__pyx_v_tmp_bound, ((PyObject*)__pyx_t_6));
     __pyx_t_6 = 0;
 
-    /* "app/helpers/cartogram_doug.pyx":187
+    /* "noname_app/helpers/cartogram_doug.pyx":187
  *             boundarys = geom[it_geom].boundary
  *             tmp_bound = []
  *             try:             # <<<<<<<<<<<<<<
@@ -3519,7 +3525,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __Pyx_XGOTREF(__pyx_t_9);
       /*try:*/ {
 
-        /* "app/helpers/cartogram_doug.pyx":188
+        /* "noname_app/helpers/cartogram_doug.pyx":188
  *             tmp_bound = []
  *             try:
  *                 nb_bound = <unsigned int>len(boundarys)             # <<<<<<<<<<<<<<
@@ -3529,7 +3535,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
         __pyx_t_10 = PyObject_Length(__pyx_v_boundarys); if (unlikely(__pyx_t_10 == -1)) __PYX_ERR(0, 188, __pyx_L6_error)
         __pyx_v_nb_bound = ((unsigned int)__pyx_t_10);
 
-        /* "app/helpers/cartogram_doug.pyx":187
+        /* "noname_app/helpers/cartogram_doug.pyx":187
  *             boundarys = geom[it_geom].boundary
  *             tmp_bound = []
  *             try:             # <<<<<<<<<<<<<<
@@ -3546,7 +3552,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "app/helpers/cartogram_doug.pyx":189
+      /* "noname_app/helpers/cartogram_doug.pyx":189
  *             try:
  *                 nb_bound = <unsigned int>len(boundarys)
  *             except:             # <<<<<<<<<<<<<<
@@ -3554,13 +3560,13 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  *                 nb_bound = 1
  */
       /*except:*/ {
-        __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.transform_geom", __pyx_clineno, __pyx_lineno, __pyx_filename);
+        __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.transform_geom", __pyx_clineno, __pyx_lineno, __pyx_filename);
         if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_1, &__pyx_t_11) < 0) __PYX_ERR(0, 189, __pyx_L8_except_error)
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_GOTREF(__pyx_t_11);
 
-        /* "app/helpers/cartogram_doug.pyx":190
+        /* "noname_app/helpers/cartogram_doug.pyx":190
  *                 nb_bound = <unsigned int>len(boundarys)
  *             except:
  *                 boundarys = [boundarys]             # <<<<<<<<<<<<<<
@@ -3575,7 +3581,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
         __Pyx_DECREF_SET(__pyx_v_boundarys, __pyx_t_12);
         __pyx_t_12 = 0;
 
-        /* "app/helpers/cartogram_doug.pyx":191
+        /* "noname_app/helpers/cartogram_doug.pyx":191
  *             except:
  *                 boundarys = [boundarys]
  *                 nb_bound = 1             # <<<<<<<<<<<<<<
@@ -3590,7 +3596,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       }
       __pyx_L8_except_error:;
 
-      /* "app/helpers/cartogram_doug.pyx":187
+      /* "noname_app/helpers/cartogram_doug.pyx":187
  *             boundarys = geom[it_geom].boundary
  *             tmp_bound = []
  *             try:             # <<<<<<<<<<<<<<
@@ -3612,7 +3618,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __pyx_L13_try_end:;
     }
 
-    /* "app/helpers/cartogram_doug.pyx":192
+    /* "noname_app/helpers/cartogram_doug.pyx":192
  *                 boundarys = [boundarys]
  *                 nb_bound = 1
  *             for it_bound in range(nb_bound):             # <<<<<<<<<<<<<<
@@ -3623,7 +3629,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     for (__pyx_t_13 = 0; __pyx_t_13 < __pyx_t_10; __pyx_t_13+=1) {
       __pyx_v_it_bound = __pyx_t_13;
 
-      /* "app/helpers/cartogram_doug.pyx":193
+      /* "noname_app/helpers/cartogram_doug.pyx":193
  *                 nb_bound = 1
  *             for it_bound in range(nb_bound):
  *                 line_coord = []             # <<<<<<<<<<<<<<
@@ -3635,7 +3641,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __Pyx_XDECREF_SET(__pyx_v_line_coord, ((PyObject*)__pyx_t_11));
       __pyx_t_11 = 0;
 
-      /* "app/helpers/cartogram_doug.pyx":194
+      /* "noname_app/helpers/cartogram_doug.pyx":194
  *             for it_bound in range(nb_bound):
  *                 line_coord = []
  *                 xs, ys = boundarys[it_bound].coords.xy             # <<<<<<<<<<<<<<
@@ -3715,7 +3721,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __pyx_t_16.memview = NULL;
       __pyx_t_16.data = NULL;
 
-      /* "app/helpers/cartogram_doug.pyx":195
+      /* "noname_app/helpers/cartogram_doug.pyx":195
  *                 line_coord = []
  *                 xs, ys = boundarys[it_bound].coords.xy
  *                 l_coord_bound = <unsigned int>len(xs)             # <<<<<<<<<<<<<<
@@ -3728,7 +3734,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
       __pyx_v_l_coord_bound = ((unsigned int)__pyx_t_17);
 
-      /* "app/helpers/cartogram_doug.pyx":196
+      /* "noname_app/helpers/cartogram_doug.pyx":196
  *                 xs, ys = boundarys[it_bound].coords.xy
  *                 l_coord_bound = <unsigned int>len(xs)
  *                 with nogil:             # <<<<<<<<<<<<<<
@@ -3742,7 +3748,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
           #endif
           /*try:*/ {
 
-            /* "app/helpers/cartogram_doug.pyx":197
+            /* "noname_app/helpers/cartogram_doug.pyx":197
  *                 l_coord_bound = <unsigned int>len(xs)
  *                 with nogil:
  *                     for k in range(l_coord_bound):             # <<<<<<<<<<<<<<
@@ -3753,7 +3759,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
             for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_18; __pyx_t_19+=1) {
               __pyx_v_k = __pyx_t_19;
 
-              /* "app/helpers/cartogram_doug.pyx":198
+              /* "noname_app/helpers/cartogram_doug.pyx":198
  *                 with nogil:
  *                     for k in range(l_coord_bound):
  *                         x = xs[k]             # <<<<<<<<<<<<<<
@@ -3763,7 +3769,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
               __pyx_t_20 = __pyx_v_k;
               __pyx_v_x = (*((double *) ( /* dim=0 */ (__pyx_v_xs.data + __pyx_t_20 * __pyx_v_xs.strides[0]) )));
 
-              /* "app/helpers/cartogram_doug.pyx":199
+              /* "noname_app/helpers/cartogram_doug.pyx":199
  *                     for k in range(l_coord_bound):
  *                         x = xs[k]
  *                         y = ys[k]             # <<<<<<<<<<<<<<
@@ -3773,7 +3779,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
               __pyx_t_21 = __pyx_v_k;
               __pyx_v_y = (*((double *) ( /* dim=0 */ (__pyx_v_ys.data + __pyx_t_21 * __pyx_v_ys.strides[0]) )));
 
-              /* "app/helpers/cartogram_doug.pyx":200
+              /* "noname_app/helpers/cartogram_doug.pyx":200
  *                         x = xs[k]
  *                         y = ys[k]
  *                         x0, y0 = x, y             # <<<<<<<<<<<<<<
@@ -3785,7 +3791,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
               __pyx_v_x0 = __pyx_t_22;
               __pyx_v_y0 = __pyx_t_23;
 
-              /* "app/helpers/cartogram_doug.pyx":202
+              /* "noname_app/helpers/cartogram_doug.pyx":202
  *                         x0, y0 = x, y
  *                         # Compute the influence of all shapes on this point
  *                         for i in range(self.total_features):             # <<<<<<<<<<<<<<
@@ -3796,7 +3802,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
               for (__pyx_t_25 = 0; __pyx_t_25 < __pyx_t_24; __pyx_t_25+=1) {
                 __pyx_v_i = __pyx_t_25;
 
-                /* "app/helpers/cartogram_doug.pyx":203
+                /* "noname_app/helpers/cartogram_doug.pyx":203
  *                         # Compute the influence of all shapes on this point
  *                         for i in range(self.total_features):
  *                             lf = &self.aLocal[i]             # <<<<<<<<<<<<<<
@@ -3805,7 +3811,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
                 __pyx_v_lf = (&(__pyx_v_self->aLocal[__pyx_v_i]));
 
-                /* "app/helpers/cartogram_doug.pyx":204
+                /* "noname_app/helpers/cartogram_doug.pyx":204
  *                         for i in range(self.total_features):
  *                             lf = &self.aLocal[i]
  *                             cx = lf.ptCenter_x             # <<<<<<<<<<<<<<
@@ -3815,7 +3821,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 __pyx_t_23 = __pyx_v_lf->ptCenter_x;
                 __pyx_v_cx = __pyx_t_23;
 
-                /* "app/helpers/cartogram_doug.pyx":205
+                /* "noname_app/helpers/cartogram_doug.pyx":205
  *                             lf = &self.aLocal[i]
  *                             cx = lf.ptCenter_x
  *                             cy = lf.ptCenter_y             # <<<<<<<<<<<<<<
@@ -3825,7 +3831,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 __pyx_t_23 = __pyx_v_lf->ptCenter_y;
                 __pyx_v_cy = __pyx_t_23;
 
-                /* "app/helpers/cartogram_doug.pyx":207
+                /* "noname_app/helpers/cartogram_doug.pyx":207
  *                             cy = lf.ptCenter_y
  *                             # Pythagorean distance
  *                             distance = sqrt((x0 - cx) ** 2 + (y0 - cy) ** 2)             # <<<<<<<<<<<<<<
@@ -3834,7 +3840,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
                 __pyx_v_distance = sqrt((pow((__pyx_v_x0 - __pyx_v_cx), 2.0) + pow((__pyx_v_y0 - __pyx_v_cy), 2.0)));
 
-                /* "app/helpers/cartogram_doug.pyx":208
+                /* "noname_app/helpers/cartogram_doug.pyx":208
  *                             # Pythagorean distance
  *                             distance = sqrt((x0 - cx) ** 2 + (y0 - cy) ** 2)
  *                             if distance > lf.dRadius:             # <<<<<<<<<<<<<<
@@ -3844,7 +3850,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 __pyx_t_3 = ((__pyx_v_distance > __pyx_v_lf->dRadius) != 0);
                 if (__pyx_t_3) {
 
-                  /* "app/helpers/cartogram_doug.pyx":211
+                  /* "noname_app/helpers/cartogram_doug.pyx":211
  *                                 # Calculate the force on verteces far away
  *                                 # from the centroid of this feature
  *                                 Fij = lf.dMass * lf.dRadius / distance             # <<<<<<<<<<<<<<
@@ -3853,7 +3859,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
                   __pyx_v_Fij = ((__pyx_v_lf->dMass * __pyx_v_lf->dRadius) / __pyx_v_distance);
 
-                  /* "app/helpers/cartogram_doug.pyx":208
+                  /* "noname_app/helpers/cartogram_doug.pyx":208
  *                             # Pythagorean distance
  *                             distance = sqrt((x0 - cx) ** 2 + (y0 - cy) ** 2)
  *                             if distance > lf.dRadius:             # <<<<<<<<<<<<<<
@@ -3863,7 +3869,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                   goto __pyx_L29;
                 }
 
-                /* "app/helpers/cartogram_doug.pyx":215
+                /* "noname_app/helpers/cartogram_doug.pyx":215
  *                                 # Calculate the force on verteces far away
  *                                 # from the centroid of this feature
  *                                 xF = distance / lf.dRadius             # <<<<<<<<<<<<<<
@@ -3873,7 +3879,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 /*else*/ {
                   __pyx_v_xF = (__pyx_v_distance / __pyx_v_lf->dRadius);
 
-                  /* "app/helpers/cartogram_doug.pyx":216
+                  /* "noname_app/helpers/cartogram_doug.pyx":216
  *                                 # from the centroid of this feature
  *                                 xF = distance / lf.dRadius
  *                                 Fij = lf.dMass * (xF ** 2) * (4 - (3 * xF))             # <<<<<<<<<<<<<<
@@ -3884,7 +3890,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 }
                 __pyx_L29:;
 
-                /* "app/helpers/cartogram_doug.pyx":217
+                /* "noname_app/helpers/cartogram_doug.pyx":217
  *                                 xF = distance / lf.dRadius
  *                                 Fij = lf.dMass * (xF ** 2) * (4 - (3 * xF))
  *                             Fij = Fij * self.dForceReductionFactor / distance             # <<<<<<<<<<<<<<
@@ -3893,7 +3899,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
                 __pyx_v_Fij = ((__pyx_v_Fij * __pyx_v_self->dForceReductionFactor) / __pyx_v_distance);
 
-                /* "app/helpers/cartogram_doug.pyx":218
+                /* "noname_app/helpers/cartogram_doug.pyx":218
  *                                 Fij = lf.dMass * (xF ** 2) * (4 - (3 * xF))
  *                             Fij = Fij * self.dForceReductionFactor / distance
  *                             x = (x0 - cx) * Fij + x             # <<<<<<<<<<<<<<
@@ -3902,7 +3908,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
                 __pyx_v_x = (((__pyx_v_x0 - __pyx_v_cx) * __pyx_v_Fij) + __pyx_v_x);
 
-                /* "app/helpers/cartogram_doug.pyx":219
+                /* "noname_app/helpers/cartogram_doug.pyx":219
  *                             Fij = Fij * self.dForceReductionFactor / distance
  *                             x = (x0 - cx) * Fij + x
  *                             y = (y0 - cy) * Fij + y             # <<<<<<<<<<<<<<
@@ -3912,7 +3918,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                 __pyx_v_y = (((__pyx_v_y0 - __pyx_v_cy) * __pyx_v_Fij) + __pyx_v_y);
               }
 
-              /* "app/helpers/cartogram_doug.pyx":220
+              /* "noname_app/helpers/cartogram_doug.pyx":220
  *                             x = (x0 - cx) * Fij + x
  *                             y = (y0 - cy) * Fij + y
  *                         with gil:             # <<<<<<<<<<<<<<
@@ -3925,7 +3931,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                   #endif
                   /*try:*/ {
 
-                    /* "app/helpers/cartogram_doug.pyx":221
+                    /* "noname_app/helpers/cartogram_doug.pyx":221
  *                             y = (y0 - cy) * Fij + y
  *                         with gil:
  *                             line_coord.append((x, y))             # <<<<<<<<<<<<<<
@@ -3948,7 +3954,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                   }
 
-                  /* "app/helpers/cartogram_doug.pyx":220
+                  /* "noname_app/helpers/cartogram_doug.pyx":220
  *                             x = (x0 - cx) * Fij + x
  *                             y = (y0 - cy) * Fij + y
  *                         with gil:             # <<<<<<<<<<<<<<
@@ -3974,7 +3980,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
             }
           }
 
-          /* "app/helpers/cartogram_doug.pyx":196
+          /* "noname_app/helpers/cartogram_doug.pyx":196
  *                 xs, ys = boundarys[it_bound].coords.xy
  *                 l_coord_bound = <unsigned int>len(xs)
  *                 with nogil:             # <<<<<<<<<<<<<<
@@ -3998,7 +4004,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
           }
       }
 
-      /* "app/helpers/cartogram_doug.pyx":222
+      /* "noname_app/helpers/cartogram_doug.pyx":222
  *                         with gil:
  *                             line_coord.append((x, y))
  *                 tmp_bound.append(line_coord)             # <<<<<<<<<<<<<<
@@ -4008,7 +4014,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __pyx_t_26 = __Pyx_PyList_Append(__pyx_v_tmp_bound, __pyx_v_line_coord); if (unlikely(__pyx_t_26 == -1)) __PYX_ERR(0, 222, __pyx_L1_error)
     }
 
-    /* "app/helpers/cartogram_doug.pyx":224
+    /* "noname_app/helpers/cartogram_doug.pyx":224
  *                 tmp_bound.append(line_coord)
  * 
  *             if nb_bound == 1:             # <<<<<<<<<<<<<<
@@ -4018,7 +4024,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __pyx_t_3 = ((__pyx_v_nb_bound == 1) != 0);
     if (__pyx_t_3) {
 
-      /* "app/helpers/cartogram_doug.pyx":225
+      /* "noname_app/helpers/cartogram_doug.pyx":225
  * 
  *             if nb_bound == 1:
  *                 new_geom.append(Polygon(tmp_bound[0]))             # <<<<<<<<<<<<<<
@@ -4054,7 +4060,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       __pyx_t_26 = __Pyx_PyList_Append(__pyx_v_new_geom, __pyx_t_1); if (unlikely(__pyx_t_26 == -1)) __PYX_ERR(0, 225, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "app/helpers/cartogram_doug.pyx":224
+      /* "noname_app/helpers/cartogram_doug.pyx":224
  *                 tmp_bound.append(line_coord)
  * 
  *             if nb_bound == 1:             # <<<<<<<<<<<<<<
@@ -4064,7 +4070,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       goto __pyx_L35;
     }
 
-    /* "app/helpers/cartogram_doug.pyx":227
+    /* "noname_app/helpers/cartogram_doug.pyx":227
  *                 new_geom.append(Polygon(tmp_bound[0]))
  *             else:
  *                 for it_bound in range(nb_bound):             # <<<<<<<<<<<<<<
@@ -4076,7 +4082,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
       for (__pyx_t_13 = 0; __pyx_t_13 < __pyx_t_10; __pyx_t_13+=1) {
         __pyx_v_it_bound = __pyx_t_13;
 
-        /* "app/helpers/cartogram_doug.pyx":228
+        /* "noname_app/helpers/cartogram_doug.pyx":228
  *             else:
  *                 for it_bound in range(nb_bound):
  *                     new_geom.append(Polygon(tmp_bound[it_bound]))             # <<<<<<<<<<<<<<
@@ -4116,7 +4122,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __pyx_L35:;
   }
 
-  /* "app/helpers/cartogram_doug.pyx":230
+  /* "noname_app/helpers/cartogram_doug.pyx":230
  *                     new_geom.append(Polygon(tmp_bound[it_bound]))
  * 
  *         if nb_geom > 1:             # <<<<<<<<<<<<<<
@@ -4126,7 +4132,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __pyx_t_3 = ((__pyx_v_nb_geom > 1) != 0);
   if (__pyx_t_3) {
 
-    /* "app/helpers/cartogram_doug.pyx":231
+    /* "noname_app/helpers/cartogram_doug.pyx":231
  * 
  *         if nb_geom > 1:
  *             return MultiPolygon(new_geom)             # <<<<<<<<<<<<<<
@@ -4164,7 +4170,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __pyx_t_1 = 0;
     goto __pyx_L0;
 
-    /* "app/helpers/cartogram_doug.pyx":230
+    /* "noname_app/helpers/cartogram_doug.pyx":230
  *                     new_geom.append(Polygon(tmp_bound[it_bound]))
  * 
  *         if nb_geom > 1:             # <<<<<<<<<<<<<<
@@ -4173,7 +4179,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
   }
 
-  /* "app/helpers/cartogram_doug.pyx":232
+  /* "noname_app/helpers/cartogram_doug.pyx":232
  *         if nb_geom > 1:
  *             return MultiPolygon(new_geom)
  *         elif nb_geom == 1:             # <<<<<<<<<<<<<<
@@ -4182,7 +4188,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __pyx_t_3 = ((__pyx_v_nb_geom == 1) != 0);
   if (__pyx_t_3) {
 
-    /* "app/helpers/cartogram_doug.pyx":233
+    /* "noname_app/helpers/cartogram_doug.pyx":233
  *             return MultiPolygon(new_geom)
  *         elif nb_geom == 1:
  *             return new_geom[0]             # <<<<<<<<<<<<<<
@@ -4192,7 +4198,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
     __pyx_r = PyList_GET_ITEM(__pyx_v_new_geom, 0);
     goto __pyx_L0;
 
-    /* "app/helpers/cartogram_doug.pyx":232
+    /* "noname_app/helpers/cartogram_doug.pyx":232
  *         if nb_geom > 1:
  *             return MultiPolygon(new_geom)
  *         elif nb_geom == 1:             # <<<<<<<<<<<<<<
@@ -4200,7 +4206,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
  */
   }
 
-  /* "app/helpers/cartogram_doug.pyx":163
+  /* "noname_app/helpers/cartogram_doug.pyx":163
  *         self.dForceReductionFactor = 1 / (dMean + 1)
  * 
  *     cdef object transform_geom(self, object geom,             # <<<<<<<<<<<<<<
@@ -4218,7 +4224,7 @@ static PyObject *__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geo
   __Pyx_XDECREF(__pyx_t_12);
   __PYX_XDEC_MEMVIEW(&__pyx_t_15, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_16, 1);
-  __Pyx_AddTraceback("app.helpers.cartogram_doug.Cartogram.transform_geom", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("noname_app.helpers.cartogram_doug.Cartogram.transform_geom", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_boundarys);
@@ -16442,10 +16448,10 @@ static void __pyx_memoryview__slice_assign_scalar(char *__pyx_v_data, Py_ssize_t
 
   /* function exit code */
 }
-static struct __pyx_vtabstruct_3app_7helpers_14cartogram_doug_Cartogram __pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram;
+static struct __pyx_vtabstruct_10noname_app_7helpers_14cartogram_doug_Cartogram __pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram;
 
-static PyObject *__pyx_tp_new_3app_7helpers_14cartogram_doug_Cartogram(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
-  struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *p;
+static PyObject *__pyx_tp_new_10noname_app_7helpers_14cartogram_doug_Cartogram(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -16453,8 +16459,8 @@ static PyObject *__pyx_tp_new_3app_7helpers_14cartogram_doug_Cartogram(PyTypeObj
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)o);
-  p->__pyx_vtab = __pyx_vtabptr_3app_7helpers_14cartogram_doug_Cartogram;
+  p = ((struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)o);
+  p->__pyx_vtab = __pyx_vtabptr_10noname_app_7helpers_14cartogram_doug_Cartogram;
   p->geodf = Py_None; Py_INCREF(Py_None);
   p->temp_geo_serie = Py_None; Py_INCREF(Py_None);
   p->values.data = NULL;
@@ -16462,8 +16468,8 @@ static PyObject *__pyx_tp_new_3app_7helpers_14cartogram_doug_Cartogram(PyTypeObj
   return o;
 }
 
-static void __pyx_tp_dealloc_3app_7helpers_14cartogram_doug_Cartogram(PyObject *o) {
-  struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)o;
+static void __pyx_tp_dealloc_10noname_app_7helpers_14cartogram_doug_Cartogram(PyObject *o) {
+  struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)o;
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && !_PyGC_FINALIZED(o)) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -16476,9 +16482,9 @@ static void __pyx_tp_dealloc_3app_7helpers_14cartogram_doug_Cartogram(PyObject *
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static int __pyx_tp_traverse_3app_7helpers_14cartogram_doug_Cartogram(PyObject *o, visitproc v, void *a) {
+static int __pyx_tp_traverse_10noname_app_7helpers_14cartogram_doug_Cartogram(PyObject *o, visitproc v, void *a) {
   int e;
-  struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)o;
+  struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)o;
   if (p->geodf) {
     e = (*v)(p->geodf, a); if (e) return e;
   }
@@ -16488,9 +16494,9 @@ static int __pyx_tp_traverse_3app_7helpers_14cartogram_doug_Cartogram(PyObject *
   return 0;
 }
 
-static int __pyx_tp_clear_3app_7helpers_14cartogram_doug_Cartogram(PyObject *o) {
+static int __pyx_tp_clear_10noname_app_7helpers_14cartogram_doug_Cartogram(PyObject *o) {
   PyObject* tmp;
-  struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *)o;
+  struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *p = (struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *)o;
   tmp = ((PyObject*)p->geodf);
   p->geodf = Py_None; Py_INCREF(Py_None);
   Py_XDECREF(tmp);
@@ -16500,17 +16506,17 @@ static int __pyx_tp_clear_3app_7helpers_14cartogram_doug_Cartogram(PyObject *o) 
   return 0;
 }
 
-static PyMethodDef __pyx_methods_3app_7helpers_14cartogram_doug_Cartogram[] = {
-  {"make", (PyCFunction)__pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_3make, METH_NOARGS, __pyx_doc_3app_7helpers_14cartogram_doug_9Cartogram_2make},
+static PyMethodDef __pyx_methods_10noname_app_7helpers_14cartogram_doug_Cartogram[] = {
+  {"make", (PyCFunction)__pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_3make, METH_NOARGS, __pyx_doc_10noname_app_7helpers_14cartogram_doug_9Cartogram_2make},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_3app_7helpers_14cartogram_doug_Cartogram = {
+static PyTypeObject __pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram = {
   PyVarObject_HEAD_INIT(0, 0)
-  "app.helpers.cartogram_doug.Cartogram", /*tp_name*/
-  sizeof(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram), /*tp_basicsize*/
+  "noname_app.helpers.cartogram_doug.Cartogram", /*tp_name*/
+  sizeof(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_3app_7helpers_14cartogram_doug_Cartogram, /*tp_dealloc*/
+  __pyx_tp_dealloc_10noname_app_7helpers_14cartogram_doug_Cartogram, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -16532,13 +16538,13 @@ static PyTypeObject __pyx_type_3app_7helpers_14cartogram_doug_Cartogram = {
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
   0, /*tp_doc*/
-  __pyx_tp_traverse_3app_7helpers_14cartogram_doug_Cartogram, /*tp_traverse*/
-  __pyx_tp_clear_3app_7helpers_14cartogram_doug_Cartogram, /*tp_clear*/
+  __pyx_tp_traverse_10noname_app_7helpers_14cartogram_doug_Cartogram, /*tp_traverse*/
+  __pyx_tp_clear_10noname_app_7helpers_14cartogram_doug_Cartogram, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_3app_7helpers_14cartogram_doug_Cartogram, /*tp_methods*/
+  __pyx_methods_10noname_app_7helpers_14cartogram_doug_Cartogram, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -16546,9 +16552,9 @@ static PyTypeObject __pyx_type_3app_7helpers_14cartogram_doug_Cartogram = {
   0, /*tp_descr_get*/
   0, /*tp_descr_set*/
   0, /*tp_dictoffset*/
-  __pyx_pw_3app_7helpers_14cartogram_doug_9Cartogram_1__init__, /*tp_init*/
+  __pyx_pw_10noname_app_7helpers_14cartogram_doug_9Cartogram_1__init__, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_3app_7helpers_14cartogram_doug_Cartogram, /*tp_new*/
+  __pyx_tp_new_10noname_app_7helpers_14cartogram_doug_Cartogram, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -16682,7 +16688,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "app.helpers.cartogram_doug.array", /*tp_name*/
+  "noname_app.helpers.cartogram_doug.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -16788,7 +16794,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "app.helpers.cartogram_doug.Enum", /*tp_name*/
+  "noname_app.helpers.cartogram_doug.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -17035,7 +17041,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "app.helpers.cartogram_doug.memoryview", /*tp_name*/
+  "noname_app.helpers.cartogram_doug.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -17160,7 +17166,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "app.helpers.cartogram_doug._memoryviewslice", /*tp_name*/
+  "noname_app.helpers.cartogram_doug._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -17273,7 +17279,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_Unable_to_convert_item_to_object, __pyx_k_Unable_to_convert_item_to_object, sizeof(__pyx_k_Unable_to_convert_item_to_object), 0, 0, 1, 0},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
   {&__pyx_n_s_allocate_buffer, __pyx_k_allocate_buffer, sizeof(__pyx_k_allocate_buffer), 0, 0, 1, 1},
-  {&__pyx_n_s_app_helpers_cartogram_doug, __pyx_k_app_helpers_cartogram_doug, sizeof(__pyx_k_app_helpers_cartogram_doug), 0, 0, 1, 1},
   {&__pyx_n_s_area, __pyx_k_area, sizeof(__pyx_k_area), 0, 0, 1, 1},
   {&__pyx_n_s_astype, __pyx_k_astype, sizeof(__pyx_k_astype), 0, 0, 1, 1},
   {&__pyx_n_s_base, __pyx_k_base, sizeof(__pyx_k_base), 0, 0, 1, 1},
@@ -17303,7 +17308,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_geometry, __pyx_k_geometry, sizeof(__pyx_k_geometry), 0, 0, 1, 1},
   {&__pyx_n_s_get_loc, __pyx_k_get_loc, sizeof(__pyx_k_get_loc), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_mz_code_noname_stuff_app_h, __pyx_k_home_mz_code_noname_stuff_app_h, sizeof(__pyx_k_home_mz_code_noname_stuff_app_h), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_mz_code_noname_stuff_nonam, __pyx_k_home_mz_code_noname_stuff_nonam, sizeof(__pyx_k_home_mz_code_noname_stuff_nonam), 0, 0, 1, 0},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_iloc, __pyx_k_iloc, sizeof(__pyx_k_iloc), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -17320,6 +17325,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_name_2, __pyx_k_name_2, sizeof(__pyx_k_name_2), 0, 0, 1, 1},
   {&__pyx_n_s_ndim, __pyx_k_ndim, sizeof(__pyx_k_ndim), 0, 0, 1, 1},
+  {&__pyx_n_s_noname_app_helpers_cartogram_dou, __pyx_k_noname_app_helpers_cartogram_dou, sizeof(__pyx_k_noname_app_helpers_cartogram_dou), 0, 0, 1, 1},
   {&__pyx_n_s_obj, __pyx_k_obj, sizeof(__pyx_k_obj), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_getbuffer, __pyx_k_pyx_getbuffer, sizeof(__pyx_k_pyx_getbuffer), 0, 0, 1, 1},
@@ -17366,7 +17372,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "app/helpers/cartogram_doug.pyx":77
+  /* "noname_app/helpers/cartogram_doug.pyx":77
  *         geom_type = set(list(geodf.geom_type))
  *         if not geom_type.issubset(allowed):
  *             raise ValueError(             # <<<<<<<<<<<<<<
@@ -17377,7 +17383,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "app/helpers/cartogram_doug.pyx":81
+  /* "noname_app/helpers/cartogram_doug.pyx":81
  *                 )
  *         self.geodf = geodf
  *         self.temp_geo_serie = geodf.geometry[:]             # <<<<<<<<<<<<<<
@@ -17534,7 +17540,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "app/helpers/cartogram_doug.pyx":21
+  /* "noname_app/helpers/cartogram_doug.pyx":21
  * 
  * 
  * def make_cartogram(geodf, field_name, iterations=5):             # <<<<<<<<<<<<<<
@@ -17544,7 +17550,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__18 = PyTuple_Pack(4, __pyx_n_s_geodf, __pyx_n_s_field_name, __pyx_n_s_iterations, __pyx_n_s_f_idx); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 21, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mz_code_noname_stuff_app_h, __pyx_n_s_make_cartogram, 21, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mz_code_noname_stuff_nonam, __pyx_n_s_make_cartogram, 21, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 21, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -17685,14 +17691,14 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_app__helpers__cartogram_doug) {
+  if (__pyx_module_is_main_noname_app__helpers__cartogram_doug) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "app.helpers.cartogram_doug")) {
-      if (unlikely(PyDict_SetItemString(modules, "app.helpers.cartogram_doug", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "noname_app.helpers.cartogram_doug")) {
+      if (unlikely(PyDict_SetItemString(modules, "noname_app.helpers.cartogram_doug", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -17709,16 +17715,16 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_vtabptr_3app_7helpers_14cartogram_doug_Cartogram = &__pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram;
-  __pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram.make = (PyObject *(*)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *, int __pyx_skip_dispatch))__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_make;
-  __pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram.cartogram = (PyObject *(*)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *))__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_cartogram;
-  __pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram.getinfo = (void (*)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *))__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_getinfo;
-  __pyx_vtable_3app_7helpers_14cartogram_doug_Cartogram.transform_geom = (PyObject *(*)(struct __pyx_obj_3app_7helpers_14cartogram_doug_Cartogram *, PyObject *, struct __pyx_opt_args_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args))__pyx_f_3app_7helpers_14cartogram_doug_9Cartogram_transform_geom;
-  if (PyType_Ready(&__pyx_type_3app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
-  __pyx_type_3app_7helpers_14cartogram_doug_Cartogram.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_3app_7helpers_14cartogram_doug_Cartogram.tp_dict, __pyx_vtabptr_3app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
-  if (PyObject_SetAttrString(__pyx_m, "Cartogram", (PyObject *)&__pyx_type_3app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
-  __pyx_ptype_3app_7helpers_14cartogram_doug_Cartogram = &__pyx_type_3app_7helpers_14cartogram_doug_Cartogram;
+  __pyx_vtabptr_10noname_app_7helpers_14cartogram_doug_Cartogram = &__pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram;
+  __pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram.make = (PyObject *(*)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *, int __pyx_skip_dispatch))__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_make;
+  __pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram.cartogram = (PyObject *(*)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *))__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_cartogram;
+  __pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram.getinfo = (void (*)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *))__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_getinfo;
+  __pyx_vtable_10noname_app_7helpers_14cartogram_doug_Cartogram.transform_geom = (PyObject *(*)(struct __pyx_obj_10noname_app_7helpers_14cartogram_doug_Cartogram *, PyObject *, struct __pyx_opt_args_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom *__pyx_optional_args))__pyx_f_10noname_app_7helpers_14cartogram_doug_9Cartogram_transform_geom;
+  if (PyType_Ready(&__pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram.tp_print = 0;
+  if (__Pyx_SetVtable(__pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram.tp_dict, __pyx_vtabptr_10noname_app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "Cartogram", (PyObject *)&__pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_ptype_10noname_app_7helpers_14cartogram_doug_Cartogram = &__pyx_type_10noname_app_7helpers_14cartogram_doug_Cartogram;
   __pyx_vtabptr_array = &__pyx_vtable_array;
   __pyx_vtable_array.get_memview = (PyObject *(*)(struct __pyx_array_obj *))__pyx_array_get_memview;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) __PYX_ERR(2, 103, __pyx_L1_error)
@@ -17767,7 +17773,7 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "app/helpers/cartogram_doug.pyx":15
+  /* "noname_app/helpers/cartogram_doug.pyx":15
  * 
  * """
  * from shapely.geometry import LineString, Polygon, MultiPolygon             # <<<<<<<<<<<<<<
@@ -17802,19 +17808,19 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":21
+  /* "noname_app/helpers/cartogram_doug.pyx":21
  * 
  * 
  * def make_cartogram(geodf, field_name, iterations=5):             # <<<<<<<<<<<<<<
  *     """
  *     Make a continuous cartogram on a geopandas.GeoDataFrame collection
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3app_7helpers_14cartogram_doug_1make_cartogram, NULL, __pyx_n_s_app_helpers_cartogram_doug); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_10noname_app_7helpers_14cartogram_doug_1make_cartogram, NULL, __pyx_n_s_noname_app_helpers_cartogram_dou); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 21, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_make_cartogram, __pyx_t_2) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":164
+  /* "noname_app/helpers/cartogram_doug.pyx":164
  * 
  *     cdef object transform_geom(self, object geom,
  *                                Polygon=Polygon, MultiPolygon=MultiPolygon,             # <<<<<<<<<<<<<<
@@ -17832,7 +17838,7 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":165
+  /* "noname_app/helpers/cartogram_doug.pyx":165
  *     cdef object transform_geom(self, object geom,
  *                                Polygon=Polygon, MultiPolygon=MultiPolygon,
  *                                LineString=LineString):             # <<<<<<<<<<<<<<
@@ -17845,7 +17851,7 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "app/helpers/cartogram_doug.pyx":1
+  /* "noname_app/helpers/cartogram_doug.pyx":1
  * # -*- coding: utf-8 -*-             # <<<<<<<<<<<<<<
  * #cython: boundscheck = False
  * #cython: wraparound = False
@@ -18006,11 +18012,11 @@ PyMODINIT_FUNC PyInit_cartogram_doug(void)
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init app.helpers.cartogram_doug", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init noname_app.helpers.cartogram_doug", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init app.helpers.cartogram_doug");
+    PyErr_SetString(PyExc_ImportError, "init noname_app.helpers.cartogram_doug");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

@@ -212,47 +212,59 @@ function handle_dataset(f){
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
         let tmp_dataset = d3.csv.parse(data);
-
-        let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
-        if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
-            if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-                add_csv_geom(data, dataset_name);
-                return;
-            }
-        }
-        joined_dataset.push(tmp_dataset);
-        let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-            nb_features = joined_dataset[0].length;
-
-        d3.select("#img_data_ext")
-            .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"});
-
-        d3.select('#data_ext')
-            .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
-            .html([' <b>', d_name,
-                   '</b> - <i><span style="font-size:9.5px;"> ',
-                   nb_features, ' features - ',
-                   field_name.length, " fields</i></span>"].join(''));
-        valid_join_check_display(false);
-        if(targeted_layer_added){
-            document.getElementById("join_button").disabled = false;
-            document.getElementById('sample_zone').style.display = "none";
-        } else {
-            document.getElementById("join_button").disabled = true;
-        }
-//        fields_handler.fill();
-        if(document.getElementById("browse_button").disabled === true)
-            document.getElementById("browse_button").disabled = false;
-        $("[layer-target-tooltip!='']").qtip({
-            content: { attr: "layer-target-tooltip" },
-            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-            events: {
-                show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-                hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-            }
-        });
+        add_dataset(tmp_dataset);
     };
     reader.readAsText(f);
+}
+
+
+/**
+*
+*
+*/
+function add_dataset(readed_dataset){
+    let field_name = Object.getOwnPropertyNames(readed_dataset[0]);
+    if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+        if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+            add_csv_geom(data, dataset_name);
+            return;
+        }
+    }
+    joined_dataset.push(readed_dataset);
+    let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+        nb_features = joined_dataset[0].length;
+
+    d3.select("#img_data_ext")
+        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"});
+
+    d3.select('#data_ext')
+        .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
+        .html([' <b>', d_name,
+               '</b> - <i><span style="font-size:9px;"> ',
+               nb_features, ' features - ',
+               field_name.length, " fields</i></span>"].join(''));
+    d3.select("#data_ext").node().parentElement.innerHTML = d3.select("#data_ext").node().parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
+
+    valid_join_check_display(false);
+    if(targeted_layer_added){
+        document.getElementById("join_button").disabled = false;
+        document.getElementById('sample_zone').style.display = "none";
+    } else {
+        document.getElementById("join_button").disabled = true;
+    }
+    if(current_functionnality && current_functionnality.name == "flow")
+        fields_handler.fill();
+    document.getElementById("remove_dataset").onclick = () => { remove_ext_dataset() };
+    if(document.getElementById("browse_button").disabled === true)
+        document.getElementById("browse_button").disabled = false;
+    $("[layer-target-tooltip!='']").qtip({
+        content: { attr: "layer-target-tooltip" },
+        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+        events: {
+            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+        }
+    });
 }
 
 function add_csv_geom(file, name){
@@ -398,7 +410,8 @@ function add_layer_topojson(text, options){
                 document.getElementById("browse_button").disabled = false;
 
             if(joined_dataset.length != 0){
-                document.getElementById("join_button").disabled = false;
+                if(document.getElementById("join_button"))
+                    document.getElementById("join_button").disabled = false;
                 section1.select(".s1").html("").on("click", null);
                 document.getElementById('sample_zone').style.display = "none";
             }
@@ -414,9 +427,12 @@ function add_layer_topojson(text, options){
                 .on("click", null);
             d3.select('#input_geom')
                 .attr("layer-target-tooltip", layer_tooltip_content)
-                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9.5px;">', nb_ft, ' features - ', nb_fields, ' fields</i></span>'].join(''));
+                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
+                       nb_fields, ' fields</i></span>'].join(''));
+            d3.select("#input_geom").node().parentElement.innerHTML = d3.select("#input_geom").node().parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
+
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_type[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
                 style: { classes: 'qtip-rounded qtip-light qtip_layer'},
@@ -426,24 +442,32 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open, button_type[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
 
     if(target_layer_on_add) {
+        if(current_functionnality) fields_handler.fill(lyr_name_to_add);
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
     } else if (result_layer_on_add) {
         center_map(lyr_name_to_add);
         switch_accordion_section();
+    } else if (current_functionnality && current_functionnality.name == "smooth"){
+        fields_handler.fill();
     }
     zoom_without_redraw();
-    binds_layers_buttons();
+    binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;
+
+    document.getElementById("remove_target").onclick = function(){
+        remove_layer(lyr_name_to_add);
+    };
+
 //    if(!skip_alert) alert('Layer successfully added to the canvas');
     if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
     return lyr_name_to_add;
@@ -580,7 +604,7 @@ function add_layout_feature(selected_feature){
        li.setAttribute("layer_name", "Sphere");
        li.setAttribute("class", "ui-state-default Sphere");
        li.setAttribute("layer-tooltip", "<b>Sphere</b> - Sample layout layer");
-       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open, button_type["Polygon"], "</div> Sphere"].join('');
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open0, button_type["Polygon"], "</div> Sphere"].join('');
        layers_listed.insertBefore(li, layers_listed.childNodes[0])
        zoom_without_redraw();
        binds_layers_buttons();
@@ -602,7 +626,7 @@ function add_layout_feature(selected_feature){
        li.setAttribute("layer_name", "Graticule");
        li.setAttribute("class", "ui-state-default Graticule");
        li.setAttribute("layer-tooltip", "<b>Graticule</b> - Sample layout layer");
-       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open, button_type["Line"], "</div> Graticule"].join('');
+       li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, eye_open0, button_type["Line"], "</div> Graticule"].join('');
        layers_listed.insertBefore(li, layers_listed.childNodes[0])
        zoom_without_redraw();
        binds_layers_buttons();
@@ -785,36 +809,8 @@ function add_sample_layer(){
                 if(selec.dataset){
                     url = sample_datasets[selec.dataset];
                     d3.csv(url, function(error, data){
-                        joined_dataset.push(data);
                         dataset_name = selec.dataset;
-                        let field_name = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                            d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-                            nb_features = joined_dataset[0].length;
-                        d3.select("#img_data_ext")
-                            .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"})
-                            .on("click", null);
-                        d3.select('#data_ext')
-                            .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
-                            .html([' <b>', d_name,
-                                   '</b> - <i><span style="font-size:9.5px;"> ',
-                                   nb_features, ' features - ',
-                                   field_name.length, " fields</i></span>"].join(''))
-                            .on("click", null);
-                        valid_join_check_display(false);
-                        if(targeted_layer_added){
-                            document.getElementById("join_button").disabled = false;
-                            document.getElementById('sample_zone').style.display = "none";
-                        } else {
-                            document.getElementById("join_button").disabled = true;
-                        }
-                        $("[layer-target-tooltip!='']").qtip({
-                            content: { attr: "layer-target-tooltip" },
-                            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-                            events: {
-                                show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-                                hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-                            }
-                        });
+                        add_dataset(data);
                     });
                 }
             }
@@ -839,6 +835,8 @@ function add_sample_layer(){
     tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     dataset_selec.on("change", function(){selec.dataset = this.value;});
 }
+
+
 
 function add_sample_geojson(name){
     var formToSend = new FormData();

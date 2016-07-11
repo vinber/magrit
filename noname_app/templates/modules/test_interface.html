@@ -47,6 +47,28 @@
 <script>
 "use strict";
 
+function make_eye_button(state){
+    if(state == "open"){
+        let eye_open = document.createElement("img");
+        eye_open.setAttribute("src", "/static/img/b/eye_open.svg");
+        eye_open.setAttribute("class", "active_button")
+        eye_open.setAttribute("id", "eye_open");
+        eye_open.setAttribute("width", 17);
+        eye_open.setAttribute("height", 17);
+        eye_open.setAttribute("alt", "Visible");
+        return eye_open;
+    } else if (state == "closed"){
+        let eye_closed = document.createElement("img");
+        eye_closed.setAttribute("src", "/static/img/b/eye_closed.svg");
+        eye_closed.setAttribute("class", "active_button");
+        eye_closed.setAttribute("id", "eye_closed");
+        eye_closed.setAttribute("width", 17);
+        eye_closed.setAttribute("height", 17);
+        eye_closed.setAttribute("alt", "Not visible");
+        return eye_closed;
+    }
+}
+
 function make_ico_choice()
 {
     let list_fun_ico = ['icon_label.png',
@@ -75,7 +97,9 @@ function make_ico_choice()
                 current_functionnality = get_menu_option(func_name);
                 let make_menu = eval(current_functionnality.menu_factory);
                 window.fields_handler = eval(current_functionnality.fields_handler);
-                document.getElementById("accordion2").querySelector("h3").innerText = current_functionnality.title;
+                // Replace the title of the section without touching the triangle icon from the menu:
+                let selec_title = document.getElementById("accordion2").querySelector("h3");
+                selec_title.innerHTML = selec_title.innerHTML.replace(selec_title.innerText, current_functionnality.title);
                 clean_menu_function();
                 make_menu();
 
@@ -169,8 +193,8 @@ var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_ty
         ["choro", button_choro], ["smooth", button_smooth], ["prop", button_prop]
         ]);
 
-var eye_open = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>',
-    eye_closed = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_closed"  width="17" height="17" alt="Visible"/>';
+var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
+
 
 
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
@@ -268,7 +292,7 @@ layer_list.append("li")
         .attr("layer_name", "Simplified_land_polygons")
         .attr("class", "ui-state-default Simplified_land_polygons")
         .attr("layer-tooltip", "Simplified_land_polygons - Sample layout layer")
-        .html('<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + eye_open + button_polygon + "</div> Simplified_land_polygons");
+        .html('<div class="layer_buttons">'+ button_style + button_trash + button_zoom_fit + eye_open0 + button_polygon + "</div> Simplified_land_polygons");
 
 var dv3 = section3.append("div")
                 .style("text-align", "center").html('');
@@ -508,7 +532,8 @@ d3.select("body").append("div")
               .classed("active", false)
               .html("");
 
-binds_layers_buttons();
+make_eye_button(); // Function to prepare the eye_close / eye_open buttons (they will be added to the global scope)
+binds_layers_buttons("Simplified_land_polygons");
 prepare_drop_section();
 
 /////////////////////////////////////////////////////////////////////////////
@@ -607,10 +632,11 @@ function binds_layers_buttons(layer_name){
     } else {
         let selec = d3.select('#sortable');
         selec.selectAll("#trash_button").on("click", remove_layer);
-        selec.selectAll(".active_button").on("click", handle_active_layer);
+        selec.selectAll(".active_button").on("click", function(){
+            handle_active_layer(this.parentElement.parentElement.getAttribute("layer_name"));
+        });
         selec.selectAll("#zoom_fit_button").on("click", function(){
-            let layer_name = this.parentElement.parentElement.getAttribute("layer_name");
-            center_map(layer_name);
+            center_map(this.parentElement.parentElement.getAttribute("layer_name"));
             zoom_without_redraw();
         });
         selec.selectAll(".style_button").on("click", function(){
@@ -640,7 +666,9 @@ function displayInfoOnMove(){
     var info_features = d3.select("#info_features");
     if(info_features.classed("active")){
         d3.select(".info_button").style('box-shadow', null);
-        map.selectAll("path").on("mouseover", null)
+        map.selectAll("path").on("mouseover", null);
+        map.selectAll("circle").on("mouseover", null);
+        map.selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
         info_features.node().innerHTML = ""
         info_features.style({});
@@ -793,6 +821,35 @@ function remove_layer(name){
     });
 }
 
+function remove_ext_dataset(){
+    swal({
+        title: "Confirm ?",
+        text: ["Remove external data ?"].join(''),
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Delete!",
+        closeOnConfirm: true
+    }).then(confirm => {
+        if(confirm){
+            field_join_map = new Array();
+            joined_dataset = new Array();
+            dataset_name = undefined;
+            let ext_dataset_img = document.getElementById("img_data_ext");
+            ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.svg");
+            ext_dataset_img.setAttribute("alt", "Additional dataset");
+            ext_dataset_img.style.cursor = "pointer";
+            ext_dataset_img.onclick = click_button_add_layer;
+            let data_ext_txt = document.getElementById("data_ext");
+            data_ext_txt.innerHTML = "<b>Add additional dataset <i>(or drop it)</i></b>";
+            data_ext_txt.onclick = click_button_add_layer;
+            document.getElementById("remove_dataset").remove();
+            document.getElementById("join_section").innerHTML = "";
+            $("#data_ext").qtip("destroy");
+        }
+    });
+}
+
 // Do some clean-up when a layer is removed
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
@@ -822,13 +879,14 @@ function remove_layer_cleanup(name){
             .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
         document.getElementById("input_geom").innerHTML = "<b>Add geometry layer <i>(or drop it)</i></b>";
-
+        document.getElementById("remove_target").remove();
         // Unfiling the fields related to the targeted functionnality:
-        fields_handler.unfill()
+        if(current_functionnality)
+            fields_handler.unfill()
 
         // Update some global variables :
         field_join_map = [];
-        delete user_data[name];
+        user_data = new Object();
         targeted_layer_added = false;
 
         // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
@@ -838,7 +896,8 @@ function remove_layer_cleanup(name){
 
         // Restore the state of the bottom of the section 1 :
         if(d3.select("#join_button").node() != null)
-            valid_join_check_display();
+            //valid_join_check_display();
+            d3.select("#join_section").html("");
 
         // If after this removal there isn't nor a targeted layer neither an external dataset :
         if(joined_dataset.length == 0)
@@ -1014,7 +1073,7 @@ function get_map_template(){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_opacity = selection.style("fill-opacity");
             layers_style[i].targeted = true;
-            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             if(current_layers[layer_name].renderer && current_layers[layer_name].renderer.startsWith("Choro")){
                 layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -1025,7 +1084,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
-            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
@@ -1033,7 +1092,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
-            layers_style[i].topo_geom = [user_id, layer_name, menu_option.quantization_default].join('_');
+            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
             layers_style[i].size = current_layers[layer_name].size;
@@ -1043,7 +1102,7 @@ function get_map_template(){
                 for(let j = 0; j < nb_ft; j++)
                     layers_style[i].result[j] = nb_ft;
             } else {
-                layers_style[i].topo_geom = [user_id, layer_name].join('_');
+                layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
                 layers_style[i].linksById = current_layers[layer_name].linksById.splice(0, nb_ft)
             }
         } else {
@@ -1205,27 +1264,40 @@ var φ = d3.scale.linear()
 function handle_active_layer(name){
     let fill_value;
     if(!name) {
-        name = this.parentElement.parentElement.getAttribute("layer_name");
+        let parent_div = this.parentElement;
+        name = parent_div.parentElement.getAttribute("layer_name");
+        let func = function() { handle_active_layer(name);};
+        console.log(name);
         if(this.id == "eye_closed"){
             fill_value = 1;
-            this.parentElement.innerHTML = this.parentElement.innerHTML.replace("closed", "open");
+            let eye_open = make_eye_button("open");
+            eye_open.onclick = func;
+            parent_div.replaceChild(eye_open, this);
         } else {
             fill_value = 0;
-            this.parentElement.innerHTML = this.parentElement.innerHTML.replace("open", "closed");
+            let eye_closed = make_eye_button("closed");
+            eye_closed.onclick = func;
+            parent_div.replaceChild(eye_closed, this);
         }
     } else {
         let selec = d3.select("#sortable").select('.' + name).select(".active_button");
+        let parent_div = selec.node().parentElement;
+        let func = function() { handle_active_layer(name);};
+        console.log(name);
         if(selec.attr("id") == "eye_closed"){
             fill_value = 1;
-            selec.node().parentElement.innerHTML = selec.node().parentElement.innerHTML.replace("closed", "open");
+            let eye_open = make_eye_button("open");
+            eye_open.onclick = func;
+            parent_div.replaceChild(eye_open, selec.node());
         } else {
             fill_value = 0;
-            selec.node().parentElement.innerHTML = selec.node().parentElement.innerHTML.replace("open", "closed");
+            let eye_closed = make_eye_button("closed");
+            eye_closed.onclick = func;
+            parent_div.replaceChild(eye_closed, selec.node());
         }
     }
     map.select("#"+name).style("opacity", fill_value);
     map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    binds_layers_buttons(name);
 }
 
 // Function to handle the title add and changes
@@ -1538,7 +1610,7 @@ function apply_user_preferences(json_pref){
             li.setAttribute("layer_name", layer_name)
             li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
             li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''))
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open, button_type_blank['Point'], "</div> ", layer_name].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open0, button_type_blank['Point'], "</div> ", layer_name].join('')
             layers_listed.insertBefore(li, layers_listed.childNodes[0])
             binds_layers_buttons();
 

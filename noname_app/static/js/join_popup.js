@@ -25,20 +25,39 @@ function handle_join(){
 // Function called to update the menu according to user operation (triggered when layers/dataset are added and after a join operation)
 function valid_join_check_display(val, prop){
     if(!val){
-        d3.select("#img_data_ext")
-            .attr({"src": "/static/img/b/joinfalse.svg", alt: "Non-validated join"})
-            .style({"width": "28px", "height": "28px"})
-            .on("click", handle_join);
-        let join_sec = d3.select("#join_section")
-            .html([prop, 'Data not joined'].join(''));
-        join_sec.append("button").attr("id", "join_button").style("display", "inline").html(" -<b> Join now</b>").on("click", handle_join);
+        let ext_dataset_img = document.getElementById("img_data_ext");
+        ext_dataset_img.setAttribute("src", "/static/img/b/joinfalse.svg");
+        ext_dataset_img.setAttribute("alt", "Non-validated join");
+        ext_dataset_img.style.width = "28px";
+        ext_dataset_img.style.height = "28px";
+        ext_dataset_img.onclick = handle_join;
+
+        let join_sec = document.getElementById("join_section");
+        join_sec.innerHTML = [prop, 'Data not joined'].join('');
+
+        let button = document.createElement("button");
+        button.setAttribute("id", "join_button");
+        button.style.display = "inline";
+        button.innerHTML = " -<b> Join now</b>";
+        button.onclick = handle_join;
+        join_sec.appendChild(button);
     } else {
-        d3.select("#img_data_ext")
-            .attr({"src": "/static/img/b/jointrue.svg", alt: "Validated join"})
-            .style({"width": "28px", "height": "28px"})
-            .on("click", null);
-        let join_sec = d3.select("#join_section").html([' <b>', prop, ' matches</b>'].join(''));
-        join_sec.append("button").attr("id", "join_button").style("display", "inline").html(" - <i> Change join field </i>").on("click", handle_join);
+        let ext_dataset_img = document.getElementById("img_data_ext");
+        ext_dataset_img.setAttribute("src", "/static/img/b/jointrue.svg");
+        ext_dataset_img.setAttribute("alt", "Validated join");
+        ext_dataset_img.style.width = "28px";
+        ext_dataset_img.style.height = "28px";
+        ext_dataset_img.onclick = null;
+
+        let join_sec = document.getElementById("join_section");
+        join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
+
+        let button = document.createElement("button");
+        button.setAttribute("id", "join_button");
+        button.style.display = "inline";
+        button.innerHTML = " - <i> Change join field </i>";
+        button.onclick = handle_join;
+        join_sec.appendChild(button);
     }
 }
 
@@ -74,7 +93,7 @@ function valid_join_on(layer_name, field1, field2){
         alert("The values on which operate have to be uniques");
         return;
     }
-//    console.log(join_values1);console.log(join_values2)
+
     if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
         for(let i=0, len=join_values1.length; i<len; i++){
             val = join_values2.indexOf(String(join_values1[i]));

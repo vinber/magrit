@@ -54,7 +54,7 @@ function ContextMenu() {
 		this.DOMObj.style.left = event.clientX+"px";
 		var self = this;
 		var hideMenu = function() {
-			if (self.DOMObj) {
+			if (self.DOMObj && self.DOMObj.parentNode && self.DOMObj.parentNode.removeChild) {
 				self.DOMObj.parentNode.removeChild(self.DOMObj);
 			}
 			this.onclick = undefined;
@@ -62,7 +62,7 @@ function ContextMenu() {
 		};
 		setTimeout(()=> {
               document.addEventListener("click", hideMenu);
-           }, 100);
+           }, 50);
 	};
 
 	this.initMenu = function(parent) {
