@@ -30,6 +30,7 @@ class TimedCall(ContextDecorator):
         print("{}{:.4f}s".format(self.prefix, time()-self.t))
         return False
 
+
 def prepare_folder():
     for i in range(10):
         try:
@@ -90,6 +91,7 @@ def guess_separator(file):
                 return ';'
             else:
                 return None
+
 
 def fetch_zip_clean(dir_path, layer_name):
     filenames = [file for file in os.listdir(dir_path)]

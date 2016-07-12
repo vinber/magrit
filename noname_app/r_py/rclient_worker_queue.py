@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 import asyncio
 import zmq
@@ -52,9 +53,8 @@ class RWorkerQueue:
         self.loop = ZMQEventLoop()
         asyncio.set_event_loop(self.loop)
 
-        @asyncio.coroutine
-        def run(loop):
-            yield from self.run_async_broker(loop, nb_r_process)
+        async def run(loop):
+            await self.run_async_broker(loop, nb_r_process)
 
         try:
             self.loop.run_until_complete(run(self.loop))
@@ -70,8 +70,7 @@ class RWorkerQueue:
             # TODO: Use something like prlimit to control processus ressource
             self.r_process[id_] = p
 
-    @asyncio.coroutine
-    def run_async_broker(self, loop, init_r_process=None):
+    async def run_async_broker(self, loop, init_r_process=None):
         self.context = Context()
         frontend = self.context.socket(zmq.ROUTER)
         frontend.bind(url_client)
@@ -88,11 +87,11 @@ class RWorkerQueue:
             self.launch_r_worker(init_r_process)
 
         while True:
-            socks = yield from poller.poll(5000)
+            socks = await poller.poll(5000)
             socks = dict(socks)
             # poll on backend (msg/reply from workers) :
             if backend in socks and socks[backend] == zmq.POLLIN:
-                message = yield from backend.recv_multipart()
+                message = await backend.recv_multipart()
                 assert self.available <= len(self.r_process)
                 worker_addr = message[0]
                 self.available_workers.append(worker_addr)
@@ -105,21 +104,21 @@ class RWorkerQueue:
                 if client_addr != b'R':
                     assert message[3] == b""
                     reply = message[4]  # Send it back to the client :
-                    yield from frontend.send_multipart([client_addr, b"", reply])
+                    await frontend.send_multipart([client_addr, b"", reply])
                     if b'exiting' in reply:
                         self.available_workers.remove(worker_addr)
 
             # poll on frontend (client request) only if workers are available :
             if frontend in socks and socks[frontend] == zmq.POLLIN:
                 client_addr, empty, request, empty2, data = \
-                    yield from frontend.recv_multipart()
+                    await frontend.recv_multipart()
                 assert empty == b"" and empty2 == b''
                 #  Dequeue and drop the next worker address
                 worker_id = self.available_workers.popleft()
-                yield from backend.send_multipart(
+                await backend.send_multipart(
                     [worker_id, b"", client_addr, b"", request, b"", data])
 
-        yield from asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)
         frontend.close()
         backend.close()
         self.loop.stop()

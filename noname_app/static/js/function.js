@@ -300,19 +300,6 @@ function fillMenu_Discont(layer){
                 .style("stroke-opacity", val >= threshold ? 1 : 0);
             result_layer.node().querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
         }
-
-        let _list_display_name = get_display_name_on_layer_list(new_layer_name),
-            layers_listed = layer_list.node(),
-            li = document.createElement("li");
-
-        li.setAttribute("layer_name", new_layer_name);
-        li.setAttribute("class", "ui-state-default sortable_result " + new_layer_name);
-        li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Line - ", arr_disc.length, " features"].join(''))
-        li.innerHTML = [
-            '<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit,
-            eye_open, button_legend, button_type['Line'], "</div> ", _list_display_name
-            ].join('')
-        layers_listed.insertBefore(li, layers_listed.childNodes[0])
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
@@ -327,8 +314,8 @@ function fillMenu_Discont(layer){
             "n_features": arr_disc.length,
             "result": result_value
             };
+        create_li_layer_elem(new_layer_name, arr_disc.length, "Line", "result");
         send_layer_server(new_layer_name, "/layers/add");
-        binds_layers_buttons();
         zoom_without_redraw();
         switch_accordion_section();
         });
@@ -342,7 +329,7 @@ function fillMenu_Discont(layer){
 */
 function send_layer_server(layer_name, url){
     var formToSend = new FormData();
-    var JSON_layer = url.indexOf("olson") > -1 ? path_to_geojson2(layer_name) : path_to_geojson(layer_name);
+    var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
     $.ajax({
@@ -832,8 +819,7 @@ function fillMenu_PropSymbolChoro(layer){
                 colors_breaks: colors_breaks,
                 is_result: true
             };
-
-            binds_layers_buttons();
+//            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
         }
@@ -1011,7 +997,8 @@ var render_label = function(layer, rendering_params){
     let new_layer_data = [];
     let ref_selection = document.getElementById(layer).querySelectorAll("path");
     let layer_to_add = check_layer_name("labels_" + layer);
-    for(let i=0; i<ref_selection.length; i++){
+    let nb_ft = ref_selection.length;
+    for(let i=0; i<nb_ft; i++){
         let ft = ref_selection[i].__data__;
         new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)})
     }
@@ -1025,20 +1012,10 @@ var render_label = function(layer, rendering_params){
         .style("fill", txt_color)
         .text(d => d.label);
 
-    let class_name = "ui-state-default sortable_result " + layer_to_add,
-        _list_display_name = get_display_name_on_layer_list(layer_to_add),
-        layers_listed = layer_list.node(),
-        li = document.createElement("li");
-
-    li.setAttribute("layer_name", layer_to_add);
-    li.setAttribute("class", class_name);
-    li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                    button_trash, button_zoom_fit,
-                    eye_open, button_type['Point'],
-                    "</div> ", _list_display_name].join('')
-    layers_listed.insertBefore(li, layers_listed.childNodes[0])
+    create_li_layer_elem(layer_to_add, nb_ft, "Point", "result");
 
     current_layers[layer_to_add] = {
+        "n_features": current_layers[layer].n_features,
         "renderer": "Label",
         "symbol": "text",
         "fill_color" : "black",
@@ -1067,13 +1044,15 @@ var fillMenu_Typo = function(){
         .html("Choose colors")
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0];
-            display_categorical_box(layer, field_selec.node().value)
+            let selected_field = field_selec.node().value;
+            let new_layer_name = check_layer_name([layer, "Typo", selected_field].join('_'));
+            display_categorical_box(layer, selected_field)
                 .then(function(confirmed){
                     if(confirmed){
                         d3.select("#Typo_yes").attr("disabled", null)
                         rendering_params = {
                                 nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                renderer:"Categorical", rendered_field: field_selec.node().value
+                                renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
                             }
                     }
                 });
@@ -1089,8 +1068,6 @@ var fillMenu_Typo = function(){
             if(rendering_params){
                 let layer = Object.getOwnPropertyNames(user_data)[0];
                 render_categorical(layer, rendering_params);
-                insert_legend_button(layer);
-                binds_layers_buttons(layer);
                 switch_accordion_section();
             }
          });
@@ -1140,8 +1117,6 @@ function fillMenu_Choropleth(){
             if(rendering_params){
                 let layer = Object.getOwnPropertyNames(user_data)[0];
                 render_choro(layer, rendering_params);
-                insert_legend_button(layer);
-                binds_layers_buttons(layer);
                 switch_accordion_section();
             }
          });
@@ -1299,11 +1274,11 @@ function fillMenu_MTA(){
     // TODO : check that fields are correctly filled before trying to prepare the query
     // ... and only enable the "compute" button when they are
     var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr("value", "yes")
-        .attr("id", "yes")
-        .attr("class", "params button_st2")
-        .html("Compute and render");
+                        .append("button")
+                        .attr("value", "yes")
+                        .attr("id", "yes")
+                        .attr("class", "params button_st2")
+                        .html("Compute and render");
 
 
     // Where the real job is done :
@@ -1339,8 +1314,7 @@ function fillMenu_MTA(){
                         for(let i=0; i<nb_features; ++i)
                             user_data[layer][i][field_name] = result_values.values[i];
                         if(type_dev == "RelativeDeviation"){
-                            current_layers[layer].renderer = ["MTA", type_dev].join('_');
-                            current_layers[layer].rendered_field = field_name
+                            let lyr_name_to_add = chech_layer_name([layer, "MTA", type_dev, field_name].join('_'))
                             let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
                             let rendering_params = {
                                 nb_class: opt_nb_class,
@@ -1350,12 +1324,12 @@ function fillMenu_MTA(){
                                 colorsByFeature: disc_result[4],
                                 renderer:  ["Choropleth", "MTA", choosen_method].join('_'),
                                 rendered_field: field_name,
-                                new_name: chech_layer_name([layer, "MTA", field_name].join('_'))
+                                new_name: lyr_name_to_add
                                     };
                             render_choro(layer, rendering_params);
-                            current_layers[layer].colors_breaks = disc_result[2];
-                            insert_legend_button(layer);
-                            zoom_without_redraw();
+                            current_layers[lyr_name_to_add].colors_breaks = disc_result[2];
+                            current_layers[lyr_name_to_add].renderer = ["MTA", type_dev].join('_');
+                            current_layers[lyr_name_to_add].rendered_field = field_name;
                         } else if (type_dev == "AbsoluteDeviation"){
                             let new_lyr_name = check_layer_name(["MTA", "AbsoluteDev", var1_name, var2_name].join('_')),
                                 rand_color = Colors.random(),
@@ -1372,7 +1346,6 @@ function fillMenu_MTA(){
                                     };
                             make_prop_symbols(rendering_params);
                             current_layers[new_lyr_name].renderer = "PropSymbols_MTA";
-                            binds_layers_buttons();
                             zoom_without_redraw();
                             switch_accordion_section();
                         }
@@ -1451,8 +1424,6 @@ function fillMenu_MTA(){
                                 current_layers[new_lyr_name].fill_color = {class: current_layers[new_lyr_name].features_order.map(obj => obj[3])}
                                 current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
                                 current_layers[new_lyr_name].rendered_field2 = field_name1;
-                                binds_layers_buttons();
-                                zoom_without_redraw();
                                 switch_accordion_section();
 
                             } else if (result_values.Error){
@@ -1924,17 +1895,6 @@ function fillMenu_Anamorphose(){
                     shape_symbol = option1_val.node().value;
 
                 let features_order = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
-
-                let class_name = "ui-state-default sortable_result " + layer_to_add,
-                    _list_display_name = get_display_name_on_layer_list(layer_to_add),
-                    layers_listed = layer_list.node(),
-                    li = document.createElement("li");
-
-                li.setAttribute("layer_name", layer_to_add);
-                li.setAttribute("class", class_name);
-                li.setAttribute("layer-tooltip", ["<b>", layer_to_add, "</b> - Point - ", current_layers[layer].n_features, " features"].join(''))
-                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_legend, button_type['Point'], "</div> ", _list_display_name].join('')
-                layers_listed.insertBefore(li, layers_listed.childNodes[0])
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
                     "type": "Point",
@@ -1947,10 +1907,9 @@ function fillMenu_Anamorphose(){
                     "ref_layer_name": layer,
                     "fill_color": {"random": true}
                     };
-                binds_layers_buttons();
+                create_li_layer_elem(layer_to_add, current_layers[layer].n_features, "Point", "result");
                 zoom_without_redraw();
                 switch_accordion_section();
-
                 }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -2176,14 +2135,10 @@ var boxExplore = {
             modal:false,
             resizable: true,
             width: Math.round(window.innerWidth * 0.8),
-//            buttons:[{
-//                    text: "Confirm",
-//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-//                        },
-//                   {
-//                    text: "Cancel",
-//                    click: function(){$(this).dialog("close");$(this).remove();}
-//                   }],
+            buttons:[{
+                    text: "Close",
+                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+                        }],
             close: function(event, ui){
                     $(this).dialog("destroy").remove();
                     if(deferred.promise.isPending()) deferred.resolve(false);
@@ -2214,7 +2169,8 @@ var fields_PropSymbol = {
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
-        })
+        });
+        setSelected(field_selec.node(), fields[0]);
     },
 
     unfill: function(){
@@ -2275,7 +2231,7 @@ function fillMenu_PropSymbol(layer){
                                      "ref_value": +ref_value.node().value,
                                      "fill_color": fill_color.node().value };
             make_prop_symbols(rendering_params);
-            binds_layers_buttons();
+            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
 
@@ -2371,24 +2327,11 @@ function make_prop_symbols(rendering_params){
         };
     }
 
-    let class_name = "ui-state-default sortable_result " + layer_to_add,
-        _list_display_name = get_display_name_on_layer_list(layer_to_add),
-        layers_listed = layer_list.node(),
-        li = document.createElement("li");
-
-    li.setAttribute("layer_name", layer_to_add);
-    li.setAttribute("class", class_name);
-    li.setAttribute("layer-tooltip",
-            ["<b>", layer_to_add, "</b> - Point - ", nb_features, " features"].join(''))
-    li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                    button_trash, button_zoom_fit, eye_open0, button_legend,
-                    button_type['Point'], "</div> ", _list_display_name].join('')
-    layers_listed.insertBefore(li, layers_listed.childNodes[0])
-
     let fill_color = rendering_params.fill_color instanceof Array
                     ? {"class": rendering_params.fill_color}
                     : {"single" : rendering_params.fill_color};
     current_layers[layer_to_add] = {
+        "n_features": d_values.length,
         "renderer": rendering_params.renderer || "PropSymbols",
         "symbol": symbol_type,
         "fill_color" : fill_color,
@@ -2399,6 +2342,7 @@ function make_prop_symbols(rendering_params){
         "ref_layer_name": layer,
         "features_order": d_values
         };
+    create_li_layer_elem(layer_to_add, d_values.length, "Point", "result");
     return d_values;
 }
 
@@ -2509,6 +2453,30 @@ function render_categorical(layer, rendering_params){
     zoom_without_redraw();
 }
 
+function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
+    let _list_display_name = get_display_name_on_layer_list(layer_name),
+        layers_listed = layer_list.node(),
+        li = document.createElement("li");
+
+    li.setAttribute("layer_name", layer_name);
+    if(type_layer == "result"){
+        li.setAttribute("class", ["ui-state-default sortable_result ", layer_name].join(''));
+        li.setAttribute("layer-tooltip",
+                ["<b>", layer_name, "</b> - ", type_geom ," - ", nb_ft, " features"].join(''));
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
+                        button_trash, button_zoom_fit, eye_open0, button_legend,
+                        button_type[type_geom], "</div> ", _list_display_name].join('');
+    } else if(type_layer == "sample"){
+        li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
+        li.setAttribute("layer-tooltip",
+                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.innerHTML = ['<div class="layer_buttons">', button_style,
+                        button_trash, button_zoom_fit, eye_open0,
+                        button_type[type_geom], "</div> ", _list_display_name].join('');
+    }
+    layers_listed.insertBefore(li, layers_listed.childNodes[0]);
+    binds_layers_buttons(layer_name);
+}
 // Function to render the `layer` according to the `rendering_params`
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
@@ -2518,10 +2486,12 @@ function render_choro(layer, rendering_params){
         var ref_layer = layer;
         layer = rendering_params.new_name;
         svg_map.lastChild.setAttribute("id", layer);
+        svg_map.lastChild.setAttribute("class", "result_layer layer");
         var layer_to_render = map.select("#"+layer).selectAll("path");
         current_layers[layer] = {n_features: current_layers[ref_layer].n_features,
                                  type: current_layers[ref_layer].type,
-                                key_name: current_layers[ref_layer].key_name};
+                                 ref_layer_name: ref_layer};
+        create_li_layer_elem(layer, current_layers[layer].n_features, current_layers[layer].type, "result");
     } else {
         var layer_to_render = map.select("#"+layer).selectAll("path");
     }
@@ -2712,10 +2682,14 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         return result;
 }
 
-// Function to add a field to the targeted layer
-// Args :
-// - layer : the layer name
-// - parent : (optional) the object createBoxExplore to be used as a callback to redisplay the table with the new field
+/**
+* Function to add a field to the targeted layer
+*
+* @param {Array} table - A reference to the "table" to work on
+* @param {String} layer - The name of the layer
+* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
+*
+*/
 function add_table_field(table, layer_name, parent){
     function check_name(){
         if(regexp_name.test(this.value))
@@ -2938,27 +2912,6 @@ function path_to_geojson(id_layer){
                 id: i,
                 properties: d.properties,
                 geometry: {type: d.type, coordinates: d.coordinates}
-            })
-        });
-    return JSON.stringify({
-        type: "FeatureCollection",
-        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-        features: result_geojson
-    });
-}
-
-function path_to_geojson2(id_layer){
-    if(id_layer.indexOf('#') != 0)
-        id_layer = ["#", id_layer].join('');
-    var result_geojson = [];
-    d3.select(id_layer)
-        .selectAll("path")
-        .each(function(d,i){
-            result_geojson.push({
-                type: "Feature",
-                id: i,
-                properties: d.properties,
-                geometry: d.geometry
             })
         });
     return JSON.stringify({

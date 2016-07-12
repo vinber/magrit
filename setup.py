@@ -37,6 +37,7 @@ setup(
     cmdclass = {'build_ext': build_ext},
     install_requires=requirements,
     test_suite='tests',
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'noname_app=noname_app.noname_aio:main',

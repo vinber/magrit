@@ -92,7 +92,8 @@ def reproj_layer(geojson, output_crs, input_crs="epsg:4326"):
                      pyproj_Proj(init=input_crs),
                      pyproj_Proj(output_crs))
     for feature in geojson["features"]:
-        feature["geometry"] = mapping(transform(reproj, shape(feature["geometry"])))
+        feature["geometry"] = mapping(transform(
+            reproj, shape(feature["geometry"])))
 
 
 def check_projection(proj4string):

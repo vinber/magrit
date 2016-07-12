@@ -21,7 +21,7 @@ cpdef get_name(unsigned int length=25):
         arr[i] = chr(choice(choice_list))
     return arr.tounicode()
 
-cpdef join_topojson_new_field2(dict topojson, list new_field, str new_field_name):
+cpdef join_field_topojson(dict topojson, list new_field, str new_field_name):
     cdef:
         unsigned int ix = 0
         dict geom
