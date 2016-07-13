@@ -13,11 +13,12 @@ class MyAppTestCase(AioHTTPTestCase):
         override the get_app method to return
         your application.
         """
-        return noname_aio.app(loop=loop)
+        app = noname_aio._init(loop=loop)
+        return app
 
     @unittest_run_loop
     async def test_example(self):
         request = await self.client.request("GET", "/")
         assert request.status == 200
         text = await request.text()
-        assert "" in text
+        assert "GeoPossum" in text

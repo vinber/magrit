@@ -762,7 +762,7 @@ function display_categorical_box(layer, field){
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
                         .attr({id: "categorical_box",
-                               title: ["Color a catgorical field - ", layer, " - ", nb_features, " features"].join('')});
+                               title: ["Color a categorical field - ", layer, " - ", nb_features, " features"].join('')});
     newbox.append("h3").html("")
     newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
 
@@ -786,7 +786,6 @@ function display_categorical_box(layer, field){
             .style("background-color", d => d.color)
             .style("margin", "auto")
             .style("vertical-align", "middle")
-//            .style({"border-width": "0.1px 0px","border-style": "solid none","border-color": "grey"})
             .style({width: "22px", height: "22px", "border-radius": "10%", display: "inline-block"})
             .on("click", function(){
                 let self = this;
@@ -832,6 +831,134 @@ function display_categorical_box(layer, field){
                     let color_map = fetch_categorical_colors();
                     let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
                     deferred.resolve([nb_class, color_map, colorByFeature]);
+                    $(this).dialog("close");
+                    }
+                },
+           {
+            text: "Cancel",
+            click: function(){
+                $(this).dialog("close");
+                $(this).remove();}
+           }],
+        close: function(event, ui){
+                d3.selectAll(".color_input").remove();
+                $(this).dialog("destroy").remove();
+                if(deferred.promise.isPending()){
+                    deferred.resolve(false);
+                }
+            }
+    })
+    return deferred.promise;
+}
+
+function fetch_symbol_categories(){
+    let categ = document.querySelectorAll(".typo_class"),
+        symbol_map = new Map();
+    for(let i = 0; i < categ.length; i++){
+        let selec =  categ[i].querySelector(".symbol_section");
+        if(selec.style.backgroundImage.length > 7){
+            let img = categ[i].querySelector(".symbol_section").style.backgroundImage.split("url(")[1].substring(1).slice(0,-2);
+            symbol_map.set(categ[i].__data__.name, [img, 36]);
+        } else {
+            symbol_map.set(categ[i].__data__.name, [null, 0]);
+        }
+    }
+    return symbol_map;
+}
+
+
+function display_box_symbol_typo(layer, field){
+    var nb_features = current_layers[layer].n_features,
+        categories = new Map(),
+        data_layer = user_data[layer],
+        cats = [];
+
+    for(let i = 0; i < nb_features; ++i){
+        let value = data_layer[i][field];
+        let ret_val = categories.get(value);
+        if(ret_val)
+            categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
+        else
+            categories.set(value, [1, [i]]);
+    }
+
+    let nb_class = categories.size;
+
+    categories.forEach( (v,k) => { cats.push({name: k, nb_elem: v[0]}) });
+
+    var newbox = d3.select("body")
+                        .append("div").style("font-size", "10px")
+                        .attr({id: "symbol_box",
+                               title: ["Choose symbols for fields categories - ", layer, " - ", nb_features, " features"].join('')});
+    newbox.append("h3").html("")
+    newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
+
+    newbox.append("ul").style("padding", "unset").attr("id", "typo_categories")
+            .selectAll("li")
+            .data(cats).enter()
+            .append("li")
+                .style({margin: "auto", "list-style": "none"})
+                .attr("class", "typo_class")
+                .attr("id", (d,i) => ["line", i].join('_'));
+
+    newbox.selectAll(".typo_class")
+            .append("span")
+            .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
+            .attr("class", "typo_name")
+            .attr("id", d => d.name)
+            .html(d => d.name);
+
+    newbox.selectAll(".typo_class")
+            .insert("p").attr("class", "symbol_section")
+            .style("margin", "auto")
+            .style("background-image", "url('')")
+            .style("vertical-align", "middle")
+            .style({width: "32px", height: "32px", "border-radius": "10%", display: "inline-block", "background-size": "32px 32px"})
+            .on("click", function(){
+                let self = this;
+                let input = document.createElement('input');
+                input.setAttribute("type", "file");
+                input.onchange = function(event){
+                    let file = event.target.files[0];
+                    let file_name = file.name;
+                    let reader = new FileReader()
+                    reader.onloadend = function(){
+                        let result = reader.result;
+                        self.style.backgroundImage = ['url("', result, '")'].join('');
+                    }
+                    reader.readAsDataURL(file);
+                }
+                input.dispatchEvent(new MouseEvent("click"));
+            });
+
+    newbox.selectAll(".typo_class")
+            .insert("span")
+            .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
+
+    newbox.selectAll(".typo_class")
+            .insert("input").attr("type", "number")
+            .style("width", "38px").style("display", "inline-block")
+            .attr("value", 32);
+
+    newbox.selectAll(".typo_class")
+            .insert("span")
+            .html(" px");
+
+      $( "#typo_categories" ).sortable({
+        placeholder: "ui-state-highlight",
+        helper: 'clone'  // Avoid propagation of the click event to the enclosed button
+      });
+
+
+    var deferred = Q.defer();
+    $("#symbol_box").dialog({
+        modal: true,
+        resizable: true,
+        buttons:[{
+            text: "Confirm",
+            click: function(){
+                    let symbol_map = fetch_symbol_categories();
+                    deferred.resolve([nb_class, symbol_map]);
                     $(this).dialog("close");
                     }
                 },

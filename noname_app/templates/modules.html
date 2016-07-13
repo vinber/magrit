@@ -5,6 +5,13 @@
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> GeoPossum </title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <link  href="/static/css/style.min.css" rel="stylesheet"  type="text/css">
     <script  src="/static/js/lib/d3.v3.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/d3.geo.projection.js"></script>
@@ -27,13 +34,6 @@
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
   </head>
   <body>
       <div id="header">
@@ -193,8 +193,6 @@ var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_ty
         ]);
 
 var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
-
-
 
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
 
@@ -529,10 +527,55 @@ prepare_drop_section();
 // JQuery menu, tooltips and progress bar related functions :
 //////////////////////////////////////////////////////////////////////////////
 
-// Trigger the accordions, start with the first one (section 1) open :
+// Set-up all the accordions :
 $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
-$("#accordion1").accordion({ collapsible: true, active: 0, heightStyle: "#map" });
 
+// Start with the first always open :
+$("#accordion1").accordion("option", "active", 0);
+
+// Close the functionnality options accordion when the user intend to choose another function :
+$("#accordion2_pre").on("accordionbeforeactivate", function(){
+//$("#accordion2_pre").on("accordionbeforeactivate", function(event, ui){
+ //   if(ui.newHeader.length) $("#accordion2").accordion({active: false})
+    let section2_accordion = document.getElementById("accordion2").firstChild;
+    if(section2_accordion.getAttribute("aria-expanded") == "true")
+        section2_accordion.dispatchEvent(new Event("click"));
+    });
+
+// Close the "choose functionnality" accordion (when one is choosed) to display functionnality options :
+
+// Compute the total size occuped by the menu in order to close some section to avoid go further than the page height :
+$(".accordion").on("accordionactivate", function(event, ui){
+        if(!(ui.newPanel) || ui.newPanel.length == 0 )
+            return ;
+        let last_opened = ui.newPanel[0].parentElement.id;
+        let opened = [];
+        let accordions = document.querySelectorAll(".accordion");
+        let new_size = 0;
+        for(let i = 0; i < accordions.length ; i++){
+            new_size = new_size + accordions[i].getBoundingClientRect().height;
+            if(accordions[i].firstChild.getAttribute("aria-expanded") == "true")
+                opened.push(accordions[i].id);
+        }
+        opened.splice(opened.indexOf(last_opened), 1);
+        if(new_size > window.innerHeight
+                && opened.indexOf("accordion1") > -1
+                && last_opened != "accordion1"){
+            new_size = new_size - accordions[0].lastChild.getBoundingClientRect().height;
+            opened.splice(opened.indexOf("accordion1"), 1);
+            $("#accordion1").accordion("option", "active", 1);
+        }
+        if(new_size > window.innerHeight){
+            for(let i = opened.length - 1; i > 0; --i){
+                let acc = document.getElementById(opened[i]);
+                new_size = new_size - acc.lastChild.getBoundingClientRect().height;
+                $("#" + opened[i]).accordion("option", "active", 1);
+                opened.pop();
+            }
+        }
+    });
+
+// Set up the widget allowing to sort layers :
 $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
     update: function(a){
@@ -673,7 +716,7 @@ function displayInfoOnMove(){
         if(symbol){
             let ref_layer_name = current_layers[top_layer].ref_layer_name;
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-                let ref_id = current_layers[top_layer].features_order[i][0];
+                let ref_id = current_layers[top_layer].features_order ? current_layers[top_layer].features_order[i][0] : +i;
                 let txt_info = ["<h3>", top_layer, "</h3><br><i>Feature ",
                                 ref_id, "/", current_layers[ref_layer_name].n_features, "</i><br>"];
                 let properties = user_data[ref_layer_name][ref_id];

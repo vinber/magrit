@@ -37,7 +37,7 @@ function createLegend(layer, title){
             || current_layers[layer].renderer.indexOf("DiscLayer") != -1)
         createLegend_discont_links(layer, field);
 
-    else if (current_layers[layer].colors_breaks || current_layers[layer].color_map)
+    else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map)
         createLegend_choro(layer, field, title, field);
 
     else if (current_layers[layer].renderer.indexOf("Carto_doug") != -1)
@@ -348,6 +348,11 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
         current_layers[layer].color_map.forEach( (v,k) => {
             data_colors_label.push({value: v[1], color: v[0]}); } );
         nb_class = current_layers[layer].color_map.size;
+    } else if(current_layers[layer].renderer.indexOf('TypoSymbols') > -1){
+        data_colors_label = [];
+        current_layers[layer].symbols_map.forEach( (v,k) => {
+            data_colors_label.push({value: k, image: v}); } );
+        nb_class = current_layers[layer].symbols_map.size;
     } else {
         data_colors_label = current_layers[layer].colors_breaks.map(obj => {
             return {value: obj[0], color: obj[1]};
@@ -360,17 +365,34 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
                                   .enter().insert('g')
                                   .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
 
-    legend_elems
-      .append('rect')
-      .attr("x", xpos + boxwidth)
-      .attr("y", function(d, i){
-        last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
-        return last_pos;
-        })
-      .attr('width', boxwidth)
-      .attr('height', boxheight)
-      .style('fill', function(d) { return d.color; })
-      .style('stroke', function(d) { return d.color; });
+    if(current_layers[layer].renderer.indexOf('TypoSymbols') == -1)
+        legend_elems
+              .append('rect')
+              .attr("x", xpos + boxwidth)
+              .attr("y", function(d, i){
+                last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
+                return last_pos;
+                })
+              .attr('width', boxwidth)
+              .attr('height', boxheight)
+              .style('fill', function(d) { return d.color; })
+              .style('stroke', function(d) { return d.color; });
+
+    else
+        legend_elems
+              .append('image')
+              .attr("x", xpos + boxwidth)
+              .attr("y", function(d, i){
+                last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
+                return last_pos;
+                })
+              .attr('width', boxwidth)
+              .attr('height', boxheight)
+//              .attr('width', d => d.image[1])
+//              .attr('height', d => d.image[1])
+              .attr("xlink:href", d => d.image[0]);
+
+
 
     legend_elems
       .append('text')

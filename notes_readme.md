@@ -39,6 +39,6 @@ Following dependencies are needed :
 
 Ubuntu/Debian:
 ```
-sudo apt-get install libgdal-dev libproj-dev libv8-dev libffi-dev
-libpython3.5-dev r-base redis-server nodejs npm libfftw3-dev libzmq-dev
+sudo apt-get install libgdal-dev gdal-bin libproj-dev libv8-dev libffi-dev
+python3.5 libpython3.5-dev cython3 r-base redis-server nodejs npm libfftw3-dev libzmq-dev
 ```

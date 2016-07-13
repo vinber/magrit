@@ -133,6 +133,102 @@ function check_layer_name(name){
     }
 }
 
+var fields_Symbol = {
+    fill: function(layer){
+        if(!layer) return;
+        let fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+            field_to_use = d3.select("#field_Symbol");
+        fields_all.forEach(function(field){
+            field_to_use.append("option").text(field).attr("value", field);
+        });
+        d3.selectAll(".params").attr("disabled", null);
+    },
+    unfill: function(){
+        unfillSelectInput(document.getElementById("field_Symbol"));
+        d3.selectAll(".params").attr("disabled", true);
+    }
+}
+
+function fillMenu_Symbol(){
+    let dv2 = section2.append("p").attr("class", "form-rendering");
+    let field_selec = dv2.append("p").html("Field to use ")
+                    .insert('select')
+                    .attr({class: "params", id: "field_Symbol"});
+    let rendering_params;
+    dv2.insert('p').style("margin", "auto").html("")
+        .append("button")
+        .attr({id: "selec_Symbol", class: "button_disc params"})
+        .style({"font-size": "0.8em", "text-align": "center"})
+        .html("Choose your symbols")
+        .on("click", function(){
+            let layer_name = Object.getOwnPropertyNames(user_data)[0];
+            display_box_symbol_typo(layer_name, field_selec.node().value).then(function(confirmed){
+                if(confirmed){
+                    ok_button.attr("disabled", null);
+                    rendering_params = {
+                        nb_cat: confirmed[0],
+                        symbols_map: confirmed[1],
+                        field: field_selec.node().value
+                    };
+                }
+            });
+        });
+
+    let ok_button = dv2.append("p")
+                      .style({"text-align": "right", margin: "auto"})
+                      .append('button')
+                      .attr("disabled", true)
+                      .attr('id', 'yes')
+                      .attr('class', 'params button_st2')
+                      .text('Compute and render');
+
+    d3.selectAll(".params").attr("disabled", true);
+
+    ok_button.on("click", function(){
+        console.log(rendering_params);
+        let layer_name = Object.getOwnPropertyNames(user_data)[0];
+        let field = rendering_params.field;
+        let layer_to_add = check_layer_name([layer_name,
+                                             field,
+                                             "Symbols"].join('_'));
+        let new_layer_data = [];
+
+        let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
+        let nb_ft = ref_selection.length;
+
+        for(let i=0; i<nb_ft; i++){
+            let ft = ref_selection[i].__data__;
+            new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)})
+        }
+
+        map.append("g").attr({id: layer_to_add, class: "layer"})
+            .selectAll("image")
+            .data(new_layer_data).enter()
+            .insert("image")
+            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
+
+        create_li_layer_elem(layer_to_add, nb_ft, "Point", "result");
+
+        current_layers[layer_to_add] = {
+            "n_features": current_layers[layer_name].n_features,
+            "renderer": "TypoSymbols",
+            "symbols_map": rendering_params.symbols_map,
+            "rendered_field": field,
+            "is_result": true,
+            "symbol": "image",
+            "ref_layer_name": layer_name,
+            };
+        zoom_without_redraw();
+
+    });
+
+}
+
+
 var fields_Discont = {
     fill: function(layer){
         if(!layer) return;
@@ -163,7 +259,7 @@ function insert_legend_button(layer_name){
     selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
 
-function fillMenu_Discont(layer){
+function fillMenu_Discont(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
     dv2.append('p').html('Value field ')
                 .insert('select')
