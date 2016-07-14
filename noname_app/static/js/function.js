@@ -96,7 +96,7 @@ function get_menu_option(func){
             "fields_handler": "fields_Symbol",
             },
     };
-    return menu_option[func.toLowerCase()] || {}
+    return menu_option[func.toLowerCase()] || {};
 }
 
 
@@ -198,7 +198,7 @@ function fillMenu_Symbol(){
 
         for(let i=0; i<nb_ft; i++){
             let ft = ref_selection[i].__data__;
-            new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)})
+            new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
         }
 
         map.append("g").attr({id: layer_to_add, class: "layer"})
@@ -223,7 +223,7 @@ function fillMenu_Symbol(){
             "ref_layer_name": layer_name,
             };
         zoom_without_redraw();
-
+        switch_accordion_section();
     });
 
 }
@@ -289,7 +289,7 @@ function fillMenu_Discont(){
                  .attr({type: 'number', class: 'params', id: 'Discont_max_size'})
                  .attr({min: 0.1, max: 66.0, value: 10, step: 0.1})
                  .on("change", function(){
-                    min_size_field.attr("max", this.value)
+                    min_size_field.attr("max", this.value);
                   });
 
     dv2.append('p').html('Discontinuity threshold ')
@@ -335,7 +335,7 @@ function fillMenu_Discont(){
                              new_id = [a.id, b.id].join('_'),
                              new_id_rev = [b.id, a.id].join('_');
                         if(!(result_value.get(new_id) || result_value.get(new_id_rev)))
-                            result_value.set(new_id, value)
+                            result_value.set(new_id, value);
                     }
                     return false; });
         else
@@ -360,7 +360,7 @@ function fillMenu_Discont(){
         let arr_disc = [], arr_tmp = [];
         for(let [id, val] of result_value){
             arr_disc.push([id, val]);
-            arr_tmp.push(val)
+            arr_tmp.push(val);
         }
 
         let serie = new geostats(arr_tmp),
@@ -535,7 +535,7 @@ function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size)
                 .style("width", "60px");
             selection
                 .insert('span')
-                .html(" px")
+                .html(" px");
         }
     }
 }
@@ -569,7 +569,7 @@ function fetch_min_max_table_value(parent_node){
             return false;
         }
     }
-    return {"mins" : mins, "maxs" : maxs, "sizes" : sizes}
+    return {"mins" : mins, "maxs" : maxs, "sizes" : sizes};
 }
 
 function fillMenu_FlowMap(){
@@ -600,8 +600,8 @@ function fillMenu_FlowMap(){
 //            disc = disc_type.node().value,
             min_size = 0.5,
             max_size = 10;
-        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size)
-    })
+        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size);
+    });
 
 //    disc_type.on("change", function(){
 //        let name = field_fij.node().value,
@@ -618,8 +618,8 @@ function fillMenu_FlowMap(){
 //            disc = disc_type.node().value,
             min_size = 0.5,
             max_size = 10;
-        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size)
-    })
+        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size);
+    });
 
     dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('');
     dv2.append('p').html('<b>Reference layer fields :</b>');
@@ -661,7 +661,7 @@ function fillMenu_FlowMap(){
                 "field_j": field_j.node().value,
                 "field_fij": field_fij.node().value,
                 "join_field": JSON.stringify(join_field_to_send)
-                }))
+                }));
 
             $.ajax({
                 processData: false,
@@ -851,7 +851,7 @@ function fillMenu_PropSymbolChoro(layer){
                 .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length))
+                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
 
                     display_discretization(layer, field2_selec.node().value, opt_nb_class, "Quantiles")
                         .then(function(confirmed){
@@ -861,7 +861,7 @@ function fillMenu_PropSymbolChoro(layer){
                                     nb_class: confirmed[0], type: confirmed[1],
                                     breaks: confirmed[2], colors: confirmed[3],
                                     colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
-                                    }
+                                    };
                             } else
                                 return;
                         });
@@ -935,7 +935,7 @@ var fields_Choropleth = {
             return;
         }
         fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
-        d3.selectAll(".params").attr("disabled", null)
+        d3.selectAll(".params").attr("disabled", null);
     },
 
     unfill: function(){
@@ -1096,17 +1096,42 @@ var render_label = function(layer, rendering_params){
     let nb_ft = ref_selection.length;
     for(let i=0; i<nb_ft; i++){
         let ft = ref_selection[i].__data__;
-        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)})
+        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
     }
-    map.append("g").attr({id: layer_to_add, class: "layer"})
+
+    let drag_elem = d3.behavior.drag()
+            .origin(function() {
+                let t = d3.select(this);
+                return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                        y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+            })
+            .on("dragstart", () => {
+                d3.event.sourceEvent.stopPropagation();
+                d3.event.sourceEvent.preventDefault();
+                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+
+              })
+            .on("dragend", () => {
+                if(d3.select("#hand_button").classed("active"))
+                    zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", function(){
+                console.log(d3.select(this));console.log(d3.event);
+                d3.select(this)
+                    .attr("x", d3.event.x).attr("y", d3.event.y);
+              });
+
+    map.append("g").attr({id: layer_to_add, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
+        .attr("id", (d,i) => "Feature_" + i)
         .attr("x", d => d.coords[0])
         .attr("y", d => d.coords[1])
         .style("font-size", font_size)
         .style("fill", txt_color)
-        .text(d => d.label);
+        .text(d => d.label)
+        .call(drag_elem);
 
     create_li_layer_elem(layer_to_add, nb_ft, "Point", "result");
 
@@ -1114,10 +1139,11 @@ var render_label = function(layer, rendering_params){
         "n_features": current_layers[layer].n_features,
         "renderer": "Label",
         "symbol": "text",
-        "fill_color" : "black",
+        "fill_color" : txt_color,
         "rendered_field": label_field,
         "is_result": true,
         "ref_layer_name": layer,
+        "default_size": font_size
         };
     zoom_without_redraw();
     return layer_to_add;
@@ -1191,14 +1217,14 @@ function fillMenu_Choropleth(){
             display_discretization(layer_name, field_selec.node().value, opt_nb_class, "Quantiles")
                 .then(function(confirmed){
                     if(confirmed){
-                        d3.select("#choro_yes").attr("disabled", null)
+                        d3.select("#choro_yes").attr("disabled", null);
                         rendering_params = {
                                 nb_class: confirmed[0], type: confirmed[1],
                                 breaks: confirmed[2], colors:confirmed[3],
                                 colorsByFeature: confirmed[4], renderer:"Choropleth",
                                 rendered_field: field_selec.node().value,
                                 new_name: check_layer_name([layer_name, field_selec.node().value, "Choro"].join('_'))
-                            }
+                            };
                     }
                 });
         });
@@ -1233,10 +1259,10 @@ var fields_MTA = {
 
             fields.forEach(function(field){
                 field1_selec.append("option").text(field).attr("value", field);
-                field2_selec.append("option").text(field).attr("value", field)
+                field2_selec.append("option").text(field).attr("value", field);
             });
             fields_all.forEach(function(field){
-                field_key_agg.append("option").text(field).attr("value", field)
+                field_key_agg.append("option").text(field).attr("value", field);
             });
 
 
@@ -1410,7 +1436,7 @@ function fillMenu_MTA(){
                         for(let i=0; i<nb_features; ++i)
                             user_data[layer][i][field_name] = result_values.values[i];
                         if(type_dev == "RelativeDeviation"){
-                            let lyr_name_to_add = chech_layer_name([layer, "MTA", type_dev, field_name].join('_'))
+                            let lyr_name_to_add = chech_layer_name([layer, "MTA", type_dev, field_name].join('_'));
                             let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
                             let rendering_params = {
                                 nb_class: opt_nb_class,
@@ -1577,7 +1603,7 @@ function fillMenu_Stewart(){
         var span = p_span.append('input')
                         .style("width", "60px")
                         .attr({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: 0.001});
-        p_span.insert("span").html(" km")
+        p_span.insert("span").html(" km");
 
         var beta = dialog_content
                         .append('p')
@@ -1658,7 +1684,7 @@ function fillMenu_Stewart(){
                     for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
                         let k = Math.round(class_lim.min[i] * 100) / 100;
                         col_map.set(k, col_pal[i]);
-                        colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]])
+                        colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]]);
                     }
                     current_layers[n_layer_name].fill_color = {"class": []};
                     current_layers[n_layer_name].renderer = "Stewart";
@@ -1709,7 +1735,7 @@ function fillMenu_Anamorphose(){
             option1_val.append("option").text(symb[0]).attr("value", symb[1]);
         });
         option2_val.on("change", function(){
-            option2_txt2.html(this.value + " px")
+            option2_txt2.html(this.value + " px");
         });
     };
 
@@ -1753,7 +1779,6 @@ function fillMenu_Anamorphose(){
     });
 
     algo_selec.on("change", function(){
-
         if(this.value == "dorling")
             make_opt_dorling();
         else if(this.value == "olson")
@@ -1813,7 +1838,7 @@ function fillMenu_Anamorphose(){
                             scale_area = 1;
                         else
                             scale_area = 1 - scale_max / (max_dif / Math.abs(mean-val));
-                        transform.push(scale_area)
+                        transform.push(scale_area);
                     }
                 } else if (ref_size == "max"){
                     let max_dif = Math.abs(max-min);
@@ -1826,7 +1851,7 @@ function fillMenu_Anamorphose(){
                             scale_area = 1;
                         else
                             scale_area = 1 - (scale_max / val_dif);
-                        transform.push(scale_area)
+                        transform.push(scale_area);
                     }
 
                 }
@@ -1915,7 +1940,7 @@ function fillMenu_Anamorphose(){
                 formToSend.append("json", JSON.stringify({
                     "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
-                    "iterations": nb_iter }))
+                    "iterations": nb_iter }));
 
                 $.ajax({
                     processData: false,
@@ -1936,7 +1961,7 @@ function fillMenu_Anamorphose(){
                             .style("fill", function(){ return Colors.random(); })
                             .style("fill-opacity", 0.8)
                             .style("stroke", "black")
-                            .style("stroke-opacity", 0.8)
+                            .style("stroke-opacity", 0.8);
                     }
                 });
 //                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
@@ -2023,7 +2048,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
 
     for(let i = 0; i < nb_features; ++i){
         let val = +user_data[layer][i][field_name];
-        let pt = path.centroid(ref_layer_selection[i].__data__.geometry)
+        let pt = path.centroid(ref_layer_selection[i].__data__.geometry);
         d_values.push([i, val, pt]);
     }
     d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
@@ -2191,11 +2216,11 @@ var boxExplore = {
             result_layers = Object.getOwnPropertyNames(result_data),
             available = new Map();
         for(let lyr_name of target_layer)
-            available.set(lyr_name, ["Target layer", user_data[lyr_name]])
+            available.set(lyr_name, ["Target layer", user_data[lyr_name]]);
         if(ext_dataset)
-            available.set(dataset_name, ["Ext. dataset", joined_dataset[0]])
+            available.set(dataset_name, ["Ext. dataset", joined_dataset[0]]);
         for(let lyr_name of result_layers)
-            available.set(lyr_name, ["Result layer", result_data[lyr_name]])
+            available.set(lyr_name, ["Result layer", result_data[lyr_name]]);
         return available;
     },
     create: function(){
@@ -2219,11 +2244,11 @@ var boxExplore = {
                                 .insert("select").attr({id: "select_table"})
                                 .on("change", function(){
                                     self.display_table(this.value);
-                                })
+                                });
 
         this.layer_names.forEach( (value, key) => {
-            let txt = [key, " (", value[0], ")"].join('')
-            select_a_table.append("option").attr("value", key).text(txt)
+            let txt = [key, " (", value[0], ")"].join('');
+            select_a_table.append("option").attr("value", key).text(txt);
         });
         setSelected(select_a_table.node(), select_a_table.node().options[0].value);
         var deferred = Q.defer();
@@ -2684,14 +2709,14 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
             let val = arr[i];
             res.push(
                 [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
-                )
+                );
         }
     else
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
                 [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
-                )
+                );
         }
     return res
 }
@@ -2713,7 +2738,7 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
         for(let i=0; i < arr_len; ++i)
             res.push(Math.sqrt(arr[i] * fixed_size / fixed_value));
 
-    return res
+    return res;
 }
 
 function prop_sizer2(arr, min_size, max_size){
@@ -2754,26 +2779,26 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
-        result[field] = []
+        result[field] = [];
         for(let i=0; i < deepth_test; ++i){
             tmp_type = typeof table[i][field];
-            if(tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number"
-            result[fields[j]].push(tmp_type)
+            if(tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number";
+            result[fields[j]].push(tmp_type);
         }
     }
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         if(result[field].every(function(ft){return ft === "number";}))
-            result[field] = "number"
+            result[field] = "number";
         else
-            result[field] = "string"
+            result[field] = "string";
     }
     if(target){
         let res = [];
         for(let k in result)
             if(result[k] === target)
-                res.push(k)
-        return res
+                res.push(k);
+        return res;
     } else
         return result;
 }
@@ -2965,7 +2990,7 @@ function add_table_field(table, layer_name, parent){
 var contains_empty_val = function(arr){
     for(let i = arr.length - 1; i > -1; --i)
         if(arr[i] == null) return true;
-    return false
+    return false;
 }
 
 // Function to be called after clicking on "render" in order to close the section 2
@@ -3008,7 +3033,7 @@ function path_to_geojson(id_layer){
                 id: i,
                 properties: d.properties,
                 geometry: {type: d.type, coordinates: d.coordinates}
-            })
+            });
         });
     return JSON.stringify({
         type: "FeatureCollection",

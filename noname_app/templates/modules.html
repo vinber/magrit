@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
+    <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <link  href="/static/css/style.min.css" rel="stylesheet"  type="text/css">
     <script  src="/static/js/lib/d3.v3.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/d3.geo.projection.js"></script>
@@ -68,8 +68,7 @@ function make_eye_button(state){
     }
 }
 
-function make_ico_choice()
-{
+function make_ico_choice(){
     let list_fun_ico = ['icon_label.png',
                         'icon_choroprop.png',
                         'icon_grid.png',
@@ -112,7 +111,6 @@ function make_ico_choice()
                 switch_accordion_section("accordion2_pre", "accordion2");
             });
     }
-
 }
 
 var w = Math.round(window.innerWidth - 360),
@@ -194,10 +192,19 @@ var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_ty
 
 var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
+// Reference to the sys run button already in two requested sizes are they are called many times :
+var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>',
+    sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>'
+
+
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
 
 //////////////////////////////////////////////////////////////////////////////
-// Set-up the menu :
+// Set-up the menu
+//
+// Some of these variables (menu, dv1, section3, dv3, dv4, background, p, const_options, etc.)
+// are not needed anymore after being used here so they are put into curly braces and declared with `let`
+// to ensure their garbage collection:
 //////////////////////////////////////////////////////////////////////////////
 {
     let menu = d3.select("#menu"),
@@ -218,15 +225,13 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     var section1 =  accordion1.append("div").attr("id","section1")
                         .attr("data-tooltip", "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here"),
         section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0"),
-        section2 =  accordion2.append("div").attr("id","section2"),
-        section3 =  accordion3.append("div").attr({"id": "section3",
-                                "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"});
+        section2 =  accordion2.append("div").attr("id","section2");
+    accordion3.append("div")
+        .attr({"id": "section3",
+               "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
-}
-
-{
     let dv1 = section1.append("div"),
         dv11 = dv1.append("div").style("width", "auto");
 
@@ -276,25 +281,17 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         .style("font-size", "12px")
         .html("Explore your table(s)")
         .on("click", function(){  boxExplore.create();  });
-}
 
-make_ico_choice();
-section2.append("p")
-        .style("font-size", "18px")
-        .html("No choosen functionnality ...");
+    make_ico_choice();
 
-// Reference to the sys run button already in two requested sizes are they are called many times :
-var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>',
-    sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>'
+    section2.append("p")
+            .style("font-size", "18px")
+            .html("No choosen functionnality ...");
 
+    let section3 = d3.select("#section3");
 
-var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
+    var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 
-// These variables (dv3, dv4, background, p, const_options, etc.) are not needed anymore
-// after being used here so they are put into curly braces and declared with `let`
-// to ensure their garbage collection:
-
-{
     let dv3 = section3.append("div")
                     .style("text-align", "center").html('');
 
@@ -312,18 +309,18 @@ var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr
             .html("<b>Canvas width (px)</b><br>")
             .insert("input").style("width", "60px")
             .attr({id: "input-width", type: "number", value: w, width: "55px"})
-            .on("change", function(){canvas_mod_size([this.value,null])})
+            .on("change", function(){canvas_mod_size([this.value,null])});
     dv4.append("div")
             .style({float: "right", width: "50%", "text-align": "center"})
             .html("<b>Canvas height (px)</b><br>")
             .insert("input").style("width", "60px")
             .attr({id: "input-height", type: "number", "value": h})
-            .on("change", function(){canvas_mod_size([null,this.value])})
+            .on("change", function(){canvas_mod_size([null,this.value])});
     dv4.append("p")
             .style({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
             .html("Map title<br>")
             .insert("input").attr("id", "title")
-            .on("keyup", function(){handle_title(this.value);})
+            .on("keyup", function(){handle_title(this.value);});
     dv4.insert("_img")
             .style("display", "inline").style("top", "4px")
             .html(sys_run_button.replace("submit", "Title properties"))
@@ -331,14 +328,14 @@ var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr
     dv4.append("p").style("text-align", "center").html("Background color")
             .insert("input").style("margin-left", "15px")
             .attr({type: "color", id: "bg_color", value: "#ffffff"})
-            .on("change", function(){handle_bg_color(this.value);})
+            .on("change", function(){handle_bg_color(this.value);});
 
     dv4.append("p")
             .html(sys_run_button + " Add layout features (arrow, scale, etc.)")
-            .on("click", select_layout_features)
+            .on("click", select_layout_features);
     dv4.append("p")
             .html(sys_run_button + " Save your preferences...")
-            .on("click", save_map_template)
+            .on("click", save_map_template);
     dv4.append("p")
             .html(sys_run_button + " Load a preference JSON...")
             .on("click", load_map_template);
@@ -551,7 +548,7 @@ $(".accordion").on("accordionactivate", function(event, ui){
         let last_opened = ui.newPanel[0].parentElement.id;
         let opened = [];
         let accordions = document.querySelectorAll(".accordion");
-        let new_size = 0;
+        let new_size = 33; // Use the real header size instead of 33
         for(let i = 0; i < accordions.length ; i++){
             new_size = new_size + accordions[i].getBoundingClientRect().height;
             if(accordions[i].firstChild.getAttribute("aria-expanded") == "true")
@@ -611,15 +608,15 @@ $( "#sortable" ).disableSelection();
 // (can be unset locally by using the `"global": false` param when making an ajax request)
 $(document).ajaxStart(function() {
         var bg = document.createElement('div');
-        bg.className = 'overlay';
+        bg.id = 'overlay';
         var prog_bar = map_div.append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black", "z-index": 2})
                          .attr("id", "progressbar")
                          .html('<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>Loading layer ...');
-        (document.body || document.documentElement).appendChild(bg);
+        document.body.appendChild(bg);
     }).ajaxComplete(function() {
-        d3.selectAll("#progressbar").remove();
-        d3.selectAll(".overlay").remove();
+        document.getElementById("progressbar").remove();
+        document.getElementById("overlay").remove();
 });
 
 // bind the mains tooltips
@@ -644,21 +641,20 @@ $("#section3[data-tooltip!='']").qtip({
 // (the function is called each time that a new feature is put in this layer manager)
 function binds_layers_buttons(layer_name){
     if(layer_name != undefined){
-        let cl_layer = '.' + layer_name,
-            sortable_li = d3.select("#sortable");
-        sortable_li.select(cl_layer).select("#trash_button").on("click", function(){ remove_layer(layer_name); });
-        sortable_li.select(cl_layer).select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
-        sortable_li.select(cl_layer).select("#zoom_fit_button").on("click", function(){
+        let sortable_li_elem = d3.select("#sortable").select("." + layer_name);
+        sortable_li_elem.select("#trash_button").on("click", function(){ remove_layer(layer_name); });
+        sortable_li_elem.select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
+        sortable_li_elem.select("#zoom_fit_button").on("click", function(){
             center_map(layer_name);
             zoom_without_redraw();
         });
-        sortable_li.select(cl_layer).select(".style_button").on("click", function(){
+        sortable_li_elem.select(".style_button").on("click", function(){
             handle_click_layer(layer_name);
         });
-        sortable_li.select(cl_layer).select(".style_target_layer").on("click", function(){
+        sortable_li_elem.select(".style_target_layer").on("click", function(){
             handle_click_layer(layer_name)
         });
-        sortable_li.select(cl_layer).select("#legend_button").on("click", function(){
+        sortable_li_elem.select("#legend_button").on("click", function(){
             handle_legend(layer_name);
         });
     } else {
@@ -702,7 +698,7 @@ function displayInfoOnMove(){
         map.selectAll("circle").on("mouseover", null);
         map.selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
-        info_features.node().innerHTML = ""
+        info_features.node().innerHTML = "";
         info_features.style({});
         document.getElementById("map").style.cursor="";
     } else {
@@ -745,28 +741,7 @@ function displayInfoOnMove(){
 
 function reproj(){
   proj.translate([t[0], t[1]]).scale(s);
-  //map.selectAll("path").attr("d", path);
-  if(func == "cartogram"){
-      map.selectAll("path:not([transform])").attr("d", path);
-      let selec = map.selectAll("path[transform]");
-      let layer_names = new Set(selec[0].map( d => d.parentElement.id));
-      for(let lyr_name of layer_names){
-          let transform_values = current_layers[lyr_name].scale_byFeature;
-          map.select("#" + lyr_name)
-              .selectAll("path[transform]")
-                  .attr("d", path)
-                  .attr("transform", function(d,i) {
-                      let centroid = path.centroid(d),
-                          x = centroid[0],
-                          y = centroid[1];
-                      return ["translate(", x, ",", y, ")",
-                              "scale(", transform_values[i], ")",
-                              "translate(", -x, ",", -y, ")"].join("")
-                  });
-      }
-    } else {
-        map.selectAll("path").attr("d", path);
-    }
+  map.selectAll("path").attr("d", path);
   reproj_symbol_layer();
 }
 
@@ -1171,20 +1146,29 @@ function save_map_template(){
 
 function zoom_without_redraw(){
     let z_scale = zoom.scale(),
-        rot_val = canvas_rotation_value || "",
-        layers = Object.getOwnPropertyNames(current_layers);
+        rot_val = canvas_rotation_value || "";
+        //layers = Object.getOwnPropertyNames(current_layers);
 
     map.selectAll("g.layer")
               .transition()
               .duration(50)
+              .style("stroke-width", function(){
+                    let lyr_name = this.id;
+                    if(!(current_layers[lyr_name].fixed_stroke))
+                        return current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px";
+                    else
+                        return this.style.strokeWidth;
+                })
               .attr("transform", [rot_val,"translate(", zoom.translate(), "),",
                                  "scale(", z_scale, ")"].join(''));
-
+/*
     for(let i = layers.length - 1; i > -1; i--){
         let lyr_name = layers[i];
         if(!(current_layers[lyr_name].fixed_stroke))
-            map.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px");
+            document.getElementById(lyr_name).style.strokeWidth = current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px";
+            //map.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px");
     }
+*/
     if(scaleBar.displayed)
         scaleBar.changeText();
 };
@@ -1273,9 +1257,8 @@ function change_projection(proj_name) {
             options_ortho.remove();
     }
     d3.select("svg").on("mousedown", null)
-                    .on("mousemove", function(){log_coordinates(this)})
+                    .on("mousemove", null)
                     .on("mouseup", null);
-
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1290,40 +1273,28 @@ var φ = d3.scale.linear()
     .domain([0, h])
     .range([90, -90]);
 
-// Function to switch the visibility of a layer with the checkbox designed for
+// Function to switch the visibility of a layer the open/closed eye button
 function handle_active_layer(name){
-    let fill_value;
+    var fill_value, parent_div, selec;
     if(!name) {
-        let parent_div = this.parentElement;
+        selec = this;
+        parent_div = selec.parentElement;
         name = parent_div.parentElement.getAttribute("layer_name");
-        let func = function() { handle_active_layer(name);};
-        console.log(name);
-        if(this.id == "eye_closed"){
-            fill_value = 1;
-            let eye_open = make_eye_button("open");
-            eye_open.onclick = func;
-            parent_div.replaceChild(eye_open, this);
-        } else {
-            fill_value = 0;
-            let eye_closed = make_eye_button("closed");
-            eye_closed.onclick = func;
-            parent_div.replaceChild(eye_closed, this);
-        }
     } else {
-        let selec = d3.select("#sortable").select('.' + name).select(".active_button");
-        let parent_div = selec.node().parentElement;
-        let func = function() { handle_active_layer(name);};
-        if(selec.attr("id") == "eye_closed"){
-            fill_value = 1;
-            let eye_open = make_eye_button("open");
-            eye_open.onclick = func;
-            parent_div.replaceChild(eye_open, selec.node());
-        } else {
-            fill_value = 0;
-            let eye_closed = make_eye_button("closed");
-            eye_closed.onclick = func;
-            parent_div.replaceChild(eye_closed, selec.node());
-        }
+        selec = document.querySelector("#sortable ." + name + " .active_button");
+        parent_div = selec.parentElement;
+    }
+    let func = function() { handle_active_layer(name); };
+    if(selec.id == "eye_closed"){
+        fill_value = 1;
+        let eye_open = make_eye_button("open");
+        eye_open.onclick = func;
+        parent_div.replaceChild(eye_open, selec);
+    } else {
+        fill_value = 0;
+        let eye_closed = make_eye_button("closed");
+        eye_closed.onclick = func;
+        parent_div.replaceChild(eye_closed, selec);
     }
     map.select("#"+name).style("opacity", fill_value);
     map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
@@ -1333,20 +1304,20 @@ function handle_active_layer(name){
 function handle_title(txt){
     var title = d3.select("#map_title");
     if(title.node()){
-        title.text(txt)
+        title.text(txt);
     } else {
         map.append("g")
              .attr("class", "legend_feature title")
           .insert("text")
              .attr({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
-             .style({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt)
+             .style({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt);
     }
 }
 
 function handle_title_properties(){
     var title = d3.select("#map_title");
     if(!title.node()){
-        alert("No title no style...")
+        alert("No title no style...");
         return;
     }
     var title_props = {
@@ -1441,7 +1412,7 @@ function canvas_mod_size(shape){
                            "margin-left":"5px", "color":"black"});
 
         // And change the position of the `source` element displayed in the bottom of the map :
-        d3.selectAll(".source_block").select("text").attr("y", h - 10)
+        d3.selectAll(".source_block").select("text").attr("y", h - 10);
     }
 }
 
@@ -1631,16 +1602,16 @@ function apply_user_preferences(json_pref){
             layer_selec = map.select("#"+layer_name);
             layer_selec.selectAll(symbol)
                     .style("fill-opacity", fill_opacity)
-                    .style("stroke-opacity", stroke_opacity)
+                    .style("stroke-opacity", stroke_opacity);
 
             let layers_listed = layer_list.node(),
                 li = document.createElement("li");
 
-            li.setAttribute("layer_name", layer_name)
+            li.setAttribute("layer_name", layer_name);
             li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
-            li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''))
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open0, button_type_blank['Point'], "</div> ", layer_name].join('')
-            layers_listed.insertBefore(li, layers_listed.childNodes[0])
+            li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''));
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open0, button_type_blank['Point'], "</div> ", layer_name].join('');
+            layers_listed.insertBefore(li, layers_listed.childNodes[0]);
             binds_layers_buttons();
 
         } else {
@@ -1648,7 +1619,7 @@ function apply_user_preferences(json_pref){
         }
 
         if(layers[i].is_result && map_config.displayed_legend)
-            handle_legend(layer_name)
+            handle_legend(layer_name);
     }
     zoom.translate(map_config.zoom_translate).scale(map_config.zoom_scale);
     zoom_without_redraw();
@@ -1657,16 +1628,16 @@ function apply_user_preferences(json_pref){
         let title = document.getElementById("map_title");
         if(title){
             title.textContent = map_config.title.content;
-            title.setAttribute("x", map_config.title.x)
-            title.setAttribute("y", map_config.title.y)
-            title.setAttribute("style", map_config.title.style)
+            title.setAttribute("x", map_config.title.x);
+            title.setAttribute("y", map_config.title.y);
+            title.setAttribute("style", map_config.title.style);
         } else {
             title = map.append("g")
                      .attr("class", "legend_feature title")
                   .insert("text")
                      .attr({id: "map_title", x: map_config.title.x, y: map_config.title.y, "alignment-baseline": "middle", "text-anchor": "middle"})
                      .text(map_config.title.content);
-            title.node().setAttribute("style", map_config.title.style)
+            title.node().setAttribute("style", map_config.title.style);
         }
     }
 }
@@ -1742,7 +1713,7 @@ function make_export_layer_box(){
              .insert("select").attr("id", "layer_to_export");
 
     let selec_type = box_content.append("p").html("Datatype ")
-             .insert("select").attr("id", "datatype_to_use")
+             .insert("select").attr("id", "datatype_to_use");
 
     let selec_projection = box_content.append("p").html("Projection ")
              .insert("select").attr("id", "projection_to_use");
@@ -1801,7 +1772,6 @@ function make_export_layer_box(){
                 let layer = selec_layer.node().value,
                     type = selec_type.node().value,
                     projec = selec_projection.node().value;
-                //console.log([layer, type, projec, [layer, menu_option.quantization_default].join('_')]);
                 let formToSend = new FormData();
                 formToSend.append("layer", layer);
                 formToSend.append("layer_name", current_layers[layer].key_name);
@@ -1819,30 +1789,23 @@ function make_export_layer_box(){
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
                         if(data.indexOf("Error:") == 0){
-                            //alert("Something went wrong : " + data.substring(6, data.length));
                             swal("Oops...", "Something went wrong : " + data.substring(6, data.length), "error");
                             return;
                         }
-                        let ext = extensions.get(type);
-                        if(ext.indexOf("json") > -1){
-                            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data),
-                                dlAnchorElem = document.getElementById('downloadAnchorElem');
-                            dlAnchorElem.setAttribute("href", dataStr);
-                            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                            dlAnchorElem.click();
-                        } else if (ext.indexOf("kml") > -1){
-                            let dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data),
-                                dlAnchorElem = document.getElementById('downloadAnchorElem');
-                            dlAnchorElem.setAttribute("href", dataStr);
-                            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                            dlAnchorElem.click();
-                        } else {
-                            let dataStr = "data:application/zip;base64," + data,
-                                dlAnchorElem = document.getElementById('downloadAnchorElem');
-                            dlAnchorElem.setAttribute("href", dataStr);
-                            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                            dlAnchorElem.click();
-                        }
+                        let ext = extensions.get(type),
+                            dataStr;
+
+                        if(ext.indexOf("json") > -1)
+                            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+                        else if (ext.indexOf("kml") > -1)
+                            dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+                        else
+                            dataStr = "data:application/zip;base64," + data;
+
+                        let dlAnchorElem = document.getElementById('downloadAnchorElem');
+                        dlAnchorElem.setAttribute("href", dataStr);
+                        dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                        dlAnchorElem.click();
                     }
                 });
                 dialogBox.dialog("destroy").remove();

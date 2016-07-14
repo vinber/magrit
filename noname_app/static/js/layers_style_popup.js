@@ -5,6 +5,9 @@ function handle_click_layer(layer_name){
         && (strContains(current_layers[layer_name].renderer, "PropSymbol")
             || strContains(current_layers[layer_name].renderer, "Dorling")))
         createStyleBox_ProbSymbol(layer_name);
+    else if (current_layers[layer_name].renderer
+             && current_layers[layer_name].renderer == "Label")
+        createStyleBoxLabel(layer_name);
     else
         createStyleBox(layer_name);
     return;
@@ -25,7 +28,7 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
           .html('Fill color<br>')
           .insert('input').attr({type: 'color', "value": last_color})
           .on('change', function(){
-                d3.select(g_lyr_name).selectAll(symbol).style("fill", this.value);
+                map.select(g_lyr_name).selectAll(symbol).style("fill", this.value);
                 current_layers[layer].fill_color = {"single": this.value};
           });
 }
@@ -35,7 +38,7 @@ function make_random_color(layer, symbol = "path"){
         .style("text-align", "center")
         .html('<b><i>Click to toggle colors</b></i>')
         .on("click", function(d,i){
-            d3.select("#" + layer)
+            map.select("#" + layer)
                 .selectAll(symbol)
                 .style("fill", function(){ return Colors.names[Colors.random()]; });
             current_layers[layer].fill_color = {"random": true};
@@ -48,20 +51,20 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
 
     if(ref_layer && current_layers[layer].features_order){
         let features_order = current_layers[layer].features_order;
-        d3.select("#"+layer)
+        map.select("#"+layer)
             .selectAll(symbol)
             .style("fill", function(d, i){
                 let idx = features_order[i][0];
                 return color_cat_map.get(data_layer[idx][field_name]);
             });
     } else if (ref_layer)
-        d3.select("#"+layer)
+        map.select("#"+layer)
             .selectAll(symbol)
             .style("fill", function(d, i){
                 return color_cat_map.get(data_layer[i][field_name]);
             });
     else
-        d3.select("#"+layer)
+        map.select("#"+layer)
             .selectAll(symbol)
             .style("fill", d => color_cat_map.get(d.properties[field_name]));
 }
@@ -108,13 +111,74 @@ let cloneObj = function(obj){
     return tmp;
 }
 
+function createStyleBoxLabel(layer_name){
+    var selection = map.select("#" + layer_name).selectAll("text"),
+        ref_layer_name = current_layers[layer_name].ref_layer_name,
+        ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
+        ref_coords = [];
+    var prev_settings = { color: current_layers[layer_name].fill_color,
+                          size: current_layers[layer_name].default_size };
+    for(let i = 0; i < ref_layer_selection.length; i++){
+        ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
+    }
+
+    make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
+        .then(function(confirmed){
+            if(!confirmed){
+                current_layers[layer_name].fill_color = prev_settings.color;
+                current_layers[layer_name].default_size = prev_settings.size;
+                selection.style("font-size", current_layers[layer_name].default_size)
+                         .style("fill", current_layers[layer_name].fill_color);
+            }
+        });
+    var popup = d3.select(".styleBox");
+    popup.append('h4')
+            .style({"font-size": "15px", "text-align": "center",
+                    "font-weight": "bold", "margin-bottom": "10px"})
+            .html("Layer style option");
+    popup.append("p")
+            .style({"text-align": "center", "color": "grey"})
+            .html(['<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+    popup.append("p").style("text-align", "center")
+            .insert("button")
+            .attr("id","reset_labels_loc")
+            .attr("class", "button_st4")
+            .text("Reset label location")
+            .on("click", function(){
+                selection.attr("x", (d,i) => ref_coords[i][0])
+                        .attr("y", (d,i) => ref_coords[i][1]);
+            });
+    popup.insert("p").style("text-align", "center").style("font-size", "9px")
+            .html("<b><i> Following options will override settings for labels modified manually </i></b>");
+    let label_sizes = popup.append("p")
+            .html("Labels default size");
+    label_sizes.insert("input")
+            .attr("type", "number")
+            .attr("value", +current_layers[layer_name].default_size.replace("px", ""))
+            .on("change", function(){
+                let size = this.value + "px";
+                current_layers[layer_name].default_size = size;
+                selection.style("font-size", size);
+            });
+    label_sizes.insert("span")
+            .html(" px")
+    popup.insert("p")
+            .html("Labels default color")
+            .insert("input")
+            .attr("type", "color")
+            .attr("value", current_layers[layer_name].fill_color)
+            .on("change", function(){
+                current_layers[layer_name].fill_color = this.value;
+                selection.style("fill", this.value);
+            });
+}
 
 function createStyleBox(layer_name){
     var type = current_layers[layer_name].type,
         rendering_params = null,
         renderer = current_layers[layer_name].renderer,
         g_lyr_name = "#" + layer_name,
-        selection = d3.select(g_lyr_name).selectAll("path"),
+        selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),

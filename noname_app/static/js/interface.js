@@ -16,7 +16,7 @@ function click_button_add_layer(){
                     .attr("type", "file").attr("multiple", "").attr("name", "file[]")
                     .attr("enctype", "multipart/form-data")
                     .on('change', function(){ prepareUpload(d3.event) });
-    console.log(this.id);
+
     target_layer_on_add = (this.id === "input_geom") ? true :
                           (this.id === "img_in_geom") ? true :
                           (this.id === "img_data_ext") ? true :
@@ -235,7 +235,11 @@ function add_dataset(readed_dataset){
         nb_features = joined_dataset[0].length;
 
     d3.select("#img_data_ext")
-        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/tabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"});
+        .attr({"id": "img_data_ext",
+               "class": "user_panel",
+               "src": "/static/img/b/tabular.svg",
+               "width": "26", "height": "26",
+               "alt": "Additional dataset"});
 
     d3.select('#data_ext')
         .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
@@ -243,7 +247,7 @@ function add_dataset(readed_dataset){
                '</b> - <i><span style="font-size:9px;"> ',
                nb_features, ' features - ',
                field_name.length, " fields</i></span>"].join(''));
-    d3.select("#data_ext").node().parentElement.innerHTML = d3.select("#data_ext").node().parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
+    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
 
     valid_join_check_display(false);
     if(targeted_layer_added){
@@ -283,7 +287,6 @@ function add_csv_geom(file, name){
             dataset_name = undefined;
             target_layer_on_add = true;
             add_layer_topojson(data);
-            target_layer_on_add = false;
         }
     });
 }
@@ -335,13 +338,14 @@ function add_layer_topojson(text, options){
     for(let i=0; i < layers_names.length; i++){
         var random_color1 = ColorsSelected.random(),
             lyr_name = layers_names[i],
-            lyr_name_to_add = check_layer_name(lyr_name),
-            nb_ft = topoObj.objects[lyr_name].geometries.length,
-            field_names = topoObj.objects[lyr_name].geometries[0].properties ? Object.getOwnPropertyNames(topoObj.objects[lyr_name].geometries[0].properties) : [];
+            lyr_name_to_add = check_layer_name(lyr_name);
+        let nb_ft = topoObj.objects[lyr_name].geometries.length,
+            topoObj_objects = topoObj.objects[lyr_name],
+            field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
-        if(topoObj.objects[lyr_name].geometries[0].type.indexOf('Point') > -1) type = 'Point';
-        else if(topoObj.objects[lyr_name].geometries[0].type.indexOf('LineString') > -1) type = 'Line';
-        else if(topoObj.objects[lyr_name].geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
+        if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
+        else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';
+        else if(topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
         current_layers[lyr_name_to_add] = {
             "type": type,
@@ -364,7 +368,7 @@ function add_layer_topojson(text, options){
               .attr("class", data_to_load ? "targeted_layer layer" : "layer")
               .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
-              .data(topojson.feature(topoObj, topoObj.objects[lyr_name]).features)
+              .data(topojson.feature(topoObj, topoObj_objects).features)
               .enter().append("path")
               .attr("d", path)
               .attr("id", function(d, ix) {
@@ -430,7 +434,7 @@ function add_layer_topojson(text, options){
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
                        nb_fields, ' fields</i></span>'].join(''));
-            d3.select("#input_geom").node().parentElement.innerHTML = d3.select("#input_geom").node().parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
+            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
 
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
@@ -822,7 +826,6 @@ function add_sample_layer(){
     tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     dataset_selec.on("change", function(){selec.dataset = this.value;});
 }
-
 
 
 function add_sample_geojson(name){

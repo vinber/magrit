@@ -212,7 +212,7 @@ class Textbox2 {
 class LabelTextbox {
     constructor(parent, id_elem, text, position=[10, 30]){
         this._text = text
-        var drag_txt_annot = d3.behavior.drag()
+        this.drag_txt_annot = d3.behavior.drag()
                 .origin(function() {
                     let t = d3.select(this);
                     return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
@@ -231,6 +231,24 @@ class LabelTextbox {
                 .on("drag", () => {
                     textgroup.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
                   });
+
+        this.aligntext = () => {
+            this._width = this.txt_width + 5;
+            this.txt.attr("x", 0.5*(this._width-this.txt_width));
+            this.txt.attr("y", 0.5*(this._height+this.fontsize)-2);
+            this.rct.attr("width", +this._width)
+                    .attr("height", this.fontsize + 8);
+        };
+
+        this.setText = str => {
+            if(this._text.length == 0)
+                this._text = " ";
+            else if (this._text.indexOf(" ") == 0)
+                this._text = this._text.substr(1)
+            this.txt.text(this._text);
+            this.txt_width = this.txt.node().getComputedTextLength();
+            this.aligntext();
+        };
 
         this.fontsize = 12;
         this.x = position[0];
@@ -253,14 +271,16 @@ class LabelTextbox {
 
         this.txt = textgroup.append("text")
                 .attr("id", id_elem)
-                .text(this._text)
+                .text("")
                 .style("fill","black")
                 .style("font-family", "'Helvetica Neue'")
                 .style("font-size", this.fontsize + "px");
+        this.setText(text);
 
-        this.txt_width = this.txt.node().getComputedTextLength();
-        this.txt.attr("x",.5*(this._width-this.txt_width));
-        this.txt.attr("y",.5*(this._height+this.fontsize)-2);
+        this.txt.attr("x",.5*(this._width-this.txt_width) + position[0])
+                .attr("y",.5*(this._height+this.fontsize)-2 + position[1]);
+
+        this.rct.attr("x", position[0]).attr("y", position[1]);
 
         textgroup.on("mouseover", () => {
             this.rct.style("fill-opacity", 0.5);
@@ -268,59 +288,18 @@ class LabelTextbox {
         textgroup.on("mouseout", () => {
             this.rct.style("fill-opacity", 0);
             });
-        textgroup.call(drag_txt_annot);
-        textgroup.on("contextmenu", () => {
+        textgroup.call(this.drag_txt_annot);
+        this.txt.on("contextmenu", () => {
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
                                   getItems());
             });
-
-        this.aligntext = () => {
-            this._width = this.txt_width + 5;
-            this.txt.attr("x", 0.5*(this._width-this.txt_width));
-            this.txt.attr("y", 0.5*(this._height+this.fontsize)-2);
-            this.rct.attr("width", +this._width)
-                    .attr("height", this.fontsize + 8);
-        };
-
-        this.setText = str => {
-            if(this._text.length == 0)
-                this._text = " ";
-            else if (this._text.indexOf(" ") == 0)
-                this._text = this._text.substr(1)
-            this.txt.text(this._text);
-            this.txt_width = this.txt.node().getComputedTextLength();
-            this.aligntext();
-        };
-    }
-
-
-    get callback(){
-        return callback;
-    }
-
-    set callback(_){
-        this.callback = _;
-    }
-
-    get width(){
-        return this._width;
-    }
-
-    set width(_){
-		 this.rct.attr("width",_);
-		 this.aligntext();
-        this._width = _;
-    }
-
-    get height(){
-        return this._height;
-    }
-
-    set height(_){
-        this.rct.attr("height",_);
-        this.aligntext();
-        this._height = _;
+        this.rct.on("contextmenu", () => {
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems());
+            });
+        this.textgroup = textgroup;
     }
 
     make_style_box(){
@@ -328,7 +307,7 @@ class LabelTextbox {
                                content: this._text,
                                font: ""};
         let self = this;
-        var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "styleTextAnnotation")
+        var a = make_confirm_dialog("", "Valid", "Cancel", "Label options", "styleTextAnnotation")
             .then(function(confirmed){
                 let box_ = document.querySelector(".styleTextAnnotation");
                 let font_size = box_.querySelector("#font_size"),
