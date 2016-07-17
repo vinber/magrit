@@ -372,7 +372,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
                 document.getElementById('form_projection_center').value = 0;
                 document.getElementById('form_rotate').value = 0;
                 proj.rotate([0,,]);
-                let current_renderings = [];
+/*                let current_renderings = [];
                 for(let lyr_name in current_layers){
                     if(current_layers[lyr_name].renderer){
                         current_renderings.push(current_layers[lyr_name].renderer)
@@ -398,9 +398,9 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
                                 });
                     }
 
-                } else {
-                    map.selectAll("path").attr("d", path);
-                }
+                } else { */
+                map.selectAll("path").attr("d", path);
+                /*}*/
                 reproj_symbol_layer();
                 rotate_global(0);
             });

@@ -1574,16 +1574,23 @@ var fields_Stewart = {
 
         if(layer){
             let fields = type_col(layer, "number"),
-                field_selec = d3.select("#stewart_field");
-            fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+                field_selec = d3.select("#stewart_field"),
+                field_selec2 = d3.select("#stewart_field2");
+            field_selec2.append("option").text(" ").attr("value", "None");
+            fields.forEach(field => {
+                field_selec.append("option").text(field).attr("value", field);
+                field_selec2.append("option").text(field).attr("value", field);
+            });
         }
         d3.selectAll(".params").attr("disabled", null);
     },
 
     unfill: function(){
         let field_selec = document.getElementById("stewart_field"),
+            field_selec2 = document.getElementById("stewart_field2"),
             mask_selec = document.getElementById("stewart_mask");
         unfillSelectInput(field_selec);
+        unfillSelectInput(field_selec2);
         unfillSelectInput(mask_selec);
         d3.selectAll(".params").attr("disabled", true);
     }
@@ -1594,6 +1601,9 @@ function fillMenu_Stewart(){
 
     var field_selec = dialog_content.append('p').style("margin", "10px 0px 0px").html('Field ')
                                     .insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field");
+
+    var field_selec2 = dialog_content.append('p').style("margin", "10px 0px 0px").html('Divide Field ')
+                                    .insert('select').attr('class', 'params marg_auto').attr("id", "stewart_field2");
 
     {
         let p_span = dialog_content
@@ -1637,22 +1647,32 @@ function fillMenu_Stewart(){
         .text('Compute')
         .on('click', function(){
             let formToSend = new FormData(),
-                field_n = field_selec.node().value,
-                var_to_send = new Object,
+                field1_n = field_selec.node().value,
+                field2_n = field_selec2.node().value,
+                var1_to_send = new Object,
+                var2_to_send = new Object,
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 bval = breaks_val.node().value.trim(),
                 reso = +resolution.node().value * 1000;
 
             bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
-            if(current_layers[layer].original_fields.has(field_n))
-                var_to_send[field_n] = [];
+            if(current_layers[layer].original_fields.has(field1_n))
+                var1_to_send[field1_n] = [];
             else
-                var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+                var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
+
+            if(field2_n != "None"){
+                if(current_layers[layer].original_fields.has(field2_n))
+                    var2_to_send[field2_n] = [];
+                else
+                    var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
+            }
 
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
-                "var_name": JSON.stringify(var_to_send),
+                "variable1": JSON.stringify(var1_to_send),
+                "variable2": JSON.stringify(var2_to_send),
                 "span": +span.node().value * 1000,
                 "beta": +beta.node().value,
                 "typefct": func_selec.node().value,

@@ -1,7 +1,7 @@
 ###################################
 # SpatialPosition functions
 ###################################
-stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
+stewart_to_json <- function(knownpts_json, var, var2, typefct = "exponential",
                             span, beta, resolution=NULL, nb_class=8,
                             user_breaks=NULL, mask_json = NULL){
   s_t <- Sys.time()
@@ -32,9 +32,12 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
       }
     }
   }
-  
-  if(class(knownpts_layer@data[, var_name]) == "character"){
-    knownpts_layer@data[, var_name] <- as.numeric(knownpts_layer@data[, var_name])
+
+  if(class(knownpts_layer@data[, var]) == "character"){
+    knownpts_layer@data[, var] <- as.numeric(knownpts_layer@data[, var])
+  }
+  if(!is.null(var2) && class(knownpts_layer@data[, var2]) == "character"){
+    knownpts_layer@data[, var2] <- as.numeric(knownpts_layer@data[, var2])
   }
 
   file.remove(knownpts_json)
@@ -42,7 +45,8 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
   s_t <- Sys.time()
   res_poly <- SpatialPosition::quickStewart(spdf = knownpts_layer,
                                             df = knownpts_layer@data,
-                                            var = var_name,
+                                            var = var,
+                                            var2 = var2,
                                             typefct = typefct,
                                             span=span, beta=beta,
                                             resolution=resolution,
@@ -80,10 +84,10 @@ stewart_to_json <- function(knownpts_json, var_name, typefct = "exponential",
 make_gridded_map <- function(layer_json_path, var_name, cellsize){
   s_t <- Sys.time()
   if(!is.numeric(cellsize)){ cellsize <- as.numeric(cellsize) }
-  
+
   latlong_string <- "+init=epsg:4326"
   eckert_iv <- "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-  
+
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp', stringsAsFactors = FALSE)
 
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
@@ -107,7 +111,7 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
   }
   print(paste0("Opening + row management ", round(Sys.time()-s_t,4),"s"))
   s_t <- Sys.time()
-  
+
   mygrid <- cartography::getGridLayer(spdf=spdf, cellsize = cellsize, spdfid = s_id)
 
   datagrid.df <- cartography::getGridData(x = mygrid, df = spdf@data, var = var_name, dfid = s_id)
@@ -142,9 +146,9 @@ mta_mediumdev <- function(x, var1, var2, key, type_dev){
 mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, type_dev='rel'){
   latlong_string <- "+init=epsg:4326"
   web_mercator <- "+init=epsg:3857"
-  
+
   spdf <- geojsonio::geojson_read(geojson_path, what='sp', stringsAsFactors = FALSE)
-  
+
   if(is.na(spdf@proj4string@projargs)) spdf@proj4string@projargs = latlong_string
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
   spdf@data[,var1] <- as.numeric(spdf@data[,var1])
@@ -164,11 +168,11 @@ getLinkLayer_json <- function(layer_json_path, csv_table, i, j, fij, join_field)
   df <- jsonlite::fromJSON(csv_table)
   spdf <- geojsonio::geojson_read(layer_json_path, what='sp')
   print(paste0("Opening csv table & geojson ", round(Sys.time()-s_t,4),"s"))
-  
+
   s_t <- Sys.time()
   links <- cartography::getLinkLayer(spdf = spdf, df = df, spdfid = join_field, dfids = i, dfide = j)
   print(paste0("GetLinkLayer ", round(Sys.time()-s_t,4),"s"))
-  
+
   s_t <- Sys.time()
   links@data <- data.frame(df[match(x = paste(links@data[, i], links@data[, j]), table = paste(df[, i], df[, j])),])
   print(paste0("Match rows ", round(Sys.time()-s_t,4),"s"))
@@ -204,7 +208,7 @@ prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols
 
   if (!class(spdf) == "SpatialPolygonsDataFrame")
     stop("argument 'spdf' must be an object of class 'SpatialPolygonsDataFrame'")
-  
+
   if (length(variable) != 1)
     stop("argument 'variable' must have length 1")
   ## - must be of type numeric or character
@@ -214,7 +218,7 @@ prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols
   check <- try(!spdf@data[, variable], silent = TRUE)
   if (class(check) == "try-error")
     stop("argument 'variable' is not a valid data.frame column of argument 'spdf'")
-  
+
   ## nrows, ncols
   ## - must be coercable to type integer
   nrows <- as.integer(nrows)
@@ -226,7 +230,7 @@ prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols
     warning("argument 'nrows' should be a power of 2 for faster calculation")
 
   ## create a grid
-  
+
   ## The algorithm by Newman works best if there is a generous "sea" around
   ## the "land", thus by default, add 50% of the x/y ranges to each side and
   ## define a grid of 512x512 points. Because the C code of Mark Newman uses
@@ -240,15 +244,15 @@ prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols
   grid <- SpatialGrid(GridTopology(cellcentre.offset = as.numeric(bb[, "min"] - shift),
                                    cellsize = as.numeric(diff(t(bb + t(rbind(-shift, shift)))) / (dim - 1)),
                                    cells.dim = dim), proj4string = spdf@proj4string)
-  
+
   ## overlay grid and polygons
-  
+
   ## This is an extension of the point-in-polygon problem. We obtain a vector of
   ## indices of the polygons in spdf.
   ind <- sp::over(grid,as(spdf,"SpatialPolygons"))
-  
+
   ## calculate "density"
-  
+
   ## For each grid cell, we need to determine the fraction of the units of
   ## "variable" as the number of units per cell. For NAs, i.e. for the "sea",
   ## insert the mean value for the whole "land" mass. For the tabulation, the

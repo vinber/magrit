@@ -7,7 +7,6 @@ TODO list:
 - Change the bar chart in the discretization panel
 - Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, etc.)
 -(Fixed ?) Fix some undefined behaviors when trying to make a new jointure on some "edge" cases
-- Add option to stewart to compute the ratio between two potentials
 - Package the R functions in order to facilitate installation (by installing directly required packages)
 - Choose a solution for ui internationalization
 - Upgrade js code to use d3.js v4 ?

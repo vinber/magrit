@@ -103,13 +103,15 @@ async def ogr_to_geojson(filepath, to_latlong=True):
     return stdout.decode()
 
 
-async def geojson_to_topojson(filepath, quantization="--no-quantization"):
+async def geojson_to_topojson(
+        filepath, quantization="--no-quantization", remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--spherical", quantization,
                      "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
-#    os.remove(filepath)
+    if remove:
+        os.remove(filepath)
     return stdout.decode()
 
 
@@ -420,7 +422,7 @@ async def nothing(posted_data, user_id, app):
     os.remove(tmp_path)
     result = gdf.to_json()
     savefile(tmp_path, result.encode())
-    res = await geojson_to_topojson(tmp_path)
+    res = await geojson_to_topojson(tmp_path, remove=True)
     hash_val = mmh3_hash(res)
     return ''.join([
              '{"key":',
@@ -453,7 +455,7 @@ async def carto_doug(posted_data, user_id, app):
         GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
     os.remove(tmp_path)
     savefile(tmp_path, result.encode())
-    res = await geojson_to_topojson(tmp_path)
+    res = await geojson_to_topojson(tmp_path, remove=True)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
@@ -508,7 +510,7 @@ async def links_map(posted_data, user_id, app):
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
-    res = await geojson_to_topojson(content['geojson_path'])
+    res = await geojson_to_topojson(content['geojson_path'], remove=True)
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
@@ -558,7 +560,7 @@ async def carto_gridded(posted_data, user_id, app):
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
-    res = await geojson_to_topojson(content['geojson_path'])
+    res = await geojson_to_topojson(content['geojson_path'], remove=True)
     new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
@@ -580,7 +582,7 @@ async def compute_olson(posted_data, user_id, app):
     tmp_part = get_name()
     f_name = "".join(["/tmp/", tmp_part, ".geojson"])
     savefile(f_name, json.dumps(ref_layer_geojson).encode())
-    res = await geojson_to_topojson(f_name)
+    res = await geojson_to_topojson(f_name, remove=True)
     new_name = "_".join(["Olson_carto",
                         str(posted_data["field_name"]),
                         str(int(posted_data["scale_max"]*100))])
@@ -697,11 +699,22 @@ async def call_stewart(posted_data, user_id, app):
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     point_layer = await app['redis_conn'].get(f_name)
     point_layer = json.loads(point_layer.decode())
-    new_field = json.loads(posted_data['var_name'])
 
-    n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0:
-        join_field_topojson(point_layer, new_field[n_field_name], n_field_name)
+    new_field1 = json.loads(posted_data['variable1'])
+    new_field2 = json.loads(posted_data['variable2'])
+
+    n_field_name1 = list(new_field1.keys())[0]
+    if len(new_field1[n_field_name1]) > 0:
+        join_field_topojson(point_layer, new_field1[n_field_name1],
+                            n_field_name1)
+
+    if new_field2:
+        n_field_name2 = list(new_field2.keys())[0]
+        if len(new_field2[n_field_name2]) > 0:
+            join_field_topojson(point_layer, new_field2[n_field_name2],
+                                n_field_name2)
+    else:
+        n_field_name2 = None
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, str(posted_data['mask_layer']), "NQ"])
@@ -720,12 +733,13 @@ async def call_stewart(posted_data, user_id, app):
         savefile(filenames['mask_layer'],
                  topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
-    commande = (b'stewart_to_json(knownpts_json, var_name, typefct, span, '
+    commande = (b'stewart_to_json(knownpts_json, var, var2, typefct, span, '
                 b'beta, resolution, nb_class, user_breaks, mask_json)')
 
     data = json.dumps({
         'knownpts_json': filenames['point_layer'],
-        'var_name': n_field_name,
+        'var': n_field_name1,
+        'var2': n_field_name2,
         'typefct': posted_data['typefct'].lower(),
         'span': posted_data['span'],
         'beta': float(posted_data['beta']),
@@ -748,8 +762,11 @@ async def call_stewart(posted_data, user_id, app):
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
-    res = await geojson_to_topojson(content['geojson_path'])
-    new_name = '_'.join(['StewartPot', n_field_name])
+    if filenames['mask_layer']:
+        os.remove(filenames['mask_layer'])
+
+    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+    new_name = '_'.join(['StewartPot', n_field_name1])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
