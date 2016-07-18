@@ -133,14 +133,14 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
 # MTA functions
 ###################################
 
-mta_globaldev <- function(x, var1, var2, ref, type_dev){
+mta_generaldev <- function(x, var1, var2, ref, type_dev){
   x <- as.data.frame(jsonlite::fromJSON(x))
-  return(paste0('{"values":', jsonlite::toJSON(MTA::globalDev(x, var1, var2, ref, type_dev)), '}'))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::generalDev(x, var1, var2, ref, type_dev)), '}'))
 }
 
-mta_mediumdev <- function(x, var1, var2, key, type_dev){
+mta_territorialdev <- function(x, var1, var2, key, type_dev){
   x <- as.data.frame(jsonlite::fromJSON(x))
-  return(paste0('{"values":', jsonlite::toJSON(MTA::mediumDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::territorialDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
 }
 
 mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, type_dev='rel'){

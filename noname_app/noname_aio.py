@@ -504,8 +504,9 @@ async def links_map(posted_data, user_id, app):
     try:
         content = json.loads(content)
     except:
-        return '{"Error":"Something went wrong... : %s"}' % content \
-            if content else "Unknown Error"
+        return json.dumps({"Error": content}) if content else "Unknown Error"
+#        return '{"Error":"Something went wrong... : %s"}' % content \
+#            if content else "Unknown Error"
 
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
@@ -597,8 +598,8 @@ async def compute_olson(posted_data, user_id, app):
 
 async def call_mta_simpl(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
-    if "medium" in posted_data["method"]:
-        commande = b'mta_mediumdev(x, var1, var2, key, type_dev)'
+    if "territorial" in posted_data["method"]:
+        commande = b'mta_territorialdev(x, var1, var2, key, type_dev)'
         data = json.dumps({
             "x": json.dumps(posted_data['table']).encode(),
             "var1": posted_data['var1_name'],
@@ -607,8 +608,8 @@ async def call_mta_simpl(posted_data, user_id, app):
             "type_dev": posted_data["type_dev"]
             }).encode()
 
-    elif "global" in posted_data["method"]:
-        commande = b'mta_globaldev(x, var1, var2, ref, type_dev)'
+    elif "general" in posted_data["method"]:
+        commande = b'mta_generaldev(x, var1, var2, ref, type_dev)'
         data = json.dumps({
             "x": json.dumps(posted_data['table']).encode(),
             "var1": posted_data['var1_name'],

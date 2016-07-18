@@ -488,7 +488,7 @@ var fields_FlowMap = {
     }
 };
 
-function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size){
+function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size, func_parent){
     if(!(joined_dataset[0][0].hasOwnProperty(fij_name))){
         document.getElementById("FlowMap_discTable").innerHTML = "";
         return;
@@ -671,8 +671,9 @@ function fillMenu_FlowMap(){
                 type: 'POST',
                 error: function(error) { console.log(error); },
                 success: function(data){
-                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true}),
-                        layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
+                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
+                    if(!new_layer_name) return;
+                    let layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
                         fij_field_name = field_fij.node().value,
                         fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
                         nb_ft = fij_values.length,
@@ -958,7 +959,8 @@ var fields_Typo = {
             field_selec = d3.select("#Typo_field_1");
 
         fields_name.forEach(f_name => {
-            field_selec.append("option").text(f_name).attr("value", f_name);
+            if(f_name != '_uid' && f_name != "UID")
+                field_selec.append("option").text(f_name).attr("value", f_name);
         });
         d3.selectAll(".params").attr("disabled", null);
     },
@@ -1295,11 +1297,11 @@ function fillMenu_MTA(){
                 table_to_send[var2_name][i] = +user_data[layer][i][var2_name];
             }
             object_to_send["method"] = choosen_method;
-            if(choosen_method == "medium_dev"){
+            if(choosen_method == "territorial_dev"){
                 let key_name = field_key_agg.node().value;
                 table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
                 object_to_send["key_field_name"] = key_name;
-            } else if(choosen_method == "global_dev"){
+            } else if(choosen_method == "general_dev"){
                 object_to_send["ref_value"] = +ref_ratio.node().value;
             }
             object_to_send["table"] = table_to_send;
@@ -1307,8 +1309,8 @@ function fillMenu_MTA(){
             object_to_send["var2_name"] = var2_name;
 
         } else if (choosen_method == "local_dev"){
-            let val = +val_param_global_dev.node().value,
-                param_name = param_global_dev.node().value == "dist" ? "dist" : "order",
+            let val = +val_param_general_dev.node().value,
+                param_name = param_general_dev.node().value == "dist" ? "dist" : "order",
                 val1_to_send = new Object(),
                 val2_to_send = new Object();
 
@@ -1331,8 +1333,8 @@ function fillMenu_MTA(){
         return object_to_send;
     }
 
-    var MTA_methods = [["Global Deviation", "global_dev"],
-                       ["Medium deviation", "medium_dev"],
+    var MTA_methods = [["General Deviation", "general_dev"],
+                       ["Territorial deviation", "territorial_dev"],
                        ["Local deviation", "local_dev"]];
 
     var dv2 = section2.append("p").attr("class", "form-rendering");
@@ -1358,16 +1360,16 @@ function fillMenu_MTA(){
 
     var a = dv2.append('div').style("margin-bottom", "15px");
 
-    var param_global_dev = a.insert("select")
+    var param_general_dev = a.insert("select")
                                 .style({"background-color": "#e5e5e5", "border-color": "transparent"})
                                 .attr("class", "params")
                                 .attr("disabled", true);
 
     [["Distance defining the contiguity", "dist"],
      ["Contiguity order", "order"]].forEach( param => {
-            param_global_dev.append("option").text(param[0]).attr("value", param[1])  });
+            param_general_dev.append("option").text(param[0]).attr("value", param[1])  });
 
-    var val_param_global_dev = a.insert('input')
+    var val_param_general_dev = a.insert('input')
                                     .style("width", "85px")
                                     .attr({type: "number", min: 0, max:1000000, step:1})
                                     .attr("disabled", true);
@@ -1375,21 +1377,21 @@ function fillMenu_MTA(){
     // Each MTA method (global/local/medium) is associated with some
     // specific arguments to enable/disabled accordingly
     method_selec.on("change", function(){
-        if(this.value == "global_dev"){
+        if(this.value == "general_dev"){
             ref_ratio.attr("disabled", null);
             field_key_agg.attr("disabled", true);
-            param_global_dev.attr("disabled", true);
-            val_param_global_dev.attr("disabled", true);
-        } else if(this.value == "medium_dev"){
+            param_general_dev.attr("disabled", true);
+            val_param_general_dev.attr("disabled", true);
+        } else if(this.value == "territorial_dev"){
             ref_ratio.attr("disabled", true);
             field_key_agg.attr("disabled", null);
-            param_global_dev.attr("disabled", true);
-            val_param_global_dev.attr("disabled", true);
+            param_general_dev.attr("disabled", true);
+            val_param_general_dev.attr("disabled", true);
         } else if(this.value == "local_dev"){
             ref_ratio.attr("disabled", true);
             field_key_agg.attr("disabled", true);
-            param_global_dev.attr("disabled", null);
-            val_param_global_dev.attr("disabled", null);
+            param_general_dev.attr("disabled", null);
+            val_param_general_dev.attr("disabled", null);
         }
     });
 
@@ -1699,11 +1701,8 @@ function fillMenu_Stewart(){
                             var class_lim = JSON.parse(data_split[1]);
                     }
                     var col_pal = getColorBrewerArray(class_lim.min.length, "Purples"),
-                        col_map = new Map(),
                         colors_breaks = [];
                     for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
-                        let k = Math.round(class_lim.min[i] * 100) / 100;
-                        col_map.set(k, col_pal[i]);
                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]]);
                     }
                     current_layers[n_layer_name].fill_color = {"class": []};
@@ -1712,12 +1711,7 @@ function fillMenu_Stewart(){
                     current_layers[n_layer_name].rendered_field = field_selec.node().value;
                     d3.select("#"+n_layer_name)
                             .selectAll("path")
-                            .style("fill", function(d, i){
-                                    let k = Math.round(d.properties.min * 100) / 100,
-                                        col = col_map.get(k);
-                                    current_layers[n_layer_name].fill_color.class[i] = col;
-                                    return col;
-                            });
+                            .style("fill", (d,i) => col_pal[i]);
                     // Todo : use the function render_choro to render the result from stewart too
                 }
             });
@@ -1734,6 +1728,19 @@ var fields_Anamorphose = {
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field);
         });
+
+        field_selec.on("change", function(){
+            let field_name = this.value,
+                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                ref_value_field = document.getElementById("Anamorph_opt3");
+            if(ref_value_field){
+                ref_value_field.setAttribute("max", max_val_field);
+                ref_value_field.value = max_val_field;
+            }
+        });
+        setSelected(field_selec.node(), field_selec.node().options[0].value);
+
+
     },
     unfill: function(){
         let field_selec = document.getElementById("Anamorph_field");
@@ -1747,21 +1754,38 @@ function fillMenu_Anamorphose(){
     var make_opt_dorling = function(){
 
         option1_txt.html('Symbol type ');
-        option2_txt.html("Symbol Max Size (px) ");
+        option2_txt.html("Fixed size ");
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
         option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
-        let option2_txt2 = option2_txt.append("span").attr("id", "Anamorph_opt_max_symb").html("10 px");
+        option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
+        option2_txt2.html("On value ...");
+        option2_val2 = option2_txt2.insert("input").attr("type", "number").attr({class: "params", id: "Anamorph_opt3"});
+
         symbols.forEach(function(symb){
             option1_val.append("option").text(symb[0]).attr("value", symb[1]);
         });
-        option2_val.on("change", function(){
-            option2_txt2.html(this.value + " px");
+
+        field_selec.on("change", function(){
+            let field_name = this.value,
+                layer = Object.getOwnPropertyNames(user_data)[0],
+                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                ref_value_field = document.getElementById("Anamorph_opt3");
+
+            ref_value_field.setAttribute("max", max_val_field);
+            ref_value_field.value = max_val_field;
         });
+        setSelected(field_selec.node(), field_selec.node().options[0].value);
+
+        option2_val.on("change", function(){
+            document.getElementById("Anamorph_ref_size_txt").innerHTML = this.value + " px";
+        });
+
     };
 
     var make_opt_iter = function(){
         option1_txt.html('N. iterations ');
-        option2_txt.html(""),
+        option2_txt.html("");
+        option2_txt2.html("");
         option1_val = option1_txt.insert('input')
                         .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
     };
@@ -1774,10 +1798,10 @@ function fillMenu_Anamorphose(){
          ["Mean value (may cause overlapping)", "mean"]].forEach(function(opt_field){
             option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
         });
-
         option2_val = option2_txt.insert('input')
                         .style("width", "60px")
                         .attr({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
+        option2_txt2.html("");
     };
 
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
@@ -1785,17 +1809,20 @@ function fillMenu_Anamorphose(){
         field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Anamorph_field'}),
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html('Symbol type'),
         option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"}),
-        option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Symbol Max Size (px)"),
+        option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Fixed size "),
         option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
-        option2_txt2 = option2_txt.insert("span").html("10 px"),
+        option2_txt2 = dialog_content.append("p").attr("id", "Anamorph_opt_txt3").html("On value ..."),
+        option2_val2 = option2_txt2.insert("input").attr({type: "number", min: 0, step: 0.1}).attr({class: "params", id: "Anamorph_opt3"}),
         symbols = [["Circle", "circle"], ["Square", "rect"]];
+
+    option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
+
+    option2_val.on("change", function(){
+        document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
+    });
 
     symbols.forEach(function(symb){
         option1_val.append("option").text(symb[0]).attr("value", symb[1]);
-    });
-
-    option2_val.on("change", function(){
-        option2_txt2.html([this.value, " px"].join(''));
     });
 
     algo_selec.on("change", function(){
@@ -2030,18 +2057,18 @@ function fillMenu_Anamorphose(){
 //                makeButtonLegend(new_layer_name);
 
             } else if (algo === "dorling"){
-                let max_size = +document.getElementById("Anamorph_opt2").value,
-                    ref_size = 0.1,
+                let fixed_value = +document.getElementById("Anamorph_opt3").value,
+                    fixed_size = +document.getElementById("Anamorph_opt2").value,
                     layer_to_add =  check_layer_name(["DorlingCarto", layer, field_name].join('_')),
                     shape_symbol = option1_val.node().value;
 
-                let features_order = make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add);
+                let features_order = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
                     "type": "Point",
                     "symbol": shape_symbol,
                     "rendered_field": field_name,
-                    "size": [ref_size, max_size],
+                    "size": [fixed_value, fixed_size],
                     "stroke-width-const": 1,
                     "is_result": true,
                     "features_order": features_order,
@@ -2057,7 +2084,7 @@ function fillMenu_Anamorphose(){
 }
 
 
-function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol, layer_to_add){
+function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add){
     let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
@@ -2071,7 +2098,7 @@ function make_dorling_demers(layer, field_name, max_size, ref_size, shape_symbol
         let pt = path.centroid(ref_layer_selection[i].__data__.geometry);
         d_values.push([i, val, pt]);
     }
-    d_values = prop_sizer2(d_values, Number(ref_size / zs), Number(max_size / zs));
+    d_values = prop_sizer3(d_values, fixed_value, fixed_size, shape_symbol);
     d_values.sort(comp);
 
     let nodes = d_values.map(function(d, i){
@@ -2575,7 +2602,29 @@ function fillMenu_griddedMap(layer){
     d3.selectAll(".params").attr("disabled", true);
 }
 
+function copy_layer(ref_layer, new_name){
+    svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+ref_layer).cloneNode(true));
+    svg_map.lastChild.setAttribute("id", new_name);
+    svg_map.lastChild.setAttribute("class", "result_layer layer");
+    current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
+                             type: current_layers[ref_layer].type,
+                             ref_layer_name: ref_layer};
+    let selec_src = document.getElementById(ref_layer).querySelectorAll("path");
+    let selec_dest = document.getElementById(new_name).querySelectorAll("path");
+    for(let i = 0; i < selec_src.length; i++)
+        selec_dest[i].__data__ = selec_src[i].__data__;
+    create_li_layer_elem(new_name, current_layers[new_name].n_features, current_layers[new_name].type, "result");
+}
+
 function render_categorical(layer, rendering_params){
+    if(rendering_params.new_name){
+        copy_layer(layer, rendering_params.new_name);
+        layer = rendering_params.new_name;
+    }
+
+    map.select("#" + layer).style("opacity", 1)
+            .style("stroke-width", 0.75/zoom.scale() + "px");
+
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
         field = rendering_params.rendered_field,
@@ -2623,20 +2672,14 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
     if(rendering_params.new_name){
-        svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+layer).cloneNode(true));
-        var ref_layer = layer;
+        copy_layer(layer, rendering_params.new_name);
         layer = rendering_params.new_name;
-        svg_map.lastChild.setAttribute("id", layer);
-        svg_map.lastChild.setAttribute("class", "result_layer layer");
-        var layer_to_render = map.select("#"+layer).selectAll("path");
-        current_layers[layer] = {n_features: current_layers[ref_layer].n_features,
-                                 type: current_layers[ref_layer].type,
-                                 ref_layer_name: ref_layer};
-        create_li_layer_elem(layer, current_layers[layer].n_features, current_layers[layer].type, "result");
-    } else {
-        var layer_to_render = map.select("#"+layer).selectAll("path");
     }
-    map.select("#"+layer).style("stroke-width", 0.75/zoom.scale() + "px");
+
+    var layer_to_render = map.select("#"+layer).selectAll("path");
+    map.select("#"+layer)
+            .style("opacity", 1)
+            .style("stroke-width", 0.75/zoom.scale() + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
@@ -2700,21 +2743,6 @@ let xrange = function*(start = 0, stop, step = 1) {
         yield i;
 }
 
-// Function returning an array of values from "arr", normalized between "min_size" and "max_size"
-function prop_sizer(arr, min_size, max_size){
-    let min_values = Math.sqrt(Math.min.apply(0, arr)),
-        max_values = Math.sqrt(Math.max.apply(0, arr)),
-        dif_val = max_values - min_values,
-        dif_size = max_size - min_size,
-        len_arr = arr.length,
-        res = new Array(len_arr);
-    // Lets use "for" loop with pre-sized array (but maybe "push" method is faster ?)
-    // as "map" and "forEach" seems to be sometimes slower in some browser
-    for(let i=0; i<len_arr; ++i)
-        res[i] = (Math.sqrt(arr[i])/dif_val * dif_size) + min_size - dif_size/dif_val;
-    return res;
-}
-
 function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         arr_len = arr.length,
@@ -2761,22 +2789,6 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     return res;
 }
 
-function prop_sizer2(arr, min_size, max_size){
-    let arr_tmp = arr.map(i => i[1]),
-        min_values = Math.sqrt(Math.min.apply(0, arr_tmp)),
-        max_values = Math.sqrt(Math.max.apply(0, arr_tmp)),
-        dif_val = max_values - min_values,
-        dif_size = max_size - min_size,
-        arr_len = arr.length,
-        res = new Array(arr_len);
-
-    for(let i=0; i<arr_len; i++){
-        let val = arr[i];
-        res[i] = [val[0], (Math.sqrt(val[1])/dif_val * dif_size) + min_size - dif_size/dif_val, val[2]];
-    }
-    return res;
-}
-
 function get_nb_decimals(nb){
     let tmp = nb.toString().split('.');
     return tmp.length < 2 ? 0 : tmp[1].length;
@@ -2816,7 +2828,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
     if(target){
         let res = [];
         for(let k in result)
-            if(result[k] === target)
+            if(result[k] === target && k != "_uid")
                 res.push(k);
         return res;
     } else

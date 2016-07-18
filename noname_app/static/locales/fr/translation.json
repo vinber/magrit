@@ -1,0 +1,15 @@
+{
+    "Add your data" : "Ajout de données",
+    "Choose a function": "Choix de la représentation",
+    "Function options": "Options de la représentation",
+    "Layers": "Gestionnaire de couches",
+    "Basemap configuration": "Configuration de la carte",
+    "Projection options": "Option de projection",
+    "Add geometry layer": "Ajout d'une couche géographique",
+    "Add additional dataset": "Ajout d'un jeu de données",
+    "Select available dataset": "Sélectionnez un jeu de données d'exemple",
+    "(or drop it)": "(ou glisser-déposer)",
+    "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+    "No choosen functionnality ...": "Pas de fonctionnalitée choisie",
+
+}

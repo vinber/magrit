@@ -464,7 +464,8 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.textContent = this.value
             });
 
-    if(legend_boxes[0].length > 0 && current_layers[layer_name].renderer != "Categorical"){
+    if(legend_boxes[0].length > 0 && current_layers[layer_name].renderer != "Categorical"
+        && current_layers[layer_name].renderer != "TypoSymbols"){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)

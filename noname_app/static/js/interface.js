@@ -435,7 +435,9 @@ function add_layer_topojson(text, options){
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
                        nb_fields, ' fields</i></span>'].join(''));
             document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
-
+            document.getElementById("remove_target").onclick = function(){
+                remove_layer(lyr_name_to_add);
+            };
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
             $("[layer-target-tooltip!='']").qtip("destoy");
@@ -469,10 +471,6 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;
-
-    document.getElementById("remove_target").onclick = function(){
-        remove_layer(lyr_name_to_add);
-    };
 
 //    if(!skip_alert) alert('Layer successfully added to the canvas');
     if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
@@ -626,9 +624,58 @@ function add_layout_feature(selected_feature){
             scaleBar.create();
         else
             alert("Only one scale bar can be added - Use right click to change its properties");
-    } else {
-        alert("Not available yet..!")
+    } else if (selected_feature == "North arrow"){
+        northArrow.display();
     }
+}
+
+var drag_lgd_features = d3.behavior.drag()
+        .origin(function() {
+            let t = d3.select(this);
+            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+        })
+        .on("dragstart", () => {
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.preventDefault();
+            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+          })
+        .on("dragend", function(){
+            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+          })
+        .on("drag", function(){
+            d3.select(this)
+                .attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
+            let t = d3.select(this);
+            self.x = t.attr("x") + d3.transform(t.attr("transform")).translate[0];
+            self.y = t.attr("y") + d3.transform(t.attr("transform")).translate[1];
+          });
+
+
+var northArrow = {
+    display: function(){
+        let arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend arrow"),
+            x_pos = w - 100,
+            y_pos = h - 100,
+            self = this;
+
+        this.x = x_pos;
+        this.y = y_pos;
+        this.svg_node = arrow_gp;
+        this.displayed = true;
+        arrow_gp.insert("image")
+            .attr("x", x_pos)
+            .attr("y", y_pos)
+            .attr("height","30px")
+            .attr("width", "30px")
+            .attr("xlink:href", '/static/img/north.svg');
+
+        arrow_gp.call(drag_lgd_features);
+    },
+    remove: function(){
+        this.svg_node.remove();
+    },
+    displayed: false
 }
 
 /**
@@ -690,7 +737,7 @@ var scaleBar = {
             .attr({x: x_pos + bar_size, y: y_pos - 5})
             .text(this.dist_txt + " km");
 
-        scale_gp.call(drag_scale);
+        scale_gp.call(drag_lgd_features);
         scale_gp.on("contextmenu", (d,i) => {
                     d3.event.preventDefault();
                     return scale_context_menu
@@ -868,3 +915,16 @@ function list_existing_layers_server(){
         error: function(error) { console.log(error); }
     });
 }
+
+i18next.use(i18nextXHRBackend)
+  .init({
+      debug: true,
+      lng: "fr",
+      fallbackLng: "en",
+      backend: {
+        loadPath: "/static/locales/{{lng}}/{{ns}}.json"
+      }
+}, (err, t) => {
+    if(err)
+        throw err;
+});

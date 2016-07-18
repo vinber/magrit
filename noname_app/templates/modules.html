@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
-    <link  href="/static/css/style.css" rel="stylesheet"  type="text/css">
+    <link href="/static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
@@ -21,6 +21,8 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
+    <script  src="/static/js/lib/i18next.min.js"></script>
+    <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
@@ -215,15 +217,15 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
         accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
 
-    accordion1.append("h3").html("Add your data");
-    accordion2_pre.append("h3").html("Choose a function");
-    accordion2.append("h3").html("Function options");
-    accordion3.append("h3").html("Layers");
-    accordion4.append("h3").html("Basemap configuration");
-    accordion5.append("h3").html("Projection options");
+    accordion1.append("h3").html(i18next.t("Add your data"));
+    accordion2_pre.append("h3").html(i18next.t("Choose a function"));
+    accordion2.append("h3").html(i18next.t("Function options"));
+    accordion3.append("h3").html(i18next.t("Layers"));
+    accordion4.append("h3").html(i18next.t("Basemap configuration"));
+    accordion5.append("h3").html(i18next.t("Projection options"));
 
     var section1 =  accordion1.append("div").attr("id","section1")
-                        .attr("data-tooltip", "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here"),
+                        .attr("data-tooltip", i18next.t("Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here")),
         section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0"),
         section2 =  accordion2.append("div").attr("id","section2");
     accordion3.append("div")
@@ -300,7 +302,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         .on("click", click_button_add_layer);
 
     dv3.append('p').style({margin: "auto", cursor: "pointer", "font-size": "10.5px", "text-align": "right"})
-            .html('<i>Add sample layout layers...</i>')
+            .html('<i>' + i18next.t("Add sample layout layers...") + '</i>')
             .on('click', function(){add_layout_layers();});
     let section4 = d3.select("#section4");
     let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
@@ -714,7 +716,7 @@ function displayInfoOnMove(){
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
                 let ref_id = current_layers[top_layer].features_order ? current_layers[top_layer].features_order[i][0] : +i;
                 let txt_info = ["<h3>", top_layer, "</h3><br><i>Feature ",
-                                ref_id, "/", current_layers[ref_layer_name].n_features, "</i><br>"];
+                                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><br>"];
                 let properties = user_data[ref_layer_name][ref_id];
                 Object.getOwnPropertyNames(properties).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+properties[el]);
@@ -850,6 +852,7 @@ function remove_ext_dataset(){
             data_ext_txt.onclick = click_button_add_layer;
             document.getElementById("remove_dataset").remove();
             document.getElementById("join_section").innerHTML = "";
+            document.getElementById('sample_zone').style.display = null;
             $("#data_ext").qtip("destroy");
         }
     });
@@ -883,7 +886,8 @@ function remove_layer_cleanup(name){
         d3.select("#img_in_geom")
             .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
-        document.getElementById("input_geom").innerHTML = "<b>Add geometry layer <i>(or drop it)</i></b>";
+        d3.select("#input_geom").html("<b>Add geometry layer <i>(or drop it)</i></b>")
+            .on('click', click_button_add_layer);
         document.getElementById("remove_target").remove();
         // Unfiling the fields related to the targeted functionnality:
         if(current_functionnality)
@@ -894,10 +898,8 @@ function remove_layer_cleanup(name){
         user_data = new Object();
         targeted_layer_added = false;
 
-        // Redisplay the top of the section 1 in the menu allowing user to drop layer or select a sample layer :
-        d3.select("#sample_link").html("<b>Select available sample dataset</b>").on("click", add_sample_layer)
-        section1.style("padding-top", null);
-        d3.select(".s1").html('<img style="display: block; margin-left: auto; margin-right: auto; height: 30px; cursor: pointer;" id="img_in_geom_big" alt="Drop_zone_section1" src="/static/img/drop_section1_small.svg">')
+        // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
+        document.getElementById('sample_zone').style.display = null;
 
         // Restore the state of the bottom of the section 1 :
         if(d3.select("#join_button").node() != null)
@@ -1223,6 +1225,13 @@ function rotate_global(angle){
       .attr("transform", [canvas_rotation_value,
                           ",translate(", zoom.translate(), "),",
                           "scale(", zoom.scale(), ")"].join(''));
+    if(northArrow.displayed){
+        let current_transform = northArrow.svg_node.attr("transform");
+        if(current_transform)
+            northArrow.svg_node.attr("transform", ["rotate(", angle, ",",northArrow.x,",", northArrow.y, "),"].join('') + current_transform);
+        else
+            northArrow.svg_node.attr("transform",  ["rotate(", angle, ",",northArrow.x,",", northArrow.y, ")"].join(''));
+        }
 };
 
 function change_projection(proj_name) {
