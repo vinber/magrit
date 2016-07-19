@@ -434,7 +434,7 @@ function createlegendEditBox(legend_id, layer_name){
     bind_selections();
     let original_params = {
         title_content: title_content.textContent, subtitle_content: subtitle_content.textContent,
-        note_content: note_content.textContent, source_content: source_content.textContent
+        note_content: note_content.textContent, source_content: source_content.textContent ? source_content.textContent : ""
         };
 
     make_confirm_dialog("", "Confirm", "Cancel", "Layer style options", box_class, undefined, undefined, true)

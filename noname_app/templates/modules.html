@@ -919,7 +919,7 @@ function remove_layer_cleanup(name){
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
     delete current_layers[name];
-    swal("Deleted!", ["Layer ", name, " has been removed"].join(''), "success");
+    swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), i18next.t("success"));
 }
 
 function load_map_template(){
@@ -1666,7 +1666,7 @@ function handle_export(){
 
     box_content.append("button")
         .attr("class", "button_st2")
-        .html("Export to PNG")
+        .html(i18next.t("Export to PNG"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
             export_compo_png();
@@ -1674,7 +1674,7 @@ function handle_export(){
 
     box_content.append("button")
         .attr("class", "button_st2")
-        .html("Export to SVG")
+        .html(i18next.t("Export to SVG"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
             export_compo_svg();
@@ -1682,7 +1682,7 @@ function handle_export(){
 
     box_content.append("button")
         .attr("class", "button_st2")
-        .html("Export to geographic layers...")
+        .html(i18next.t("Export layers to a geographic format"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
             make_export_layer_box();
@@ -1721,7 +1721,7 @@ function make_export_layer_box(){
         return 1;
     });
 
-    box_content.append("h3").html("Layer export");
+    box_content.append("h3").html(i18next.t("Layer export"));
 
     let selec_layer = box_content.append("p").html("Layer to export ")
              .insert("select").attr("id", "layer_to_export");

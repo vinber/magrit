@@ -4,7 +4,7 @@
     "Function options": "Options de la représentation",
     "Layers": "Gestionnaire de couches",
     "Basemap configuration": "Configuration de la carte",
-    "Projection options": "Option de projection",
+    "Projection options": "Options de projection",
     "Add geometry layer": "Ajout d'une couche géographique",
     "Add additional dataset": "Ajout d'un jeu de données",
     "Select available sample dataset": "Sélection d'un jeu de données d'exemple",
@@ -28,7 +28,7 @@
     "fields": "champs",
     "Field": "Champ",
     "matches": "correspondances",
-    "layer": "couche",
+    "Layer": "La couche",
     "Loading results": "Chargement en cours",
     "Background color": "Couleur d'arrière plan",
     "Compute and render": "Dessiner le résultat",
@@ -41,5 +41,12 @@
     "Cancel": "Annulation",
     "Delete": "Suppression",
     "Deleted": "Supprimée",
-    "has been removed": "a été supprimée"
+    "has been removed": "a été supprimée",
+    "The geometrie layer and the joined dataset doesn't have the same number of features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entitées",
+    "Continue anyway": "Continuer",
+    "The values on which operate have to be uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques",
+    "Export to PNG": "Export au format PNG",
+    "Export to SVG": "Export au format SVG",
+    "Export layers to a geographic format": "Exporter vers un format compatible SIG",
+    "Layer export": "Options d'export"
 }

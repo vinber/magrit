@@ -221,7 +221,7 @@ function createStyleBox(layer_name){
                         lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
                     lgd_choro.remove();
                     createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
-                    lgd_choro = document.getElementById("legend_root");
+                    lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     lgd_choro.setAttribute("transform", transform_param);
                 }
                 sendPreferences();
@@ -304,7 +304,8 @@ function createStyleBox(layer_name){
             }
         } else if (renderer == "Categorical"){
             let renderer_field = current_layers[layer_name].rendered_field,
-                fields_layer = type_col(layer_name),
+                ref_layer_name = current_layers[layer_name].ref_layer_name,
+                fields_layer = type_col(ref_layer_name),
                 fields_name = Object.getOwnPropertyNames(fields_layer),
                 field_to_render;
 
@@ -322,7 +323,7 @@ function createStyleBox(layer_name){
                 .style({"font-size": "0.8em", "text-align": "center"})
                 .html("Choose colors")
                 .on("click", function(){
-                    display_categorical_box(layer_name, field_selec.node().value)
+                    display_categorical_box(ref_layer_name, field_selec.node().value)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
@@ -337,11 +338,14 @@ function createStyleBox(layer_name){
 
         } else if (renderer != "Stewart"){
             let field_to_discretize;
+            var table_layer_name = layer_name;
             if(renderer == "Gridded")
                 field_to_discretize = "densitykm";
             else {
-                var fields = type_col(layer_name, "number"),
-                    field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params').on("change", function(){ field_to_discretize = this.value; });
+                if(renderer == "Choropleth")
+                    table_layer_name = current_layers[layer_name].ref_layer_name;
+                var fields = type_col(table_layer_name, "number");
+                var field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params').on("change", function(){ field_to_discretize = this.value; });
                 field_to_discretize = fields[0];
                 fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
                 if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
@@ -352,7 +356,7 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html("Display and arrange class")
                 .on("click", function(){
-                    display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "Quantiles")
+                    display_discretization(table_layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "Quantiles")
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
@@ -523,7 +527,7 @@ function createStyleBox_ProbSymbol(layer_name){
                             lgd_subtitle = lgd_prop_symb.querySelector("#legendsubtitle").innerHTML;
                         lgd_prop_symb.remove();
                         createLegend_symbol(layer_name, field_used, lgd_title, lgd_subtitle);
-                        lgd_prop_symb = document.getElementById("legend_root2");
+                        lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_prop_symb.setAttribute("transform", transform_param);
                     }
@@ -537,14 +541,14 @@ function createStyleBox_ProbSymbol(layer_name){
                         current_layers[layer_name].colors_breaks.push([[rendering_params.breaks[i], " - ", rendering_params.breaks[i+1]].join(''), rendering_params.colors[i]]);
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
-                    let lgd_choro = document.getElementById("legend_root");
+                    let lgd_choro =document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     if(lgd_choro){
                         let transform_param = lgd_choro.getAttribute("transform"),
                             lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
                             lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
                         lgd_choro.remove();
                         createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
-                        lgd_choro = document.getElementById("legend_root");
+                        lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_choro.setAttribute("transform", transform_param);
                     }

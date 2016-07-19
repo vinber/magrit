@@ -14,7 +14,7 @@ function handle_join(){
                 }
             });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog("The geometrie layer and the joined dataset doesn't have the same number of features. Continue anyway ?", "Ok", "Cancel", "").then(function(confirmed){
+        make_confirm_dialog(i18next.t("The geometrie layer and the joined dataset doesn't have the same number of features") + ". " + i18next.t("Continue anyway") +  "?", "Ok", i18next.t("Cancel"), "").then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {
@@ -33,12 +33,13 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = handle_join;
 
         let join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [prop, 'Data not joined'].join('');
+        join_sec.innerHTML = [prop, i18next.t('Data not joined')].join('');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        button.innerHTML = " -<b> Join now</b>";
+        //button.innerHTML = " -<b> Join now</b>";
+        button.innerHTML = " -<b> " + i18next.t("Join now") + "</b>";
         button.onclick = handle_join;
         join_sec.appendChild(button);
     } else {
@@ -50,7 +51,8 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = null;
 
         let join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
+        //join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
+        join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
@@ -80,7 +82,7 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set2 = new Set(join_values2);
     if(join_set2.size != join_values2.length){
-        alert("The values on which operate have to be uniques");
+        alert(i18next.t("The values on which operate have to be uniques"));
         return;
     }
 
@@ -90,7 +92,7 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set1 = new Set(join_values1);
     if(join_set1.size != join_values1.length){
-        alert("The values on which operate have to be uniques");
+        alert(i18next.t("The values on which operate have to be uniques"));
         return;
     }
 
