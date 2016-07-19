@@ -89,8 +89,10 @@ function make_ico_choice(){
                             .style("margin-bottom", "1px");
     for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
         let ico_name = list_fun_ico[i],
-            func_name = ico_name.split('.')[0].split("_")[1];
+            func_name = ico_name.split('.')[0].split("_")[1],
+            func_desc = get_menu_option(func_name).desc;
         function_panel.append("img")
+            .attr("title", func_desc)
             .attr("src", ["/static/img/func_icons/", ico_name].join(''))
             .style("margin", "1px")
             .on("click", function(){
@@ -168,28 +170,25 @@ var button_style = ' <img src="/static/img/High-contrast-edit-clear.svg" class="
     button_trash = ' <img src="/static/img/Trash_font_awesome.svg" id="trash_button" width="17" height="17" alt="submit"/>',
     button_legend = ' <img src="/static/img/qgis_legend.svg" id="legend_button" width="17" height="17" alt="submit"/>',
     button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg" id="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
-    button_polygon = '<img src="/static/img/type_geom/poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_line = '<img src="/static/img/type_geom/line.svg" class="ico_type" width="17" height="17" alt="Line"/>',
-    button_point = '<img src="/static/img/type_geom/dot.svg" class="ico_type" width="17" height="17" alt="Point"/>',
-    button_type = {"Point": button_point, "Line": button_line, "Polygon": button_polygon};
+    button_type = new Map([
+        ["Point", '<img src="/static/img/type_geom/dot.svg" class="ico_type" width="17" height="17" alt="Point"/>'],
+        ["Line", '<img src="/static/img/type_geom/line.svg" class="ico_type" width="17" height="17" alt="Line"/>'],
+        ["Polygon", '<img src="/static/img/type_geom/poly.svg" class="ico_type" width="17" height="17" alt="Polygon"/>']
+        ]);
 
-var button_flow = '<img src="/static/img/type_geom/layer_flow.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_symbol = '<img src="/static/img/type_geom/layer_symbol.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_mta = '<img src="/static/img/type_geom/layer_mta.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_propchoro = '<img src="/static/img/type_geom/layer_propchoro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_typo = '<img src="/static/img/type_geom/layer_typo.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_disc = '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_cartogram = '<img src="/static/img/type_geom/layer_cartogram.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_label = '<img src="/static/img/type_geom/layer_label.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_grid = '<img src="/static/img/type_geom/layer_grid.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_choro = '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_smooth = '<img src="/static/img/type_geom/layer_smooth.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_prop = '<img src="/static/img/type_geom/layer_prop.svg" class="ico_type" width="17" height="17" alt="Polygon"/>',
-    button_result_type = new Map([
-        ["flow", button_flow], ["symbol", button_symbol], ["grid", button_grid],
-        ["MTA", button_mta], ["propchoro", button_propchoro], ["typo", button_typo],
-        ["disc", button_disc], ["cartogram", button_cartogram], ["label", button_label],
-        ["choro", button_choro], ["smooth", button_smooth], ["prop", button_prop]
+var button_result_type = new Map([
+        ["flow", '<img src="/static/img/type_geom/layer_flow.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["symbol", '<img src="/static/img/type_geom/layer_symbol.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["grid", '<img src="/static/img/type_geom/layer_grid.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["MTA", '<img src="/static/img/type_geom/layer_mta.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["typo", '<img src="/static/img/type_geom/layer_typo.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["disc", '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["label", '<img src="/static/img/type_geom/layer_label.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["choro", '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["smooth", '<img src="/static/img/type_geom/layer_smooth.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["prop", '<img src="/static/img/type_geom/layer_prop.svg" class="ico_type" width="17" height="17" alt="Polygon"/>']
         ]);
 
 var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
@@ -238,36 +237,39 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         dv11 = dv1.append("div").style("width", "auto");
 
     dv11.append("img")
-        .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "26", "height": "26",  "alt": "Geometry layer"})
+        .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
 
     dv11.append("p")
         .attr({id: "input_geom", class: "user_panel"})
         .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html("<b>Add geometry layer <i>(or drop it)</i></b>")
+        //.html('<b>"Add geometry layer <i>(or drop it)</i></b>')
+        .html("<b>" + i18next.t("Add geometry layer") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
         .on('click',  click_button_add_layer);
 
     let dv12 = dv1.append("div");
     dv12.append("img")
-        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.svg", "width": "26", "height": "26",  "alt": "Additional dataset"})
+        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
     dv12.append("p")
         .attr({"id": "data_ext", "class": "user_panel"})
         .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html('<b>Add additional dataset <i>(or drop it)</i></b>')
+        //.html('<b>Add additional dataset <i>(or drop it)</i></b>')
+        .html("<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
         .on('click',  click_button_add_layer);
 
     let div_sample = dv1.append("div").attr("id", "sample_zone");
     div_sample.append("img")
-        .attr({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.svg", "width": "26", "height": "26",  "alt": "Sample layers"})
+        .attr({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
         .style("cursor", "pointer")
         .on('click', add_sample_layer);
     div_sample.append("span")
         .attr({"id": "sample_link", "class": "user_panel"})
         .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html("<b>Select available sample dataset</b>")
+        //.html("<b>Select available sample dataset</b>")
+        .html("<b>" + i18next.t("Select available sample dataset") + "</b>")
         .on('click', add_sample_layer);
 
     dv1.append("p")
@@ -281,14 +283,16 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         .append("button")
         .attr({id: "browse_button", class: "button_st3", disabled: true})
         .style("font-size", "12px")
-        .html("Explore your table(s)")
+        //.html("Explore your table(s)")
+        .html(i18next.t("Explore your table(s)"))
         .on("click", function(){  boxExplore.create();  });
 
     make_ico_choice();
 
     section2.append("p")
             .style("font-size", "18px")
-            .html("No choosen functionnality ...");
+            .html(i18next.t("No choosen functionnality"));
+            //.html("No choosen functionnality ...");
 
     let section3 = d3.select("#section3");
 
@@ -308,45 +312,43 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
     dv4.append("div")
             .style({float: "left", width: "50%", "text-align": "center"})
-            .html("<b>Canvas width (px)</b><br>")
+            //.html("<b>Canvas width (px)</b><br>")
+            .html("<b>" + i18next.t("Canvas width") + " (px)</b><br>")
             .insert("input").style("width", "60px")
             .attr({id: "input-width", type: "number", value: w, width: "55px"})
             .on("change", function(){canvas_mod_size([this.value,null])});
     dv4.append("div")
             .style({float: "right", width: "50%", "text-align": "center"})
-            .html("<b>Canvas height (px)</b><br>")
+            //.html("<b>Canvas height (px)</b><br>")
+            .html("<b>" + i18next.t("Canvas height") + " (px)</b><br>")
             .insert("input").style("width", "60px")
             .attr({id: "input-height", type: "number", "value": h})
             .on("change", function(){canvas_mod_size([null,this.value])});
     dv4.append("p")
             .style({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
-            .html("Map title<br>")
+            //.html("Map title<br>")
+            .html(i18next.t("Map title") + "<br>")
             .insert("input").attr("id", "title")
             .on("keyup", function(){handle_title(this.value);});
     dv4.insert("_img")
             .style("display", "inline").style("top", "4px")
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
-    dv4.append("p").style("text-align", "center").html("Background color")
+    dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
             .insert("input").style("margin-left", "15px")
             .attr({type: "color", id: "bg_color", value: "#ffffff"})
             .on("change", function(){handle_bg_color(this.value);});
 
     dv4.append("p")
-            .html(sys_run_button + " Add layout features (arrow, scale, etc.)")
+            //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
+            .html(sys_run_button + " " + i18next.t("Add layout features"))
             .on("click", select_layout_features);
-    dv4.append("p")
-            .html(sys_run_button + " Save your preferences...")
-            .on("click", save_map_template);
-    dv4.append("p")
-            .html(sys_run_button + " Load a preference JSON...")
-            .on("click", load_map_template);
 
     let section5 = d3.select("#section5");
     let dv5 = section5.append("p").attr("class", "form-item");
-    dv5.insert('label-item').html("<b>Projection </b><br>");
+    dv5.insert('label-item').html("<b>" + i18next.t("Projection") + " </b><br>");
 
-    section5.append("div").html("Canvas rotation")
+    section5.append("div").html(i18next.t("Canvas rotation"));
     section5.append("input")
             .attr("type", "range")
             .attr("id","form_rotate")
@@ -354,7 +356,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
             .attr("max",360).attr("step",1)
             .on("input", function(){rotate_global(this.value)});
 
-    var rotation_param = section5.append("div").html("Projection center (λ-axis rotation)")
+    var rotation_param = section5.append("div").html(i18next.t("Projection center (λ-axis rotation)"))
     rotation_param.append("input")
             .attr("type", "range")
             .attr("id","form_projection_center")
@@ -365,7 +367,8 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     section5.append("div").insert("button")
             .attr("id","reset_center_rotation")
             .attr("class", "button_st4")
-            .text("Reset center/zooming/rotation")
+            //.text("Reset center/zooming/rotation")
+            .text(i18next.t("Reset center/zooming/rotation"))
             .on("click", function(){
                 zoom.scale(0.5).translate([400, 250]);
                 zoom_without_redraw();
@@ -374,35 +377,6 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
                 document.getElementById('form_projection_center').value = 0;
                 document.getElementById('form_rotate').value = 0;
                 proj.rotate([0,,]);
-/*                let current_renderings = [];
-                for(let lyr_name in current_layers){
-                    if(current_layers[lyr_name].renderer){
-                        current_renderings.push(current_layers[lyr_name].renderer)
-                    }
-                }
-                if(current_renderings.indexOf("cartogram")){
-                    map.selectAll("path:not([transform])").attr("d", path);
-                    let selec = map.selectAll("path[transform]");
-                    let layer_names = selec[0].map( d => d.parentElement.id);
-                    for(let ii = 0; ii < layer_names.length; ++ii){
-                        let lyr_name = layer_names[ii],
-                            transform_values = current_layers[lyr_name].scale_byFeature;
-                        map.select(lyr_name)
-                            .selectAll("path[transform]")
-                                .attr("d", path)
-                                .attr("transform", function(d,i) {
-                                    let centroid = path.centroid(d),
-                                        x = centroid[0],
-                                        y = centroid[1];
-                                    return ["translate(", x, ",", y, ")",
-                                            "scale(", transform_values[i], ")",
-                                            "translate(", -x, ",", -y, ")"].join("")
-                                });
-                    }
-
-                } else { */
-                map.selectAll("path").attr("d", path);
-                /*}*/
                 reproj_symbol_layer();
                 rotate_global(0);
             });
@@ -460,7 +434,38 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
                   .attr("title", "Export / Load your map preferences")
                   .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
-                  .on("click", function(){ alert("Not implemented!"); });
+                  .on("click", function(){
+                        if(document.getElementById("menu_pref"))
+                            document.getElementById("menu_pref").remove();
+                        else {
+                            let actions = [
+                                {"name": i18next.t("Save your preferences"), "callback": save_map_template},
+                                {"name": i18next.t("Load a preference JSON"), "callback": load_map_template}
+                                ];
+                            let menu = document.createElement("div");
+                            menu.style.top = "30px";
+                            menu.style.right = "35px";
+                            menu.className = "context-menu";
+                            menu.id = "menu_pref";
+                            let list_elems = document.createElement("ul");
+                            menu.appendChild(list_elems);
+                            for (let i = 0; i < actions.length; i++) {
+                                let item = document.createElement("li");
+                                list_elems.appendChild(item);
+                                item.setAttribute("data-index",i);
+                                let name = document.createElement("span");
+                                name.className = "context-menu-item-name";
+                                name.style.color = "#000";
+                                name.textContent = actions[i].name;
+                                item.appendChild(name);
+                                item.onclick = function(){
+                                    actions[i].callback();
+                                    menu.remove();
+                                }
+                            }
+                            document.querySelector("body").appendChild(menu);
+                        }
+                    });
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Help")
@@ -560,14 +565,14 @@ $(".accordion").on("accordionactivate", function(event, ui){
         if(new_size > window.innerHeight
                 && opened.indexOf("accordion1") > -1
                 && last_opened != "accordion1"){
-            new_size = new_size - accordions[0].lastChild.getBoundingClientRect().height;
+            new_size = new_size - accordions[0].getBoundingClientRect().height;
             opened.splice(opened.indexOf("accordion1"), 1);
             $("#accordion1").accordion("option", "active", 1);
         }
         if(new_size > window.innerHeight){
             for(let i = opened.length - 1; i > 0; --i){
                 let acc = document.getElementById(opened[i]);
-                new_size = new_size - acc.lastChild.getBoundingClientRect().height;
+                new_size = new_size - acc.getBoundingClientRect().height;
                 $("#" + opened[i]).accordion("option", "active", 1);
                 opened.pop();
             }
@@ -614,7 +619,7 @@ $(document).ajaxStart(function() {
         var prog_bar = map_div.append("div")
                          .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black", "z-index": 2})
                          .attr("id", "progressbar")
-                         .html('<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>Loading layer ...');
+                         .html('<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>' + i18next.t('Loading results') + ' ...');
         document.body.appendChild(bg);
     }).ajaxComplete(function() {
         document.getElementById("progressbar").remove();
@@ -884,7 +889,7 @@ function remove_layer_cleanup(name){
         // Updating the top of the menu (section 1) :
         $("#input_geom").qtip("destroy");
         d3.select("#img_in_geom")
-            .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.svg", "width": "24", "height": "24",  "alt": "Geometry layer"})
+            .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
         d3.select("#input_geom").html("<b>Add geometry layer <i>(or drop it)</i></b>")
             .on('click', click_button_add_layer);

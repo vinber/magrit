@@ -49,6 +49,9 @@ function ContextMenu() {
 		else
 			event.returnValue = false;
 
+		if(event.stopPropagation)
+			event.stopPropagation();
+
 		this.initMenu(parent);
 		this.DOMObj.style.top = (event.clientY+document.body.scrollTop)+"px";
 		this.DOMObj.style.left = event.clientX+"px";
@@ -57,12 +60,12 @@ function ContextMenu() {
 			if (self.DOMObj && self.DOMObj.parentNode && self.DOMObj.parentNode.removeChild) {
 				self.DOMObj.parentNode.removeChild(self.DOMObj);
 			}
-			this.onclick = undefined;
+			self.onclick = undefined;
 			document.removeEventListener("click", hideMenu);
 		};
 		setTimeout(()=> {
               document.addEventListener("click", hideMenu);
-           }, 50);
+           }, 150);
 	};
 
 	this.initMenu = function(parent) {

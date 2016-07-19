@@ -1,10 +1,12 @@
 TODO list:
+- /!\ fix reloading a project from previously exported one
 - /!\ fix the zoom by rectangular zone
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
 - Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation
 - Choose some fonts (to be served by the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts in the current browser.
 - Change the bar chart in the discretization panel
-- Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, etc.)
+-(Partially done) Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, grid cell-size, etc.)
 -(Fixed ?) Fix some undefined behaviors when trying to make a new jointure on some "edge" cases
 - Choose a solution for ui internationalization
 - Upgrade js code to use d3.js v4 ?
+- Add soem specials options for the garticule in the "stylebox"

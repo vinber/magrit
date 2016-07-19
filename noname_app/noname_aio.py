@@ -107,7 +107,7 @@ async def geojson_to_topojson(
         filepath, quantization="--no-quantization", remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--spherical", quantization,
+    process = Popen(["topojson", "--spherical", quantization, "--bbox",
                      "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     if remove:
@@ -116,7 +116,7 @@ async def geojson_to_topojson(
 
 
 async def store_non_quantized(filepath, f_name, redis_conn):
-    process = Popen(["topojson", "--spherical", "--no-quantization",
+    process = Popen(["topojson", "--spherical", "--no-quantization", "--bbox",
                      "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     result = stdout.decode()
@@ -273,7 +273,7 @@ async def convert(request):
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and "file[]" not in posted_data:
         list_files = []
-        for i in range(len(posted_data) - 2):
+        for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
             file_name = ''.join(['/tmp/', field[1]])
             list_files.append(file_name)
@@ -504,9 +504,9 @@ async def links_map(posted_data, user_id, app):
     try:
         content = json.loads(content)
     except:
-        return json.dumps({"Error": content}) if content else "Unknown Error"
-#        return '{"Error":"Something went wrong... : %s"}' % content \
-#            if content else "Unknown Error"
+        return json.dumps(
+            {"Error": "Something went wrong...:\n{}"
+                      .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
@@ -555,14 +555,15 @@ async def carto_gridded(posted_data, user_id, app):
     try:
         content = json.loads(content)
     except:
-        return '{"Error":"Something went wrong... : %s"}' % content \
-            if content else "Unknown Error"
+        return json.dumps(
+            {"Error": "Something went wrong...:\n{}"
+                      .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
-    new_name = '_'.join(['Gridded', posted_data["cellsize"], n_field_name])
+    new_name = '_'.join(['Gridded', str(posted_data["cellsize"]), n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
@@ -619,17 +620,19 @@ async def call_mta_simpl(posted_data, user_id, app):
             }).encode()
 
     else:
-        return {"Error": "Unknow MTA method"}
+        return json.dumps({"Error": "Unknow MTA method"})
 
     content = await R_client_fuw_async(
         url_client, commande, data, app['async_ctx'], user_id)
     content = content.decode()
+
     try:
         assert '{' in content
         return content
     except:
-        return '{"Error":"Something went wrong... : %s"}' % content \
-            if content else "Unknown Error"
+        return json.dumps(
+            {"Error": "Something went wrong...:\n{}"
+                      .format(content if content else "Unknown Error")})
 
 
 async def receiv_layer(request):
@@ -691,8 +694,9 @@ async def call_mta_geo(posted_data, user_id, app):
         assert '{' in content
         return content
     except:
-        return '{"Error":"Something went wrong... : %s"}' % content \
-            if content else "Unknown Error"
+        return json.dumps(
+            {"Error": "Something went wrong...:\n{}"
+                      .format(content if content else "Unknown Error")})
 
 
 async def call_stewart(posted_data, user_id, app):

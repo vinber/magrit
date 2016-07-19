@@ -421,7 +421,7 @@ function add_layer_topojson(text, options){
                 document.getElementById('sample_zone').style.display = "none";
             }
 
-            let _button = button_type[type],
+            let _button = button_type.get(type),
                 nb_fields = field_names.length,
                 nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length,
                 _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
@@ -439,7 +439,7 @@ function add_layer_topojson(text, options){
                 remove_layer(lyr_name_to_add);
             };
             targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
             $("[layer-target-tooltip!='']").qtip("destoy");
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
@@ -452,16 +452,17 @@ function add_layer_topojson(text, options){
         } else if (result_layer_on_add) {
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
         } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type[type], "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
         }
         layers_listed.insertBefore(li, layers_listed.childNodes[0])
     }
 
     if(target_layer_on_add) {
-        if(current_functionnality) fields_handler.fill(lyr_name_to_add);
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
+        if(current_functionnality)
+            fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
         center_map(lyr_name_to_add);
         switch_accordion_section();
@@ -472,8 +473,8 @@ function add_layer_topojson(text, options){
     binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;
 
-//    if(!skip_alert) alert('Layer successfully added to the canvas');
-    if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
+    //if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
+    if(!skip_alert) swal(i18next.t("Success") + "!", i18next.t("Layer successfully added to the map"), "success")
     return lyr_name_to_add;
 };
 
@@ -919,7 +920,7 @@ function list_existing_layers_server(){
 i18next.use(i18nextXHRBackend)
   .init({
       debug: true,
-      lng: "fr",
+      lng: window.navigator.language || 'en',
       fallbackLng: "en",
       backend: {
         loadPath: "/static/locales/{{lng}}/{{ns}}.json"

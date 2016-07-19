@@ -180,7 +180,7 @@ function fillMenu_Symbol(){
                       .attr("disabled", true)
                       .attr('id', 'yes')
                       .attr('class', 'params button_st2')
-                      .text('Compute and render');
+                      .text(i18next.t('Compute and render'));
 
     d3.selectAll(".params").attr("disabled", true);
 
@@ -308,7 +308,7 @@ function fillMenu_Discont(){
                       .append('button')
                       .attr('id', 'yes')
                       .attr('class', 'params button_st2')
-                      .text('Compute and render');
+                      .text(i18next.t('Compute and render'));
 
     d3.selectAll(".params").attr("disabled", true);
 
@@ -633,7 +633,7 @@ function fillMenu_FlowMap(){
                         .attr('id', 'yes')
                         .attr('class', 'params button_st2')
                         .style({"text-align": "right", margin: "auto"})
-                        .text('Compute and render');
+                        .text(i18next.t('Compute and render'));
 
     d3.selectAll(".params").attr("disabled", true);
 
@@ -1069,7 +1069,7 @@ var fillMenu_Label = function(){
         .append("button")
         .attr('id', 'Label_yes')
         .attr('class', 'button_st2')
-        .html('Render')
+        .html(i18next.t('Render'))
         .on("click", function(){
             rendering_params["label_field"] = field_selec.node().value;
             if(prop_selec.node().checked){
@@ -1212,7 +1212,7 @@ function fillMenu_Choropleth(){
         .append("button")
         .attr({id: "choro_class", class: "button_disc params"})
         .style({"font-size": "0.8em", "text-align": "center"})
-        .html("Display and arrange class")
+        .html(i18next.t("Display and arrange class"))
         .on("click", function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0],
                 opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer_name].length))
@@ -1402,7 +1402,7 @@ function fillMenu_MTA(){
                         .attr("value", "yes")
                         .attr("id", "yes")
                         .attr("class", "params button_st2")
-                        .html("Compute and render");
+                        .html(i18next.t("Compute and render"));
 
 
     // Where the real job is done :
@@ -1560,7 +1560,16 @@ function fillMenu_MTA(){
             });
         }
     });
+}
 
+var get_first_guess_span = function(){
+    let bbox = _target_layer_file.bbox,
+        abs = Math.abs;
+    let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
+                                  [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
+        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
+                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    return Math.round((width_km + height_km) / 2 * 0.02);
 }
 
 var fields_Stewart = {
@@ -1583,6 +1592,7 @@ var fields_Stewart = {
                 field_selec.append("option").text(field).attr("value", field);
                 field_selec2.append("option").text(field).attr("value", field);
             });
+            document.getElementById("stewart_span").value = get_first_guess_span();
         }
         d3.selectAll(".params").attr("disabled", null);
     },
@@ -1646,7 +1656,7 @@ function fillMenu_Stewart(){
         .append('button')
         .attr('id', 'stewart_yes')
         .attr('class', "params button_st2")
-        .text('Compute')
+        .text(i18next.t('Compute and render'))
         .on('click', function(){
             let formToSend = new FormData(),
                 field1_n = field_selec.node().value,
@@ -2536,10 +2546,11 @@ function fillMenu_griddedMap(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering");
     var field_selec = dialog_content.append('p').html('Field ')
                         .insert('select').attr({class: 'params', id: "Gridded_field"});
-    var cellsize = dialog_content.append('p').html('Cell size <i>(meters)</i> ')
+    let _cell_size = get_first_guess_span();
+    var cellsize = dialog_content.append('p').html('Cell size <i>(km)</i> ')
                         .insert('input').attr({
-                            type: 'number', class: 'params', value: 0,
-                            min: 1000, max: 700000, step: 0.1});
+                            type: 'number', class: 'params', value: _cell_size,
+                            min: 1.000, max: 7000, step: 0.001});
     var col_pal = dialog_content.append('p').html('Colorramp ')
                         .insert('select').attr('class', 'params');
 
@@ -2552,7 +2563,7 @@ function fillMenu_griddedMap(layer){
         .append('button')
         .attr("class", "params button_st2")
         .attr('id', 'Gridded_yes')
-        .html('Compute and render')
+        .html(i18next.t('Compute and render'))
         .on("click", function(){
             let field_n = field_selec.node().value,
                 layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2567,7 +2578,7 @@ function fillMenu_griddedMap(layer){
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
                 "var_name": JSON.stringify(var_to_send),
-                "cellsize": cellsize.node().value
+                "cellsize": +cellsize.node().value * 1000
                 }));
             $.ajax({
                 processData: false,
@@ -2655,14 +2666,14 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
                 ["<b>", layer_name, "</b> - ", type_geom ," - ", nb_ft, " features"].join(''));
         li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
                         button_trash, button_zoom_fit, eye_open0, button_legend,
-                        button_type[type_geom], "</div> ", _list_display_name].join('');
+                        button_type.get(type_geom), "</div> ", _list_display_name].join('');
     } else if(type_layer == "sample"){
         li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = ['<div class="layer_buttons">', button_style,
                         button_trash, button_zoom_fit, eye_open0,
-                        button_type[type_geom], "</div> ", _list_display_name].join('');
+                        button_type.get(type_geom), "</div> ", _list_display_name].join('');
     }
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
     binds_layers_buttons(layer_name);

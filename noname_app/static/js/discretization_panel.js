@@ -909,11 +909,16 @@ function display_box_symbol_typo(layer, field){
             .html(d => d.name);
 
     newbox.selectAll(".typo_class")
-            .insert("p").attr("class", "symbol_section")
+            .insert("p")
+            .attr("title", "Click me to choose a symbol!")
+            .attr("class", "symbol_section")
             .style("margin", "auto")
             .style("background-image", "url('')")
             .style("vertical-align", "middle")
-            .style({width: "32px", height: "32px", "border-radius": "10%", display: "inline-block", "background-size": "32px 32px"})
+            .style({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
+                    "border-radius": "10%", border: "1px dashed blue",
+                    display: "inline-block", "background-size": "32px 32px"
+                  })
             .on("click", function(){
                 let self = this;
                 let input = document.createElement('input');
