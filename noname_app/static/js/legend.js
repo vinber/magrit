@@ -6,8 +6,12 @@ function handle_legend(layer){
         let class_name = [".lgdf", layer].join('_');
         let rml = false;
         if(d3.select(class_name).node()){
-            d3.selectAll(class_name).remove();
-            d3.selectAll(".source_block").remove();
+            if(!d3.select(class_name).attr("display"))
+                d3.select(class_name).attr("display", "none");
+            else
+                d3.select(class_name).attr("display", null);
+//            d3.selectAll(class_name).remove();
+//            d3.selectAll(".source_block").remove();
             rml = true;
         } else {
             createLegend(layer, "")
@@ -51,8 +55,19 @@ function make_legend_context_menu(legend_node, layer){
    let context_menu = new ContextMenu(),
        getItems = () =>  [
         {"name": "Edit style...", "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
-        {"name": "Delete", "action": () => { legend_node.remove(); }}
+        {"name": "Hide", "action": () => {
+            if(!legend_node.attr("display"))
+                legend_node.attr("display", "none");
+            else
+                legend_node.attr("diplay", null);
+        }}
     ];
+    legend_node.on("dblclick", () => {
+        d3.event.stopPropagation();
+        d3.event.preventDefault();
+        createlegendEditBox(legend_node.attr("id"), layer);
+        });
+
     legend_node.on("contextmenu", () => {
         context_menu.showMenu(d3.event,
                               document.querySelector("body"),

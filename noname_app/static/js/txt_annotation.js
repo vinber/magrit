@@ -4,25 +4,6 @@ class Textbox2 {
     // woo lets use ES2015 classes !
     constructor(parent, new_id_txt_annot, position=[10, 30]){
         this._text = "Enter your text...";
-        var drag_txt_annot = d3.behavior.drag()
-                .origin(function() {
-                    let t = d3.select(this);
-                    return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                            y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-                })
-                .on("dragstart", () => {
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-
-                  })
-                .on("dragend", () => {
-                    if(d3.select("#hand_button").classed("active"))
-                        zoom.on("zoom", zoom_without_redraw);
-                  })
-                .on("drag", () => {
-                    textgroup.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
-                  });
         this.fontsize = 12;
         this.x = position[0];
         this.y = position[1];
@@ -68,7 +49,7 @@ class Textbox2 {
             if(this.focused)
                 this.t = setTimeout(()=>{this.focus_on()}, 2000);
             });
-        textgroup.call(drag_txt_annot);
+        textgroup.call(drag_lgd_features);
         textgroup.on("contextmenu", () => {
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),

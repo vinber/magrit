@@ -209,9 +209,10 @@ function fillMenu_Symbol(){
             .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
             .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
             .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
+            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
+            .call(drag_elem_geo);
 
-        create_li_layer_elem(layer_to_add, nb_ft, "Point", "result");
+        create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
 
         current_layers[layer_to_add] = {
             "n_features": current_layers[layer_name].n_features,
@@ -410,7 +411,7 @@ function fillMenu_Discont(){
             "n_features": arr_disc.length,
             "result": result_value
             };
-        create_li_layer_elem(new_layer_name, arr_disc.length, "Line", "result");
+        create_li_layer_elem(new_layer_name, arr_disc.length, ["Line", "discont"], "result");
         send_layer_server(new_layer_name, "/layers/add");
         zoom_without_redraw();
         switch_accordion_section();
@@ -1087,6 +1088,27 @@ var fillMenu_Label = function(){
     d3.selectAll(".params").attr("disabled", true);
 }
 
+let drag_elem_geo = d3.behavior.drag()
+        .origin(function() {
+            let t = d3.select(this);
+            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+        })
+        .on("dragstart", () => {
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.preventDefault();
+            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+
+          })
+        .on("dragend", () => {
+            if(d3.select("#hand_button").classed("active"))
+                zoom.on("zoom", zoom_without_redraw);
+          })
+        .on("drag", function(){
+            d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
+          });
+
+
 var render_label = function(layer, rendering_params){
     let label_field = rendering_params.label_field;
     let txt_color = rendering_params.color;
@@ -1101,28 +1123,6 @@ var render_label = function(layer, rendering_params){
         new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
     }
 
-    let drag_elem = d3.behavior.drag()
-            .origin(function() {
-                let t = d3.select(this);
-                return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                        y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-            })
-            .on("dragstart", () => {
-                d3.event.sourceEvent.stopPropagation();
-                d3.event.sourceEvent.preventDefault();
-                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-
-              })
-            .on("dragend", () => {
-                if(d3.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
-              })
-            .on("drag", function(){
-                console.log(d3.select(this));console.log(d3.event);
-                d3.select(this)
-                    .attr("x", d3.event.x).attr("y", d3.event.y);
-              });
-
     map.append("g").attr({id: layer_to_add, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
@@ -1133,9 +1133,9 @@ var render_label = function(layer, rendering_params){
         .style("font-size", font_size)
         .style("fill", txt_color)
         .text(d => d.label)
-        .call(drag_elem);
+        .call(drag_elem_geo);
 
-    create_li_layer_elem(layer_to_add, nb_ft, "Point", "result");
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
 
     current_layers[layer_to_add] = {
         "n_features": current_layers[layer].n_features,
@@ -2085,7 +2085,7 @@ function fillMenu_Anamorphose(){
                     "ref_layer_name": layer,
                     "fill_color": {"random": true}
                     };
-                create_li_layer_elem(layer_to_add, current_layers[layer].n_features, "Point", "result");
+                create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
                 zoom_without_redraw();
                 switch_accordion_section();
                 }
@@ -2520,7 +2520,7 @@ function make_prop_symbols(rendering_params){
         "ref_layer_name": layer,
         "features_order": d_values
         };
-    create_li_layer_elem(layer_to_add, d_values.length, "Point", "result");
+    create_li_layer_elem(layer_to_add, d_values.length, ["Point", "prop"], "result");
     return d_values;
 }
 
@@ -2613,7 +2613,7 @@ function fillMenu_griddedMap(layer){
     d3.selectAll(".params").attr("disabled", true);
 }
 
-function copy_layer(ref_layer, new_name){
+function copy_layer(ref_layer, new_name, type_result){
     svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+ref_layer).cloneNode(true));
     svg_map.lastChild.setAttribute("id", new_name);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
@@ -2624,12 +2624,12 @@ function copy_layer(ref_layer, new_name){
     let selec_dest = document.getElementById(new_name).querySelectorAll("path");
     for(let i = 0; i < selec_src.length; i++)
         selec_dest[i].__data__ = selec_src[i].__data__;
-    create_li_layer_elem(new_name, current_layers[new_name].n_features, current_layers[new_name].type, "result");
+    create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
 function render_categorical(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name);
+        copy_layer(layer, rendering_params.new_name, "typo");
         layer = rendering_params.new_name;
     }
 
@@ -2663,10 +2663,10 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
     if(type_layer == "result"){
         li.setAttribute("class", ["ui-state-default sortable_result ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - ", type_geom ," - ", nb_ft, " features"].join(''));
+                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
                         button_trash, button_zoom_fit, eye_open0, button_legend,
-                        button_type.get(type_geom), "</div> ", _list_display_name].join('');
+                        button_result_type.get(type_geom[1]), "</div> ", _list_display_name].join('');
     } else if(type_layer == "sample"){
         li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
@@ -2683,7 +2683,7 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name);
+        copy_layer(layer, rendering_params.new_name, "choro");
         layer = rendering_params.new_name;
     }
 

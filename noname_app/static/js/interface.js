@@ -647,9 +647,6 @@ var drag_lgd_features = d3.behavior.drag()
         .on("drag", function(){
             d3.select(this)
                 .attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
-            let t = d3.select(this);
-            self.x = t.attr("x") + d3.transform(t.attr("transform")).translate[0];
-            self.y = t.attr("y") + d3.transform(t.attr("transform")).translate[1];
           });
 
 
@@ -695,28 +692,6 @@ var scaleBar = {
         this.y = y_pos;
         this.bar_size = bar_size;
         this.getDist();
-
-        let drag_scale = d3.behavior.drag()
-                .origin(function() {
-                    let t = d3.select(this);
-                    return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                            y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-                })
-                .on("dragstart", () => {
-                    d3.event.sourceEvent.stopPropagation();
-                    d3.event.sourceEvent.preventDefault();
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                  })
-                .on("dragend", function(){
-                    if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
-                  })
-                .on("drag", function(){
-                    d3.select(this)
-                        .attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
-                    let t = d3.select(this);
-                    self.x = t.attr("x") + d3.transform(t.attr("transform")).translate[0];
-                    self.y = t.attr("y") + d3.transform(t.attr("transform")).translate[1];
-                  });
 
         let getItems = () => [
             {"name": "Resize", "action": () => { alert('foo')}},

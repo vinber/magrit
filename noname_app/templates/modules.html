@@ -118,7 +118,8 @@ function make_ico_choice(){
 }
 
 var w = Math.round(window.innerWidth - 360),
-    h = Math.round(window.innerHeight / 1.24);
+    h = window.innerHeight - 75;
+    //h = Math.round(window.innerHeight / 1.24);
 
 var proj = d3.geo.naturalEarth().scale(1).translate([0,0]);
 
@@ -1154,7 +1155,6 @@ function save_map_template(){
 function zoom_without_redraw(){
     let z_scale = zoom.scale(),
         rot_val = canvas_rotation_value || "";
-        //layers = Object.getOwnPropertyNames(current_layers);
 
     map.selectAll("g.layer")
               .transition()
@@ -1168,14 +1168,7 @@ function zoom_without_redraw(){
                 })
               .attr("transform", [rot_val,"translate(", zoom.translate(), "),",
                                  "scale(", z_scale, ")"].join(''));
-/*
-    for(let i = layers.length - 1; i > -1; i--){
-        let lyr_name = layers[i];
-        if(!(current_layers[lyr_name].fixed_stroke))
-            document.getElementById(lyr_name).style.strokeWidth = current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px";
-            //map.select('#'+ lyr_name).style("stroke-width", current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px");
-    }
-*/
+
     if(scaleBar.displayed)
         scaleBar.changeText();
 };
@@ -1414,6 +1407,9 @@ function canvas_mod_size(shape){
         map.attr("width", w)
             .call(zoom_without_redraw);
         map_div.style("width", w + "px");
+        if(w + 360 + 30 < window.innerWidth){
+            document.querySelector(".light-menu").style.right = '-30px';
+        }
     }
     if(shape[1]){
         h = +shape[1];
