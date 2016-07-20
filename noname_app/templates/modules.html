@@ -382,13 +382,6 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
                 rotate_global(0);
             });
 
-
-    var info_coords = map_div.append("div").attr("class", "light-menu-bottom")
-                .style({position:"absolute", bottom:"-40px", left:"0px", "z-index":-1})
-                .append("p").attr("id", "info_coords")
-                  .style({"font-size": "14px", "margin-left":"5px", "color":"black"})
-                  .html("");
-
     let background = map.append("g")
                         .attr({id: "Simplified_land_polygons", class: "layer"})
                         .style({"stroke-width": "0.3px"});
@@ -873,7 +866,6 @@ function remove_layer_cleanup(name){
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
         d3.selectAll([".lgdf_", name].join('')).remove();
-        d3.selectAll(".source_block").remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
         if(current_layers[name].hasOwnProperty("key_name"))
@@ -1417,12 +1409,8 @@ function canvas_mod_size(shape){
             .call(zoom_without_redraw);
         map_div.style("height", h + "px");
 
-        // Change also the position of displayed coordinates when height of map is changed :
-        info_coords.style({"font-size": "14px", "margin-top": (h + 10) + "px",
-                           "margin-left":"5px", "color":"black"});
-
         // And change the position of the `source` element displayed in the bottom of the map :
-        d3.selectAll(".source_block").select("text").attr("y", h - 10);
+        //d3.selectAll(".source_block").select("text").attr("y", h - 10);
     }
 }
 
