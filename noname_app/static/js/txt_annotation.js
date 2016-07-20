@@ -11,7 +11,7 @@ class Textbox2 {
         this._height = 20;
         this.focused = null;
 
-        var textgroup = parent.append("g").attr("class", "txt_annot"),
+        var textgroup = parent.append("g").attr("class", "legend txt_annot"),
             context_menu = new ContextMenu(),
             getItems = () =>  [
                 {"name": "Edit style...", "action": () => { this.make_style_box(); }},

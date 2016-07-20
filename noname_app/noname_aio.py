@@ -761,8 +761,9 @@ async def call_stewart(posted_data, user_id, app):
     try:
         content = json.loads(content)
     except:
-        return '{"Error":"Something went wrong... : %s"}' % content \
-            if content else "Unknown Error"
+        return json.dumps(
+            {"Error": "Something went wrong...:\n{}"
+                      .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
         print("Additionnal infos:\n", content["additional_infos"])

@@ -214,15 +214,21 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
                 }
                 // Also change the legend if there is one displayed :
-                let lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                if(lgd_choro){
-                    let transform_param = lgd_choro.getAttribute("transform"),
-                        lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
-                    lgd_choro.remove();
-                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
-                    lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                    lgd_choro.setAttribute("transform", transform_param);
+                let ttt = (renderer == "DiscLayer" || renderer == "Links")
+                let lgd = document.querySelector([ttt ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
+                if(lgd){
+                    let transform_param = lgd.getAttribute("transform"),
+                        lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+                        lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+                        boxgap = lgd.getAttribute("boxgap");
+                    lgd.remove();
+                    if(ttt)
+                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle);
+                    else
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
+                    lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+                    if(transform_param)
+                        lgd.setAttribute("transform", transform_param);
                 }
                 sendPreferences();
                 zoom_without_redraw();
@@ -448,7 +454,10 @@ function createStyleBox(layer_name){
     }
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
-                      .on('change', function(){selection.style("stroke", this.value)});
+                      .on('change', function(){
+                        selection.style("stroke", this.value);
+                        current_layers[layer_name].fill_color.single = this.value;
+                        });
      popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
                       .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
@@ -524,9 +533,10 @@ function createStyleBox_ProbSymbol(layer_name){
                     if(lgd_prop_symb){
                         let transform_param = lgd_prop_symb.getAttribute("transform"),
                             lgd_title = lgd_prop_symb.querySelector("#legendtitle").innerHTML,
-                            lgd_subtitle = lgd_prop_symb.querySelector("#legendsubtitle").innerHTML;
+                            lgd_subtitle = lgd_prop_symb.querySelector("#legendsubtitle").innerHTML,
+                            nested = lgd_prop_symb.getAttribute("nested");
                         lgd_prop_symb.remove();
-                        createLegend_symbol(layer_name, field_used, lgd_title, lgd_subtitle);
+                        createLegend_symbol(layer_name, field_used, lgd_title, lgd_subtitle, nested);
                         lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_prop_symb.setAttribute("transform", transform_param);
@@ -545,9 +555,10 @@ function createStyleBox_ProbSymbol(layer_name){
                     if(lgd_choro){
                         let transform_param = lgd_choro.getAttribute("transform"),
                             lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
-                            lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
+                            lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
+                            boxgap = lgd_prop_symb.getAttribute("boxgap");
                         lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
                         lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_choro.setAttribute("transform", transform_param);

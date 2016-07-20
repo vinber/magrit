@@ -133,6 +133,69 @@ function check_layer_name(name){
     }
 }
 
+function box_choice_symbol(){
+    var newbox = d3.select("body")
+                        .append("div").style("font-size", "10px")
+                        .attr({id: "box_choice_symbol", title: "Symbol selection"});
+    var dataUrl_res;
+    newbox.append("h3").html("Symbol selection");
+    newbox.append("p").html("Select a symbol...")
+    newbox.append("button")
+        .html("Choose your own symbol...")
+        .on("click", function(){
+            let input = document.createElement('input');
+            input.setAttribute("type", "file");
+            input.onchange = function(event){
+                let file = event.target.files[0];
+                let file_name = file.name;
+                let reader = new FileReader()
+                reader.onloadend = function(){
+                    let result = reader.result;
+                    dataUrl_res = ['url("', result, '")'].join('');
+                    newbox.select("#current_symb").style("background-image", dataUrl_res);
+                }
+                reader.readAsDataURL(file);
+            }
+            input.dispatchEvent(new MouseEvent("click"));
+        });
+
+    newbox.insert("p").html("Selected symbol :")
+    newbox.insert("p").attr("id", "current_symb")
+            .attr("class", "symbol_section")
+            .style("margin", "auto")
+            .style("background-image", "url('')")
+            .style("vertical-align", "middle")
+            .style({width: "32px", height: "32px",
+                    "border-radius": "10%",
+                    display: "inline-block", "background-size": "32px 32px"
+                  });
+    var deferred = Q.defer();
+    $("#box_choice_symbol").dialog({
+        modal: true,
+        resizable: true,
+        buttons:[{
+            text: "Confirm",
+            click: function(){
+                    deferred.resolve(dataUrl_res);
+                    $(this).dialog("close");
+                    }
+                },
+           {
+            text: "Cancel",
+            click: function(){
+                $(this).dialog("close");
+                $(this).remove();}
+           }],
+        close: function(event, ui){
+                $(this).dialog("destroy").remove();
+                if(deferred.promise.isPending()){
+                    deferred.resolve(false);
+                }
+            }
+    })
+    return deferred.promise;
+}
+
 var fields_Symbol = {
     fill: function(layer){
         if(!layer) return;
@@ -210,6 +273,8 @@ function fillMenu_Symbol(){
             .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
             .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
             .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
+            .on("mouseover", function(){ this.style.cursor = "pointer";})
+            .on("mouseout", function(){ this.style.cursor = "initial";})
             .call(drag_elem_geo);
 
         create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
@@ -223,6 +288,7 @@ function fillMenu_Symbol(){
             "symbol": "image",
             "ref_layer_name": layer_name,
             };
+        up_legend();
         zoom_without_redraw();
         switch_accordion_section();
     });
@@ -293,6 +359,16 @@ function fillMenu_Discont(){
                     min_size_field.attr("max", this.value);
                   });
 
+    dv2.append('p').html(' Number of class ')
+            .insert('input')
+            .attr({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
+            .style("width", "50px");
+
+    var disc_type = dv2.append('p').html(' Discretization type ')
+                        .insert('select').attr('class', 'params').attr("id", "Discont_discKind");
+    ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
+        .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
+
     dv2.append('p').html('Discontinuity threshold ')
                  .insert('input')
                  .style('width', '60px')
@@ -351,30 +427,48 @@ function fillMenu_Discont(){
                     }
                     return false; });
 
-        let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind.node().value].join('_')),
-            user_color = document.getElementById("color_Discont").value,
-            method = document.getElementById("kind_Discont").value,
-            result_layer = map.append("g").attr("id", new_layer_name)
-                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-                .attr("class", "result_layer layer");
-
         let arr_disc = [], arr_tmp = [];
         for(let [id, val] of result_value){
             arr_disc.push([id, val]);
             arr_tmp.push(val);
         }
 
-        let serie = new geostats(arr_tmp),
-            nb_ft = arr_tmp.length,
-            opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
-            step = (max_size - min_size) / (opt_nb_class - 1),
-            class_size = Array(opt_nb_class).fill(0).map((d,i) => min_size + (i * step));
+//        let serie = new geostats(arr_tmp),
+//            nb_ft = arr_tmp.length,
+////            opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
+//            nb_class = +document.getElementById("Discont_nbClass").value,
+//            step = (max_size - min_size) / (nb_class - 1),
+//            class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
+//
+//        let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
+//        console.log(disc_result);
+//        let breaks_val = serie.getEqInterval(nb_class),
+//            breaks = new Array();
+//
+//        for(let i = 0; i<breaks_val.length-1; ++i)
+//            breaks.push([[breaks_val[i], breaks_val[i+1]].join(' - '), class_size[i]]);
 
-        let breaks_val = serie.getEqInterval(opt_nb_class),
-            breaks = new Array();
+        let nb_ft = arr_tmp.length,
+            nb_class = +document.getElementById("Discont_nbClass").value,
+            step = (max_size - min_size) / (nb_class - 1),
+            class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
-        for(let i = 0; i<breaks_val.length-1; ++i)
-            breaks.push([[breaks_val[i], breaks_val[i+1]].join(' - '), class_size[i]]);
+        let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
+        if(!disc_result || !disc_result[2]){
+            let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+            let w = nb_class > opt_nb_class ? "smaller" : "larger"
+            swal("Oops...", "Something went wrong with choosen discretization (try with a " + w + " number of class and/or another method)", "error");
+            return;
+        }
+        let serie = disc_result[3],
+            breaks = disc_result[2].map(ft => [ft[0].join(' - '), ft[1]]);
+
+        let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind.node().value].join('_')),
+            user_color = document.getElementById("color_Discont").value,
+            method = document.getElementById("kind_Discont").value,
+            result_layer = map.append("g").attr("id", new_layer_name)
+                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                .attr("class", "result_layer layer");
 
         result_data[new_layer_name] = new Array(nb_ft);
         let data_result = result_data[new_layer_name];
@@ -413,6 +507,7 @@ function fillMenu_Discont(){
             };
         create_li_layer_elem(new_layer_name, arr_disc.length, ["Line", "discont"], "result");
         send_layer_server(new_layer_name, "/layers/add");
+        up_legend();
         zoom_without_redraw();
         switch_accordion_section();
         });
@@ -489,63 +584,85 @@ var fields_FlowMap = {
     }
 };
 
-function make_min_max_tableau(fij_name, nb_class, disc_kind, min_size, max_size, func_parent){
-    if(!(joined_dataset[0][0].hasOwnProperty(fij_name))){
-        document.getElementById("FlowMap_discTable").innerHTML = "";
+function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent){
+    document.getElementById(id_parent).innerHTML = "";
+    let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size),
+        breaks = disc_result[2];
+
+    if(!breaks)
         return;
-    } else {
-        document.getElementById("FlowMap_discTable").innerHTML = "";
-        let fij_values = joined_dataset[0].map(obj => +obj[fij_name]),
-            disc_result = discretize_to_size(fij_values, disc_kind, nb_class, min_size, max_size),
-            breaks = disc_result[2];
-        if(!breaks)
-            return;
-        d3.select("#FlowMap_discTable")
-            .append("p")
-            .style("word-spacing", "1.8em")
-            .html('Min - Max - Size');
-        d3.select("#FlowMap_discTable")
-            .append("div")
-            .selectAll("p")
-            .data(breaks).enter()
-            .append("p").attr("class", "breaks_vals").attr("id", (d,i) => ["line", i].join('_'));
-        let selec = d3.select("#FlowMap_discTable").selectAll(".breaks_vals");
-        for(let i = 0; i < selec[0].length; i++){
-            let selection =  d3.select("#FlowMap_discTable").select('#line_' + i);
-            selection
-                .insert('input')
-                .attr("type", "number")
-                .attr("id", "min_class")
-                .attr("step", 0.1)
-                .attr("value", +breaks[i][0][0].toFixed(2))
-                .style("width", "60px");
-            selection
-                .insert('input')
-                .attr("type", "number")
-                .attr("id", "max_class")
-                .attr("step", 0.1)
-                .attr("value", +breaks[i][0][1].toFixed(2))
-                .style("width", "60px");
-            selection
-                .insert('input')
-                .attr("type", "number")
-                .attr("id", "size_class")
-                .attr("step", 0.1)
-                .attr("value", +breaks[i][1].toFixed(2))
-                .style("margin-left", "20px")
-                .style("width", "60px");
-            selection
-                .insert('span')
-                .html(" px");
+
+    let parent_nd = d3.select("#" + id_parent);
+
+    parent_nd
+        .append("p")
+        .style("word-spacing", "1.8em")
+        .html('Min - Max - Size');
+    parent_nd
+        .append("div")
+        .selectAll("p")
+        .data(breaks).enter()
+        .append("p")
+            .attr("class", "breaks_vals")
+            .attr("id", (d,i) => ["line", i].join('_'));
+
+    let selec = parent_nd.selectAll(".breaks_vals");
+
+    for(let i = 0; i < selec[0].length; i++){
+        let selection = parent_nd.select('#line_' + i);
+        selection
+            .insert('input')
+            .attr("type", "number")
+            .attr("id", "min_class")
+            .attr("step", 0.1)
+            .attr("value", +breaks[i][0][0].toFixed(2))
+            .style("width", "60px")
+
+        selection
+            .insert('input')
+            .attr("type", "number")
+            .attr("id", "max_class")
+            .attr("step", 0.1)
+            .attr("value", +breaks[i][0][1].toFixed(2))
+            .style("width", "60px")
+
+        selection
+            .insert('input')
+            .attr("type", "number")
+            .attr("id", "size_class")
+            .attr("step", 0.1)
+            .attr("value", +breaks[i][1].toFixed(2))
+            .style("margin-left", "20px")
+            .style("width", "60px");
+
+        selection
+            .insert('span')
+            .html(" px");
+    }
+    let mins = document.getElementById(id_parent).querySelectorAll("#min_class"),
+        maxs = document.getElementById(id_parent).querySelectorAll("#max_class");
+
+    for(let i = 0; i < mins.length; i++){
+        if(i > 0){
+            let prev_ix = i-1;
+            mins[i].onchange = function(){ maxs[prev_ix].value = this.value };
+        }
+        if(i < mins.length - 1){
+            let next_ix = i+1;
+            maxs[i].onchange = function(){ mins[next_ix].value = this.value };
         }
     }
 }
 
-function fetch_min_max_table_value(parent_node){
-    if(!parent_node){
+function fetch_min_max_table_value(parent_id){
+    var parent_node;
+
+    if(!parent_id){
         if(current_functionnality.name == "flow") parent_node = document.getElementById("FlowMap_discTable");
         else if (current_functionnality.name == "discont") parent_node = document.getElementById("Discont_discTable");
         else return false;
+    } else {
+        parent_node = document.getElementById(parent_id);
     }
 
     let mins = Array.prototype.map.call(parent_node.querySelectorAll("#min_class"), el => +el.value),
@@ -584,42 +701,49 @@ function fillMenu_FlowMap(){
         field_fij = dv2.append('p').html('<b><i> fij </i></b> field ')
                         .insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
 
-//    var disc_type = dv2.append('p').html(' Discretization type ').insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
-//    ["Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
-//        .forEach(field => {
-//            disc_type.append("option").text(field).attr("value", field)
-//        });
+    var disc_type = dv2.append('p').html(' Discretization type ').insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
+    ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
+        .forEach(field => {
+            disc_type.append("option").text(field).attr("value", field)
+        });
 
     var nb_class_input = dv2.append('p').html(' Number of class ')
                         .insert('input')
                         .attr({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
                         .style("width", "50px");
 
+    var values_fij;
+
     field_fij.on("change", function(){
         let name = this.value,
             nclass = nb_class_input.node().value,
-//            disc = disc_type.node().value,
+            disc = disc_type.node().value,
             min_size = 0.5,
             max_size = 10;
-        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size);
+        values_fij = joined_dataset[0].map(obj => +obj[name]);
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
     });
 
-//    disc_type.on("change", function(){
-//        let name = field_fij.node().value,
-//            nclass = nb_class.node().value,
-//            disc = this.value,
-//            min_size = 0.5,
-//            max_size = 10;
-//        make_min_max_tableau(name, nclass, disc, min_size, max_size)
-//    })
+    disc_type.on("change", function(){
+        let name = field_fij.node().value,
+            nclass = nb_class_input.node().value,
+            disc = this.value,
+            min_size = 0.5,
+            max_size = 10;
+        if(disc == "Q6"){
+            nclass = 6;
+            nb_class_input.attr("value", 6);
+        }
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
+    })
 
     nb_class_input.on("change", function(){
         let name = field_fij.node().value,
             nclass = this.value,
-//            disc = disc_type.node().value,
+            disc = disc_type.node().value,
             min_size = 0.5,
             max_size = 10;
-        make_min_max_tableau(name, nclass, "Equal interval", min_size, max_size);
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
     });
 
     dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('');
@@ -644,7 +768,7 @@ function fillMenu_FlowMap(){
                 formToSend = new FormData(),
                 join_field_to_send = new Object();
 
-            let disc_params = fetch_min_max_table_value(),
+            let disc_params = fetch_min_max_table_value("FlowMap_discTable"),
                 mins = disc_params.mins,
                 maxs = disc_params.maxs,
                 sizes = disc_params.sizes,
@@ -1108,6 +1232,44 @@ let drag_elem_geo = d3.behavior.drag()
             d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
           });
 
+function make_style_box_indiv_label(label_node){
+    console.log(label_node)
+    let current_options = {size: label_node.style.fontSize,
+                           content: label_node.textContent,
+                           font: "",
+                           color: label_node.style.fill};
+
+    if(current_options.color.startsWith("rgb"))
+        current_options.color = rgb2hex(current_options.color);
+
+    let new_params = {};
+    let self = this;
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Label options", "styleTextAnnotation")
+        .then(function(confirmed){
+            if(!confirmed){
+                label_node.style.fontsize = current_options.size;
+                label_node.textContent = current_options.content;
+                label_node.style.fill = current_options.color;
+            }
+        });
+    let box_content = d3.select(".styleTextAnnotation").insert("div");
+    box_content.append("p").html("Font size ")
+            .append("input").attr({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.style.fontSize.slice(0,-2)})
+            .on("change", function(){
+                label_node.style.fontSize = this.value + "px";
+            });
+    box_content.append("p").html("Content ")
+            .append("input").attr({"value": label_node.textContent, id: "label_content"})
+            .on("keyup", function(){
+                label_node.textContent = this.value;
+            });
+    box_content.append("p").html("Color ")
+            .append("input").attr({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+            .on("change", function(){
+                label_node.style.fill = this.value;
+            });
+};
+
 
 var render_label = function(layer, rendering_params){
     let label_field = rendering_params.label_field;
@@ -1123,6 +1285,12 @@ var render_label = function(layer, rendering_params){
         new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
     }
 
+    var context_menu = new ContextMenu(),
+        getItems = (self_parent) =>  [
+            {"name": "Edit style...", "action": () => { make_style_box_indiv_label(self_parent) }},
+            {"name": "Delete", "action": () => { self_parent.remove() }}
+        ];
+
     map.append("g").attr({id: layer_to_add, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
@@ -1133,6 +1301,12 @@ var render_label = function(layer, rendering_params){
         .style("font-size", font_size)
         .style("fill", txt_color)
         .text(d => d.label)
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("contextmenu", function(){
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems(this)); })
         .call(drag_elem_geo);
 
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
@@ -1147,6 +1321,7 @@ var render_label = function(layer, rendering_params){
         "ref_layer_name": layer,
         "default_size": font_size
         };
+    up_legend();
     zoom_without_redraw();
     return layer_to_add;
 }
@@ -1438,7 +1613,7 @@ function fillMenu_MTA(){
                         for(let i=0; i<nb_features; ++i)
                             user_data[layer][i][field_name] = result_values.values[i];
                         if(type_dev == "RelativeDeviation"){
-                            let lyr_name_to_add = chech_layer_name([layer, "MTA", type_dev, field_name].join('_'));
+                            let lyr_name_to_add = check_layer_name([layer, "MTA", type_dev, field_name].join('_'));
                             let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
                             let rendering_params = {
                                 nb_class: opt_nb_class,
@@ -2086,6 +2261,7 @@ function fillMenu_Anamorphose(){
                     "fill_color": {"random": true}
                     };
                 create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
+                up_legend();
                 zoom_without_redraw();
                 switch_accordion_section();
                 }
@@ -2520,6 +2696,7 @@ function make_prop_symbols(rendering_params){
         "ref_layer_name": layer,
         "features_order": d_values
         };
+    up_legend();
     create_li_layer_elem(layer_to_add, d_values.length, ["Point", "prop"], "result");
     return d_values;
 }
@@ -2534,6 +2711,7 @@ var fields_griddedMap = {
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field); });
         d3.selectAll(".params").attr("disabled", null);
+        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
     },
     unfill: function(){
         let field_selec = document.getElementById("Gridded_field");
@@ -2546,11 +2724,10 @@ function fillMenu_griddedMap(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering");
     var field_selec = dialog_content.append('p').html('Field ')
                         .insert('select').attr({class: 'params', id: "Gridded_field"});
-    let _cell_size = get_first_guess_span();
     var cellsize = dialog_content.append('p').html('Cell size <i>(km)</i> ')
                         .insert('input').attr({
-                            type: 'number', class: 'params', value: _cell_size,
-                            min: 1.000, max: 7000, step: 0.001});
+                            type: 'number', class: 'params', id: "Gridded_cellsize",
+                            value: 10.0, min: 1.000, max: 7000, step: 0.001});
     var col_pal = dialog_content.append('p').html('Colorramp ')
                         .insert('select').attr('class', 'params');
 
@@ -2624,6 +2801,7 @@ function copy_layer(ref_layer, new_name, type_result){
     let selec_dest = document.getElementById(new_name).querySelectorAll("path");
     for(let i = 0; i < selec_src.length; i++)
         selec_dest[i].__data__ = selec_src[i].__data__;
+    up_legend();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
@@ -3062,6 +3240,16 @@ function haversine_dist(A, B){
                 Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
                 Math.sin(dLon/2) * Math.sin(dLon/2);
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function standardize_values(array_values){
+    let new_values = [];
+    minV = Math.min.apply(null, values_json );
+    maxV = Math.max.apply(null, values_json);
+    for(let i=0; i<values_json.length; i++) {
+        new_values[i] = (values_json[i] - minV ) / ( maxV - minV );
+    }
+    return new_values;
 }
 
 function path_to_geojson(id_layer){

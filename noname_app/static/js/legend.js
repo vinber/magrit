@@ -5,11 +5,11 @@ function handle_legend(layer){
     if(state != undefined){
         let class_name = [".lgdf", layer].join('_');
         let rml = false;
-        if(d3.select(class_name).node()){
-            if(!d3.select(class_name).attr("display"))
-                d3.select(class_name).attr("display", "none");
+        if(d3.selectAll(class_name).node()){
+            if(!d3.selectAll(class_name).attr("display"))
+                d3.selectAll(class_name).attr("display", "none");
             else
-                d3.select(class_name).attr("display", null);
+                d3.selectAll(class_name).attr("display", null);
 //            d3.selectAll(class_name).remove();
 //            d3.selectAll(".source_block").remove();
             rml = true;
@@ -103,8 +103,10 @@ function createLegend_nothing(layer, field, title, subtitle){
         boxgap = 12,
         xpos = 30,
         ypos = 30,
-        tmp_class_name = ["legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         legend_root = map.insert('g').attr('id', 'legend_root_nothing').attr("class", tmp_class_name).style("cursor", "grab");
+
+    var rect_under_legend = legend_root.insert("rect");
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
@@ -135,7 +137,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
         xpos = 30,
         ypos = 30,
         y_pos2 =  ypos + space_elem,
-        tmp_class_name = ["legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         legend_root = map.insert('g').attr('id', 'legend_root_links').attr("class", tmp_class_name).style("cursor", "grab"),
         breaks = current_layers[layer].breaks,
         nb_class = breaks.length;
@@ -207,6 +209,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
 }
 
 function make_underlying_rect(legend_root, under_rect, xpos, ypos){
+    under_rect.attr({"width": 0, height: 0});
     let bbox_legend = legend_root.node().getBoundingClientRect();
     under_rect.attr("class", "legend_feature").attr("id", "under_rect")
                      .attr("height", Math.round(bbox_legend.height / 5) * 5 + 10)
@@ -228,7 +231,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false"){
         y_pos2 =  ypos + space_elem,
         ref_layer_name = layer.indexOf('_PropSymbols') > -1 ? layer.split("_PropSymbols")[0] : current_layers[layer].ref_layer_name,
         nb_features = user_data[ref_layer_name].length,
-        tmp_class_name = ["legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
 
@@ -358,7 +361,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
         ypos = 30,
         last_pos = null,
         y_pos2 =  ypos + boxheight,
-        tmp_class_name = ["legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         nb_class,
         data_colors_label;
     var legend_root = map.insert('g')
@@ -454,7 +457,6 @@ function createlegendEditBox(legend_id, layer_name){
         title_content = legend_node.querySelector("#legendtitle");
         subtitle_content = legend_node.querySelector("#legendsubtitle");
         note_content = legend_node.querySelector("#legend_bottom_note");
-//        source_content = document.getElementById("source_block");
         legend_node_d3 = d3.select(legend_node);
         legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
     };
@@ -471,11 +473,10 @@ function createlegendEditBox(legend_id, layer_name){
                 title_content.textContent = original_params.title_content;
                 subtitle_content.textContent = original_params.subtitle_content;
                 note_content.textContent = original_params.note_content;
-//                source_content.textContent = original_params.source_content;
-            } else {
-                #TODO/FIXME : recompute the underlying rect taking into account the translate param if any
-                make_underlying_rect(d3.select(legend_node), d3.select(legend_node.querySelector("#under_rect")));
             }
+            bind_selections();
+            make_underlying_rect(legend_node_d3,
+                                 legend_node_d3.select("#under_rect"));
         });
 
     var box_body = d3.select([".", box_class].join('')),
@@ -550,20 +551,19 @@ function createlegendEditBox(legend_id, layer_name){
     }
 
     if(legend_id === "legend_root"){
-        let lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-        let current_state = +lgd_choro.getAttribute("boxgap") == 0 ? true : false;
+        let current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
         box_body.insert("p").html("No gap between color boxes")
                 .insert("input").attr("type", "checkbox")
                 .attr("id", "style_lgd")
                 .on("change", function(){
                     let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
-                    lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                    let boxgap = +lgd_choro.getAttribute("boxgap") == 0 ? 4 : 0;
-                    let transform_param = lgd_choro.getAttribute("transform"),
-                        lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML;
+                    legend_node = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+                    let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
+                    let transform_param = legend_node.getAttribute("transform"),
+                        lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
 
-                    lgd_choro.remove();
+                    legend_node.remove();
                     createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap);
                     bind_selections();
                     if(transform_param)
@@ -571,20 +571,19 @@ function createlegendEditBox(legend_id, layer_name){
                 });
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root2"){
-        let lgd_symbol = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
-        let current_state = lgd_symbol.getAttribute("nested") == "true" ? true : false;
+        let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         box_body.insert("p").html("Nested symbols")
                 .insert("input").attr("type", "checkbox")
                 .attr("id", "style_lgd")
                 .on("change", function(){
-                    lgd_symbol = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''))
+                    legend_node = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''))
                     let rendered_field = current_layers[layer_name].rendered_field;
-                    let nested = lgd_symbol.getAttribute("nested") == "true" ? "false" : "true";
-                    let transform_param = lgd_symbol.getAttribute("transform"),
-                        lgd_title = lgd_symbol.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = lgd_symbol.querySelector("#legendsubtitle").innerHTML;
+                    let nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
+                    let transform_param = legend_node.getAttribute("transform"),
+                        lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
 
-                    lgd_symbol.remove();
+                    legend_node.remove();
                     createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested);
                     bind_selections();
                     if(transform_param)

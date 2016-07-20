@@ -469,6 +469,7 @@ function add_layer_topojson(text, options){
     } else if (current_functionnality && current_functionnality.name == "smooth"){
         fields_handler.fill();
     }
+    up_legend();
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;

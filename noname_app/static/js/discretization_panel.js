@@ -36,7 +36,7 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
     }
     for(let i = 0; i<breaks.length-1; ++i)
         breaks_prop.push([[breaks[i], breaks[i+1]], class_size[i]]);
-    return [nb_class, type, breaks_prop];
+    return [nb_class, type, breaks_prop, serie];
 }
 
 
@@ -230,7 +230,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     };
 
     var display_ref_histo = function(){
-        var svg_h = h / 7.25,
+        var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
             svg_w = w / 4.75,
             nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
 
@@ -345,7 +345,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 bin.val = stock_class[i] + 1;
                 bin.offset = i == 0 ? 0 : (bins[i-1].width + bins[i-1].offset);
                 bin.width = breaks[i+1] - breaks[i];
-                bin.height = bin.val;
+                bin.height = bin.val / (breaks[i+1] - breaks[i]);
                 bins[i] = bin;
             }
             return true;
@@ -404,7 +404,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("x", function(d){ return x(d.offset);})
                 .attr("width", function(d){ return x(d.width);})
                 .attr("y", function(d){ return y(d.height) - margin.bottom;})
-                .attr("height", function(d){ return svg_h - y(d.height);});
+                .attr("height", d => (svg_h - y(d.height)) > 1.7 ? svg_h - y(d.height) : 1.7) // To remove (allow to display a visible polygon in order to slightly see class color)
+                //.attr("height", function(d){ return svg_h - y(d.height);});
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
@@ -518,7 +519,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                                 }
                             });
 
-    var svg_h = h / 5,
+    var svg_h = h / 5 > 90 ? h / 5 : 90,
         svg_w = w - (w / 8),
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
@@ -526,7 +527,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
-        .attr("height", svg_h + margin.top + margin.bottom);
+//        .attr("height", svg_h + margin.top + margin.bottom);
 
     var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -855,12 +856,14 @@ function fetch_symbol_categories(){
     let categ = document.querySelectorAll(".typo_class"),
         symbol_map = new Map();
     for(let i = 0; i < categ.length; i++){
-        let selec =  categ[i].querySelector(".symbol_section");
+        let selec =  categ[i].querySelector(".symbol_section"),
+            new_name = categ[i].querySelector(".typo_name").value;
         if(selec.style.backgroundImage.length > 7){
             let img = categ[i].querySelector(".symbol_section").style.backgroundImage.split("url(")[1].substring(1).slice(0,-2);
-            symbol_map.set(categ[i].__data__.name, [img, 36]);
+            let size = +categ[i].querySelector("input").value
+            symbol_map.set(categ[i].__data__.name, [img, size, new_name]);
         } else {
-            symbol_map.set(categ[i].__data__.name, [null, 0]);
+            symbol_map.set(categ[i].__data__.name, [null, 0, new_name]);
         }
     }
     return symbol_map;
@@ -901,12 +904,19 @@ function display_box_symbol_typo(layer, field){
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'));
 
+//    newbox.selectAll(".typo_class")
+//            .append("span")
+//            .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
+//            .attr("class", "typo_name")
+//            .attr("id", d => d.name)
+//            .html(d => d.name);
+
     newbox.selectAll(".typo_class")
-            .append("span")
+            .append("input")
             .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
             .attr("class", "typo_name")
-            .attr("id", d => d.name)
-            .html(d => d.name);
+            .attr("value", d => d.name)
+            .attr("id", d => d.name);
 
     newbox.selectAll(".typo_class")
             .insert("p")
@@ -921,19 +931,25 @@ function display_box_symbol_typo(layer, field){
                   })
             .on("click", function(){
                 let self = this;
-                let input = document.createElement('input');
-                input.setAttribute("type", "file");
-                input.onchange = function(event){
-                    let file = event.target.files[0];
-                    let file_name = file.name;
-                    let reader = new FileReader()
-                    reader.onloadend = function(){
-                        let result = reader.result;
-                        self.style.backgroundImage = ['url("', result, '")'].join('');
+                box_choice_symbol().then(confirmed => {
+                    if(confirmed){
+                        self.style.backgroundImage = confirmed;
                     }
-                    reader.readAsDataURL(file);
-                }
-                input.dispatchEvent(new MouseEvent("click"));
+                });
+//                let self = this;
+//                let input = document.createElement('input');
+//                input.setAttribute("type", "file");
+//                input.onchange = function(event){
+//                    let file = event.target.files[0];
+//                    let file_name = file.name;
+//                    let reader = new FileReader()
+//                    reader.onloadend = function(){
+//                        let result = reader.result;
+//                        self.style.backgroundImage = ['url("', result, '")'].join('');
+//                    }
+//                    reader.readAsDataURL(file);
+//                }
+//                input.dispatchEvent(new MouseEvent("click"));
             });
 
     newbox.selectAll(".typo_class")

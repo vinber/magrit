@@ -1,7 +1,6 @@
 TODO list:
 - /!\ fix reloading a project from previously exported one
 - /!\ fix the zoom by rectangular zone
-- /!\ Change the bar chart in the discretization panel
 - Upgrade js code to use d3.js v4
 - Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
 - Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation

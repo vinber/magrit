@@ -10,7 +10,7 @@
  "paris_hospitals": "/static/data_sample/paris_hospitals.geojson",
  "us_county": "/static/data_sample/cb_2015_us_county_20m.geojson",
  "us_states": "/static/data_sample/cb_2015_us_state_5m.geojson",
- "world_countries_50m": "/static/data_sample/geojson/ne_50m_admin_0_countries.geojson",
+ "world_countries_50m": "/static/data_sample/ne_50m_admin_0_countries.geojson",
  "world_country": "/static/data_sample/simplified_land_polygons.geojson",
  "world_cities": "/static/data_sample/world_cities_extract5000.geojson",
  "water_coverage": "/static/data_sample/water.geojson"

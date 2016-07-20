@@ -184,7 +184,7 @@ var button_result_type = new Map([
         ["MTA", '<img src="/static/img/type_geom/layer_mta.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
         ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
         ["typo", '<img src="/static/img/type_geom/layer_typo.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
-        ["disc", '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
+        ["discont", '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
         ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
         ["label", '<img src="/static/img/type_geom/layer_label.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
         ["choro", '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="Polygon"/>'],
@@ -300,15 +300,17 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
 
     let dv3 = section3.append("div")
-                    .style("text-align", "center").html('');
+                    .style("padding-top", "10px").html('');
 
     dv3.append("img")
-        .attr("src", "/static/img/mActionAdd.svg")
+        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
+        .attr("src", "/static/img/b/addsample.png")
+        .on('click', add_layout_layers);
+    dv3.append("img")
+        .attr("src", "/static/img/b/addgeom.png")
+        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
         .on("click", click_button_add_layer);
 
-    dv3.append('p').style({margin: "auto", cursor: "pointer", "font-size": "10.5px", "text-align": "right"})
-            .html('<i>' + i18next.t("Add sample layout layers...") + '</i>')
-            .on('click', function(){add_layout_layers();});
     let section4 = d3.select("#section4");
     let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
     dv4.append("div")
@@ -573,6 +575,13 @@ $(".accordion").on("accordionactivate", function(event, ui){
         }
     });
 
+function up_legend(){
+    let legend_features = svg_map.querySelectorAll('.legend');
+    for(let i = 0; i < legend_features.length; i++){
+        svg_map.appendChild(legend_features[i], null);
+    }
+}
+
 // Set up the widget allowing to sort layers :
 $( "#sortable" ).sortable({
     placeholder: "ui-state-highlight",
@@ -588,17 +597,17 @@ $( "#sortable" ).sortable({
       }
       let desired_order = [],
           actual_order = [],
-          layers = svg_map;
+          layers = svg_map.querySelectorAll(".layer");
 
       for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
           let n = a.target.childNodes[i].getAttribute("layer_name");
           desired_order[i] = n;
-          actual_order[i] = layers.children[i].id;
+          actual_order[i] = layers[i].id;
       }
       for(let i = 0, len = desired_order.length; i < len; i++){
           let lyr1 = document.getElementById(desired_order[i]),
               lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
-          layers.insertBefore(lyr2, lyr1);
+          svg_map.insertBefore(lyr2, lyr1);
       }
      if(at_end) displayInfoOnMove();
      }
@@ -824,7 +833,9 @@ function remove_layer(name){
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
         closeOnConfirm: false
-    }).then(confirm => { if(confirm) remove_layer_cleanup(name); });
+    }).then(() => { remove_layer_cleanup(name); },
+            () => { null; }
+    );    // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
 }
 
 function remove_ext_dataset(){
@@ -836,8 +847,8 @@ function remove_ext_dataset(){
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
         closeOnConfirm: true
-    }).then(confirm => {
-        if(confirm){
+    }).then(() =>
+        {
             field_join_map = new Array();
             joined_dataset = new Array();
             dataset_name = undefined;
@@ -853,8 +864,8 @@ function remove_ext_dataset(){
             document.getElementById("join_section").innerHTML = "";
             document.getElementById('sample_zone').style.display = null;
             $("#data_ext").qtip("destroy");
-        }
-    });
+        }, () => { null; }
+    );
 }
 
 // Do some clean-up when a layer is removed
