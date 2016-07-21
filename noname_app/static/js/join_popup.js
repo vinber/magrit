@@ -192,10 +192,13 @@ function createJoinBox(layer){
 
     make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
         .then(function(confirmed){
-            if(confirmed)
-                valid_join_on(layer, last_choice.field1, last_choice.field2);
-                fields_handler.unfill();
-                fields_handler.fill(layer);
+            if(confirmed){
+                let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
+                if(join_res && window.fields_handler){
+                    fields_handler.unfill();
+                    fields_handler.fill(layer);
+                }
+            }
         });
     d3.select(".joinBox").style({"text-align": "center", "line-height": "0.9em"});
     d3.select("#button_field1").style("float", "left").on("change", function(){last_choice.field1 = this.value;});

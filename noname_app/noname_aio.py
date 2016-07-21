@@ -943,6 +943,10 @@ async def convert_csv_geo(request):
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
 
+def prepare_list_svg_symbols():
+    symbols = os.listdir("static/img/svg_symbols/")
+    with open("static/json/list_symbols.json", "w") as f:
+        f.write(json.dumps(symbols))
 
 def check_port_available(port_nb):
     if port_nb < 7000:
@@ -1004,7 +1008,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
-
+    prepare_list_svg_symbols()
     srv = await loop.create_server(
         app.make_handler(), '0.0.0.0', port)
     return srv, app

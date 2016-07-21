@@ -1173,7 +1173,7 @@ function zoom_without_redraw(){
                                  "scale(", z_scale, ")"].join(''));
 
     if(scaleBar.displayed)
-        scaleBar.changeText();
+        scaleBar.update();
 };
 
 function interpolateZoom(translate, scale) {

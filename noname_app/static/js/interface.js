@@ -662,6 +662,14 @@ var northArrow = {
         this.y = y_pos;
         this.svg_node = arrow_gp;
         this.displayed = true;
+
+        let getItems = () => [
+            {"name": "Options...", "action": () => { this.editStyle()}},
+            {"name": "Delete", "action": () => { this.remove(); }}
+        ];
+
+        let arrow_context_menu = new ContextMenu();
+
         arrow_gp.insert("image")
             .attr("x", x_pos)
             .attr("y", y_pos)
@@ -670,9 +678,21 @@ var northArrow = {
             .attr("xlink:href", '/static/img/north.svg');
 
         arrow_gp.call(drag_lgd_features);
+
+        arrow_gp
+            .on("mouseover", function(){ this.style.cursor = "pointer";})
+            .on("mouseout", function(){ this.style.cursor = "initial";})
+            .on("contextmenu", (d,i) => {
+                d3.event.preventDefault();
+                return arrow_context_menu
+                   .showMenu(d3.event, document.querySelector("body"), getItems());
+            });
     },
     remove: function(){
         this.svg_node.remove();
+    },
+    editStyle: function(){
+        null;
     },
     displayed: false
 }
@@ -692,11 +712,11 @@ var scaleBar = {
         this.x = x_pos;
         this.y = y_pos;
         this.bar_size = bar_size;
+        this.fixed_size = false;
         this.getDist();
 
         let getItems = () => [
-            {"name": "Resize", "action": () => { alert('foo')}},
-            {"name": "Edit Style...", "action": () => { alert("bar"); }},
+            {"name": "Edit style and size...", "action": () => { this.editStyle()}},
             {"name": "Delete", "action": () => { this.remove(); }}
         ];
 
@@ -715,7 +735,9 @@ var scaleBar = {
             .text(this.dist_txt + " km");
 
         scale_gp.call(drag_lgd_features);
-        scale_gp.on("contextmenu", (d,i) => {
+        scale_gp.on("mouseover", function(){ this.style.cursor = "pointer";})
+                .on("mouseout", function(){ this.style.cursor = "initial";})
+                .on("contextmenu", (d,i) => {
                     d3.event.preventDefault();
                     return scale_context_menu
                        .showMenu(d3.event, document.querySelector("body"), getItems());
@@ -737,23 +759,74 @@ var scaleBar = {
         this.dist = dist;
 
     },
-    resize: function(){
+    resize: function(desired_dist){
+        desired_dist = desired_dist || this.fixed_size;
+        let ratio = +this.dist_txt / desired_dist;
+        let new_size = this.bar_size / ratio;
         let z_scale = zoom.scale();
-        this.Scale.select("#rect_scale");
-
+        this.Scale.select("#rect_scale")
+                  .attr("width", new_size);
+        this.Scale.select("#text_limit_sup_scale")
+                  .attr("x", this.x + new_size);
+        this.bar_size = new_size;
+        this.fixed_size = desired_dist;
+        this.changeText();
     },
     changeText: function(){
         this.getDist();
         this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " km");
+    },
+    update: function(){
+        this.changeText();
+        if(this.fixed_size)
+            this.resize();
     },
     remove: function(){
         this.Scale.remove();
         this.Scale = null;
         this.displayed = false;
     },
+    editStyle: function(){
+        var new_val,
+            self = this;
+        make_confirm_dialog("", "Valid", "Cancel", "Scale bar options", "scaleBarEditBox")
+            .then(function(confirmed){
+                if(confirmed){
+                    if(new_val)
+                        self.resize(new_val);
+                    else {
+                        self.fixed_size = false;
+                        self.changeText();
+                    }
+                }
+            });
+        var box_body = d3.select(".scaleBarEditBox");
+        box_body.node().parentElement.style.width = "auto";
+        box_body.append("h3")
+                .html("Scale bar options");
+        box_body.append("p").style("display", "inline")
+                .html("Fixed size ");
+        box_body.append("input")
+                .attr("type", "checkbox")
+                .attr("checked", self.fixed_size ? true : null)
+                .on("change", function(){
+                    if(box_body.select("#scale_fixed_field").attr("disabled")){
+                        box_body.select("#scale_fixed_field").attr("disabled", null);
+                        new_val = +box_body.select("#scale_fixed_field").attr("value");
+                    } else {
+                        box_body.select("#scale_fixed_field").attr("disabled", true);
+                        new_val = false;
+                    }
+        });
+        box_body.append("input")
+                .attr('id', "scale_fixed_field")
+                .attr("type", "number")
+                .attr("disabled", self.fixed_size ? null : true)
+                .attr("value", +this.dist_txt)
+                .on("change", function(){ new_val = +this.value });
+    },
     displayed: false
 };
-
 function add_layout_layers(){
     var selec = {layout: null};
     var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],

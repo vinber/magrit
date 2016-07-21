@@ -133,15 +133,50 @@ function check_layer_name(name){
     }
 }
 
-function box_choice_symbol(){
+function box_choice_symbol(sample_symbols){
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
                         .attr({id: "box_choice_symbol", title: "Symbol selection"});
-    var dataUrl_res;
+
     newbox.append("h3").html("Symbol selection");
-    newbox.append("p").html("Select a symbol...")
+    newbox.append("p").html("Select a symbol...");
+
+    var box_select = newbox.append("div")
+                        .style({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
+                        .attr("id", "symbols_select");
+
+    box_select.selectAll("p")
+            .data(sample_symbols)
+            .enter()
+            .append("p")
+            .attr("id", d => "p_" + d[0].replace(".svg", ""))
+            .attr("title", d => d[0])
+            .html(d => d[1])
+            .style({width: "32px", height: "32px",
+                    "margin": "auto", display: "inline-block"});
+
+    box_select.selectAll("svg")
+            .attr("id", function(){ return this.parentElement.id.slice(2) })
+            .attr({height: "32px", width: "32px"})
+            .on("click", function(){
+                box_select.selectAll("svg").each(function(){
+                    this.parentElement.style.border = "";
+                    this.parentElement.style.padding = "0px";
+                })
+                this.parentElement.style.padding = "-1px";
+                this.parentElement.style.border = "1px dashed red";
+                let svg_dataUrl = [
+                    'url("data:image/svg+xml;base64,',
+                    btoa(new XMLSerializer().serializeToString(this)),
+                    '")'].join('');
+                newbox.select("#current_symb").style("background-image", svg_dataUrl);
+            });
+
+    newbox.append("p")
+        .attr("display", "inline")
+        .html("Or choose upload your symbol ");
     newbox.append("button")
-        .html("Choose your own symbol...")
+        .html("Browse")
         .on("click", function(){
             let input = document.createElement('input');
             input.setAttribute("type", "file");
@@ -151,7 +186,7 @@ function box_choice_symbol(){
                 let reader = new FileReader()
                 reader.onloadend = function(){
                     let result = reader.result;
-                    dataUrl_res = ['url("', result, '")'].join('');
+                    let dataUrl_res = ['url("', result, '")'].join('');
                     newbox.select("#current_symb").style("background-image", dataUrl_res);
                 }
                 reader.readAsDataURL(file);
@@ -176,7 +211,8 @@ function box_choice_symbol(){
         buttons:[{
             text: "Confirm",
             click: function(){
-                    deferred.resolve(dataUrl_res);
+                    let res_url = newbox.select("#current_symb").style("background-image");
+                    deferred.resolve(res_url);
                     $(this).dialog("close");
                     }
                 },
@@ -3032,6 +3068,16 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 * @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
 *
 */
+function get_fun_operator(operator){
+    let operators = new Map([
+        ["+", function(a, b){ return a + b; }],
+        ["-", function(a, b){ return a - b; }],
+        ["/", function(a, b){ return a / b; }],
+        ["*", function(a, b){ return a * b; }],
+    ]);
+    return operators.get(operator);
+}
+
 function add_table_field(table, layer_name, parent){
     function check_name(){
         if(regexp_name.test(this.value))
@@ -3047,12 +3093,23 @@ function add_table_field(table, layer_name, parent){
             fi1 = options.field1,
             fi2 = options.field2,
             new_name_field = options.new_name,
-            operation = options.operator;
+            operation = options.operator,
+            opt_val = options.opt_val;
 
-        if(options.type_operation === "math_compute" && table.length > 3200){
+        if(options.type_operation === "math_compute" && table.length > 3500){
             let formToSend = new FormData();
-            formToSend.append('var1', JSON.stringify(table.map( d => d[fi1])));
-            formToSend.append('var2', JSON.stringify(table.map( d => d[fi2])));
+            let var1 = [],
+                var2 = (fi2 == "user_const_value") ? +opt_val : [];
+            for(let i=0; i<table.length; i++){
+                var1.push(+table[i][fi1])
+            }
+            if(fi2 != "user_const_value"){
+                for(let i=0; i<table.length; i++){
+                    var2.push(+table[i][fi2])
+                }
+            }
+            formToSend.append('var1', JSON.stringify(var1));
+            formToSend.append('var2', JSON.stringify(var2));
             formToSend.append('operator', operation);
             return request_data("POST", "/helpers/calc", formToSend).then(function(e){
                 let data = JSON.parse(e.target.responseText);
@@ -3063,11 +3120,17 @@ function add_table_field(table, layer_name, parent){
             });
         }
         else if(options.type_operation === "math_compute"){
-            for(let i=0; i<table.length; i++)
-                table[i][new_name_field] = +eval([+table[i][fi1], operation, +table[i][fi2]].join(' '));
+            let math_func = get_fun_operator(operation)
+            if(fi2 != "user_const_value"){
+                for(let i=0; i<table.length; i++)
+                    table[i][new_name_field] = math_func(+table[i][fi1], +table[i][fi2]);
+            } else {
+                opt_val = +opt_val;
+                for(let i=0; i<table.length; i++)
+                    table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
+            }
             return Promise.resolve(true);
         } else {
-            let opt_val = options.opt_val;
             if(operation == "Truncate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
@@ -3092,7 +3155,13 @@ function add_table_field(table, layer_name, parent){
                         refresh_subtype_content(chooses_handler.type_operation, this.value);
                         });
         field2 = div1.append("select")
-                    .on("change", function(){ chooses_handler.field2 = this.value; });
+                    .on("change", function(){
+                        chooses_handler.field2 = this.value;
+                        if(this.value == "user_const_value"){
+                            val_opt.style("display", null);
+//                            val_opt.attr("disabled", null);
+                        }
+                    });
         if(type == "math_compute"){
             math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
             for(let k in fields_type){
@@ -3101,7 +3170,9 @@ function add_table_field(table, layer_name, parent){
                     field2.append("option").text(k).attr("value", k);
                 }
             }
-            val_opt.attr("disabled", true);
+            field2.append("option").text("Constant value...").attr("value", "user_const_value");
+            val_opt.style("display", "none");
+//            val_opt.attr("disabled", true);
             txt_op.text("");
             chooses_handler.operator = math_operation[0];
         } else {
@@ -3112,7 +3183,8 @@ function add_table_field(table, layer_name, parent){
                     field2.append("option").text(k).attr("value", k);
                 }
             }
-            val_opt.attr("disabled", null);
+            val_opt.style("display", null);
+//            val_opt.attr("disabled", null);
             txt_op.html("Character to join the two fields (can stay blank) :<br>");
             chooses_handler.operator = string_operation[0];
         }
@@ -3122,8 +3194,11 @@ function add_table_field(table, layer_name, parent){
 
     function refresh_subtype_content(type, subtype){
         if(type != "string_field"){
-            val_opt.attr("disabled", true);
-            txt_op.text("")
+            if(field2.node().value != "user_const_value"){
+                val_opt.style("display", "none");
+//                val_opt.attr("disabled", true);
+                txt_op.text("");
+            }
         } else {
             if(subtype == "Truncate"){
                 txt_op.html("Number of char to keep (from the left) :<br>");
@@ -3145,10 +3220,12 @@ function add_table_field(table, layer_name, parent){
                     "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
-                let tmp = compute_and_add(chooses_handler);
-                tmp.then(function(resolved){
-                        fields_handler.unfill();
-                        fields_handler.fill(layer_name);
+                compute_and_add(chooses_handler).then(
+                    function(resolved){
+                        if(window.fields_handler){
+                            fields_handler.unfill();
+                            fields_handler.fill(layer_name);
+                        }
                         if(parent)
                             parent.display_table(layer_name);
                     }, function(error){
@@ -3186,7 +3263,8 @@ function add_table_field(table, layer_name, parent){
 
     var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
         val_opt = div2.append("input").attr("id", "val_opt")
-                        .attr("disabled", true)
+//                        .attr("disabled", true)
+                        .style("display", "none")
                         .on("change", function(){ chooses_handler.opt_val = this.value;});
 
     var math_operation = ["+", "-", "*", "/"],

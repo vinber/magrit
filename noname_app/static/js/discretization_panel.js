@@ -31,8 +31,14 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
         breaks = eval(val);
 //        // In order to avoid class limit falling out the serie limits with Std class :
 //        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-        ir = serie.getInnerRanges();
-        if(!ir) return false;
+
+//        ir = serie.getInnerRanges();
+//        if(!ir){
+//            ir = [];
+//            for(let i = 0; i < breaks.length - 1; i++){
+//                ir.push([breaks[i], breaks[i+1]].join(' - '))
+//            }
+//        }
     }
     for(let i = 0; i<breaks.length-1; ++i)
         breaks_prop.push([[breaks[i], breaks[i+1]], class_size[i]]);
@@ -860,7 +866,7 @@ function fetch_symbol_categories(){
             new_name = categ[i].querySelector(".typo_name").value;
         if(selec.style.backgroundImage.length > 7){
             let img = categ[i].querySelector(".symbol_section").style.backgroundImage.split("url(")[1].substring(1).slice(0,-2);
-            let size = +categ[i].querySelector("input").value
+            let size = +categ[i].querySelector("#symbol_size").value
             symbol_map.set(categ[i].__data__.name, [img, size, new_name]);
         } else {
             symbol_map.set(categ[i].__data__.name, [null, 0, new_name]);
@@ -871,10 +877,32 @@ function fetch_symbol_categories(){
 
 
 function display_box_symbol_typo(layer, field){
+
+    var prepare_available_symbols = function(){
+        let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
+                .then(function(list_res){
+                   list_res = JSON.parse(list_res.target.responseText);
+                   Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
+                    .then(function(symbols){
+                        for(let i=0; i<list_res.length; i++){
+                            default_symbols.push([list_res[i], symbols[i].target.responseText]);
+                        }
+                    });
+                })
+    }
+
+    if(!window.default_symbols){
+        window.default_symbols = [];
+        prepare_available_symbols();
+    }
     var nb_features = current_layers[layer].n_features,
         categories = new Map(),
         data_layer = user_data[layer],
         cats = [];
+
+    var res_symbols = window.default_symbols;
+
+    var default_d_url = 'url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJmbGFnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDU3OS45OTcgNTc5Ljk5NyIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgNTc5Ljk5NyA1NzkuOTk3IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIGQ9Ik0yMzEuODQ2LDQ3Mi41NzJWMzEuODA2aC0yMi4xOHY0NDAuNTU3JiMxMDsmIzk7Yy0zNC4wMTYsMi42NDktNTkuNDE5LDE4Ljc2Ny01OS40MTksMzguODcxYzAsMjIuMDIxLDMwLjQ1NiwzOS4yNzEsNjkuMzM3LDM5LjI3MWMzOC44NzcsMCw2OS4zMzItMTcuMjUsNjkuMzMyLTM5LjI3MSYjMTA7JiM5O0MyODguOTE3LDQ5MS41OTUsMjY0LjY3NCw0NzUuNzY0LDIzMS44NDYsNDcyLjU3MnoiLz4KPHBvbHlnb24gZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIHBvaW50cz0iMjM1LjI0MywyOS40OTIgMjMzLjcyMywyMDcuNjI4IDQyOS43NDksMjEwLjMyOSAiLz4KPC9zdmc+")';
 
     for(let i = 0; i < nb_features; ++i){
         let value = data_layer[i][field];
@@ -904,16 +932,9 @@ function display_box_symbol_typo(layer, field){
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'));
 
-//    newbox.selectAll(".typo_class")
-//            .append("span")
-//            .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
-//            .attr("class", "typo_name")
-//            .attr("id", d => d.name)
-//            .html(d => d.name);
-
     newbox.selectAll(".typo_class")
             .append("input")
-            .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
+            .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
             .attr("class", "typo_name")
             .attr("value", d => d.name)
             .attr("id", d => d.name);
@@ -923,7 +944,8 @@ function display_box_symbol_typo(layer, field){
             .attr("title", "Click me to choose a symbol!")
             .attr("class", "symbol_section")
             .style("margin", "auto")
-            .style("background-image", "url('')")
+            //.style("background-image", "url('')")
+            .style("background-image", default_d_url)
             .style("vertical-align", "middle")
             .style({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
                     "border-radius": "10%", border: "1px dashed blue",
@@ -931,25 +953,11 @@ function display_box_symbol_typo(layer, field){
                   })
             .on("click", function(){
                 let self = this;
-                box_choice_symbol().then(confirmed => {
+                box_choice_symbol(res_symbols).then(confirmed => {
                     if(confirmed){
                         self.style.backgroundImage = confirmed;
                     }
                 });
-//                let self = this;
-//                let input = document.createElement('input');
-//                input.setAttribute("type", "file");
-//                input.onchange = function(event){
-//                    let file = event.target.files[0];
-//                    let file_name = file.name;
-//                    let reader = new FileReader()
-//                    reader.onloadend = function(){
-//                        let result = reader.result;
-//                        self.style.backgroundImage = ['url("', result, '")'].join('');
-//                    }
-//                    reader.readAsDataURL(file);
-//                }
-//                input.dispatchEvent(new MouseEvent("click"));
             });
 
     newbox.selectAll(".typo_class")
@@ -957,12 +965,13 @@ function display_box_symbol_typo(layer, field){
             .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
 
     newbox.selectAll(".typo_class")
-            .insert("input").attr("type", "number")
+            .insert("input").attr("type", "number").attr("id", "symbol_size")
             .style("width", "38px").style("display", "inline-block")
             .attr("value", 32);
 
     newbox.selectAll(".typo_class")
             .insert("span")
+            .style("display", "inline-block")
             .html(" px");
 
       $( "#typo_categories" ).sortable({
