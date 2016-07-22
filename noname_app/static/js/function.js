@@ -236,16 +236,22 @@ var fields_Symbol = {
     fill: function(layer){
         if(!layer) return;
         let fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
-            field_to_use = d3.select("#field_Symbol");
+            field_to_use = d3.select("#field_Symbol"),
+            self = this;
         fields_all.forEach(function(field){
             field_to_use.append("option").text(field).attr("value", field);
         });
         d3.selectAll(".params").attr("disabled", null);
+        field_to_use.on("change", function(){
+            self.box_typo = display_box_symbol_typo(layer, this.value);
+        });
+        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Symbol"));
         d3.selectAll(".params").attr("disabled", true);
-    }
+    },
+    box_typo: undefined
 }
 
 function fillMenu_Symbol(){
@@ -253,6 +259,7 @@ function fillMenu_Symbol(){
     let field_selec = dv2.append("p").html("Field to use ")
                     .insert('select')
                     .attr({class: "params", id: "field_Symbol"});
+
     let rendering_params;
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
@@ -260,8 +267,7 @@ function fillMenu_Symbol(){
         .style({"font-size": "0.8em", "text-align": "center"})
         .html("Choose your symbols")
         .on("click", function(){
-            let layer_name = Object.getOwnPropertyNames(user_data)[0];
-            display_box_symbol_typo(layer_name, field_selec.node().value).then(function(confirmed){
+            fields_Symbol.box_typo().then(function(confirmed){
                 if(confirmed){
                     ok_button.attr("disabled", null);
                     rendering_params = {
@@ -716,6 +722,7 @@ function fetch_min_max_table_value(parent_id){
         return false;
     }
 
+// Actually this step might not be useful anymore as class min - max are binded to change automatically to avoid this:
 // - Min / max values are consistent :
     for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
         if(mins[i+1] != maxs[i]){
@@ -1923,6 +1930,7 @@ function fillMenu_Stewart(){
                     }
                     var col_pal = getColorBrewerArray(class_lim.min.length, "Purples"),
                         colors_breaks = [];
+                    col_pal.reverse();
                     for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]]);
                     }
@@ -2152,47 +2160,6 @@ function fillMenu_Anamorphose(){
                                 .style("stroke-opacity", 0.8);
                     }
                 });
-
-//                result_data[new_layer_name] = new Array();
-//                map.append("g").attr("id", new_layer_name)
-//                      .attr("class", "result_layer layer")
-//                      .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-//                      .selectAll(".subunit")
-//                      .data(topojson.feature(_target_layer_file, _target_layer_file.objects[layer]).features)
-//                      .enter().append("path")
-//                      .attr("d", path)
-//                      .attr("id", function(d,ix) {
-//                            result_data[new_layer_name].push(d.properties);
-//                            return ["feature", ix].join('_');
-//                        })
-//                      .style("stroke", "rgb(0, 0, 0)")
-//                      .style("stroke-opacity", .4)
-//                      .style("fill", Colors.names[Colors.random()])
-//                      .style("fill-opacity", 0.6)
-//                      .attr("transform", function(d,i) {
-//                            let centroid = path.centroid(d),
-//                                x = centroid[0],
-//                                y = centroid[1];
-//                            return ["translate(", x, ",", y, ")",
-//                                    "scale(", transform[i], ")",
-//                                    "translate(", -x, ",", -y, ")"].join("");
-//                        });
-
-//                let class_name = "ui-state-default sortable_result " + new_layer_name,
-//                    _list_display_name = get_display_name_on_layer_list(new_layer_name),
-//                    layers_listed = layer_list.node(),
-//                    li = document.createElement("li");
-//
-//                li.setAttribute("layer_name", new_layer_name);
-//                li.setAttribute("class", class_name);
-//                li.setAttribute("layer-tooltip", ["<b>", new_layer_name, "</b> - Polygon - ", nb_ft, " features"].join(''))
-//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open, button_type_blank['Polygon'], "</div> ", _list_display_name].join('')
-//                layers_listed.insertBefore(li, layers_listed.childNodes[0])
-
-//                binds_layers_buttons();
-//                zoom_without_redraw();
-//                switch_accordion_section();
-//                send_layer_server(new_layer_name, "/layers/add")
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -2200,11 +2167,14 @@ function fillMenu_Anamorphose(){
                     var_to_send = new Object(),
                     nb_iter = option1_val.node().value;
 
-                if(current_layers[layer].original_fields.has(field_name))
-                    var_to_send[field_name] = [];
-                else
-                    var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
-
+                var_to_send[field_name] = [];
+                if(!current_layers[layer].original_fields.has(field_name)){
+                    let table = user_data[layer],
+                        to_send = var_to_send[field_name];
+                    for(let i=0; i<user_data[layer].length; ++i){
+                        to_send.push(+table[i][field_name])
+                    }
+                }
                 formToSend.append("json", JSON.stringify({
                     "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
@@ -2915,10 +2885,10 @@ function render_choro(layer, rendering_params){
     current_layers[layer]['stroke-width-const'] = 0.75;
     current_layers[layer].is_result = true;
     let colors_breaks = [];
-    for(let i = 0; i<rendering_params['breaks'].length-1; ++i){
+    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
         colors_breaks.push([
-                [rendering_params['breaks'][i], " - ", rendering_params['breaks'][i+1]].join(''),
-                rendering_params['colors'][i]
+                [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                rendering_params['colors'][i-1]
             ]);
         }
     current_layers[layer].colors_breaks = colors_breaks;
@@ -3029,7 +2999,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
                     : joined_dataset[0],
         fields = Object.getOwnPropertyNames(table[0]),
         nb_features = table.length,
-        deepth_test = 10 < nb_features ? 10 : nb_features,
+        deepth_test = 100 > nb_features ? 100 : nb_features,
         result = new Object(),
         field = undefined,
         tmp_type = undefined;
@@ -3074,6 +3044,7 @@ function get_fun_operator(operator){
         ["-", function(a, b){ return a - b; }],
         ["/", function(a, b){ return a / b; }],
         ["*", function(a, b){ return a * b; }],
+        ["^", function(a, b){ return Math.pow(a, b); }],
     ]);
     return operators.get(operator);
 }
@@ -3159,7 +3130,6 @@ function add_table_field(table, layer_name, parent){
                         chooses_handler.field2 = this.value;
                         if(this.value == "user_const_value"){
                             val_opt.style("display", null);
-//                            val_opt.attr("disabled", null);
                         }
                     });
         if(type == "math_compute"){
@@ -3172,7 +3142,6 @@ function add_table_field(table, layer_name, parent){
             }
             field2.append("option").text("Constant value...").attr("value", "user_const_value");
             val_opt.style("display", "none");
-//            val_opt.attr("disabled", true);
             txt_op.text("");
             chooses_handler.operator = math_operation[0];
         } else {
@@ -3184,7 +3153,6 @@ function add_table_field(table, layer_name, parent){
                 }
             }
             val_opt.style("display", null);
-//            val_opt.attr("disabled", null);
             txt_op.html("Character to join the two fields (can stay blank) :<br>");
             chooses_handler.operator = string_operation[0];
         }
@@ -3196,7 +3164,6 @@ function add_table_field(table, layer_name, parent){
         if(type != "string_field"){
             if(field2.node().value != "user_const_value"){
                 val_opt.style("display", "none");
-//                val_opt.attr("disabled", true);
                 txt_op.text("");
             }
         } else {
@@ -3263,11 +3230,10 @@ function add_table_field(table, layer_name, parent){
 
     var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
         val_opt = div2.append("input").attr("id", "val_opt")
-//                        .attr("disabled", true)
                         .style("display", "none")
                         .on("change", function(){ chooses_handler.opt_val = this.value;});
 
-    var math_operation = ["+", "-", "*", "/"],
+    var math_operation = ["+", "-", "*", "/", "^"],
         string_operation = ["Concatenate", "Truncate"];
 
     {
@@ -3359,4 +3325,29 @@ function request_data(method, url, data){
         request.onerror = reject;
         request.send(data);
     });
+}
+/**
+* Function computing the min of an array of values - no fancy functionnalities here
+* (it doesn't add anything comparing to Math.min.apply() or d3.min() except
+*  a little speed-up)
+*
+*/
+function min_fast(arr){
+  let min = arr[0];
+  for(let i = 1; i < arr.length; ++i){
+    let val = +arr[i];
+    if(val && val < min)
+       min = val;
+  }
+  return min;
+}
+
+function max_fast(arr){
+  let max = arr[0];
+  for(let i = 1; i < arr.length; ++i){
+    let val = +arr[i];
+    if(val > max)
+       max = arr[i];
+  }
+  return max;
 }

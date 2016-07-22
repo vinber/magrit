@@ -180,7 +180,7 @@ function createLegend_discont_links(layer, field, title, subtitle){
                     })
           .attr('width', 45)
           .attr('height', function(d, i){  return d.size;  })
-          .style({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7})
+          .style({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7, "stroke-width": 0})
 
     last_pos = y_pos2;
     last_size = 0;
@@ -430,14 +430,27 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
 //              .attr('height', d => d.image[1])
               .attr("xlink:href", d => d.image[0]);
 
-    legend_elems
-      .append('text')
-      .attr("x", xpos + boxwidth * 2 + 10)
-      .attr("y", function(d, i){
-        return y_pos2 + (i * boxgap) + (i+2/3) * boxheight;
-        })
-      .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
-      .text(function(d) { return d.value; });
+    // TODO : fix this part of the legend
+    if(current_layers[layer].renderer.indexOf('Choropleth') > -1)
+        legend_elems
+          .append('text')
+          .attr("x", xpos + boxwidth * 2 + 10)
+          .attr("y", function(d, i){
+            return y_pos2 + (i * boxgap) / 2 + (i+2/3) * boxheight;
+            })
+          .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text(function(d) { return +d.value.split(' - ')[1]; });
+
+    else
+        legend_elems
+          .append('text')
+          .attr("x", xpos + boxwidth * 2 + 10)
+          .attr("y", function(d, i){
+            return y_pos + (i * boxgap) / 2 + (i+2/3) * boxheight;
+            })
+          .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text(function(d) { return d.value; });
+
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")

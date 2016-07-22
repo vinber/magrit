@@ -697,6 +697,7 @@ function createStyleBox_ProbSymbol(layer_name){
             let f_val = +this.value,
                 prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
             redraw_prop_val(prop_values);
+              current_layers[layer_name].size[0] = f_val;
         });
 // Todo : find a "light" way to recompute the "force" on the node after changing their size
 //              if(type_method.indexOf('Dorling') > -1){

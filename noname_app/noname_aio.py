@@ -911,7 +911,8 @@ async def calc_helper(request):
             return web.Response(text='{"Error":"Invalid datatype"}')
     result = {
                 "+": val1.__add__, "-": val1.__sub__,
-                "*": val1.__mul__, "/": val1.__truediv__
+                "*": val1.__mul__, "/": val1.__truediv__,
+                "^": val1.__pow__
             }[posted_data['operator']](val2).tolist()
     return web.Response(text=json.dumps(result))
 

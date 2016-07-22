@@ -12,17 +12,18 @@ const MAX_INPUT_SIZE = 12582912; // max allowed input size in bytes
 */
 function click_button_add_layer(){
     var res = [],
+        self = this,
         input = d3.select(document.createElement('input'))
                     .attr("type", "file").attr("multiple", "").attr("name", "file[]")
                     .attr("enctype", "multipart/form-data")
                     .on('change', function(){ prepareUpload(d3.event) });
 
-    target_layer_on_add = (this.id === "input_geom") ? true :
-                          (this.id === "img_in_geom") ? true :
-                          (this.id === "img_data_ext") ? true :
-                          (this.id === "data_ext") ? true : false;
-
     function prepareUpload(event){
+        target_layer_on_add = (self.id === "input_geom") ? true :
+                              (self.id === "img_in_geom") ? true :
+                              (self.id === "img_data_ext") ? true :
+                              (self.id === "data_ext") ? true : false;
+
         let files = event.target.files;
         for(let i=0; i < files.length; i++){
             if(files[i].size > MAX_INPUT_SIZE){
@@ -230,7 +231,18 @@ function add_dataset(readed_dataset){
             return;
         }
     }
+
+    // Check if their is an empty name in the columns name (typically the first one) and replace it by UID:
+    if(readed_dataset[0].hasOwnProperty('')){
+        let new_col_name = !readed_dataset[0].hasOwnProperty('UID') ? 'UID' :'Undefined_Name';
+        for(let i = 0; i < readed_dataset.length; ++i){
+            readed_dataset[i][new_col_name] = readed_dataset[i]['']
+            delete readed_dataset[i][''];
+        }
+    }
+
     joined_dataset.push(readed_dataset);
+
     let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
         nb_features = joined_dataset[0].length;
 
@@ -653,11 +665,11 @@ var drag_lgd_features = d3.behavior.drag()
 
 var northArrow = {
     display: function(){
-        let arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend arrow"),
-            x_pos = w - 100,
+        let x_pos = w - 100,
             y_pos = h - 100,
             self = this;
-
+        let arrow_svg = map.append("svg").attr("id", "north_arrow_svg").attr("class", "legend").attr({x: x_pos, y: y_pos});
+        let arrow_gp = arrow_svg.append("g").attr("id", "north_arrow");
         this.x = x_pos;
         this.y = y_pos;
         this.svg_node = arrow_gp;
@@ -670,12 +682,20 @@ var northArrow = {
 
         let arrow_context_menu = new ContextMenu();
 
-        arrow_gp.insert("image")
-            .attr("x", x_pos)
-            .attr("y", y_pos)
-            .attr("height","30px")
-            .attr("width", "30px")
-            .attr("xlink:href", '/static/img/north.svg');
+        arrow_gp.append("polygon")
+                .attr({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
+                       points: "312.3,327.9 328.9,318.5 328.9,296.4 "})
+        arrow_gp.append("polygon")
+                .attr({stroke: "#000000", "stroke-miterlimit": 10,
+                       points: "329.9,296.4 329.9,318.5 346.7,327.8 "})
+        arrow_gp.append("g").insert("path")
+                .attr("d", "M322.8,278.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V278.6z")
+//        arrow_gp.insert("image")
+//            .attr("x", x_pos)
+//            .attr("y", y_pos)
+//            .attr("height","30px")
+//            .attr("width", "30px")
+//            .attr("xlink:href", '/static/img/north.svg');
 
         arrow_gp.call(drag_lgd_features);
 
@@ -723,7 +743,7 @@ var scaleBar = {
         let scale_context_menu = new ContextMenu();
         scale_gp.insert("rect")
             .attr({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
-            .style("fill", "transparent");
+            .style("fill", "none");
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attr({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");

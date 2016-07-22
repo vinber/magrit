@@ -21,16 +21,16 @@ stewart_to_json <- function(knownpts_json, var, var2, typefct = "exponential",
     mask_layer <- geojsonio::geojson_read(mask_json, what='sp', stringsAsFactors = FALSE)
     if(is.na(mask_layer@proj4string@projargs)) mask_layer@proj4string@projargs = latlong_string
     if(isLonLat(mask_layer)) mask_layer <- sp::spTransform(mask_layer, CRS(nat_earth))
-    if(!rgeos::gIsValid(mask_layer)){
-      print('Invalid geom mask - First test')
-      mask_layer <- rgeos::gBuffer(rgeos::gBuffer(mask_layer, width = 1), width = -1)
-      additionnal_infos <- "Mask layer have been changed to obtain valid geometries"
-      if(!rgeos::gIsValid(mask_layer)){
-        mask_layer <- NULL
-        print('Invalid geom mask, dropping it')
-        additionnal_infos <- "Mask not used (invalid geometry)"
-      }
-    }
+    # if(!rgeos::gIsValid(mask_layer)){
+    #   print('Invalid geom mask - First test')
+    #   mask_layer <- rgeos::gBuffer(rgeos::gBuffer(mask_layer, width = 1), width = -1)
+    #   additionnal_infos <- "Mask layer have been changed to obtain valid geometries"
+    #   if(!rgeos::gIsValid(mask_layer)){
+    #     # mask_layer <- NULL
+    #     print('Invalid geom mask, dropping it')
+    #     additionnal_infos <- "Mask not used (invalid geometry)"
+    #   }
+    # }
   }
 
   if(class(knownpts_layer@data[, var]) == "character"){
