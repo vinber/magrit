@@ -97,7 +97,7 @@ var drag_legend_func = function(legend_group){
                 });
 }
 
-function createLegend_nothing(layer, field, title, subtitle){
+function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
     var subtitle = subtitle || field,
         space_elem = 18,
         boxgap = 12,
@@ -110,12 +110,11 @@ function createLegend_nothing(layer, field, title, subtitle){
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
-            .attr("y", ypos)
+            .attr("x", xpos + space_elem)
 
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
+            .attr("x", xpos + space_elem)
             .attr("y", ypos + 15);
 
     legend_root.call(drag_legend_func(legend_root));
@@ -125,12 +124,12 @@ function createLegend_nothing(layer, field, title, subtitle){
             .attr({x: xpos, y: ypos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('Additional notes');
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos);
+    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
 
-function createLegend_discont_links(layer, field, title, subtitle){
+function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value){
     var subtitle = subtitle || field,
         space_elem = 18,
         boxgap = 12,
@@ -146,12 +145,12 @@ function createLegend_discont_links(layer, field, title, subtitle){
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
+            .attr("x", xpos + space_elem)
             .attr("y", ypos)
 
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
+            .attr("x", xpos + space_elem)
             .attr("y", ypos + 15);
 
     let ref_symbols_params = new Array();
@@ -203,26 +202,36 @@ function createLegend_discont_links(layer, field, title, subtitle){
             .attr({x: xpos, y: last_pos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('Additional notes');
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos);
+    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
 
-function make_underlying_rect(legend_root, under_rect, xpos, ypos){
+function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
     under_rect.attr({"width": 0, height: 0});
     let bbox_legend = legend_root.node().getBoundingClientRect();
     under_rect.attr("class", "legend_feature").attr("id", "under_rect")
-                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 10)
-                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 10)
-                     .style("fill", "green")
-                     .style("fill-opacity", 0);
+                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 25)
+                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 20)
+
     if(xpos && ypos)
-        under_rect.attr("x", xpos - 5).attr("y", ypos - 5)
-    legend_root.on("mouseover", ()=>{ under_rect.style("fill-opacity", 0.1); })
-    legend_root.on("mouseout", ()=>{ under_rect.style("fill-opacity", 0); });
+        under_rect.attr("x", xpos - 2.5).attr("y", ypos - 15)
+    if(!fill){
+        under_rect.style("fill", "green")
+                  .style("fill-opacity", 0);
+        legend_root.attr("visible_rect", "true");
+        legend_root.on("mouseover", ()=>{ under_rect.style("fill-opacity", 0.1); })
+                   .on("mouseout", ()=>{ under_rect.style("fill-opacity", 0); });
+    } else {
+        under_rect.style("fill", fill.color)
+                  .style("fill-opacity", fill.opacity);
+        legend_root.attr("visible_rect", "false");
+        legend_root.on("mouseover", null).on("mouseout", null);
+
+    }
 }
 
-function createLegend_symbol(layer, field, title, subtitle, nested = "false"){
+function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value){
     var subtitle = subtitle || field,
         space_elem = 18,
         boxgap = 4,
@@ -239,11 +248,11 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false"){
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
+            .attr("x", xpos + space_elem)
             .attr("y", ypos)
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem * 2 + boxgap)
+            .attr("x", xpos + space_elem)
             .attr("y", ypos + 15);
 
     let ref_symbols = document.getElementById(layer).querySelectorAll(symbol_type),
@@ -348,19 +357,19 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false"){
             .attr({x: xpos, y: last_pos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('Additional notes');
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos);
+    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
 
-function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
+function createLegend_choro(layer, field, title, subtitle, boxgap = 4, rect_fill_value){
     var subtitle = subtitle || field,
         boxheight = 18,
         boxwidth = 18,
         xpos = w - (w / 8),
         ypos = 30,
         last_pos = null,
-        y_pos2 =  ypos + boxheight,
+        y_pos2 =  ypos + boxheight * 2,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         nb_class,
         data_colors_label;
@@ -374,11 +383,11 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
 
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + boxheight * 2)
+            .attr("x", xpos + boxheight)
             .attr("y", ypos)
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + boxheight * 2)
+            .attr("x", xpos + boxheight)
             .attr("y", ypos + 15);
 
     if(current_layers[layer].renderer.indexOf('Categorical') > -1){
@@ -430,23 +439,37 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
 //              .attr('height', d => d.image[1])
               .attr("xlink:href", d => d.image[0]);
 
-    // TODO : fix this part of the legend
-    if(current_layers[layer].renderer.indexOf('Choropleth') > -1)
+    if(current_layers[layer].renderer.indexOf('Choropleth') > -1
+        || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
+        || current_layers[layer].renderer.indexOf('Gridded') > -1
+        || current_layers[layer].renderer.indexOf('Stewart') > -1){
+        let tmp_pos;
         legend_elems
           .append('text')
           .attr("x", xpos + boxwidth * 2 + 10)
           .attr("y", function(d, i){
-            return y_pos2 + (i * boxgap) / 2 + (i+2/3) * boxheight;
+            tmp_pos = y_pos2 + i * boxheight + (i * boxgap);
+            return tmp_pos;
             })
           .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return +d.value.split(' - ')[1]; });
 
+        legend_root
+          .insert('text')
+          .attr("x", xpos + boxwidth * 2 + 10)
+          .attr("y", function(d, i){
+            return tmp_pos + boxheight + boxgap;
+            })
+          .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text(function(d) { return data_colors_label[data_colors_label.length -1].value.split(' - ')[0]; });
+
+    }
     else
         legend_elems
           .append('text')
           .attr("x", xpos + boxwidth * 2 + 10)
           .attr("y", function(d, i){
-            return y_pos + (i * boxgap) / 2 + (i+2/3) * boxheight;
+            return y_pos2 + (i * boxgap) / 2 + (i+2/3) * boxheight;
             })
           .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return d.value; });
@@ -458,7 +481,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4){
             .style("font", "11px 'Enriqueta', arial, serif")
             .text('Additional notes');
     legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos);
+    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
@@ -474,12 +497,17 @@ function createlegendEditBox(legend_id, layer_name){
         legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
     };
 
-    var box_class, legend_node, title_content,subtitle_content,note_content,source_content,legend_node_d3,legend_boxes;
+    var box_class, legend_node, title_content,subtitle_content,note_content,source_content,legend_node_d3,legend_boxes,rect_fill_value;
     bind_selections();
     let original_params = {
         title_content: title_content.textContent, subtitle_content: subtitle_content.textContent,
         note_content: note_content.textContent }; //, source_content: source_content.textContent ? source_content.textContent : ""
-
+    if(legend_node.getAttribute("visible_rect") == "true"){
+        rect_fill_value = {
+            color: legend_node.querySelector("#under_rect").style.fill,
+            opacity: legend_node.querySelector("#under_rect").style.fillOpacity
+        }
+    }
     make_confirm_dialog("", "Confirm", "Cancel", "Layer style options", box_class, undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
@@ -489,7 +517,9 @@ function createlegendEditBox(legend_id, layer_name){
             }
             bind_selections();
             make_underlying_rect(legend_node_d3,
-                                 legend_node_d3.select("#under_rect"));
+                                 legend_node_d3.select("#under_rect"),
+                                 undefined, undefined,
+                                 rect_fill_value);
         });
 
     var box_body = d3.select([".", box_class].join('')),
@@ -577,7 +607,7 @@ function createlegendEditBox(legend_id, layer_name){
                         lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
 
                     legend_node.remove();
-                    createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap);
+                    createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value);
                     bind_selections();
                     if(transform_param)
                         document.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
@@ -597,7 +627,7 @@ function createlegendEditBox(legend_id, layer_name){
                         lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
 
                     legend_node.remove();
-                    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested);
+                    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value);
                     bind_selections();
                     if(transform_param)
                         document.querySelector(["#legend_root2.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
@@ -618,10 +648,20 @@ function createlegendEditBox(legend_id, layer_name){
                 note_content.textContent = this.value;
             });
 
-//    box_body.insert('p').html('Source/authors informations:<br>')
-//            .insert('input').attr("value", "Rendered by MAPOLOGIC")
-//            .style("font", "italic 10px Gill Sans Extrabold, sans-serif")
-//            .on("keyup", function(){
-//                source_content.textContent = this.value;
-//            });
+    box_body.insert('p').html('Display a rectangle under the legend')
+                .insert("input").attr("type", "checkbox")
+                .attr("checked", rect_fill_value === undefined ? true : null)
+                .attr("id", "rect_lgd_checkbox")
+                .on("change", function(){
+                    if(this.checked){
+                        rect_fill_value = {color: "white", opacity: 1};
+                    } else {
+                        rect_fill_value = undefined;
+                    }
+                    make_underlying_rect(legend_node_d3,
+                                         legend_node_d3.select("#under_rect"),
+                                         undefined, undefined,
+                                         rect_fill_value
+                                         );
+                });
 }

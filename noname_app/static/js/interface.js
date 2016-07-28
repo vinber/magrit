@@ -606,7 +606,7 @@ function add_layout_feature(selected_feature){
             alert("Maximum number of text annotations has been reached")
             return;
         }
-        let txt_box = new Textbox2(map, new_id);
+        let txt_box = new Textbox(map, new_id);
 
     } else if (selected_feature == "Sphere background"){
         if(current_layers.Sphere) return;
@@ -658,8 +658,12 @@ var drag_lgd_features = d3.behavior.drag()
             if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
           })
         .on("drag", function(){
-            d3.select(this)
-                .attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
+            let t = d3.select(this),
+                scale_value = t.attr("scale"),
+                rotation_value = t.attr("rotate");
+            scale_value = scale_value ? "scale(" + scale_value + ")" : "";
+            rotation_value = rotation_value ? "rotate(" + rotation_value + ",0,0)" : "";
+            t.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')' + scale_value + rotation_value);
           });
 
 
@@ -668,8 +672,8 @@ var northArrow = {
         let x_pos = w - 100,
             y_pos = h - 100,
             self = this;
-        let arrow_svg = map.append("svg").attr("id", "north_arrow_svg").attr("class", "legend").attr({x: x_pos, y: y_pos});
-        let arrow_gp = arrow_svg.append("g").attr("id", "north_arrow");
+//        let arrow_svg = map.append("svg").attr("id", "north_arrow_svg").attr("class", "legend");
+        let arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend");
         this.x = x_pos;
         this.y = y_pos;
         this.svg_node = arrow_gp;
@@ -684,12 +688,16 @@ var northArrow = {
 
         arrow_gp.append("polygon")
                 .attr({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "312.3,327.9 328.9,318.5 328.9,296.4 "})
+                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
         arrow_gp.append("polygon")
                 .attr({stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "329.9,296.4 329.9,318.5 346.7,327.8 "})
-        arrow_gp.append("g").insert("path")
-                .attr("d", "M322.8,278.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V278.6z")
+                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
+        arrow_gp.insert("path")
+                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
+//        arrow_gp.append("g").insert("rect")
+//                .attr("height", "60px")
+//                .attr("width", "60px");
+
 //        arrow_gp.insert("image")
 //            .attr("x", x_pos)
 //            .attr("y", y_pos)
@@ -712,7 +720,53 @@ var northArrow = {
         this.svg_node.remove();
     },
     editStyle: function(){
-        null;
+        var new_val,
+            self = this;
+        make_confirm_dialog("", "Valid", "Cancel", "North arrow options", "arrowEditBox")
+            .then(function(confirmed){
+                if(confirmed){
+                    null;
+                }
+            });
+        var box_body = d3.select(".arrowEditBox");
+        box_body.node().parentElement.style.width = "auto";
+        box_body.append("h3")
+                .html("North arrow options");
+        box_body.append("p").style("margin-bottom", "0")
+                .html("Arrow size ");
+        box_body.append("input")
+                .attr("type", "range")
+                .attr({min: 0.1, max: 2, step: 0.1})
+                .attr("value", self.svg_node.attr("scale") || 1)
+                .on("change", function(){
+                    let translate_param = self.svg_node.attr("transform"),
+                        rotation_value = self.svg_node.attr("rotate");
+                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
+                                        ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
+                                        : "";
+                    rotation_value = rotation_value
+                                        ? "rotate(" + rotation_value + ",0,0)"
+                                        : "";
+                    self.svg_node.attr("scale", this.value);
+                    self.svg_node.attr("transform", translate_param + "scale(" + this.value + ")" + rotation_value);
+                });
+        box_body.append("p").style("margin-bottom", "0")
+                .html("Arrow rotation ");
+        box_body.append("input")
+                .attr("type", "range")
+                .attr("value", self.svg_node.attr("rotate") || 0)
+                .attr({min: 0, max: 360, step: 0.1})
+                .on("change", function(){
+                    let translate_param = self.svg_node.attr("transform"),
+                        scale_value = self.svg_node.attr("scale");
+                    scale_value = scale_value ? "scale(" + scale_value + ")" : "";
+                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
+                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
+                                            : "";
+
+                    self.svg_node.attr("rotate", this.value);
+                    self.svg_node.attr("transform", translate_param + scale_value + "rotate(" + this.value + ",0,0)");
+                });
     },
     displayed: false
 }
@@ -749,9 +803,11 @@ var scaleBar = {
             .style("fill", "black");
         scale_gp.insert("text")
             .attr({x: x_pos - 4, y: y_pos - 5})
+            .style("font", "11px 'Enriqueta', arial, serif")
             .text("0");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
             .attr({x: x_pos + bar_size, y: y_pos - 5})
+            .style("font", "11px 'Enriqueta', arial, serif")
             .text(this.dist_txt + " km");
 
         scale_gp.call(drag_lgd_features);
@@ -764,6 +820,7 @@ var scaleBar = {
                 });
         this.Scale = scale_gp;
         this.displayed = true;
+        this.resize(Math.round(this.dist / 10) * 10);
     },
     getDist: function(){
         let x_pos = w / 2,
@@ -897,14 +954,20 @@ function add_sample_layer(){
     var target_layers = [["<i>Target layer</i>",""],
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
                     ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
-                    ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
+                    ["Martinique (FR overseas region) communes (Polygons)", "martinique"],
+                    ["California Protected Areas (CPAD 1.9) extract <i>(Polygons)</i>", "cpad"],
+                    ["Nuts 2 (2006) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
+                    ["Nuts 3 (2006) European subdivisions <i>(Polygons)</i>", "nuts3_data"],
                     ["World countries <i>(Polygons)</i>", "world_countries_50m"],
                     ["U.S.A counties <i>(Polygons)</i>", "us_county"],
                     ["U.S.A states <i>(Polygons)</i>", "us_states"]];
 
     var tabular_datasets = [["<i>Tabular dataset</i>",""],
                     ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
-                    ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset']];
+                    ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset'],
+                    ['Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>', 'martinique_data'],
+                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
+                    ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
 
     var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "sampleDialogBox").then(
         function(confirmed){

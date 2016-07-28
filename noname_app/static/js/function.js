@@ -817,8 +817,10 @@ function fillMenu_FlowMap(){
                 sizes = disc_params.sizes,
                 nb_class = mins.length,
                 user_breaks = [].concat(mins, maxs[nb_class - 1]),
-                min_size = Math.min.apply(null, sizes),
-                max_size = Math.max.apply(null, sizes);
+                min_size = min_fast(sizes),
+                max_size = max_fast(sizes);
+//                min_size = Math.min.apply(null, sizes),
+//                max_size = Math.max.apply(null, sizes);
 
             join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
 
@@ -957,7 +959,8 @@ var fields_PropSymbolChoro = {
 
         field1_selec.on("change", function(){
             let field_name = this.value,
-                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
+//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("PropSymbolChoro_ref_value");
 
             ref_value_field.setAttribute("max", max_val_field);
@@ -1065,12 +1068,12 @@ function fillMenu_PropSymbolChoro(layer){
             let id_map = make_prop_symbols(rd_params),
                 colors_breaks = [];
 
-            for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
+            for(let i = rendering_params['breaks'].length-1; i > 0; --i){
                 colors_breaks.push([
-                    [rendering_params['breaks'][i], " - ", rendering_params['breaks'][i+1]].join(''),
-                    rendering_params['colors'][i]
+                        [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                        rendering_params['colors'][i-1]
                     ]);
-
+            }
             current_layers[new_layer_name] = {
                 renderer: "PropSymbolsChoro",
                 features_order: id_map,
@@ -1341,8 +1344,8 @@ var render_label = function(layer, rendering_params){
         .attr("id", (d,i) => "Feature_" + i)
         .attr("x", d => d.coords[0])
         .attr("y", d => d.coords[1])
-        .style("font-size", font_size)
-        .style("fill", txt_color)
+        .attr({"alignment-baseline": "middle", "text-anchor": "middle"})
+        .style({"font-size": font_size, fill: txt_color})
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
@@ -1960,7 +1963,8 @@ var fields_Anamorphose = {
 
         field_selec.on("change", function(){
             let field_name = this.value,
-                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
+//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("Anamorph_opt3");
             if(ref_value_field){
                 ref_value_field.setAttribute("max", max_val_field);
@@ -1997,7 +2001,8 @@ function fillMenu_Anamorphose(){
         field_selec.on("change", function(){
             let field_name = this.value,
                 layer = Object.getOwnPropertyNames(user_data)[0],
-                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
+//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("Anamorph_opt3");
 
             ref_value_field.setAttribute("max", max_val_field);
@@ -2525,7 +2530,8 @@ var fields_PropSymbol = {
             let field_name = this.value,
                 data_layer = user_data[layer],
                 field_values = data_layer.map(obj => +obj[field_name]),
-                max_val_field = Math.max.apply(null, field_values),
+                max_val_field = max_fast(field_values),
+//                max_val_field = Math.max.apply(null, field_values),
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
@@ -2567,8 +2573,27 @@ function fillMenu_PropSymbol(layer){
     [['Circle', "circle"], ['Square', "rect"]].forEach(function(symb){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
-    var fill_color = dialog_content.append('p').html('Symbol color ')
-              .insert('input').attr('type', 'color').attr({class: "params", "value": ColorsSelected.random()});
+    dialog_content.append('p').html('Symbol color ');
+    let color_par = dialog_content.append('select').attr("class", "params");
+    color_par.append("option").attr("value", 1).text("One color");
+    color_par.append("option").attr("value", 2).text("Two colors");
+
+    color_par.on("change", function(){
+        if(this.value == 1){
+            fill_color2.attr("display", "none");
+            fill_color_opt.attr("display", "none");
+        }
+    });
+    var fill_color1 = dialog_content.insert('input')
+                                .attr('type', 'color')
+                                .attr({class: "params", "value": ColorsSelected.random()});
+    var fill_color2 = dialog_content.insert('input')
+                                .attr('type', 'color')
+                                .attr({class: "params", "value": ColorsSelected.random()});
+    var fill_color_opt = dialog_content.insert("p")
+                                .insert('input')
+                                .attr('type', 'color')
+                                .attr({class: "params", "value": ColorsSelected.random()});
 
     var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
                                 .insert("input").attr({type: "checkbox", class: "params"});
@@ -2999,11 +3024,10 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
                     : joined_dataset[0],
         fields = Object.getOwnPropertyNames(table[0]),
         nb_features = table.length,
-        deepth_test = 100 > nb_features ? 100 : nb_features,
+        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
         result = new Object(),
         field = undefined,
         tmp_type = undefined;
-
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         result[field] = [];
@@ -3288,8 +3312,8 @@ function haversine_dist(A, B){
 
 function standardize_values(array_values){
     let new_values = [];
-    minV = Math.min.apply(null, values_json );
-    maxV = Math.max.apply(null, values_json);
+    let minV = min_fast(values_json);
+    let maxV = max_fast(values_json);
     for(let i=0; i<values_json.length; i++) {
         new_values[i] = (values_json[i] - minV ) / ( maxV - minV );
     }
@@ -3350,4 +3374,11 @@ function max_fast(arr){
        max = arr[i];
   }
   return max;
+}
+
+function has_negative(arr){
+  for(let i = 0; i < arr.length; ++i)
+    if(+arr[i] < 0)
+       return true;
+  return false;
 }
