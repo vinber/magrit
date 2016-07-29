@@ -37,13 +37,14 @@ class Textbox {
         foreign_obj.setAttributeNS(null, "x", this.x);
         foreign_obj.setAttributeNS(null, "y", this.y);
         foreign_obj.setAttributeNS(null, "overflow", "visible");
-        foreign_obj.setAttributeNS(null, "width", w);
-        foreign_obj.setAttributeNS(null, "height", h);
+        foreign_obj.setAttributeNS(null, "width", "100%");
+        foreign_obj.setAttributeNS(null, "height", "100%");
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
 
         let inner_p = document.createElement("p");
-        inner_p.setAttribute("contentEditable", "true");
+        inner_p.setAttribute("id", "in_" + new_id_txt_annot);
+//        inner_p.setAttribute("contentEditable", "true");
         inner_p.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
         inner_p.style = "display:table-cell;padding:10px;color:#000;"
             + "opacity:1;font-family:Verdana;font-size:14px;white-space: pre;"
@@ -52,7 +53,7 @@ class Textbox {
         foreign_obj.appendChild(inner_p);
         parent.appendChild(foreign_obj);
 
-        let frgn_obj = map.select("foreignObject");
+        let frgn_obj = map.select("#" + new_id_txt_annot);
         let inner_ft = frgn_obj.select('p');
         inner_ft.call(drag_txt_annot);
 
@@ -65,10 +66,12 @@ class Textbox {
         inner_ft.on("dblclick", () => { d3.event.stopPropagation(); });
 
         inner_ft.on("mouseover", () => {
+                    inner_ft.attr("contentEditable", "true");
                     inner_ft.style("background-color", "white");
                     inner_ft.style("border", "1px solid red");
                 })
                 .on("mouseout", () => {
+                    inner_ft.attr("contentEditable", "false");
                     inner_ft.style("background-color", "transparent");
                     inner_ft.style("border", "");
                 });

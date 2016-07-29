@@ -205,8 +205,14 @@ function createStyleBox(layer_name){
                      && rendering_params != undefined && renderer != "Stewart"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
                     let colors_breaks = [];
-                    for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
-                        colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
+                    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+                        colors_breaks.push([
+                            [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                            rendering_params['colors'][i-1]
+                            ]);
+                    }
+//                    for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
+//                        colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
                     current_layers[layer_name].colors_breaks = colors_breaks;
                     current_layers[layer_name].rendered_field = rendering_params.field;
                 } else if (renderer == "Stewart"){
@@ -493,7 +499,8 @@ function createStyleBox_ProbSymbol(layer_name){
         prev_col_breaks;
 
     var d_values = [],
-        comp = function(a, b){return b-a};
+        abs = Math.abs,
+        comp = function(a, b){return abs(b)-abs(a)};
     for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
         d_values.push(+user_data[ref_layer_name][i][field_used]);
     d_values.sort(comp);
@@ -521,6 +528,8 @@ function createStyleBox_ProbSymbol(layer_name){
 
     if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
         prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
+    else if(current_layers[layer_name].break_val != undefined)
+        prev_col_breaks = current_layers[layer_name].break_val;
 
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
@@ -547,8 +556,12 @@ function createStyleBox_ProbSymbol(layer_name){
                     console.log(rendering_params.breaks)
                     current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
                     current_layers[layer_name].colors_breaks = [];
-                    for(let i = 0; i<rendering_params.breaks.length-1; ++i)
-                        current_layers[layer_name].colors_breaks.push([[rendering_params.breaks[i], " - ", rendering_params.breaks[i+1]].join(''), rendering_params.colors[i]]);
+                    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+                        current_layers[layer_name].colors_breaks.push([
+                            [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                            rendering_params['colors'][i-1]
+                            ]);
+                    }
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
                     let lgd_choro =document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
@@ -572,6 +585,13 @@ function createStyleBox_ProbSymbol(layer_name){
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
                 if(fill_meth == "single") {
                     selection.style('fill', fill_prev.single)
+                             .style('stroke-opacity', previous_stroke_opacity)
+                             .style('stroke', stroke_prev);
+                } else if(fill_meth == "two") {
+                    current_layers[layer_name].break_val = prev_col_breaks;
+                    current_layers[layer_name].fill_color = {"two": [fill_prev.two[0], fill_prev.two[1]]};
+                    selection.style('fill', (d,i) => d_values[i] > prev_col_breaks ? fill_prev.two[1] : fill_prev.two[0])
+                             .style('stroke-opacity', previous_stroke_opacity)
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "class") {
                     selection.style('fill-opacity', opacity)
@@ -581,6 +601,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     current_layers[layer_name].colors_breaks = prev_col_breaks;
                 } else if(fill_meth == "random"){
                     selection.style('fill', function(){return Colors.name[Colors.random()];})
+                             .style('stroke-opacity', previous_stroke_opacity)
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "categorical"){
                     fill_categorical(layer_name, fill_prev.categorical[0],
@@ -627,6 +648,38 @@ function createStyleBox_ProbSymbol(layer_name){
              }
             });
         });
+    } else if(current_layers[layer_name].break_val != undefined){
+        let fill_color_section = popup.append('div').attr({id: "fill_color_section"});
+        fill_color_section.append("p")
+                    .style("text-align", "center")
+                    .html('Color according to a break value');
+        var p2 = fill_color_section.append("p").style("display", "inline");
+        var col1 = p2.insert("input").attr("type", "color")
+                            .attr("id", "col1")
+                            .attr("value", current_layers[layer_name].fill_color.two[0])
+                            .on("change", function(){
+                                let new_break_val = +b_val.node().value;
+                                current_layers[layer_name].fill_color.two[0] = this.value;
+                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : this.value);
+                            });
+        var col2 = p2.insert("input").attr("type", "color")
+                            .attr("id", "col2")
+                            .attr("value", current_layers[layer_name].fill_color.two[1])
+                            .on("change", function(){
+                                let new_break_val = +b_val.node().value;
+                                current_layers[layer_name].fill_color.two[1] = this.value;
+                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? this.value : col1.node().value);
+
+                            });
+        fill_color_section.insert("span").html("Break value ");
+        var b_val = fill_color_section.insert("input")
+                            .attr({type: "number", value: current_layers[layer_name].break_val})
+                            .style("width", "75px")
+                            .on("change", function(){
+                                let new_break_val = +this.value;
+                                current_layers[layer_name].break_val = new_break_val;
+                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : col1.node().value);
+                            });
     } else {
         let fields = type_col(ref_layer_name, "string"),
             fill_method = popup.append("p").html("Fill color").insert("select");

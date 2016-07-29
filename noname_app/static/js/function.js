@@ -1928,22 +1928,22 @@ function fillMenu_Stewart(){
                         var n_layer_name = add_layer_topojson(raw_topojson, {result_layer_on_add: true});
                         if(!n_layer_name)
                             return;
-                        else
-                            var class_lim = JSON.parse(data_split[1]);
+                        var class_lim = JSON.parse(data_split[1]);
                     }
-                    var col_pal = getColorBrewerArray(class_lim.min.length, "Purples"),
+                    var col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
+                        nb_class = class_lim['min'].length,
                         colors_breaks = [];
-                    col_pal.reverse();
-                    for(let i=0, i_len = class_lim.min.length; i < i_len; ++i){
-                        colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[i]]);
+                    for(let i = 0; i < nb_class; i++){
+                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[nb_class - 1 - i]]);
                     }
+
                     current_layers[n_layer_name].fill_color = {"class": []};
                     current_layers[n_layer_name].renderer = "Stewart";
                     current_layers[n_layer_name].colors_breaks = colors_breaks;
                     current_layers[n_layer_name].rendered_field = field_selec.node().value;
                     d3.select("#"+n_layer_name)
                             .selectAll("path")
-                            .style("fill", (d,i) => col_pal[i]);
+                            .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
                     // Todo : use the function render_choro to render the result from stewart too
                 }
             });
@@ -2486,10 +2486,17 @@ var fields_PropSymbol = {
                 data_layer = user_data[layer],
                 field_values = data_layer.map(obj => +obj[field_name]),
                 max_val_field = max_fast(field_values),
+                has_neg = has_negative(field_values),
 //                max_val_field = Math.max.apply(null, field_values),
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
+            if(has_neg){
+                setSelected(document.getElementById("PropSymbol_nb_colors"), 2);
+                document.getElementById("PropSymbol_break_val").value = 0;
+            } else {
+                setSelected(document.getElementById("PropSymbol_nb_colors"), 1);
+            }
         });
         setSelected(field_selec.node(), fields[0]);
     },
@@ -2529,7 +2536,10 @@ function fillMenu_PropSymbol(layer){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
     dialog_content.append('p').html('Symbol color ');
-    let color_par = dialog_content.append('select').attr("class", "params");
+    let color_par = dialog_content.append('select')
+                            .attr("class", "params")
+                            .attr("id", "PropSymbol_nb_colors")
+                            .style("margin-right", "15px");
     color_par.append("option").attr("value", 1).text("One color");
     color_par.append("option").attr("value", 2).text("Two colors");
 
@@ -2541,19 +2551,24 @@ function fillMenu_PropSymbol(layer){
         } else {
             fill_color2.style("display", null);
             fill_color_opt.style("display", null);
-            fill_color_text.style("display", null);
+            fill_color_text.style("display", "inline");
         }
     });
-    var fill_color = dialog_content.insert('input')
+    var col_p = dialog_content.append("p").style("display", "inline");
+    var fill_color = col_p.insert('input')
                                 .attr('type', 'color')
                                 .attr({class: "params", "value": ColorsSelected.random()});
-    var fill_color2 = dialog_content.insert('input')
+    var fill_color2 = col_p.insert('input')
                                 .attr('type', 'color')
+                                .style("display", "none")
                                 .attr({class: "params", "value": ColorsSelected.random()});
-    var fill_color_text = dialog_content.insert("p").html("Break value ");
-    var fill_color_opt = dialog_content.insert('input')
+    var col_b = dialog_content.insert("p");
+    var fill_color_text = col_b.insert("span").style("display", "none")
+                                .html("Break value ");
+    var fill_color_opt = col_b.insert('input')
                                 .attr('type', 'number')
-                                .attr({class: "params"})
+                                .attr({class: "params", "id": "PropSymbol_break_val"})
+                                .style("display", "none")
                                 .style("width", "75px");
 
 //    var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
@@ -2578,7 +2593,7 @@ function fillMenu_PropSymbol(layer){
                                      "fill_color": fill_color.node().value };
             if(+color_par.node().value == 2){
                 rendering_params["break_val"] = +fill_color_opt.node().value;
-                rendering_params["fill_color"] = [fill_color.node().value, fill_color2.node().value]
+                rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
             }
             console.log(rendering_params)
             make_prop_symbols(rendering_params);
@@ -2598,7 +2613,7 @@ function make_prop_symbols(rendering_params){
         values_to_use = rendering_params.values_to_use,
         d_values = new Array(nb_features),
         abs = Math.abs,
-        comp = function(a, b){ return abs(b[1])-abs(a[1]); },
+        comp = function(a,b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
@@ -2616,21 +2631,22 @@ function make_prop_symbols(rendering_params){
             d_values[i] = [i, +user_data[layer][i][field], centr];
         }
 
-    if(rendering_params.break_val && rendering_params.fill_color.length == 2){
-        let col1 = rendering_params.fill_color[0],
-            col2 = rendering_params.fill_color[1];
-        rendering_params.fill_color = [];
+    if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
+        let col1 = rendering_params.fill_color.two[0],
+            col2 = rendering_params.fill_color.two[1];
+        var tmp_fill_color = [];
         for(let i = 0; i < nb_features; ++i){
-            let color = d_values[i][1] > rendering_params.break_val ? col1 : col2;
-            rendering_params.fill_color.push(color)
+            tmp_fill_color.push(d_values[i][1] > rendering_params.break_val ? col2 : col1)
         }
+    } else {
+        var tmp_fill_color = rendering_params.fill_color;
     }
 
     d_values = prop_sizer3(d_values, ref_value, ref_size, symbol_type);
     d_values.sort(comp);
 
     /*
-        Values have been sorted (descendant order) to have larger symbols
+        Values have been sorted (descendant order on the absolute values) to have larger symbols
         displayed under the smaller, so now d_values is an array like :
         [
          [id_ref_feature, value, [x_centroid, y_centroid]],
@@ -2642,20 +2658,15 @@ function make_prop_symbols(rendering_params){
 
     let layer_to_add = rendering_params.new_name;
 
-    if(!(rendering_params.fill_color instanceof Array)){
+    if(!(rendering_params.fill_color instanceof Array) && !(rendering_params.fill_color.two)){
         for(let i=0; i<nb_features; ++i)
             d_values[i].push(rendering_params.fill_color);
     } else {
         for(let i=0; i<nb_features; ++i){
             let idx = d_values[i][0];
-            d_values[i].push(rendering_params.fill_color[idx]);
+            d_values[i].push(tmp_fill_color[idx]);
         }
     }
-
-//    if(current_layers[layer_to_add]){
-//        remove_layer_cleanup(layer_to_add);
-//        d3.selectAll('#' + layer_to_add).remove();
-//    }
 
     var symbol_layer = map.append("g").attr("id", layer_to_add)
                           .attr("class", "result_layer layer");
@@ -2689,7 +2700,9 @@ function make_prop_symbols(rendering_params){
         };
     }
 
-    let fill_color = rendering_params.fill_color instanceof Array
+    let fill_color = rendering_params.fill_color.two != undefined
+                    ? rendering_params.fill_color
+                    : rendering_params.fill_color instanceof Array
                     ? {"class": rendering_params.fill_color}
                     : {"single" : rendering_params.fill_color};
     current_layers[layer_to_add] = {
@@ -2704,6 +2717,9 @@ function make_prop_symbols(rendering_params){
         "ref_layer_name": layer,
         "features_order": d_values
         };
+    if(rendering_params.break_val != undefined){
+        current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
+    }
     up_legend();
     create_li_layer_elem(layer_to_add, d_values.length, ["Point", "prop"], "result");
     return d_values;
@@ -2942,6 +2958,7 @@ let xrange = function*(start = 0, stop, step = 1) {
 
 function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
+        Abs = Math.abs,
         arr_len = arr.length,
 //        p_scale = proj.scale(),
         z_scale = zoom.scale(),
@@ -2953,14 +2970,14 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
-                [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
+                [val[0], Math.sqrt(Abs(val[1]) * fixed_size / fixed_value), val[2]]
                 );
         }
     else
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
-                [val[0], Math.sqrt(val[1] * fixed_size / fixed_value), val[2]]
+                [val[0], Math.sqrt(Abs(val[1]) * fixed_size / fixed_value), val[2]]
                 );
         }
     return res
@@ -2968,6 +2985,7 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
 
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
+        Abs = Math.abs,
         arr_len = arr.length,
 //        p_scale = proj.scale(),
         z_scale = zoom.scale(),
@@ -2977,11 +2995,11 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i)
-            res.push(Math.sqrt(arr[i] * fixed_size / fixed_value));
+            res.push(Math.sqrt(Abs(arr[i]) * fixed_size / fixed_value));
 
     else
         for(let i=0; i < arr_len; ++i)
-            res.push(Math.sqrt(arr[i] * fixed_size / fixed_value));
+            res.push(Math.sqrt(Abs(arr[i]) * fixed_size / fixed_value));
 
     return res;
 }
@@ -3327,6 +3345,8 @@ function request_data(method, url, data){
         request.send(data);
     });
 }
+
+
 /**
 * Function computing the min of an array of values - no fancy functionnalities here
 * (it doesn't add anything comparing to Math.min.apply() or d3.min() except
@@ -3359,3 +3379,13 @@ function has_negative(arr){
        return true;
   return false;
 }
+
+var round_value = function(val, nb){
+    if(nb == undefined)
+        return val;
+    let dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
+    return nb >= 0
+        ? Math.round(+val * dec_mult) / dec_mult
+        : Math.round(+val / dec_mult) * dec_mult;
+}
+

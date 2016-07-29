@@ -592,7 +592,7 @@ function add_layout_feature(selected_feature){
         if(existing_annotation)
             existing_id = Array.prototype.map.call(
                             existing_annotation,
-                            elem => +elem.childNodes[1].id.split('text_annotation_')[1]
+                            elem => +elem.childNodes[0].id.split('text_annotation_')[1]
                             );
         for(let i in range(25)){
             i = +i;
