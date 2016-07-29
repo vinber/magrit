@@ -2207,51 +2207,6 @@ function fillMenu_Anamorphose(){
                             .style("stroke-opacity", 0.8);
                     }
                 });
-//                let carto = d3.cartogram().projection(d3.geo.naturalEarth()).properties(function(d){return d.properties;}),
-//                    geoms = _target_layer_file.objects[layer].geometries,
-//                    let random_color = Colors.random();
-//
-//                carto.value(function(d, i){
-//                        return +user_data[layer][i][field_name]; });
-//
-//                let new_features = carto(_target_layer_file, geoms).features,
-//                    new_layer_name = layer + "_Dougenik_Cartogram";
-//                console.log(geoms);
-//                console.log(new_features);
-//                map.append("g")
-//                    .attr("id", new_layer_name)
-//                    .attr("class", "result_layer layer")
-//                    .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
-//                    .selectAll(".subunit")
-//                    .data(new_features)
-//                    .enter().append("path")
-//                        .attr("d", path)
-//                        .attr("id", function(d, ix) { return "feature_" + ix; })
-//                        .style("stroke", "black")
-//                        .style("stroke-opacity", .4)
-//                        .style("fill", random_color)
-//                        .style("fill-opacity", 0.5)
-//                        .attr("height", "100%")
-//                        .attr("width", "100%");
-//
-//                let class_name = "ui-state-default sortable_result " + new_layer_name,
-//                    layers_listed = layer_list.node(),
-//                    li = document.createElement("li");
-//
-//                li.setAttribute("class", class_name);
-//                li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open, button_type_blank['Polygon'], "</div> ", new_layer_name].join('')
-//                layers_listed.insertBefore(li, layers_listed.childNodes[0])
-//                current_layers[new_layer_name] = {
-//                    "renderer": "DougenikCarto",
-//                    "rendered_field": field_name,
-//                    "stroke-width-const": 1,
-//                    "is_result": true,
-//                    "ref_layer_name": layer
-//                    };
-//                binds_layers_buttons();
-//                zoom_without_redraw();
-//                makeButtonLegend(new_layer_name);
-
             } else if (algo === "dorling"){
                 let fixed_value = +document.getElementById("Anamorph_opt3").value,
                     fixed_size = +document.getElementById("Anamorph_opt2").value,
@@ -2580,23 +2535,29 @@ function fillMenu_PropSymbol(layer){
 
     color_par.on("change", function(){
         if(this.value == 1){
-            fill_color2.attr("display", "none");
-            fill_color_opt.attr("display", "none");
+            fill_color2.style("display", "none");
+            fill_color_opt.style("display", "none");
+            fill_color_text.style("display", "none");
+        } else {
+            fill_color2.style("display", null);
+            fill_color_opt.style("display", null);
+            fill_color_text.style("display", null);
         }
     });
-    var fill_color1 = dialog_content.insert('input')
+    var fill_color = dialog_content.insert('input')
                                 .attr('type', 'color')
                                 .attr({class: "params", "value": ColorsSelected.random()});
     var fill_color2 = dialog_content.insert('input')
                                 .attr('type', 'color')
                                 .attr({class: "params", "value": ColorsSelected.random()});
-    var fill_color_opt = dialog_content.insert("p")
-                                .insert('input')
-                                .attr('type', 'color')
-                                .attr({class: "params", "value": ColorsSelected.random()});
+    var fill_color_text = dialog_content.insert("p").html("Break value ");
+    var fill_color_opt = dialog_content.insert('input')
+                                .attr('type', 'number')
+                                .attr({class: "params"})
+                                .style("width", "75px");
 
-    var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
-                                .insert("input").attr({type: "checkbox", class: "params"});
+//    var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
+//                                .insert("input").attr({type: "checkbox", class: "params"});
 
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append('button')
@@ -2615,6 +2576,11 @@ function fillMenu_PropSymbol(layer){
                                      "ref_size": +ref_size.node().value,
                                      "ref_value": +ref_value.node().value,
                                      "fill_color": fill_color.node().value };
+            if(+color_par.node().value == 2){
+                rendering_params["break_val"] = +fill_color_opt.node().value;
+                rendering_params["fill_color"] = [fill_color.node().value, fill_color2.node().value]
+            }
+            console.log(rendering_params)
             make_prop_symbols(rendering_params);
             binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
@@ -2631,7 +2597,8 @@ function make_prop_symbols(rendering_params){
         nb_features = rendering_params.nb_features,
         values_to_use = rendering_params.values_to_use,
         d_values = new Array(nb_features),
-        comp = function(a, b){ return b[1]-a[1]; },
+        abs = Math.abs,
+        comp = function(a, b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
@@ -2648,6 +2615,16 @@ function make_prop_symbols(rendering_params){
             let centr = path.centroid(ref_layer_selection[i].__data__);
             d_values[i] = [i, +user_data[layer][i][field], centr];
         }
+
+    if(rendering_params.break_val && rendering_params.fill_color.length == 2){
+        let col1 = rendering_params.fill_color[0],
+            col2 = rendering_params.fill_color[1];
+        rendering_params.fill_color = [];
+        for(let i = 0; i < nb_features; ++i){
+            let color = d_values[i][1] > rendering_params.break_val ? col1 : col2;
+            rendering_params.fill_color.push(color)
+        }
+    }
 
     d_values = prop_sizer3(d_values, ref_value, ref_size, symbol_type);
     d_values.sort(comp);
@@ -2675,10 +2652,10 @@ function make_prop_symbols(rendering_params){
         }
     }
 
-    if(current_layers[layer_to_add]){
-        remove_layer_cleanup(layer_to_add);
-        d3.selectAll('#' + layer_to_add).remove();
-    }
+//    if(current_layers[layer_to_add]){
+//        remove_layer_cleanup(layer_to_add);
+//        d3.selectAll('#' + layer_to_add).remove();
+//    }
 
     var symbol_layer = map.append("g").attr("id", layer_to_add)
                           .attr("class", "result_layer layer");

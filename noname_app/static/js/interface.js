@@ -606,7 +606,7 @@ function add_layout_feature(selected_feature){
             alert("Maximum number of text annotations has been reached")
             return;
         }
-        let txt_box = new Textbox(map, new_id);
+        let txt_box = new Textbox(map.node(), new_id);
 
     } else if (selected_feature == "Sphere background"){
         if(current_layers.Sphere) return;
@@ -672,7 +672,7 @@ var northArrow = {
         let x_pos = w - 100,
             y_pos = h - 100,
             self = this;
-//        let arrow_svg = map.append("svg").attr("id", "north_arrow_svg").attr("class", "legend");
+
         let arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend");
         this.x = x_pos;
         this.y = y_pos;

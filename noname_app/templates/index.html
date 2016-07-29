@@ -4,11 +4,17 @@
 
 <body>
     <div id="header"></div>
-    <div id="page" style="position: relative;"></div>
+    <div id="page" style="position: relative;">
+        <p style="font-size: 30px;color: rgb(23, 58, 80);">
+            <strong>Put your data on the map...!</strong>
+        </p>
+        <form>
+            <button class="button_st3" formaction="/modules">Enter!</button>
+        </form>
+    </div>
     <div id="footer"><p> {{ last_visit }} </p></div>
 </body>
 
 <script>
-    getMenu("#page","../static/json/index.json");
     getHeader("#header","GeoPossum","");
 </script>

@@ -667,7 +667,7 @@ function binds_layers_buttons(layer_name){
         sortable_li_elem.select("#legend_button").on("click", function(){
             handle_legend(layer_name);
         });
-    } else {
+    } else { // This part should be removed soon as we tend to not call this function without layer name anymore :
         let selec = d3.select('#sortable');
         selec.selectAll("#trash_button").on("click", remove_layer);
         selec.selectAll(".active_button").on("click", function(){
@@ -847,8 +847,7 @@ function remove_ext_dataset(){
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
         closeOnConfirm: true
-    }).then(() =>
-        {
+        }).then(() => {
             field_join_map = new Array();
             joined_dataset = new Array();
             dataset_name = undefined;
@@ -864,8 +863,7 @@ function remove_ext_dataset(){
             document.getElementById("join_section").innerHTML = "";
             document.getElementById('sample_zone').style.display = null;
             $("#data_ext").qtip("destroy");
-        }, () => { null; }
-    );
+        }, () => { null; });
 }
 
 // Do some clean-up when a layer is removed
@@ -885,8 +883,8 @@ function remove_layer_cleanup(name){
 
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
-    //document.querySelector('#sortable .' + name).remove()
-    d3.select("#sortable").select('.'+name).remove();
+    document.querySelector('#sortable .' + name).remove()
+    //d3.select("#sortable").select('.'+name).remove();
 
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
