@@ -66,14 +66,16 @@ class Textbox {
         inner_ft.on("dblclick", () => { d3.event.stopPropagation(); });
 
         inner_ft.on("mouseover", () => {
-                    inner_ft.attr("contentEditable", "true");
+                    inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
                     inner_ft.style("background-color", "white");
                     inner_ft.style("border", "1px solid red");
+                    d3.select("body").classed("noselect", true);
                 })
                 .on("mouseout", () => {
                     inner_ft.attr("contentEditable", "false");
                     inner_ft.style("background-color", "transparent");
                     inner_ft.style("border", "");
+                    d3.select("body").classed("noselect", false);
                 });
 
         this.text_annot = frgn_obj;
@@ -86,12 +88,7 @@ class Textbox {
         let self = this;
         var a = make_confirm_dialog("", "Valid", "Cancel", "Textbox options", "styleTextAnnotation")
             .then(function(confirmed){
-//                let box_ = document.querySelector(".styleTextAnnotation");
-//                let font_size = box_.querySelector("#font_size"),
-//                    content = box_.querySelector("#annotation_content");
-                if(confirmed){
-                    null;
-                } else {
+                if(!confirmed){
                     self.text_annot.select("p").text(current_options.content);
                     self.fontsize = current_options.size;
                 }

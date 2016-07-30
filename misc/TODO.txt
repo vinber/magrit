@@ -1,6 +1,7 @@
 TODO list:
 - /!\ fix reloading a project from previously exported one
 - /!\ Upgrade js code to use d3.js v4
+- /!\ In the same time : Correct many nonsenses due to the incremental way in which were added some features, aka "clean the code"
 - /!\ Choose some fonts (to be served by the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts in the current browser.
 - /!\ fix the zoom by rectangular zone (to do with d3 v4 as this behavior may have slightly changed)
 - Switch to CeCILL licence ?
@@ -15,3 +16,4 @@ TODO list:
 - Design a favicon
 - Create an index page
 - Insert message about how cookies are used for EU visitors to comply with whatever directive it is
+

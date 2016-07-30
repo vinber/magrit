@@ -800,7 +800,10 @@ async def R_compute(request):
 
 
 async def handler_exists_layer(request):
-    res = await request.app['redis_conn'].get(request.match_info['expr'])
+    session_redis = await get_session(request)
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    res = await request.app['redis_conn'].get(
+        '_'.join([user_id, request.match_info['expr'], "NQ"]))
     if res:
         return web.Response(text=res.decode())
     else:
@@ -944,10 +947,12 @@ async def convert_csv_geo(request):
     print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
     return web.Response(text=result)
 
+
 def prepare_list_svg_symbols():
     symbols = os.listdir("static/img/svg_symbols/")
     with open("static/json/list_symbols.json", "w") as f:
         f.write(json.dumps(symbols))
+
 
 def check_port_available(port_nb):
     if port_nb < 7000:

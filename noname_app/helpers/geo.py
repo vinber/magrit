@@ -8,6 +8,7 @@ from shapely.geometry import shape, mapping
 from shapely.ops import transform
 from shapely.affinity import scale
 
+
 def olson_transform(geojson, scale_values):
     """
     Inplace scaling transformation of each polygon of the geojson provided
@@ -30,6 +31,7 @@ def olson_transform(geojson, scale_values):
         geom = shape(feature["geometry"])
         val = scale_values[ix]
         feature["geometry"] = mapping(scale(geom, xfact=val, yfact=val))
+
 
 def reproj_convert_layer(geojson_path, output_path,
                          file_format, output_crs, input_crs="epsg:4326"):
@@ -100,7 +102,7 @@ def check_projection(proj4string):
     if "epsg:" in proj4string[:5]:
         proj4string = "".join(["+init=", proj4string])
     try:
-        _ = pyproj_Proj(proj4string)
+        pyproj_Proj(proj4string)
         return proj4string
     except:
         return False

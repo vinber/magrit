@@ -378,39 +378,40 @@ function fillMenu_Discont(){
                 .insert('select')
                 .attr({class: 'params', id: "field_id_Discont"});
 
-    let disc_kind = dv2.append('p').html('Discontinuity kind ')
-                .insert('select')
-                .attr({class: 'params', id: "kind_Discont"});
+    {
+        let disc_kind = dv2.append('p').html('Discontinuity kind ')
+                    .insert('select')
+                    .attr({class: 'params', id: "kind_Discont"});
 
-    [ ["Relative", "rel"],
-      ["Absolute", "abs"] ].forEach(function(k){
-        disc_kind.append("option").text(k[0]).attr("value", k[1]); });
+        [ ["Relative", "rel"],
+          ["Absolute", "abs"] ].forEach(function(k){
+            disc_kind.append("option").text(k[0]).attr("value", k[1]); });
 
-    let min_size_field = dv2.append('p').html('Reference min. size ')
-                 .insert('input')
-                 .style('width', '60px')
-                 .attr({type: 'number', class: 'params', id: 'Discont_min_size'})
-                 .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
+        let min_size_field = dv2.append('p').html('Reference min. size ')
+                     .insert('input')
+                     .style('width', '60px')
+                     .attr({type: 'number', class: 'params', id: 'Discont_min_size'})
+                     .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
 
-    dv2.append('p').html('Reference max. size ')
-                 .insert('input')
-                 .style('width', '60px')
-                 .attr({type: 'number', class: 'params', id: 'Discont_max_size'})
-                 .attr({min: 0.1, max: 66.0, value: 10, step: 0.1})
-                 .on("change", function(){
-                    min_size_field.attr("max", this.value);
-                  });
+        dv2.append('p').html('Reference max. size ')
+                     .insert('input')
+                     .style('width', '60px')
+                     .attr({type: 'number', class: 'params', id: 'Discont_max_size'})
+                     .attr({min: 0.1, max: 66.0, value: 10, step: 0.1})
+                     .on("change", function(){
+                        min_size_field.attr("max", this.value);
+                      });
 
-    dv2.append('p').html(' Number of class ')
-            .insert('input')
-            .attr({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
-            .style("width", "50px");
+        dv2.append('p').html(' Number of class ')
+                .insert('input')
+                .attr({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
+                .style("width", "50px");
 
-    var disc_type = dv2.append('p').html(' Discretization type ')
-                        .insert('select').attr('class', 'params').attr("id", "Discont_discKind");
-    ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
-        .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
-
+        let disc_type = dv2.append('p').html(' Discretization type ')
+                            .insert('select').attr('class', 'params').attr("id", "Discont_discKind");
+        ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
+            .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
+    }
     dv2.append('p').html('Discontinuity threshold ')
                  .insert('input')
                  .style('width', '60px')
@@ -437,61 +438,54 @@ function fillMenu_Discont(){
             field_id = document.getElementById("field_id_Discont").value,
             min_size = +document.getElementById("Discont_min_size").value,
             max_size = +document.getElementById("Discont_max_size").value,
-            threshold = +document.getElementById("Discont_threshold").value;
+            threshold = +document.getElementById("Discont_threshold").value,
+            disc_kind = document.getElementById("kind_Discont").value,
+            nb_class = +document.getElementById("Discont_nbClass").value,
+            user_color = document.getElementById("color_Discont").value,
+            method = document.getElementById("kind_Discont").value;
 
         let result_value = new Map(),
-            result_geom = {};
-
+            result_geom = {},
+            topo_mesh = topojson.mesh,
+            math_max = Math.max;
+        console.time("discont");
         // Use topojson.mesh a first time to compute the discontinuity value
         // for each border (according to the given topology)
         // (Discontinuities could also be computed relativly fastly server side
         // which can be a better solution for large dataset..)
-        if(disc_kind.node().value == "rel")
-            topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+        if(disc_kind == "rel")
+            topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     if(a !== b){
-                         let value = Math.max(a.properties[field] / b.properties[field],
-                                              b.properties[field] / a.properties[field]),
-                             new_id = [a.id, b.id].join('_'),
-                             new_id_rev = [b.id, a.id].join('_');
-                        if(!(result_value.get(new_id) || result_value.get(new_id_rev)))
+                        let new_id = [a.id, b.id].join('_'),
+                            new_id_rev = [b.id, a.id].join('_');
+                        if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
+                            let value = math_max(a.properties[field] / b.properties[field],
+                                                 b.properties[field] / a.properties[field]);
                             result_value.set(new_id, value);
+                        }
                     }
                     return false; });
         else
-            topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+            topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     if(a !== b){
-                         let value = Math.max(a.properties[field] - b.properties[field],
-                                              b.properties[field] - a.properties[field]),
-                             new_id = [a.id, b.id].join('_'),
-                             new_id_rev = [b.id, a.id].join('_');
-                        if(!(result_value.get(new_id) || result_value.get(new_id_rev)))
-                            result_value.set(new_id, value)
+                        let new_id = [a.id, b.id].join('_'),
+                            new_id_rev = [b.id, a.id].join('_');
+                        if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
+                            let value = math_max(a.properties[field] - b.properties[field],
+                                                 b.properties[field] - a.properties[field]);
+                            result_value.set(new_id, value);
+                        }
                     }
                     return false; });
 
-        let arr_disc = [], arr_tmp = [];
-        for(let [id, val] of result_value){
-            arr_disc.push([id, val]);
-            arr_tmp.push(val);
+        let arr_disc = [],
+            arr_tmp = [];
+        for(let kv of result_value.entries()){
+            arr_disc.push(kv);
+            arr_tmp.push(kv[1]);
         }
 
-//        let serie = new geostats(arr_tmp),
-//            nb_ft = arr_tmp.length,
-////            opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
-//            nb_class = +document.getElementById("Discont_nbClass").value,
-//            step = (max_size - min_size) / (nb_class - 1),
-//            class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
-//
-//        let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
-//        console.log(disc_result);
-//        let breaks_val = serie.getEqInterval(nb_class),
-//            breaks = new Array();
-//
-//        for(let i = 0; i<breaks_val.length-1; ++i)
-//            breaks.push([[breaks_val[i], breaks_val[i+1]].join(' - '), class_size[i]]);
-
         let nb_ft = arr_tmp.length,
-            nb_class = +document.getElementById("Discont_nbClass").value,
             step = (max_size - min_size) / (nb_class - 1),
             class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
@@ -505,15 +499,14 @@ function fillMenu_Discont(){
         let serie = disc_result[3],
             breaks = disc_result[2].map(ft => [ft[0].join(' - '), ft[1]]);
 
-        let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind.node().value].join('_')),
-            user_color = document.getElementById("color_Discont").value,
-            method = document.getElementById("kind_Discont").value,
+        let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind].join('_')),
             result_layer = map.append("g").attr("id", new_layer_name)
                 .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
         result_data[new_layer_name] = new Array(nb_ft);
-        let data_result = result_data[new_layer_name];
+        let data_result = result_data[new_layer_name],
+            result_lyr_node = result_layer.node();
 
         // This is bad and should be replaced by somthing better as we are
         // traversing the whole topojson again and again
@@ -524,14 +517,14 @@ function fillMenu_Discont(){
                 p_size = class_size[serie.getClass(val)];
             data_result[i] =  {id: id_ft, disc_value: val, prop_value: p_size};
             result_layer.append("path")
-                .datum(topojson.mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
                     return a != b
                         && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
                 .attr({d: path, id: ["feature", i].join('_')})
                 .style({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
                 .style("stroke-opacity", val >= threshold ? 1 : 0);
-            result_layer.node().querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
         }
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
@@ -544,10 +537,11 @@ function fillMenu_Discont(){
             "fixed_stroke": true,
             "ref_layer_name": layer,
             "fill_color": { "single": user_color },
-            "n_features": arr_disc.length,
-            "result": result_value
+//            "result": result_value,
+            "n_features": nb_ft
             };
-        create_li_layer_elem(new_layer_name, arr_disc.length, ["Line", "discont"], "result");
+        create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+        console.timeEnd('discont');
         send_layer_server(new_layer_name, "/layers/add");
         up_legend();
         zoom_without_redraw();
@@ -722,14 +716,14 @@ function fetch_min_max_table_value(parent_id){
         return false;
     }
 
-// Actually this step might not be useful anymore as class min - max are binded to change automatically to avoid this:
-// - Min / max values are consistent :
-    for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
-        if(mins[i+1] != maxs[i]){
-            alert("Class min and max values have to be consistent");
-            return false;
-        }
-    }
+//// Actually this step might not be useful anymore as class min - max are binded to change automatically to avoid this:
+//// - Min / max values are consistent :
+//    for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
+//        if(mins[i+1] != maxs[i]){
+//            alert("Class min and max values have to be consistent");
+//            return false;
+//        }
+//    }
     return {"mins" : mins, "maxs" : maxs, "sizes" : sizes};
 }
 
@@ -960,7 +954,6 @@ var fields_PropSymbolChoro = {
         field1_selec.on("change", function(){
             let field_name = this.value,
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("PropSymbolChoro_ref_value");
 
             ref_value_field.setAttribute("max", max_val_field);
@@ -1087,7 +1080,6 @@ function fillMenu_PropSymbolChoro(layer){
                 colors_breaks: colors_breaks,
                 is_result: true
             };
-//            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
         }
@@ -2176,7 +2168,7 @@ function fillMenu_Anamorphose(){
                 if(!current_layers[layer].original_fields.has(field_name)){
                     let table = user_data[layer],
                         to_send = var_to_send[field_name];
-                    for(let i=0; i<user_data[layer].length; ++i){
+                    for(let i=0, i_len=table.length; i<i_len; ++i){
                         to_send.push(+table[i][field_name])
                     }
                 }
@@ -2571,9 +2563,6 @@ function fillMenu_PropSymbol(layer){
                                 .style("display", "none")
                                 .style("width", "75px");
 
-//    var behavior_onzoom = dialog_content.append('p').html("Recompute symbol size when zooming")
-//                                .insert("input").attr({type: "checkbox", class: "params"});
-
     dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'yes')
@@ -2611,25 +2600,30 @@ function make_prop_symbols(rendering_params){
         field = rendering_params.field,
         nb_features = rendering_params.nb_features,
         values_to_use = rendering_params.values_to_use,
-        d_values = new Array(nb_features),
+        d_values = [],
         abs = Math.abs,
         comp = function(a,b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
+        layer_to_add = rendering_params.new_name,
         zs = zoom.scale();
 
     if(values_to_use)
         for(let i = 0; i < nb_features; ++i){
-            let centr = path.centroid(ref_layer_selection[i].__data__);
-            d_values[i] = [i, +values_to_use[i], centr];
+//            let centr = path.centroid(ref_layer_selection[i].__data__);
+            d_values.push([i, +values_to_use[i],
+                           path.centroid(ref_layer_selection[i].__data__)]);
         }
-    else
+    else {
+        let data_table = user_data[layer];
         for(let i = 0; i < nb_features; ++i){
-            let centr = path.centroid(ref_layer_selection[i].__data__);
-            d_values[i] = [i, +user_data[layer][i][field], centr];
+//            let centr = path.centroid(ref_layer_selection[i].__data__);
+            d_values.push([i, +data_table[i][field],
+                           path.centroid(ref_layer_selection[i].__data__)]);
         }
+    }
 
     if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
         let col1 = rendering_params.fill_color.two[0],
@@ -2656,15 +2650,13 @@ function make_prop_symbols(rendering_params){
         ]
     */
 
-    let layer_to_add = rendering_params.new_name;
-
     if(!(rendering_params.fill_color instanceof Array) && !(rendering_params.fill_color.two)){
         for(let i=0; i<nb_features; ++i)
             d_values[i].push(rendering_params.fill_color);
     } else {
         for(let i=0; i<nb_features; ++i){
-            let idx = d_values[i][0];
-            d_values[i].push(tmp_fill_color[idx]);
+//            let idx = d_values[i][0];
+            d_values[i].push(tmp_fill_color[d_values[i][0]]);
         }
     }
 
@@ -2672,7 +2664,7 @@ function make_prop_symbols(rendering_params){
                           .attr("class", "result_layer layer");
 
     if(symbol_type === "circle"){
-        for(let i = 0; i < d_values.length; i++){
+        for(let i = 0; i < nb_features; i++){
             let params = d_values[i];
             symbol_layer.append('circle')
                 .attr('cx', params[2][0])
@@ -2684,7 +2676,7 @@ function make_prop_symbols(rendering_params){
                 .style("stroke-width", 1 / zs);
         }
     } else if(symbol_type === "rect"){
-        for(let i = 0; i < d_values.length; i++){
+        for(let i = 0; i < nb_features; i++){
             let params = d_values[i],
                 size = params[1];
 
@@ -2706,7 +2698,7 @@ function make_prop_symbols(rendering_params){
                     ? {"class": rendering_params.fill_color}
                     : {"single" : rendering_params.fill_color};
     current_layers[layer_to_add] = {
-        "n_features": d_values.length,
+        "n_features": nb_features,
         "renderer": rendering_params.renderer || "PropSymbols",
         "symbol": symbol_type,
         "fill_color" : fill_color,
@@ -2721,7 +2713,7 @@ function make_prop_symbols(rendering_params){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
     up_legend();
-    create_li_layer_elem(layer_to_add, d_values.length, ["Point", "prop"], "result");
+    create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
     return d_values;
 }
 
@@ -2793,8 +2785,13 @@ function fillMenu_griddedMap(layer){
                     if(!n_layer_name)
                         return;
                     let res_data = result_data[n_layer_name],
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(res_data.length)),
-                        d_values = res_data.map(obj => +obj["densitykm"]);
+                        nb_ft = res_data.length,
+                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
+                        d_values = [];
+
+                    for(let i=0; i < nb_ft; i++){
+                        d_values.push(+res_data[i]["densitykm"])
+                    }
 
                     current_layers[n_layer_name].renderer = "Gridded";
                     let disc_result = discretize_to_colors(d_values, "Quantiles", opt_nb_class, col_pal.node().value),
@@ -2888,7 +2885,7 @@ function render_choro(layer, rendering_params){
         copy_layer(layer, rendering_params.new_name, "choro");
         layer = rendering_params.new_name;
     }
-
+    let breaks = rendering_params["breaks"];
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
@@ -2903,9 +2900,9 @@ function render_choro(layer, rendering_params){
     current_layers[layer]['stroke-width-const'] = 0.75;
     current_layers[layer].is_result = true;
     let colors_breaks = [];
-    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+    for(let i = breaks.length-1; i > 0; --i){
         colors_breaks.push([
-                [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                [breaks[i-1], " - ", breaks[i]].join(''),
                 rendering_params['colors'][i-1]
             ]);
         }
@@ -2958,26 +2955,29 @@ let xrange = function*(start = 0, stop, step = 1) {
 
 function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
-        Abs = Math.abs,
+        abs = Math.abs,
+        sqrt = Math.sqrt,
         arr_len = arr.length,
 //        p_scale = proj.scale(),
         z_scale = zoom.scale(),
+        ratio = fixed_size / sqrt(fixed_value / z_scale),
         res = [];
 
-    fixed_value = Math.sqrt(fixed_value / z_scale);
+//    fixed_value = sqrt(fixed_value / z_scale);
+//    ratio =  fixed_size / fixed_value;
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
-                [val[0], Math.sqrt(Abs(val[1]) * fixed_size / fixed_value), val[2]]
+                [val[0], sqrt(abs(val[1]) * ratio), val[2]]
                 );
         }
     else
         for(let i=0; i < arr_len; ++i){
             let val = arr[i];
             res.push(
-                [val[0], Math.sqrt(Abs(val[1]) * fixed_size / fixed_value), val[2]]
+                [val[0], sqrt(abs(val[1]) * ratio), val[2]]
                 );
         }
     return res
@@ -2985,21 +2985,23 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
 
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
-        Abs = Math.abs,
+        abs = Math.abs,
+        sqrt = Math.sqrt,
         arr_len = arr.length,
 //        p_scale = proj.scale(),
         z_scale = zoom.scale(),
+        ratio = fixed_size / sqrt(fixed_value / z_scale),
         res = [];
 
-    fixed_value = Math.sqrt(fixed_value / z_scale);
-
+//    fixed_value = sqrt(fixed_value / z_scale);
+//    let ratio = fixed_size / fixed_value;
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i)
-            res.push(Math.sqrt(Abs(arr[i]) * fixed_size / fixed_value));
+            res.push(sqrt(abs(arr[i]) * ratio));
 
     else
         for(let i=0; i < arr_len; ++i)
-            res.push(Math.sqrt(Abs(arr[i]) * fixed_size / fixed_value));
+            res.push(sqrt(abs(arr[i]) * ratio));
 
     return res;
 }
@@ -3050,12 +3052,10 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
 }
 
 /**
-* Function to add a field to the targeted layer
+* Return a basic operator as a function, each one taking two numbers in arguments
 *
-* @param {Array} table - A reference to the "table" to work on
-* @param {String} layer - The name of the layer
-* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
-*
+* @param {String} operator
+* @return {function}
 */
 function get_fun_operator(operator){
     let operators = new Map([
@@ -3068,6 +3068,14 @@ function get_fun_operator(operator){
     return operators.get(operator);
 }
 
+/**
+* Function to add a field to the targeted layer
+*
+* @param {Array} table - A reference to the "table" to work on
+* @param {String} layer - The name of the layer
+* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
+*
+*/
 function add_table_field(table, layer_name, parent){
     function check_name(){
         if(regexp_name.test(this.value))
@@ -3271,6 +3279,10 @@ function add_table_field(table, layer_name, parent){
     return box;
 }
 
+/**
+* @param {Array} arr - The array to test
+* @return {Boolean} result - True or False, according to whether it contains empty values or not
+*/
 var contains_empty_val = function(arr){
     for(let i = arr.length - 1; i > -1; --i)
         if(arr[i] == null) return true;
@@ -3288,6 +3300,13 @@ function switch_accordion_section(id_to_close="accordion2", id_to_open="accordio
         section3.dispatchEvent(new Event("click"));
 }
 
+/**
+* Return the haversine distance in kilometers between two points (lat/long coordinates)
+*
+* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
+* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
+* @return {Number} distance - The distance in km between A and B
+*/
 function haversine_dist(A, B){
     let pi_dr = Math.PI / 180;
 
@@ -3336,6 +3355,14 @@ function path_to_geojson(id_layer){
     });
 }
 
+/**
+* Perform an asynchronous request
+*
+* @param {String} method - the method like "GET" or "POST"
+* @param {String} url - the targeted url
+* @param {FormData} data - Optionnal, the data to be send
+* @return {Promise} response
+*/
 function request_data(method, url, data){
     return new Promise(function(resolve, reject){
         var request = new XMLHttpRequest();
@@ -3348,10 +3375,12 @@ function request_data(method, url, data){
 
 
 /**
-* Function computing the min of an array of values - no fancy functionnalities here
-* (it doesn't add anything comparing to Math.min.apply() or d3.min() except
-*  a little speed-up)
+* Function computing the min of an array of values (tking care of empty/null/undefined slot)
+*  - no fancy functionnalities here (it doesn't add anything comparing to Math.min.apply()
+*    or d3.min() except a little speed-up)
 *
+* @param {Array} arr
+* @return {Number} min
 */
 function min_fast(arr){
   let min = arr[0];
@@ -3363,6 +3392,12 @@ function min_fast(arr){
   return min;
 }
 
+/**
+* Return the maximum value of an array of numbers
+*
+* @param {Array} arr - the array of numbers
+* @return {Number} max
+*/
 function max_fast(arr){
   let max = arr[0];
   for(let i = 1; i < arr.length; ++i){
@@ -3373,6 +3408,12 @@ function max_fast(arr){
   return max;
 }
 
+/**
+* Test an array of numbers for negative values
+*
+* @param {Array} arr - the array of numbers
+* @return {Bool} result - True or False, whether it contains negatives values or not
+*/
 function has_negative(arr){
   for(let i = 0; i < arr.length; ++i)
     if(+arr[i] < 0)

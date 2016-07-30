@@ -297,17 +297,24 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 
     let section3 = d3.select("#section3");
 
-    var layer_list = section3.append("div").append("ul").attr("id", "sortable").attr("class", "layer_list");
+    var layer_list = section3.append("div")
+                             .append("ul").attr({id: "sortable", class: "layer_list"})
+                             .on("mouseover", function(){
+                                    $('.qtip.qtip-section3').qtip("hide")
+                                })
+                             .on("mouseout", function(){
+                                    $('.qtip.qtip-section3').qtip("show")
+                                });
 
     let dv3 = section3.append("div")
                     .style("padding-top", "10px").html('');
 
     dv3.append("img")
         .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
-        .attr("src", "/static/img/b/addsample.png")
+        .attr("src", "/static/img/b/addsample_t.png")
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attr("src", "/static/img/b/addgeom.png")
+        .attr("src", "/static/img/b/addgeom_t.png")
         .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
         .on("click", click_button_add_layer);
 
@@ -542,9 +549,7 @@ $("#accordion2_pre").on("accordionbeforeactivate", function(){
         section2_accordion.dispatchEvent(new Event("click"));
     });
 
-// Close the "choose functionnality" accordion (when one is choosed) to display functionnality options :
-
-// Compute the total size occuped by the menu in order to close some section to avoid go further than the page height :
+// Compute the total size occuped by the menu in order to close some section(s) to avoid go further than the page height :
 $(".accordion").on("accordionactivate", function(event, ui){
         if(!(ui.newPanel) || ui.newPanel.length == 0 )
             return ;
@@ -565,13 +570,13 @@ $(".accordion").on("accordionactivate", function(event, ui){
             opened.splice(opened.indexOf("accordion1"), 1);
             $("#accordion1").accordion("option", "active", 1);
         }
-        if(new_size > window.innerHeight){
-            for(let i = opened.length - 1; i > 0; --i){
-                let acc = document.getElementById(opened[i]);
-                new_size = new_size - acc.getBoundingClientRect().height;
-                $("#" + opened[i]).accordion("option", "active", 1);
-                opened.pop();
-            }
+        for(let i = opened.length - 1; i > 0; --i){
+            if(new_size < window.innerHeight)
+                break;
+            let acc = document.getElementById(opened[i]);
+            new_size = new_size - acc.getBoundingClientRect().height;
+            $("#" + opened[i]).accordion("option", "active", 1);
+            opened.pop();
         }
     });
 
@@ -689,12 +694,18 @@ function binds_layers_buttons(layer_name){
     }
     $("[layer-tooltip!='']").qtip({
         content: { attr: "layer-tooltip" },
+        style: { classes: 'qtip-rounded qtip-light qtip_layer'}
+    });
+/*
+    $("[layer-tooltip!='']").qtip({
+        content: { attr: "layer-tooltip" },
         style: { classes: 'qtip-rounded qtip-light qtip_layer'},
         events: {
             show: function(){ $('.qtip.qtip-section3').qtip("hide") },
             hide: function(){ $('.qtip.qtip-section3').qtip("show") }
         }
     });
+*/
 }
 
 // Function to display information on the top layer (in the layer manager)
@@ -1031,7 +1042,6 @@ function get_map_template(){
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
-        user_id = document.getElementById('user_id').innerHTML,
         displayed_legend = d3.selectAll(".legend_feature:not(.title)");
 
     map_config.projection = current_proj_name;
@@ -1087,7 +1097,7 @@ function get_map_template(){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_opacity = selection.style("fill-opacity");
             layers_style[i].targeted = true;
-            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
+            layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             if(current_layers[layer_name].renderer && current_layers[layer_name].renderer.startsWith("Choro")){
                 layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -1098,7 +1108,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
-            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
+            layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
@@ -1106,7 +1116,7 @@ function get_map_template(){
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
-            layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
+            layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
             layers_style[i].size = current_layers[layer_name].size;
@@ -1116,7 +1126,7 @@ function get_map_template(){
                 for(let j = 0; j < nb_ft; j++)
                     layers_style[i].result[j] = nb_ft;
             } else {
-                layers_style[i].topo_geom = [user_id, layer_name, "NQ"].join('_');
+                layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
                 layers_style[i].linksById = current_layers[layer_name].linksById.splice(0, nb_ft)
             }
         } else {
@@ -1133,6 +1143,7 @@ function get_map_template(){
                         layers_style[i].topo_geom = result[i].target.responseText;
                     }
                 }
+            console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
             return JSON.stringify({"map_config": map_config, "layers": layers_style});;
         });
 }
@@ -1410,6 +1421,8 @@ function canvas_mod_size(shape){
         map_div.style("width", w + "px");
         if(w + 360 + 30 < window.innerWidth){
             document.querySelector(".light-menu").style.right = '-30px';
+        } else {
+            document.querySelector(".light-menu").style.right = '0px';
         }
     }
     if(shape[1]){

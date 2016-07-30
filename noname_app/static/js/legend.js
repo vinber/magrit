@@ -4,15 +4,11 @@ function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
         let class_name = [".lgdf", layer].join('_');
-        let rml = false;
         if(d3.selectAll(class_name).node()){
             if(!d3.selectAll(class_name).attr("display"))
                 d3.selectAll(class_name).attr("display", "none");
             else
                 d3.selectAll(class_name).attr("display", null);
-//            d3.selectAll(class_name).remove();
-//            d3.selectAll(".source_block").remove();
-            rml = true;
         } else {
             createLegend(layer, "")
         }
@@ -48,7 +44,11 @@ function createLegend(layer, title){
         createLegend_nothing(layer, field, "Dougenik Cartogram", field);
 
     else
-        createLegend_nothing(layer, field, title, field);
+        swal("Oups..!",
+             i18next.t("No legend available for this representation") + ".<br>"
+             + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
+             "warning")
+//        createLegend_nothing(layer, field, title, field);
 }
 
 function make_legend_context_menu(legend_node, layer){
@@ -157,7 +157,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     for(let b_val of breaks)
         ref_symbols_params.push({value:b_val[0], size:b_val[1]})
-
+    ref_symbols_params.reverse();
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
@@ -185,15 +185,26 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     last_size = 0;
 
     let x_text_pos = xpos + space_elem + max_size * 1.5 + 45;
+    let tmp_pos;
     legend_elems.append("text")
         .attr("x", x_text_pos)
         .attr("y", function(d, i){
                     last_pos = boxgap + last_pos + last_size;
                     last_size = d.size;
-                    return last_pos + (d.size * 2 / 3);
+                    tmp_pos = last_pos - (d.size / 4)
+                    return tmp_pos;
                     })
         .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(function(d, i){return d.value;});
+        .text(function(d, i){return d.value.split(' - ')[1];});
+
+    legend_root.insert('text').attr("id", "lgd_choro_min_val")
+        .attr("x", x_text_pos)
+        .attr("y", function(d, i){
+          return tmp_pos + boxgap;
+          })
+        .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
+        .text(function(d) { return ref_symbols_params[ref_symbols_params.length -1].value.split(' - ')[0] });
+
 
     legend_root.call(drag_legend_func(legend_root));
 
@@ -211,11 +222,11 @@ function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
     under_rect.attr({"width": 0, height: 0});
     let bbox_legend = legend_root.node().getBoundingClientRect();
     under_rect.attr("class", "legend_feature").attr("id", "under_rect")
-                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 25)
-                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 20)
+                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 20)
+                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 25)
 
     if(xpos && ypos)
-        under_rect.attr("x", xpos - 2.5).attr("y", ypos - 15)
+        under_rect.attr("x", xpos - 2.5).attr("y", ypos - 12.5)
     if(!fill || (!fill.color || !fill.opacity)){
         under_rect.style("fill", "green")
                   .style("fill-opacity", 0);
@@ -656,7 +667,7 @@ function createlegendEditBox(legend_id, layer_name){
                     let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
                     legend_node = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
-                    let rounding_precision = document.getElementById("precision_range").value;
+                    let rounding_precision = document.getElementById("precision_range") ? document.getElementById("precision_range").value : undefined;
                     let transform_param = legend_node.getAttribute("transform"),
                         lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;

@@ -141,7 +141,22 @@ class ResponseFetcher:
             self.results.append(body)
 
 
-## -*- coding: utf-8 -*-
+#def check_layer_name(name, session_redis):
+#    existing_layers = session_redis['user_layers']
+#    if name not in existing_layers:
+#        return name
+#    else:
+#        tmp = re_findall("_\d+$", name)
+#        if tmp:
+#            i = tmp[0][1:]
+#            name = name[:len(name)-len(i)]
+#            return check_layer_name(
+#                    ''.join([name, str(int(i)+1)]), session_redis)
+#        else:
+#            name = '_'.join([name, "1"])
+#            return check_layer_name(name, session_redis)
+
+
 #"""
 #Make many (non concurrent) requests to a local Ocpu instance in order
 #to see if all requests are served
