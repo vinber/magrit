@@ -603,20 +603,23 @@ function createlegendEditBox(legend_id, layer_name){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)
-        let first_value = (legend_id.indexOf("2") === -1)
-                            ? legend_boxes[0][0].__data__.value.split(" - ")[0]
-                            : String(legend_boxes[0][0].__data__.value),
-            fourth_value = (legend_id.indexOf("2") === -1)
-                            ? legend_boxes[0][1].__data__.value.split(" - ")[1]
-                            : String(legend_boxes[0][3].__data__.value),
-            current_nb_dec1 = first_value.length - first_value.indexOf(".") - 1,
-            current_nb_dec4 = fourth_value.length - fourth_value.indexOf(".") - 1;
+        let max_nb_decimals = 0;
+        if(legend_id.indexOf("2")=== -1){
+            max_nb_decimals = get_max_nb_dec(layer_name);
+        } else {
+            let first_value = String(legend_boxes[0][0].__data__.value),
+                fourth_value = String(legend_boxes[0][3].__data__.value);
+            let p0 = first_value.indexOf("."),
+                p3 = fourth_value.indexOf(".");
+            if(p0 > -1){
+                max_nb_decimals = first_value.length - p0 - 1;
+            }
+            if(p3 > -1 && (first_value.length - p3 - 1) > max_nb_decimals){
+                max_nb_decimals = first_value.length - p3 - 1;
+            }
+        }
 
-        if(current_nb_dec4 === fourth_value.length && current_nb_dec1 === first_value.length) current_nb_dec = null;
-        else current_nb_dec = current_nb_dec4 >= current_nb_dec1 ? current_nb_dec4 : current_nb_dec1;
-
-        if(current_nb_dec){
-            let max_nb_decimal = current_nb_dec > 8 ? current_nb_dec : 8;
+        if(max_nb_decimals > 0){
             if(legend_node.getAttribute("rounding_precision"))
                 current_nb_dec = legend_node.getAttribute("rounding_precision");
             box_body.append('p')
@@ -625,7 +628,7 @@ function createlegendEditBox(legend_id, layer_name){
                         .html(['Floating number rounding precision<br> ', current_nb_dec, ' '].join(''));
             if(legend_id === "legend_root" || legend_id === "legend_root_links")
                 box_body.append('input')
-                    .attr({id: "precision_range", type: "range", min: -5, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                    .attr({id: "precision_range", type: "range", min: -5, max: max_nb_decimals, step: 1, value: current_nb_dec})
                     .style("display", "inline")
                     .on('change', function(){
                         let nb_float = +this.value;
@@ -642,7 +645,7 @@ function createlegendEditBox(legend_id, layer_name){
                     });
             else if(legend_id === "legend_root2")
                 box_body.append('input')
-                    .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimal, step: 1, value: current_nb_dec})
+                    .attr({id: "precision_range", type: "range", min: 0, max: max_nb_decimals, step: 1, value: current_nb_dec})
                     .style("display", "inline")
                     .on('change', function(){
                         let nb_float = +this.value,
@@ -730,4 +733,21 @@ function createlegendEditBox(legend_id, layer_name){
                                          rect_fill_value
                                          );
                 });
+}
+
+var get_max_nb_dec = function(layer_name){
+    if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
+        return;
+    let max = 0;
+    current_layers[layer_name].colors_breaks.forEach( el => {
+        let tmp = el[0].split(' - ');
+        let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
+        if(p1 > -1)
+            if(tmp[0].length - 1 - p1 > max)
+                max = tmp[0].length - 1 - tmp[0].indexOf('.');
+        if(p2 > -1)
+            if(tmp[1].length - 1 - p2 > max)
+                max = tmp[1].length - 1 - tmp[1].indexOf('.');
+        });
+    return max;
 }

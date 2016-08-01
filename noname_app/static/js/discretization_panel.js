@@ -10,17 +10,19 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
             "Quantiles": "serie.getQuantile(nb_class)",
             "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
             "Q6": "getBreaksQ6(values)",
+            "Geometric progression": "serie.getGeometricProgression(nb_class)"
         }
     }
 
     var serie = new geostats(values),
         nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
         step = (max_size - min_size) / (nb_class - 1),
-        breaks = new Array(),
+        breaks = [],
         class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step)),
-        breaks_prop = new Array(),
-        rendering_params = new Object(),
-        tmp, ir;
+        breaks_prop = [],
+        rendering_params = {},
+        cmp_fun = (a,b) => a - b,
+        tmp;
 
     var val = func_switch.to(type);
     if(type === "Q6"){
@@ -714,11 +716,14 @@ function getBreaksQ6(serie){
 }
 
 function getBreaks_userDefined(serie, breaks_list){
-    var break_values = breaks_list.split('-').map(el => +el.trim()),
+    var separator = has_negative(serie) ? '- ' : '-',
+        break_values = breaks_list.split(separator).map(el => +el.trim()),
         len_serie = serie.length,
         j = 0,
         len_break_val = break_values.length,
         stock_class = new Array(len_break_val-1);
+
+    console.log(serie)
 
     for(let i=1; i<len_break_val; ++i){
         let class_max = break_values[i];
@@ -1012,3 +1017,4 @@ var display_box_symbol_typo = function(layer, field){
         return deferred.promise;
     };
 }
+

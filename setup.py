@@ -5,8 +5,8 @@ import atexit
 from setuptools import find_packages
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+#from Cython.Distutils import build_ext
+#from Cython.Build import cythonize
 import noname_app
 
 with open("requirements.txt") as f:
@@ -43,9 +43,9 @@ setup(
     url='https://github.com/mthh/noname-stuff',
     packages=find_packages(),
     package_dir={},
-    ext_modules=cythonize(exts),
-    cmdclass={'build_ext': build_ext},
-    setup_requires=['Cython>=0.24'],
+    setup_requires=['setuptools>=18.0', 'Cython>=0.24'],
+    ext_modules=exts,
+#    cmdclass={'build_ext': build_ext},
     install_requires=requirements,
     test_suite='tests',
     include_package_data=True,

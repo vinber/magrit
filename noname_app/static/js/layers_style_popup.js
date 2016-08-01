@@ -2,8 +2,8 @@
 
 function handle_click_layer(layer_name){
     if(current_layers[layer_name].renderer
-        && (strContains(current_layers[layer_name].renderer, "PropSymbol")
-            || strContains(current_layers[layer_name].renderer, "Dorling")))
+        && (current_layers[layer_name].renderer.indexOf("PropSymbol") > -1
+            || current_layers[layer_name].renderer.indexOf("Dorling") > -1))
         createStyleBox_ProbSymbol(layer_name);
     else if (current_layers[layer_name].renderer
              && current_layers[layer_name].renderer == "Label")
@@ -442,7 +442,12 @@ function createStyleBox(layer_name){
                             current_layers[layer_name].min_display = val;
                         });
         popup.append('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
-
+        popup.append("button")
+                .attr("class", "button_disc")
+                .html("Modify size by class")
+                .on("click", function(){
+                    display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "")
+                });
      } else if (type === "Line" && renderer == "DiscLayer"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
@@ -455,8 +460,12 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].min_display = val;
                 });
         popup.append("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append("p").html("Reference max. size (px) ")
-                    .insert("input").attr({type: "number", min: 0.1, max: max_val, step: 0.1, value: current_layers[layer_name].size[1]});
+        popup.append("button")
+                .attr("class", "button_disc")
+                .html("Modify size by class")
+                .on("click", function(){
+                    display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "")
+                });
     }
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)

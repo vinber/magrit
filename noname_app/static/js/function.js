@@ -504,7 +504,7 @@ function fillMenu_Discont(){
                 .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
-        result_data[new_layer_name] = new Array(nb_ft);
+        result_data[new_layer_name] = [];
         let data_result = result_data[new_layer_name],
             result_lyr_node = result_layer.node();
 
@@ -515,7 +515,7 @@ function fillMenu_Discont(){
             let id_ft = arr_disc[i][0],
                 val = arr_disc[i][1],
                 p_size = class_size[serie.getClass(val)];
-            data_result[i] =  {id: id_ft, disc_value: val, prop_value: p_size};
+            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
             result_layer.append("path")
                 .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
                     let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
@@ -620,13 +620,14 @@ var fields_FlowMap = {
     }
 };
 
-function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent){
+function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks){
     document.getElementById(id_parent).innerHTML = "";
-    let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size),
+    if(values && breaks == undefined){
+        let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size);
         breaks = disc_result[2];
-
-    if(!breaks)
-        return;
+        if(!breaks)
+            return false;
+    }
 
     let parent_nd = d3.select("#" + id_parent);
 
@@ -639,6 +640,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
         .selectAll("p")
         .data(breaks).enter()
         .append("p")
+            .style("margin", "0px")
             .attr("class", "breaks_vals")
             .attr("id", (d,i) => ["line", i].join('_'));
 
@@ -666,10 +668,10 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
             .insert('input')
             .attr("type", "number")
             .attr("id", "size_class")
-            .attr("step", 0.1)
+            .attr("step", 0.11)
             .attr("value", +breaks[i][1].toFixed(2))
             .style("margin-left", "20px")
-            .style("width", "60px");
+            .style("width", "55px");
 
         selection
             .insert('span')
@@ -705,7 +707,7 @@ function fetch_min_max_table_value(parent_id){
         maxs = Array.prototype.map.call(parent_node.querySelectorAll("#max_class"), el => +el.value),
         sizes = Array.prototype.map.call(parent_node.querySelectorAll("#size_class"), el => +el.value),
         nb_class = mins.length,
-        comp_fun = (a,b) => a > b;
+        comp_fun = (a,b) => a - b;
 
 // Some verification regarding the input values provided by the user :
 // - Values are ordered :
@@ -724,7 +726,7 @@ function fetch_min_max_table_value(parent_id){
 //            return false;
 //        }
 //    }
-    return {"mins" : mins, "maxs" : maxs, "sizes" : sizes};
+    return {"mins" : mins.sort(comp_fun), "maxs" : maxs.sort(comp_fun), "sizes" : sizes.sort(comp_fun)};
 }
 
 function fillMenu_FlowMap(){
@@ -803,7 +805,7 @@ function fillMenu_FlowMap(){
             let ref_layer = Object.getOwnPropertyNames(user_data)[0],
                 name_join_field = join_field.node().value,
                 formToSend = new FormData(),
-                join_field_to_send = new Object();
+                join_field_to_send = {};
 
             let disc_params = fetch_min_max_table_value("FlowMap_discTable"),
                 mins = disc_params.mins,
@@ -824,7 +826,7 @@ function fillMenu_FlowMap(){
                 "field_i": field_i.node().value,
                 "field_j": field_j.node().value,
                 "field_fij": field_fij.node().value,
-                "join_field": JSON.stringify(join_field_to_send)
+                "join_field": join_field_to_send
                 }));
 
             $.ajax({
@@ -854,7 +856,7 @@ function fillMenu_FlowMap(){
                     current_layers[new_layer_name].fixed_stroke = true;
                     current_layers[new_layer_name].renderer = "Links";
                     current_layers[new_layer_name].breaks = [];
-                    current_layers[new_layer_name].linksbyId = new Array(nb_ft);
+                    current_layers[new_layer_name].linksbyId = [];
                     current_layers[new_layer_name].size = [min_size, max_size];
                     current_layers[new_layer_name].rendered_field = fij_field_name;
                     current_layers[new_layer_name].ref_layer_name = ref_layer;
@@ -863,7 +865,7 @@ function fillMenu_FlowMap(){
 
                     for(let i = 0; i < nb_ft; ++i){
                         let val = +fij_values[i];
-                        links_byId[i] = [i, fij_values[i], sizes[serie.getClass(val)]];
+                        links_byId.push([i, val, sizes[serie.getClass(val)]]);
                     }
 
                     for(let i = 0; i<nb_class; ++i)
@@ -914,7 +916,7 @@ function fillMenu_Test(){
                 nb_features = user_data[layer].length,
                 field_name = field_selec.node().value,
                 formToSend = new FormData(),
-                var_to_send = new Object();
+                var_to_send = {};
 
             var_to_send[field_name] = user_data[layer].map(i => +i[field_name]);
             formToSend.append("json", JSON.stringify({
@@ -976,7 +978,7 @@ var fields_PropSymbolChoro = {
 
 
 function fillMenu_PropSymbolChoro(layer){
-    var rendering_params = new Object(),
+    var rendering_params = {},
         dv2 = section2.append("p").attr("class", "form-rendering");
 
     var field1_selec = dv2.append('p').html('Field 1 (symbol size) ')
@@ -1046,7 +1048,7 @@ function fillMenu_PropSymbolChoro(layer){
         if(rendering_params){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 nb_features = user_data[layer].length,
-                rd_params = new Object(),
+                rd_params = {},
                 new_layer_name = check_layer_name(layer + "_PropSymbolsChoro");
 
             rd_params.field = field1_selec.node().value;
@@ -1168,7 +1170,7 @@ var fields_Label = {
 
 var fillMenu_Label = function(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = new Object();
+        rendering_params = {};
 
     var field_selec = dv2.append('p')
                             .html('Labels field ')
@@ -1366,7 +1368,7 @@ var render_label = function(layer, rendering_params){
 
 var fillMenu_Typo = function(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = new Object();
+        rendering_params = {};
 
     var field_selec = dv2.append('p')
                             .html('Field ')
@@ -1413,7 +1415,7 @@ var fillMenu_Typo = function(){
 
 function fillMenu_Choropleth(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = new Object();
+        rendering_params = {};
 
     var field_selec = dv2.append('p')
                             .html('Field :')
@@ -1500,14 +1502,14 @@ var fields_MTA = {
 
 function fillMenu_MTA(){
     var prepare_mta = function(choosen_method, var1_name, var2_name, layer, nb_features){
-        var table_to_send = new Object(),
-            object_to_send = new Object();
+        var table_to_send = {},
+            object_to_send = {};
         if (choosen_method != "local_dev"){
-            table_to_send[var1_name] = new Array(nb_features);
-            table_to_send[var2_name] = new Array(nb_features);
+            table_to_send[var1_name] = [];
+            table_to_send[var2_name] = [];
             for(let i=0; i<nb_features; i++){
-                table_to_send[var1_name][i] = +user_data[layer][i][var1_name];
-                table_to_send[var2_name][i] = +user_data[layer][i][var2_name];
+                table_to_send[var1_name].push(+user_data[layer][i][var1_name]);
+                table_to_send[var2_name].push(+user_data[layer][i][var2_name]);
             }
             object_to_send["method"] = choosen_method;
             if(choosen_method == "territorial_dev"){
@@ -1524,8 +1526,8 @@ function fillMenu_MTA(){
         } else if (choosen_method == "local_dev"){
             let val = +val_param_general_dev.node().value,
                 param_name = param_general_dev.node().value == "dist" ? "dist" : "order",
-                val1_to_send = new Object(),
-                val2_to_send = new Object();
+                val1_to_send = {},
+                val2_to_send = {};
 
             if(current_layers[layer].original_fields.has(var1_name))
                 val1_to_send[var1_name] = [];
@@ -1874,8 +1876,8 @@ function fillMenu_Stewart(){
             let formToSend = new FormData(),
                 field1_n = field_selec.node().value,
                 field2_n = field_selec2.node().value,
-                var1_to_send = new Object,
-                var2_to_send = new Object,
+                var1_to_send = {},
+                var2_to_send = {},
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 bval = breaks_val.node().value.trim(),
                 reso = +resolution.node().value * 1000;
@@ -1896,8 +1898,8 @@ function fillMenu_Stewart(){
 
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
-                "variable1": JSON.stringify(var1_to_send),
-                "variable2": JSON.stringify(var2_to_send),
+                "variable1": var1_to_send,
+                "variable2": var2_to_send,
                 "span": +span.node().value * 1000,
                 "beta": +beta.node().value,
                 "typefct": func_selec.node().value,
@@ -2086,11 +2088,14 @@ function fillMenu_Anamorphose(){
                     dataset = user_data[layer];
 
                 let layer_select = map.select("#"+layer).selectAll("path")[0],
-                    d_values = new Array(nb_ft),
-                    area_values = new Array(nb_ft);
+                    sqrt = Math.sqrt,
+                    abs = Math.abs,
+                    d_values = [],
+                    area_values = [];
+
                 for(let i = 0; i < nb_ft; ++i){
-                    d_values[i] = Math.sqrt(+dataset[i][field_n]);
-                    area_values[i] = +path.area(layer_select[i].__data__.geometry);
+                    d_values.push(sqrt(+dataset[i][field_n]));
+                    area_values.push(+path.area(layer_select[i].__data__.geometry));
                 }
 
                 let mean = d3.mean(d_values),
@@ -2098,23 +2103,23 @@ function fillMenu_Anamorphose(){
                     max = d3.max(d_values),
                     transform = [];
                 if(ref_size == "mean"){
-                    let low_ = Math.abs(mean-min),
-                        up_ = Math.abs(max-mean),
+                    let low_ = abs(mean-min),
+                        up_ = abs(max-mean),
                         max_dif = low_ > up_ ? low_ : up_;
 
                     for(let i= 0; i < nb_ft; ++i){
                         let val = d_values[i],
                             scale_area;
                         if(val > mean)
-                            scale_area = 1 + scale_max / (max_dif / Math.abs(val-mean));
+                            scale_area = 1 + scale_max / (max_dif / abs(val-mean));
                         else if(val == mean)
                             scale_area = 1;
                         else
-                            scale_area = 1 - scale_max / (max_dif / Math.abs(mean-val));
+                            scale_area = 1 - scale_max / (max_dif / abs(mean-val));
                         transform.push(scale_area);
                     }
                 } else if (ref_size == "max"){
-                    let max_dif = Math.abs(max-min);
+                    let max_dif = abs(max-min);
 
                     for(let i= 0; i < nb_ft; ++i){
                         let val = d_values[i],
@@ -2161,7 +2166,7 @@ function fillMenu_Anamorphose(){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
                     layer = Object.getOwnPropertyNames(user_data)[0],
-                    var_to_send = new Object(),
+                    var_to_send = {},
                     nb_iter = option1_val.node().value;
 
                 var_to_send[field_name] = [];
@@ -2234,7 +2239,7 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
         d_values = [],
         zs = zoom.scale(),
         symbol_layer = undefined,
-        comp = (a,b) => a[1] < b[1],
+        comp = (a,b) => b[1] - a[1],
         force = d3.layout.force().charge(0).gravity(0).size([w, h]);
 
     for(let i = 0; i < nb_features; ++i){
@@ -2479,7 +2484,6 @@ var fields_PropSymbol = {
                 field_values = data_layer.map(obj => +obj[field_name]),
                 max_val_field = max_fast(field_values),
                 has_neg = has_negative(field_values),
-//                max_val_field = Math.max.apply(null, field_values),
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
@@ -2761,7 +2765,7 @@ function fillMenu_griddedMap(layer){
             let field_n = field_selec.node().value,
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 formToSend = new FormData(),
-                var_to_send = new Object();
+                var_to_send = {};
 
             if(current_layers[layer].original_fields.has(field_n))
                 var_to_send[field_n] = [];
@@ -2770,7 +2774,7 @@ function fillMenu_griddedMap(layer){
 
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
-                "var_name": JSON.stringify(var_to_send),
+                "var_name": var_to_send,
                 "cellsize": +cellsize.node().value * 1000
                 }));
             $.ajax({
@@ -2938,7 +2942,7 @@ function unfillSelectInput(select_node){
 let range = function(start = 0, stop, step = 1) {
     let cur = (stop === undefined) ? 0 : start;
     let max = (stop === undefined) ? start : stop;
-    let res = new Array();
+    let res = [];
     for(let i = cur; step < 0 ? i > max : i < max; i += step)
         res.push(i);
     return res;
@@ -3022,7 +3026,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         fields = Object.getOwnPropertyNames(table[0]),
         nb_features = table.length,
         deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-        result = new Object(),
+        result = {},
         field = undefined,
         tmp_type = undefined;
     for(let j = 0, len = fields.length; j < len; ++j){

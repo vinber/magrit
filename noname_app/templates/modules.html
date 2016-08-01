@@ -29,6 +29,7 @@
     <script  src="/static/js/txt_annotation.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
     <script  src="/static/js/interface.js"></script>
+    <script  src="/static/js/discrtiz_links_discont.js"></script>
     <script  src="/static/js/layers_style_popup.js"></script>
     <script  src="/static/js/discretization_panel.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
@@ -133,12 +134,12 @@ var path = d3.geo.path().projection(proj).pointRadius(4),
 
 /*
 A bunch of global variable, storing oftently reused informations :
-    - user_date[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
+    - user_data[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
             (+ the joined features if a join is done)
     - result_data[layer_name] : the same but for any eventual result layers (like Stewart, gridded, etc.)
-    - joined_dataset : the joined dataset (read with d3.csv is pushed in the first slot of this array)
+    - joined_dataset : the joined dataset (read with d3.csv then pushed in the first slot of this array)
     - field_join_map : an array containg mapping between index of geom layer and index of ext. dataset
-    - current_layers : the main object describing **all** the layers on the map (incunding detailed, ie by features, styling properties if needed)
+    - current_layers : the main object describing **all** the layers on the map (incunding detailed (ie. by features) styling properties if needed)
     - last_params : an object to fill with the last user selected paremeter after "valid" button of
             the targeted functionnality has been pushed
 */
@@ -655,24 +656,27 @@ $("#section3[data-tooltip!='']").qtip({
 // which are on each feature representing a layer in the layer manager
 // (the function is called each time that a new feature is put in this layer manager)
 function binds_layers_buttons(layer_name){
-    if(layer_name != undefined){
-        let sortable_li_elem = d3.select("#sortable").select("." + layer_name);
-        sortable_li_elem.select("#trash_button").on("click", function(){ remove_layer(layer_name); });
-        sortable_li_elem.select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
-        sortable_li_elem.select("#zoom_fit_button").on("click", function(){
-            center_map(layer_name);
-            zoom_without_redraw();
-        });
-        sortable_li_elem.select(".style_button").on("click", function(){
-            handle_click_layer(layer_name);
-        });
-        sortable_li_elem.select(".style_target_layer").on("click", function(){
-            handle_click_layer(layer_name)
-        });
-        sortable_li_elem.select("#legend_button").on("click", function(){
-            handle_legend(layer_name);
-        });
-    } else { // This part should be removed soon as we tend to not call this function without layer name anymore :
+    if(layer_name == undefined){
+        alert("This shouldn't happend");
+        return;
+    }
+    let sortable_li_elem = d3.select("#sortable").select("." + layer_name);
+    sortable_li_elem.select("#trash_button").on("click", function(){ remove_layer(layer_name); });
+    sortable_li_elem.select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
+    sortable_li_elem.select("#zoom_fit_button").on("click", function(){
+        center_map(layer_name);
+        zoom_without_redraw();
+    });
+    sortable_li_elem.select(".style_button").on("click", function(){
+        handle_click_layer(layer_name);
+    });
+    sortable_li_elem.select(".style_target_layer").on("click", function(){
+        handle_click_layer(layer_name)
+    });
+    sortable_li_elem.select("#legend_button").on("click", function(){
+        handle_legend(layer_name);
+    });
+/*    } else { // This part should be removed soon as we tend to not call this function without layer name anymore :
         let selec = d3.select('#sortable');
         selec.selectAll("#trash_button").on("click", remove_layer);
         selec.selectAll(".active_button").on("click", function(){
@@ -692,6 +696,7 @@ function binds_layers_buttons(layer_name){
             handle_legend(this.parentElement.parentElement.getAttribute("layer_name"))
         });
     }
+*/
     $("[layer-tooltip!='']").qtip({
         content: { attr: "layer-tooltip" },
         style: { classes: 'qtip-rounded qtip-light qtip_layer'}
@@ -1632,7 +1637,7 @@ function apply_user_preferences(json_pref){
             li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''));
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open0, button_type_blank['Point'], "</div> ", layer_name].join('');
             layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-            binds_layers_buttons();
+            binds_layers_buttons(layer_name);
 
         } else {
             null;

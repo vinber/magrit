@@ -56,6 +56,19 @@ def try_float(val):
     except ValueError:
         return val
 
+async def is_known_user(request, ref):
+    session = await get_session(request)
+    if 'R_user' in session and session['R_user'] in ref:
+        id_ = session['R_user']
+        assert id_ in ref
+        print(session['R_user'], ' is a kwown user')
+    else:
+        id_ = get_key(var=ref)
+        session['R_user'] = id_
+        ref[id_] = [True, None]
+        print(session['R_user'], ' is a new user')
+    return id_
+
 
 def zip_and_clean(dir_path, layer_name):
     zip_stream = BytesIO()

@@ -66,21 +66,6 @@ async def handler(request):
     session['last_visit'] = time.time()
     return {'last_visit': date}
 
-
-async def is_known_user(request, ref):
-    session = await get_session(request)
-    if 'R_user' in session and session['R_user'] in ref:
-        id_ = session['R_user']
-        assert id_ in ref
-        print(session['R_user'], ' is a kwown user')
-    else:
-        id_ = get_key(var=ref)
-        session['R_user'] = id_
-        ref[id_] = [True, None]
-        print(session['R_user'], ' is a new user')
-    return id_
-
-
 ##########################################################
 #### A few functions to open (server side)
 #### ... a geo layer uploaded by the user
@@ -471,12 +456,8 @@ async def links_map(posted_data, user_id, app):
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = json.loads(posted_data['join_field'])
-    ref_layer, new_field = await asyncio.gather(*[
-        ajson_loads(ref_layer.decode()),
-        ajson_loads(posted_data['join_field'])
-        ])
+    ref_layer = json.loads(ref_layer.decode())
+    new_field = posted_data['join_field']
 
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
@@ -528,10 +509,8 @@ async def carto_gridded(posted_data, user_id, app):
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
 
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = json.loads(posted_data['var_name'])
-    ref_layer, new_field = await asyncio.gather(*[
-        ajson_loads(ref_layer.decode()), ajson_loads(posted_data['var_name'])])
+    ref_layer = json.loads(ref_layer.decode())
+    new_field = posted_data['var_name']
 
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
@@ -563,7 +542,9 @@ async def carto_gridded(posted_data, user_id, app):
         print("Additionnal infos:\n", content["additional_infos"])
 
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
-    new_name = '_'.join(['Gridded', str(posted_data["cellsize"]), n_field_name])
+    new_name = '_'.join(['Gridded',
+                         str(posted_data["cellsize"]),
+                         n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
@@ -705,8 +686,8 @@ async def call_stewart(posted_data, user_id, app):
     point_layer = await app['redis_conn'].get(f_name)
     point_layer = json.loads(point_layer.decode())
 
-    new_field1 = json.loads(posted_data['variable1'])
-    new_field2 = json.loads(posted_data['variable2'])
+    new_field1 = posted_data['variable1']
+    new_field2 = posted_data['variable2']
 
     n_field_name1 = list(new_field1.keys())[0]
     if len(new_field1[n_field_name1]) > 0:
