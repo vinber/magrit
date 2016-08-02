@@ -195,7 +195,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
                     return tmp_pos;
                     })
         .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(function(d, i){return d.value.split(' - ')[1];});
+        .text(function(d, i){return d.value[1];});
 
     legend_root.insert('text').attr("id", "lgd_choro_min_val")
         .attr("x", x_text_pos)
@@ -203,7 +203,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
           return tmp_pos + boxgap;
           })
         .style({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(function(d) { return ref_symbols_params[ref_symbols_params.length -1].value.split(' - ')[0] });
+        .text(function(d) { return ref_symbols_params[ref_symbols_params.length -1].value[0] });
 
 
     legend_root.call(drag_legend_func(legend_root));

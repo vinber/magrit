@@ -433,6 +433,7 @@ function fillMenu_Discont(){
     d3.selectAll(".params").attr("disabled", true);
 
     ok_button.on("click", function(){
+        document.getElementById("overlay").style.display = "";
         let layer = Object.getOwnPropertyNames(user_data)[0],
             field = document.getElementById("field_Discont").value,
             field_id = document.getElementById("field_id_Discont").value,
@@ -494,10 +495,11 @@ function fillMenu_Discont(){
             let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
             let w = nb_class > opt_nb_class ? "smaller" : "larger"
             swal("Oops...", "Something went wrong with choosen discretization (try with a " + w + " number of class and/or another method)", "error");
+            document.getElementById("overlay").style.display = "none";
             return;
         }
         let serie = disc_result[3],
-            breaks = disc_result[2].map(ft => [ft[0].join(' - '), ft[1]]);
+            breaks = disc_result[2].map(ft => [ft[0], ft[1]]);
 
         let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind].join('_')),
             result_layer = map.append("g").attr("id", new_layer_name)
@@ -511,21 +513,35 @@ function fillMenu_Discont(){
         // This is bad and should be replaced by somthing better as we are
         // traversing the whole topojson again and again
         // looking for each "border" from its "id" (though it isn't that slow)
-        for(let i=0; i<nb_ft; i++){
-            let id_ft = arr_disc[i][0],
-                val = arr_disc[i][1],
-                p_size = class_size[serie.getClass(val)];
-            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
-            result_layer.append("path")
-                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-                    return a != b
-                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
-                .attr({d: path, id: ["feature", i].join('_')})
-                .style({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
-                .style("stroke-opacity", val >= threshold ? 1 : 0);
-            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+        let chunk_size = 600 > nb_ft ? nb_ft : 600,
+            _s = 0;
+
+        var compute = function(){
+            for(let i=_s; i<chunk_size; i++){
+                let id_ft = arr_disc[i][0],
+                    val = arr_disc[i][1],
+                    p_size = class_size[serie.getClass(val)];
+                data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
+                result_layer.append("path")
+                    .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                        let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
+                        return a != b
+                            && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
+                    .attr({d: path, id: ["feature", i].join('_')})
+                    .style({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
+                    .style("stroke-opacity", val >= threshold ? 1 : 0);
+                result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+            }
+            _s = chunk_size;
+            if(_s < nb_ft){
+                chunk_size += 600;
+                if(chunk_size > nb_ft) chunk_size = nb_ft;
+                setTimeout(compute, 0);
+                return;
+            }
         }
+
+        compute();
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
@@ -537,10 +553,10 @@ function fillMenu_Discont(){
             "fixed_stroke": true,
             "ref_layer_name": layer,
             "fill_color": { "single": user_color },
-//            "result": result_value,
             "n_features": nb_ft
             };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+        document.getElementById("overlay").style.display = "none";
         console.timeEnd('discont');
         send_layer_server(new_layer_name, "/layers/add");
         up_legend();
@@ -693,15 +709,12 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
 }
 
 function fetch_min_max_table_value(parent_id){
-    var parent_node;
+    var parent_node = parent_id ? document.getElementById(parent_id)
+                        : current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
+                        : current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
+                        : null;
 
-    if(!parent_id){
-        if(current_functionnality.name == "flow") parent_node = document.getElementById("FlowMap_discTable");
-        else if (current_functionnality.name == "discont") parent_node = document.getElementById("Discont_discTable");
-        else return false;
-    } else {
-        parent_node = document.getElementById(parent_id);
-    }
+    if(!parent_node) return;
 
     let mins = Array.prototype.map.call(parent_node.querySelectorAll("#min_class"), el => +el.value),
         maxs = Array.prototype.map.call(parent_node.querySelectorAll("#max_class"), el => +el.value),
@@ -718,14 +731,6 @@ function fetch_min_max_table_value(parent_id){
         return false;
     }
 
-//// Actually this step might not be useful anymore as class min - max are binded to change automatically to avoid this:
-//// - Min / max values are consistent :
-//    for(let i = 0, len_i = nb_class - 1; i < len_i; i++){
-//        if(mins[i+1] != maxs[i]){
-//            alert("Class min and max values have to be consistent");
-//            return false;
-//        }
-//    }
     return {"mins" : mins.sort(comp_fun), "maxs" : maxs.sort(comp_fun), "sizes" : sizes.sort(comp_fun)};
 }
 
@@ -815,8 +820,6 @@ function fillMenu_FlowMap(){
                 user_breaks = [].concat(mins, maxs[nb_class - 1]),
                 min_size = min_fast(sizes),
                 max_size = max_fast(sizes);
-//                min_size = Math.min.apply(null, sizes),
-//                max_size = Math.max.apply(null, sizes);
 
             join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
 
@@ -869,7 +872,7 @@ function fillMenu_FlowMap(){
                     }
 
                     for(let i = 0; i<nb_class; ++i)
-                        current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]].join(' - '), sizes[i]]);
+                        current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]], sizes[i]]);
 
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.75)
@@ -3333,7 +3336,7 @@ function standardize_values(array_values){
     let minV = min_fast(values_json);
     let maxV = max_fast(values_json);
     for(let i=0; i<values_json.length; i++) {
-        new_values[i] = (values_json[i] - minV ) / ( maxV - minV );
+        new_values.push((values_json[i] - minV ) / ( maxV - minV ));
     }
     return new_values;
 }

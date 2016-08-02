@@ -898,9 +898,9 @@ var scaleBar = {
 };
 function add_layout_layers(){
     var selec = {layout: null};
-    var layout_layers = [["Nuts 0 (2013) European Country <i>(Polygons)</i>", "nuts0"],
-                         ["Nuts 1 (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
-                         ["Nuts 2 (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
+    var layout_layers = [["Nuts 0* (2013) European Country <i>(Polygons)</i>", "nuts0"],
+                         ["Nuts 1* (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
+                         ["Nuts 2* (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
                          ["World countries simplified <i>(Polygons)</i>", "world_country"],
                          ["World country capitals <i>(Points)</i>", "world_cities"],
                          ];
@@ -918,7 +918,7 @@ function add_layout_layers(){
             }
         });
 
-    var box_body = d3.select(".sampleLayoutDialogBox");
+    var box_body = d3.select(".sampleLayoutDialogBox").style("text-align", "center");
     box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html("Choose layer(s) to be used as layout : ");
     box_body.append("p").style("color", "grey").html("<i>(multiple layers can be selected)</i>");
@@ -931,6 +931,8 @@ function add_layout_layers(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
         selec.layout = selected_asArray.map(elem => elem.value)
     });
+    box_body.append("span").style("font-size", "0.65rem")
+            .html("<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>");
 }
 
 

@@ -210,6 +210,12 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 // to ensure their garbage collection:
 //////////////////////////////////////////////////////////////////////////////
 {
+    let bg = document.createElement('div');
+    bg.id = 'overlay';
+    bg.style.display = "none";
+    bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('Loading results') + ' ...</p>'
+    document.body.appendChild(bg);
+
     let menu = d3.select("#menu"),
         accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
         accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
@@ -623,16 +629,20 @@ $( "#sortable" ).disableSelection();
 // Display a progress bar during the ajaxRequest
 // (can be unset locally by using the `"global": false` param when making an ajax request)
 $(document).ajaxStart(function() {
+        /*
         var bg = document.createElement('div');
         bg.id = 'overlay';
-        var prog_bar = map_div.append("div")
-                         .style({position: "absolute",top: "-20px", left: (w/4)+"px", "text-align": "center", "color": "black", "z-index": 2})
-                         .attr("id", "progressbar")
-                         .html('<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>' + i18next.t('Loading results') + ' ...');
+        //bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('Loading results') + ' ...</p>'
+        var prog_bar = document.createElement('p');
+        prog_bar.style = "position: absolute;top: 11px; left: " + (w/2) + "px;text-align: center;color: black;z-index: 2;";
+        prog_bar.innerHTML = '<img src="/static/img/ajax-loader.gif" style="width:' + (w/3) + 'px"/><br>' + i18next.t('Loading results') + ' ...';
+        bg.appendChild(prog_bar);
         document.body.appendChild(bg);
+        */
+        document.getElementById("overlay").style.display = "";
     }).ajaxComplete(function() {
-        document.getElementById("progressbar").remove();
-        document.getElementById("overlay").remove();
+        document.getElementById("overlay").style.display = "none";
+        //document.getElementById("overlay").remove();
 });
 
 // bind the mains tooltips
@@ -676,41 +686,11 @@ function binds_layers_buttons(layer_name){
     sortable_li_elem.select("#legend_button").on("click", function(){
         handle_legend(layer_name);
     });
-/*    } else { // This part should be removed soon as we tend to not call this function without layer name anymore :
-        let selec = d3.select('#sortable');
-        selec.selectAll("#trash_button").on("click", remove_layer);
-        selec.selectAll(".active_button").on("click", function(){
-            handle_active_layer(this.parentElement.parentElement.getAttribute("layer_name"));
-        });
-        selec.selectAll("#zoom_fit_button").on("click", function(){
-            center_map(this.parentElement.parentElement.getAttribute("layer_name"));
-            zoom_without_redraw();
-        });
-        selec.selectAll(".style_button").on("click", function(){
-            handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
-        });
-        selec.selectAll(".style_target_layer").on("click", function(){
-            handle_click_layer(this.parentElement.parentElement.getAttribute("layer_name"))
-        });
-        selec.selectAll("#legend_button").on("click", function(){
-            handle_legend(this.parentElement.parentElement.getAttribute("layer_name"))
-        });
-    }
-*/
+
     $("[layer-tooltip!='']").qtip({
         content: { attr: "layer-tooltip" },
         style: { classes: 'qtip-rounded qtip-light qtip_layer'}
     });
-/*
-    $("[layer-tooltip!='']").qtip({
-        content: { attr: "layer-tooltip" },
-        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-        events: {
-            show: function(){ $('.qtip.qtip-section3').qtip("hide") },
-            hide: function(){ $('.qtip.qtip-section3').qtip("show") }
-        }
-    });
-*/
 }
 
 // Function to display information on the top layer (in the layer manager)

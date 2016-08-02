@@ -446,7 +446,22 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html("Modify size by class")
                 .on("click", function(){
-                    display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "")
+                    display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "User defined")
+                        .then(function(result){
+                            if(result){
+                                console.log(result);
+                                let serie = result[0];
+                                serie.setClassManually(result[2]);
+                                let sizes = result[1].map(ft => ft[1]);
+                                let links_byId = current_layers[new_layer_name].linksbyId;
+                                current_layers[layer_name].breaks = result[1];
+                                for(let i = 0; i < nb_ft; ++i){
+                                    links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
+                                }
+                                selection.style('fill-opacity', 0)
+                                        .style("stroke-width", (d,i) => {return links_byId[i][2]});
+                            }
+                        });
                 });
      } else if (type === "Line" && renderer == "DiscLayer"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
@@ -464,7 +479,19 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html("Modify size by class")
                 .on("click", function(){
-                    display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "")
+                    display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "User defined")
+                        .then(function(result){
+                            if(result){
+                                console.log(result);
+                                let serie = result[0];
+                                serie.setClassManually(result[2]);
+                                let sizes = result[1].map(ft => ft[1]);
+                                current_layers[layer_name].breaks = result[1];
+                                current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+                                selection.style('fill-opacity', 0)
+                                        .style("stroke-width", (d,i) => sizes[serie.getClass(+d.properties.disc_value)]);
+                            }
+                        });
                 });
     }
      popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')

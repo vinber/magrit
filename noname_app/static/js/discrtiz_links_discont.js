@@ -150,13 +150,20 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                         .insert("p").html(["<b>Summary</b><br>", content_summary].join(""));
     }
 
-    var update_breaks = function(){
-        make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div");
+    var update_breaks = function(user_defined){
+        if(!user_defined){
+            make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div");
+        }
         let tmp_breaks = fetch_min_max_table_value("sizes_div");
         breaks_info = [];
+        last_min = tmp_breaks.sizes[0];
+        last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
         for(let i = 0; i<tmp_breaks.sizes.length; i++)
             breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
         breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
+        if(user_defined){
+            make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info);
+        }
     }
 
     var redisplay = {
@@ -246,7 +253,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
 
     var serie = new geostats(values),
-        breaks_info = current_layers[layer_name].breaks.map(ft => { return [[+ft[0].split(' - ')[0], +ft[0].split(" - ")[1]], ft[1]]; }),
+        breaks_info = [].concat(current_layers[layer_name].breaks),
         breaks = [+breaks_info[0][0][0]],
         stock_class = [],
         bins = [],
@@ -259,7 +266,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     values = serie.sorted();
     serie.setPrecision(6);
-    var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression"];
+    var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "User defined"];
     if(!serie._hasZeroValue()){
         available_functions.push("Geometric progression");
         func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
@@ -404,7 +411,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .attr("class", "button_st3")
             .html("Apply changes")
             .on("click", function(){
-                update_breaks();
+                discretization.node().value = type;
+                update_breaks(true);
                 redisplay.compute();
                 redisplay.draw();
             });
@@ -420,7 +428,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         buttons:[{
             text: "Confirm",
             click: function(){
-                    deferred.resolve([breaks_info, breaks]);
+                    if(breaks[0] < serie.min())
+                        breaks[0] = serie.min();
+
+                    if(breaks[nb_class] > serie.max())
+                        breaks[nb_class] = serie.max();
+
+                    deferred.resolve([serie, breaks_info, breaks]);
                     $(this).dialog("close");
                     }
                 },

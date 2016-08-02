@@ -1,0 +1,33 @@
+language: python
+python:
+  - "3.5"
+sudo: required
+dist: trusty
+install:
+  - pip install --upgrade "setuptools>=25.1"
+  - pip install --global-option=build_ext --global-option="-I/usr/include/gdal" gdal
+  - pip install -r requirements.txt
+  - python setup.py install
+script:
+  - noname_app --help
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
+      - libpython3.5-dev
+      - libopenblas-base
+      - gdal-bin
+      - libgdal-dev
+      - libproj-dev
+      - libv8-3.14-dev
+      - libffi-dev
+      - r-base
+      - redis-server
+      - nodejs
+      - nodejs-dev
+      - node-gyp
+      - npm
+      - libfftw3-dev
+      - libzmq3-dev

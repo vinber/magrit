@@ -43,7 +43,7 @@ setup(
     url='https://github.com/mthh/noname-stuff',
     packages=find_packages(),
     package_dir={},
-    setup_requires=['setuptools>=18.0', 'Cython>=0.24'],
+    setup_requires=['setuptools>=25.1', 'Cython>=0.24'],
     ext_modules=exts,
 #    cmdclass={'build_ext': build_ext},
     install_requires=requirements,

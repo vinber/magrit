@@ -173,7 +173,7 @@ async def cache_input_topojson(request):
             f_path = '/tmp/' + f_name
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, "-q 1e8")
+            result = await geojson_to_topojson(f_path, "-q 1e6")
             result = result.replace(f_name, name)
             asyncio.ensure_future(
                 store_non_quantized(
@@ -299,7 +299,7 @@ async def convert(request):
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'w') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, "-q 1e8")
+        result = await geojson_to_topojson(filepath2, "-q 1e6")
         asyncio.ensure_future(
             store_non_quantized(
                 filepath2, f_nameNQ, request.app['redis_conn']))
@@ -320,7 +320,7 @@ async def convert(request):
             filepath2 = '/tmp/' + layer_name.replace('.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, "-q 1e8")
+            result = await geojson_to_topojson(filepath2, "-q 1e6")
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
             asyncio.ensure_future(
@@ -345,7 +345,7 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
 
-        result = await geojson_to_topojson(filepath, "-q 1e8")
+        result = await geojson_to_topojson(filepath, "-q 1e6")
 
         if len(result) == 0 and not crs:
             return web.Response(text=json.dumps(
@@ -365,7 +365,7 @@ async def convert(request):
         os.remove(filepath)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e8")
+        result = await geojson_to_topojson(filepath, "-q 1e6")
         if len(result) == 0:
             return web.Response(
                 text='{"Error": "Error converting reading kml file"}')
@@ -389,6 +389,9 @@ async def serve_main_page(request):
     user_id = get_user_id(session_redis, request.app['app_users'])
     return {"user_id": user_id}
 
+@aiohttp_jinja2.template('about.html')
+async def about_handler(request):
+    return {}
 
 async def nothing(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
@@ -969,6 +972,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route = app.router.add_route
     add_route('GET', '/', handler)
     add_route('GET', '/index', handler)
+    add_route('GET', '/about', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)
@@ -1002,6 +1006,10 @@ async def init(loop, port=9999, nb_r_workers='2'):
 
 
 def main():
+    if len(sys.argv) == 2 and "--help" in sys.argv[1]:
+        display_usage(sys.argv[0])
+        return
+
     if not os.path.isdir('/tmp/feeds'):
         try:
             os.mkdir('/tmp/feeds')
