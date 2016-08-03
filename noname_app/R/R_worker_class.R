@@ -7,6 +7,7 @@ load <- function(){
   require(SpatialPosition, quietly = TRUE)
   require(geojsonio, quietly = TRUE)
   require(stats, quietly = TRUE)
+  require(R6, quietly = TRUE)
   require(cartography)
 }
 

@@ -1,6 +1,9 @@
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
-from .transform import from_topo
-
+try:
+    from .transform import from_topo
+except:
+    from noname_app.helpers.transform import from_topo
 
 def convert_from_topo(topojson):
     assert isinstance(topojson, dict)

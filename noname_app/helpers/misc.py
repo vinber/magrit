@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 """
 @author: mz
@@ -10,8 +11,10 @@ from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
 from mmh3 import hash as mmh3_hash
 
-from .cy_misc import get_name
-
+try:
+    from .cy_misc import get_name
+except:
+    from noname_app.helpers.cy_misc import get_name
 
 LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,

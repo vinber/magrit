@@ -41,14 +41,25 @@ try:
     from noname_app.helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform)
 except:
-    from r_py.rclient_worker_queue import R_client_fuw_async, url_client
-    from helpers.misc import (
-        savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from helpers.cy_misc import get_name, join_field_topojson
-    from helpers.cartogram_doug import make_cartogram
-    from helpers.topo_to_geo import convert_from_topo
-    from helpers.geo import (
-        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+    try:
+        from r_py.rclient_worker_queue import R_client_fuw_async, url_client
+        from helpers.misc import (
+            savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+        from helpers.cy_misc import get_name, join_field_topojson
+        from helpers.cartogram_doug import make_cartogram
+        from helpers.topo_to_geo import convert_from_topo
+        from helpers.geo import (
+            reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+    except:
+        from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
+        from .helpers.misc import (
+            savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+        from .helpers.cy_misc import get_name, join_field_topojson
+        from .helpers.cartogram_doug import make_cartogram
+        from .helpers.topo_to_geo import convert_from_topo
+        from .helpers.geo import (
+            reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+
 
 from geopandas import GeoDataFrame
 
@@ -958,6 +969,50 @@ def display_usage(file_name):
                               (default: 2)
         """.format(file_name))
 
+
+async def session_middleware_factory(app, handler):
+    redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
+    return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
+
+def create_app(loop, port=9999, nb_r_workers='2'):
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if app_real_path != os.getcwd():
+        os.chdir(app_real_path)
+    _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
+    app = web.Application(
+        loop=loop, middlewares=[session_middleware_factory, ])
+#    app = web.Application(loop=loop)
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
+    add_route = app.router.add_route
+    add_route('GET', '/', handler)
+    add_route('GET', '/index', handler)
+    add_route('GET', '/about', about_handler)
+    add_route('GET', '/modules', serve_main_page)
+    add_route('GET', '/modules/', serve_main_page)
+    add_route('GET', '/modules/{expr}', serve_main_page)
+    add_route('GET', '/layers', list_user_layers)
+    add_route('POST', '/layers/add', receiv_layer)
+    add_route('POST', '/layers/delete', remove_layer)
+    add_route('GET', '/get_layer/{expr}', handler_exists_layer)
+    add_route('POST', '/get_layer2', handler_exists_layer2)
+    add_route('POST', '/R_compute/{function}', R_compute)
+    add_route('POST', '/convert_to_topojson', convert)
+    add_route('POST', '/convert_csv_geo', convert_csv_geo)
+    add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
+    add_route('POST', '/helpers/calc', calc_helper)
+    app.router.add_static('/static/', path='static', name='static')
+#    app['async_ctx'] = zmq.asyncio.Context(2)
+#    app['redis_conn'] = redis_conn
+    app['broker'] = _p
+    app['app_users'] = set()
+    with open('static/json/sample_layers.json', 'r') as f:
+        app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
+    app['ThreadPool'] = ThreadPoolExecutor(4)
+    app['R_function'] = {
+        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
+        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
+    return app
 
 async def init(loop, port=9999, nb_r_workers='2'):
     _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])

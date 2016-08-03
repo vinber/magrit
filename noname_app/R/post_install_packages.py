@@ -7,6 +7,7 @@ with open("/tmp/r_packages.r", "w") as f:
     f.write("""chooseCRANmirror(ind=10);
         install.packages(\"devtools\");
         require(devtools);
+        install.packages(\"R6\");
         install.packages(\"rgeos\");
         install.packages(\"jsonlite\");
         install.packages(\"sp\");

@@ -30,18 +30,27 @@ Currently available mapping methods :
  - choroplethized proportional symbol
  - gridded map
  - compute a gravitational interaction model (Stewart potential) to produce a smoothed map
- - cartograms
+ - cartograms according to various algorythms
  - "label map"
- -
+ - "symbols map"
  - compute and render the result of statistical comparison between territorial units (based on HyperCarte* methods)
- - In progress : render cartograms according to other algorythms, render "label map" with optimal label positioning
 
 #### Instalation
+
+##### Dependencies
 Following dependencies are needed :
 
-Ubuntu/Debian:
+Ubuntu 16.04
 ```
 sudo apt-get install libgdal-dev gdal-bin libproj-dev libv8-dev libffi-dev \
 python3.5 libpython3.5-dev r-base redis-server nodejs nodejs-dev node-gyp npm \
 libfftw3-dev libzmq3-dev
 ```
+
+##### Building
+```
+python3.5 setup.py install
+```
+
+##### Testing
+
