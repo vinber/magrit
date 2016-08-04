@@ -4,6 +4,7 @@ aiohttp_session >= 0.5.0
 aioredis >= 0.2.6
 cchardet == 1.0.0
 Cython >= 0.24
+docopt == 0.6.2
 Fiona >= 1.6
 gdal == 2.1.0
 geopandas == 0.1.1

@@ -1,12 +1,28 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 """
-@author: mz
+noname_app
+
+Usage:
+  noname_app
+  noname_app [--R-workers <n_worker>] [--port <port_nb>]
+  noname_app [-p <port_nb>] [-R <n_worker>]
+  noname_app --version
+  noname_app --help
+
+Options:
+  -h, --help                Show this screen.
+  --version                 Show version.
+  -p <port>, --port <port>  Port number to use (exit if not available) [default: 9999]
+  -R <n>, --R-workers <n>   Number of R instance to start [default: 2]
 """
+
 import os
 import sys
 import ujson as json
 import time
+import docopt
+import logging
 
 import asyncio
 import zmq.asyncio
@@ -173,14 +189,17 @@ async def cache_input_topojson(request):
         result = await request.app['redis_conn'].get(f_nameNQ)
         if result:
             result = result.decode()
-            print("The TopoJSON was already cached !")
+            content["additional_infos"]
+            request.app['logger'].info(
+                '{} - Used result from redis'.format(user_id))
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(f_name, name), '}'
                 ]))
         else:
             res = await ogr_to_geojson(path, to_latlong=True)
-            print("Transform coordinates from GeoJSON")
+            request.app['logger'].info(
+                '{} - Transform coordinates from GeoJSON'.format(user_id))
             f_path = '/tmp/' + f_name
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
@@ -216,7 +235,8 @@ async def cache_input_topojson(request):
         result = await request.app['redis_conn'].get(f_nameNQ)
         if result:
             result = result.decode()
-            print("The TopoJSON was already cached !")
+            request.app['logger'].info(
+                '{} - Used result from redis'.format(user_id))
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(hash_val, name), '}'
@@ -300,7 +320,7 @@ async def convert(request):
     results = await request.app['redis_conn'].keys(f_name)
     if results:
         result = await request.app['redis_conn'].get(f_nameQ)
-        print("Used cached result")
+        request.app['logger'].info('{} - Used result from redis'.format(user_id))
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
             ))
@@ -347,7 +367,7 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
             res = await ogr_to_geojson(filepath, to_latlong=True)
-            print("Transform coordinates from GeoJSON")
+            request.app['logger'].info('{} - Transform coordinates from GeoJSON'.format(user_id))
             os.remove(filepath)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(res)
@@ -388,7 +408,9 @@ async def convert(request):
                 request.app['redis_conn'].set(f_nameQ, result))
     else:
         return web.Response(text='{"Error": "Incorrect datatype"}')
-
+    request.app['logger'].info(
+        '{} - Converted, stored in redis and sent back to client'
+        .format(user_id))
     return web.Response(text=''.join(
         ['{"key":', str(hashed_input), ',"file":', result, '}']
         ))
@@ -433,7 +455,7 @@ async def nothing(posted_data, user_id, app):
 
 
 async def carto_doug(posted_data, user_id, app):
-    s_t = time.time()
+    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson']), "Q"])
     ref_layer = await app['redis_conn'].get(f_name)
@@ -460,12 +482,13 @@ async def carto_doug(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
-    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
+    request.app['logger'].info(
+        '{} - timing : carto_doug : {:.4f}s'
+        .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def links_map(posted_data, user_id, app):
-    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
@@ -491,10 +514,8 @@ async def links_map(posted_data, user_id, app):
         "fij": posted_data["field_fij"],
         "join_field": n_field_name
         }).encode()
-    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     content = await R_client_fuw_async(
         url_client, commande, data, app['async_ctx'], user_id)
-    s_t = time.time()
     content = content.decode()
     try:
         content = json.loads(content)
@@ -504,7 +525,8 @@ async def links_map(posted_data, user_id, app):
                       .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
-        print("Additionnal infos:\n", content["additional_infos"])
+        app['logger'].info(
+            '{} - Links - {}'.format(user_id, content["additional_infos"]))
 
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
     new_name = ''.join(["Links_", n_field_name])
@@ -512,12 +534,10 @@ async def links_map(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
-    print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def carto_gridded(posted_data, user_id, app):
-    s_t = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
@@ -540,10 +560,8 @@ async def carto_gridded(posted_data, user_id, app):
         "var_name": n_field_name,
         "cellsize": posted_data["cellsize"]
         }).encode()
-    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
     content = await R_client_fuw_async(
         url_client, commande, data, app['async_ctx'], user_id)
-    s_t = time.time()
     content = content.decode()
     try:
         content = json.loads(content)
@@ -553,7 +571,8 @@ async def carto_gridded(posted_data, user_id, app):
                       .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
-        print("Additionnal infos:\n", content["additional_infos"])
+        app['logger'].info(
+            '{} - Gridded - {}'.format(user_id, content["additional_infos"]))
 
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
     new_name = '_'.join(['Gridded',
@@ -588,7 +607,9 @@ async def compute_olson(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val, "NQ"]), res))
-    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
+    request.app['logger'].info(
+        '{} - timing : olson-like cartogeam : {:.4f}s'
+        .format(user_id, time.time()-st))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
@@ -761,7 +782,8 @@ async def call_stewart(posted_data, user_id, app):
                       .format(content if content else "Unknown Error")})
 
     if "additional_infos" in content:
-        print("Additionnal infos:\n", content["additional_infos"])
+        app['logger'].info(
+            '{} - Stewart - {}'.format(user_id, content["additional_infos"]))
 
     if filenames['mask_layer']:
         os.remove(filenames['mask_layer'])
@@ -817,6 +839,9 @@ async def handler_exists_layer2(request):
             '_'.join([user_id, layer_name_redis, "NQ"])
             )
     if not res:
+        app['logger'].info(
+            '{} - Unable to fetch the requested layer ({}/{})'
+            .format(user_id, layer_name, layer_name_redis))
         return web.Response(
             text="Error: Unable to fetch the layer on the server")
     elif file_format == "TopoJSON":
@@ -926,7 +951,8 @@ async def convert_csv_geo(request):
 
     result = await request.app['redis_conn'].get(f_name)
     if result:
-        print("Used cached result")
+        request.app['logger'].info(
+                '{} - Used result from redis'.format(user_id))
         return web.Response(text=result.decode())
 
     res = await rawcsv_to_geo(data)
@@ -939,7 +965,9 @@ async def convert_csv_geo(request):
         result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
     else:
         asyncio.ensure_future(request.app['redis_conn'].set(f_name, result))
-    print("csv -> geojson -> topojson : {:.4f}s".format(time.time()-st))
+    request.app['logger'].info(
+        '{} - timing : csv -> geojson -> topojson : {:.4f}s'
+        .format(user_id, time.time()-st))
     return web.Response(text=result)
 
 
@@ -958,21 +986,10 @@ def check_port_available(port_nb):
     return True
 
 
-def display_usage(file_name):
-    print("""
-    Usage :
-        ./{} [TCP port to use] [Number of R process]
-
-        TCP port to use       An available TCP port for the application
-                              (default: 9999)
-        Number of R process   The number of R instance to start in background
-                              (default: 2)
-        """.format(file_name))
-
-
 async def session_middleware_factory(app, handler):
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
     return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
+
 
 def create_app(loop, port=9999, nb_r_workers='2'):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1016,6 +1033,8 @@ def create_app(loop, port=9999, nb_r_workers='2'):
 
 async def init(loop, port=9999, nb_r_workers='2'):
     _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50)
     redis_conn = await create_reconnecting_redis(('localhost', 6379), db=1)
     app = web.Application(
@@ -1047,6 +1066,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     app['redis_conn'] = redis_conn
     app['broker'] = _p
     app['app_users'] = set()
+    app['logger'] = logger
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
@@ -1061,45 +1081,19 @@ async def init(loop, port=9999, nb_r_workers='2'):
 
 
 def main():
-    if len(sys.argv) == 2 and "--help" in sys.argv[1]:
-        display_usage(sys.argv[0])
-        return
-
-    if not os.path.isdir('/tmp/feeds'):
-        try:
-            os.mkdir('/tmp/feeds')
-        except Exception as err:
-            print(err)
-            display_usage(sys.argv[0])
-            sys.exit()
-
-    if len(sys.argv) == 2:
-        try:
-            port = int(sys.argv[1])
-        except:
-            display_usage(sys.argv[0])
-            sys.exit()
-        nb_r_workers = '2'
-    elif len(sys.argv) == 3:
-        try:
-            port = int(sys.argv[1])
-        except:
-            display_usage(sys.argv[0])
-            sys.exit()
-        nb_r_workers = sys.argv[2]
-        if not nb_r_workers.isnumeric():
-            print(
-                "Error : The number of R instances have to be a number (<= 8)")
-            display_usage(sys.argv[0])
-            sys.exit()
-    else:
-        port = 9999
-        nb_r_workers = '2'
+    arguments = docopt.docopt(__doc__, version='noname_app 0.0.0 (Unreleased)')
+    if not arguments["--port"].isnumeric():
+        print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
+        sys.exit("Error: Invalid port value")
+    if not arguments["--R-workers"].isnumeric():
+        print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
+        sys.exit("Error: Invalid R workers value")
+    port = int(arguments["--port"])
+    nb_r_workers = arguments["--R-workers"]
 
     if not check_port_available(port):
-        print("Error : Selected port is already in use")
-        display_usage(sys.argv[0])
-        sys.exit()
+        print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
+        sys.exit("Error : Selected port is already in use")
 
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
@@ -1109,7 +1103,8 @@ def main():
     loop = asyncio.get_event_loop()
     srv, app = loop.run_until_complete(init(loop, port, nb_r_workers))
 
-    print(pp, 'serving on', srv.sockets[0].getsockname())
+    app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
+#    print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()
     except KeyboardInterrupt:

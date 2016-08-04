@@ -8,9 +8,6 @@ GDALOPTS="  --with-ogr \
             --with-geos \
             --with-expat \
             --without-libtool \
-            --with-libz=internal \
-            --with-libtiff=internal \
-            --with-geotiff=internal \
             --without-gif \
             --without-pg \
             --without-grass \
@@ -18,33 +15,11 @@ GDALOPTS="  --with-ogr \
             --without-cfitsio \
             --without-pcraster \
             --without-netcdf \
-            --with-png=internal \
-            --with-jpeg=internal \
             --without-gif \
             --without-ogdi \
             --without-fme \
             --without-hdf4 \
-            --with-hdf5 \
-            --without-jasper \
-            --without-ecw \
-            --without-kakadu \
-            --without-mrsid \
-            --without-jp2mrsid \
-            --without-bsb \
-            --without-grib \
-            --without-mysql \
-            --without-ingres \
-            --without-xerces \
-            --without-odbc \
-            --with-curl \
-            --without-sqlite3 \
-            --without-dwgdirect \
-            --without-idb \
-            --without-sde \
-            --without-perl \
-            --without-php \
-            --without-ruby \
-            --without-python \
+            --with-spatialite
             --with-static-proj4=/usr/lib"
 
 # Create build dir if not exists
