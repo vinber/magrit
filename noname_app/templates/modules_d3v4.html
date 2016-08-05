@@ -12,10 +12,22 @@
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <script  src="/static/js/lib/d3.v3.min.js"></script>
+    <script src="https://d3js.org/d3-array.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+    <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+    <script src="https://d3js.org/d3-selection.v1.min.js"></script>
+    <script src="https://d3js.org/d3-timer.v1.min.js"></script>
+    <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+    <script src="https://d3js.org/d3-request.v1.min.js"></script>
+    <script src="https://d3js.org/d3-transition.v1.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+    <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+    <script src="https://d3js.org/d3-zoom.v1.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
-    <script  src="/static/js/lib/d3.geo.projection.js"></script>
-    <script  src="/static/js/lib/polyhedron.js"></script>
     <script  src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
     <script  src="/static/js/lib/geostats.min.js"></script>
@@ -26,7 +38,7 @@
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
-    <script  src="/static/js/txt_annotation.js"></script>
+  <!--  <script  src="/static/js/txt_annotation.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
     <script  src="/static/js/interface.js"></script>
     <script  src="/static/js/discrtiz_links_discont.js"></script>
@@ -36,7 +48,7 @@
     <script  src="/static/js/function.js"></script>
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
-    <script  src="/static/js/colors_helpers.js"></script>
+    <script  src="/static/js/colors_helpers.js"></script> -->
   </head>
   <body>
       <div id="header">
@@ -48,6 +60,19 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
+
+i18next.use(i18nextXHRBackend)
+  .init({
+      debug: true,
+      lng: window.navigator.language || 'en',
+      fallbackLng: "en",
+      backend: {
+        loadPath: "/static/locales/fr/translation.json"
+      }
+}, (err, t) => {
+    if(err)
+        throw err;
+});
 
 function make_eye_button(state){
     if(state == "open"){
@@ -122,14 +147,14 @@ var w = Math.round(window.innerWidth - 360),
     h = window.innerHeight - 75;
     //h = Math.round(window.innerHeight / 1.24);
 
-var proj = d3.geo.naturalEarth().scale(1).translate([0,0]);
+var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
 
-var path = d3.geo.path().projection(proj).pointRadius(4),
+var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
-    zoom = d3.behavior.zoom().on("zoom", zoom_without_redraw),
+    zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
 
 /*
@@ -245,51 +270,51 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         dv11 = dv1.append("div").style("width", "auto");
 
     dv11.append("img")
-        .attr({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
+        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
 
     dv11.append("p")
-        .attr({id: "input_geom", class: "user_panel"})
-        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .attrs({id: "input_geom", class: "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
         //.html('<b>"Add geometry layer <i>(or drop it)</i></b>')
         .html("<b>" + i18next.t("Add geometry layer") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
         .on('click',  click_button_add_layer);
 
     let dv12 = dv1.append("div");
     dv12.append("img")
-        .attr({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
+        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
     dv12.append("p")
-        .attr({"id": "data_ext", "class": "user_panel"})
-        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .attrs({"id": "data_ext", "class": "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
         //.html('<b>Add additional dataset <i>(or drop it)</i></b>')
         .html("<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
         .on('click',  click_button_add_layer);
 
     let div_sample = dv1.append("div").attr("id", "sample_zone");
     div_sample.append("img")
-        .attr({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
+        .attrs({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
         .style("cursor", "pointer")
         .on('click', add_sample_layer);
     div_sample.append("span")
-        .attr({"id": "sample_link", "class": "user_panel"})
-        .style({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        .attrs({"id": "sample_link", "class": "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
         //.html("<b>Select available sample dataset</b>")
         .html("<b>" + i18next.t("Select available sample dataset") + "</b>")
         .on('click', add_sample_layer);
 
     dv1.append("p")
         .attr("id", "join_section")
-        .style({"text-align": "center", "margin-top": "2px"})
+        .styles({"text-align": "center", "margin-top": "2px"})
         .html("");
     dv1.append("p")
         .attr("id", "browse_section")
         .attr("align", "center")
         .html("")
         .append("button")
-        .attr({id: "browse_button", class: "button_st3", disabled: true})
+        .attrs({id: "browse_button", class: "button_st3", disabled: true})
         .style("font-size", "12px")
         //.html("Explore your table(s)")
         .html(i18next.t("Explore your table(s)"))
@@ -305,7 +330,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     let section3 = d3.select("#section3");
 
     var layer_list = section3.append("div")
-                             .append("ul").attr({id: "sortable", class: "layer_list"})
+                             .append("ul").attrs({id: "sortable", class: "layer_list"})
                              .on("mouseover", function(){
                                     $('.qtip.qtip-section3').qtip("hide")
                                 })
@@ -328,21 +353,21 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     let section4 = d3.select("#section4");
     let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
     dv4.append("div")
-            .style({float: "left", width: "50%", "text-align": "center"})
+            .styles({float: "left", width: "50%", "text-align": "center"})
             //.html("<b>Canvas width (px)</b><br>")
             .html("<b>" + i18next.t("Canvas width") + " (px)</b><br>")
             .insert("input").style("width", "60px")
-            .attr({id: "input-width", type: "number", value: w, width: "55px"})
+            .attrs({id: "input-width", type: "number", value: w, width: "55px"})
             .on("change", function(){canvas_mod_size([this.value,null])});
     dv4.append("div")
-            .style({float: "right", width: "50%", "text-align": "center"})
+            .styles({float: "right", width: "50%", "text-align": "center"})
             //.html("<b>Canvas height (px)</b><br>")
             .html("<b>" + i18next.t("Canvas height") + " (px)</b><br>")
             .insert("input").style("width", "60px")
-            .attr({id: "input-height", type: "number", "value": h})
+            .attrs({id: "input-height", type: "number", "value": h})
             .on("change", function(){canvas_mod_size([null,this.value])});
     dv4.append("p")
-            .style({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
+            .styles({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
             //.html("Map title<br>")
             .html(i18next.t("Map title") + "<br>")
             .insert("input").attr("id", "title")
@@ -353,7 +378,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
             .on("click", handle_title_properties);
     dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
             .insert("input").style("margin-left", "15px")
-            .attr({type: "color", id: "bg_color", value: "#ffffff"})
+            .attrs({type: "color", id: "bg_color", value: "#ffffff"})
             .on("change", function(){handle_bg_color(this.value);});
 
     dv4.append("p")
@@ -399,21 +424,38 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
             });
 
     let background = map.append("g")
-                        .attr({id: "Simplified_land_polygons", class: "layer"})
-                        .style({"stroke-width": "0.3px"});
+                        .attrs({id: "Simplified_land_polygons", class: "layer"})
+                        .style("stroke-width", "0.3px");
 
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function ready(error, json) {
+    d3.request("/static/data_sample/simplified_land_polygons.topojson")
+        .mimeType("application/json")
+        .response(function(xhr) { return JSON.parse(xhr.responseText); })
+        .get(cb1);
+    function cb1(error, json) {
+            console.log(json)
+            background.selectAll('.subunit')
+                      .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+                      .enter()
+                      .append('path')
+                      .attr("d", path)
+                      .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+            map.selectAll("path").attr("d", path);
+            //scale_to_lyr("Simplified_land_polygons");
+            //center_map("Simplified_land_polygons");
+            zoom_without_redraw();
+        }
+   /* d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
         background.selectAll('.subunit')
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
                   .enter()
                   .append('path')
                   .attr("d", path)
-                  .style({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
         map.selectAll("path").attr("d", path);
         scale_to_lyr("Simplified_land_polygons");
         center_map("Simplified_land_polygons");
         zoom_without_redraw();
-    });
+    });*/
 
     let p = dv5.append("select")
                 .attr("id","form_projection")
@@ -499,7 +541,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     let lm = map_div
                 .append("div")
                 .attr("class", "light-menu")
-                .style({position:"absolute", right:"0px", bottom: "0px"});
+                .styles({position:"absolute", right:"0px", bottom: "0px"});
 
     let lm_buttons = [
         {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
@@ -1150,7 +1192,7 @@ function save_map_template(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    let z_scale = zoom.scale(),
+    let zoom_param = d3.zoomTransform(map),
         rot_val = canvas_rotation_value || "";
 
     map.selectAll("g.layer")
@@ -1159,15 +1201,15 @@ function zoom_without_redraw(){
               .style("stroke-width", function(){
                     let lyr_name = this.id;
                     if(!(current_layers[lyr_name].fixed_stroke))
-                        return current_layers[lyr_name]['stroke-width-const'] / z_scale +  "px";
+                        return current_layers[lyr_name]['stroke-width-const'] / zoom_param.k +  "px";
                     else
                         return this.style.strokeWidth;
                 })
-              .attr("transform", [rot_val,"translate(", zoom.translate(), "),",
-                                 "scale(", z_scale, ")"].join(''));
+              .attr("transform", [rot_val,"translate(", zoom_param.x, zoom_param.y, "),",
+                                 "scale(", zoom_param.k, ")"].join(''));
 
-    if(scaleBar.displayed)
-        scaleBar.update();
+    //if(scaleBar.displayed)
+    //    scaleBar.update();
 };
 
 function interpolateZoom(translate, scale) {
@@ -1265,18 +1307,6 @@ function change_projection(proj_name) {
                     .on("mouseup", null);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// Used for the sphere rotation when orthographic projection is enabled :
-//////////////////////////////////////////////////////////////////////////////
-
-var λ = d3.scale.linear()
-    .domain([0, w])
-    .range([-180, 180]);
-
-var φ = d3.scale.linear()
-    .domain([0, h])
-    .range([90, -90]);
-
 // Function to switch the visibility of a layer the open/closed eye button
 function handle_active_layer(name){
     var fill_value, parent_div, selec;
@@ -1313,8 +1343,8 @@ function handle_title(txt){
         map.append("g")
              .attr("class", "legend_feature title")
           .insert("text")
-             .attr({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
-             .style({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt);
+             .attrs({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
+             .styles({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt);
     }
 }
 
@@ -1354,16 +1384,16 @@ function handle_title_properties(){
         ['Verdana', 'Verdana,Geneva,sans-serif']
         ];
     box_content.append("p").html("Font-size :<br>")
-        .insert("input").attr({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style({width: "50px"})
+        .insert("input").attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style({width: "50px"})
         .on("change", function(){  title.style("font-size", this.value + "px");  });
     box_content.append("p").html("x position (% from the left side) :<br>")
-        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]}).style({width: "50px"})
+        .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]}).style({width: "50px"})
         .on("change", function(){  title.attr("x", this.value + "%");  });
     box_content.append("p").html("y position (% from the top) :<br>")
-        .insert("input").attr({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]}).style({width: "50px"})
+        .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]}).style({width: "50px"})
         .on("change", function(){  title.attr("y", this.value + "%");  });
     box_content.append("p").html("Font color :<br>")
-        .insert("input").attr({type: "color", value: title_props.color})
+        .insert("input").attrs({type: "color", value: title_props.color})
         .on("change", function(){  title.style("fill", this.value);  });
     var font_select = box_content.append("p").html("Font family :<br>")
         .insert("select").attr("class", "params")
@@ -1449,7 +1479,7 @@ function export_compo_svg(){
 
 function export_compo_png(){
     // Todo : ask for output format (svg / png) before conversion / ! \
-    var targetCanvas = d3.select("body").append("canvas").attr({id: "canvas_map_export", height: h, width: w}).node(),
+    var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
         svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
         ctx = targetCanvas.getContext('2d'),
@@ -1640,7 +1670,7 @@ function apply_user_preferences(json_pref){
             title = map.append("g")
                      .attr("class", "legend_feature title")
                   .insert("text")
-                     .attr({id: "map_title", x: map_config.title.x, y: map_config.title.y, "alignment-baseline": "middle", "text-anchor": "middle"})
+                     .attrs({id: "map_title", x: map_config.title.x, y: map_config.title.y, "alignment-baseline": "middle", "text-anchor": "middle"})
                      .text(map_config.title.content);
             title.node().setAttribute("style", map_config.title.style);
         }
@@ -1688,7 +1718,7 @@ function handle_export(){
 
 function make_export_layer_box(){
     d3.select("body").append("div")
-        .attr({id: "dialogGeoExport", class: "exportGeoDialogBox", title: "Choose layer and datatype..."})
+        .attrs({id: "dialogGeoExport", class: "exportGeoDialogBox", title: "Choose layer and datatype..."})
         .style("font-size", "0.6em")
         .html("");
 
@@ -1847,6 +1877,256 @@ window.addEventListener("unload", function(){
         navigator.sendBeacon("/layers/delete", formToSend);
     }
 }, false);
+
+function click_button_add_layer(){
+    var res = [],
+        self = this,
+        input = d3.select(document.createElement('input'))
+                    .attr("type", "file").attr("multiple", "").attr("name", "file[]")
+                    .attr("enctype", "multipart/form-data")
+                    .on('change', function(){ prepareUpload(d3.event) });
+
+    function prepareUpload(event){
+        target_layer_on_add = (self.id === "input_geom") ? true :
+                              (self.id === "img_in_geom") ? true :
+                              (self.id === "img_data_ext") ? true :
+                              (self.id === "data_ext") ? true : false;
+
+        let files = event.target.files;
+        for(let i=0; i < files.length; i++){
+            if(files[i].size > MAX_INPUT_SIZE){
+                alert("Too large input file (should currently be under 8Mb");
+                return;
+            }
+        }
+        if(files[0].name.indexOf('topojson') > -1){
+            handle_TopoJSON_files(files);
+        } else if(files.length == 1 && (files[0].name.indexOf("geojson") > -1
+                    || files[0].name.indexOf('zip') > -1 || files[0].name.indexOf('kml'))){
+            handle_single_file(files[0]);
+        } else if((files[0].name.toLowerCase().indexOf('.csv')
+                    || files[0].name.toLowerCase().indexOf('.tsv'))
+                    && target_layer_on_add) {
+            handle_dataset(files[0])
+            target_layer_on_add = false;
+        }
+        else if(files.length >= 4){
+            var files_to_send = [];
+            Array.prototype.forEach.call(files, f =>
+                f.name.indexOf('.shp') > -1
+                    || f.name.indexOf('.dbf') > -1
+                    || f.name.indexOf('.shx') > -1
+                    || f.name.indexOf('.prj') > -1
+                    ? files_to_send.push(f) : null)
+            if(files_to_send.length >= 4)
+                handle_shapefile(files_to_send);
+            else
+                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+        } else {
+            alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
+        }
+    };
+    input.node().dispatchEvent(new MouseEvent("click"))
+}
+
+function get_menu_option(func){
+    var menu_option = {
+        "test":{
+            "name": "test",
+            "title": "test",
+            "desc": "Testing functionnality...",
+            "menu_factory": "fillMenu_Test",
+            "fields_handler": "fields_Test",
+        },
+        "smooth":{
+            "name": "smooth",
+            "title":"Smoothed map (Stewart potentials)",
+            "desc":"Compute stewart potentials...",
+            "menu_factory": "fillMenu_Stewart",
+            "fields_handler": "fields_Stewart",
+            },
+        "prop":{
+            "name": "prop",
+            "title":"Proportional symbols",
+            "menu_factory": "fillMenu_PropSymbol",
+            "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data",
+            "fields_handler": "fields_PropSymbol",
+            },
+        "choroprop":{
+            "name": "choroprop",
+            "title":"Proportional colored symbols",
+            "menu_factory": "fillMenu_PropSymbolChoro",
+            "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
+            "fields_handler": "fields_PropSymbolChoro",
+            },
+        "choro":{
+            "name": "choro",
+            "title":"Choropleth map",
+            "menu_factory": "fillMenu_Choropleth",
+            "desc":"Render a choropleth map on a numerical field of your data",
+            "fields_handler": "fields_Choropleth",
+            },
+        "cartogram":{
+            "name": "cartogram",
+            "title":"Anamorphose map",
+            "menu_factory": "fillMenu_Anamorphose",
+            "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
+            "fields_handler": "fields_Anamorphose",
+            "add_options": "keep_file",
+            },
+        "grid":{
+            "name": "grid",
+            "title":"Gridded map",
+            "menu_factory": "fillMenu_griddedMap",
+            "desc":"Render a gridded map on a numerical field of your data",
+            "fields_handler": "fields_griddedMap",
+            },
+        "mta":{
+            "name": "mta",
+            "title":"Multiscalar Territorial Analysis",
+            "menu_factory": "fillMenu_MTA",
+            "desc":"Compute and render various methods of multiscalar territorial analysis",
+            "fields_handler": "fields_MTA",
+            },
+        "flow":{
+            "name": "flow",
+            "title":"Link/FLow map",
+            "menu_factory": "fillMenu_FlowMap",
+            "desc": "Render a map displaying links between features with graduated sizes",
+            "fields_handler": "fields_FlowMap",
+            },
+        "discont":{
+            "name": "discont",
+            "title":"Discontinuities map",
+            "menu_factory": "fillMenu_Discont",
+            "desc": "Render a map displaying discontinuities between polygons features",
+            "fields_handler": "fields_Discont",
+            "add_options": "keep_file",
+            },
+        "typo":{
+            "name": "typo",
+            "title":"Categorical map",
+            "menu_factory": "fillMenu_Typo",
+            "desc":"Render a categorical map with an attribute field of your dataset",
+            "fields_handler": "fields_Typo",
+            },
+        "label":{
+            "name": "label",
+            "title":"Label map",
+            "menu_factory": "fillMenu_Label",
+            "desc":"Render a map with optimal label positionning",
+            "fields_handler": "fields_Label",
+            },
+        "symbol":{
+            "name": "symbol",
+            "title":"Symbol map",
+            "menu_factory": "fillMenu_Symbol",
+            "desc":"Render a map with optimal label positionning",
+            "fields_handler": "fields_Symbol",
+            },
+    };
+    return menu_option[func.toLowerCase()] || {};
+}
+
+function prepare_drop_section(){
+    Array.prototype.forEach.call(
+        document.querySelectorAll("#section1,#section3"),
+        function(elem){
+            elem.addEventListener("dragenter", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                target_layer_on_add = false;
+                elem.style.border = '3px dashed green';
+            });
+            elem.addEventListener("dragover", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                elem.style.border = '3px dashed green';
+            });
+            elem.addEventListener("dragleave", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                elem.style.border = '';
+            });
+            elem.addEventListener("drop", function(e) {
+                e.preventDefault();
+                let files = e.dataTransfer.files,
+                    self_section = elem.id;
+
+                e.stopPropagation();
+
+                if(self_section === "section1")
+                    target_layer_on_add = true;
+
+                for(let i=0; i < files.length; i++){
+                    if(files[i].size > MAX_INPUT_SIZE){
+                        elem.style.border = '3px dashed red';
+                        alert("Too large input file (should currently be under 12Mb");
+                        elem.style.border = '';
+                        return;
+                    }
+                }
+                if(!(files.length == 1)){
+                    var files_to_send = [];
+                    Array.prototype.forEach.call(files, f =>
+                        f.name.indexOf('.shp') > -1
+                            || f.name.indexOf('.dbf') > -1
+                            || f.name.indexOf('.shx') > -1
+                            || f.name.indexOf('.prj') > -1
+                            ? files_to_send.push(f) : null)
+                    elem.style.border = '';
+                    if(target_layer_on_add && targeted_layer_added){
+                           alert("Only one layer can be added by this functionnality");
+                    } else if(files_to_send.length == 4){
+                        handle_shapefile(files_to_send);
+                    } else {
+                        elem.style.border = '3px dashed red';
+                        alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                        elem.style.border = '';
+                    }
+                }
+                else if(files[0].name.toLowerCase().indexOf('topojson')){
+                       elem.style.border = '';
+                       if(target_layer_on_add && targeted_layer_added)
+                           alert("Only one layer can be added by this functionnality");
+                       // Most direct way to add a layer :
+                       else handle_TopoJSON_files(files);
+               }
+               else if(files[0].name.toLowerCase().indexOf('geojson') ||
+                    files[0].name.toLowerCase().indexOf('zip') ||
+                    files[0].name.toLowerCase().indexOf('kml')){
+                       elem.style.border = '';
+
+                       if(target_layer_on_add && targeted_layer_added)
+                           alert("Only one layer can be added by this functionnality");
+                       // Send the file to the server for conversion :
+                       else handle_single_file(files[0]);
+               }
+              else if(files[0].name.toLowerCase().indexOf('.csv')
+                || files[0].name.toLowerCase().indexOf('.tsv')) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        handle_dataset(files[0]);
+                    else
+                        alert('Only layout layers can be added here');
+                    target_layer_on_add = false;
+               }
+              else {
+                    elem.style.border = '3px dashed red';
+                    alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
+                    elem.style.border = '';
+                }
+            }, true);
+    });
+}
+
+function handle_dataset(){ null; };
+function handle_shapefile(){ null; };
+function handle_single_file(){ null; };
+function add_sample_layer(){ null; };
+function add_layout_layers(){ null; };
+function select_layout_features(){ null; };
+function create_li_layer_elem (){ null; }
 
 </script>
 </body>

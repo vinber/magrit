@@ -189,7 +189,6 @@ async def cache_input_topojson(request):
         result = await request.app['redis_conn'].get(f_nameNQ)
         if result:
             result = result.decode()
-            content["additional_infos"]
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
             return web.Response(text=''.join([
@@ -415,6 +414,11 @@ async def convert(request):
         ['{"key":', str(hashed_input), ',"file":', result, '}']
         ))
 
+@aiohttp_jinja2.template('modules_d3v4.html')
+async def serve_main_page2(request):
+    session_redis = await get_session(request)
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    return {"user_id": user_id}
 
 @aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
@@ -582,7 +586,6 @@ async def carto_gridded(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
-    print('Python - p3 : {:.4f}'.format(time.time()-s_t))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
@@ -990,6 +993,9 @@ async def session_middleware_factory(app, handler):
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
     return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
 
+async def redis_conn_factory(app, handler):
+    return await create_reconnecting_redis(('localhost', 6379), db=1)(app, handler)
+
 
 def create_app(loop, port=9999, nb_r_workers='2'):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1018,8 +1024,8 @@ def create_app(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
-#    app['async_ctx'] = zmq.asyncio.Context(2)
-#    app['redis_conn'] = redis_conn
+    app['async_ctx'] = zmq.asyncio.Context(2)
+    app['redis_conn'] = redis_conn_factory()
     app['broker'] = _p
     app['app_users'] = set()
     with open('static/json/sample_layers.json', 'r') as f:
@@ -1034,7 +1040,7 @@ def create_app(loop, port=9999, nb_r_workers='2'):
 async def init(loop, port=9999, nb_r_workers='2'):
     _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger("noname_app.main")
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50)
     redis_conn = await create_reconnecting_redis(('localhost', 6379), db=1)
     app = web.Application(
@@ -1049,6 +1055,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route('GET', '/about', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
+    add_route('GET', '/modules2/', serve_main_page2)
     add_route('GET', '/modules/{expr}', serve_main_page)
     add_route('GET', '/layers', list_user_layers)
     add_route('POST', '/layers/add', receiv_layer)

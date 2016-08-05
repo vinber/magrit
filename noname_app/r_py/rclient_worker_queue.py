@@ -1,11 +1,13 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 import asyncio
+import logging
 import zmq
 import sys
 import os
 from collections import deque
 from psutil import Popen
+from threading import Thread
 from zmq.asyncio import Context, Poller, ZMQEventLoop
 
 url_worker = 'ipc:///tmp/feeds/workers'
@@ -25,6 +27,38 @@ async def R_client_fuw_async(client_url, request, data, context, i):
     socket.close()
     return reply
 
+class LogPipe(Thread):
+    '''
+    Code taken from
+    http://codereview.stackexchange.com/questions/6567/redirecting-subprocesses-output-stdout-and-stderr-to-the-logging-module
+    '''
+    def __init__(self, logger):
+        """
+        Setup the object with an existing logger and start the thread
+        """
+        Thread.__init__(self)
+        self.daemon = False
+        self.logger = logger
+        self.fdRead, self.fdWrite = os.pipe()
+        self.pipeReader = os.fdopen(self.fdRead)
+        self.start()
+
+    def fileno(self):
+        """Return the write file descriptor of the pipe
+        """
+        return self.fdWrite
+
+    def run(self):
+        """Run the thread, logging everything.
+        """
+        for line in iter(self.pipeReader.readline, ''):
+            self.logger.info(line.strip('\n'))
+        self.pipeReader.close()
+
+    def close(self):
+        """Close the write end of the pipe.
+        """
+        os.close(self.fdWrite)
 
 class RWorkerQueue:
     # TODO: write some tests
@@ -37,6 +71,9 @@ class RWorkerQueue:
                 print(err)
                 sys.exit()
 
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger("noname_app.async_brooker")
+        self.logpipe = LogPipe(self.logger)
         self.available_workers = deque()
         self.r_process = {}
         self.init_nb = init_R_process
@@ -59,14 +96,15 @@ class RWorkerQueue:
         try:
             self.loop.run_until_complete(run(self.loop))
         except KeyboardInterrupt:
-            print('(async_broker) Interrrupting...')
+            self.logpipe.close()
+            self.logger.info('(async_broker) Interrrupting...')
             return
 
     def launch_r_worker(self, nb=1):
         for i in range(nb):
             id_ = str(len(self.r_process)+1)
-            p = Popen(['Rscript', '--vanilla',
-                       'R/R_worker_class.R', id_])
+            p = Popen(['Rscript', '--vanilla', 'R/R_worker_class.R', id_],
+                      stdout=self.logpipe, stderr=self.logpipe)
             # TODO: Use something like prlimit to control processus ressource
             self.r_process[id_] = p
 
@@ -76,8 +114,8 @@ class RWorkerQueue:
         frontend.bind(url_client)
         backend = self.context.socket(zmq.ROUTER)
         backend.bind(url_worker)
-        print('(async_broker) is ON - Starting with {} R workers'
-              .format(self.init_nb))
+        self.logger.info('(async_broker) is ON - Starting with {} R workers'
+                         .format(self.init_nb))
 
         poller = Poller()
         poller.register(backend, zmq.POLLIN)
@@ -122,7 +160,7 @@ class RWorkerQueue:
         frontend.close()
         backend.close()
         self.loop.stop()
-        print('(async_broker) exiting...')
+        self.logger.info('(async_broker) exiting...')
         return 0
 
 
