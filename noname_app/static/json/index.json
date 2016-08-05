@@ -1,0 +1,62 @@
+[
+	{
+	"img" : "world.png",
+	"desc" : "Example 1 - Explore geometries/dataset",
+	"link" 	: "/modules/test"
+	},
+	{
+	"img" : "potentials2.png",
+	"desc" : "Example 2 - Stewart potentials",
+	"link" 	: "/modules/stewart"
+	},
+	{
+	"img" : "choro.png",
+	"desc" : "Example 3 - Choropleth map",
+	"link" 	: "/modules/choropleth"
+	},
+	{
+	"img" : "bubble.png",
+	"desc" : "Example 4 - Prop. symbols map",
+	"link" 	:  "/modules/prop_symbol"
+	},
+	{
+	"img" : "gridded2.png",
+	"desc" : "Example 5 - Gridded map",
+	"link" 	:  "/modules/grid_map"
+	},
+	{
+	"img" : "links.png",
+	"desc" : "Example 6 - Flows map",
+	"link" 	:  "/modules/flows_map"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 7 - Multiscalar Territorial Analysis",
+	"link" 	:  "/modules/MTA"
+	},
+     {
+	"img" : "bubble_choro.png",
+	"desc" : "Example 8 - Choroplethized prop. symbols",
+	"link" 	:  "/modules/prop_symbol_choro"
+	},
+     {
+	"img" : "cartogram.png",
+	"desc" : "Example 9 - Cartogram map",
+	"link" 	:  "/modules/cartogram"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 9 - Discontinuities Map",
+	"link" 	:  "/modules/discontinuities"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 10 - Categorical Map",
+	"link" 	:  "/modules/categorical"
+	},
+     {
+	"img" : "empty.png",
+	"desc" : "Example 11 - Label Map",
+	"link" 	:  "/modules/label"
+	}
+]
