@@ -1,16 +1,19 @@
 TODO list:
-- Check for missing values before letting the user choose the field for choropleth / stewart /etc.. (as behavior dont seems to be the same on all browser)
-- Propose directly palettes instead of only reclassing in the styling popup when features have been already classed
-- Do more data validation (client and/or server side) to avoid weird user-uploads + more testing on the join operation
-- /!\ reload preferences from the exported json
-- /!\ fix the zoom by rectangular zone
-- add the simplification options ?
-- allow to display label on rendered features ?
-- Add some layout elements (cardinal arrow, scale, etc.)
-- Fix confusion between layer pointed by the information cursor when layer order is modified while pointing for informations
-- Keep trace of the last legend position, to redisplay it on the same place (only if colors are changed when a legend palette is displayed)
-- Improve the "user defined" break values in the discretization panel
-- Refactor broken selenium tests
-- Allow the user to display label of features on its map (based, or not on some criteria)
-- Only propose palette on styling box for stewart layer (or resend a query if the number of class is changed)
-- Fix the (colored) legend on PropSymbolChoro in order to keep it updated when a new discretization is changed (as on choropleth)
+- /!\ fix reloading a project from previously exported one
+- /!\ Upgrade js code to use d3.js v4
+- /!\ In the same time : Correct many nonsenses due to the incremental way in which were added some features, aka "clean the code"
+- /!\ Choose some fonts (to be served by the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts in the current browser.
+- /!\ fix the zoom by rectangular zone (to do with d3 v4 as this behavior may have slightly changed)
+- Switch to CeCILL licence ?
+- Handle correctly missing values according to the functionnality used
+- Do more data validation (client and/or server side) to avoid weird user-uploads
+-(Partially done) Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, grid cell-size, etc.)
+- Add soem specials options for the garticule in the "stylebox"
+- Improve the new "Textbox" class (in order to have the same behavior with chromium than with firefox)
+- Make a fancy chart for selecting class and size for values quantization in discontinuities / links
+- Offer to choose the color and opacity of the rectangle under the legend
+- Allow the PNG export with a better resolution ? (currently it fits stricly the pixel size defined in "basemap options")
+- Design a favicon
+- Create an index page
+- Insert message about how cookies are used for EU visitors to comply with whatever directive it is
+
