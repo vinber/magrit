@@ -20,7 +20,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         var c = histo_options.append("p").style("margin", 0).style("display", "inline");
 
         a.insert("input")
-            .attr({type: "checkbox", value: "mean"})
+            .attrs({type: "checkbox", value: "mean"})
             .on("change", function(){
                     if(line_mean.classed("active")){
                         line_mean.style("stroke-width", 0)
@@ -34,7 +34,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 });
 
         b.insert("input")
-            .attr({type: "checkbox", value: "median"})
+            .attrs({type: "checkbox", value: "median"})
             .on("change", function(){
                     if(line_median.classed("active")){
                         line_median.style("stroke-width", 0)
@@ -48,7 +48,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 });
 
         c.insert("input")
-            .attr({type: "checkbox", value: "std"})
+            .attrs({type: "checkbox", value: "std"})
             .on("change", function(){
                     if(line_std_left.classed("active")){
                         line_std_left.style("stroke-width", 0)
@@ -95,7 +95,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
           .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var x = d3.scale.linear()
+        var x = d3.scaleLinear()
             .domain([serie.min(), serie.max()])
             .range([0, width]);
 
@@ -103,7 +103,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .bins(x.ticks(nb_bins))
             (values);
 
-        var y = d3.scale.linear()
+        var y = d3.scaleLinear()
             .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
             .range([height, 0]);
 
@@ -117,16 +117,15 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .attr("width", x(data[1].x) - x(data[0].x))
             .attr("height", d => height - y(d.y))
             .attr("transform", "translate(0, "+ margin.bottom +")")
-            .style({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+            .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
             .attr("class", "x axis")
             .style("font-size", "10px")
             .attr("transform", "translate(0," + height + ")")
-            .call(d3.svg.axis()
+            .call(d3.axisBottom()
                 .scale(x)
-                .ticks(4)
-                .orient("bottom"))
+                .ticks(4))
             .selectAll("text")
                 .attr("y", 4).attr("x", -4)
                 .attr("dy", ".45em")
@@ -136,17 +135,16 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         svg_ref_histo.append("g")
             .attr("class", "y axis")
             .style("font-size", "10px")
-            .call(d3.svg.axis()
+            .call(d3.axisLeft()
                 .scale(y)
-                .ticks(5)
-                .orient("left"));
+                .ticks(5));
     }
 
     var make_summary = function(){
         let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
         newBox.append("div").attr("id","summary")
                         .style("font-size", "10px").style("float", "right")
-                        .style({"margin-left": "25px", "margin-right": "50px"})
+                        .styles({"margin-left": "25px", "margin-right": "50px"})
                         .insert("p").html(["<b>Summary</b><br>", content_summary].join(""));
     }
 
@@ -187,10 +185,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = ColorsSelected.random();
 
-            var x = d3.scale.linear()
+            var x = d3.scaleLinear()
                 .range([0, svg_w]);
 
-            var y = d3.scale.linear()
+            var y = d3.scaleLinear()
                 .range([svg_h, 0]);
 
             x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
@@ -202,7 +200,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .attr("class", "bar")
                 .attr("transform", "translate(0, -17.5)")
                 .style("fill", function(d){return d.color;})
-                .style({"opacity": 0.5, "stroke-opacity":1})
+                .styles({"opacity": 0.5, "stroke-opacity":1})
                 .attr("x", function(d){ return x(d.offset);})
                 .attr("width", function(d){ return x(d.width);})
                 .attr("y", function(d){ return y(d.height) - margin.bottom;})
@@ -225,10 +223,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             svg_histo.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.svg.axis()
+                .call(d3.axisLeft()
                     .scale(y)
-                    .ticks(5)
-                    .orient("left"));
+                    .ticks(5));
 
             return true;
         },
@@ -239,7 +236,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var formatCount = d3.format(",.0f");
 
     var newBox = d3.select("body").append("div")
-                     .style({"font-size":"12px"})
+                     .style("font-size", "12px")
                      .attr("id", "discretiz_charts")
                      .attr("title", ["Discretization panel - ", layer_name, " - ", field_name].join(''));
 
@@ -272,7 +269,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
-    var discretization = newBox.append('div') // .style({"margin-top": "30px", "padding-top": "10px"})
+    var discretization = newBox.append('div') // .styles({"margin-top": "30px", "padding-top": "10px"})
                                 .attr("id", "discretization_panel")
                                 .insert("p").html("Type ")
                                 .insert("select").attr("class", "params")
@@ -303,7 +300,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                             .style("display", "inline")
                             .attr("id", "nb_class_range")
                             .attr("type", "range")
-                            .attr({min: 2, max: max_nb_class, value: nb_class, step:1})
+                            .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
                                 var old_nb_class = nb_class;
@@ -333,7 +330,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var overlay_svg = div_svg.append("g");
 
-    var x = d3.scale.linear()
+    var x = d3.scaleLinear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
@@ -346,7 +343,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("y1", 10)
         .attr("x2", x(mean_val))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "red", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "red", fill: "none"})
         .classed("active", false);
 
     var txt_mean = overlay_svg.append("text")
@@ -363,7 +360,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("y1", 10)
         .attr("x2", x(serie.median()))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "blue", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
         .classed("active", false);
 
     var txt_median = overlay_svg.append("text")
@@ -380,7 +377,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("y1", 10)
         .attr("x2", x(mean_val - stddev))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
     var line_std_right = overlay_svg.append("line")
@@ -389,7 +386,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("y1", 10)
         .attr("x2", x(mean_val + stddev))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
 
@@ -397,11 +394,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     svg_histo.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.svg.axis()
-        .scale(x)
-        .orient("bottom"));
+        .call(d3.axisBottom()
+        .scale(x));
 
-    var box_content = newBox.append("div").attr({id: "box_content"});
+    var box_content = newBox.append("div").attr("id", "box_content");
     box_content.append("h3").style("margin", "0").html("<b>Line size</b>");
     var sizes_div =  d3.select("#box_content")
                             .append("div").attr("id", "sizes_div");

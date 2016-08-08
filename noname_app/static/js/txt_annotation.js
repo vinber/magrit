@@ -13,25 +13,29 @@ class Textbox {
                 {"name": "Delete", "action": () => { this.text_annot.remove(); }}
             ];
 
-        let drag_txt_annot = d3.behavior.drag()
-                .origin(function() {
-                    let t = d3.select(this.parentElement);
-                    return {x:  t.attr("x") - d3.transform(d3.event).translate[0],
-                            y:  t.attr("y") - d3.transform(d3.event).translate[1]};
+        let drag_txt_annot = d3.drag()
+             .subject(function() {
+                    var t = d3.select(this.parentElement),
+                        prev_translate = t.attr("transform");
+                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                    return {
+                        x: t.attr("x") - prev_translate[0],
+                        y: t.attr("y") - prev_translate[1]
+                    };
                 })
-                .on("dragstart", () => {
-                    d3.event.sourceEvent.stopPropagation();
-                    if(d3.select("#hand_button").classed("active"))
-                        zoom.on("zoom", null);
-                  })
-                .on("dragend", () => {
-                    if(d3.select("#hand_button").classed("active"))
-                        zoom.on("zoom", zoom_without_redraw);
-                  })
-                .on("drag", function(){
-                    d3.event.sourceEvent.preventDefault();
-                    d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
-                  });
+            .on("start", () => {
+                d3.event.sourceEvent.stopPropagation();
+                if(d3.select("#hand_button").classed("active"))
+                    zoom.on("zoom", null);
+              })
+            .on("end", () => {
+                if(d3.select("#hand_button").classed("active"))
+                    zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", function(){
+                d3.event.sourceEvent.preventDefault();
+                d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
+              });
 
         let foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
         foreign_obj.setAttributeNS(null, "x", this.x);
@@ -44,7 +48,6 @@ class Textbox {
 
         let inner_p = document.createElement("p");
         inner_p.setAttribute("id", "in_" + new_id_txt_annot);
-//        inner_p.setAttribute("contentEditable", "true");
         inner_p.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
         inner_p.style = "display:table-cell;padding:10px;color:#000;"
             + "opacity:1;font-family:Verdana;font-size:14px;white-space: pre;"
@@ -95,13 +98,13 @@ class Textbox {
             });
         let box_content = d3.select(".styleTextAnnotation").insert("div");
         box_content.append("p").html("Font size ")
-                .append("input").attr({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+                .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
                 .on("change", function(){
                     self.fontsize = +this.value;
                     self.text_annot.select("p").style("font-size", self.fontsize + "px")
                 });
         box_content.append("p").html("Content ")
-                .append("textarea").attr({id: "annotation_content"})
+                .append("textarea").attr("id", "annotation_content")
                 .on("keyup", function(){
                     self._text = this.value;
                     self.text_annot.select("p").html(this.value)

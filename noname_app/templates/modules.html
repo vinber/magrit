@@ -152,6 +152,8 @@ var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
+    zoom_scale = 1,
+    zoom_translate = [0, 0],
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
@@ -1046,8 +1048,8 @@ function get_map_template(){
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
-    map_config.zoom_translate = zoom.translate();
-    map_config.zoom_scale = zoom.scale();
+    map_config.zoom_translate = zoom_translate;
+    map_config.zoom_scale = zoom_scale;
     map_config.div_width = +w;
     map_config.div_height = +h;
     map_config.n_layers = layers[0].length;
@@ -1162,27 +1164,41 @@ function save_map_template(){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    var transform, zoom_scale, zoom_translate;
+    var transform;
     var rot_val = canvas_rotation_value || "";
-    if(!d3.event){
-            transform = map.select(".layer").attr("transform");
-            zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
-            zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
+    console.log(zoom_scale, zoom_translate)
+    if(!d3.event || !d3.event.transform || !d3.event.sourceEvent){
+        map.selectAll(".layer")
+          .transition()
+          .duration(50)
+          .style("stroke-width", function(){
+                let lyr_name = this.id;
+                if(!(current_layers[lyr_name].fixed_stroke))
+                    return current_layers[lyr_name]['stroke-width-const'] / zoom_scale +  "px";
+                else
+                    return this.style.strokeWidth;
+            })
+          .attr("transform", "translate(" + zoom_translate + ") scale(" + zoom_scale + ")");
     } else {
         transform = d3.event.transform;
+        console.log(transform)
+        zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
+        zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
+        map.selectAll(".layer")
+                  .transition()
+                  .duration(50)
+                  .style("stroke-width", function(){
+                        let lyr_name = this.id;
+                        if(!(current_layers[lyr_name].fixed_stroke))
+                            return current_layers[lyr_name]['stroke-width-const'] / zoom_scale +  "px";
+                        else
+                            return this.style.strokeWidth;
+                    })
+                  .attr("transform", transform)
+        console.log(d3.event)
+        d3.event.sourceEvent.stopPropagation();
+        d3.event.sourceEvent.preventDefault();
     }
-
-    map.selectAll(".layer")
-              .transition()
-              .duration(50)
-              .style("stroke-width", function(){
-                    let lyr_name = this.id;
-                    if(!(current_layers[lyr_name].fixed_stroke))
-                        return current_layers[lyr_name]['stroke-width-const'] / zoom_scale +  "px";
-                    else
-                        return this.style.strokeWidth;
-                })
-              .attr("transform", transform)
 
     if(scaleBar.displayed)
         scaleBar.update();
@@ -1190,9 +1206,6 @@ function zoom_without_redraw(){
 
 function interpolateZoom(translate, scale) {
     var self = this;
-    var transform = map.select(".layer").attr("transform");
-    var zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
-    var zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
     return d3.transition().duration(225).tween("zoom", function () {
         var iTranslate = d3.interpolate(zoom_translate[1], translate),
             iScale = d3.interpolate(zoom_scale[1], scale);
@@ -1205,15 +1218,12 @@ function interpolateZoom(translate, scale) {
 }
 
 function zoomClick() {
-    var transform = map.select(".layer").attr("transform");
-    var zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
-    var zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
     var clicked = d3.event.target,
         direction = 1,
         factor = 0.1,
         target_zoom = 1,
         center = [w / 2, h / 2],
-        translate = +zoom_translate[1],
+        translate = zoom_translate,
         translate0 = [],
         l = [],
         view = {x: translate[0], y: translate[1], k: zoom_scale};
@@ -1243,8 +1253,8 @@ function rotate_global(angle){
       .transition()
       .duration(10)
       .attr("transform", [canvas_rotation_value,
-                          ",translate(", zoom.translate(), "),",
-                          "scale(", zoom.scale(), ")"].join(''));
+                          ",translate(", zoom_translate, "),",
+                          "scale(", zoom_scale, ")"].join(''));
     if(northArrow.displayed){
         let current_transform = northArrow.svg_node.attr("transform");
         if(current_transform)
@@ -1565,7 +1575,7 @@ function apply_user_preferences(json_pref){
                     .style("stroke-opacity", stroke_opacity)
         } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
             let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
-            let zs = zoom.scale();
+            let zs = zoom_scale;
             let full_params = JSON.parse(layers[i].features_order);
             let n_ft = full_params.length;
             symbol = layers[i].symbol;
@@ -1860,6 +1870,16 @@ window.addEventListener("unload", function(){
         navigator.sendBeacon("/layers/delete", formToSend);
     }
 }, false);
+
+function get_zoom_param(scale){
+    let transform = map.select(".targeted_layer").attr("transform"),
+        zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
+    if(scale) return zoom_scale;
+    else {
+        let zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
+        return {scale: zoom_scale, translate: zoom_translate}
+    }
+}
 
 </script>
 </body>

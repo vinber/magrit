@@ -259,15 +259,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
           .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var x = d3.scale.linear()
+        var x = d3.scaleLinear()
             .domain([serie.min(), serie.max()])
             .range([0, width]);
 
-        var data = d3.layout.histogram()
-            .bins(x.ticks(nb_bins))
+        var data = d3.histogram()
+            .thresholds(x.ticks(nb_bins))
             (values);
 
-        var y = d3.scale.linear()
+        var y = d3.scaleLinear()
             .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
             .range([height, 0]);
 
@@ -287,10 +287,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .attr("class", "x axis")
             .style("font-size", "10px")
             .attr("transform", "translate(0," + height + ")")
-            .call(d3.svg.axis()
+            .call(d3.axisBottom()
                 .scale(x)
-                .ticks(4)
-                .orient("bottom"))
+                .ticks(4))
             .selectAll("text")
                 .attr("y", 4).attr("x", -4)
                 .attr("dy", ".45em")
@@ -300,10 +299,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         svg_ref_histo.append("g")
             .attr("class", "y axis")
             .style("font-size", "10px")
-            .call(d3.svg.axis()
+            .call(d3.axisLeft()
                 .scale(y)
-                .ticks(5)
-                .orient("left"));
+                .ticks(5));
     }
 
     var make_summary = function(){
@@ -393,10 +391,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = color_array[i];
 
-            var x = d3.scale.linear()
+            var x = d3.scaleLinear()
                 .range([0, svg_w]);
 
-            var y = d3.scale.linear()
+            var y = d3.scaleLinear()
                 .range([svg_h, 0]);
 
             x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
@@ -432,10 +430,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             svg_histo.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.svg.axis()
+                .call(d3.axisLeft()
                     .scale(y)
-                    .ticks(5)
-                    .orient("left"));
+                    .ticks(5));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
             return true;
@@ -542,7 +539,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     var overlay_svg = div_svg.append("g");
 
-    var x = d3.scale.linear()
+    var x = d3.scaleLinear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
@@ -606,9 +603,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     svg_histo.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.svg.axis()
-        .scale(x)
-        .orient("bottom"));
+        .call(d3.axisBottom()
+        .scale(x));
 
     var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
     accordion_colors.append("h3").html("<b>Color scheme</b>");

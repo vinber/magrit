@@ -489,7 +489,8 @@ function add_layer_topojson(text, options){
     } else if (result_layer_on_add) {
         center_map(lyr_name_to_add);
         switch_accordion_section();
-    } else if (current_functionnality && current_functionnality.name == "smooth"){
+    }
+    if (!target_layer_on_add && current_functionnality && current_functionnality.name == "smooth"){
         fields_handler.fill();
     }
     up_legend();
@@ -525,6 +526,7 @@ function scale_to_lyr(name){
     });
     let prev_trans = proj.translate(),
         prev_scale = proj.scale();
+    zoom_scale = 1;
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     proj.scale(s);
     map.selectAll("g.layer").selectAll("path").attr("d", path);
@@ -551,11 +553,18 @@ function center_map(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-    var _s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
-        _t = [(w - _s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - _s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    map.select("#"+name).attr("transform", "translate(" + _t + ") scale(" + _s + ")");
-//    zoom.scaleTo(map.selectAll(".layer"), _s);
-//    zoom.translateBy(map.selectAll(".layer"), _t);
+    zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
+    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
+//    map.selectAll(".layer")
+//            .style("stroke-width", function(){
+//                        let lyr_name = this.id;
+//                        return current_layers[lyr_name].fixed_stroke
+//                                ? this.style.strokeWidth
+//                                : current_layers[lyr_name]['stroke-width-const'] / zoom_scale +  "px";
+//                    })
+//            .attr("transform", "translate(" + zoom_scale + ") scale(" + zoom_translate + ")");
 };
 
 function select_layout_features(){
@@ -623,7 +632,7 @@ function add_layout_feature(selected_feature){
                .append("path")
                .attr("class", "graticule")
                .style("stroke-dasharray",  5)
-               .datum(d3.geo.graticule())
+               .datum(d3.geoGraticule())
                .attr("d", path)
                .style("fill", "none")
                .style("stroke", "grey");
@@ -641,11 +650,14 @@ function add_layout_feature(selected_feature){
 }
 
 var drag_lgd_features = d3.drag()
-//        .origin(function() {
-//            let t = d3.select(this);
-//            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-//                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-//        })
+         .subject(function() {
+                var t = d3.select(this),
+                    prev_translate = t.attr("transform");
+                prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                return {
+                    x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
+                };
+            })
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
@@ -822,8 +834,8 @@ var scaleBar = {
     getDist: function(){
         let x_pos = w / 2,
             y_pos = h / 2,
-            z_trans = zoom.translate(),
-            z_scale = zoom.scale();
+            z_trans = zoom_translate,
+            z_scale = zoom_scale;
 
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
@@ -837,7 +849,7 @@ var scaleBar = {
         desired_dist = desired_dist || this.fixed_size;
         let ratio = +this.dist_txt / desired_dist;
         let new_size = this.bar_size / ratio;
-        let z_scale = zoom.scale();
+        let z_scale = zoom_scale;
         this.Scale.select("#rect_scale")
                   .attr("width", new_size);
         this.Scale.select("#text_limit_sup_scale")
@@ -901,6 +913,7 @@ var scaleBar = {
     },
     displayed: false
 };
+
 function add_layout_layers(){
     var selec = {layout: null};
     var layout_layers = [["Nuts 0* (2013) European Country <i>(Polygons)</i>", "nuts0"],

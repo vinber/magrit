@@ -662,7 +662,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
 
     let selec = parent_nd.selectAll(".breaks_vals");
 
-    for(let i = 0; i < selec[0].length; i++){
+    for(let i = 0; i < selec._groups[0].length; i++){
         let selection = parent_nd.select('#line_' + i);
         selection
             .insert('input')
@@ -1256,11 +1256,12 @@ var fillMenu_Label = function(){
 }
 
 let drag_elem_geo = d3.drag()
-//        .origin(function() {
-//            let t = d3.select(this);
-//            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-//                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-//        })
+         .subject(function() {
+                var t = d3.select(this);
+                return {
+                    x: t.attr("x"), y: t.attr("y")
+                };
+            })
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
@@ -2090,7 +2091,7 @@ function fillMenu_Anamorphose(){
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
-                let layer_select = map.select("#"+layer).selectAll("path")[0],
+                let layer_select = document.getElementById(layer).querySelectorAll("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
@@ -2240,10 +2241,12 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
-        zs = zoom.scale(),
+        zs = zoom_scale,
         symbol_layer = undefined,
         comp = (a,b) => b[1] - a[1],
-        force = d3.layout.force().charge(0).gravity(0).size([w, h]);
+        force = d3.forceSimulation()
+                    .force("charge", d3.forceManyBody().distanceMin(0).distanceMax(0).strength(d => d.value))
+                    .force("collide", d3.forceCollide().radius(function(d) { return d.r + 0.5; }).iterations(2));
 
     for(let i = 0; i < nb_features; ++i){
         let val = +user_data[layer][i][field_name];
@@ -2265,7 +2268,7 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     let bg_color = Colors.random(),
         stroke_color = "black";
 
-    force.nodes(nodes).on("tick", tick).start();
+    force.nodes(nodes).on("tick", tick);
 
     if(shape_symbol == "circle") {
         symbol_layer = map.append("g").attr("id", layer_to_add)
@@ -2291,83 +2294,90 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     }
 
     function tick(e){
-        if(shape_symbol == "circle"){
-            symbol_layer.each(gravity(e.alpha * 0.1))
-                .each(collide(.5))
-                .attr("cx", function(d){ return d.x })
-                .attr("cy", function(d){ return d.y })
-        } else {
-            symbol_layer.each(gravity(e.alpha * 0.1))
-                .each(collide(.5))
-                .attr("x", function(d){ return d.x - d.r})
+        if(shape_symbol == "circle")
+            symbol_layer.attr("cx", d => d.x).attr("cy", d => d.y);
+        else
+            symbol_layer.attr("x", function(d){ return d.x - d.r})
                 .attr("y", function(d){ return d.y - d.r})
-        }
     }
 
-    function gravity(k) {
-        return function(d) {
-            d.x += (d.x0 - d.x) * k;
-            d.y += (d.y0 - d.y) * k;
-        };
-    }
-
-    function collide(k) {
-        var q = d3.geom.quadtree(nodes);
-        if(shape_symbol == "circle"){
-            return function(node) {
-                let nr = node.r,
-                    nx1 = node.x - nr,
-                    nx2 = node.x + nr,
-                    ny1 = node.y - nr,
-                    ny2 = node.y + nr;
-                q.visit(function(quad, x1, y1, x2, y2) {
-                    if (quad.point && (quad.point !== node)) {
-                        let x = node.x - quad.point.x,
-                            y = node.y - quad.point.y,
-                            l = x * x + y * y,
-                            r = nr + quad.point.r;
-                        if (l < r * r) {
-                            l = ((l = Math.sqrt(l)) - r) / l * k;
-                            node.x -= x *= l;
-                            node.y -= y *= l;
-                            quad.point.x += x;
-                            quad.point.y += y;
-                        }
-                    }
-                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-                });
-            };
-        } else {
-            return function(node) {
-                let nr = node.r,
-                    nx1 = node.x - nr,
-                    nx2 = node.x + nr,
-                    ny1 = node.y - nr,
-                    ny2 = node.y + nr;
-                q.visit(function(quad, x1, y1, x2, y2) {
-                    if (quad.point && (quad.point !== node)) {
-                        let x = node.x - quad.point.x,
-                            y = node.y - quad.point.y,
-                            lx = Math.abs(x),
-                            ly = Math.abs(y),
-                            r = nr + quad.point.r;
-                        if (lx < r && ly < r) {
-                            if(lx > ly){
-                                lx = (lx - r) * (x < 0 ? -k : k);
-                                node.x -= lx;
-                                quad.point.x += lx;
-                            } else {
-                                ly = (ly - r) * (y < 0 ? -k : k);
-                                node.y -= ly;
-                                quad.point.y += ly;
-                            }
-                        }
-                    }
-                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-                });
-            };
-        }
-    }
+//    function tick(e){
+//        if(shape_symbol == "circle"){
+//            symbol_layer.each(gravity(e.alpha * 0.1))
+//                .each(collide(.5))
+//                .attr("cx", function(d){ return d.x })
+//                .attr("cy", function(d){ return d.y })
+//        } else {
+//            symbol_layer.each(gravity(e.alpha * 0.1))
+//                .each(collide(.5))
+//                .attr("x", function(d){ return d.x - d.r})
+//                .attr("y", function(d){ return d.y - d.r})
+//        }
+//    }
+//    function gravity(k) {
+//        return function(d) {
+//            d.x += (d.x0 - d.x) * k;
+//            d.y += (d.y0 - d.y) * k;
+//        };
+//    }
+//
+//    function collide(k) {
+//        var q = d3.geom.quadtree(nodes);
+//        if(shape_symbol == "circle"){
+//            return function(node) {
+//                let nr = node.r,
+//                    nx1 = node.x - nr,
+//                    nx2 = node.x + nr,
+//                    ny1 = node.y - nr,
+//                    ny2 = node.y + nr;
+//                q.visit(function(quad, x1, y1, x2, y2) {
+//                    if (quad.point && (quad.point !== node)) {
+//                        let x = node.x - quad.point.x,
+//                            y = node.y - quad.point.y,
+//                            l = x * x + y * y,
+//                            r = nr + quad.point.r;
+//                        if (l < r * r) {
+//                            l = ((l = Math.sqrt(l)) - r) / l * k;
+//                            node.x -= x *= l;
+//                            node.y -= y *= l;
+//                            quad.point.x += x;
+//                            quad.point.y += y;
+//                        }
+//                    }
+//                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+//                });
+//            };
+//        } else {
+//            return function(node) {
+//                let nr = node.r,
+//                    nx1 = node.x - nr,
+//                    nx2 = node.x + nr,
+//                    ny1 = node.y - nr,
+//                    ny2 = node.y + nr;
+//                q.visit(function(quad, x1, y1, x2, y2) {
+//                    if (quad.point && (quad.point !== node)) {
+//                        let x = node.x - quad.point.x,
+//                            y = node.y - quad.point.y,
+//                            lx = Math.abs(x),
+//                            ly = Math.abs(y),
+//                            r = nr + quad.point.r;
+//                        if (lx < r && ly < r) {
+//                            if(lx > ly){
+//                                lx = (lx - r) * (x < 0 ? -k : k);
+//                                node.x -= lx;
+//                                quad.point.x += lx;
+//                            } else {
+//                                ly = (ly - r) * (y < 0 ? -k : k);
+//                                node.y -= ly;
+//                                quad.point.y += ly;
+//                            }
+//                        }
+//                    }
+//                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+//                });
+//            };
+//        }
+//    }
     return d_values;
 }
 
@@ -2615,7 +2625,7 @@ function make_prop_symbols(rendering_params){
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
-        zs = zoom.scale();
+        zs = zoom_scale;
 
     if(values_to_use)
         for(let i = 0; i < nb_features; ++i){
@@ -2838,9 +2848,8 @@ function render_categorical(layer, rendering_params){
         copy_layer(layer, rendering_params.new_name, "typo");
         layer = rendering_params.new_name;
     }
-
     map.select("#" + layer).style("opacity", 1)
-            .style("stroke-width", 0.75/zoom.scale() + "px");
+            .style("stroke-width", 0.75/zoom_scale + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
@@ -2896,7 +2905,7 @@ function render_choro(layer, rendering_params){
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
-            .style("stroke-width", 0.75/zoom.scale() + "px");
+            .style("stroke-width", 0.75/zoom_scale + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
@@ -2965,9 +2974,7 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         abs = Math.abs,
         sqrt = Math.sqrt,
         arr_len = arr.length,
-//        p_scale = proj.scale(),
-        z_scale = zoom.scale(),
-        ratio = fixed_size / sqrt(fixed_value / z_scale),
+        ratio = fixed_size / sqrt(fixed_value / zoom_scale),
         res = [];
 
     if(type_symbol == "circle")
@@ -2992,9 +2999,7 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
         abs = Math.abs,
         sqrt = Math.sqrt,
         arr_len = arr.length,
-//        p_scale = proj.scale(),
-        z_scale = zoom.scale(),
-        ratio = fixed_size / sqrt(fixed_value / z_scale),
+        ratio = fixed_size / sqrt(fixed_value / zoom_scale),
         res = [];
 
 //    fixed_value = sqrt(fixed_value / z_scale);

@@ -104,13 +104,8 @@ let cloneObj = function(obj){
         return new Map(obj.entries());
     } else {
         return Object.assign({}, obj);
+    }
 }
-//        tmp = obj.constructor();
-//        for(let k in obj)
-//            tmp[k] = cloneObj(obj[k]);
-//    }
-//    return tmp;
-//}
 
 function createStyleBoxLabel(layer_name){
     var selection = map.select("#" + layer_name).selectAll("text"),
@@ -241,7 +236,8 @@ function createStyleBox(layer_name){
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
                          .style('stroke-opacity', border_opacity);
-                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom.scale()+"px");
+                let zoom_scale = get_zoom_param(scale=true);
+                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale+"px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
@@ -508,7 +504,8 @@ function createStyleBox(layer_name){
                           .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
                           .on('change', function(){
                                 let val = +this.value;
-                                map.select(g_lyr_name).style("stroke-width", (val / zoom.scale()) + "px");
+                                let zoom_scale = get_zoom_param(scale=true);
+                                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
                                 current_layers[layer_name]['stroke-width-const'] = val;
                           });
 }
@@ -541,7 +538,7 @@ function createStyleBox_ProbSymbol(layer_name){
     d_values.sort(comp);
 
     let redraw_prop_val = function(prop_values){
-        let selec = selection[0];
+        let selec = selection._groups[0];
 
         if(type_symbol === "circle") {
             for(let i=0, len = prop_values.length; i < len; i++){
@@ -785,8 +782,10 @@ function createStyleBox_ProbSymbol(layer_name){
             let f_val = +this.value,
                 prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
             redraw_prop_val(prop_values);
-              current_layers[layer_name].size[0] = f_val;
+            current_layers[layer_name].size[0] = f_val;
         });
+}
+
 // Todo : find a "light" way to recompute the "force" on the node after changing their size
 //              if(type_method.indexOf('Dorling') > -1){
 //                let nodes = selection[0].map((d, i) => {
@@ -798,4 +797,4 @@ function createStyleBox_ProbSymbol(layer_name){
 //                    });
 //                  current_layers[layer_name].force.nodes(nodes).start()
 //              }
-}
+//}

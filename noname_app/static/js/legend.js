@@ -76,18 +76,21 @@ function make_legend_context_menu(legend_node, layer){
 }
 
 var drag_legend_func = function(legend_group){
-    return d3.behavior.drag()
-            .origin(function() {
-                let t = d3.select(this);
-                return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                        y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-            })
-            .on("dragstart", () => {
+    return d3.drag()
+             .subject(function() {
+                    var t = d3.select(this),
+                        prev_translate = t.attr("transform");
+                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                    return {
+                        x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
+                    };
+                })
+            .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
                 d3.event.sourceEvent.preventDefault();
                 if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
                 })
-            .on("dragend", () => {
+            .on("end", () => {
                 if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
                 legend_group.style("cursor", "grab");
                 })
@@ -278,7 +281,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         val_1 = Math.pow((sqrt(val_max) - sqrt(val_min)) / 3, 2),
         val_2 = Math.pow(sqrt(val_1) + (sqrt(val_max) - sqrt(val_min)) / 3, 2),
         d_values = [val_max, val_2, val_1, val_min],
-        z_scale = zoom.scale(),
+        z_scale = zoom_scale,
         nb_decimals = get_nb_decimals(val_max),
         ref_symbols_params = [];
 
@@ -598,7 +601,7 @@ function createlegendEditBox(legend_id, layer_name){
                 subtitle_content.textContent = this.value
             });
 
-    if(legend_boxes[0].length > 0 && current_layers[layer_name].renderer != "Categorical"
+    if(legend_boxes._groups[0].length > 0 && current_layers[layer_name].renderer != "Categorical"
         && current_layers[layer_name].renderer != "TypoSymbols"){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
@@ -607,8 +610,8 @@ function createlegendEditBox(legend_id, layer_name){
         if(legend_id.indexOf("2")=== -1){
             max_nb_decimals = get_max_nb_dec(layer_name);
         } else {
-            let first_value = String(legend_boxes[0][0].__data__.value),
-                fourth_value = String(legend_boxes[0][3].__data__.value);
+            let first_value = String(legend_boxes._groups[0][0].__data__.value),
+                fourth_value = String(legend_boxes._groups[0][3].__data__.value);
             let p0 = first_value.indexOf("."),
                 p3 = fourth_value.indexOf(".");
             if(p0 > -1){
@@ -635,11 +638,11 @@ function createlegendEditBox(legend_id, layer_name){
 //                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                         d3.select("#precision_change_txt")
                             .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-                        for(let i = 0; i < legend_boxes[0].length; i++){
-                            let values = legend_boxes[0][i].__data__.value.split(' - ');
-                            legend_boxes[0][i].innerHTML = round_value(+values[1], nb_float);
+                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
+                            let values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+                            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float);
                         }
-                        let min_val = +legend_boxes[0][legend_boxes[0].length - 1].__data__.value.split(' - ')[0];
+                        let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
                         document.getElementById('lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
@@ -652,9 +655,9 @@ function createlegendEditBox(legend_id, layer_name){
                             dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                         d3.select("#precision_change_txt")
                             .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
-                        for(let i = 0; i < legend_boxes[0].length; i++){
-                            let value = legend_boxes[0][i].__data__.value;
-                            legend_boxes[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
+                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
+                            let value = legend_boxes._groups[0][i].__data__.value;
+                            legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
                         }
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
