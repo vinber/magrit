@@ -14,7 +14,7 @@ function handle_join(){
                 }
             });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog(i18next.t("The geometrie layer and the joined dataset doesn't have the same number of features") + ". " + i18next.t("Continue anyway") +  "?", "Ok", i18next.t("Cancel"), "").then(function(confirmed){
+        make_confirm_dialog(i18next.t("The geometry layer and the joined dataset doesn't have the same number of features") + ". " + i18next.t("Continue anyway") +  "?", "Ok", i18next.t("Cancel"), "").then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {
@@ -200,7 +200,7 @@ function createJoinBox(layer){
                 }
             }
         });
-    d3.select(".joinBox").style({"text-align": "center", "line-height": "0.9em"});
+    d3.select(".joinBox").styles({"text-align": "center", "line-height": "0.9em"});
     d3.select("#button_field1").style("float", "left").on("change", function(){last_choice.field1 = this.value;});
     d3.select("#button_field2").style("float", "left").on("change", function(){last_choice.field2 = this.value;});
 }

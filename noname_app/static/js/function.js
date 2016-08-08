@@ -136,13 +136,13 @@ function check_layer_name(name){
 function box_choice_symbol(sample_symbols){
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
-                        .attr({id: "box_choice_symbol", title: "Symbol selection"});
+                        .attrs({id: "box_choice_symbol", title: "Symbol selection"});
 
     newbox.append("h3").html("Symbol selection");
     newbox.append("p").html("Select a symbol...");
 
     var box_select = newbox.append("div")
-                        .style({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
+                        .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
                         .attr("id", "symbols_select");
 
     box_select.selectAll("p")
@@ -152,12 +152,12 @@ function box_choice_symbol(sample_symbols){
             .attr("id", d => "p_" + d[0].replace(".svg", ""))
             .attr("title", d => d[0])
             .html(d => d[1])
-            .style({width: "32px", height: "32px",
+            .styles({width: "32px", height: "32px",
                     "margin": "auto", display: "inline-block"});
 
     box_select.selectAll("svg")
             .attr("id", function(){ return this.parentElement.id.slice(2) })
-            .attr({height: "32px", width: "32px"})
+            .attrs({height: "32px", width: "32px"})
             .on("click", function(){
                 box_select.selectAll("svg").each(function(){
                     this.parentElement.style.border = "";
@@ -200,7 +200,7 @@ function box_choice_symbol(sample_symbols){
             .style("margin", "auto")
             .style("background-image", "url('')")
             .style("vertical-align", "middle")
-            .style({width: "32px", height: "32px",
+            .styles({width: "32px", height: "32px",
                     "border-radius": "10%",
                     display: "inline-block", "background-size": "32px 32px"
                   });
@@ -258,13 +258,13 @@ function fillMenu_Symbol(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
     let field_selec = dv2.append("p").html("Field to use ")
                     .insert('select')
-                    .attr({class: "params", id: "field_Symbol"});
+                    .attrs({class: "params", id: "field_Symbol"});
 
     let rendering_params;
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attr({id: "selec_Symbol", class: "button_disc params"})
-        .style({"font-size": "0.8em", "text-align": "center"})
+        .attrs({id: "selec_Symbol", class: "button_disc params"})
+        .styles({"font-size": "0.8em", "text-align": "center"})
         .html("Choose your symbols")
         .on("click", function(){
             fields_Symbol.box_typo().then(function(confirmed){
@@ -280,7 +280,7 @@ function fillMenu_Symbol(){
         });
 
     let ok_button = dv2.append("p")
-                      .style({"text-align": "right", margin: "auto"})
+                      .styles({"text-align": "right", margin: "auto"})
                       .append('button')
                       .attr("disabled", true)
                       .attr('id', 'yes')
@@ -306,7 +306,7 @@ function fillMenu_Symbol(){
             new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
         }
 
-        map.append("g").attr({id: layer_to_add, class: "layer"})
+        map.append("g").attrs({id: layer_to_add, class: "layer"})
             .selectAll("image")
             .data(new_layer_data).enter()
             .insert("image")
@@ -372,16 +372,16 @@ function fillMenu_Discont(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
     dv2.append('p').html('Value field ')
                 .insert('select')
-                .attr({class: 'params', id: "field_Discont"});
+                .attrs({class: 'params', id: "field_Discont"});
 
     dv2.append('p').html('Id field ')
                 .insert('select')
-                .attr({class: 'params', id: "field_id_Discont"});
+                .attrs({class: 'params', id: "field_id_Discont"});
 
     {
         let disc_kind = dv2.append('p').html('Discontinuity kind ')
                     .insert('select')
-                    .attr({class: 'params', id: "kind_Discont"});
+                    .attrs({class: 'params', id: "kind_Discont"});
 
         [ ["Relative", "rel"],
           ["Absolute", "abs"] ].forEach(function(k){
@@ -390,21 +390,21 @@ function fillMenu_Discont(){
         let min_size_field = dv2.append('p').html('Reference min. size ')
                      .insert('input')
                      .style('width', '60px')
-                     .attr({type: 'number', class: 'params', id: 'Discont_min_size'})
-                     .attr({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
+                     .attrs({type: 'number', class: 'params', id: 'Discont_min_size'})
+                     .attrs({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
 
         dv2.append('p').html('Reference max. size ')
                      .insert('input')
                      .style('width', '60px')
-                     .attr({type: 'number', class: 'params', id: 'Discont_max_size'})
-                     .attr({min: 0.1, max: 66.0, value: 10, step: 0.1})
+                     .attrs({type: 'number', class: 'params', id: 'Discont_max_size'})
+                     .attrs({min: 0.1, max: 66.0, value: 10, step: 0.1})
                      .on("change", function(){
                         min_size_field.attr("max", this.value);
                       });
 
         dv2.append('p').html(' Number of class ')
                 .insert('input')
-                .attr({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
+                .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
                 .style("width", "50px");
 
         let disc_type = dv2.append('p').html(' Discretization type ')
@@ -415,16 +415,16 @@ function fillMenu_Discont(){
     dv2.append('p').html('Discontinuity threshold ')
                  .insert('input')
                  .style('width', '60px')
-                 .attr({type: 'number', class: 'params', id: 'Discont_threshold'})
-                 .attr({min: 0.0, max: 9999.0, value: 0.5, step: 0.1});
+                 .attrs({type: 'number', class: 'params', id: 'Discont_threshold'})
+                 .attrs({min: 0.0, max: 9999.0, value: 0.5, step: 0.1});
 
     dv2.append('p').html('Color ')
                 .insert('input')
-                .attr({class: 'params', id: "color_Discont",
+                .attrs({class: 'params', id: "color_Discont",
                        type: "color", value: ColorsSelected.random()});
 
     let ok_button = dv2.append("p")
-                      .style({"text-align": "right", margin: "auto"})
+                      .styles({"text-align": "right", margin: "auto"})
                       .append('button')
                       .attr('id', 'yes')
                       .attr('class', 'params button_st2')
@@ -503,7 +503,7 @@ function fillMenu_Discont(){
 
         let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind].join('_')),
             result_layer = map.append("g").attr("id", new_layer_name)
-                .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
         result_data[new_layer_name] = [];
@@ -527,8 +527,8 @@ function fillMenu_Discont(){
                         let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
                         return a != b
                             && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
-                    .attr({d: path, id: ["feature", i].join('_')})
-                    .style({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
+                    .attrs({d: path, id: ["feature", i].join('_')})
+                    .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
                     .style("stroke-opacity", val >= threshold ? 1 : 0);
                 result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
             }
@@ -753,7 +753,7 @@ function fillMenu_FlowMap(){
 
     var nb_class_input = dv2.append('p').html(' Number of class ')
                         .insert('input')
-                        .attr({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
+                        .attrs({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
                         .style("width", "50px");
 
     var values_fij;
@@ -801,7 +801,7 @@ function fillMenu_FlowMap(){
     let ok_button = dv2.append('button')
                         .attr('id', 'yes')
                         .attr('class', 'params button_st2')
-                        .style({"text-align": "right", margin: "auto"})
+                        .styles({"text-align": "right", margin: "auto"})
                         .text(i18next.t('Compute and render'));
 
     d3.selectAll(".params").attr("disabled", true);
@@ -908,11 +908,11 @@ function fillMenu_Test(){
     let random_color = Colors.random();
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
         field_selec = dialog_content.append('p').html('Field :')
-                        .insert('select').attr({class: 'params', id: 'Test_field'});
+                        .insert('select').attrs({class: 'params', id: 'Test_field'});
 
-    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
+    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
-        .attr({id: 'Test_yes', class: "params button_st2"})
+        .attrs({id: 'Test_yes', class: "params button_st2"})
         .html('"Compute"...')
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -986,12 +986,12 @@ function fillMenu_PropSymbolChoro(layer){
 
     var field1_selec = dv2.append('p').html('Field 1 (symbol size) ')
                           .insert('select')
-                          .attr({class: 'params', id: 'PropSymbolChoro_field_1'});
+                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
 
     var ref_size = dv2.append('p').style("display", "inline").html('Fixed size ')
                      .insert('input')
-                     .attr({type: 'range', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attr({min: 0.1, max: 66.0, value: 10.0, step: 0.1})
+                     .attrs({type: 'range', class: 'params', id: 'PropSymbolChoro_ref_size'})
+                     .attrs({min: 0.1, max: 66.0, value: 10.0, step: 0.1})
                      .style("width", "8em")
                      .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
 
@@ -1001,9 +1001,9 @@ function fillMenu_PropSymbolChoro(layer){
 
     var ref_value = dv2.append('p').html('on value ... ')
                      .insert('input')
-                     .style({'width': '100px', "margin-left": "65px"})
-                     .attr({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
-                     .attr({min: 0.1, step: 0.1});
+                     .styles({'width': '100px', "margin-left": "65px"})
+                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
+                     .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
     var symb_selec = dv2.append('p').html('Symbol type ').insert('select').attr('class', 'params');
@@ -1013,11 +1013,11 @@ function fillMenu_PropSymbolChoro(layer){
     });
 
     var field2_selec = dv2.append('p').html('Field 2 (symbol color) ')
-                        .insert('select').attr({class: 'params', id: 'PropSymbolChoro_field_2'});
+                        .insert('select').attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
     dv2.insert('p').style("margin", "auto").html("")
                 .append("button").attr('class', 'params button_disc')
-                .style({"font-size": "0.8em", "text-align": "center"})
+                .styles({"font-size": "0.8em", "text-align": "center"})
                 .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -1038,9 +1038,9 @@ function fillMenu_PropSymbolChoro(layer){
                 });
 
     var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
-                                .insert("input").attr({type: "checkbox", class: "params"});
+                                .insert("input").attrs({type: "checkbox", class: "params"});
 
-    var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
+    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
                         .attr('id', 'yes')
                         .attr('class', 'button_st2')
@@ -1197,11 +1197,11 @@ var fillMenu_Label = function(){
 
     var max_font_size = prop_menu.append("p").html("Maximum font size ")
                             .insert("input").attr("type", "number")
-                            .attr({min: 0, max: 35, value: 11, step: 0.1});
+                            .attrs({min: 0, max: 35, value: 11, step: 0.1});
 
     var ref_font_size = dv2.append("p").html("Reference font size ")
                             .insert("input").attr("type", "number")
-                            .attr({min: 0, max: 35, value: 9, step: 0.1});
+                            .attrs({min: 0, max: 35, value: 9, step: 0.1});
 
 
     var choice_font = dv2.append("p").html("Font ")
@@ -1233,7 +1233,7 @@ var fillMenu_Label = function(){
 
     prop_menu.style("display", "none");
 
-    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'Label_yes')
         .attr('class', 'button_st2')
@@ -1255,19 +1255,19 @@ var fillMenu_Label = function(){
     d3.selectAll(".params").attr("disabled", true);
 }
 
-let drag_elem_geo = d3.behavior.drag()
-        .origin(function() {
-            let t = d3.select(this);
-            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-        })
-        .on("dragstart", () => {
+let drag_elem_geo = d3.drag()
+//        .origin(function() {
+//            let t = d3.select(this);
+//            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+//                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+//        })
+        .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
             if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
 
           })
-        .on("dragend", () => {
+        .on("end", () => {
             if(d3.select("#hand_button").classed("active"))
                 zoom.on("zoom", zoom_without_redraw);
           })
@@ -1297,17 +1297,17 @@ function make_style_box_indiv_label(label_node){
         });
     let box_content = d3.select(".styleTextAnnotation").insert("div");
     box_content.append("p").html("Font size ")
-            .append("input").attr({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.style.fontSize.slice(0,-2)})
+            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.style.fontSize.slice(0,-2)})
             .on("change", function(){
                 label_node.style.fontSize = this.value + "px";
             });
     box_content.append("p").html("Content ")
-            .append("input").attr({"value": label_node.textContent, id: "label_content"})
+            .append("input").attrs({"value": label_node.textContent, id: "label_content"})
             .on("keyup", function(){
                 label_node.textContent = this.value;
             });
     box_content.append("p").html("Color ")
-            .append("input").attr({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+            .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
             .on("change", function(){
                 label_node.style.fill = this.value;
             });
@@ -1334,15 +1334,15 @@ var render_label = function(layer, rendering_params){
             {"name": "Delete", "action": () => { self_parent.remove() }}
         ];
 
-    map.append("g").attr({id: layer_to_add, class: "layer result_layer"})
+    map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
         .attr("id", (d,i) => "Feature_" + i)
         .attr("x", d => d.coords[0])
         .attr("y", d => d.coords[1])
-        .attr({"alignment-baseline": "middle", "text-anchor": "middle"})
-        .style({"font-size": font_size, fill: txt_color})
+        .attrs({"alignment-baseline": "middle", "text-anchor": "middle"})
+        .styles({"font-size": font_size, fill: txt_color})
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
@@ -1381,8 +1381,8 @@ var fillMenu_Typo = function(){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attr({id: "Typo_class", class: "button_disc params"})
-        .style({"font-size": "0.8em", "text-align": "center"})
+        .attrs({id: "Typo_class", class: "button_disc params"})
+        .styles({"font-size": "0.8em", "text-align": "center"})
         .html("Choose colors")
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0];
@@ -1400,7 +1400,7 @@ var fillMenu_Typo = function(){
                 });
         });
 
-    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'Typo_yes')
         .attr("disabled", true)
@@ -1428,8 +1428,8 @@ function fillMenu_Choropleth(){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attr({id: "choro_class", class: "button_disc params"})
-        .style({"font-size": "0.8em", "text-align": "center"})
+        .attrs({id: "choro_class", class: "button_disc params"})
+        .styles({"font-size": "0.8em", "text-align": "center"})
         .html(i18next.t("Display and arrange class"))
         .on("click", function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0],
@@ -1449,7 +1449,7 @@ function fillMenu_Choropleth(){
                 });
         });
 
-    dv2.insert("p").style({"text-align": "right", margin: "auto"})
+    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'choro_yes')
         .attr("disabled", true)
@@ -1568,7 +1568,7 @@ function fillMenu_MTA(){
     var field_key_agg = dv2.append("p").html("Aggregation key field :")
                             .insert("select").attr("class", "params").attr("id", "MTA_field_key_agg").attr("disabled", true);
     var ref_ratio = dv2.append("p").html("Reference ratio :")
-                            .insert("input").attr({type: "number", min: 0, max: 10000000, step: 0.1});
+                            .insert("input").attrs({type: "number", min: 0, max: 10000000, step: 0.1});
     var type_deviation = dv2.append("p").html("Type of deviation")
                             .insert("select").attr("class", "params");
     [["Relative deviation", "rel"],
@@ -1579,7 +1579,7 @@ function fillMenu_MTA(){
     var a = dv2.append('div').style("margin-bottom", "15px");
 
     var param_general_dev = a.insert("select")
-                                .style({"background-color": "#e5e5e5", "border-color": "transparent"})
+                                .styles({"background-color": "#e5e5e5", "border-color": "transparent"})
                                 .attr("class", "params")
                                 .attr("disabled", true);
 
@@ -1589,7 +1589,7 @@ function fillMenu_MTA(){
 
     var val_param_general_dev = a.insert('input')
                                     .style("width", "85px")
-                                    .attr({type: "number", min: 0, max:1000000, step:1})
+                                    .attrs({type: "number", min: 0, max:1000000, step:1})
                                     .attr("disabled", true);
 
     // Each MTA method (global/local/medium) is associated with some
@@ -1615,7 +1615,7 @@ function fillMenu_MTA(){
 
     // TODO : check that fields are correctly filled before trying to prepare the query
     // ... and only enable the "compute" button when they are
-    var ok_button = dv2.insert("p").style({"text-align": "right", margin: "auto"})
+    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append("button")
                         .attr("value", "yes")
                         .attr("id", "yes")
@@ -1838,39 +1838,39 @@ function fillMenu_Stewart(){
     {
         let p_span = dialog_content
                         .append("p")
-                            .style({"float": "left"})
+                            .style("float", "left")
                             .text("Span ");
         var span = p_span.append('input')
                         .style("width", "60px")
-                        .attr({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: 0.001});
+                        .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: 0.001});
         p_span.insert("span").html(" km");
 
         var beta = dialog_content
                         .append('p')
-                            .style({"float": "right", "margin-right": "35px"})
+                            .styles({"float": "right", "margin-right": "35px"})
                             .html('Beta ')
                         .insert('input')
                             .style("width", "60px")
-                            .attr({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: 0.1});
+                            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: 0.1});
 
         let p_reso = dialog_content
                             .append('p').text('Resolution (opt.) ');
         var resolution = p_reso.insert('input').style("width", "60px")
-                            .attr({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: 0.1});
+                            .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: 0.1});
         p_reso.insert("span").html(" km");
     }
 
-    var func_selec = dialog_content.append('p').html('Function type ').insert('select').attr({class: 'params', id: "stewart_func"}),
-        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attr({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}).style("width", "50px"),
-        breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attr({class: 'params', id: "stewart_breaks"}).style({"width": "260px", "height": "30px"}),
-        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attr({class: 'params', id: "stewart_mask"});
+    var func_selec = dialog_content.append('p').html('Function type ').insert('select').attrs({class: 'params', id: "stewart_func"}),
+        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}).style("width", "50px"),
+        breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attrs({class: 'params', id: "stewart_breaks"}).styles({"width": "260px", "height": "30px"}),
+        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attrs({class: 'params', id: "stewart_mask"});
 
     ['Exponential', 'Pareto'].forEach(function(fun_name){
         func_selec.append("option").text(fun_name).attr("value", fun_name);
     });
 
 
-    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
+    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'stewart_yes')
         .attr('class', "params button_st2")
@@ -1985,11 +1985,11 @@ function fillMenu_Anamorphose(){
 
         option1_txt.html('Symbol type ');
         option2_txt.html("Fixed size ");
-        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
-        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
+        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
+        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
         option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
         option2_txt2.html("On value ...");
-        option2_val2 = option2_txt2.insert("input").attr("type", "number").attr({class: "params", id: "Anamorph_opt3"});
+        option2_val2 = option2_txt2.insert("input").attr("type", "number").attrs({class: "params", id: "Anamorph_opt3"});
 
         symbols.forEach(function(symb){
             option1_val.append("option").text(symb[0]).attr("value", symb[1]);
@@ -2018,32 +2018,32 @@ function fillMenu_Anamorphose(){
         option2_txt.html("");
         option2_txt2.html("");
         option1_val = option1_txt.insert('input')
-                        .attr({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
+                        .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
     };
 
     var make_opt_olson = function(){
         option1_txt.html("Scale reference size on : ");
         option2_txt.html("Maximum size modification (%) ");
-        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"});
+        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
         [["Max. value (prevent overlapping)", "max"],
          ["Mean value (may cause overlapping)", "mean"]].forEach(function(opt_field){
             option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
         });
         option2_val = option2_txt.insert('input')
                         .style("width", "60px")
-                        .attr({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
+                        .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
         option2_txt2.html("");
     };
 
     var dialog_content = section2.append("div").attr("class", "form-rendering"),
         algo_selec = dialog_content.append('p').html('Algorythm to use :').insert('select').attr('class', 'params'),
-        field_selec = dialog_content.append('p').html('Field :').insert('select').attr({class: 'params', id: 'Anamorph_field'}),
+        field_selec = dialog_content.append('p').html('Field :').insert('select').attrs({class: 'params', id: 'Anamorph_field'}),
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html('Symbol type'),
-        option1_val = option1_txt.insert("select").attr({class: "params", id: "Anamorph_opt"}),
+        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"}),
         option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html("Fixed size "),
-        option2_val = option2_txt.insert("input").attr({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
+        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
         option2_txt2 = dialog_content.append("p").attr("id", "Anamorph_opt_txt3").html("On value ..."),
-        option2_val2 = option2_txt2.insert("input").attr({type: "number", min: 0, step: 0.1}).attr({class: "params", id: "Anamorph_opt3"}),
+        option2_val2 = option2_txt2.insert("input").attrs({type: "number", min: 0, step: 0.1}).attrs({class: "params", id: "Anamorph_opt3"}),
         symbols = [["Circle", "circle"], ["Square", "rect"]];
 
     option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
@@ -2071,9 +2071,9 @@ function fillMenu_Anamorphose(){
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
-    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
+    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
-        .attr({id: 'Anamorph_yes', class: "params button_st2"})
+        .attrs({id: 'Anamorph_yes', class: "params button_st2"})
         .html('Compute')
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2391,7 +2391,7 @@ var boxExplore = {
         let self = this;
         this.top_buttons
              .insert("button")
-             .attr({id: "add_field_button", class: "button_st3"})
+             .attrs({id: "add_field_button", class: "button_st3"})
              .html("Add a new field...")
              .on('click', function(){
                 add_table_field(the_table, table_name, self);
@@ -2402,7 +2402,7 @@ var boxExplore = {
             this.columns_names.length, " fields"].join('');
         this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
         this.box_table.append("table")
-                      .attr({class: "display compact", id: "myTable"})
+                      .attrs({class: "display compact", id: "myTable"})
                       .style("width", "80%");
         let myTable = $('#myTable').DataTable({
             data: the_table,
@@ -2430,17 +2430,17 @@ var boxExplore = {
         this.columns_names = undefined;
         this.current_table = undefined,
         this.box_table = d3.select("body").append("div")
-                            .attr({id: "browse_data_box", title: "Explore dataset"})
+                            .attrs({id: "browse_data_box", title: "Explore dataset"})
                             .style("font-size", "0.75em");
 
         let self = this;
 
         this.top_buttons = this.box_table.append('p')
-                                    .style({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
         let select_a_table = this.box_table
                                 .append('p').html("Available tables :")
-                                .insert("select").attr({id: "select_table"})
+                                .insert("select").attr("id", "select_table")
                                 .on("change", function(){
                                     self.display_table(this.value);
                                 });
@@ -2512,11 +2512,11 @@ function fillMenu_PropSymbol(layer){
         dialog_content = section2.append("p").attr("class", "form-rendering"),
         field_selec = dialog_content.append('p').html('Field ')
                           .insert('select')
-                          .attr({class: 'params', 'id': "PropSymbol_field_1"}),
+                          .attrs({class: 'params', 'id': "PropSymbol_field_1"}),
         ref_size = dialog_content.append('p').style("display", "inline").html('Fixed size ')
                          .insert('input')
-                         .attr({type: 'number', class: 'params'})
-                         .attr({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
+                         .attrs({type: 'number', class: 'params'})
+                         .attrs({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
                          .style("width", "50px");
 
     dialog_content.append('span').html(" px");
@@ -2524,8 +2524,8 @@ function fillMenu_PropSymbol(layer){
     var ref_value = dialog_content.append('p').attr("id", "PropSymbol_ref_value")
                             .html('on value ... ')
                             .insert('input')
-                            .style({'width': '100px', "margin-left": "65px"})
-                            .attr({type: 'number', class: "params", min: 0.1, step: 0.1});
+                            .styles({'width': '100px', "margin-left": "65px"})
+                            .attrs({type: 'number', class: "params", min: 0.1, step: 0.1});
 
     var symb_selec = dialog_content
                         .append('p').html('Symbol type ')
@@ -2556,21 +2556,21 @@ function fillMenu_PropSymbol(layer){
     var col_p = dialog_content.append("p").style("display", "inline");
     var fill_color = col_p.insert('input')
                                 .attr('type', 'color')
-                                .attr({class: "params", "value": ColorsSelected.random()});
+                                .attrs({class: "params", "value": ColorsSelected.random()});
     var fill_color2 = col_p.insert('input')
                                 .attr('type', 'color')
                                 .style("display", "none")
-                                .attr({class: "params", "value": ColorsSelected.random()});
+                                .attrs({class: "params", "value": ColorsSelected.random()});
     var col_b = dialog_content.insert("p");
     var fill_color_text = col_b.insert("span").style("display", "none")
                                 .html("Break value ");
     var fill_color_opt = col_b.insert('input')
                                 .attr('type', 'number')
-                                .attr({class: "params", "id": "PropSymbol_break_val"})
+                                .attrs({class: "params", "id": "PropSymbol_break_val"})
                                 .style("display", "none")
                                 .style("width", "75px");
 
-    dialog_content.insert("p").style({"text-align": "right", margin: "auto"})
+    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'yes')
         .attr("class", "params button_st2")
@@ -2746,9 +2746,9 @@ var fields_griddedMap = {
 function fillMenu_griddedMap(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering");
     var field_selec = dialog_content.append('p').html('Field ')
-                        .insert('select').attr({class: 'params', id: "Gridded_field"});
+                        .insert('select').attrs({class: 'params', id: "Gridded_field"});
     var cellsize = dialog_content.append('p').html('Cell size <i>(km)</i> ')
-                        .insert('input').attr({
+                        .insert('input').attrs({
                             type: 'number', class: 'params', id: "Gridded_cellsize",
                             value: 10.0, min: 1.000, max: 7000, step: 0.001});
     var col_pal = dialog_content.append('p').html('Colorramp ')
@@ -2759,7 +2759,7 @@ function fillMenu_griddedMap(layer){
     .forEach( d => { col_pal.append("option").text(d).attr("value", d); });
 
     dialog_content.insert("p")
-        .style({"text-align": "right", margin: "auto"})
+        .styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr("class", "params button_st2")
         .attr('id', 'Gridded_yes')
@@ -2969,9 +2969,6 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         z_scale = zoom.scale(),
         ratio = fixed_size / sqrt(fixed_value / z_scale),
         res = [];
-
-//    fixed_value = sqrt(fixed_value / z_scale);
-//    ratio =  fixed_size / fixed_value;
 
     if(type_symbol == "circle")
         for(let i=0; i < arr_len; ++i){

@@ -130,8 +130,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             sequential_color_select.append("option").text(name).attr("value", name);
         });
         var button_reverse = d3.select(".color_txt").insert("button")
-                                .style({"display": "inline", "margin-left": "10px"})
-                                .attr({"class": "button_st3", "id": "reverse_pal_btn"})
+                                .styles({"display": "inline", "margin-left": "10px"})
+                                .attrs({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html("Reverse palette")
                                 .on("click", function(){
                                     to_reverse = true;
@@ -148,7 +148,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         col_div.insert('p')
                 .attr("class", "central_class")
                 .html("Central class : ")
-               .insert("input").attr({
+               .insert("input").attrs({
                    type: "number", class: "central_class", id: "centr_class",
                    min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
                    })
@@ -164,7 +164,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                         .insert("select").attr("class", "color_params_left")
                         .on("change", function(){ redisplay.draw() });
         var right_color_select = col_div.insert("p")
-                        .style({display: "inline", "margin-left": "70px"})
+                        .styles({display: "inline", "margin-left": "70px"})
                         .attr("class", "color_txt2")
                         .html("Right-side color ramp ")
                         .insert("select").attr("class", "color_params_right")
@@ -184,7 +184,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         var c = histo_options.append("p").style("margin", 0).style("display", "inline");
 
         a.insert("input")
-            .attr({type: "checkbox", value: "mean"})
+            .attrs({type: "checkbox", value: "mean"})
             .on("change", function(){
                     if(line_mean.classed("active")){
                         line_mean.style("stroke-width", 0)
@@ -198,7 +198,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 });
 
         b.insert("input")
-            .attr({type: "checkbox", value: "median"})
+            .attrs({type: "checkbox", value: "median"})
             .on("change", function(){
                     if(line_median.classed("active")){
                         line_median.style("stroke-width", 0)
@@ -212,7 +212,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 });
 
         c.insert("input")
-            .attr({type: "checkbox", value: "std"})
+            .attrs({type: "checkbox", value: "std"})
             .on("change", function(){
                     if(line_std_left.classed("active")){
                         line_std_left.style("stroke-width", 0)
@@ -281,7 +281,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
             .attr("width", x(data[1].x) - x(data[0].x))
             .attr("height", d => height - y(d.y))
             .attr("transform", "translate(0, "+ margin.bottom +")")
-            .style({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+            .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
             .attr("class", "x axis")
@@ -310,7 +310,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
         newBox.append("div").attr("id","summary")
                         .style("font-size", "10px").style("float", "right")
-                        .style({"margin-left": "25px", "margin-right": "50px"})
+                        .styles({"margin-left": "25px", "margin-right": "50px"})
                         .insert("p").html(["<b>Summary</b><br>", content_summary].join(""));
     }
 
@@ -408,7 +408,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                 .attr("class", "bar")
                 .attr("transform", "translate(0, -17.5)")
                 .style("fill", function(d){return d.color;})
-                .style({"opacity": 0.5, "stroke-opacity":1})
+                .styles({"opacity": 0.5, "stroke-opacity":1})
                 .attr("x", function(d){ return x(d.offset);})
                 .attr("width", function(d){ return x(d.width);})
                 .attr("y", function(d){ return y(d.height) - margin.bottom;})
@@ -447,7 +447,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var formatCount = d3.format(",.0f");
 
     var newBox = d3.select("body").append("div")
-                     .style({"font-size":"12px"})
+                     .style("font-size", "12px")
                      .attr("id", "discretiz_charts")
                      .attr("title", ["Discretization panel - ", layer_name, " - ", field_name].join(''));
 
@@ -473,7 +473,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
-    var discretization = newBox.append('div') // .style({"margin-top": "30px", "padding-top": "10px"})
+    var discretization = newBox.append('div') // .styles({"margin-top": "30px", "padding-top": "10px"})
                                 .attr("id", "discretization_panel")
                                 .insert("p").html("Type ")
                                 .insert("select").attr("class", "params")
@@ -503,7 +503,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
                             .style("display", "inline")
                             .attr("id", "nb_class_range")
                             .attr("type", "range")
-                            .attr({min: 2, max: max_nb_class, value: nb_class, step:1})
+                            .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
                                 var old_nb_class = nb_class;
@@ -555,7 +555,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .attr("y1", 10)
         .attr("x2", x(mean_val))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "red", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "red", fill: "none"})
         .classed("active", false);
 
     var txt_mean = overlay_svg.append("text")
@@ -572,7 +572,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .attr("y1", 10)
         .attr("x2", x(serie.median()))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "blue", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
         .classed("active", false);
 
     var txt_median = overlay_svg.append("text")
@@ -589,7 +589,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .attr("y1", 10)
         .attr("x2", x(mean_val - stddev))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
     var line_std_right = overlay_svg.append("line")
@@ -598,7 +598,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .attr("y1", 10)
         .attr("x2", x(mean_val + stddev))
         .attr("y2", svg_h - margin.bottom)
-        .style({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
 
@@ -610,7 +610,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
         .scale(x)
         .orient("bottom"));
 
-    var accordion_colors = newBox.append("div").attr({id: "accordion_colors", class: "accordion_disc"});
+    var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
     accordion_colors.append("h3").html("<b>Color scheme</b>");
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
@@ -618,7 +618,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
     ["Sequential", "Diverging"].forEach(function(el){
         color_scheme.insert("label").style("margin", "20px").html(el)
-                    .insert('input').attr({
+                    .insert('input').attrs({
                         type: "radio", name: "color_scheme", value: el, id: "button_"+el})
                      .on("change", function(){
                         if(this.value === "Sequential"){
@@ -635,7 +635,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     document.getElementById("button_Sequential").checked = true;
 
     var accordion_breaks = newBox.append("div")
-                                .attr({id: "accordion_breaks_vals",
+                                .attrs({id: "accordion_breaks_vals",
                                        class: "accordion_disc"});
     accordion_breaks.append("h3").html("<b>Current break values</b>");
 
@@ -773,7 +773,7 @@ function display_categorical_box(layer, field){
 
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
-                        .attr({id: "categorical_box",
+                        .attrs({id: "categorical_box",
                                title: ["Color a categorical field - ", layer, " - ", nb_features, " features"].join('')});
     newbox.append("h3").html("")
     newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
@@ -782,13 +782,13 @@ function display_categorical_box(layer, field){
             .selectAll("li")
             .data(cats).enter()
             .append("li")
-                .style({margin: "auto", "list-style": "none"})
+                .styles({margin: "auto", "list-style": "none"})
                 .attr("class", "typo_class")
                 .attr("id", (d,i) => ["line", i].join('_'));
 
     newbox.selectAll(".typo_class")
             .append("input")
-            .style({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
+            .styles({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
             .attr("class", "typo_name")
             .attr("value", d => d.name)
             .attr("id", d => d.name);
@@ -798,7 +798,7 @@ function display_categorical_box(layer, field){
             .style("background-color", d => d.color)
             .style("margin", "auto")
             .style("vertical-align", "middle")
-            .style({width: "22px", height: "22px", "border-radius": "10%", display: "inline-block"})
+            .styles({width: "22px", height: "22px", "border-radius": "10%", display: "inline-block"})
             .on("click", function(){
                 let self = this;
                 let this_color = self.style.backgroundColor;
@@ -927,7 +927,7 @@ var display_box_symbol_typo = function(layer, field){
     return function(){
         var newbox = d3.select("body")
                             .append("div").style("font-size", "10px")
-                            .attr({id: "symbol_box",
+                            .attrs({id: "symbol_box",
                                    title: ["Choose symbols for fields categories - ", layer, " - ", nb_features, " features"].join('')});
         newbox.append("h3").html("")
         newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
@@ -936,13 +936,13 @@ var display_box_symbol_typo = function(layer, field){
                 .selectAll("li")
                 .data(cats).enter()
                 .append("li")
-                    .style({margin: "auto", "list-style": "none"})
+                    .styles({margin: "auto", "list-style": "none"})
                     .attr("class", "typo_class")
                     .attr("id", (d,i) => ["line", i].join('_'));
 
         newbox.selectAll(".typo_class")
                 .append("input")
-                .style({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
+                .styles({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
                 .attr("class", "typo_name")
                 .attr("value", d => d.new_name)
                 .attr("id", d => d.name);
@@ -955,7 +955,7 @@ var display_box_symbol_typo = function(layer, field){
                 //.style("background-image", "url('')")
                 .style("background-image", d => d.img)
                 .style("vertical-align", "middle")
-                .style({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
+                .styles({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
                         "border-radius": "10%", border: "1px dashed blue",
                         display: "inline-block", "background-size": "32px 32px"
                       })

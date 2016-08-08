@@ -223,7 +223,7 @@ function handle_dataset(f){
     reader.onload = function(e) {
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
-        let tmp_dataset = d3.csv.parse(data);
+        let tmp_dataset =  d3.csvParse(data);
         add_dataset(tmp_dataset);
     };
     reader.readAsText(f);
@@ -258,7 +258,7 @@ function add_dataset(readed_dataset){
         nb_features = joined_dataset[0].length;
 
     d3.select("#img_data_ext")
-        .attr({"id": "img_data_ext",
+        .attrs({"id": "img_data_ext",
                "class": "user_panel",
                "src": "/static/img/b/tabular.svg",
                "width": "26", "height": "26",
@@ -389,7 +389,7 @@ function add_layer_topojson(text, options){
 
         map.append("g").attr("id", lyr_name_to_add)
               .attr("class", data_to_load ? "targeted_layer layer" : "layer")
-              .style({"stroke-linecap": "round", "stroke-linejoin": "round"})
+              .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
               .selectAll(".subunit")
               .data(topojson.feature(topoObj, topoObj_objects).features)
               .enter().append("path")
@@ -451,7 +451,7 @@ function add_layer_topojson(text, options){
 
             _button = _button.substring(10, _button.indexOf("class") - 2);
             d3.select("#img_in_geom")
-                .attr({"src": _button, "width": "26", "height": "26"})
+                .attrs({"src": _button, "width": "26", "height": "26"})
                 .on("click", null);
             d3.select('#input_geom')
                 .attr("layer-target-tooltip", layer_tooltip_content)
@@ -539,6 +539,7 @@ function scale_to_lyr(name){
 function center_map(name){
     var bbox_layer_path = undefined;
     name = current_layers[name].ref_layer_name || name;
+
     map.select("#"+name).selectAll('path').each(function(d, i){
         let bbox_path = path.bounds(d);
         if(!bbox_layer_path)
@@ -552,7 +553,9 @@ function center_map(name){
     });
     var _s = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h),
         _t = [(w - _s * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - _s * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    zoom.scale(_s).translate(_t);
+    map.select("#"+name).attr("transform", "translate(" + _t + ") scale(" + _s + ")");
+//    zoom.scaleTo(map.selectAll(".layer"), _s);
+//    zoom.translateBy(map.selectAll(".layer"), _t);
 };
 
 function select_layout_features(){
@@ -568,7 +571,7 @@ function select_layout_features(){
     box_body.append('h3').html("Choose features to be added : ");
 
     var layout_ft_selec = box_body.append('p').html('')
-                            .insert('select').attr({class: 'sample_layout',
+                            .insert('select').attrs({class: 'sample_layout',
                                                     size: available_features.length});
 
     available_features.forEach(function(ft){
@@ -605,10 +608,10 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "Sphere background"){
         if(current_layers.Sphere) return;
         current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}};
-        map.append("g").attr({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
+        map.append("g").attrs({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
             .append("path")
             .datum({type: "Sphere"})
-            .style({fill: "lightblue", "fill-opacity": 0.2})
+            .styles({fill: "lightblue", "fill-opacity": 0.2})
             .attr("id", "sphere")
             .attr("d", path);
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
@@ -616,7 +619,7 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "Graticule"){
         if(current_layers["Graticule"] != undefined)
             return;
-        map.append("g").attr({id: "Graticule", class: "layer"})
+        map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
                .attr("class", "graticule")
                .style("stroke-dasharray",  5)
@@ -637,18 +640,18 @@ function add_layout_feature(selected_feature){
     }
 }
 
-var drag_lgd_features = d3.behavior.drag()
-        .origin(function() {
-            let t = d3.select(this);
-            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
-                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
-        })
-        .on("dragstart", () => {
+var drag_lgd_features = d3.drag()
+//        .origin(function() {
+//            let t = d3.select(this);
+//            return {x: t.attr("x") + d3.transform(t.attr("transform")).translate[0],
+//                    y: t.attr("y") + d3.transform(t.attr("transform")).translate[1]};
+//        })
+        .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
             if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
           })
-        .on("dragend", function(){
+        .on("end", function(){
             if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
           })
         .on("drag", function(){
@@ -681,10 +684,10 @@ var northArrow = {
         let arrow_context_menu = new ContextMenu();
 
         arrow_gp.append("polygon")
-                .attr({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
+                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
                        points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
         arrow_gp.append("polygon")
-                .attr({stroke: "#000000", "stroke-miterlimit": 10,
+                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
                        points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
         arrow_gp.insert("path")
                 .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
@@ -730,7 +733,7 @@ var northArrow = {
                 .html("Arrow size ");
         box_body.append("input")
                 .attr("type", "range")
-                .attr({min: 0.1, max: 2, step: 0.1})
+                .attrs({min: 0.1, max: 2, step: 0.1})
                 .attr("value", self.svg_node.attr("scale") || 1)
                 .on("change", function(){
                     let translate_param = self.svg_node.attr("transform"),
@@ -749,7 +752,7 @@ var northArrow = {
         box_body.append("input")
                 .attr("type", "range")
                 .attr("value", self.svg_node.attr("rotate") || 0)
-                .attr({min: 0, max: 360, step: 0.1})
+                .attrs({min: 0, max: 360, step: 0.1})
                 .on("change", function(){
                     let translate_param = self.svg_node.attr("transform"),
                         scale_value = self.svg_node.attr("scale");
@@ -790,17 +793,17 @@ var scaleBar = {
 
         let scale_context_menu = new ContextMenu();
         scale_gp.insert("rect")
-            .attr({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
+            .attrs({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
             .style("fill", "none");
         scale_gp.insert("rect").attr("id", "rect_scale")
-            .attr({x: x_pos, y: y_pos, height: 2, width: bar_size})
+            .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");
         scale_gp.insert("text")
-            .attr({x: x_pos - 4, y: y_pos - 5})
+            .attrs({x: x_pos - 4, y: y_pos - 5})
             .style("font", "11px 'Enriqueta', arial, serif")
             .text("0");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
-            .attr({x: x_pos + bar_size, y: y_pos - 5})
+            .attrs({x: x_pos + bar_size, y: y_pos - 5})
             .style("font", "11px 'Enriqueta', arial, serif")
             .text(this.dist_txt + " km");
 
@@ -927,7 +930,7 @@ function add_layout_layers(){
 
     var layout_layer_selec = box_body.append('p').html('')
                                     .insert('select')
-                                    .attr({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
+                                    .attrs({class: 'sample_layout', multiple: "multiple", size: layout_layers.length});
     layout_layers.forEach(function(layer_info){layout_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     layout_layer_selec.on("change", function(){
         let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
@@ -1044,16 +1047,3 @@ function list_existing_layers_server(){
         error: function(error) { console.log(error); }
     });
 }
-
-i18next.use(i18nextXHRBackend)
-  .init({
-      debug: true,
-      lng: window.navigator.language || 'en',
-      fallbackLng: "en",
-      backend: {
-        loadPath: "/static/locales/{{lng}}/{{ns}}.json"
-      }
-}, (err, t) => {
-    if(err)
-        throw err;
-});

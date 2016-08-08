@@ -26,7 +26,7 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
         last_color = (fill_prev && fill_prev.single) ? fill_prev.single : undefined;
     fill_color_section.insert('p')
           .html('Fill color<br>')
-          .insert('input').attr({type: 'color', "value": last_color})
+          .insert('input').attrs({type: 'color', "value": last_color})
           .on('change', function(){
                 map.select(g_lyr_name).selectAll(symbol).style("fill", this.value);
                 current_layers[layer].fill_color = {"single": this.value};
@@ -98,18 +98,19 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", 
 };
 
 let cloneObj = function(obj){
-    let tmp;
     if(obj === null || typeof obj !== "object")
         return obj;
     else if(obj.toString() == "[object Map]"){
-        tmp = new Map(obj.entries());
+        return new Map(obj.entries());
     } else {
-        tmp = obj.constructor();
-        for(let k in obj)
-            tmp[k] = cloneObj(obj[k]);
-    }
-    return tmp;
+        return Object.assign({}, obj);
 }
+//        tmp = obj.constructor();
+//        for(let k in obj)
+//            tmp[k] = cloneObj(obj[k]);
+//    }
+//    return tmp;
+//}
 
 function createStyleBoxLabel(layer_name){
     var selection = map.select("#" + layer_name).selectAll("text"),
@@ -133,11 +134,11 @@ function createStyleBoxLabel(layer_name){
         });
     var popup = d3.select(".styleBox");
     popup.append('h4')
-            .style({"font-size": "15px", "text-align": "center",
+            .styles({"font-size": "15px", "text-align": "center",
                     "font-weight": "bold", "margin-bottom": "10px"})
             .html("Layer style option");
     popup.append("p")
-            .style({"text-align": "center", "color": "grey"})
+            .styles({"text-align": "center", "color": "grey"})
             .html(['<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
     popup.append("p").style("text-align", "center")
             .insert("button")
@@ -211,8 +212,6 @@ function createStyleBox(layer_name){
                             rendering_params['colors'][i-1]
                             ]);
                     }
-//                    for(let i = 0; i<rendering_params['breaks'].length-1; ++i)
-//                        colors_breaks.push([rendering_params.breaks[i] + " - " + rendering_params.breaks[i+1], rendering_params.colors[i]]);
                     current_layers[layer_name].colors_breaks = colors_breaks;
                     current_layers[layer_name].rendered_field = rendering_params.field;
                 } else if (renderer == "Stewart"){
@@ -282,7 +281,7 @@ function createStyleBox(layer_name){
 
      var popup = d3.select(".styleBox");
      popup.append('h4')
-            .style({"font-size": "15px", "text-align": "center",
+            .styles({"font-size": "15px", "text-align": "center",
                     "font-weight": "bold", "margin-bottom": "10px"})
             .html("Layer style option");
      popup.append("p")
@@ -299,7 +298,7 @@ function createStyleBox(layer_name){
                  ["Color according to a categorical field", "categorical"],
                  ["Random color on each feature", "random"]].forEach(function(d,i){
                         fill_method.append("option").text(d[0]).attr("value", d[1])  });
-                popup.append('div').attr({id: "fill_color_section"})
+                popup.append('div').attrs({id: "fill_color_section"})
                 fill_method.on("change", function(){
                     d3.select("#fill_color_section").html("").on("click", null);
                     if (this.value == "single")
@@ -311,7 +310,7 @@ function createStyleBox(layer_name){
                     });
                 setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
             } else {
-                popup.append('div').attr({id: "fill_color_section"})
+                popup.append('div').attrs({id: "fill_color_section"})
                 make_single_color_menu(layer_name, fill_prev);
             }
         } else if (renderer == "Categorical"){
@@ -331,8 +330,8 @@ function createStyleBox(layer_name){
 
             popup.insert('p').style("margin", "auto").html("")
                 .append("button")
-                .attr({class: "button_disc"})
-                .style({"font-size": "0.8em", "text-align": "center"})
+                .attr("class", "button_disc")
+                .styles({"font-size": "0.8em", "text-align": "center"})
                 .html("Choose colors")
                 .on("click", function(){
                     display_categorical_box(ref_layer_name, field_selec.node().value)
@@ -412,8 +411,8 @@ function createStyleBox(layer_name){
                 seq_color_select.append("option").text(name).attr("value", name); });
 
             var button_reverse = popup.insert("button")
-                                    .style({"display": "inline", "margin-left": "10px"})
-                                    .attr({"class": "button_st3", "id": "reverse_colramp"})
+                                    .styles({"display": "inline", "margin-left": "10px"})
+                                    .attrs({"class": "button_st3", "id": "reverse_colramp"})
                                     .html("Reverse palette")
                                     .on("click", function(){
                                         let pal_name = document.getElementById("coloramp_params").value;
@@ -430,7 +429,7 @@ function createStyleBox(layer_name){
             previous_stroke_opacity = selection.style("stroke-opacity");
         selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
         popup.append('p').html('Only display flows larger than ...')
-                        .insert('input').attr({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
+                        .insert('input').attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
                         .on("change", function(){
                             let val = +this.value;
                             popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
@@ -467,7 +466,7 @@ function createStyleBox(layer_name){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
         popup.append("p").html("Discontinuity threshold ")
-                .insert("input").attr({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
+                .insert("input").attrs({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
                 .on("change", function(){
                     let val = +this.value;
                     popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
@@ -506,7 +505,7 @@ function createStyleBox(layer_name){
 
     if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
-                          .insert('input').attr('type', 'number').attr({min: 0, step: 0.1, value: stroke_width})
+                          .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
                           .on('change', function(){
                                 let val = +this.value;
                                 map.select(g_lyr_name).style("stroke-width", (val / zoom.scale()) + "px");
@@ -656,11 +655,11 @@ function createStyleBox_ProbSymbol(layer_name){
 
     var popup = d3.select(".styleBox");
     popup.append('h4')
-            .style({"font-size": "15px", "text-align": "center",
+            .styles({"font-size": "15px", "text-align": "center",
                     "font-weight": "bold", "margin-bottom": "10px"})
             .html("Layer style option");
     popup.append("p")
-            .style({"text-align": "center", "color": "grey"})
+            .styles({"text-align": "center", "color": "grey"})
             .html(['<i>Rendered layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
@@ -685,7 +684,7 @@ function createStyleBox_ProbSymbol(layer_name){
             });
         });
     } else if(current_layers[layer_name].break_val != undefined){
-        let fill_color_section = popup.append('div').attr({id: "fill_color_section"});
+        let fill_color_section = popup.append('div').attr("id", "fill_color_section");
         fill_color_section.append("p")
                     .style("text-align", "center")
                     .html('Color according to a break value');
@@ -709,7 +708,7 @@ function createStyleBox_ProbSymbol(layer_name){
                             });
         fill_color_section.insert("span").html("Break value ");
         var b_val = fill_color_section.insert("input")
-                            .attr({type: "number", value: current_layers[layer_name].break_val})
+                            .attrs({type: "number", value: current_layers[layer_name].break_val})
                             .style("width", "75px")
                             .on("change", function(){
                                 let new_break_val = +this.value;
@@ -726,7 +725,7 @@ function createStyleBox_ProbSymbol(layer_name){
             .forEach(function(d,i){
                 fill_method.append("option").text(d[0]).attr("value", d[1])
             });
-        popup.append('div').attr({id: "fill_color_section"})
+        popup.append('div').attr("id", "fill_color_section")
         fill_method.on("change", function(){
             d3.select("#fill_color_section").html("").on("click", null);
             if (this.value == "single")
@@ -753,7 +752,7 @@ function createStyleBox_ProbSymbol(layer_name){
           .on('change', function(){selection.style('stroke-opacity', this.value)});
 
     popup.append('p').html('Border width<br>')
-          .insert('input').attr('type', 'number').attr({min: 0, step: 0.1, value: stroke_width})
+          .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
           .on('change', function(){
                 selection.style("stroke-width", this.value+"px");
                 current_layers[layer_name]['stroke-width-const'] = +this.value
@@ -764,7 +763,7 @@ function createStyleBox_ProbSymbol(layer_name){
         "</i><br><br>Symbol fixed size<br>"].join(''))
     prop_val_content
           .insert('input').attr("type", "range")
-          .attr({id: "max_size_range", min: 0.1, max: 40, step: 0.1, value: current_layers[layer_name].size[1]})
+          .attrs({id: "max_size_range", min: 0.1, max: 40, step: 0.1, value: current_layers[layer_name].size[1]})
           .on("change", function(){
               let f_size = +this.value,
                   prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
@@ -780,7 +779,7 @@ function createStyleBox_ProbSymbol(layer_name){
     popup.append("p").html("on value ...")
         .insert("input")
         .style("width", "100px")
-        .attr({type: "number", min: 0.1, max: max_val_prop_symbol,
+        .attrs({type: "number", min: 0.1, max: max_val_prop_symbol,
                value: +current_layers[layer_name].size[0], step: 0.1})
         .on("change", function(){
             let f_val = +this.value,
