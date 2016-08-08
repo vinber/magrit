@@ -13,12 +13,13 @@ const MAX_INPUT_SIZE = 8704000; // max allowed input size in bytes
 function click_button_add_layer(){
     var res = [],
         self = this,
-        input = d3.select(document.createElement('input'))
-                    .attr("type", "file").attr("multiple", "").attr("name", "file[]")
-                    .attr("enctype", "multipart/form-data")
-                    .on('change', function(){ prepareUpload(d3.event) });
+        input = document.createElement('input');
 
-    function prepareUpload(event){
+    input.setAttribute('type', 'file');
+    input.setAttribute('multiple', '');
+    input.setAttribute('name', 'file[]');
+    input.setAttribute('enctype', 'multipart/form-data');
+    input.onchange = function(event){
         target_layer_on_add = (self.id === "input_geom") ? true :
                               (self.id === "img_in_geom") ? true :
                               (self.id === "img_data_ext") ? true :
@@ -58,7 +59,8 @@ function click_button_add_layer(){
             alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
         }
     };
-    input.node().dispatchEvent(new MouseEvent("click"))
+
+    input.dispatchEvent(new MouseEvent("click"))
 }
 
 /**

@@ -414,11 +414,6 @@ async def convert(request):
         ['{"key":', str(hashed_input), ',"file":', result, '}']
         ))
 
-@aiohttp_jinja2.template('modules_d3v4.html')
-async def serve_main_page2(request):
-    session_redis = await get_session(request)
-    user_id = get_user_id(session_redis, request.app['app_users'])
-    return {"user_id": user_id}
 
 @aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
@@ -426,9 +421,11 @@ async def serve_main_page(request):
     user_id = get_user_id(session_redis, request.app['app_users'])
     return {"user_id": user_id}
 
+
 @aiohttp_jinja2.template('about.html')
 async def about_handler(request):
     return {}
+
 
 async def nothing(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
@@ -486,7 +483,7 @@ async def carto_doug(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
-    request.app['logger'].info(
+    app['logger'].info(
         '{} - timing : carto_doug : {:.4f}s'
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
@@ -590,7 +587,7 @@ async def carto_gridded(posted_data, user_id, app):
 
 
 async def compute_olson(posted_data, user_id, app):
-    s_t = time.time()
+    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
     ref_layer = await app['redis_conn'].get(f_name)
@@ -610,7 +607,7 @@ async def compute_olson(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val, "NQ"]), res))
-    request.app['logger'].info(
+    app['logger'].info(
         '{} - timing : olson-like cartogeam : {:.4f}s'
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
@@ -842,7 +839,7 @@ async def handler_exists_layer2(request):
             '_'.join([user_id, layer_name_redis, "NQ"])
             )
     if not res:
-        app['logger'].info(
+        request.app['logger'].info(
             '{} - Unable to fetch the requested layer ({}/{})'
             .format(user_id, layer_name, layer_name_redis))
         return web.Response(
@@ -1055,7 +1052,6 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route('GET', '/about', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
-    add_route('GET', '/modules2/', serve_main_page2)
     add_route('GET', '/modules/{expr}', serve_main_page)
     add_route('GET', '/layers', list_user_layers)
     add_route('POST', '/layers/add', receiv_layer)
