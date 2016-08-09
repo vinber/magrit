@@ -240,10 +240,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
     var display_ref_histo = function(){
         var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
             svg_w = w / 4.75,
-            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
+            nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
 
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
-        nb_bins = nb_bins > values.length ? nb_bins : values.length;
+        nb_bins = nb_bins > +values.length ? nb_bins : values.length;
 
         var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
             width = svg_w - margin.right - margin.left;
@@ -261,14 +261,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         var x = d3.scaleLinear()
             .domain([serie.min(), serie.max()])
-            .range([0, width]);
+            .rangeRound([0, width]);
 
         var data = d3.histogram()
-            .thresholds(x.ticks(nb_bins))
+            .domain(x.domain())
+            .thresholds(x.ticks(35))
             (values);
 
         var y = d3.scaleLinear()
-            .domain([0, d3.max(data, function(d) { return d.y + 2.5; })])
+            .domain([0, d3.max(data, function(d) { return d.length; })])
             .range([height, 0]);
 
         var bar = svg_ref_histo.selectAll(".bar")
@@ -276,11 +277,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
           .enter()
             .append("rect")
             .attr("class", "bar")
-            .attr("x", d => x(d.x))
-            .attr("y", d =>  y(d.y) - margin.bottom)
-            .attr("width", x(data[1].x) - x(data[0].x))
-            .attr("height", d => height - y(d.y))
-            .attr("transform", "translate(0, "+ margin.bottom +")")
+            .attr("x", 1)
+            .attr("width", x(data[1].x1) - x(data[1].x0))
+            .attr("height",  d => height - y(d.length))
+            .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
+//            .attr("transform", "translate(0, "+ margin.bottom +")")
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")

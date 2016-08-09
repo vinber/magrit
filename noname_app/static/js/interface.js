@@ -827,8 +827,8 @@ var scaleBar = {
         let x_pos = w / 2,
             y_pos = h / 2,
             transform = d3.zoomTransform(map.node()),
-            z_trans = transform.translate,
-            z_scale = transform.scale;
+            z_trans = [transform.x, transform.y],
+            z_scale = transform.k;
 
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
