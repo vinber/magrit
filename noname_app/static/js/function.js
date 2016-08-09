@@ -1037,8 +1037,8 @@ function fillMenu_PropSymbolChoro(layer){
                         });
                 });
 
-    var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
-                                .insert("input").attrs({type: "checkbox", class: "params"});
+//    var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
+//                                .insert("input").attrs({type: "checkbox", class: "params"});
 
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
@@ -2241,7 +2241,7 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
-        zs = zoom_scale,
+        zs = d3.zoomTransform(map.node()).k,
         symbol_layer = undefined,
         comp = (a,b) => b[1] - a[1],
         force = d3.forceSimulation()
@@ -2625,7 +2625,7 @@ function make_prop_symbols(rendering_params){
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
-        zs = zoom_scale;
+        zs = d3.zoomTransform(map.node()).k;
 
     if(values_to_use)
         for(let i = 0; i < nb_features; ++i){
@@ -2849,7 +2849,7 @@ function render_categorical(layer, rendering_params){
         layer = rendering_params.new_name;
     }
     map.select("#" + layer).style("opacity", 1)
-            .style("stroke-width", 0.75/zoom_scale + "px");
+            .style("stroke-width", 0.75/d3.zoomTransform(map.node()).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
@@ -2905,7 +2905,7 @@ function render_choro(layer, rendering_params){
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
-            .style("stroke-width", 0.75/zoom_scale + "px");
+            .style("stroke-width", 0.75/d3.zoomTransform(map.node()).k, + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
@@ -2974,7 +2974,7 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         abs = Math.abs,
         sqrt = Math.sqrt,
         arr_len = arr.length,
-        ratio = fixed_size / sqrt(fixed_value / zoom_scale),
+        ratio = fixed_size / sqrt(fixed_value / d3.zoomTransform(map.node()).k),
         res = [];
 
     if(type_symbol == "circle")
@@ -2999,7 +2999,7 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
         abs = Math.abs,
         sqrt = Math.sqrt,
         arr_len = arr.length,
-        ratio = fixed_size / sqrt(fixed_value / zoom_scale),
+        ratio = fixed_size / sqrt(fixed_value / d3.zoomTransform(map.node()).k),
         res = [];
 
 //    fixed_value = sqrt(fixed_value / z_scale);

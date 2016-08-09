@@ -410,12 +410,11 @@ function add_layer_topojson(text, options){
 
                     return "feature_" + ix;
                 })
-              .style("stroke", type != 'Line' ? "rgb(0, 0, 0)" : random_color1)
-              .style("stroke-opacity", .4)
-              .style("fill", type != 'Line' ? random_color1 : null)
-              .style("fill-opacity", type != 'Line' ? 0.75 : 0)
-              .attr("height", "100%")
-              .attr("width", "100%");
+              .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
+                       "stroke-opacity": .4,
+                       "fill": type != 'Line' ? random_color1 : null,
+                       "fill-opacity": type != 'Line' ? 0.75 : 0})
+              .attrs({"height": "100%", "width": "100%"});
 
         let class_name = [
             "ui-state-default ",
@@ -524,9 +523,8 @@ function scale_to_lyr(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-    let prev_trans = proj.translate(),
-        prev_scale = proj.scale();
-    zoom_scale = 1;
+//    let prev_trans = proj.translate(),
+//        prev_scale = proj.scale();
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     proj.scale(s);
     map.selectAll("g.layer").selectAll("path").attr("d", path);
@@ -553,18 +551,11 @@ function center_map(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-    zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
-    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
-//    map.selectAll(".layer")
-//            .style("stroke-width", function(){
-//                        let lyr_name = this.id;
-//                        return current_layers[lyr_name].fixed_stroke
-//                                ? this.style.strokeWidth
-//                                : current_layers[lyr_name]['stroke-width-const'] / zoom_scale +  "px";
-//                    })
-//            .attr("transform", "translate(" + zoom_scale + ") scale(" + zoom_translate + ")");
+    let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0], zoom_translate[1]);
+//    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
+//    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
 };
 
 function select_layout_features(){
@@ -577,11 +568,12 @@ function select_layout_features(){
 
     var box_body = d3.select(".sampleLayoutFtDialogBox");
     box_body.node().parentElement.style.width = "auto";
-    box_body.append('h3').html("Choose features to be added : ");
+    box_body.append('h3').html("Choose a feature to be added : ");
 
     var layout_ft_selec = box_body.append('p').html('')
-                            .insert('select').attrs({class: 'sample_layout',
-                                                    size: available_features.length});
+                            .insert('select')
+                            .attrs({class: 'sample_layout',
+                                    size: available_features.length});
 
     available_features.forEach(function(ft){
         layout_ft_selec.append("option").html(ft).attr("value", ft);
@@ -834,8 +826,9 @@ var scaleBar = {
     getDist: function(){
         let x_pos = w / 2,
             y_pos = h / 2,
-            z_trans = zoom_translate,
-            z_scale = zoom_scale;
+            transform = d3.zoomTransform(map.node()),
+            z_trans = transform.translate,
+            z_scale = transform.scale;
 
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
@@ -849,7 +842,7 @@ var scaleBar = {
         desired_dist = desired_dist || this.fixed_size;
         let ratio = +this.dist_txt / desired_dist;
         let new_size = this.bar_size / ratio;
-        let z_scale = zoom_scale;
+
         this.Scale.select("#rect_scale")
                   .attr("width", new_size);
         this.Scale.select("#text_limit_sup_scale")
