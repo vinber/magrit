@@ -1,4 +1,18 @@
 "use strict";
+
+i18next.use(i18nextXHRBackend)
+  .init({
+      debug: true,
+      lng: window.navigator.language || 'en',
+      fallbackLng: "en",
+      backend: {
+        loadPath: "/static/locales/fr/translation.json"
+      }
+}, (err, t) => {
+    if(err)
+        throw err;
+});
+
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////

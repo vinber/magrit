@@ -101,7 +101,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
         var data = d3.histogram()
             .domain(x.domain())
-            .thresholds(x.ticks(35))
+            .thresholds(x.ticks(nb_bins))
             (values);
 
         var y = d3.scaleLinear()
@@ -205,20 +205,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .attr("width", function(d){ return x(d.width);})
                 .attr("y", function(d){ return y(d.height) - margin.bottom;})
                 .attr("height", function(d){ return svg_h - y(d.height);});
-
-//            svg_histo.selectAll(".txt_bar")
-//                .data(bins)
-//              .enter().append("text")
-//                .attr("dy", ".75em")
-//                .attr("y", function(d){
-//                    let tmp = y(d.height) + 5;
-//                    return (tmp < height - 12) ? tmp : height - 12
-//                    })
-//                .attr("x", function(d){return x(d.offset + d.width /2)})
-//                .attr("text-anchor", "middle")
-//                .attr("class", "text_bar")
-//                .style("color", "black")
-//                .text(function(d) { return formatCount(d.val); });
 
             svg_histo.append("g")
                 .attr("class", "y axis")

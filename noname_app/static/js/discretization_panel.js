@@ -265,7 +265,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type){
 
         var data = d3.histogram()
             .domain(x.domain())
-            .thresholds(x.ticks(35))
+            .thresholds(x.ticks(nb_bins))
             (values);
 
         var y = d3.scaleLinear()

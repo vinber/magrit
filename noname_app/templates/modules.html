@@ -24,8 +24,9 @@
     <script src="https://d3js.org/d3-request.v1.min.js"></script>
     <script src="https://d3js.org/d3-transition.v1.min.js"></script>
     <script src="https://d3js.org/d3-drag.v1.min.js"></script>
-    <script src="https://d3js.org/d3-zoom.v1.min.js"></script> -->
-    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-zoom.v1.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script> -->
+    <script  src="/static/js/lib/d3.v4.min.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
     <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
@@ -60,19 +61,6 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
-
-i18next.use(i18nextXHRBackend)
-  .init({
-      debug: true,
-      lng: window.navigator.language || 'en',
-      fallbackLng: "en",
-      backend: {
-        loadPath: "/static/locales/fr/translation.json"
-      }
-}, (err, t) => {
-    if(err)
-        throw err;
-});
 
 function make_eye_button(state){
     if(state == "open"){

@@ -1103,7 +1103,10 @@ var fields_Choropleth = {
             alert("The targeted layer doesn't seems to contain any numerical field or contains too many empty values");
             return;
         }
-        fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+        fields.forEach(field => {
+            field_selec.append("option").text(field).attr("value", field);
+//            this.rendering_params[field] = {};
+        });
         d3.selectAll(".params").attr("disabled", null);
     },
 
@@ -1111,11 +1114,13 @@ var fields_Choropleth = {
         let field_selec = document.getElementById("choro_field_1"),
             nb_fields = field_selec.childElementCount;
 
-        for(let i = nb_fields - 1; i > -1 ; --i)
+        for(let i = nb_fields - 1; i > -1 ; --i){
+//            delete this.rendering_params[field_selec.children[i]];
             field_selec.removeChild(field_selec.children[i]);
-
+        }
         d3.selectAll(".params").attr("disabled", true);
-    }
+    },
+    rendering_params: {}
 };
 
 var fields_Typo = {
@@ -1418,14 +1423,21 @@ var fillMenu_Typo = function(){
 }
 
 function fillMenu_Choropleth(){
-    var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = {};
+    var dv2 = section2.append("p").attr("class", "form-rendering");
+    let rendering_params = fields_Choropleth.rendering_params;
 
     var field_selec = dv2.append('p')
                             .html('Field :')
                          .insert('select')
                             .attr('class', 'params')
-                            .attr('id', 'choro_field_1');
+                            .attr('id', 'choro_field_1')
+                            .on("change", function(){
+                                let field_name = this.value;
+                                if(rendering_params[field_name])
+                                    d3.select("#choro_yes").attr("disabled", null);
+                                else
+                                    d3.select("#choro_yes").attr("disabled", true);
+                            });
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
@@ -1434,20 +1446,29 @@ function fillMenu_Choropleth(){
         .html(i18next.t("Display and arrange class"))
         .on("click", function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0],
-                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer_name].length))
-            display_discretization(layer_name, field_selec.node().value, opt_nb_class, "Quantiles")
-                .then(function(confirmed){
-                    if(confirmed){
-                        d3.select("#choro_yes").attr("disabled", null);
-                        rendering_params = {
-                                nb_class: confirmed[0], type: confirmed[1],
-                                breaks: confirmed[2], colors:confirmed[3],
-                                colorsByFeature: confirmed[4], renderer:"Choropleth",
-                                rendered_field: field_selec.node().value,
-                                new_name: check_layer_name([layer_name, field_selec.node().value, "Choro"].join('_'))
-                            };
-                    }
-                });
+                selected_field = field_selec.node().value,
+                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer_name].length)),
+                conf_disc_box;
+
+            if(rendering_params[selected_field])
+                conf_disc_box = display_discretization(layer_name, selected_field,
+                                                       rendering_params[selected_field].nb_class,
+                                                       rendering_params[selected_field].type);
+            else
+                conf_disc_box = display_discretization(layer_name, selected_field, opt_nb_class, "Quantiles");
+
+            conf_disc_box.then(function(confirmed){
+                if(confirmed){
+                    d3.select("#choro_yes").attr("disabled", null);
+                    rendering_params[selected_field] = {
+                            nb_class: confirmed[0], type: confirmed[1],
+                            breaks: confirmed[2], colors:confirmed[3],
+                            colorsByFeature: confirmed[4], renderer:"Choropleth",
+                            rendered_field: selected_field,
+                            new_name: check_layer_name([layer_name, selected_field, "Choro"].join('_'))
+                        };
+                }
+            });
         });
 
     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
@@ -1459,7 +1480,7 @@ function fillMenu_Choropleth(){
         .on("click", function(){
             if(rendering_params){
                 let layer = Object.getOwnPropertyNames(user_data)[0];
-                render_choro(layer, rendering_params);
+                render_choro(layer, rendering_params[field_selec.node().value]);
                 switch_accordion_section();
             }
          });
@@ -3438,4 +3459,3 @@ var round_value = function(val, nb){
         ? Math.round(+val * dec_mult) / dec_mult
         : Math.round(+val / dec_mult) * dec_mult;
 }
-
