@@ -976,12 +976,13 @@ var fields_PropSymbolChoro = {
             field2_selec.removeChild(field2_selec.children[i]);
         }
         d3.selectAll(".params").attr("disabled", true);
-    }
+    },
+    rendering_params: {}
 };
 
 
 function fillMenu_PropSymbolChoro(layer){
-    var rendering_params = {},
+    var rendering_params = fields_PropSymbolChoro.rendering_params,
         dv2 = section2.append("p").attr("class", "form-rendering");
 
     var field1_selec = dv2.append('p').html('Field 1 (symbol size) ')
@@ -1013,7 +1014,14 @@ function fillMenu_PropSymbolChoro(layer){
     });
 
     var field2_selec = dv2.append('p').html('Field 2 (symbol color) ')
-                        .insert('select').attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
+                        .insert('select').attrs({class: 'params', id: 'PropSymbolChoro_field_2'})
+                        .on("change", function(){
+                            let field_name = this.value;
+                            if(rendering_params[field_name])
+                                d3.select("#propChoro_yes").attr("disabled", null);
+                            else
+                                d3.select("#propChoro_yes").attr("disabled", true);
+                        });
 
     dv2.insert('p').style("margin", "auto").html("")
                 .append("button").attr('class', 'params button_disc')
@@ -1021,20 +1029,28 @@ function fillMenu_PropSymbolChoro(layer){
                 .html("Choose a discretization ...")
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+                        selected_field = field2_selec.node().value,
+                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
+                        conf_disc_box;
 
-                    display_discretization(layer, field2_selec.node().value, opt_nb_class, "Quantiles")
-                        .then(function(confirmed){
-                            if(confirmed){
-                                dv2.select('#yes').attr("disabled", null);
-                                rendering_params = {
-                                    nb_class: confirmed[0], type: confirmed[1],
-                                    breaks: confirmed[2], colors: confirmed[3],
-                                    colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
-                                    };
-                            } else
-                                return;
-                        });
+                    if(rendering_params[selected_field])
+                        conf_disc_box = display_discretization(layer, selected_field,
+                                                               rendering_params[selected_field].nb_class,
+                                                               rendering_params[selected_field].type);
+                    else
+                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles");
+
+                    conf_disc_box.then(function(confirmed){
+                        if(confirmed){
+                            dv2.select('#propChoro_yes').attr("disabled", null);
+                            rendering_params[selected_field] = {
+                                nb_class: confirmed[0], type: confirmed[1],
+                                breaks: confirmed[2], colors: confirmed[3],
+                                colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
+                                };
+                        } else
+                            return;
+                    });
                 });
 
 //    var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
@@ -1042,16 +1058,17 @@ function fillMenu_PropSymbolChoro(layer){
 
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
-                        .attr('id', 'yes')
+                        .attr('id', 'propChoro_yes')
                         .attr('class', 'button_st2')
                         .attr('disabled', true)
                         .text('Render');
 
     ok_button.on("click", function(){
-        if(rendering_params){
+        if(rendering_params[field2_selec.node().value]){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 nb_features = user_data[layer].length,
                 rd_params = {},
+                color_field = field2_selec.node().value,
                 new_layer_name = check_layer_name(layer + "_PropSymbolsChoro");
 
             rd_params.field = field1_selec.node().value;
@@ -1061,15 +1078,15 @@ function fillMenu_PropSymbolChoro(layer){
             rd_params.symbol = symb_selec.node().value;
             rd_params.ref_value = +ref_value.node().value;
             rd_params.ref_size = +ref_size.node().value;
-            rd_params.fill_color = rendering_params['colorsByFeature'];
+            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
 
             let id_map = make_prop_symbols(rd_params),
                 colors_breaks = [];
 
-            for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
                 colors_breaks.push([
-                        [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
-                        rendering_params['colors'][i-1]
+                        [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
+                        rendering_params[color_field]['colors'][i-1]
                     ]);
             }
             current_layers[new_layer_name] = {
@@ -1270,11 +1287,11 @@ let drag_elem_geo = d3.drag()
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
-            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
 
           })
         .on("end", () => {
-            if(d3.select("#hand_button").classed("active"))
+            if(map_div.select("#hand_button").classed("active"))
                 zoom.on("zoom", zoom_without_redraw);
           })
         .on("drag", function(){

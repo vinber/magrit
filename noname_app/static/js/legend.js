@@ -281,7 +281,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         val_1 = Math.pow((sqrt(val_max) - sqrt(val_min)) / 3, 2),
         val_2 = Math.pow(sqrt(val_1) + (sqrt(val_max) - sqrt(val_min)) / 3, 2),
         d_values = [val_max, val_2, val_1, val_min],
-        z_scale = zoom_scale,
+        z_scale = d3.zoomTransform(map.node()).k,
         nb_decimals = get_nb_decimals(val_max),
         ref_symbols_params = [];
 

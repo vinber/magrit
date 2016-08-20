@@ -25,11 +25,11 @@ class Textbox {
                 })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(d3.select("#hand_button").classed("active"))
+                if(map_div.select("#hand_button").classed("active"))
                     zoom.on("zoom", null);
               })
             .on("end", () => {
-                if(d3.select("#hand_button").classed("active"))
+                if(map_div.select("#hand_button").classed("active"))
                     zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){

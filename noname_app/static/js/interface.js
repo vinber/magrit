@@ -667,10 +667,10 @@ var drag_lgd_features = d3.drag()
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
-            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
+            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
           })
         .on("end", function(){
-            if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
           })
         .on("drag", function(){
             let t = d3.select(this),

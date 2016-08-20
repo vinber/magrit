@@ -110,6 +110,9 @@ function make_ico_choice(){
             .attr("src", ["/static/img/func_icons/", ico_name].join(''))
             .style("margin", "1px")
             .on("click", function(){
+                if(window.fields_handler){
+                    fields_handler.unfill();
+                }
                 current_functionnality = get_menu_option(func_name);
                 let make_menu = eval(current_functionnality.menu_factory);
                 window.fields_handler = eval(current_functionnality.fields_handler);
@@ -1182,7 +1185,37 @@ function zoom_without_redraw(){
 
     if(scaleBar.displayed)
         scaleBar.update();
+
+    if(window.legendRedrawTimeout){
+        clearTimeout(legendRedrawTimeout);
+    }
+    window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
 };
+
+function redraw_legends_symbols(){
+    let legend_nodes = document.querySelectorAll("#legend_root2");
+    for(let i=0; i<legend_nodes.length; ++i){
+        let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
+            rendered_field = current_layers[layer_name].rendered_field,
+            nested = legend_nodes[i].getAttribute("nested");
+
+        let transform_param = legend_nodes[i].getAttribute("transform"),
+            lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML;
+
+        let rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
+            color: legend_nodes[i].querySelector("#under_rect").style.fill,
+            opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
+        } : undefined;
+
+        legend_nodes[i].remove();
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value);
+
+        if(transform_param)
+            document.querySelector(["#legend_root2.lgdf_", layer_name].join(''))
+                .setAttribute("transform", transform_param);
+    }
+}
 
 function interpolateZoom(translate, scale) {
     var self = this;
