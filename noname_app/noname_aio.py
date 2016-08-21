@@ -990,9 +990,8 @@ async def session_middleware_factory(app, handler):
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
     return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
 
-async def redis_conn_factory(app, handler):
-    return await create_reconnecting_redis(('localhost', 6379), db=1)(app, handler)
-
+def fake_redis_conn_factory():
+    return FakeAsyncRedisConn()
 
 def create_app(loop, port=9999, nb_r_workers='2'):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1022,7 +1021,7 @@ def create_app(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
     app['async_ctx'] = zmq.asyncio.Context(2)
-    app['redis_conn'] = redis_conn_factory()
+    app['redis_conn'] = fake_redis_conn_factory()
     app['broker'] = _p
     app['app_users'] = set()
     with open('static/json/sample_layers.json', 'r') as f:

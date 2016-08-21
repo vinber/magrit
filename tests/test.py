@@ -101,9 +101,25 @@ async def test_calc_helper_float(cli):
         == '[0.2163934426,0.4538461538,0.7813953488,1.4058823529,2.18,4.3625]'
 
 
-async def test_convert_geo(cli):
-    pass
+#async def test_convert_geo(cli):
+#    pass
 
+#class FakeAsyncRedisConn:
+#    """
+#    For quick testing purpose only.. More than rudimentary..
+#    """
+#    def __init__(self):
+#        self.storage = {}
+#
+#    async def set(self, key, value):
+#        assert isinstance(value, bytes)
+#        self.storage[key] = value
+#
+#    async def get(self, key):
+#        return self.storage.get(key, None)
+#
+#    async def delete(self, key):
+#        self.storage.pop(key)
 
 #def launch_app():
 #    p = subprocess.Popen(["noname_app", "12345", "1"],

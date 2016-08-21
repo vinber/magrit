@@ -186,7 +186,7 @@ function createStyleBox(layer_name){
 
     var stroke_prev = selection.style('stroke'),
         border_opacity = selection.style('stroke-opacity'),
-        stroke_width = current_layers[layer_name]['stroke-width-const'];
+        stroke_width = +current_layers[layer_name]['stroke-width-const'];
 
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
@@ -236,11 +236,10 @@ function createStyleBox(layer_name){
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
                          .style('stroke-opacity', border_opacity);
-                let zoom_scale = get_zoom_param(scale=true);
-                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale+"px");
+                let zoom_scale = d3.zoomTransform(map.node()).k;
+                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-
                 if(type == "Line"){
                     if(fill_meth == "single")
                     selection.style("stroke", fill_prev.single)

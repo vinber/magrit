@@ -12,23 +12,9 @@
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <!-- <script src="https://d3js.org/d3-array.v1.min.js"></script>
-    <script src="https://d3js.org/d3-geo.v1.min.js"></script>
-    <script src="https://d3js.org/d3-color.v1.min.js"></script>
-    <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
-    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
-    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
-    <script src="https://d3js.org/d3-selection.v1.min.js"></script>
-    <script src="https://d3js.org/d3-timer.v1.min.js"></script>
-    <script src="https://d3js.org/d3-collection.v1.min.js"></script>
-    <script src="https://d3js.org/d3-request.v1.min.js"></script>
-    <script src="https://d3js.org/d3-transition.v1.min.js"></script>
-    <script src="https://d3js.org/d3-drag.v1.min.js"></script>
-    <script src="https://d3js.org/d3-zoom.v1.min.js"></script>
-    <script src="https://d3js.org/d3.v4.js"></script> -->
     <script  src="/static/js/lib/d3.v4.min.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+    <script  src="/static/js/lib/d3-geo-projection.v1.min.js"></script>
+    <script  src="/static/js/lib/d3-selection-multi.v1.min.js"></script>
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
@@ -61,6 +47,447 @@
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
+
+/**
+* Function setting-up main elements of the interface
+*
+* Some of the variables created here are put in global/window scope
+* as they are gonna be frequently used
+*
+*/
+function setUpInterface()
+{
+    let bg = document.createElement('div');
+    bg.id = 'overlay';
+    bg.style.display = "none";
+    bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('Loading results') + ' ...</p>'
+    document.body.appendChild(bg);
+
+    let menu = d3.select("#menu"),
+        accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
+        accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
+        accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
+        accordion3 = menu.append("div").attr("id","accordion3").attr("class", "accordion"),
+        accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
+        accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
+
+    accordion1.append("h3").html(i18next.t("Add your data"));
+    accordion2_pre.append("h3").html(i18next.t("Choose a function"));
+    accordion2.append("h3").html(i18next.t("Function options"));
+    accordion3.append("h3").html(i18next.t("Layers"));
+    accordion4.append("h3").html(i18next.t("Basemap configuration"));
+    accordion5.append("h3").html(i18next.t("Projection options"));
+
+    window.section1 =  accordion1.append("div")
+                        .attr("id","section1")
+                        .attr("data-tooltip", i18next.t("Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here"));
+    window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0");
+    window.section2 =  accordion2.append("div").attr("id","section2");
+    accordion3.append("div")
+        .attrs({"id": "section3",
+               "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"}),
+    accordion4.append("div").attr("id","section4");
+    accordion5.append("div").attr("id","section5");
+
+    let dv1 = section1.append("div"),
+        dv11 = dv1.append("div").style("width", "auto");
+
+    dv11.append("img")
+        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
+        .style("cursor", "pointer")
+        .on('click',  click_button_add_layer);
+
+    dv11.append("p")
+        .attrs({id: "input_geom", class: "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        //.html('<b>"Add geometry layer <i>(or drop it)</i></b>')
+        .html("<b>" + i18next.t("Add geometry layer") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
+        .on('click',  click_button_add_layer);
+
+    let dv12 = dv1.append("div");
+    dv12.append("img")
+        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
+        .style("cursor", "pointer")
+        .on('click',  click_button_add_layer);
+    dv12.append("p")
+        .attrs({"id": "data_ext", "class": "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        //.html('<b>Add additional dataset <i>(or drop it)</i></b>')
+        .html("<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
+        .on('click',  click_button_add_layer);
+
+    let div_sample = dv1.append("div").attr("id", "sample_zone");
+    div_sample.append("img")
+        .attrs({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
+        .style("cursor", "pointer")
+        .on('click', add_sample_layer);
+    div_sample.append("span")
+        .attrs({"id": "sample_link", "class": "user_panel"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
+        //.html("<b>Select available sample dataset</b>")
+        .html("<b>" + i18next.t("Select available sample dataset") + "</b>")
+        .on('click', add_sample_layer);
+
+    dv1.append("p")
+        .attr("id", "join_section")
+        .styles({"text-align": "center", "margin-top": "2px"})
+        .html("");
+    dv1.append("p")
+        .attr("id", "browse_section")
+        .attr("align", "center")
+        .html("")
+        .append("button")
+        .attrs({id: "browse_button", class: "button_st3", disabled: true})
+        .style("font-size", "12px")
+        //.html("Explore your table(s)")
+        .html(i18next.t("Explore your table(s)"))
+        .on("click", function(){  boxExplore.create();  });
+
+    make_ico_choice();
+
+    section2.append("p")
+            .style("font-size", "18px")
+            .html(i18next.t("No choosen functionnality"));
+            //.html("No choosen functionnality ...");
+
+    let section3 = d3.select("#section3");
+
+    window.layer_list = section3.append("div")
+                             .append("ul").attrs({id: "sortable", class: "layer_list"})
+                             .on("mouseover", function(){
+                                    $('.qtip.qtip-section3').qtip("hide")
+                                })
+                             .on("mouseout", function(){
+                                    $('.qtip.qtip-section3').qtip("show")
+                                });
+
+    let dv3 = section3.append("div")
+                    .style("padding-top", "10px").html('');
+
+    dv3.append("img")
+        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
+        .attr("src", "/static/img/b/addsample_t.png")
+        .on('click', add_layout_layers);
+    dv3.append("img")
+        .attr("src", "/static/img/b/addgeom_t.png")
+        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
+        .on("click", click_button_add_layer);
+
+    let section4 = d3.select("#section4");
+    let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
+    dv4.append("div")
+            .styles({float: "left", width: "50%", "text-align": "center"})
+            //.html("<b>Canvas width (px)</b><br>")
+            .html("<b>" + i18next.t("Canvas width") + " (px)</b><br>")
+            .insert("input").style("width", "60px")
+            .attrs({id: "input-width", type: "number", value: w, width: "55px"})
+            .on("change", function(){canvas_mod_size([this.value,null])});
+    dv4.append("div")
+            .styles({float: "right", width: "50%", "text-align": "center"})
+            //.html("<b>Canvas height (px)</b><br>")
+            .html("<b>" + i18next.t("Canvas height") + " (px)</b><br>")
+            .insert("input").style("width", "60px")
+            .attrs({id: "input-height", type: "number", "value": h})
+            .on("change", function(){canvas_mod_size([null,this.value])});
+    dv4.append("p")
+            .styles({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
+            //.html("Map title<br>")
+            .html(i18next.t("Map title") + "<br>")
+            .insert("input").attr("id", "title")
+            .on("keyup", function(){handle_title(this.value);});
+    dv4.insert("_img")
+            .style("display", "inline").style("top", "4px")
+            .html(sys_run_button.replace("submit", "Title properties"))
+            .on("click", handle_title_properties);
+    dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
+            .insert("input").style("margin-left", "15px")
+            .attrs({type: "color", id: "bg_color", value: "#ffffff"})
+            .on("change", function(){handle_bg_color(this.value);});
+
+    dv4.append("p")
+            //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
+            .html(sys_run_button + " " + i18next.t("Add layout features"))
+            .on("click", select_layout_features);
+
+    let section5 = d3.select("#section5");
+    let dv5 = section5.append("p").attr("class", "form-item");
+    dv5.insert('label-item').html("<b>" + i18next.t("Projection") + " </b><br>");
+
+    section5.append("div").html(i18next.t("Canvas rotation"));
+    section5.append("input")
+            .attr("type", "range")
+            .attr("id","form_rotate")
+            .attr("value",0).attr("min",0)
+            .attr("max",360).attr("step",1)
+            .on("input", function(){rotate_global(this.value)});
+
+    window.rotation_param = section5.append("div").html(i18next.t("Projection center (λ-axis rotation)"))
+    rotation_param.append("input")
+            .attr("type", "range")
+            .attr("id","form_projection_center")
+            .attr("value", 0).attr("min", -180)
+            .attr("max", 180).attr("step", 0.5)
+            .on("input", function(){handle_proj_center_button([this.value, null, null])});
+
+    section5.append("div").insert("button")
+            .attr("id","reset_center_rotation")
+            .attr("class", "button_st4")
+            //.text("Reset center/zooming/rotation")
+            .text(i18next.t("Reset center/zooming/rotation"))
+            .on("click", function(){
+                map.node().__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
+                zoom_without_redraw();
+                let proj_params = get_approx_zoom(h, w);
+                proj.scale(0).translate(0,0);
+                document.getElementById('form_projection_center').value = 0;
+                document.getElementById('form_rotate').value = 0;
+                proj.rotate([0,,]);
+                reproj_symbol_layer();
+                rotate_global(0);
+            });
+
+    let background = map.append("g")
+                        .attrs({id: "Simplified_land_polygons", class: "layer"})
+                        .style("stroke-width", "0.3px");
+
+   d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
+        background.selectAll('.subunit')
+                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+                  .enter()
+                  .append('path')
+                  .attr("d", path)
+                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+        map.selectAll("path").attr("d", path);
+        scale_to_lyr("Simplified_land_polygons");
+        center_map("Simplified_land_polygons");
+        zoom_without_redraw();
+    });
+
+    let p = dv5.append("select")
+                .attr("id","form_projection")
+                .style("align", "center")
+                .on("change", function(){
+                    change_projection(this.value);
+                    let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+                    if(layer_name){
+                        center_map(layer_name);
+                        zoom_without_redraw();
+                    }
+                });
+    d3.json("/static/json/projections.json", function(json) {
+       json.forEach(function(d) {
+            available_projections.set(d.name, d.projection);
+            p.append("option").text(d.name).attr("value", d.projection);
+           });
+    });
+
+    let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline")
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Export your composition")
+                  .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="20" height="20" alt="Export"/>')
+                  .style("margin-top", "none")
+                  .on("click", handle_export);
+
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Export / Load your map preferences")
+                  .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
+                  .style("margin-top", "none")
+                  .on("click", function(){
+                        if(document.getElementById("menu_pref"))
+                            document.getElementById("menu_pref").remove();
+                        else {
+                            let actions = [
+                                {"name": i18next.t("Save your preferences"), "callback": save_map_template},
+                                {"name": i18next.t("Load a preference JSON"), "callback": load_map_template}
+                                ];
+                            let menu = document.createElement("div");
+                            menu.style.top = "30px";
+                            menu.style.right = "35px";
+                            menu.className = "context-menu";
+                            menu.id = "menu_pref";
+                            let list_elems = document.createElement("ul");
+                            menu.appendChild(list_elems);
+                            for (let i = 0; i < actions.length; i++) {
+                                let item = document.createElement("li");
+                                list_elems.appendChild(item);
+                                item.setAttribute("data-index",i);
+                                let name = document.createElement("span");
+                                name.className = "context-menu-item-name";
+                                name.style.color = "#000";
+                                name.textContent = actions[i].name;
+                                item.appendChild(name);
+                                item.onclick = function(){
+                                    actions[i].callback();
+                                    menu.remove();
+                                }
+                            }
+                            document.querySelector("body").appendChild(menu);
+                        }
+                    });
+
+    const_options.append("button").attr("class", "const_buttons")
+                  .attr("title", "Help")
+                  .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
+                  .style("margin-top", "none")
+                  .on("click", function(){
+                      swal({
+                          title: "Emergency help !",
+                          text: "Write something to be searched in the documentation :",
+                          input: "text",
+                          showCancelButton: true,
+                          closeOnConfirm: false,
+                          animation: "slide-from-top",
+                          inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
+                       }).then(inputValue => {
+                              swal("Nice!", "You wrote: " + inputValue, "success");
+                        })
+                    });
+
+    // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
+    let lm = map_div
+                .append("div")
+                .attr("class", "light-menu")
+                .styles({position:"absolute", right:"0px", bottom: "0px"});
+
+    let lm_buttons = [
+        {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
+        {id: "zoom_in", title: "Zoom in", class: "zoom_button", html: "+"},
+        {id: "info_button", title: "Feature information", class: "info_button", html: "i"},
+        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
+    ];
+
+    let selec = lm.selectAll("input")
+        .data(lm_buttons).enter()
+        .append('p').style("margin", "auto")
+            .insert("button")
+            .attr("class", d => d.class)
+            .attr("title", d => d.title)
+            .attr("id", d => d.id)
+            .html(d => d.html);
+
+    // Trigger actions when buttons are clicked and set-up the initial view :
+    d3.selectAll(".zoom_button").on("click", zoomClick);
+    document.getElementById("info_button").onclick = displayInfoOnMove;
+    document.getElementById("hand_button").onclick = handle_click_hand;
+    document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
+    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
+    document.getElementById("brush_zoom_button").onclick = brush_rect;
+
+    // Already append the div for displaying information on features,
+    // setting it currently unactive until it will be requested :
+    d3.select("body").append("div")
+                  .attr("id", "info_features")
+                  .classed("active", false)
+                  .html("");
+
+    create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
+    prepare_drop_section();
+
+    /////////////////////////////////////////////////////////////////////////////
+    // JQuery menu, tooltips and progress bar related functions :
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Set-up all the accordions :
+    $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
+
+    // Start with the first always open :
+    $("#accordion1").accordion("option", "active", 0);
+
+    // Close the functionnality options accordion when the user intend to choose another function :
+    $("#accordion2_pre").on("accordionbeforeactivate", function(){
+    //$("#accordion2_pre").on("accordionbeforeactivate", function(event, ui){
+     //   if(ui.newHeader.length) $("#accordion2").accordion({active: false})
+        let section2_accordion = document.getElementById("accordion2").firstChild;
+        if(section2_accordion.getAttribute("aria-expanded") == "true")
+            section2_accordion.dispatchEvent(new Event("click"));
+        });
+
+    // Compute the total size occuped by the menu in order to close some section(s) to avoid go further than the page height :
+    $(".accordion").on("accordionactivate", function(event, ui){
+            if(!(ui.newPanel) || ui.newPanel.length == 0 )
+                return ;
+            let last_opened = ui.newPanel[0].parentElement.id;
+            let opened = [];
+            let accordions = document.querySelectorAll(".accordion");
+            let new_size = 33; // Use the real header size instead of 33
+            for(let i = 0; i < accordions.length ; i++){
+                new_size = new_size + accordions[i].getBoundingClientRect().height;
+                if(accordions[i].firstChild.getAttribute("aria-expanded") == "true")
+                    opened.push(accordions[i].id);
+            }
+            opened.splice(opened.indexOf(last_opened), 1);
+            if(new_size > window.innerHeight
+                    && opened.indexOf("accordion1") > -1
+                    && last_opened != "accordion1"){
+                new_size = new_size - accordions[0].getBoundingClientRect().height;
+                opened.splice(opened.indexOf("accordion1"), 1);
+                $("#accordion1").accordion("option", "active", 1);
+            }
+            for(let i = opened.length - 1; i > 0; --i){
+                if(new_size < window.innerHeight)
+                    break;
+                let acc = document.getElementById(opened[i]);
+                new_size = new_size - acc.getBoundingClientRect().height;
+                $("#" + opened[i]).accordion("option", "active", 1);
+                opened.pop();
+            }
+        });
+
+    // Set up the widget allowing to sort layers :
+    $( "#sortable" ).sortable({
+        placeholder: "ui-state-highlight",
+        update: function(a){
+          // Set the layer order on the map in concordance with the user changes
+          // in the layer manager with a pretty rusty sorting algorythm
+          // trying to match the requested order from the actual order
+          // (currently havent been tested on a really large number of layers)
+          let at_end = null;
+          if(document.getElementById("info_features").className == "active"){
+            displayInfoOnMove();
+            at_end = true;
+          }
+          let desired_order = [],
+              actual_order = [],
+              layers = svg_map.querySelectorAll(".layer");
+
+          for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
+              let n = a.target.childNodes[i].getAttribute("layer_name");
+              desired_order[i] = n;
+              actual_order[i] = layers[i].id;
+          }
+          for(let i = 0, len = desired_order.length; i < len; i++){
+              let lyr1 = document.getElementById(desired_order[i]),
+                  lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
+              svg_map.insertBefore(lyr2, lyr1);
+          }
+         if(at_end) displayInfoOnMove();
+         }
+      });
+    $( "#sortable" ).disableSelection();
+
+    // Display a progress bar during the ajaxRequest
+    // (can be unset locally by using the `"global": false` param when making an ajax request)
+    $(document).ajaxStart(function() {
+            document.getElementById("overlay").style.display = "";
+        }).ajaxComplete(function() {
+            document.getElementById("overlay").style.display = "none";
+    });
+
+    // bind the mains tooltips
+    $("#section1[data-tooltip!='']").qtip({
+        content: { attr: "data-tooltip" },
+        style: { classes: 'qtip-youtube qtip-section1' },
+        position: { my: 'center left', at: 'center right', target: this }
+    })
+
+    $("#section3[data-tooltip!='']").qtip({
+        content: { attr: "data-tooltip" },
+        style: { classes: 'qtip-youtube qtip-section3' },
+        position: { my: 'center left', at: 'center right', target: this }
+    })
+}
+
 
 function make_eye_button(state){
     if(state == "open"){
@@ -213,395 +640,27 @@ var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id=
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
 var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" alt="submit"/>',
-    sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>'
+    sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>';
 
+current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}};
 
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}}
-
-//////////////////////////////////////////////////////////////////////////////
-// Set-up the menu
-//
-// Some of these variables (menu, dv1, section3, dv3, dv4, background, p, const_options, etc.)
-// are not needed anymore after being used here so they are put into curly braces and declared with `let`
-// to ensure their garbage collection:
-//////////////////////////////////////////////////////////////////////////////
-{
-    let bg = document.createElement('div');
-    bg.id = 'overlay';
-    bg.style.display = "none";
-    bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('Loading results') + ' ...</p>'
-    document.body.appendChild(bg);
-
-    let menu = d3.select("#menu"),
-        accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
-        accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
-        accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
-        accordion3 = menu.append("div").attr("id","accordion3").attr("class", "accordion"),
-        accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
-        accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
-
-    accordion1.append("h3").html(i18next.t("Add your data"));
-    accordion2_pre.append("h3").html(i18next.t("Choose a function"));
-    accordion2.append("h3").html(i18next.t("Function options"));
-    accordion3.append("h3").html(i18next.t("Layers"));
-    accordion4.append("h3").html(i18next.t("Basemap configuration"));
-    accordion5.append("h3").html(i18next.t("Projection options"));
-
-    var section1 =  accordion1.append("div").attr("id","section1")
-                        .attr("data-tooltip", i18next.t("Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here")),
-        section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0"),
-        section2 =  accordion2.append("div").attr("id","section2");
-    accordion3.append("div")
-        .attrs({"id": "section3",
-               "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"}),
-    accordion4.append("div").attr("id","section4");
-    accordion5.append("div").attr("id","section5");
-
-    let dv1 = section1.append("div"),
-        dv11 = dv1.append("div").style("width", "auto");
-
-    dv11.append("img")
-        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
-        .style("cursor", "pointer")
-        .on('click',  click_button_add_layer);
-
-    dv11.append("p")
-        .attrs({id: "input_geom", class: "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        //.html('<b>"Add geometry layer <i>(or drop it)</i></b>')
-        .html("<b>" + i18next.t("Add geometry layer") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
-        .on('click',  click_button_add_layer);
-
-    let dv12 = dv1.append("div");
-    dv12.append("img")
-        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
-        .style("cursor", "pointer")
-        .on('click',  click_button_add_layer);
-    dv12.append("p")
-        .attrs({"id": "data_ext", "class": "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        //.html('<b>Add additional dataset <i>(or drop it)</i></b>')
-        .html("<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
-        .on('click',  click_button_add_layer);
-
-    let div_sample = dv1.append("div").attr("id", "sample_zone");
-    div_sample.append("img")
-        .attrs({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
-        .style("cursor", "pointer")
-        .on('click', add_sample_layer);
-    div_sample.append("span")
-        .attrs({"id": "sample_link", "class": "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        //.html("<b>Select available sample dataset</b>")
-        .html("<b>" + i18next.t("Select available sample dataset") + "</b>")
-        .on('click', add_sample_layer);
-
-    dv1.append("p")
-        .attr("id", "join_section")
-        .styles({"text-align": "center", "margin-top": "2px"})
-        .html("");
-    dv1.append("p")
-        .attr("id", "browse_section")
-        .attr("align", "center")
-        .html("")
-        .append("button")
-        .attrs({id: "browse_button", class: "button_st3", disabled: true})
-        .style("font-size", "12px")
-        //.html("Explore your table(s)")
-        .html(i18next.t("Explore your table(s)"))
-        .on("click", function(){  boxExplore.create();  });
-
-    make_ico_choice();
-
-    section2.append("p")
-            .style("font-size", "18px")
-            .html(i18next.t("No choosen functionnality"));
-            //.html("No choosen functionnality ...");
-
-    let section3 = d3.select("#section3");
-
-    var layer_list = section3.append("div")
-                             .append("ul").attrs({id: "sortable", class: "layer_list"})
-                             .on("mouseover", function(){
-                                    $('.qtip.qtip-section3').qtip("hide")
-                                })
-                             .on("mouseout", function(){
-                                    $('.qtip.qtip-section3').qtip("show")
-                                });
-
-    let dv3 = section3.append("div")
-                    .style("padding-top", "10px").html('');
-
-    dv3.append("img")
-        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
-        .attr("src", "/static/img/b/addsample_t.png")
-        .on('click', add_layout_layers);
-    dv3.append("img")
-        .attr("src", "/static/img/b/addgeom_t.png")
-        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
-        .on("click", click_button_add_layer);
-
-    let section4 = d3.select("#section4");
-    let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
-    dv4.append("div")
-            .styles({float: "left", width: "50%", "text-align": "center"})
-            //.html("<b>Canvas width (px)</b><br>")
-            .html("<b>" + i18next.t("Canvas width") + " (px)</b><br>")
-            .insert("input").style("width", "60px")
-            .attrs({id: "input-width", type: "number", value: w, width: "55px"})
-            .on("change", function(){canvas_mod_size([this.value,null])});
-    dv4.append("div")
-            .styles({float: "right", width: "50%", "text-align": "center"})
-            //.html("<b>Canvas height (px)</b><br>")
-            .html("<b>" + i18next.t("Canvas height") + " (px)</b><br>")
-            .insert("input").style("width", "60px")
-            .attrs({id: "input-height", type: "number", "value": h})
-            .on("change", function(){canvas_mod_size([null,this.value])});
-    dv4.append("p")
-            .styles({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
-            //.html("Map title<br>")
-            .html(i18next.t("Map title") + "<br>")
-            .insert("input").attr("id", "title")
-            .on("keyup", function(){handle_title(this.value);});
-    dv4.insert("_img")
-            .style("display", "inline").style("top", "4px")
-            .html(sys_run_button.replace("submit", "Title properties"))
-            .on("click", handle_title_properties);
-    dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
-            .insert("input").style("margin-left", "15px")
-            .attrs({type: "color", id: "bg_color", value: "#ffffff"})
-            .on("change", function(){handle_bg_color(this.value);});
-
-    dv4.append("p")
-            //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
-            .html(sys_run_button + " " + i18next.t("Add layout features"))
-            .on("click", select_layout_features);
-
-    let section5 = d3.select("#section5");
-    let dv5 = section5.append("p").attr("class", "form-item");
-    dv5.insert('label-item').html("<b>" + i18next.t("Projection") + " </b><br>");
-
-    section5.append("div").html(i18next.t("Canvas rotation"));
-    section5.append("input")
-            .attr("type", "range")
-            .attr("id","form_rotate")
-            .attr("value",0).attr("min",0)
-            .attr("max",360).attr("step",1)
-            .on("input", function(){rotate_global(this.value)});
-
-    var rotation_param = section5.append("div").html(i18next.t("Projection center (λ-axis rotation)"))
-    rotation_param.append("input")
-            .attr("type", "range")
-            .attr("id","form_projection_center")
-            .attr("value", 0).attr("min", -180)
-            .attr("max", 180).attr("step", 0.5)
-            .on("input", function(){handle_proj_center_button([this.value, null, null])});
-
-    section5.append("div").insert("button")
-            .attr("id","reset_center_rotation")
-            .attr("class", "button_st4")
-            //.text("Reset center/zooming/rotation")
-            .text(i18next.t("Reset center/zooming/rotation"))
-            .on("click", function(){
-                zoom.scale(0.5).translate([400, 250]);
-                zoom_without_redraw();
-                let proj_params = get_approx_zoom(h, w);
-                proj.scale(proj_params.approx_scale).translate(proj_params.approx_translate);
-                document.getElementById('form_projection_center').value = 0;
-                document.getElementById('form_rotate').value = 0;
-                proj.rotate([0,,]);
-                reproj_symbol_layer();
-                rotate_global(0);
-            });
-
-    let background = map.append("g")
-                        .attrs({id: "Simplified_land_polygons", class: "layer"})
-                        .style("stroke-width", "0.3px");
-
-   d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
-        background.selectAll('.subunit')
-                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-                  .enter()
-                  .append('path')
-                  .attr("d", path)
-                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
-        map.selectAll("path").attr("d", path);
-        scale_to_lyr("Simplified_land_polygons");
-        center_map("Simplified_land_polygons");
-        zoom_without_redraw();
+(function(){
+    i18next.use(i18nextXHRBackend)
+      .init({
+          debug: true,
+          lng: window.navigator.language || 'en',
+          fallbackLng: "fr",
+          backend: {
+            loadPath: "/static/locales/fr/translation.json"
+          }
+    }, (err, t) => {
+        if(err)
+            throw err;
+        else
+            setUpInterface();
     });
+})();
 
-    let p = dv5.append("select")
-                .attr("id","form_projection")
-                .style("align", "center")
-                .on("change", function(){
-                    change_projection(this.value);
-                    let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
-                    if(layer_name){
-                        center_map(layer_name);
-                        zoom_without_redraw();
-                    }
-                });
-    d3.json("/static/json/projections.json", function(json) {
-       json.forEach(function(d) {
-            available_projections.set(d.name, d.projection);
-            p.append("option").text(d.name).attr("value", d.projection);
-           });
-    });
-
-    let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline")
-    const_options.append("button").attr("class", "const_buttons")
-                  .attr("title", "Export your composition")
-                  .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="20" height="20" alt="Export"/>')
-                  .style("margin-top", "none")
-                  .on("click", handle_export);
-
-    const_options.append("button").attr("class", "const_buttons")
-                  .attr("title", "Export / Load your map preferences")
-                  .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
-                  .style("margin-top", "none")
-                  .on("click", function(){
-                        if(document.getElementById("menu_pref"))
-                            document.getElementById("menu_pref").remove();
-                        else {
-                            let actions = [
-                                {"name": i18next.t("Save your preferences"), "callback": save_map_template},
-                                {"name": i18next.t("Load a preference JSON"), "callback": load_map_template}
-                                ];
-                            let menu = document.createElement("div");
-                            menu.style.top = "30px";
-                            menu.style.right = "35px";
-                            menu.className = "context-menu";
-                            menu.id = "menu_pref";
-                            let list_elems = document.createElement("ul");
-                            menu.appendChild(list_elems);
-                            for (let i = 0; i < actions.length; i++) {
-                                let item = document.createElement("li");
-                                list_elems.appendChild(item);
-                                item.setAttribute("data-index",i);
-                                let name = document.createElement("span");
-                                name.className = "context-menu-item-name";
-                                name.style.color = "#000";
-                                name.textContent = actions[i].name;
-                                item.appendChild(name);
-                                item.onclick = function(){
-                                    actions[i].callback();
-                                    menu.remove();
-                                }
-                            }
-                            document.querySelector("body").appendChild(menu);
-                        }
-                    });
-
-    const_options.append("button").attr("class", "const_buttons")
-                  .attr("title", "Help")
-                  .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
-                  .style("margin-top", "none")
-                  .on("click", function(){
-                      swal({
-                          title: "Emergency help !",
-                          text: "Write something to be searched in the documentation :",
-                          input: "text",
-                          showCancelButton: true,
-                          closeOnConfirm: false,
-                          animation: "slide-from-top",
-                          inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
-                       }).then(inputValue => {
-                              swal("Nice!", "You wrote: " + inputValue, "success");
-                        })
-                    });
-
-    // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
-    let lm = map_div
-                .append("div")
-                .attr("class", "light-menu")
-                .styles({position:"absolute", right:"0px", bottom: "0px"});
-
-    let lm_buttons = [
-        {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
-        {id: "zoom_in", title: "Zoom in", class: "zoom_button", html: "+"},
-        {id: "info_button", title: "Feature information", class: "info_button", html: "i"},
-        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
-    ];
-
-    let selec = lm.selectAll("input")
-        .data(lm_buttons).enter()
-        .append('p').style("margin", "auto")
-            .insert("button")
-            .attr("class", d => d.class)
-            .attr("title", d => d.title)
-            .attr("id", d => d.id)
-            .html(d => d.html);
-
-    // Trigger actions when buttons are clicked and set-up the initial view :
-    d3.selectAll(".zoom_button").on("click", zoomClick);
-    document.getElementById("info_button").onclick = displayInfoOnMove;
-    document.getElementById("hand_button").onclick = handle_click_hand;
-    document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
-    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-    document.getElementById("brush_zoom_button").onclick = brush_rect;
-}
-
-// Already append the div for displaying information on features,
-// setting it currently unactive until it will be requested :
-d3.select("body").append("div")
-              .attr("id", "info_features")
-              .classed("active", false)
-              .html("");
-
-create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
-prepare_drop_section();
-
-/////////////////////////////////////////////////////////////////////////////
-// JQuery menu, tooltips and progress bar related functions :
-//////////////////////////////////////////////////////////////////////////////
-
-// Set-up all the accordions :
-$(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
-
-// Start with the first always open :
-$("#accordion1").accordion("option", "active", 0);
-
-// Close the functionnality options accordion when the user intend to choose another function :
-$("#accordion2_pre").on("accordionbeforeactivate", function(){
-//$("#accordion2_pre").on("accordionbeforeactivate", function(event, ui){
- //   if(ui.newHeader.length) $("#accordion2").accordion({active: false})
-    let section2_accordion = document.getElementById("accordion2").firstChild;
-    if(section2_accordion.getAttribute("aria-expanded") == "true")
-        section2_accordion.dispatchEvent(new Event("click"));
-    });
-
-// Compute the total size occuped by the menu in order to close some section(s) to avoid go further than the page height :
-$(".accordion").on("accordionactivate", function(event, ui){
-        if(!(ui.newPanel) || ui.newPanel.length == 0 )
-            return ;
-        let last_opened = ui.newPanel[0].parentElement.id;
-        let opened = [];
-        let accordions = document.querySelectorAll(".accordion");
-        let new_size = 33; // Use the real header size instead of 33
-        for(let i = 0; i < accordions.length ; i++){
-            new_size = new_size + accordions[i].getBoundingClientRect().height;
-            if(accordions[i].firstChild.getAttribute("aria-expanded") == "true")
-                opened.push(accordions[i].id);
-        }
-        opened.splice(opened.indexOf(last_opened), 1);
-        if(new_size > window.innerHeight
-                && opened.indexOf("accordion1") > -1
-                && last_opened != "accordion1"){
-            new_size = new_size - accordions[0].getBoundingClientRect().height;
-            opened.splice(opened.indexOf("accordion1"), 1);
-            $("#accordion1").accordion("option", "active", 1);
-        }
-        for(let i = opened.length - 1; i > 0; --i){
-            if(new_size < window.innerHeight)
-                break;
-            let acc = document.getElementById(opened[i]);
-            new_size = new_size - acc.getBoundingClientRect().height;
-            $("#" + opened[i]).accordion("option", "active", 1);
-            opened.pop();
-        }
-    });
 
 function up_legend(){
     let legend_features = svg_map.querySelectorAll('.legend');
@@ -609,59 +668,6 @@ function up_legend(){
         svg_map.appendChild(legend_features[i], null);
     }
 }
-
-// Set up the widget allowing to sort layers :
-$( "#sortable" ).sortable({
-    placeholder: "ui-state-highlight",
-    update: function(a){
-      // Set the layer order on the map in concordance with the user changes
-      // in the layer manager with a pretty rusty sorting algorythm
-      // trying to match the requested order from the actual order
-      // (currently havent been tested on a really large number of layers)
-      let at_end = null;
-      if(document.getElementById("info_features").className == "active"){
-        displayInfoOnMove();
-        at_end = true;
-      }
-      let desired_order = [],
-          actual_order = [],
-          layers = svg_map.querySelectorAll(".layer");
-
-      for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
-          let n = a.target.childNodes[i].getAttribute("layer_name");
-          desired_order[i] = n;
-          actual_order[i] = layers[i].id;
-      }
-      for(let i = 0, len = desired_order.length; i < len; i++){
-          let lyr1 = document.getElementById(desired_order[i]),
-              lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
-          svg_map.insertBefore(lyr2, lyr1);
-      }
-     if(at_end) displayInfoOnMove();
-     }
-  });
-$( "#sortable" ).disableSelection();
-
-// Display a progress bar during the ajaxRequest
-// (can be unset locally by using the `"global": false` param when making an ajax request)
-$(document).ajaxStart(function() {
-        document.getElementById("overlay").style.display = "";
-    }).ajaxComplete(function() {
-        document.getElementById("overlay").style.display = "none";
-});
-
-// bind the mains tooltips
-$("#section1[data-tooltip!='']").qtip({
-    content: { attr: "data-tooltip" },
-    style: { classes: 'qtip-youtube qtip-section1' },
-    position: { my: 'center left', at: 'center right', target: this }
-})
-
-$("#section3[data-tooltip!='']").qtip({
-    content: { attr: "data-tooltip" },
-    style: { classes: 'qtip-youtube qtip-section3' },
-    position: { my: 'center left', at: 'center right', target: this }
-})
 
 ////////////////
 // To sort:
@@ -1264,12 +1270,15 @@ function zoomClick() {
 
 function rotate_global(angle){
     canvas_rotation_value = ["rotate(", angle, ",", w / 2,",", h / 2, ")"].join('');
+
+    let zoom_transform = d3.zoomTransform(map.node());
+
     map.selectAll("g.layer")
       .transition()
       .duration(10)
       .attr("transform", [canvas_rotation_value,
-                          ",translate(", zoom_translate, "),",
-                          "scale(", zoom_scale, ")"].join(''));
+                          ",translate(", [zoom_transform.x, zoom_transform.y], "),",
+                          "scale(", zoom_transform.k, ")"].join(''));
     if(northArrow.displayed){
         let current_transform = northArrow.svg_node.attr("transform");
         if(current_transform)
@@ -1280,11 +1289,11 @@ function rotate_global(angle){
 };
 
 function change_projection(proj_name) {
-    var current_proj_name = proj_name.split('()')[0].split('.')[2];
+    var current_proj_name = proj_name.split('()')[0].split('.')[1];
 
     // Update global variables:
     proj = eval(proj_name);
-    path = d3.geo.path().projection(proj);
+    path = d3.geoPath().projection(proj).pointRadius(4);
     t = proj.translate();
     s = proj.scale();
 
@@ -1292,7 +1301,7 @@ function change_projection(proj_name) {
     reproj();
 
     // Set specifics mouse events according to the projection :
-    if(strContains(current_proj_name, 'orthographic')){
+    if(current_proj_name.indexOf('Orthographic') > -1){
         var current_params = proj.rotate();
         rotation_param.append("div").attr("class", "options_ortho").html("Projection center (φ-axis rotation)")
                 .insert("input")
@@ -1528,7 +1537,7 @@ function apply_user_preferences(json_pref){
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-    path = d3.geo.path().projection(proj);
+    path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll("path").attr("d", path);
 
     for(let i = map_config.n_layers - 1; i > -1; --i){

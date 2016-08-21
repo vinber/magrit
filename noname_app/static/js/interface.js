@@ -1,18 +1,4 @@
 "use strict";
-
-i18next.use(i18nextXHRBackend)
-  .init({
-      debug: true,
-      lng: window.navigator.language || 'en',
-      fallbackLng: "en",
-      backend: {
-        loadPath: "/static/locales/fr/translation.json"
-      }
-}, (err, t) => {
-    if(err)
-        throw err;
-});
-
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
@@ -567,7 +553,7 @@ function center_map(name){
     });
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0], zoom_translate[1]);
+    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0]/zoom_scale, zoom_translate[1]/zoom_scale);
 //    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
 //    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
 };
