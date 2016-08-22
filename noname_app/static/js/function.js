@@ -11,35 +11,35 @@ function get_menu_option(func){
         },
         "smooth":{
             "name": "smooth",
-            "title":"Smoothed map (Stewart potentials)",
+            "title":i18next.t("Smoothed map (Stewart potentials)"),
             "desc":"Compute stewart potentials...",
             "menu_factory": "fillMenu_Stewart",
             "fields_handler": "fields_Stewart",
             },
         "prop":{
             "name": "prop",
-            "title":"Proportional symbols",
+            "title": i18next.t("Proportional symbols"),
             "menu_factory": "fillMenu_PropSymbol",
             "desc":"Display proportional symbols with appropriate discretisation on a numerical field of your data",
             "fields_handler": "fields_PropSymbol",
             },
         "choroprop":{
             "name": "choroprop",
-            "title":"Proportional colored symbols",
+            "title": i18next.t("Proportional colored symbols"),
             "menu_factory": "fillMenu_PropSymbolChoro",
             "desc":"Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
             "fields_handler": "fields_PropSymbolChoro",
             },
         "choro":{
             "name": "choro",
-            "title":"Choropleth map",
+            "title": i18next.t("Choropleth map"),
             "menu_factory": "fillMenu_Choropleth",
             "desc":"Render a choropleth map on a numerical field of your data",
             "fields_handler": "fields_Choropleth",
             },
         "cartogram":{
             "name": "cartogram",
-            "title":"Anamorphose map",
+            "title": i18next.t("Anamorphose map"),
             "menu_factory": "fillMenu_Anamorphose",
             "desc":"Render a map using an anamorphose algorythm on a numerical field of your data",
             "fields_handler": "fields_Anamorphose",
@@ -47,28 +47,28 @@ function get_menu_option(func){
             },
         "grid":{
             "name": "grid",
-            "title":"Gridded map",
+            "title": i18next.t("Gridded map"),
             "menu_factory": "fillMenu_griddedMap",
             "desc":"Render a gridded map on a numerical field of your data",
             "fields_handler": "fields_griddedMap",
             },
         "mta":{
             "name": "mta",
-            "title":"Multiscalar Territorial Analysis",
+            "title": i18next.t("Multiscalar Territorial Analysis"),
             "menu_factory": "fillMenu_MTA",
             "desc":"Compute and render various methods of multiscalar territorial analysis",
             "fields_handler": "fields_MTA",
             },
         "flow":{
             "name": "flow",
-            "title":"Link/FLow map",
+            "title": i18next.t("Link/FLow map"),
             "menu_factory": "fillMenu_FlowMap",
             "desc": "Render a map displaying links between features with graduated sizes",
             "fields_handler": "fields_FlowMap",
             },
         "discont":{
             "name": "discont",
-            "title":"Discontinuities map",
+            "title": i18next.t("Discontinuities map"),
             "menu_factory": "fillMenu_Discont",
             "desc": "Render a map displaying discontinuities between polygons features",
             "fields_handler": "fields_Discont",
@@ -76,22 +76,22 @@ function get_menu_option(func){
             },
         "typo":{
             "name": "typo",
-            "title":"Categorical map",
+            "title": i18next.t("Categorical map"),
             "menu_factory": "fillMenu_Typo",
             "desc":"Render a categorical map with an attribute field of your dataset",
             "fields_handler": "fields_Typo",
             },
         "label":{
             "name": "label",
-            "title":"Label map",
+            "title": i18next.t("Label map"),
             "menu_factory": "fillMenu_Label",
             "desc":"Render a map with optimal label positionning",
             "fields_handler": "fields_Label",
             },
         "symbol":{
             "name": "symbol",
-            "title":"Symbol map",
-            "menu_factory": "fillMenu_Symbol",
+            "title": i18next.t("Symbol map"),
+            "menu_factory": "fillMenu_TypoSymbol",
             "desc":"Render a map with optimal label positionning",
             "fields_handler": "fields_Symbol",
             },
@@ -138,8 +138,8 @@ function box_choice_symbol(sample_symbols){
                         .append("div").style("font-size", "10px")
                         .attrs({id: "box_choice_symbol", title: "Symbol selection"});
 
-    newbox.append("h3").html("Symbol selection");
-    newbox.append("p").html("Select a symbol...");
+    newbox.append("h3").html(i18next.t("Symbol selection"));
+    newbox.append("p").html(i18next.t("Select a symbol..."));
 
     var box_select = newbox.append("div")
                         .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
@@ -174,7 +174,7 @@ function box_choice_symbol(sample_symbols){
 
     newbox.append("p")
         .attr("display", "inline")
-        .html("Or choose upload your symbol ");
+        .html(i18next.t("Or upload your symbol "));
     newbox.append("button")
         .html("Browse")
         .on("click", function(){
@@ -232,6 +232,34 @@ function box_choice_symbol(sample_symbols){
     return deferred.promise;
 }
 
+function make_style_box_indiv_symbol(label_node){
+    let current_options = {size: label_node.getAttribute("width")};
+    let ref_coords = {x: +label_node.getAttribute("x") + (+current_options.size.slice(0, -2) / 2),
+                      y: +label_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
+    let new_params = {};
+    let self = this;
+    var a = make_confirm_dialog("", "Valid", "Cancel", "Label options", "styleTextAnnotation")
+        .then(function(confirmed){
+            if(!confirmed){
+                label_node.setAttribute("width", current_options.size);
+                label_node.setAttribute("height", current_options.size);
+                label_node.setAttribute("x", ref_coords.x - (+current_options.size.slice(0, -2) / 2));
+                label_node.setAttribute("y", ref_coords.y - (+current_options.size.slice(0, -2) / 2));
+            }
+        });
+    let box_content = d3.select(".styleTextAnnotation").insert("div");
+    box_content.append("p").html("Image size ")
+            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.getAttribute("width").slice(0,-2)})
+            .on("change", function(){
+                let new_val = this.value + "px";
+                label_node.setAttribute("width", new_val);
+                label_node.setAttribute("height", new_val);
+                label_node.setAttribute("x", ref_coords.x - (+this.value / 2));
+                label_node.setAttribute("y", ref_coords.y - (+this.value / 2));
+            });
+};
+
+
 var fields_Symbol = {
     fill: function(layer){
         if(!layer) return;
@@ -243,6 +271,7 @@ var fields_Symbol = {
         });
         d3.selectAll(".params").attr("disabled", null);
         field_to_use.on("change", function(){
+            document.getElementById("yesTypoSymbols").disabled = true;
             self.box_typo = display_box_symbol_typo(layer, this.value);
         });
         self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
@@ -254,7 +283,7 @@ var fields_Symbol = {
     box_typo: undefined
 }
 
-function fillMenu_Symbol(){
+function fillMenu_TypoSymbol(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
     let field_selec = dv2.append("p").html("Field to use ")
                     .insert('select')
@@ -283,60 +312,69 @@ function fillMenu_Symbol(){
                       .styles({"text-align": "right", margin: "auto"})
                       .append('button')
                       .attr("disabled", true)
-                      .attr('id', 'yes')
-                      .attr('class', 'params button_st2')
-                      .text(i18next.t('Compute and render'));
+                      .attr('id', 'yesTypoSymbols')
+                      .attr('class', 'button_st2')
+                      .text(i18next.t('Compute and render'))
+                      .on("click", function(){
+                          render_TypoSymbols(rendering_params);
+                      });
 
     d3.selectAll(".params").attr("disabled", true);
-
-    ok_button.on("click", function(){
-        console.log(rendering_params);
-        let layer_name = Object.getOwnPropertyNames(user_data)[0];
-        let field = rendering_params.field;
-        let layer_to_add = check_layer_name([layer_name,
-                                             field,
-                                             "Symbols"].join('_'));
-        let new_layer_data = [];
-
-        let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
-        let nb_ft = ref_selection.length;
-
-        for(let i=0; i<nb_ft; i++){
-            let ft = ref_selection[i].__data__;
-            new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
-        }
-
-        map.append("g").attrs({id: layer_to_add, class: "layer"})
-            .selectAll("image")
-            .data(new_layer_data).enter()
-            .insert("image")
-            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
-            .on("mouseover", function(){ this.style.cursor = "pointer";})
-            .on("mouseout", function(){ this.style.cursor = "initial";})
-            .call(drag_elem_geo);
-
-        create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
-
-        current_layers[layer_to_add] = {
-            "n_features": current_layers[layer_name].n_features,
-            "renderer": "TypoSymbols",
-            "symbols_map": rendering_params.symbols_map,
-            "rendered_field": field,
-            "is_result": true,
-            "symbol": "image",
-            "ref_layer_name": layer_name,
-            };
-        up_legend();
-        zoom_without_redraw();
-        switch_accordion_section();
-    });
-
 }
 
+function render_TypoSymbols(rendering_params){
+    let layer_name = Object.getOwnPropertyNames(user_data)[0];
+    let field = rendering_params.field;
+    let layer_to_add = check_layer_name([layer_name,
+                                         field,
+                                         "Symbols"].join('_'));
+    let new_layer_data = [];
+
+    let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
+    let nb_ft = ref_selection.length;
+
+    for(let i=0; i<nb_ft; i++){
+        let ft = ref_selection[i].__data__;
+        new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
+    }
+
+    let context_menu = new ContextMenu(),
+        getItems = (self_parent) => [
+            {"name": "Edit style...", "action": () => { make_style_box_indiv_symbol(self_parent); }},
+            {"name": "Delete", "action": () => {self_parent.style.display = "none"; }}
+    ];
+
+    map.append("g").attrs({id: layer_to_add, class: "layer"})
+        .selectAll("image")
+        .data(new_layer_data).enter()
+        .insert("image")
+        .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+        .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+        .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+        .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+        .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("contextmenu", function(){
+            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+            })
+        .call(drag_elem_geo);
+
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
+
+    current_layers[layer_to_add] = {
+        "n_features": current_layers[layer_name].n_features,
+        "renderer": "TypoSymbols",
+        "symbols_map": rendering_params.symbols_map,
+        "rendered_field": field,
+        "is_result": true,
+        "symbol": "image",
+        "ref_layer_name": layer_name,
+        };
+    up_legend();
+    zoom_without_redraw();
+    switch_accordion_section();
+}
 
 var fields_Discont = {
     fill: function(layer){
@@ -1081,11 +1119,13 @@ function fillMenu_PropSymbolChoro(layer){
                         conf_disc_box;
 
                     if(rendering_params[selected_field])
-                        conf_disc_box = display_discretization(layer, selected_field,
+                        conf_disc_box = display_discretization(layer,
+                                                               selected_field,
                                                                rendering_params[selected_field].nb_class,
-                                                               rendering_params[selected_field].type);
+                                                               rendering_params[selected_field].type,
+                                                               rendering_params[selected_field].colors);
                     else
-                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles");
+                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles", null);
 
                     conf_disc_box.then(function(confirmed){
                         if(confirmed){
@@ -1099,9 +1139,6 @@ function fillMenu_PropSymbolChoro(layer){
                             return;
                     });
                 });
-
-//    var behavior_onzoom = dv2.append('p').html("Recompute symbol size when zooming")
-//                                .insert("input").attrs({type: "checkbox", class: "params"});
 
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
@@ -1169,7 +1206,6 @@ var fields_Choropleth = {
         }
         fields.forEach(field => {
             field_selec.append("option").text(field).attr("value", field);
-//            this.rendering_params[field] = {};
         });
         d3.selectAll(".params").attr("disabled", null);
     },
@@ -1346,7 +1382,6 @@ let drag_elem_geo = d3.drag()
           });
 
 function make_style_box_indiv_label(label_node){
-    console.log(label_node)
     let current_options = {size: label_node.style.fontSize,
                            content: label_node.textContent,
                            font: "",
@@ -1400,8 +1435,8 @@ var render_label = function(layer, rendering_params){
 
     var context_menu = new ContextMenu(),
         getItems = (self_parent) =>  [
-            {"name": "Edit style...", "action": () => { make_style_box_indiv_label(self_parent) }},
-            {"name": "Delete", "action": () => { self_parent.remove() }}
+            {"name": "Edit style...", "action": () => { make_style_box_indiv_label(self_parent); }},
+            {"name": "Delete", "action": () => { self_parent.style.display = "none"; }}
         ];
 
     map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
@@ -1517,16 +1552,21 @@ function fillMenu_Choropleth(){
             if(rendering_params[selected_field])
                 conf_disc_box = display_discretization(layer_name, selected_field,
                                                        rendering_params[selected_field].nb_class,
-                                                       rendering_params[selected_field].type);
+                                                       rendering_params[selected_field].type,
+                                                       rendering_params[selected_field].colors);
             else
-                conf_disc_box = display_discretization(layer_name, selected_field, opt_nb_class, "Quantiles");
+                conf_disc_box = display_discretization(layer_name,
+                                                       selected_field,
+                                                       opt_nb_class,
+                                                       "Quantiles",
+                                                       null);
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
                     d3.select("#choro_yes").attr("disabled", null);
                     rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
-                            breaks: confirmed[2], colors:confirmed[3],
+                            breaks: confirmed[2], colors: confirmed[3],
                             colorsByFeature: confirmed[4], renderer:"Choropleth",
                             rendered_field: selected_field,
                             new_name: check_layer_name([layer_name, selected_field, "Choro"].join('_'))

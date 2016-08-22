@@ -85,7 +85,7 @@ function setUpInterface()
     window.section2 =  accordion2.append("div").attr("id","section2");
     accordion3.append("div")
         .attrs({"id": "section3",
-               "data-tooltip": "Drop new layout layer or click to browse locally and add one.<br> Supported type : shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"}),
+               "data-tooltip": i18next.t("Drop new layout layer or click to browse locally and add one. Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML")}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -165,12 +165,12 @@ function setUpInterface()
                     .style("padding-top", "10px").html('');
 
     dv3.append("img")
-        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
         .attr("src", "/static/img/b/addsample_t.png")
+        .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
         .attr("src", "/static/img/b/addgeom_t.png")
-        .style("float", "right").style("border-radius", "10%").style("margin", "2.5px")
+        .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 
     let section4 = d3.select("#section4");
@@ -196,7 +196,7 @@ function setUpInterface()
             .insert("input").attr("id", "title")
             .on("keyup", function(){handle_title(this.value);});
     dv4.insert("_img")
-            .style("display", "inline").style("top", "4px")
+            .styles({display: "inline", top: "4px", cursor: "pointer"})
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
     dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
@@ -206,6 +206,7 @@ function setUpInterface()
 
     dv4.append("p")
             //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
+            .style("cursor", "pointer")
             .html(sys_run_button + " " + i18next.t("Add layout features"))
             .on("click", select_layout_features);
 
@@ -284,12 +285,14 @@ function setUpInterface()
     let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline")
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export your composition")
+                  .style("cursor", "pointer")
                   .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.svg" width="20" height="20" alt="Export"/>')
                   .style("margin-top", "none")
                   .on("click", handle_export);
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Export / Load your map preferences")
+                  .style("cursor", "pointer")
                   .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){
@@ -327,6 +330,7 @@ function setUpInterface()
 
     const_options.append("button").attr("class", "const_buttons")
                   .attr("title", "Help")
+                  .style("cursor", "pointer")
                   .html('<img src="/static/img/High-contrast-help-browser.svg" width="20" height="20" alt="export_load_preferences"/>')
                   .style("margin-top", "none")
                   .on("click", function(){
@@ -350,11 +354,11 @@ function setUpInterface()
                 .styles({position:"absolute", right:"0px", bottom: "0px"});
 
     let lm_buttons = [
-        {id: "zoom_out", title: "Zoom out", class: "zoom_button", html: "-"},
-        {id: "zoom_in", title: "Zoom in", class: "zoom_button", html: "+"},
-        {id: "info_button", title: "Feature information", class: "info_button", html: "i"},
-        {id: "hand_button", title: "Use the cursor to move on the map (default behavior)", class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: "Zoom on selection", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
+        {id: "zoom_out", title: i18next.t("lm_buttons.zoom-"), class: "zoom_button", html: "-"},
+        {id: "zoom_in", title: i18next.t("lm_buttons.zoom+"), class: "zoom_button", html: "+"},
+        {id: "info_button", title: i18next.t("lm_buttons.i"), class: "info_button", html: "i"},
+        {id: "hand_button", title: i18next.t("lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
     ];
 
     let selec = lm.selectAll("input")
@@ -536,6 +540,7 @@ function make_ico_choice(){
             .attr("title", func_desc)
             .attr("src", ["/static/img/func_icons/", ico_name].join(''))
             .style("margin", "1px")
+            .style("cursor", "pointer")
             .on("click", function(){
                 if(window.fields_handler){
                     fields_handler.unfill();
@@ -834,7 +839,7 @@ function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     swal({
         title: "Confirm ?",
-        text: ["Remove layer '", name, "?"].join(''),
+        text: ["Remove layer ", name, "?"].join(''),
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
@@ -843,6 +848,7 @@ function remove_layer(name){
     }).then(() => { remove_layer_cleanup(name); },
             () => { null; }
     );    // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
+                //  ^^^^^^^^^^^^^^^^^^^^^^^ Not sure anymore :/
 }
 
 function remove_ext_dataset(){
@@ -864,7 +870,7 @@ function remove_ext_dataset(){
             ext_dataset_img.style.cursor = "pointer";
             ext_dataset_img.onclick = click_button_add_layer;
             let data_ext_txt = document.getElementById("data_ext");
-            data_ext_txt.innerHTML = "<b>Add additional dataset <i>(or drop it)</i></b>";
+            data_ext_txt.innerHTML = "<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>";
             data_ext_txt.onclick = click_button_add_layer;
             document.getElementById("remove_dataset").remove();
             document.getElementById("join_section").innerHTML = "";
@@ -899,7 +905,7 @@ function remove_layer_cleanup(name){
         d3.select("#img_in_geom")
             .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
-        d3.select("#input_geom").html("<b>Add geometry layer <i>(or drop it)</i></b>")
+        d3.select("#input_geom").html("<b>" + i18next.t("Add geometry layer") + " <i>" + i18next.t("(or drop it)") + "</i></b>")
             .on('click', click_button_add_layer);
         document.getElementById("remove_target").remove();
         // Unfiling the fields related to the targeted functionnality:
@@ -926,7 +932,7 @@ function remove_layer_cleanup(name){
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
     delete current_layers[name];
-    swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), i18next.t("success"));
+    swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), "success");
 }
 
 function load_map_template(){
@@ -1036,15 +1042,16 @@ function get_map_template(){
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
-        displayed_legend = d3.selectAll(".legend_feature:not(.title)");
+        displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
+        zoom_transform = d3.zoomTransform(map.node());
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
-    map_config.zoom_translate = zoom_translate;
-    map_config.zoom_scale = zoom_scale;
+    map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
+    map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
     map_config.div_height = +h;
     map_config.n_layers = layers[0].length;
@@ -1230,8 +1237,12 @@ function interpolateZoom(translate, scale) {
         var iTranslate = d3.interpolate([transform.x, transform.y], translate),
             iScale = d3.interpolate(transform.k, scale);
         return function (t) {
-            zoom.scaleTo(map.selectAll(".layer"), iScale(t));
-            zoom.translateBy(map.selectAll(".layer"), iTranslate(t));
+            map.node().__zoom.k = iScale(t);
+            let _t =  iTranslate(t);
+            map.node().__zoom.x = _t[0];
+            map.node().__zoom.y = _t[1];
+            //zoom.scaleTo(map.selectAll(".layer"), iScale(t));
+            //zoom.translateBy(map.selectAll(".layer"), iTranslate(t));
             zoom_without_redraw()
         };
     });
@@ -1303,13 +1314,13 @@ function change_projection(proj_name) {
     // Set specifics mouse events according to the projection :
     if(current_proj_name.indexOf('Orthographic') > -1){
         var current_params = proj.rotate();
-        rotation_param.append("div").attr("class", "options_ortho").html("Projection center (φ-axis rotation)")
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("Projection center (φ-axis rotation)"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_phi"})
                 .attrs({value: current_params[1], min: -180, max: 180, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, this.value, null])})
 
-        rotation_param.append("div").attr("class", "options_ortho").html("Projection center (γ-axis rotation)")
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("Projection center (γ-axis rotation)"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_gamma"})
                 .attrs({value: current_params[2], min: -90, max: 90, step: 0.5})

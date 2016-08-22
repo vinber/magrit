@@ -1,2 +1,23 @@
 {
+    "lm_buttons":{
+        "zoom+": "Zoom in",
+        "zoom-": "Zoom out",
+        "i": "Feature information",
+        "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
+        "zoom_rect": "Zoom on rectangular selection"
+    },
+    "disc_box":{
+        "title": "Discretization Panel",
+        "type_disc": "Type",
+        "class": " class",
+        "disp_mean": "Display mean",
+        "disp_median": "Display median",
+        "disp_sd": "Display standard deviation",
+        "hist_ref_title": "Distribution reference histogram",
+        "summary": "Summary",
+        "title_color_scheme": "Color scheme",
+        "title_break_values": "Current break values"
+        "mean": "Mean",
+        "median": "Median"
+    }
 }

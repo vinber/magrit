@@ -10,15 +10,6 @@
     font-size: 11px;
 }
 
-#svg_ref_histo .axis label{
-    font-size: 10px;
-}
-
-.axis line, .axis path{
-    fill: none;
-    stroke: black;
-}
-
 label_it_inline {
     font-size: 10px;
     display: inline;

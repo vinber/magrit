@@ -8,6 +8,9 @@ function handle_click_layer(layer_name){
     else if (current_layers[layer_name].renderer
              && current_layers[layer_name].renderer == "Label")
         createStyleBoxLabel(layer_name);
+    else if (current_layers[layer_name].renderer
+            && current_layers[layer_name].renderer == "TypoSymbols")
+        createStyleBoxTypoSymbols(layer_name);
     else
         createStyleBox(layer_name);
     return;
@@ -107,6 +110,54 @@ let cloneObj = function(obj){
     }
 }
 
+function createStyleBoxTypoSymbols(layer_name){
+    var selection = map.select("#" + layer_name).selectAll("image"),
+        ref_layer_name = current_layers[layer_name].ref_layer_name,
+        ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
+        symbols_map = current_layers[layer_name].symbols_map,
+        ref_coords = [];
+
+    for(let i = 0; i < ref_layer_selection.length; i++){
+        ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
+    }
+
+    make_confirm_dialog("", "Save", "Close without saving", "Layer style options", "styleBox", undefined, undefined, true)
+        .then(function(confirmed){
+            if(!confirmed){
+                current_layers[layer_name].fill_color = prev_settings.color;
+                current_layers[layer_name].default_size = prev_settings.size;
+                selection.style("font-size", current_layers[layer_name].default_size)
+                         .style("fill", current_layers[layer_name].fill_color);
+            }
+        });
+    var popup = d3.select(".styleBox");
+    popup.append('h4')
+            .styles({"font-size": "15px", "text-align": "center",
+                    "font-weight": "bold", "margin-bottom": "10px"})
+            .html("Layer style option");
+    popup.append("p")
+            .styles({"text-align": "center", "color": "grey"})
+            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
+                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+    popup.append("p").style("text-align", "center")
+            .insert("button")
+            .attr("id","reset_symn_loc")
+            .attr("class", "button_st4")
+            .text("Reset symbols location")
+            .on("click", function(){
+                selection.attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
+                        .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
+            });
+    popup.append("p").style("text-align", "center")
+            .insert("button")
+            .attr("id","reset_symn_loc")
+            .attr("class", "button_st4")
+            .text("Redraw deleted symbols")
+            .on("click", function(){
+                selection.style("display", undefined);
+            });
+}
+
 function createStyleBoxLabel(layer_name){
     var selection = map.select("#" + layer_name).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
@@ -134,7 +185,8 @@ function createStyleBoxLabel(layer_name){
             .html("Layer style option");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
-            .html(['<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
+                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
     popup.append("p").style("text-align", "center")
             .insert("button")
             .attr("id","reset_labels_loc")
@@ -144,6 +196,17 @@ function createStyleBoxLabel(layer_name){
                 selection.attr("x", (d,i) => ref_coords[i][0])
                         .attr("y", (d,i) => ref_coords[i][1]);
             });
+
+    popup.append("p").style("text-align", "center")
+            .insert("button")
+            .attr("id","reset_symn_loc")
+            .attr("class", "button_st4")
+            .text("Redraw deleted symbols")
+            .on("click", function(){
+                selection.style("display", undefined);
+//                selection.style("fill-opacity", 1);
+            });
+
     popup.insert("p").style("text-align", "center").style("font-size", "9px")
             .html("<b><i> Following options will override settings for labels modified manually </i></b>");
     let label_sizes = popup.append("p")

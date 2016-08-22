@@ -124,16 +124,16 @@ function prepare_drop_section(){
                         elem.style.border = '';
                     }
                 }
-                else if(files[0].name.toLowerCase().indexOf('topojson')){
+                else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
                        elem.style.border = '';
                        if(target_layer_on_add && targeted_layer_added)
                            alert("Only one layer can be added by this functionnality");
                        // Most direct way to add a layer :
                        else handle_TopoJSON_files(files);
                }
-               else if(files[0].name.toLowerCase().indexOf('geojson') ||
-                    files[0].name.toLowerCase().indexOf('zip') ||
-                    files[0].name.toLowerCase().indexOf('kml')){
+               else if(files[0].name.toLowerCase().indexOf('geojson') > -1||
+                    files[0].name.toLowerCase().indexOf('zip') > -1 ||
+                    files[0].name.toLowerCase().indexOf('kml') > -1){
                        elem.style.border = '';
 
                        if(target_layer_on_add && targeted_layer_added)
@@ -141,8 +141,8 @@ function prepare_drop_section(){
                        // Send the file to the server for conversion :
                        else handle_single_file(files[0]);
                }
-              else if(files[0].name.toLowerCase().indexOf('.csv')
-                || files[0].name.toLowerCase().indexOf('.tsv')) {
+              else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
+                || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
                     elem.style.border = '';
                     if(self_section === "section1")
                         handle_dataset(files[0]);
@@ -553,7 +553,11 @@ function center_map(name){
     });
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0]/zoom_scale, zoom_translate[1]/zoom_scale);
+    let _zoom = map.node().__zoom;
+    _zoom.k = zoom_scale;
+    _zoom.x = zoom_translate[0];
+    _zoom.y = zoom_translate[1];
+//    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0]/zoom_scale, zoom_translate[1]/zoom_scale);
 //    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
 //    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
 };
@@ -687,30 +691,41 @@ var northArrow = {
 
         let arrow_context_menu = new ContextMenu();
 
-        arrow_gp.append("polygon")
-                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
-        arrow_gp.append("polygon")
-                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
-        arrow_gp.insert("path")
-                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
-//        arrow_gp.append("g").insert("rect")
-//                .attr("height", "60px")
-//                .attr("width", "60px");
+//        arrow_gp.append("polygon")
+//                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
+//                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
+//        arrow_gp.append("polygon")
+//                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
+//                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
+//        arrow_gp.insert("path")
+//                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
+        this.under_rect = arrow_gp.append("g")
+            .insert("rect")
+                .style("fill", "green")
+                .style("fill-opacity", 0)
+                .attr("x", x_pos - (36 - 30) / 2)
+                .attr("y", y_pos - (36 - 30) / 2)
+                .attr("height", "36px")
+                .attr("width", "36px");
 
-//        arrow_gp.insert("image")
-//            .attr("x", x_pos)
-//            .attr("y", y_pos)
-//            .attr("height","30px")
-//            .attr("width", "30px")
-//            .attr("xlink:href", '/static/img/north.svg');
+        this.arrow_img = arrow_gp.insert("image")
+            .attr("x", x_pos)
+            .attr("y", y_pos)
+            .attr("height","30px")
+            .attr("width", "30px")
+            .attr("xlink:href", "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxOC4xLjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FscXVlXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIzMTEgMjc4LjYgMzYuOSA1MC41IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDMxMSAyNzguNiAzNi45IDUwLjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPHBvbHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50cz0iMzEyLjMsMzI3LjkgMzI4LjksMzE4LjUgMzI4LjksMjk2LjQgIi8+DQo8cG9seWdvbiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIzMjkuOSwyOTYuNCAzMjkuOSwzMTguNSAzNDYuNywzMjcuOCAiLz4NCjxnPg0KCTxwYXRoIGQ9Ik0zMjIuOCwyNzguNmgyLjlsNi43LDEwLjN2LTEwLjNoM3YxNS43aC0yLjlsLTYuNy0xMC4zdjEwLjNoLTNWMjc4LjZ6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==");
 
         arrow_gp.call(drag_lgd_features);
 
         arrow_gp
-            .on("mouseover", function(){ this.style.cursor = "pointer";})
-            .on("mouseout", function(){ this.style.cursor = "initial";})
+            .on("mouseover", function(){
+                this.style.cursor = "pointer";
+                self.under_rect.style("fill-opacity", 0.1);
+                })
+            .on("mouseout", function(){
+                this.style.cursor = "initial";
+                self.under_rect.style("fill-opacity", 0);
+                })
             .on("contextmenu", (d,i) => {
                 d3.event.preventDefault();
                 return arrow_context_menu
@@ -736,20 +751,16 @@ var northArrow = {
         box_body.append("p").style("margin-bottom", "0")
                 .html("Arrow size ");
         box_body.append("input")
-                .attr("type", "range")
-                .attrs({min: 0.1, max: 2, step: 0.1})
-                .attr("value", self.svg_node.attr("scale") || 1)
+                .attrs({type: "range", min: 2, max: 75, step: 0.1})
+                .attr("value", self.arrow_img.attr("width").slice(0, -2))
                 .on("change", function(){
-                    let translate_param = self.svg_node.attr("transform"),
-                        rotation_value = self.svg_node.attr("rotate");
-                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
-                                        ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
-                                        : "";
-                    rotation_value = rotation_value
-                                        ? "rotate(" + rotation_value + ",0,0)"
-                                        : "";
-                    self.svg_node.attr("scale", this.value);
-                    self.svg_node.attr("transform", translate_param + "scale(" + this.value + ")" + rotation_value);
+                    let new_val = this.value + "px",
+                        new_val_rect = (+this.value + 6) + "px";
+                    self.arrow_img.attr("width", new_val)
+                                  .attr("height", new_val);
+                    self.under_rect
+                                .attr("width", new_val_rect)
+                                .attr("height", new_val_rect);
                 });
         box_body.append("p").style("margin-bottom", "0")
                 .html("Arrow rotation ");
