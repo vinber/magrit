@@ -1474,9 +1474,6 @@ function canvas_mod_size(shape){
         map.attr("height", h)
             .call(zoom_without_redraw);
         map_div.style("height", h + "px");
-
-        // And change the position of the `source` element displayed in the bottom of the map :
-        //d3.selectAll(".source_block").select("text").attr("y", h - 10);
     }
 }
 

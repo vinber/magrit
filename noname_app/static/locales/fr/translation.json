@@ -87,5 +87,11 @@
         "title_break_values": "Choix manuel des limites de classes",
         "mean": "Moyenne",
         "median": "Médiane"
+    },
+    "style_box":{
+        "ref_layer": "Couche de référence",
+        "rendered_field: "Valeur représentée",
+        "ok": "Valider",
+        "cancel": "Annuler"
     }
 }

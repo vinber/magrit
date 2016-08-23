@@ -2087,7 +2087,6 @@ var fields_Anamorphose = {
         field_selec.on("change", function(){
             let field_name = this.value,
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("Anamorph_opt3");
             if(ref_value_field){
                 ref_value_field.setAttribute("max", max_val_field);
@@ -2125,7 +2124,6 @@ function fillMenu_Anamorphose(){
             let field_name = this.value,
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-//                max_val_field = Math.max.apply(null, user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("Anamorph_opt3");
 
             ref_value_field.setAttribute("max", max_val_field);

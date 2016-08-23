@@ -3,7 +3,7 @@
         "zoom+": "Zoom in",
         "zoom-": "Zoom out",
         "i": "Feature information",
-        "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
+        "hand_button": "Use the cursor to move on the map (default behavior)",
         "zoom_rect": "Zoom on rectangular selection"
     },
     "disc_box":{
@@ -16,8 +16,14 @@
         "hist_ref_title": "Distribution reference histogram",
         "summary": "Summary",
         "title_color_scheme": "Color scheme",
-        "title_break_values": "Current break values"
+        "title_break_values": "Current break values",
         "mean": "Mean",
         "median": "Median"
+    },
+    "style_box":{
+        "ref_layer": "Reference layer",
+        "rendered_field: "Rendered field",
+        "ok": "Confirm",
+        "cancel": "Close without saving"
     }
 }

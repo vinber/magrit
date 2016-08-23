@@ -1,5 +1,11 @@
 "use strict";
-
+/**
+* Function called on clicking on the legend button of each layer
+* - toggle the visibility of the legend (or create the legend if doesn't currently exists)
+*
+* @param {String} layer - The layer name
+*
+*/
 function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
@@ -15,15 +21,17 @@ function handle_legend(layer){
     }
 }
 
+/**
+* Function called on the first click on the legend button of each layer
+* - delegate legend creation according to the type of function
+*
+* @param {String} layer - The layer name
+* @param {String} title - The desired title (default: empty - can be modified later)
+*
+*/
 function createLegend(layer, title){
-    // Common part :
-//    var source_info = map.insert('g').attr("class", "legend_feature source_block")
-//                        .insert("text").style("font", "italic 10px Gill Sans Extrabold, sans-serif")
-//                        .attrs({id: "source_block", x: 10, y: h-10})
-//                        .text("Rendered by MAPOLOGIC");
-
     var field = current_layers[layer].rendered_field;
-    // Specific parts :
+
     if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
         let field2 = current_layers[layer].rendered_field2;
         createLegend_choro(layer, field2, title);
@@ -47,8 +55,7 @@ function createLegend(layer, title){
         swal("Oups..!",
              i18next.t("No legend available for this representation") + ".<br>"
              + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
-             "warning")
-//        createLegend_nothing(layer, field, title, field);
+             "warning");
 }
 
 function make_legend_context_menu(legend_node, layer){
@@ -221,6 +228,12 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     make_legend_context_menu(legend_root, layer);
 }
 
+/**
+* Function computing the size of the rectangle to be put under the legend
+* (called on each change modifying the size of the legend box,
+* eg. longer title, switching to nested symbols, etc..)
+*
+*/
 function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
     under_rect.attrs({"width": 0, height: 0});
     let bbox_legend = legend_root.node().getBoundingClientRect();
@@ -635,7 +648,6 @@ function createlegendEditBox(legend_id, layer_name){
                     .style("display", "inline")
                     .on('change', function(){
                         let nb_float = +this.value;
-//                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                         d3.select("#precision_change_txt")
                             .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
@@ -707,6 +719,7 @@ function createlegendEditBox(legend_id, layer_name){
         document.getElementById("style_lgd").checked = current_state;
     }
 
+// Todo : Reactivate this functionnality :
 //    box_body.insert("p").html("Display features count ")
 //            .insert("input").attr("type", "checkbox")
 //            .on("change", function(){
