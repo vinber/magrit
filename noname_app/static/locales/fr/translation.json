@@ -90,7 +90,7 @@
     },
     "style_box":{
         "ref_layer": "Couche de référence",
-        "rendered_field: "Valeur représentée",
+        "rendered_field": "Valeur représentée",
         "ok": "Valider",
         "cancel": "Annuler"
     }

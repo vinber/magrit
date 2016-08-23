@@ -1048,7 +1048,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route = app.router.add_route
     add_route('GET', '/', handler)
     add_route('GET', '/index', handler)
-    add_route('GET', '/about', about_handler)
+    add_route('GET', '/about/', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)

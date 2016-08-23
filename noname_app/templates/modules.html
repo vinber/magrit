@@ -770,7 +770,9 @@ function reproj(){
 function reproj_symbol_layer(){
   for(let lyr_name in current_layers){
     if(current_layers[lyr_name].renderer
-        && current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1){
+        && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
+            || current_layers[lyr_name].renderer.indexOf('TypoSymbols')  > -1
+            || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )){
       let ref_layer_name = current_layers[lyr_name].ref_layer_name,
           features_order = current_layers[lyr_name].features_order,
           symbol = current_layers[lyr_name].symbol,
@@ -780,23 +782,36 @@ function reproj_symbol_layer(){
             .each((d,i) => {
                 new_coords.push(path.centroid(d))
             });
-      let ord = features_order.map(obj => obj[0]);
-      for(let i = 0; i < ord.length; i++)
-        features_order[i][2] = new_coords[ord[i]];
 
-      if(symbol == "circle")
+      if (symbol == "text") {
           map.select("#"+lyr_name)
                 .selectAll(symbol)
-                .attr("cx", (d,i) => features_order[i][2][0])
-                .attr("cy", (d,i) => features_order[i][2][1])
-                .attr("r", (d,i) => features_order[i][1]);
-      else if (symbol == "rect")
+                .attr("x", (d,i) => new_coords[i][0])
+                .attr("y", (d,i) => new_coords[i][1])
+      } else if (symbol == "image"){
           map.select("#"+lyr_name)
                 .selectAll(symbol)
-                .attr("x", (d,i) => features_order[i][2][0] - features_order[i][1] / 2)
-                .attr("y", (d,i) => features_order[i][2][1] - features_order[i][1] / 2)
-                .attr("height", (d,i) => features_order[i][1])
-                .attr("width", (d,i) => features_order[i][1]);
+                .attr("x", function(d,i){ console.log(this); return new_coords[i][0] - +this.getAttribute("width").slice(0, -2) / 2; })
+                .attr("y", function(d,i){ return new_coords[i][1] - +this.getAttribute("width").slice(0, -2) / 2; })
+      } else {
+          let ord = features_order.map(obj => obj[0]);
+          for(let i = 0; i < ord.length; i++)
+            features_order[i][2] = new_coords[ord[i]];
+
+          if(symbol == "circle")
+              map.select("#"+lyr_name)
+                    .selectAll(symbol)
+                    .attr("cx", (d,i) => features_order[i][2][0])
+                    .attr("cy", (d,i) => features_order[i][2][1])
+                    .attr("r", (d,i) => features_order[i][1]);
+          else if (symbol == "rect")
+              map.select("#"+lyr_name)
+                    .selectAll(symbol)
+                    .attr("x", (d,i) => features_order[i][2][0] - features_order[i][1] / 2)
+                    .attr("y", (d,i) => features_order[i][2][1] - features_order[i][1] / 2)
+                    .attr("height", (d,i) => features_order[i][1])
+                    .attr("width", (d,i) => features_order[i][1]);
+      }
     }
   }
 }
@@ -1210,7 +1225,8 @@ function redraw_legends_symbols(){
     for(let i=0; i<legend_nodes.length; ++i){
         let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
             rendered_field = current_layers[layer_name].rendered_field,
-            nested = legend_nodes[i].getAttribute("nested");
+            nested = legend_nodes[i].getAttribute("nested"),
+            visible = legend_nodes[i].style.visibility;
 
         let transform_param = legend_nodes[i].getAttribute("transform"),
             lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
@@ -1223,10 +1239,10 @@ function redraw_legends_symbols(){
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value);
-
+        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+        new_lgd.style.visibility = visible;
         if(transform_param)
-            document.querySelector(["#legend_root2.lgdf_", layer_name].join(''))
-                .setAttribute("transform", transform_param);
+            new_lgd.setAttribute("transform", transform_param);
     }
 }
 

@@ -266,9 +266,9 @@ prepare_cart_density <- function(json_polygons, variable = 1, nrows = 2^8, ncols
   mean <- sum(tab * indVar[as.numeric(names(tab))]) / sum(tab)
   ind[is.na(ind)] <- length(var) + 1
   indVar[length(var) + 1] <- mean
-  #dens <- matrix(indVar[ind], byrow = TRUE, ncol = dim["x"])
+  dens <- matrix(indVar[ind], byrow = TRUE, ncol = dim["x"])
   return(jsonlite::toJSON(as.double(t(
-      matrix(indVar[ind], byrow = TRUE, ncol = dim["x"])[rev(seq(along = dens[, 1])), ]
+      dens[rev(seq(along = dens[, 1])), ]
       ))))
 }
 

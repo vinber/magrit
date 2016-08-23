@@ -3,20 +3,20 @@
 	{"name": "mercator", "projection":  "d3.geoMercator().scale(375).translate([525, 350])"},
 	{"name": "azimuthalEqualArea", "projection":  "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},
 	{"name": "orthographic", "projection":  "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"},
-	{"name": "Sinusoidal", "projection": "d3.geoSinusoidal()"},
-	{"name": "Armadillo", "projection": "d3.geoArmadillo()"},
-	{"name": "Baker", "projection": "d3.geoBaker().scale(100)"},
-	{"name": "Boggs", "projection": "d3.geoBoggs().scale(250)"},
-	{"name": "Bonne", "projection": "d3.geoBonne().scale(180)"},
-	{"name": "Bromley", "projection": "d3.geoBromley()"},
-	{"name": "Collignon", "projection": "d3.geoCollignon().scale(93)"},
-	{"name": "Craster Parabolic", "projection": "d3.geoCraster()"},
+	{"name": "Sinusoidal", "projection": "d3.geoSinusoidal().scale(400)"},
+	{"name": "Armadillo", "projection": "d3.geoArmadillo().scale(400)"},
+	{"name": "Baker", "projection": "d3.geoBaker().scale(400)"},
+	{"name": "Boggs", "projection": "d3.geoBoggs().scale(400)"},
+	{"name": "Bonne", "projection": "d3.geoBonne().scale(400)"},
+	{"name": "Bromley", "projection": "d3.geoBromley().scale(400)"},
+	{"name": "Collignon", "projection": "d3.geoCollignon().scale(400)"},
+	{"name": "Craster Parabolic", "projection": "d3.geoCraster().scale(400)"},
 	{"name": "Eckert I", "projection": "d3.geoEckert1().scale(400).translate([300, 250])"},
 	{"name": "Eckert II", "projection": "d3.geoEckert2().scale(400).translate([300, 250])"},
 	{"name": "Eckert III", "projection": "d3.geoEckert3().scale(525).translate([150, 125])"},
 	{"name": "Eckert IV", "projection": "d3.geoEckert4().scale(525).translate([150, 125])"},
-	{"name": "Eckert V", "projection": "d3.geoEckert5().scale(225)"},
-	{"name": "Eckert VI", "projection": "d3.geoEckert6().scale(225)"}
+	{"name": "Eckert V", "projection": "d3.geoEckert5().scale(400)"},
+	{"name": "Eckert VI", "projection": "d3.geoEckert6().scale(400)"}
  ]
 
 

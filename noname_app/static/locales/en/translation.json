@@ -22,7 +22,7 @@
     },
     "style_box":{
         "ref_layer": "Reference layer",
-        "rendered_field: "Rendered field",
+        "rendered_field": "Rendered field",
         "ok": "Confirm",
         "cancel": "Close without saving"
     }

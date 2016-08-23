@@ -1148,6 +1148,7 @@ function fillMenu_PropSymbolChoro(layer){
                         .text('Render');
 
     ok_button.on("click", function(){
+        if(!ref_value.node().value) return
         if(rendering_params[field2_selec.node().value]){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 nb_features = user_data[layer].length,
