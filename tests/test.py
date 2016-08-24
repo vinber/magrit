@@ -33,6 +33,7 @@ def read_csv():
         data_csv = f.read()
     return data_csv
 
+
 def test_convert_from_topo(read_topo, read_verif_topo):
     assert json.loads(json.dumps(convert_from_topo(read_topo))) \
             == read_verif_topo

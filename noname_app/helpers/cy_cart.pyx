@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-@author: mthh
-"""
 from libc.stdlib cimport malloc, free
 from geopandas import GeoDataFrame
 from shapely.geometry import MultiPolygon, Polygon, LineString

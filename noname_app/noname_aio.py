@@ -28,7 +28,7 @@ import asyncio
 import zmq.asyncio
 import pandas as pd
 import numpy as np
-
+import matplotlib; matplotlib.use('Agg')
 from base64 import b64encode
 from contextlib import closing
 from zipfile import ZipFile
@@ -47,35 +47,38 @@ from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
 # Helpers :
+#try:
+#    from noname_app.r_py.rclient_worker_queue import R_client_fuw_async, url_client
+#    from noname_app.helpers.misc import (
+#        savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+#    from noname_app.helpers.cy_misc import get_name, join_field_topojson
+#    from noname_app.helpers.cartogram_doug import make_cartogram
+#    from noname_app.helpers.topo_to_geo import convert_from_topo
+#    from noname_app.helpers.geo import (
+#        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+#    from noname_app.helpers.stewart_smoomapy import quick_stewart_mod
+#except:
 try:
-    from noname_app.r_py.rclient_worker_queue import R_client_fuw_async, url_client
-    from noname_app.helpers.misc import (
+    from r_py.rclient_worker_queue import R_client_fuw_async, url_client
+    from helpers.misc import (
         savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from noname_app.helpers.cy_misc import get_name, join_field_topojson
-    from noname_app.helpers.cartogram_doug import make_cartogram
-    from noname_app.helpers.topo_to_geo import convert_from_topo
-    from noname_app.helpers.geo import (
+    from helpers.cy_misc import get_name, join_field_topojson
+    from helpers.cartogram_doug import make_cartogram
+    from helpers.topo_to_geo import convert_from_topo
+    from helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform)
-except:
-    try:
-        from r_py.rclient_worker_queue import R_client_fuw_async, url_client
-        from helpers.misc import (
-            savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-        from helpers.cy_misc import get_name, join_field_topojson
-        from helpers.cartogram_doug import make_cartogram
-        from helpers.topo_to_geo import convert_from_topo
-        from helpers.geo import (
-            reproj_convert_layer, reproj_layer, check_projection, olson_transform)
-    except:
-        from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
-        from .helpers.misc import (
-            savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-        from .helpers.cy_misc import get_name, join_field_topojson
-        from .helpers.cartogram_doug import make_cartogram
-        from .helpers.topo_to_geo import convert_from_topo
-        from .helpers.geo import (
-            reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+    from helpers.stewart_smoomapy import quick_stewart_mod
 
+except:
+    from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
+    from .helpers.misc import (
+        savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+    from .helpers.cy_misc import get_name, join_field_topojson
+    from .helpers.cartogram_doug import make_cartogram
+    from .helpers.topo_to_geo import convert_from_topo
+    from .helpers.geo import (
+        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+    from .helpers.stewart_smoomapy import quick_stewart_mod
 
 from geopandas import GeoDataFrame
 
@@ -799,6 +802,86 @@ async def call_stewart(posted_data, user_id, app):
         json.dumps(content['breaks'])
         ])
 
+async def call_stewart2(posted_data, user_id, app):
+    st = time.time()
+    posted_data = json.loads(posted_data.get("json"))
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+    point_layer = await app['redis_conn'].get(f_name)
+    point_layer = json.loads(point_layer.decode())
+
+    new_field1 = posted_data['variable1']
+    new_field2 = posted_data['variable2']
+
+    n_field_name1 = list(new_field1.keys())[0]
+    if len(new_field1[n_field_name1]) > 0:
+        join_field_topojson(point_layer, new_field1[n_field_name1],
+                            n_field_name1)
+
+    if new_field2:
+        n_field_name2 = list(new_field2.keys())[0]
+        if len(new_field2[n_field_name2]) > 0:
+            join_field_topojson(point_layer, new_field2[n_field_name2],
+                                n_field_name2)
+    else:
+        n_field_name2 = None
+
+    if posted_data['mask_layer']:
+        f_name = '_'.join([user_id, str(posted_data['mask_layer']), "NQ"])
+        mask_layer = await app['redis_conn'].get(f_name)
+
+    tmp_part = get_name()
+    filenames = {
+        'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
+        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson'])
+                      if posted_data['mask_layer'] != "" else None
+        }
+    savefile(filenames['point_layer'],
+             topojson_to_geojson(point_layer).encode())
+
+    if filenames['mask_layer']:
+        savefile(filenames['mask_layer'],
+                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+
+#    res = quick_stewart(filenames['point_layer'], n_field_name1,
+#                        span=int(posted_data['span']),
+#                        beta=float(posted_data['beta']),
+#                        typefct=posted_data['typefct'].lower(),
+#                        resolution=posted_data['resolution'],
+#                        nb_class=int(posted_data['nb_class']),
+#                        user_defined_breaks=posted_data['user_breaks'],
+#                        mask=filenames["mask_layer"])
+
+    res, breaks = await app.loop.run_in_executor(
+        app["ThreadPool"],
+        quick_stewart_mod,
+        filenames['point_layer'],
+        n_field_name1,
+        int(posted_data['span']),
+        float(posted_data['beta']),
+        posted_data['typefct'].lower(),
+        int(posted_data['nb_class']),
+        posted_data['resolution'],
+        filenames["mask_layer"],
+        posted_data['user_breaks'])
+
+    os.remove(filenames['point_layer'])
+    savefile(filenames['point_layer'], res)
+    res = await geojson_to_topojson(filenames['point_layer'], remove=True)
+
+    new_name = '_'.join(['StewartPot', n_field_name1])
+    res = res.replace(tmp_part, new_name)
+    hash_val = mmh3_hash(res)
+
+    asyncio.ensure_future(
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+    app['logger'].info(
+        '{} - timing : stewart_on_py : {:.4f}s'
+        .format(user_id, time.time()-st))
+
+    return "|||".join([
+        ''.join(['{"key":', str(hash_val), ',"file":', res, '}']),
+        json.dumps(breaks)
+        ])
 
 async def R_compute(request):
     s_t = time.time()
@@ -1073,7 +1156,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
     app['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
     prepare_list_svg_symbols()
