@@ -1,11 +1,29 @@
 # -*- coding: utf-8 -*-
-from smoomapy import compute, render_stewart
-from geopandas import GeoDataFrame
+from smoomapy import SmoothStewart
+import pickle
+
+
+def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
+                   user_defined_breaks=None, mask=None):
+    """
+    Function allowing to recompute contour limits
+    from a pickle-dumped SmoothStewart instance.
+    """
+    StePot = pickle.loads(dumped_obj)
+    result = StePot.render(nb_class,
+                           disc_kind,
+                           user_defined_breaks,
+                           func_grid="matplotlib",
+                           output="GeoDataFrame",
+                           new_mask = mask)
+    _min, _max = result[["min", "max"]].values.T.tolist()
+    return (result[::-1].to_json().encode(),
+            {"min": _min[::-1], "max": _max[::-1]})
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,
-                            beta=2, typefct='exponential',
-                            nb_class=None, resolution=None, mask=None,
-                            user_defined_breaks=None):
+                      beta=2, typefct='exponential',
+                      nb_class=None, disc_kind=None, resolution=None, mask=None,
+                      user_defined_breaks=None):
     """
     Modified function from smoomapy
 
@@ -40,35 +58,14 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     breaks: dict
         The break values used.
     """
-    gdf = GeoDataFrame.from_file(input_geojson_points).to_crs(crs="+proj=natearth")
-
-    if mask:
-        mask = GeoDataFrame.from_file(mask).to_crs(crs="+proj=natearth") \
-                if mask != input_geojson_points else gdf
-
-        if len(set(gdf.type).intersection({"Polygon", "MultiPolygon"})) > 0 \
-                and gdf.crs == mask.crs:
-            use_mask = True
-        else:
-            print("Warning: Mask layer have to be (Multi)Polygon geometries"
-                  " and use the same CRS as input values")
-            use_mask = False
-    else:
-        use_mask = False
-
-    pot, unknownpts, shape = compute(gdf,
-                                     variable_name,
-                                     span=span,
-                                     beta=beta,
-                                     resolution=resolution,
-                                     typefct='exponential',
-                                     mask=mask if use_mask else None)
-
-    result = render_stewart(
-        pot, unknownpts, nb_class if nb_class else 8, mask, shape,
-        user_defined_breaks)
-    result.crs = gdf.crs
+    StePot = SmoothStewart(input_geojson_points, variable_name, span,
+                           beta, typefct, resolution, None, mask)
+    result = StePot.render(nb_class,
+                           disc_kind,
+                           user_defined_breaks,
+                           func_grid="matplotlib" if not mask else "scipy",
+                           output="GeoDataFrame")
     _min, _max = result[["min", "max"]].values.T.tolist()
-    return (result[::-1].to_crs({'init': 'epsg:4326'}).to_json().encode(),
-            {"min": _min[::-1], "max": _max[::-1]})
-
+    return (result[::-1].to_json().encode(),
+            {"min": _min[::-1], "max": _max[::-1]},
+            pickle.dumps(StePot))

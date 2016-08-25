@@ -299,7 +299,7 @@ function createStyleBox(layer_name){
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
                          .style('stroke-opacity', border_opacity);
-                let zoom_scale = d3.zoomTransform(map.node()).k;
+                let zoom_scale = +d3.zoomTransform(map.node()).k;
                 map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
@@ -566,7 +566,7 @@ function createStyleBox(layer_name){
                           .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
                           .on('change', function(){
                                 let val = +this.value;
-                                let zoom_scale = get_zoom_param(scale=true);
+                                let zoom_scale = +d3.zoomTransform(map.node()).k;
                                 map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
                                 current_layers[layer_name]['stroke-width-const'] = val;
                           });

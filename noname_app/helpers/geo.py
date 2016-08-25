@@ -8,6 +8,14 @@ from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
 from shapely.geometry import shape, mapping
 from shapely.ops import transform
 from shapely.affinity import scale
+from io import StringIO
+from pandas import read_csv as pd_read_csv
+from geopandas import GeoDataFrame
+
+
+def draw_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
+    gdf = GeoDataFrame(ref_layer_geojson)
+    csv_table = pd_read_csv(StringIO(csv_table))
 
 
 def olson_transform(geojson, scale_values):

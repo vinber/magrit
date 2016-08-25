@@ -14,13 +14,13 @@ cpdef from_topo(topo, obj_name):
     geojson = transformer.geom_dispatch(geojson)
     return geojson
 
-
-cdef class BaseConvert:
+cdef class Transformer_no_transform:
     cdef:
         list arcs
         dict dispatch_geom
 
-    def __init__(self):
+    def __init__(self, arcs):
+        self.arcs = arcs
         self.dispatch_geom = {
             'Point': self.point, 'MultiPoint': self.multi_point,
             'LineString': self.line_string, 'MultiLineString': self.multi_line_string_poly,
@@ -53,11 +53,9 @@ cdef class BaseConvert:
         return [self.stitch_arcs(a) for a in arcs]
 
     cdef dict feature(self, dict feature):
-        cdef:
-            dict out
-            str type_ = feature['type']
-            dict geom_ = {'type': type_}
-
+        cdef dict out
+        cdef str type_ = feature['type']
+        cdef dict geom_ = {'type': type_}
         if type_ in ('Point','MultiPoint'):
             geom_['coordinates'] = feature['coordinates']
         elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
@@ -67,7 +65,6 @@ cdef class BaseConvert:
 
         geom_ = self.geom_dispatch(geom_)
         out = {'type':'Feature', 'geometry': geom_}
-
         for key in ('properties','bbox','id'):
             if key in feature:
                 out[key] = feature[key]
@@ -77,10 +74,13 @@ cdef class BaseConvert:
         return self.dispatch_geom[geometry['type']](geometry)
 
     cpdef dict point(self, dict geometry):
-        pass
+        geometry['coordinates'] = [geometry['coordinates'][0], geometry['coordinates'][1]]
+        return geometry
 
     cpdef dict multi_point(self, dict geometry):
-        pass
+        cdef list geom
+        geometry['coordinates'] = [[geom[0], geom[1]] for geom in geometry['coordinates']]
+        return  geometry
 
     cpdef dict line_string(self, dict geometry):
         geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
@@ -94,43 +94,30 @@ cdef class BaseConvert:
 
     cpdef dict multi_poly(self, dict geometry):
         cdef list a
-        geometry['coordinates'] = \
-            [self.stich_multi_arcs(a) for a in geometry['arcs']]
+        geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
         del geometry['arcs']
         return geometry
 
     cpdef dict geometry_collection(self, dict geometry):
-        cdef dict geom
-        return {
+        cdef dict out = {
             'type': 'FeatureCollection',
             'features': [self.feature(geom) for geom in geometry['geometries']]
             }
+        return out
 
-
-cdef class Transformer_no_transform(BaseConvert):
-    def __init__(self, arcs):
-        BaseConvert.__init__(self)
-        self.arcs = arcs
-
-    cpdef dict point(self, dict geometry):
-        geometry['coordinates'] = \
-            [geometry['coordinates'][0], geometry['coordinates'][1]]
-        return geometry
-
-    cpdef dict multi_point(self, dict geometry):
-        cdef list geom
-        geometry['coordinates'] = \
-            [[geom[0], geom[1]] for geom in geometry['coordinates']]
-        return  geometry
-
-
-cdef class Transformer(BaseConvert):
-    cdef:
-        Point scale
-        Point translate
+cdef class Transformer:
+    cdef Point scale
+    cdef Point translate
+    cdef list arcs
+    cdef dict dispatch_geom
 
     def __init__(self, dict transform, arcs):
-        BaseConvert.__init__(self)
+        self.dispatch_geom = {
+            'Point': self.point, 'MultiPoint': self.multi_point,
+            'LineString': self.line_string, 'MultiLineString': self.multi_line_string_poly,
+            'Polygon': self.multi_line_string_poly, 'MultiPolygon': self.multi_poly,
+            "GeometryCollection": self.geometry_collection
+            }
         self.scale.x, self.scale.y = transform['scale']
         self.translate.x, self.translate.y = transform['translate']
         self.arcs = [self.convert_arc(a) for a in arcs]
@@ -146,12 +133,52 @@ cdef class Transformer(BaseConvert):
     cdef list reversed_arc(self, arc):
         return list(reversed(self.arcs[~arc]))
 
+    cdef list stitch_arcs(self, list arcs):
+        cdef list line_string = []
+        for arc in arcs:
+            if arc < 0:
+                line = self.reversed_arc(arc)
+            else:
+                line = self.arcs[arc]
+            if len(line_string)>0:
+                if line_string[-1] == line[0]:
+                    line_string.extend(line[1:])
+                else:
+                    line_string.extend(line)
+            else:
+                line_string.extend(line)
+        return line_string
+
+    cdef list stich_multi_arcs(self,arcs):
+        return [self.stitch_arcs(a) for a in arcs]
+
     cdef list conv_point(self, Point point):
         return [point.x * self.scale.x + self.translate.x,
                 point.y * self.scale.y + self.translate.y]
 
     cpdef convert_point(self, point):
         return self.conv_point({'x': point[0], 'y': point[1]})
+
+    cdef dict feature(self, dict feature):
+        cdef dict out
+        cdef str type_ = feature['type']
+        cdef dict geom_ = {'type': type_}
+        if type_ in ('Point','MultiPoint'):
+            geom_['coordinates'] = feature['coordinates']
+        elif type_ in ('LineString','MultiLineString','MultiPolygon','Polygon'):
+            geom_['arcs'] = feature['arcs']
+        elif type_ == 'GeometryCollection':
+            geom_['geometries'] = feature['geometries']
+
+        geom_ = self.geom_dispatch(geom_)
+        out = {'type':'Feature', 'geometry': geom_}
+        for key in ('properties','bbox','id'):
+            if key in feature:
+                out[key] = feature[key]
+        return out
+
+    cpdef geom_dispatch(self, dict geometry):
+        return self.dispatch_geom[geometry['type']](geometry)
 
     cpdef dict point(self, dict geometry):
         geometry['coordinates'] = self.convert_point(geometry['coordinates'])
@@ -160,3 +187,24 @@ cdef class Transformer(BaseConvert):
     cpdef dict multi_point(self, dict geometry):
         geometry['coordinates'] = [self.convert_point(geom) for geom in geometry['coordinates']]
         return  geometry
+
+    cpdef dict line_string(self, dict geometry):
+        geometry['coordinates'] = self.stitch_arcs(geometry['arcs'])
+        del geometry['arcs']
+        return geometry
+
+    cpdef dict multi_line_string_poly(self, dict geometry):
+        geometry['coordinates'] = self.stich_multi_arcs(geometry['arcs'])
+        del geometry['arcs']
+        return geometry
+
+    cpdef dict multi_poly(self, dict geometry):
+        cdef list a
+        geometry['coordinates'] = [self.stich_multi_arcs(a) for a in geometry['arcs']]
+        del geometry['arcs']
+        return geometry
+
+    cpdef dict geometry_collection(self, dict geometry):
+        out = {'type': 'FeatureCollection'}
+        out['features'] = [self.feature(geom) for geom in geometry['geometries']]
+        return out

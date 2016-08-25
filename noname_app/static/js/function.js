@@ -1989,6 +1989,7 @@ function fillMenu_Stewart(){
 
     var func_selec = dialog_content.append('p').html('Function type ').insert('select').attrs({class: 'params', id: "stewart_func"}),
         nb_class = dialog_content.append("p").html("Number of class ").insert("input").attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}).style("width", "50px"),
+        disc_kind = dialog_content.append("p").html("Discretization type ").insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
         breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attrs({class: 'params', id: "stewart_breaks"}).styles({"width": "260px", "height": "30px"}),
         mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attrs({class: 'params', id: "stewart_mask"});
 
@@ -1996,6 +1997,10 @@ function fillMenu_Stewart(){
         func_selec.append("option").text(fun_name).attr("value", fun_name);
     });
 
+    disc_kind.append("option").text("Natural breaks (Jenks)").attr("value", "jenks");
+    disc_kind.append("option").text("Quantiles").attr("value", "percentiles");
+    disc_kind.append("option").text("Equal interval").attr("value", "equal_interval");
+    disc_kind.append("option").text("Geometric progression").attr("value", "prog_geom");
 
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
@@ -2035,6 +2040,7 @@ function fillMenu_Stewart(){
                 "typefct": func_selec.node().value,
                 "resolution": reso > 0 ? reso : null,
                 "nb_class": nb_class.node().value,
+                "disc_kind": disc_kind.node().value,
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
 

@@ -37,7 +37,7 @@ from io import StringIO
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 # Web related stuff :
 import jinja2
@@ -67,7 +67,7 @@ try:
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform)
-    from helpers.stewart_smoomapy import quick_stewart_mod
+    from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
 
 except:
     from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
@@ -78,7 +78,7 @@ except:
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform)
-    from .helpers.stewart_smoomapy import quick_stewart_mod
+    from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
 
 from geopandas import GeoDataFrame
 
@@ -842,27 +842,43 @@ async def call_stewart2(posted_data, user_id, app):
         savefile(filenames['mask_layer'],
                  topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
-#    res = quick_stewart(filenames['point_layer'], n_field_name1,
-#                        span=int(posted_data['span']),
-#                        beta=float(posted_data['beta']),
-#                        typefct=posted_data['typefct'].lower(),
-#                        resolution=posted_data['resolution'],
-#                        nb_class=int(posted_data['nb_class']),
-#                        user_defined_breaks=posted_data['user_breaks'],
-#                        mask=filenames["mask_layer"])
+    reusable_val = '_'.join([user_id,
+                             str(posted_data['topojson']),
+                             n_field_name1,
+                             str(posted_data["span"]),
+                             str(posted_data['beta']),
+                             str(posted_data['resolution']),
+                             posted_data['typefct'].lower()])
 
-    res, breaks = await app.loop.run_in_executor(
-        app["ThreadPool"],
-        quick_stewart_mod,
-        filenames['point_layer'],
-        n_field_name1,
-        int(posted_data['span']),
-        float(posted_data['beta']),
-        posted_data['typefct'].lower(),
-        int(posted_data['nb_class']),
-        posted_data['resolution'],
-        filenames["mask_layer"],
-        posted_data['user_breaks'])
+    existing_obj = await app['redis_conn'].get(reusable_val)
+
+    if existing_obj:
+        res, breaks = await app.loop.run_in_executor(
+            app["ThreadPool"],
+            resume_stewart,
+            existing_obj,
+            int(posted_data['nb_class']),
+            posted_data["disc_kind"],
+            posted_data['user_breaks'],
+            filenames["mask_layer"])
+
+    else:
+        res, breaks, dump_obj = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            quick_stewart_mod,
+            filenames['point_layer'],
+            n_field_name1,
+            int(posted_data['span']),
+            float(posted_data['beta']),
+            posted_data['typefct'].lower(),
+            int(posted_data['nb_class']),
+            posted_data["disc_kind"],
+            posted_data['resolution'],
+            filenames["mask_layer"],
+            posted_data['user_breaks'])
+
+        asyncio.ensure_future(
+            app['redis_conn'].set(reusable_val, dump_obj))
 
     os.remove(filenames['point_layer'])
     savefile(filenames['point_layer'], res)
@@ -1155,6 +1171,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
+    app['ProcessPool'] = ProcessPoolExecutor(2)
     app['R_function'] = {
         "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
