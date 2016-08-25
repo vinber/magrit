@@ -142,7 +142,8 @@ class RWorkerQueue:
                 if client_addr != b'R':
                     assert message[3] == b""
                     reply = message[4]  # Send it back to the client :
-                    await frontend.send_multipart([client_addr, b"", reply])
+                    asyncio.ensure_future(
+                        frontend.send_multipart([client_addr, b"", reply]))
                     if b'exiting' in reply:
                         self.available_workers.remove(worker_addr)
 
@@ -153,8 +154,8 @@ class RWorkerQueue:
                 assert empty == b"" and empty2 == b''
                 #  Dequeue and drop the next worker address
                 worker_id = self.available_workers.popleft()
-                await backend.send_multipart(
-                    [worker_id, b"", client_addr, b"", request, b"", data])
+                asyncio.ensure_future(backend.send_multipart(
+                    [worker_id, b"", client_addr, b"", request, b"", data]))
 
         await asyncio.sleep(0.5)
         frontend.close()

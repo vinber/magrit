@@ -6,8 +6,9 @@
 struct Point;
 typedef struct Point Point;
 
-/* "noname_app/helpers/transform.pyx":2
- * # -*- coding: utf-8 -*-
+/* "noname_app/helpers/transform.pyx":5
+ * #cython: boundscheck=False
+ * #cython: cdivision=True
  * ctypedef public struct Point:             # <<<<<<<<<<<<<<
  *     double x
  *     double y

@@ -66,7 +66,8 @@ try:
     from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
-        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+        reproj_convert_layer, reproj_layer, check_projection, olson_transform,
+        make_geojson_links)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
 
 except:
@@ -77,7 +78,8 @@ except:
     from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
-        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
+        reproj_convert_layer, reproj_layer, check_projection, olson_transform,
+        make_geojson_links)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
 
 from geopandas import GeoDataFrame
@@ -86,7 +88,7 @@ pp = '(aiohttp_app) '
 
 
 @aiohttp_jinja2.template('index.html')
-async def handler(request):
+async def index_handler(request):
     session = await get_session(request)
     if 'last_visit' in session:
         date = 'Last visit : {}'.format(datetime.fromtimestamp(
@@ -491,8 +493,8 @@ async def carto_doug(posted_data, user_id, app):
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
-
 async def links_map(posted_data, user_id, app):
+    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
@@ -503,43 +505,90 @@ async def links_map(posted_data, user_id, app):
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    ref_layer = convert_from_topo(ref_layer)
+
+    result_geojson = await app.loop.run_in_executor(
+        app["ThreadPool"],
+        make_geojson_links,
+        ref_layer,
+        posted_data["csv_table"],
+        posted_data["field_i"],
+        posted_data["field_j"],
+        posted_data["field_fij"],
+        n_field_name)
+#    result_geojson = make_geojson_links(ref_layer,
+#        posted_data["csv_table"],
+#        posted_data["field_i"],
+#        posted_data["field_j"],
+#        posted_data["field_fij"],
+#        n_field_name)
 
     tmp_part = get_name()
-    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
-                 "result": None}
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-    commande = \
-        b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
-    data = json.dumps({
-        "layer_json_path": filenames['src_layer'],
-        "csv_table": posted_data['csv_table'],
-        "i": posted_data["field_i"],
-        "j": posted_data["field_j"],
-        "fij": posted_data["field_fij"],
-        "join_field": n_field_name
-        }).encode()
-    content = await R_client_fuw_async(
-        url_client, commande, data, app['async_ctx'], user_id)
-    content = content.decode()
-    try:
-        content = json.loads(content)
-    except:
-        return json.dumps(
-            {"Error": "Something went wrong...:\n{}"
-                      .format(content if content else "Unknown Error")})
-
-    if "additional_infos" in content:
-        app['logger'].info(
-            '{} - Links - {}'.format(user_id, content["additional_infos"]))
-
-    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+    tmp_name = ''.join(['/tmp/', tmp_part, '.geojson'])
+    savefile(tmp_name, result_geojson)
+    res = await geojson_to_topojson(tmp_name, remove=False)
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+    app['logger'].info(
+        '{} - timing : links_on_py : {:.4f}s'
+        .format(user_id, time.time()-st))
+
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
+#async def links_map(posted_data, user_id, app):
+#    st = time.time()
+#    posted_data = json.loads(posted_data.get("json"))
+#
+#    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+#    ref_layer = await app['redis_conn'].get(f_name)
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = posted_data['join_field']
+#
+#    n_field_name = list(new_field.keys())[0]
+#    if len(new_field[n_field_name]) > 0:
+#        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+#
+#    tmp_part = get_name()
+#    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
+#                 "result": None}
+#    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+#    commande = \
+#        b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
+#    data = json.dumps({
+#        "layer_json_path": filenames['src_layer'],
+#        "csv_table": posted_data['csv_table'],
+#        "i": posted_data["field_i"],
+#        "j": posted_data["field_j"],
+#        "fij": posted_data["field_fij"],
+#        "join_field": n_field_name
+#        }).encode()
+#    content = await R_client_fuw_async(
+#        url_client, commande, data, app['async_ctx'], user_id)
+#    content = content.decode()
+#    try:
+#        content = json.loads(content)
+#    except:
+#        return json.dumps(
+#            {"Error": "Something went wrong...:\n{}"
+#                      .format(content if content else "Unknown Error")})
+#
+#    if "additional_infos" in content:
+#        app['logger'].info(
+#            '{} - Links - {}'.format(user_id, content["additional_infos"]))
+#
+#    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+#    new_name = ''.join(["Links_", n_field_name])
+#    res = res.replace(tmp_part, new_name)
+#    hash_val = mmh3_hash(res)
+#    asyncio.ensure_future(
+#        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+#    app['logger'].info(
+#        '{} - timing : links_on_r : {:.4f}s'
+#        .format(user_id, time.time()-st))
+#    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 async def carto_gridded(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
@@ -1085,12 +1134,30 @@ def check_port_available(port_nb):
     return True
 
 
+async def on_shutdown(app):
+    app["redis_conn"].quit()
+    app["ProcessPool"].shutdown()
+    app["ThreadPool"].shutdown()
+    for task in asyncio.Task.all_tasks():
+        await asyncio.sleep(0)
+        info = task._repr_info()
+        if "RedisConnection" in info[1]:
+            task.cancel()
+        elif "RedisPool" in info[1] and "pending" in info[0]:
+            try:
+                _ = await asyncio.wait_for(task, 1)
+            except asyncio.TimeoutError:
+                task.cancel()
+
+
 async def session_middleware_factory(app, handler):
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
     return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
 
+
 def fake_redis_conn_factory():
     return FakeAsyncRedisConn()
+
 
 def create_app(loop, port=9999, nb_r_workers='2'):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1102,8 +1169,8 @@ def create_app(loop, port=9999, nb_r_workers='2'):
 #    app = web.Application(loop=loop)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
-    add_route('GET', '/', handler)
-    add_route('GET', '/index', handler)
+    add_route('GET', '/', index_handler)
+    add_route('GET', '/index', index_handler)
     add_route('GET', '/about', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
@@ -1130,7 +1197,15 @@ def create_app(loop, port=9999, nb_r_workers='2'):
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
+#    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
     return app
+
+#async def on_startup(app):
+#    app['broker'] = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
+#    app["redis_conn"] = await create_reconnecting_redis(('localhost', 6379), db=1)
+#    app['async_ctx'] = zmq.asyncio.Context(2)
+
 
 async def init(loop, port=9999, nb_r_workers='2'):
     _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
@@ -1145,8 +1220,8 @@ async def init(loop, port=9999, nb_r_workers='2'):
 #    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
-    add_route('GET', '/', handler)
-    add_route('GET', '/index', handler)
+    add_route('GET', '/', index_handler)
+    add_route('GET', '/index', index_handler)
     add_route('GET', '/about/', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
@@ -1162,7 +1237,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
-#    app.router.add_static('/database/', path='../database', name='database')
+    app.router.add_static('/database/', path='../database', name='database')
     app['async_ctx'] = zmq.asyncio.Context(2)
     app['redis_conn'] = redis_conn
     app['broker'] = _p
@@ -1176,10 +1251,13 @@ async def init(loop, port=9999, nb_r_workers='2'):
         "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
+#    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
+    handler = app.make_handler()
     srv = await loop.create_server(
-        app.make_handler(), '0.0.0.0', port)
-    return srv, app
+        handler, '0.0.0.0', port)
+    return srv, app, handler
 
 
 def main():
@@ -1203,7 +1281,7 @@ def main():
 
     zmq.asyncio.install()
     loop = asyncio.get_event_loop()
-    srv, app = loop.run_until_complete(init(loop, port, nb_r_workers))
+    srv, app, handler = loop.run_until_complete(init(loop, port, nb_r_workers))
 
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
 #    print(pp, 'serving on', srv.sockets[0].getsockname())
@@ -1211,6 +1289,17 @@ def main():
         loop.run_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        srv.close()
+        loop.run_until_complete(srv.wait_closed())
+        loop.run_until_complete(app.shutdown())
+        loop.run_until_complete(handler.finish_connections(60.0))
+        loop.run_until_complete(app.cleanup())
+    loop.close()
+#    try:
+#        loop.run_forever()
+#    except KeyboardInterrupt:
+#        pass
 
 
 if __name__ == '__main__':

@@ -8,14 +8,39 @@ from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
 from shapely.geometry import shape, mapping
 from shapely.ops import transform
 from shapely.affinity import scale
-from io import StringIO
-from pandas import read_csv as pd_read_csv
+from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 
 
-def draw_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
-    gdf = GeoDataFrame(ref_layer_geojson)
-    csv_table = pd_read_csv(StringIO(csv_table))
+def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
+    gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
+    gdf.set_index(join_field, inplace=True, drop=False)
+    gdf.geometry = gdf.geometry.centroid
+    csv_table = pd_read_json(csv_table)
+    geoms_loc = gdf.geometry.loc
+    ft_template_start = \
+        '''{"type":"Feature","geometry":{"type":"LineString","coordinates":['''
+    geojson_features = []
+    for n, id_i, id_j, fij in csv_table[[field_i, field_j, field_fij]].itertuples():
+#        pt1, pt2 = \
+#            list(geoms_loc[id_i].coords)[0], list(geoms_loc[id_j].coords)[0]
+        pts = \
+            list(geoms_loc[id_i].coords)[0] + list(geoms_loc[id_j].coords)[0]
+        geojson_features.append(''.join([
+                ft_template_start,
+                '''[{0},{1}],[{2},{3}]'''.format(*pts),
+                ''']},"properties":{"''',
+                '''i":"{0}","j":"{1}","fij":"{2}"'''.format(id_i, id_j, fij),
+                '''}}'''
+                ])
+            )
+
+    return ''.join([
+        '''{"type":"FeatureCollection","crs":{"type":"name","properties":'''
+        '''{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
+        ','.join(geojson_features),
+        ''']}'''
+        ]).encode()
 
 
 def olson_transform(geojson, scale_values):
