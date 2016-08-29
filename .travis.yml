@@ -52,4 +52,3 @@ addons:
       - npm
       - libfftw3-dev
       - libzmq3-dev
-    firefox: "48.0"
