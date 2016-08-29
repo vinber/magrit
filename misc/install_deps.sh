@@ -8,5 +8,6 @@ fi
   cd $OTHER_PY_PACKAGES
   git clone http://github.com/mthh/smoomapy
   cd smoomapy/
+  pip install -r requirements.txt
   python setup.py install
 cd $TRAVIS_BUILD_DIR
