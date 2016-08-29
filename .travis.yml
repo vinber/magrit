@@ -9,12 +9,15 @@ cache:
   directories:
     - $GDALINST
     - ~/.cache/pip
+    - $OTHER_PY_PACKAGES
 env:
   global:
+    - OTHER_PY_PACKAGES=$HOME/py_tmp
     - GDALINST=$HOME/gdalinstall
     - GDALBUILD=$HOME/gdalbuild
 before_install:
   - ./misc/install_gdal.sh
+  - ./misc/install_deps.sh
   - export PATH=$GDALINST/gdal-2.1.0/bin:$PATH
   - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.0/lib:$LD_LIBRARY_PATH
 install:
@@ -25,7 +28,7 @@ install:
 script:
   - noname_app --help
   - py.test tests/test.py
-  - py.test tests/test_web.py
+  - py.test tests/tests_web.py
 addons:
   apt:
     sources:
@@ -47,3 +50,4 @@ addons:
       - npm
       - libfftw3-dev
       - libzmq3-dev
+    firefox: "48.0"

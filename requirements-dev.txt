@@ -10,11 +10,13 @@ gdal == 2.1.0
 geopandas >= 0.1.1
 hiredis >= 0.2.0
 Jinja2 == 2.8
+matplotlib == 1.5.1
 murmurhash3 == 2.3.5
 numpy == 1.11.1
 pandas == 0.18.1
 pyproj == 1.9.5.1
 requests == 2.9.1
+scipy >= 0.17.0
 selenium == 2.53.6
 Shapely == 1.5.15
 ujson >= 1.35
