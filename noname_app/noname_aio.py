@@ -1137,6 +1137,7 @@ def check_port_available(port_nb):
 
 
 async def on_shutdown(app):
+    app["broker"].terminate()
     app["redis_conn"].quit()
     app["ProcessPool"].shutdown()
     app["ThreadPool"].shutdown()

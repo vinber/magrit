@@ -3233,7 +3233,7 @@ function add_table_field(table, layer_name, parent){
             operation = options.operator,
             opt_val = options.opt_val;
 
-        if(options.type_operation === "math_compute" && table.length > 3500){
+        if(options.type_operation === "math_compute" && table.length > 3200){
             let formToSend = new FormData();
             let var1 = [],
                 var2 = (fi2 == "user_const_value") ? +opt_val : [];
