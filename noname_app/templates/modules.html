@@ -1226,6 +1226,7 @@ function redraw_legends_symbols(){
         let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
             rendered_field = current_layers[layer_name].rendered_field,
             nested = legend_nodes[i].getAttribute("nested"),
+            display_value = legend_nodes[i].getAttribute("display"),
             visible = legend_nodes[i].style.visibility;
 
         let transform_param = legend_nodes[i].getAttribute("transform"),
@@ -1236,11 +1237,12 @@ function redraw_legends_symbols(){
             color: legend_nodes[i].querySelector("#under_rect").style.fill,
             opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
         } : undefined;
-
+        console.log(visible);
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value);
         let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
         new_lgd.style.visibility = visible;
+        new_lgd.setAttribute("display", display_value);
         if(transform_param)
             new_lgd.setAttribute("transform", transform_param);
     }

@@ -543,7 +543,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4, rect_fill
           .append('text')
           .attr("x", xpos + boxwidth * 2 + 10)
           .attr("y", function(d, i){
-            return y_pos2 + (i * boxgap) / 2 + (i+2/3) * boxheight;
+            return y_pos2 + i * boxheight + (i * boxgap) + (boxheight * 2/3);
             })
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return d.value; });

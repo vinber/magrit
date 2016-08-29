@@ -894,6 +894,7 @@ async def call_stewart2(posted_data, user_id, app):
     reusable_val = '_'.join([user_id,
                              str(posted_data['topojson']),
                              n_field_name1,
+                             n_field_name2 if n_field_name2 else "",
                              str(posted_data["span"]),
                              str(posted_data['beta']),
                              str(posted_data['resolution']),
@@ -924,6 +925,7 @@ async def call_stewart2(posted_data, user_id, app):
             posted_data["disc_kind"],
             posted_data['resolution'],
             filenames["mask_layer"],
+            n_field_name2,
             posted_data['user_breaks'])
 
         asyncio.ensure_future(
@@ -1253,7 +1255,6 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
-#    app.router.add_static('/database/', path='../database', name='database')
     app['async_ctx'] = zmq.asyncio.Context(2)
     app['redis_conn'] = redis_conn
     app['broker'] = _p

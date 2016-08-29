@@ -11,17 +11,23 @@ import time
 
 class AbcTest(unittest.TestCase):
     def setUp(self):
-        self.p = subprocess.Popen(["noname_app", "--port", "8080", "--R-workers", "1"])
-        time.sleep(2)
+        self.p = subprocess.Popen(["noname_app", "--port", "7878", "--R-workers", "1"])
+        time.sleep(10)
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(30)
-        self.base_url = "http://localhost:8080/"
+        self.base_url = "http://localhost:7878/"
         self.verificationErrors = []
         self.accept_next_alert = True
 
     def test_abc(self):
         driver = self.driver
         driver.get(self.base_url + "modules")
+        for i in range(60):
+            try:
+                if self.is_element_present(By.ID, "#sample_link"): break
+            except: pass
+            time.sleep(1)
+        else: self.fail("time out")
         driver.find_element_by_css_selector("#sample_link > b").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")

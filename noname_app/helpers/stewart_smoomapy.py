@@ -22,7 +22,8 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,
                       beta=2, typefct='exponential',
-                      nb_class=None, disc_kind=None, resolution=None, mask=None,
+                      nb_class=None, disc_kind=None, resolution=None,
+                      mask=None, variable_name2=None,
                       user_defined_breaks=None):
     """
     Modified function from smoomapy
@@ -59,7 +60,7 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
         The break values used.
     """
     StePot = SmoothStewart(input_geojson_points, variable_name, span,
-                           beta, typefct, resolution, None, mask)
+                           beta, typefct, resolution, variable_name2, mask)
     result = StePot.render(nb_class,
                            disc_kind,
                            user_defined_breaks,
