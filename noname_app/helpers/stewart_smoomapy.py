@@ -15,7 +15,7 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                            user_defined_breaks,
                            func_grid="matplotlib",
                            output="GeoDataFrame",
-                           new_mask = mask)
+                           new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
     return (result[::-1].to_json().encode(),
             {"min": _min[::-1], "max": _max[::-1]})

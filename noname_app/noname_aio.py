@@ -1155,11 +1155,26 @@ async def session_middleware_factory(app, handler):
     return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
 
 
-def fake_redis_conn_factory():
-    return FakeAsyncRedisConn()
-
-
 def create_app(loop, port=9999, nb_r_workers='2'):
+    class FakeAsyncRedisConn:
+        """
+        For quick testing purpose only.. More than rudimentary..
+        """
+        def __init__(self):
+            self.storage = {}
+
+        async def set(self, key, value):
+            assert isinstance(value, bytes)
+            self.storage[key] = value
+
+        async def get(self, key):
+            return self.storage.get(key, None)
+
+        async def delete(self, key):
+            self.storage.pop(key)
+
+        def quit(self):
+            pass
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
@@ -1187,14 +1202,15 @@ def create_app(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
     app['async_ctx'] = zmq.asyncio.Context(2)
-    app['redis_conn'] = fake_redis_conn_factory()
+    app['redis_conn'] = FakeAsyncRedisConn()
     app['broker'] = _p
     app['app_users'] = set()
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
+    app['ProcessPool'] = ProcessPoolExecutor(2)
     app['R_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
 #    app.on_startup.append(on_startup)
@@ -1237,7 +1253,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
-    app.router.add_static('/database/', path='../database', name='database')
+#    app.router.add_static('/database/', path='../database', name='database')
     app['async_ctx'] = zmq.asyncio.Context(2)
     app['redis_conn'] = redis_conn
     app['broker'] = _p
@@ -1284,7 +1300,6 @@ def main():
     srv, app, handler = loop.run_until_complete(init(loop, port, nb_r_workers))
 
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
-#    print(pp, 'serving on', srv.sockets[0].getsockname())
     try:
         loop.run_forever()
     except KeyboardInterrupt:
@@ -1296,10 +1311,6 @@ def main():
         loop.run_until_complete(handler.finish_connections(60.0))
         loop.run_until_complete(app.cleanup())
     loop.close()
-#    try:
-#        loop.run_forever()
-#    except KeyboardInterrupt:
-#        pass
 
 
 if __name__ == '__main__':

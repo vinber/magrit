@@ -8,17 +8,14 @@ services:
 cache:
   directories:
     - $GDALINST
-    - $PHANTOMJSDIR
     - ~/.cache/pip
 env:
   global:
     - GDALINST=$HOME/gdalinstall
     - GDALBUILD=$HOME/gdalbuild
-    - PHANTOMJSDIR=$HOME/phantomjs
 before_install:
   - ./misc/install_gdal.sh
-  - ./misc/install_phantomjs.sh
-  - export PATH=$GDALINST/gdal-2.1.0/bin:$PHANTOMJSDIR/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+  - export PATH=$GDALINST/gdal-2.1.0/bin:$PATH
   - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.0/lib:$LD_LIBRARY_PATH
 install:
   - npm -g install topojson
@@ -28,6 +25,7 @@ install:
 script:
   - noname_app --help
   - py.test tests/test.py
+  - py.test tests/test_web.py
 addons:
   apt:
     sources:
