@@ -228,13 +228,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 })
         a.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_mean") + "br>");
+            .html(i18next.t("disc_box.disp_mean") + "<br>");
         b.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_median") + "br>");
+            .html(i18next.t("disc_box.disp_median") + "<br>");
         c.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_sd") + "br>");
+            .html(i18next.t("disc_box.disp_sd") + "<br>");
     };
 
     var display_ref_histo = function(){
@@ -468,6 +468,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
         max_nb_class = 22 < nb_values ? 22 : nb_values;
+
+    if(serie.variance() == 0 && serie.stddev() == 0){
+        var serie = new geostats(values);
+    }
 
     values = serie.sorted();
     serie.setPrecision(6);

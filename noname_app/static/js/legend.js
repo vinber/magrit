@@ -45,8 +45,11 @@ function createLegend(layer, title){
             || current_layers[layer].renderer.indexOf("DiscLayer") != -1)
         createLegend_discont_links(layer, field);
 
+    else if (current_layers[layer].renderer.indexOf("Choropleth") > -1)
+        createLegend_choro(layer, field, title, field, 0);
+
     else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map)
-        createLegend_choro(layer, field, title, field);
+        createLegend_choro(layer, field, title, field, 4);
 
     else if (current_layers[layer].renderer.indexOf("Carto_doug") != -1)
         createLegend_nothing(layer, field, "Dougenik Cartogram", field);
@@ -220,7 +223,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x: xpos, y: last_pos + 2*space_elem})
+            .attrs({x: xpos + space_elem, y: last_pos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('');
     make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
@@ -423,7 +426,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     var coef = current_layers[layer].break_val ? 3.75 : 2;
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x: xpos, y: last_pos + coef * space_elem})
+            .attrs({x:  xpos + space_elem, y: last_pos + coef * space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('');
 
@@ -434,7 +437,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     make_legend_context_menu(legend_root, layer);
 }
 
-function createLegend_choro(layer, field, title, subtitle, boxgap = 4, rect_fill_value, rounding_precision){
+function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision){
     var subtitle = subtitle || field,
         boxheight = 18,
         boxwidth = 18,
@@ -551,7 +554,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 4, rect_fill
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x: xpos, y: last_pos + 2*boxheight})
+            .attrs({x:  xpos + boxheight, y: last_pos + 2*boxheight})
             .style("font", "11px 'Enriqueta', arial, serif")
             .text('');
     legend_root.call(drag_legend_func(legend_root));
@@ -620,7 +623,7 @@ function createlegendEditBox(legend_id, layer_name){
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)
         let max_nb_decimals = 0;
-        if(legend_id.indexOf("2")=== -1){
+        if(legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1){
             max_nb_decimals = get_max_nb_dec(layer_name);
         } else {
             let first_value = String(legend_boxes._groups[0][0].__data__.value),
@@ -638,11 +641,13 @@ function createlegendEditBox(legend_id, layer_name){
         if(max_nb_decimals > 0){
             if(legend_node.getAttribute("rounding_precision"))
                 current_nb_dec = legend_node.getAttribute("rounding_precision");
+            if(max_nb_decimals > +current_nb_dec && max_nb_decimals > 18)
+                max_nb_decimals = 18;
             box_body.append('p')
                         .style("display", "inline")
                         .attr("id", "precision_change_txt")
                         .html(['Floating number rounding precision<br> ', current_nb_dec, ' '].join(''));
-            if(legend_id === "legend_root" || legend_id === "legend_root_links")
+            if(legend_id === "legend_root")
                 box_body.append('input')
                     .attrs({id: "precision_range", type: "range", min: -5, max: max_nb_decimals, step: 1, value: current_nb_dec})
                     .style("display", "inline")
@@ -673,6 +678,26 @@ function createlegendEditBox(legend_id, layer_name){
                         }
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
+            else if(legend_id === "legend_root_links")
+                box_body.append('input')
+                    .attrs({id: "precision_range", type: "range", min: 0, max: max_nb_decimals, step: 1, value: current_nb_dec})
+                    .style("display", "inline")
+                    .on('change', function(){
+                        let nb_float = +this.value,
+                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
+                        d3.select("#precision_change_txt")
+                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
+                            let value = legend_boxes._groups[0][i].__data__.value[1];
+                            legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
+                        }
+                        legend_node.setAttribute("rounding_precision", nb_float);
+                        let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
+                        document.getElementById('lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
+                        legend_node.setAttribute("rounding_precision", nb_float);
+                    });
+
+
         }
     }
 
@@ -733,14 +758,19 @@ function createlegendEditBox(legend_id, layer_name){
                 note_content.textContent = this.value;
             });
 
-    box_body.insert('p').html('Display a rectangle under the legend')
-                .insert("input").attr("type", "checkbox")
-                .attr("checked", rect_fill_value === undefined ? null : true)
-                .attr("id", "rect_lgd_checkbox")
+    let rectangle_options = box_body.insert('p').html('Display a rectangle under the legend');
+    rectangle_options.insert("input")
+                .attrs({type: "checkbox",
+                        checked: rect_fill_value === undefined ? null : true,
+                        id: "rect_lgd_checkbox"})
                 .on("change", function(){
                     if(this.checked){
-                        rect_fill_value = {color: "white", opacity: 1};
+                        rectangle_options.select("#choice_color_under_rect")
+                                        .attr("value", "#ffffff")
+                                        .attr("disabled", null);
+                        rect_fill_value = {color: "#ffffff", opacity: 1};
                     } else {
+                        rectangle_options.select("#choice_color_under_rect").attr("disabled", true);
                         rect_fill_value = undefined;
                     }
                     make_underlying_rect(legend_node_d3,
@@ -749,6 +779,19 @@ function createlegendEditBox(legend_id, layer_name){
                                          rect_fill_value
                                          );
                 });
+    rectangle_options.insert("input")
+                .attrs({id: "choice_color_under_rect",
+                        type: "color",
+                        value: rect_fill_value === undefined ? undefined : rect_fill_value.color,
+                        disabled: rect_fill_value === undefined ? true : null})
+                .on("change", function(){
+                    rect_fill_value = {color: this.value, opacity: 1};
+                    make_underlying_rect(legend_node_d3,
+                                         legend_node_d3.select("#under_rect"),
+                                         undefined, undefined,
+                                         rect_fill_value
+                                         );
+                })
 }
 
 var get_max_nb_dec = function(layer_name){

@@ -523,15 +523,17 @@ function createStyleBox(layer_name){
      } else if (type === "Line" && renderer == "DiscLayer"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
-        popup.append("p").html("Discontinuity threshold ")
-                .insert("input").attrs({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
+        let disc_part = popup.append("p").html("Discontinuity threshold ");
+        disc_part.insert("input")
+                .attrs({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
+                .style("width", "70px")
                 .on("change", function(){
                     let val = +this.value;
                     popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
                     selection.style("stroke-opacity", (d,i) => +d.properties.disc_value > val ? 1 : 0 );
                     current_layers[layer_name].min_display = val;
                 });
-        popup.append("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
+        disc_part.insert("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
         popup.append("button")
                 .attr("class", "button_disc")
                 .html("Modify size by class")
@@ -558,7 +560,9 @@ function createStyleBox(layer_name){
                         current_layers[layer_name].fill_color.single = this.value;
                         });
      popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
-                      .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
+                      .insert('input')
+                      .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+                      .style("width", "70px")
                       .on('change', function(){selection.style('stroke-opacity', this.value)});
 
     if(renderer != "DiscLayer" && renderer != "Links")

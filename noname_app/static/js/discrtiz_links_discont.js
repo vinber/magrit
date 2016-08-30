@@ -64,13 +64,14 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 })
         a.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html("Display mean<br>");
+            .html(i18next.t("disc_box.disp_mean") + "<br>");
         b.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html("Display median<br>");
+            .html(i18next.t("disc_box.disp_median") + "<br>");
         c.append("label_it_inline")
             .attr("class", "label_it_inline")
-            .html("Display standard deviation<br>");
+            .html(i18next.t("disc_box.disp_sd") + "<br>");
+
     };
 
     var display_ref_histo = function(){
@@ -247,6 +248,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     breaks_info.forEach(elem => { breaks.push(elem[0][1]) });
 
+    if(serie.variance() == 0 && serie.stddev() == 0){
+        var serie = new geostats(values);
+    }
+
     values = serie.sorted();
     serie.setPrecision(6);
     var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "User defined"];
@@ -289,6 +294,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                             .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
+                                if(type == "User defined"){
+                                    type = "Equal interval";
+                                    discretization.node().value = "Equal interval";
+                                    }
                                 var old_nb_class = nb_class;
                                 if(type === "Q6"){
                                     this.value = 6;
@@ -410,11 +419,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         buttons:[{
             text: "Confirm",
             click: function(){
-                    if(breaks[0] < serie.min())
-                        breaks[0] = serie.min();
-
-                    if(breaks[nb_class] > serie.max())
-                        breaks[nb_class] = serie.max();
+                    breaks[0] = serie.min();
+                    breaks[nb_class] = serie.max();
+//                    if(breaks[0] < serie.min())
+//                        breaks[0] = serie.min();
+//
+//                    if(breaks[nb_class] > serie.max())
+//                        breaks[nb_class] = serie.max();
 
                     deferred.resolve([serie, breaks_info, breaks]);
                     $(this).dialog("close");

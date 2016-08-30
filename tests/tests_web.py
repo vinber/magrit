@@ -65,6 +65,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("ui-id-3").click()
         driver.find_element_by_id("ui-id-2").click()
         driver.find_element_by_css_selector("img[title=\"Compute stewart potentials...\"]").click()
+        time.sleep(0.5)
         driver.find_element_by_id("stewart_nb_class").clear()
         driver.find_element_by_id("stewart_nb_class").send_keys("7")
         driver.find_element_by_id("stewart_span").clear()
@@ -123,6 +124,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_xpath("//button[@type='button']").click()
         #  Test the dougenik cartogram functionnality...
         driver.find_element_by_css_selector("img[title=\"Render a map using an anamorphose algorythm on a numerical field of your data\"]").click()
+        time.sleep(0.5)
         Select(driver.find_element_by_css_selector("select.params")).select_by_visible_text("Dougenik & al. (1985)")
         #  ... using one of these previously computed field :
         Select(driver.find_element_by_id("Anamorph_field")).select_by_visible_text("NewFieldName2")
@@ -133,7 +135,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
     def test_new_field_choro_many_features(self):
         driver = self.driver
-        driver.get(self.base_url + "/modules")
+        driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link > b").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("U.S.A counties (Polygons)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
@@ -155,6 +157,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("ui-id-2").click()
         driver.find_element_by_css_selector("img[title=\"Render a choropleth map on a numerical field of your data\"]").click()
+        time.sleep(0.5)
         #  Let's use this new field to render a choropleth map :
         Select(driver.find_element_by_id("choro_field_1")).select_by_visible_text("Ratio")
         driver.find_element_by_css_selector("option[value=\"Ratio\"]").click()

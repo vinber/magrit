@@ -46,23 +46,12 @@ from aioredis import create_pool, create_reconnecting_redis
 from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
-# Helpers :
-#try:
-#    from noname_app.r_py.rclient_worker_queue import R_client_fuw_async, url_client
-#    from noname_app.helpers.misc import (
-#        savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-#    from noname_app.helpers.cy_misc import get_name, join_field_topojson
-#    from noname_app.helpers.cartogram_doug import make_cartogram
-#    from noname_app.helpers.topo_to_geo import convert_from_topo
-#    from noname_app.helpers.geo import (
-#        reproj_convert_layer, reproj_layer, check_projection, olson_transform)
-#    from noname_app.helpers.stewart_smoomapy import quick_stewart_mod
-#except:
 try:
     from r_py.rclient_worker_queue import R_client_fuw_async, url_client
     from helpers.misc import (
         savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from helpers.cy_misc import get_name, join_field_topojson
+    from helpers.cy_misc import (
+        get_name, join_field_topojson, get_borders_to_geojson)
     from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
@@ -74,7 +63,8 @@ except:
     from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
     from .helpers.misc import (
         savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from .helpers.cy_misc import get_name, join_field_topojson
+    from .helpers.cy_misc import (
+        get_name, join_field_topojson, get_borders_to_geojson)
     from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
@@ -364,7 +354,7 @@ async def convert(request):
         os.remove(filepath+'archive')
         [os.remove(file) for file in list_files]
 
-    elif 'octet-stream' in datatype:
+    elif 'octet-stream' in datatype and "geojson" in name.lower():
         data = data.decode()
         if '"crs"' in data and '"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data:
             crs = True
@@ -392,8 +382,8 @@ async def convert(request):
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
 
-    elif 'kml' in datatype:
-        print(datatype)
+    elif 'octet-stream' in datatype and "kml" in name.lower():
+        print(datatype, name)
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
@@ -493,6 +483,44 @@ async def carto_doug(posted_data, user_id, app):
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
+
+async def compute_discont(posted_data, user_id, app):
+    st = time.time()
+    posted_data = json.loads(posted_data.get("json"))
+    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+    ref_layer = await app['redis_conn'].get(f_name)
+    ref_layer = json.loads(ref_layer.decode())
+    new_field = posted_data['join_field']
+
+    n_field_name = list(new_field.keys())[0]
+    if len(new_field[n_field_name]) > 0:
+        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    ref_layer_geojson = convert_from_topo(ref_layer)
+    tmp_part = get_name()
+    tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
+    with open(tmp_path, 'wb') as f:
+        f.write(json.dumps(ref_layer_geojson).encode())
+    new_topojson = await geojson_to_topojson(tmp_path, "-q 1e4")
+    new_topojson = json.loads(new_topojson)
+    res_geojson = app.loop.run_in_executor(
+        app["ProcessPool"],
+        get_borders_to_geojson,
+        new_topojson
+        )
+    savefile(tmp_path, res_geojson)
+    res = await geojson_to_topojson(tmp_path, remove=True)
+    new_name = ''.join(["Discont_", n_field_name])
+    res = res.replace(tmp_part, new_name)
+    hash_val = mmh3_hash(res)
+    asyncio.ensure_future(
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+    app['logger'].info(
+        '{} - timing : dicont_on_py : {:.4f}s'
+        .format(user_id, time.time()-st))
+
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+
+
 async def links_map(posted_data, user_id, app):
     st = time.time()
     posted_data = json.loads(posted_data.get("json"))
@@ -526,7 +554,7 @@ async def links_map(posted_data, user_id, app):
     tmp_part = get_name()
     tmp_name = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_name, result_geojson)
-    res = await geojson_to_topojson(tmp_name, remove=False)
+    res = await geojson_to_topojson(tmp_name, remove=True)
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
@@ -766,90 +794,89 @@ async def call_mta_geo(posted_data, user_id, app):
             {"Error": "Something went wrong...:\n{}"
                       .format(content if content else "Unknown Error")})
 
-
-async def call_stewart(posted_data, user_id, app):
-    posted_data = json.loads(posted_data.get("json"))
-    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
-    point_layer = await app['redis_conn'].get(f_name)
-    point_layer = json.loads(point_layer.decode())
-
-    new_field1 = posted_data['variable1']
-    new_field2 = posted_data['variable2']
-
-    n_field_name1 = list(new_field1.keys())[0]
-    if len(new_field1[n_field_name1]) > 0:
-        join_field_topojson(point_layer, new_field1[n_field_name1],
-                            n_field_name1)
-
-    if new_field2:
-        n_field_name2 = list(new_field2.keys())[0]
-        if len(new_field2[n_field_name2]) > 0:
-            join_field_topojson(point_layer, new_field2[n_field_name2],
-                                n_field_name2)
-    else:
-        n_field_name2 = None
-
-    if posted_data['mask_layer']:
-        f_name = '_'.join([user_id, str(posted_data['mask_layer']), "NQ"])
-        mask_layer = await app['redis_conn'].get(f_name)
-
-    tmp_part = get_name()
-    filenames = {
-        'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
-        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson'])
-                      if posted_data['mask_layer'] != "" else None
-        }
-    savefile(filenames['point_layer'],
-             topojson_to_geojson(point_layer).encode())
-
-    if filenames['mask_layer']:
-        savefile(filenames['mask_layer'],
-                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
-
-    commande = (b'stewart_to_json(knownpts_json, var, var2, typefct, span, '
-                b'beta, resolution, nb_class, user_breaks, mask_json)')
-
-    data = json.dumps({
-        'knownpts_json': filenames['point_layer'],
-        'var': n_field_name1,
-        'var2': n_field_name2,
-        'typefct': posted_data['typefct'].lower(),
-        'span': posted_data['span'],
-        'beta': float(posted_data['beta']),
-        'resolution': posted_data['resolution'],
-        'nb_class': int(posted_data['nb_class']),
-        'user_breaks': posted_data['user_breaks'],
-        'mask_json': filenames['mask_layer']
-        }).encode()
-
-    content = await R_client_fuw_async(
-        url_client, commande, data, app['async_ctx'], user_id)
-    content = content.decode()
-
-    try:
-        content = json.loads(content)
-    except:
-        return json.dumps(
-            {"Error": "Something went wrong...:\n{}"
-                      .format(content if content else "Unknown Error")})
-
-    if "additional_infos" in content:
-        app['logger'].info(
-            '{} - Stewart - {}'.format(user_id, content["additional_infos"]))
-
-    if filenames['mask_layer']:
-        os.remove(filenames['mask_layer'])
-
-    res = await geojson_to_topojson(content['geojson_path'], remove=True)
-    new_name = '_'.join(['StewartPot', n_field_name1])
-    res = res.replace(tmp_part, new_name)
-    hash_val = mmh3_hash(res)
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
-    return "|||".join([
-        ''.join(['{"key":', str(hash_val), ',"file":', res, '}']),
-        json.dumps(content['breaks'])
-        ])
+#async def call_stewart(posted_data, user_id, app):
+#    posted_data = json.loads(posted_data.get("json"))
+#    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+#    point_layer = await app['redis_conn'].get(f_name)
+#    point_layer = json.loads(point_layer.decode())
+#
+#    new_field1 = posted_data['variable1']
+#    new_field2 = posted_data['variable2']
+#
+#    n_field_name1 = list(new_field1.keys())[0]
+#    if len(new_field1[n_field_name1]) > 0:
+#        join_field_topojson(point_layer, new_field1[n_field_name1],
+#                            n_field_name1)
+#
+#    if new_field2:
+#        n_field_name2 = list(new_field2.keys())[0]
+#        if len(new_field2[n_field_name2]) > 0:
+#            join_field_topojson(point_layer, new_field2[n_field_name2],
+#                                n_field_name2)
+#    else:
+#        n_field_name2 = None
+#
+#    if posted_data['mask_layer']:
+#        f_name = '_'.join([user_id, str(posted_data['mask_layer']), "NQ"])
+#        mask_layer = await app['redis_conn'].get(f_name)
+#
+#    tmp_part = get_name()
+#    filenames = {
+#        'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
+#        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson'])
+#                      if posted_data['mask_layer'] != "" else None
+#        }
+#    savefile(filenames['point_layer'],
+#             topojson_to_geojson(point_layer).encode())
+#
+#    if filenames['mask_layer']:
+#        savefile(filenames['mask_layer'],
+#                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+#
+#    commande = (b'stewart_to_json(knownpts_json, var, var2, typefct, span, '
+#                b'beta, resolution, nb_class, user_breaks, mask_json)')
+#
+#    data = json.dumps({
+#        'knownpts_json': filenames['point_layer'],
+#        'var': n_field_name1,
+#        'var2': n_field_name2,
+#        'typefct': posted_data['typefct'].lower(),
+#        'span': posted_data['span'],
+#        'beta': float(posted_data['beta']),
+#        'resolution': posted_data['resolution'],
+#        'nb_class': int(posted_data['nb_class']),
+#        'user_breaks': posted_data['user_breaks'],
+#        'mask_json': filenames['mask_layer']
+#        }).encode()
+#
+#    content = await R_client_fuw_async(
+#        url_client, commande, data, app['async_ctx'], user_id)
+#    content = content.decode()
+#
+#    try:
+#        content = json.loads(content)
+#    except:
+#        return json.dumps(
+#            {"Error": "Something went wrong...:\n{}"
+#                      .format(content if content else "Unknown Error")})
+#
+#    if "additional_infos" in content:
+#        app['logger'].info(
+#            '{} - Stewart - {}'.format(user_id, content["additional_infos"]))
+#
+#    if filenames['mask_layer']:
+#        os.remove(filenames['mask_layer'])
+#
+#    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+#    new_name = '_'.join(['StewartPot', n_field_name1])
+#    res = res.replace(tmp_part, new_name)
+#    hash_val = mmh3_hash(res)
+#    asyncio.ensure_future(
+#        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+#    return "|||".join([
+#        ''.join(['{"key":', str(hash_val), ',"file":', res, '}']),
+#        json.dumps(content['breaks'])
+#        ])
 
 async def call_stewart2(posted_data, user_id, app):
     st = time.time()
@@ -1153,72 +1180,72 @@ async def on_shutdown(app):
                 task.cancel()
 
 
-async def session_middleware_factory(app, handler):
-    redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
-    return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
-
-
-def create_app(loop, port=9999, nb_r_workers='2'):
-    class FakeAsyncRedisConn:
-        """
-        For quick testing purpose only.. More than rudimentary..
-        """
-        def __init__(self):
-            self.storage = {}
-
-        async def set(self, key, value):
-            assert isinstance(value, bytes)
-            self.storage[key] = value
-
-        async def get(self, key):
-            return self.storage.get(key, None)
-
-        async def delete(self, key):
-            self.storage.pop(key)
-
-        def quit(self):
-            pass
-    app_real_path = os.path.dirname(os.path.realpath(__file__))
-    if app_real_path != os.getcwd():
-        os.chdir(app_real_path)
-    _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
-    app = web.Application(
-        loop=loop, middlewares=[session_middleware_factory, ])
-#    app = web.Application(loop=loop)
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
-    add_route = app.router.add_route
-    add_route('GET', '/', index_handler)
-    add_route('GET', '/index', index_handler)
-    add_route('GET', '/about', about_handler)
-    add_route('GET', '/modules', serve_main_page)
-    add_route('GET', '/modules/', serve_main_page)
-    add_route('GET', '/modules/{expr}', serve_main_page)
-    add_route('GET', '/layers', list_user_layers)
-    add_route('POST', '/layers/add', receiv_layer)
-    add_route('POST', '/layers/delete', remove_layer)
-    add_route('GET', '/get_layer/{expr}', handler_exists_layer)
-    add_route('POST', '/get_layer2', handler_exists_layer2)
-    add_route('POST', '/R_compute/{function}', R_compute)
-    add_route('POST', '/convert_to_topojson', convert)
-    add_route('POST', '/convert_csv_geo', convert_csv_geo)
-    add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
-    add_route('POST', '/helpers/calc', calc_helper)
-    app.router.add_static('/static/', path='static', name='static')
-    app['async_ctx'] = zmq.asyncio.Context(2)
-    app['redis_conn'] = FakeAsyncRedisConn()
-    app['broker'] = _p
-    app['app_users'] = set()
-    with open('static/json/sample_layers.json', 'r') as f:
-        app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
-    app['ThreadPool'] = ThreadPoolExecutor(4)
-    app['ProcessPool'] = ProcessPoolExecutor(2)
-    app['R_function'] = {
-        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
-        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
-        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
-#    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
-    return app
+#async def session_middleware_factory(app, handler):
+#    redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50, loop=app.loop)
+#    return await session_middleware(redis_storage.RedisStorage(redis_cookie))(app, handler)
+#
+#
+#def create_app(loop, port=9999, nb_r_workers='2'):
+#    class FakeAsyncRedisConn:
+#        """
+#        For quick testing purpose only.. More than rudimentary..
+#        """
+#        def __init__(self):
+#            self.storage = {}
+#
+#        async def set(self, key, value):
+#            assert isinstance(value, bytes)
+#            self.storage[key] = value
+#
+#        async def get(self, key):
+#            return self.storage.get(key, None)
+#
+#        async def delete(self, key):
+#            self.storage.pop(key)
+#
+#        def quit(self):
+#            pass
+#    app_real_path = os.path.dirname(os.path.realpath(__file__))
+#    if app_real_path != os.getcwd():
+#        os.chdir(app_real_path)
+#    _p = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
+#    app = web.Application(
+#        loop=loop, middlewares=[session_middleware_factory, ])
+##    app = web.Application(loop=loop)
+#    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
+#    add_route = app.router.add_route
+#    add_route('GET', '/', index_handler)
+#    add_route('GET', '/index', index_handler)
+#    add_route('GET', '/about', about_handler)
+#    add_route('GET', '/modules', serve_main_page)
+#    add_route('GET', '/modules/', serve_main_page)
+#    add_route('GET', '/modules/{expr}', serve_main_page)
+#    add_route('GET', '/layers', list_user_layers)
+#    add_route('POST', '/layers/add', receiv_layer)
+#    add_route('POST', '/layers/delete', remove_layer)
+#    add_route('GET', '/get_layer/{expr}', handler_exists_layer)
+#    add_route('POST', '/get_layer2', handler_exists_layer2)
+#    add_route('POST', '/R_compute/{function}', R_compute)
+#    add_route('POST', '/convert_to_topojson', convert)
+#    add_route('POST', '/convert_csv_geo', convert_csv_geo)
+#    add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
+#    add_route('POST', '/helpers/calc', calc_helper)
+#    app.router.add_static('/static/', path='static', name='static')
+#    app['async_ctx'] = zmq.asyncio.Context(2)
+#    app['redis_conn'] = FakeAsyncRedisConn()
+#    app['broker'] = _p
+#    app['app_users'] = set()
+#    with open('static/json/sample_layers.json', 'r') as f:
+#        app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
+#    app['ThreadPool'] = ThreadPoolExecutor(4)
+#    app['ProcessPool'] = ProcessPoolExecutor(2)
+#    app['R_function'] = {
+#        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
+#        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
+#        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
+##    app.on_startup.append(on_startup)
+#    app.on_shutdown.append(on_shutdown)
+#    return app
 
 #async def on_startup(app):
 #    app['broker'] = Popen([sys.executable, 'r_py/rclient_worker_queue.py', nb_r_workers])
@@ -1236,7 +1263,6 @@ async def init(loop, port=9999, nb_r_workers='2'):
         loop=loop,
         middlewares=[
             session_middleware(redis_storage.RedisStorage(redis_cookie))])
-#    aiohttp_debugtoolbar.setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)

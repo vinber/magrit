@@ -54,7 +54,7 @@ function click_button_add_layer(){
             if(files_to_send.length >= 4)
                 handle_shapefile(files_to_send);
             else
-                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile');
         } else {
             alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
         }
@@ -551,6 +551,7 @@ function center_map(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
+    console.log(bbox_layer_path)
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     let _zoom = map.node().__zoom;
@@ -971,7 +972,6 @@ function add_sample_layer(){
                     ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
                     ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
                     ["Martinique (FR overseas region) communes (Polygons)", "martinique"],
-                    ["California Protected Areas (CPAD 1.9) extract <i>(Polygons)</i>", "cpad"],
                     ["Nuts 2 (2006) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
                     ["Nuts 3 (2006) European subdivisions <i>(Polygons)</i>", "nuts3_data"],
                     ["World countries <i>(Polygons)</i>", "world_countries_50m"],
