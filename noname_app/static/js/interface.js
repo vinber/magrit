@@ -28,17 +28,18 @@ function click_button_add_layer(){
         let files = event.target.files;
         for(let i=0; i < files.length; i++){
             if(files[i].size > MAX_INPUT_SIZE){
-                alert("Too large input file (should currently be under 8Mb");
+                swal(i18next.t("Error") + "!", i18next.t("Too large input file (should currently be under 8Mb"), "error");
                 return;
             }
         }
         if(files[0].name.indexOf('topojson') > -1){
             handle_TopoJSON_files(files);
-        } else if(files.length == 1 && (files[0].name.indexOf("geojson") > -1
-                    || files[0].name.indexOf('zip') > -1 || files[0].name.indexOf('kml'))){
+        } else if(files.length == 1 && (files[0].name.toLowerCase().indexOf("geojson") > -1
+                    || files[0].name.toLowerCase().indexOf('zip') > -1
+                    || files[0].name.toLowerCase().indexOf('kml') > -1)){
             handle_single_file(files[0]);
-        } else if((files[0].name.toLowerCase().indexOf('.csv')
-                    || files[0].name.toLowerCase().indexOf('.tsv'))
+        } else if((files[0].name.toLowerCase().indexOf('.csv') > -1
+                    || files[0].name.toLowerCase().indexOf('.tsv') > -1)
                     && target_layer_on_add) {
             handle_dataset(files[0])
             target_layer_on_add = false;
@@ -54,9 +55,20 @@ function click_button_add_layer(){
             if(files_to_send.length >= 4)
                 handle_shapefile(files_to_send);
             else
-                alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile');
+                swal(i18next.t("Error") + "!", i18next.t("Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile"), "error");
         } else {
-            alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
+            let shp_part;
+            Array.prototype.forEach.call(files, f =>
+                f.name.indexOf('.shp') > -1
+                    || f.name.indexOf('.dbf') > -1
+                    || f.name.indexOf('.shx') > -1
+                    || f.name.indexOf('.prj') > -1
+                    ? shp_part = true : null);
+            if(shp_part){
+                swal(i18next.t("Error") + "!", i18next.t('All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload'), "error");
+            } else {
+                swal(i18next.t("Error") + "!", i18next.t('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)'), "error");
+            }
         }
     };
 
@@ -100,7 +112,10 @@ function prepare_drop_section(){
                 for(let i=0; i < files.length; i++){
                     if(files[i].size > MAX_INPUT_SIZE){
                         elem.style.border = '3px dashed red';
-                        alert("Too large input file (should currently be under 12Mb");
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t("Too large input file (should currently be under 8Mb"),
+                              type: "warning",
+                              allowOutsideClick: false});
                         elem.style.border = '';
                         return;
                     }
@@ -115,29 +130,41 @@ function prepare_drop_section(){
                             ? files_to_send.push(f) : null)
                     elem.style.border = '';
                     if(target_layer_on_add && targeted_layer_added){
-                           alert("Only one layer can be added by this functionnality");
+                            swal({title: i18next.t("Error") + "!",
+                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                                  type: "error",
+                                  allowOutsideClick: false});
                     } else if(files_to_send.length == 4){
                         handle_shapefile(files_to_send);
                     } else {
                         elem.style.border = '3px dashed red';
-                        alert('Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have been provided for reading a Shapefile');
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t("Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile"),
+                              type: "error",
+                              allowOutsideClick: false});
                         elem.style.border = '';
                     }
                 }
                 else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
                        elem.style.border = '';
                        if(target_layer_on_add && targeted_layer_added)
-                           alert("Only one layer can be added by this functionnality");
+                            swal({title: i18next.t("Error") + "!",
+                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                                  type: "error",
+                                  allowOutsideClick: false});
                        // Most direct way to add a layer :
                        else handle_TopoJSON_files(files);
                }
-               else if(files[0].name.toLowerCase().indexOf('geojson') > -1||
+               else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
                     files[0].name.toLowerCase().indexOf('zip') > -1 ||
                     files[0].name.toLowerCase().indexOf('kml') > -1){
                        elem.style.border = '';
 
                        if(target_layer_on_add && targeted_layer_added)
-                           alert("Only one layer can be added by this functionnality");
+                            swal({title: i18next.t("Error") + "!",
+                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                                  type: "error",
+                                  allowOutsideClick: false});
                        // Send the file to the server for conversion :
                        else handle_single_file(files[0]);
                }
@@ -147,12 +174,32 @@ function prepare_drop_section(){
                     if(self_section === "section1")
                         handle_dataset(files[0]);
                     else
-                        alert('Only layout layers can be added here');
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t('Only layout layers can be added here'),
+                              type: "error",
+                              allowOutsideClick: false});
                     target_layer_on_add = false;
                }
               else {
                     elem.style.border = '3px dashed red';
-                    alert('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)');
+                    let shp_part;
+                    Array.prototype.forEach.call(files, f =>
+                        f.name.indexOf('.shp') > -1
+                            || f.name.indexOf('.dbf') > -1
+                            || f.name.indexOf('.shx') > -1
+                            || f.name.indexOf('.prj') > -1
+                            ? shp_part = true : null);
+                    if(shp_part){
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t('All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    } else {
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    }
                     elem.style.border = '';
                 }
             }, true);

@@ -854,12 +854,13 @@ function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     swal({
         title: "Confirm ?",
-        text: ["Remove layer ", name, "?"].join(''),
+        text: [i18next.t("Remove layer"), " ", name, "?"].join(''),
         type: "warning",
         showCancelButton: true,
+        allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
-        closeOnConfirm: false
+        closeOnConfirm: true
     }).then(() => { remove_layer_cleanup(name); },
             () => { null; }
     );    // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
@@ -869,9 +870,10 @@ function remove_layer(name){
 function remove_ext_dataset(){
     swal({
         title: "Confirm ?",
-        text: ["Remove external data ?"].join(''),
+        text: i18next.t("Remove tabular dataset") + "?",
         type: "warning",
         showCancelButton: true,
+        allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Delete!",
         closeOnConfirm: true
@@ -947,7 +949,7 @@ function remove_layer_cleanup(name){
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
     delete current_layers[name];
-    swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), "success");
+    //swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), "success");
 }
 
 function load_map_template(){

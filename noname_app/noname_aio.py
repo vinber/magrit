@@ -58,6 +58,7 @@ try:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+    from helpers.grid_layer import get_grid_layer2
 
 except:
     from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
@@ -71,6 +72,8 @@ except:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+    from .helpers.grid_layer import get_grid_layer2
+
 
 from geopandas import GeoDataFrame
 
@@ -618,7 +621,55 @@ async def links_map(posted_data, user_id, app):
 #        .format(user_id, time.time()-st))
 #    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
-async def carto_gridded(posted_data, user_id, app):
+#async def carto_gridded(posted_data, user_id, app):
+#    posted_data = json.loads(posted_data.get("json"))
+#
+#    f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+#    ref_layer = await app['redis_conn'].get(f_name)
+#
+#    ref_layer = json.loads(ref_layer.decode())
+#    new_field = posted_data['var_name']
+#
+#    n_field_name = list(new_field.keys())[0]
+#    if len(new_field[n_field_name]) > 0:
+#        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+#
+#    tmp_part = get_name()
+#    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
+#                 "result": None}
+#    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+#    commande = b'make_gridded_map(layer_json_path, var_name, cellsize)'
+#    data = json.dumps({
+#        "layer_json_path": filenames['src_layer'],
+#        "var_name": n_field_name,
+#        "cellsize": posted_data["cellsize"]
+#        }).encode()
+#    content = await R_client_fuw_async(
+#        url_client, commande, data, app['async_ctx'], user_id)
+#    content = content.decode()
+#    try:
+#        content = json.loads(content)
+#    except:
+#        return json.dumps(
+#            {"Error": "Something went wrong...:\n{}"
+#                      .format(content if content else "Unknown Error")})
+#
+#    if "additional_infos" in content:
+#        app['logger'].info(
+#            '{} - Gridded - {}'.format(user_id, content["additional_infos"]))
+#
+#    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+#    new_name = '_'.join(['Gridded',
+#                         str(posted_data["cellsize"]),
+#                         n_field_name])
+#    res = res.replace(tmp_part, new_name)
+#    hash_val = mmh3_hash(res)
+#    asyncio.ensure_future(
+#        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+#    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+
+async def carto_gridded2(posted_data, user_id, app):
+    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
@@ -635,27 +686,20 @@ async def carto_gridded(posted_data, user_id, app):
     filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-    commande = b'make_gridded_map(layer_json_path, var_name, cellsize)'
-    data = json.dumps({
-        "layer_json_path": filenames['src_layer'],
-        "var_name": n_field_name,
-        "cellsize": posted_data["cellsize"]
-        }).encode()
-    content = await R_client_fuw_async(
-        url_client, commande, data, app['async_ctx'], user_id)
-    content = content.decode()
-    try:
-        content = json.loads(content)
-    except:
-        return json.dumps(
-            {"Error": "Something went wrong...:\n{}"
-                      .format(content if content else "Unknown Error")})
 
-    if "additional_infos" in content:
-        app['logger'].info(
-            '{} - Gridded - {}'.format(user_id, content["additional_infos"]))
+    result_geojson = await app.loop.run_in_executor(
+        app["ProcessPool"],
+        get_grid_layer2,
+        filenames['src_layer'],
+        posted_data["cellsize"],
+        n_field_name)
 
-    res = await geojson_to_topojson(content['geojson_path'], remove=True)
+    savefile(filenames['src_layer'], result_geojson.encode())
+    res = await geojson_to_topojson(filenames['src_layer'], remove=True)
+
+    app['logger'].info(
+        '{} - Gridded_on_py - {:.4f}'.format(user_id, st-time.time()))
+
     new_name = '_'.join(['Gridded',
                          str(posted_data["cellsize"]),
                          n_field_name])
@@ -664,6 +708,7 @@ async def carto_gridded(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+
 
 
 async def compute_olson(posted_data, user_id, app):
@@ -1292,7 +1337,7 @@ async def init(loop, port=9999, nb_r_workers='2'):
     app['ThreadPool'] = ThreadPoolExecutor(4)
     app['ProcessPool'] = ProcessPoolExecutor(2)
     app['R_function'] = {
-        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
+        "stewart": call_stewart2, "gridded": carto_gridded2, "links": links_map,
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
 #    app.on_startup.append(on_startup)
