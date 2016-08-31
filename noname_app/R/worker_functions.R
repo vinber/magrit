@@ -135,12 +135,12 @@ make_gridded_map <- function(layer_json_path, var_name, cellsize){
 
 mta_generaldev <- function(x, var1, var2, ref, type_dev){
   x <- as.data.frame(jsonlite::fromJSON(x))
-  return(paste0('{"values":', jsonlite::toJSON(MTA::generalDev(x, var1, var2, ref, type_dev)), '}'))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::gdev(x, var1, var2, ref, type_dev)), '}'))
 }
 
 mta_territorialdev <- function(x, var1, var2, key, type_dev){
   x <- as.data.frame(jsonlite::fromJSON(x))
-  return(paste0('{"values":', jsonlite::toJSON(MTA::territorialDev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
+  return(paste0('{"values":', jsonlite::toJSON(MTA::tdev(x=x, var1=var1, var2=var2, type=type_dev,  key=key)), '}'))
 }
 
 mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, type_dev='rel'){
@@ -153,8 +153,8 @@ mta_localdev <- function(geojson_path, var1, var2, order = NULL, dist = NULL, ty
   if(isLonLat(spdf)) spdf <- sp::spTransform(spdf, CRS(web_mercator))
   spdf@data[,var1] <- as.numeric(spdf@data[,var1])
   spdf@data[,var2] <- as.numeric(spdf@data[,var2])
-  res <- MTA::localDev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
-                       var1 = var1, var2 = var2,
+  res <- MTA::sdev(spdf = spdf, x = spdf@data, spdfid = NULL, xid = NULL,
+                       var1 = var1, var2 = var2, mat=NULL,
                        order = order, dist = dist, type = type_dev)
   return(paste0('{"values":', jsonlite::toJSON(res), '}'))
 }
