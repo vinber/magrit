@@ -1,7 +1,5 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
-import sys
-import atexit
 from setuptools import find_packages
 from distutils.core import setup
 from distutils.extension import Extension
@@ -30,12 +28,6 @@ exts = [Extension("noname_app.helpers.cy_misc",
         ]
 
 
-def _post_install():
-    from subprocess import call
-    call([sys.executable, 'noname_app/R/post_install_packages.py'])
-
-atexit.register(_post_install)
-
 setup(
     name='noname_app',
     version=noname_app.__version__,
@@ -44,7 +36,6 @@ setup(
     packages=find_packages(),
     setup_requires=['setuptools>=25.1', 'Cython>=0.24'],
     ext_modules=exts,
-#    cmdclass={'build_ext': build_ext},
     install_requires=requirements,
     test_suite='tests',
     include_package_data=True,

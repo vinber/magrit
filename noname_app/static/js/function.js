@@ -668,7 +668,7 @@ function send_layer_server(layer_name, url){
         data: formToSend,
         global: false,
         type: 'POST',
-        error: function(error) { console.log(error); },
+        error: function(error) { display_error_during_computation(); console.log(error); },
         success: function(data){
                 let key = JSON.parse(data).key;
                 current_layers[layer_name].key_name = key;
@@ -923,7 +923,7 @@ function fillMenu_FlowMap(){
                 url: '/R_compute/links',
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
                     if(!new_layer_name) return;
@@ -1017,7 +1017,7 @@ function fillMenu_Test(){
                 url: '/R_compute/nothing',
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
                     current_layers[n_layer_name].renderer = "None";
@@ -1772,7 +1772,7 @@ function fillMenu_MTA(){
                 url: target_url,
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     current_layers[layer].is_result = true;
                     let result_values = JSON.parse(data),
@@ -1833,7 +1833,7 @@ function fillMenu_MTA(){
                 url: target_url,
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     let result_values_abs = JSON.parse(data);
                     if(result_values_abs.values){
@@ -1853,7 +1853,7 @@ function fillMenu_MTA(){
                         url: target_url,
                         data: formToSend,
                         type: 'POST',
-                        error: function(error) { console.log(error); },
+                        error: function(error) { display_error_during_computation(); console.log(error); },
                         success: function(data2){
                             let result_values_rel = JSON.parse(data2),
                                 disc_result;
@@ -2050,7 +2050,7 @@ function fillMenu_Stewart(){
                 url: '/R_compute/stewart',
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     {
                         let data_split = data.split('|||'),
@@ -2281,7 +2281,7 @@ function fillMenu_Anamorphose(){
                     url: '/R_compute/olson',
                     data: formToSend,
                     type: 'POST',
-                    error: function(error) { console.log(error); },
+                    error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(result){
                         let n_layer_name = add_layer_topojson(result, {result_layer_on_add: true});
                         current_layers[n_layer_name].renderer = "OlsonCarto";
@@ -2322,7 +2322,7 @@ function fillMenu_Anamorphose(){
                     url: '/R_compute/carto_doug',
                     data: formToSend,
                     type: 'POST',
-                    error: function(error) { console.log(error); },
+                    error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(data){
                         let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
                         current_layers[n_layer_name].fill_color = { "random": true };
@@ -2926,7 +2926,7 @@ function fillMenu_griddedMap(layer){
                 url: '/R_compute/gridded',
                 data: formToSend,
                 type: 'POST',
-                error: function(error) { console.log(error); },
+                error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
                     let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
                     if(!n_layer_name)
@@ -3362,7 +3362,7 @@ function add_table_field(table, layer_name, parent){
                         if(parent)
                             parent.display_table(layer_name);
                     }, function(error){
-                        alert("Somethng wrong happened");
+                        display_error_during_computation(); console.log(error);
                 }).done(()=> { document.querySelector("body").style.cursor = ""; });
             }
         });
@@ -3567,4 +3567,12 @@ var round_value = function(val, nb){
     return nb >= 0
         ? Math.round(+val * dec_mult) / dec_mult
         : Math.round(+val / dec_mult) * dec_mult;
+}
+
+function display_error_during_computation(msg){
+    msg = msg ? "Details : " + msg : "",
+    swal({title: i18next.t("Error") + "!",
+          text: i18next.t("Something wrong happened - Current operation has been aborted") + msg,
+          type: "error",
+          allowOutsideClick: false});
 }

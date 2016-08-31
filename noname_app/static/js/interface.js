@@ -114,7 +114,7 @@ function prepare_drop_section(){
                         elem.style.border = '3px dashed red';
                         swal({title: i18next.t("Error") + "!",
                               text: i18next.t("Too large input file (should currently be under 8Mb"),
-                              type: "warning",
+                              type: "error",
                               allowOutsideClick: false});
                         elem.style.border = '';
                         return;
