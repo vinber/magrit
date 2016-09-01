@@ -114,8 +114,9 @@ async def geojson_to_topojson(
         filepath, quantization="--no-quantization", remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--spherical", quantization, "--bbox",
-                     "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
+    process = Popen(["topojson", "--no-stitch-poles", quantization, "--bbox",
+                     "-p", "--", filepath,],
+                     stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     if remove:
         os.remove(filepath)
@@ -585,7 +586,8 @@ async def carto_gridded(posted_data, user_id, app):
         get_grid_layer2,
         filenames['src_layer'],
         posted_data["cellsize"],
-        n_field_name)
+        n_field_name,
+        posted_data["grid_shape"].lower())
 
     savefile(filenames['src_layer'], result_geojson.encode())
     res = await geojson_to_topojson(filenames['src_layer'], remove=True)

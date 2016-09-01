@@ -2891,12 +2891,18 @@ function fillMenu_griddedMap(layer){
                         .insert('input').attrs({
                             type: 'number', class: 'params', id: "Gridded_cellsize",
                             value: 10.0, min: 1.000, max: 7000, step: 0.001});
+    var grid_shape = dialog_content.append('p').html('Grid shape ')
+                        .insert('select').attrs({class: 'params', id: "Gridded_shape"});
     var col_pal = dialog_content.append('p').html('Colorramp ')
                         .insert('select').attr('class', 'params');
 
     ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
     'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds']
     .forEach( d => { col_pal.append("option").text(d).attr("value", d); });
+
+    ['Square', 'Diamond', 'Hexagon'].forEach( d => {
+        grid_shape.append("option").text(d).attr("value",d);
+    });
 
     dialog_content.insert("p")
         .styles({"text-align": "right", margin: "auto"})
@@ -2918,7 +2924,8 @@ function fillMenu_griddedMap(layer){
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
                 "var_name": var_to_send,
-                "cellsize": +cellsize.node().value * 1000
+                "cellsize": +cellsize.node().value * 1000,
+                "grid_shape": grid_shape.node().value
                 }));
             $.ajax({
                 processData: false,
@@ -3217,11 +3224,14 @@ function get_fun_operator(operator){
 */
 function add_table_field(table, layer_name, parent){
     function check_name(){
-        if(regexp_name.test(this.value))
+        if(regexp_name.test(this.value) || this.value == "")
             chooses_handler.new_name = this.value;
         else { // Rollback to the last correct name  :
             this.value = chooses_handler.new_name;
-            alert("Unauthorized character");
+            swal({title: i18next.t("Error") + "!",
+                  text: i18next.t("Unauthorized character!"),
+                  type: "error",
+                  allowOutsideClick: false});
         }
     };
 
@@ -3232,6 +3242,14 @@ function add_table_field(table, layer_name, parent){
             new_name_field = options.new_name,
             operation = options.operator,
             opt_val = options.opt_val;
+
+        if(!regexp_name.test(new_name_field)){
+            swal({title: i18next.t("Error") + "!",
+                  text: i18next.t("Unauthorized column name !"),
+                  type: "error",
+                  allowOutsideClick: false});
+            return Promise.reject("Invalid name");
+        }
 
         if(options.type_operation === "math_compute" && table.length > 3200){
             let formToSend = new FormData();
@@ -3362,7 +3380,10 @@ function add_table_field(table, layer_name, parent){
                         if(parent)
                             parent.display_table(layer_name);
                     }, function(error){
-                        display_error_during_computation(); console.log(error);
+                        if(error != "Invalid name")
+                            display_error_during_computation();
+                        console.log(error);
+                        document.querySelector("body").style.cursor = "";
                 }).done(()=> { document.querySelector("body").style.cursor = ""; });
             }
         });
