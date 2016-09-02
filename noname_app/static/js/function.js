@@ -3176,13 +3176,16 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         result[field] = [];
         for(let i=0; i < deepth_test; ++i){
             tmp_type = typeof table[i][field];
-            if(tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number";
+            if(tmp_type === "string" && !isNaN(Number(table[i][field])))
+                tmp_type = "number";
+            else if(tmp_type === "object" && isFinite(table[i][field]))
+                tmp_type = "empty"
             result[fields[j]].push(tmp_type);
         }
     }
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
-        if(result[field].every(function(ft){return ft === "number";}))
+        if(result[field].every(function(ft){return ft === "number" || ft === "empty";}) && result[field].indexOf("number") > -1)
             result[field] = "number";
         else
             result[field] = "string";
