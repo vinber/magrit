@@ -1037,7 +1037,7 @@ async def on_shutdown(app):
 
 
 async def init(loop, port=9999):
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("noname_app.main")
     redis_cookie = await create_pool(('localhost', 6379), db=0, maxsize=50)
     redis_conn = await create_reconnecting_redis(('localhost', 6379), db=1)
