@@ -26,7 +26,7 @@ def setUpModule():
     global p  # Could very likely be changed to avoid global variable
     global port
     port = get_port_available(7878)
-    p = psutil.Popen(["noname_app", "--port", port, "--R-workers", "1"])
+    p = psutil.Popen(["noname_app", "--port", port])
     time.sleep(5)
 
 
