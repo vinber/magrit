@@ -252,6 +252,28 @@ function handle_TopoJSON_files(files) {
     });
 };
 
+function handle_reload_TopoJSON(text, param_add_func){
+    var ajaxData = new FormData();
+    var f = new Blob([text], {type: "application/json"});
+    ajaxData.append('file[]', f);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/cache_topojson/user',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) { console.log(error);},
+        success: function(res){
+            let key = JSON.parse(res).key;
+            let topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
+            console.log(topoObjText)
+            add_layer_topojson(topoObjText, param_add_func);
+        }
+    });
+
+}
+
 /**
 * Handle a csv dataset by parsing it as an array of Object (ie features) or by
 * converting it to topojson if it contains valid x/y/lat/lon/etc. columns and
@@ -444,7 +466,7 @@ function add_layer_topojson(text, options){
               .attr("id", function(d, ix) {
                     if(data_to_load){
                         if(field_names.length > 0){
-                            if(d.id != ix){
+                            if(d.id != undefined && d.id != ix){
                                 d.properties["_uid"] = d.id;
                                 d.id = +ix;
                             }
@@ -519,7 +541,7 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
         } else {
             li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
         }

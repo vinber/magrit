@@ -274,7 +274,11 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         symbol_type = current_layers[layer].symbol;
 
 
-    var legend_root = map.insert('g').attr('id', 'legend_root2').attr("class", tmp_class_name).style("cursor", "grab");
+    var legend_root = map.insert('g')
+                        .attr('id', 'legend_root2')
+                        .attr("class", tmp_class_name)
+                        .attr("transform", "translate(0,0)")
+                        .style("cursor", "grab");
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
@@ -329,7 +333,6 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
             {size: size_max * z_scale, value: val_min.toFixed(nb_decimals)}
         ];
 
-    console.log(ref_symbols_params);
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
@@ -406,14 +409,16 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
             legend_elems
                   .append("rect")
                   .attr("x", xpos + space_elem + boxgap)
-                  .attr("y", d => ypos + 45 + max_size + (max_size / 2) - d.size)
+                  .attr("y", d => ypos + 45 + max_size - d.size)
+
+//                  .attr("y", d => ypos + 45 + max_size + (max_size / 2) - d.size)
                   .attr('height', d => d.size)
                   .attr('width', d => d.size)
                   .styles({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
-                .attr("y", d => ypos + 45 + max_size * 2 - (max_size / 2) - d.size)
+                .attr("y", d => ypos + 45 + max_size - d.size)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
                 .text(d => d.value);
             last_pos = ypos + 30 + max_size + (max_size / 2);
@@ -471,15 +476,18 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
         nb_class,
         data_colors_label;
 
+    boxgap = +boxgap;
+
     var legend_root = map.insert('g')
-                        .attr('id', 'legend_root').attr("class", tmp_class_name)
+                        .attr('id', 'legend_root')
+                        .attr("class", tmp_class_name)
+                        .attr("transform", "translate(0,0)")
+                        .attr("boxgap", boxgap)
+                        .attr("rounding_precision", rounding_precision)
                         .style("cursor", "grab");
 
     var rect_under_legend = legend_root.insert("rect");
 
-    boxgap = +boxgap;
-    legend_root.attr("boxgap", boxgap);
-    legend_root.attr("rounding_precision", rounding_precision);
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + boxheight)
