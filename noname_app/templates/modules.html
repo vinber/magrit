@@ -148,7 +148,6 @@ function setUpInterface()
     section2.append("p")
             .style("font-size", "18px")
             .html(i18next.t("No choosen functionnality"));
-            //.html("No choosen functionnality ...");
 
     let section3 = d3.select("#section3");
 
@@ -357,8 +356,8 @@ function setUpInterface()
         {id: "zoom_out", title: i18next.t("lm_buttons.zoom-"), class: "zoom_button", html: "-"},
         {id: "zoom_in", title: i18next.t("lm_buttons.zoom+"), class: "zoom_button", html: "+"},
         {id: "info_button", title: i18next.t("lm_buttons.i"), class: "info_button", html: "i"},
-        {id: "hand_button", title: i18next.t("lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'},
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
+        {id: "hand_button", title: i18next.t("lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.svg" width="18" height="18" alt="Hand_closed"/>'} /*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'} */
     ];
 
     let selec = lm.selectAll("input")
@@ -376,13 +375,14 @@ function setUpInterface()
     document.getElementById("hand_button").onclick = handle_click_hand;
     document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
     let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-    document.getElementById("brush_zoom_button").onclick = brush_rect;
+    /* document.getElementById("brush_zoom_button").onclick = brush_rect; */
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
     d3.select("body").append("div")
                   .attr("id", "info_features")
                   .classed("active", false)
+                  .style("display", "none")
                   .html("");
 
     create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
@@ -516,18 +516,17 @@ function make_eye_button(state){
 }
 
 function make_ico_choice(){
-    let list_fun_ico = ['icon_label.png',
-                        'icon_choroprop.png',
-                        'icon_grid.png',
-                        'icon_typo.png',
-                        'icon_prop.png',
-                        'icon_flow.png',
-                        'icon_cartogram.png',
-                        'icon_mta.png',
+    let list_fun_ico = ['icon_prop.png',
                         'icon_choro.png',
+                        'icon_typo.png',
+                        'icon_choroprop.png',
+                        'icon_flow.png',
+                        'icon_grid.png',
+                        'icon_cartogram.png',
                         'icon_smooth.png',
+                        'icon_discont.png',
                         'icon_symbol.png',
-                        'icon_discont.png'];
+                        'icon_label.png'];
     let function_panel = section2_pre.append("p")
                             .style("text-align", "center")
                             .style("margin-top", "1px")
@@ -721,7 +720,8 @@ function displayInfoOnMove(){
         map.selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
         info_features.node().innerHTML = "";
-        info_features.style({});
+        //info_features.style({});
+        info_features.style("display", "none");
         document.getElementById("map").style.cursor="";
     } else {
         var nb_layer = map.selectAll(".layer")._groups[0].length,
@@ -735,27 +735,33 @@ function displayInfoOnMove(){
             let ref_layer_name = current_layers[top_layer].ref_layer_name;
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
                 let ref_id = current_layers[top_layer].features_order ? current_layers[top_layer].features_order[i][0] : +i;
-                let txt_info = ["<h3>", top_layer, "</h3><br><i>Feature ",
-                                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><br>"];
+                let txt_info = ["<h3>", top_layer, "</h3><i>Feature ",
+                                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><p>"];
                 let properties = user_data[ref_layer_name][ref_id];
                 Object.getOwnPropertyNames(properties).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+properties[el]);
                     });
+                txt_info.push("</p>");
                 info_features.node().innerHTML = txt_info.join('');
+                info_features.style("display", null);
                 });
         } else {
             symbol = "path"
             map.select(id_top_layer).selectAll("path").on("mouseover", function(d,i){
-                let txt_info = ["<h3>", top_layer, "</h3><br><i>Feature ",
-                                i, "/", current_layers[top_layer].n_features, "</i><br>"];
+                let txt_info = ["<h3>", top_layer, "</h3><i>Feature ",
+                                i + 1, "/", current_layers[top_layer].n_features, "</i><p>"];
                 Object.getOwnPropertyNames(d.properties).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+d.properties[el]);
                     });
+                txt_info.push("</p>");
                 info_features.node().innerHTML = txt_info.join('');
+                info_features.style("display", null);
                 });
         }
         map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
-                info_features.node().innerHTML = ""; });
+                info_features.node().innerHTML = "";
+                info_features.style("display", "none");
+        });
         info_features.classed("active", true);
         document.getElementById("map").style.cursor="help";
     }
@@ -853,8 +859,8 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
 function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     swal({
-        title: "Confirm ?",
-        text: [i18next.t("Remove layer"), " ", name, "?"].join(''),
+        title: [i18next.t("Remove layer"), " ", name, "?"].join(''),
+        text: "",
         type: "warning",
         showCancelButton: true,
         allowOutsideClick: false,
@@ -869,8 +875,8 @@ function remove_layer(name){
 
 function remove_ext_dataset(){
     swal({
-        title: "Confirm ?",
-        text: i18next.t("Remove tabular dataset") + "?",
+        title: i18next.t("Remove tabular dataset") + "?",
+        text: "",
         type: "warning",
         showCancelButton: true,
         allowOutsideClick: false,

@@ -192,7 +192,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
                     })
           .attr('width', 45)
           .attr('height', function(d, i){  return d.size;  })
-          .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7, "stroke-width": 0})
+          .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
 
     last_pos = y_pos2;
     last_size = 0;
@@ -268,11 +268,14 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         xpos = 30,
         ypos = 30,
         y_pos2 =  ypos + space_elem,
-        ref_layer_name = layer.indexOf('_PropSymbols') > -1 ? layer.split("_PropSymbols")[0] : current_layers[layer].ref_layer_name,
+        ref_layer_name = current_layers[layer].ref_layer_name,
         nb_features = user_data[ref_layer_name].length,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
+    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro")
+                        ? "#FFF" : (current_layers[layer].fill_color.two !== undefined)
+                        ? "#FFF" : current_layers[layer].fill_color.single;
 
     var legend_root = map.insert('g')
                         .attr('id', 'legend_root2')
@@ -353,7 +356,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                         return last_pos;
                         })
                   .attr('r', function(d, i){return d.size;})
-                  .styles({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
+                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
@@ -377,7 +380,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                             })
                   .attr('width', function(d, i){  return d.size;  })
                   .attr('height', function(d, i){  return d.size;  })
-                  .styles({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7})
+                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
             last_pos = y_pos2; last_size = 0;
             let x_text_pos = xpos + space_elem + boxgap + max_size * 1.5 + 5;
             legend_elems.append("text")
@@ -397,7 +400,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                   .attr("cx", xpos + space_elem + boxgap + max_size / 2)
                   .attr("cy", d => ypos + 45 + max_size + (max_size / 2) - d.size)
                   .attr('r', d => d.size)
-                  .styles({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
+                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
@@ -410,11 +413,9 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                   .append("rect")
                   .attr("x", xpos + space_elem + boxgap)
                   .attr("y", d => ypos + 45 + max_size - d.size)
-
-//                  .attr("y", d => ypos + 45 + max_size + (max_size / 2) - d.size)
                   .attr('height', d => d.size)
                   .attr('width', d => d.size)
-                  .styles({fill: "beige", stroke: "rgb(0, 0, 0)", "fill-opacity": 0.7});
+                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
@@ -616,7 +617,7 @@ function createlegendEditBox(legend_id, layer_name){
         }
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options", box_class, undefined, undefined, true)
+    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, box_class, undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
                 title_content.textContent = original_params.title_content;

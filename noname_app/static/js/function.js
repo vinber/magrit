@@ -2198,7 +2198,7 @@ function fillMenu_Anamorphose(){
 
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
-     ['Gastner & Newman (2004)', 'gastner'],
+/*     ['Gastner & Newman (2004)', 'gastner'],*/
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
@@ -2211,9 +2211,10 @@ function fillMenu_Anamorphose(){
                 algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
                 field_name = field_selec.node().value;
-            if(algo === "gastner"){
-                alert('Not implemented (yet!)')
-            } else if (algo === "olson"){
+//            if(algo === "gastner"){
+//                alert('Not implemented (yet!)')
+//            } else
+            if (algo === "olson"){
                 let field_n = field_selec.node().value,
                     layer = Object.getOwnPropertyNames(user_data)[0],
                     ref_size = option1_val.node().value,

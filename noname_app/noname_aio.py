@@ -1071,7 +1071,7 @@ async def init(loop, port=9999):
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
-    app['ProcessPool'] = ProcessPoolExecutor(2)
+    app['ProcessPool'] = ProcessPoolExecutor(4)
     app['geo_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
 #        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,

@@ -339,8 +339,17 @@ function add_dataset(readed_dataset){
                '</b> - <i><span style="font-size:9px;"> ',
                nb_features, ' features - ',
                field_name.length, " fields</i></span>"].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
-
+//    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
+    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    document.getElementById("remove_dataset").onclick = () => {
+        remove_ext_dataset()
+    };
+    document.getElementById("remove_dataset").onmouseover = function(){
+        this.style.opacity = 1;
+    };
+    document.getElementById("remove_dataset").onmouseout = function(){
+        this.style.opacity = 0.5;
+    };
     valid_join_check_display(false);
     if(targeted_layer_added){
         document.getElementById("join_button").disabled = false;
@@ -350,7 +359,6 @@ function add_dataset(readed_dataset){
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
-    document.getElementById("remove_dataset").onclick = () => { remove_ext_dataset() };
     if(document.getElementById("browse_button").disabled === true)
         document.getElementById("browse_button").disabled = false;
     $("[layer-target-tooltip!='']").qtip("destoy");
@@ -525,9 +533,16 @@ function add_layer_topojson(text, options){
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
                        nb_fields, ' fields</i></span>'].join(''));
-            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
-            document.getElementById("remove_target").onclick = function(){
+//            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
+            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">'
+            document.getElementById("remove_target").onclick = () => {
                 remove_layer(lyr_name_to_add);
+            };
+            document.getElementById("remove_target").onmouseover = function(){
+                this.style.opacity = 1;
+            };
+            document.getElementById("remove_target").onmouseout = function(){
+                this.style.opacity = 0.5;
             };
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')

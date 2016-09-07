@@ -14,3 +14,7 @@ label_it_inline {
     font-size: 10px;
     display: inline;
 }
+
+#svg_discretization .y_axis, #svg_discretization .x_axis {
+    stroke-width: 0.2;
+}

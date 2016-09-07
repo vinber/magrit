@@ -220,11 +220,13 @@ a.menu {
 
 #info_features {
     position: absolute;
-    right: 0px;
-    top: 100px;
-    border-radius: 2%;
-    background-color:beige;
-    font-size:14px;
+    cursor: default;
+    right: 34px;
+    top: 45px;
+    border-radius: 9px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #999;
+    font: 14px 'Source Sans Pro', Helvetica, sans-serif;
     padding-right:20px;
     padding-left:20px;
     color:black;

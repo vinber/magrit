@@ -286,7 +286,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
-            .attr("class", "x axis")
+            .attr("class", "x_axis")
             .style("font-size", "10px")
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom()
@@ -299,7 +299,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 .style("text-anchor", "end");
 
         svg_ref_histo.append("g")
-            .attr("class", "y axis")
+            .attr("class", "y_axis")
             .style("font-size", "10px")
             .call(d3.axisLeft()
                 .scale(y)
@@ -363,7 +363,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 // Clean-up previously made histogram :
             d3.select("#svg_discretization").selectAll(".bar").remove();
             d3.select("#svg_discretization").selectAll(".text_bar").remove();
-            d3.select("#svg_discretization").selectAll(".y.axis").remove();
+            d3.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if(!provided_colors){
             var col_scheme = d3.select('.color_params_left').node() ? "Diverging" : "Sequential";
@@ -411,31 +411,35 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 .data(bins)
               .enter().append("rect")
                 .attr("class", "bar")
-                .attr("transform", "translate(0, -17.5)")
+                .attr("id", (d,i) => "bar_" + i)
+                .attr("transform", "translate(0, -7.5)")
                 .style("fill", function(d){return d.color;})
-                .styles({"opacity": 0.5, "stroke-opacity":1})
+                .styles({"opacity": 0.95, "stroke-opacity":1})
                 .attr("x", function(d){ return x(d.offset);})
                 .attr("width", function(d){ return x(d.width);})
                 .attr("y", function(d){ return y(d.height) - margin.bottom;})
-//                .attr("height", d => (svg_h - y(d.height)) > 1.7 ? svg_h - y(d.height) : 1.7) // To remove (allow to display a visible polygon in order to slightly see class color)
-                .attr("height", function(d){ return svg_h - y(d.height);});
+                .attr("height", function(d){ return svg_h - y(d.height);})
+                .on("mouseover", function(){ this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null; })
+                .on("mouseout", function(){ this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none"; });
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
                 .attr("dy", ".75em")
                 .attr("y", function(d){
-                    let tmp = y(d.height) + 5;
-                    return (tmp < height - 12) ? tmp : height - 12
+                    return y(d.height) - margin.top * 2 - margin.bottom - 1.5;
                     })
                 .attr("x", function(d){return x(d.offset + d.width /2)})
                 .attr("text-anchor", "middle")
                 .attr("class", "text_bar")
+                .attr("id", (d,i) => "text_bar_" + i)
                 .style("color", "black")
-                .text(function(d) { return formatCount(d.val); });
+                .style("cursor", "default")
+                .style("display", "none")
+                .text(function(d) { return formatCount(d.val); })
 
             svg_histo.append("g")
-                .attr("class", "y axis")
+                .attr("class", "y_axis")
                 .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
                 .call(d3.axisLeft()
                     .scale(y)
@@ -535,15 +539,16 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                                 }
                             });
 
-    var svg_h = h / 5 > 90 ? h / 5 : 90,
+    var svg_h = h / 5 > 100 ? h / 5 : 100,
         svg_w = w - (w / 8),
-        margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
+//        margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
+        margin = {top: 7.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
 
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
-//        .attr("height", svg_h + margin.top + margin.bottom);
+        .attr("height", svg_h + margin.top + margin.bottom);
 
     var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -612,7 +617,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
 
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
-        .attr("class", "x axis")
+        .attr("class", "x_axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom()
         .scale(x));
