@@ -1,0 +1,11 @@
+noname_app:
+  build: ./app
+  ports:
+    - "9999:9999"
+  links:
+    - redis:redis
+
+redis:
+  build: ./redis
+  ports:
+    - "6379:6379"
