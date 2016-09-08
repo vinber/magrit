@@ -1,11 +1,28 @@
+####################################################################
+# Working config file building an "all-in one" (and heavy..)
+# image of the app and making it accessible on port 9999
+# (but it should be splited in multiple containers)
+####################################################################
+# Can be build and run like this :
+#
+# $ docker build -t "noname_app:latest" .
+# $ docker run --publish "9999:9999" -it "noname_app:latest"
+#
+# ... then in the provided shell :
+#
+#   # service redis-server start
+#   # noname_app
+
 FROM ubuntu:latest
-MAINTAINER MMtthhhhh
+MAINTAINER mth
 
 RUN apt-get update && apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base \
         python3.5 python3.5-dev nodejs python3-numpy python3-pip gdal-bin libgdal-dev \
         libfreetype6-dev libfreetype6 libproj-dev libv8-3.14-dev libffi-dev \
-        nodejs nodejs-dev node-gyp npm git wget \
-        && npm -g install topojson && rm -rf /var/lib/apt/lists/*
+        nodejs nodejs-dev node-gyp npm redis-server git wget \
+        && npm -g install topojson \
+        && rm -rf /var/lib/apt/lists/* \
+        && ln -s /usr/bin/nodejs /usr/bin/node
 
 WORKDIR /home
 
@@ -28,19 +45,18 @@ ENV GDALOPTS="  --with-geos \
 		        --with-spatialite \
 		        --with-static-proj4=/usr/lib"
 
-
 RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download.osgeo.org/gdal/2.1.0/gdal-2.1.0.tar.gz \
     && tar -xzf gdal-2.1.0.tar.gz && cd gdal-2.1.0 && ./configure --prefix=$GDALINST/gdal-2.1.0 $GDALOPTS \
 	&& make -s -j 2 && make install
-
-# COPY install_gdal.sh /home/
-# RUN chmod +x /home/install_gdal.sh && ./home/install_gdal.sh
 
 ENV PATH="${GDALINST}/gdal-2.1.0/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
 
 RUN pip3 install -U pip \
         && mkdir /home/app && cd /home/app \
+#        && git clone http://github.com/mthh/jenkspy/ \
+#        && cd jenkspy/ \
+#        && python3 setup.py install
         && git clone http://github.com/mthh/noname-stuff/ -b "with-no-R" \
         && cd noname-stuff/ \
         && pip3 install -r requirements-dev.txt \
@@ -52,4 +68,4 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ -b "dev" \
 
 EXPOSE 9999
 
-CMD ["noname_app"]
+CMD ["/bin/sh"]
