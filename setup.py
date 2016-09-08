@@ -18,15 +18,8 @@ exts = [Extension("noname_app.helpers.cy_misc",
                   extra_compile_args=["-O3"]),
         Extension("noname_app.helpers.cartogram_doug",
                   ["noname_app/helpers/cartogram_doug.pyx"], ["."],
-                  extra_compile_args=["-O3"]),
-        Extension("noname_app.helpers.cy_cart",
-                  ["noname_app/helpers/cy_cart.pyx",
-                   "noname_app/helpers/src/cart.c",
-                   "noname_app/helpers/src/embed.c",
-                   "noname_app/helpers/src/interp_mat.c"],
-                  ["."], libraries=["fftw3"], extra_compile_args=["-O2"])
+                  extra_compile_args=["-O3"])
         ]
-
 
 setup(
     name='noname_app',
