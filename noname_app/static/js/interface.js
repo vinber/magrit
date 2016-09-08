@@ -581,8 +581,7 @@ function add_layer_topojson(text, options){
     binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;
 
-    //if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
-    if(!skip_alert) swal(i18next.t("Success") + "!", i18next.t("Layer successfully added to the map"), "success")
+    if(!skip_alert) swal("", i18next.t("Layer successfully added to the map"), "success")
     return lyr_name_to_add;
 };
 

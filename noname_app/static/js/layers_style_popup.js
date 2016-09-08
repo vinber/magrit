@@ -116,11 +116,40 @@ let cloneObj = function(obj){
 }
 
 function createStyleBoxTypoSymbols(layer_name){
+    function get_prev_settings(){
+        let features = selection._groups[0];
+        for(let i = 0; i<features.length; i++){
+            prev_settings.push({
+                "display": features[i].style.display ? features[i].style.display : null,
+                "size": features[i].getAttribute("width"),
+                "position": [features[i].getAttribute("x"), features[i].getAttribute("y")]
+            });
+        }
+        prev_settings_defaults["size"] = current_layers[layer_name].default_size;
+    }
+
+    function restore_prev_settings(){
+        let features = selection._groups[0];
+        for(let i = 0; i<features.length; i++){
+            features[i].setAttribute("width", prev_settings[i]["size"]);
+            features[i].setAttribute("height", prev_settings[i]["size"]);
+            features[i].setAttribute("x", prev_settings[i]["position"][0]);
+            features[i].setAttribute("y", prev_settings[i]["position"][1]);
+            features[i].style.display = prev_settings[i]["display"];
+        }
+        current_layers[layer_name].default_size = prev_settings_defaults.size;
+    }
+
     var selection = map.select("#" + layer_name).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
         symbols_map = current_layers[layer_name].symbols_map,
         ref_coords = [];
+
+    var prev_settings = [],
+        prev_settings_defaults = {};
+
+    get_prev_settings();
 
     for(let i = 0; i < ref_layer_selection.length; i++){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
@@ -129,12 +158,10 @@ function createStyleBoxTypoSymbols(layer_name){
     make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
-                current_layers[layer_name].fill_color = prev_settings.color;
-                current_layers[layer_name].default_size = prev_settings.size;
-                selection.style("font-size", current_layers[layer_name].default_size)
-                         .style("fill", current_layers[layer_name].fill_color);
+                restore_prev_settings();
             }
         });
+
     var popup = d3.select(".styleBox");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
@@ -149,6 +176,7 @@ function createStyleBoxTypoSymbols(layer_name){
                 selection.attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
                         .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
             });
+
     popup.append("p").style("text-align", "center")
             .insert("button")
             .attr("id","reset_symn_loc")
@@ -160,12 +188,47 @@ function createStyleBoxTypoSymbols(layer_name){
 }
 
 function createStyleBoxLabel(layer_name){
+    function get_prev_settings(){
+        let features = selection._groups[0];
+        prev_settings = [];
+        for(let i = 0; i < features.length; i++){
+            prev_settings.push({
+                "color": features[i].style.fill,
+                "size": features[i].style.fontSize,
+                "display": features[i].style.display ? features[i].style.display : null,
+                "position": [features[i].getAttribute("x"), features[i].getAttribute("y")]
+                });
+        }
+        prev_settings_defaults = {
+            "color": current_layers[layer_name].fill_color,
+            "size": current_layers[layer_name].default_size
+        };
+    };
+
+    function restore_prev_settings(){
+        let features = selection._groups[0];
+        for(let i = 0; i < features.length; i++){
+            features[i].style.fill = prev_settings[i]["color"];
+            features[i].style.fontSize = prev_settings[i]["size"];
+            features[i].style.display = prev_settings[i]["display"];
+            features[i].setAttribute("x", prev_settings[i]["position"][0]);
+            features[i].setAttribute("y", prev_settings[i]["position"][1]);
+        }
+
+        current_layers[layer_name].fill_color = prev_settings_defaults.color;
+        current_layers[layer_name].default_size = prev_settings_defaults.size;
+    };
+
     var selection = map.select("#" + layer_name).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
         ref_coords = [];
-    var prev_settings = { color: current_layers[layer_name].fill_color,
-                          size: current_layers[layer_name].default_size };
+
+    var prev_settings = [],
+        prev_settings_defaults = {};
+
+    get_prev_settings();
+
     for(let i = 0; i < ref_layer_selection.length; i++){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
@@ -173,10 +236,7 @@ function createStyleBoxLabel(layer_name){
     make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
-                current_layers[layer_name].fill_color = prev_settings.color;
-                current_layers[layer_name].default_size = prev_settings.size;
-                selection.style("font-size", current_layers[layer_name].default_size)
-                         .style("fill", current_layers[layer_name].fill_color);
+                restore_prev_settings();
             }
         });
     var popup = d3.select(".styleBox");
@@ -201,7 +261,6 @@ function createStyleBoxLabel(layer_name){
             .text("Redraw deleted symbols")
             .on("click", function(){
                 selection.style("display", undefined);
-//                selection.style("fill-opacity", 1);
             });
 
     popup.insert("p").style("text-align", "center").style("font-size", "9px")
@@ -258,7 +317,7 @@ function createStyleBox(layer_name){
 //                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
 //                    current_layers[layer_name].fixed_stroke = true;
                 if(current_layers[layer_name].renderer != undefined
-                     && rendering_params != undefined && renderer != "Stewart"){
+                     && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
                     let colors_breaks = [];
                     for(let i = rendering_params['breaks'].length-1; i > 0; --i){
@@ -374,7 +433,7 @@ function createStyleBox(layer_name){
             fields_name.forEach(f_name => {
                 field_selec.append("option").text(f_name).attr("value", f_name);
             });
-
+            setSelected(field_selec.node(), current_layers[layer_name].rendered_field);
             popup.insert('p').style("margin", "auto").html("")
                 .append("button")
                 .attr("class", "button_disc")

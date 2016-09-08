@@ -34,7 +34,7 @@ function createLegend(layer, title){
 
     if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
         let field2 = current_layers[layer].rendered_field2;
-        createLegend_choro(layer, field2, title);
+        createLegend_choro(layer, field2, title, 0);
         createLegend_symbol(layer, field);
     }
     else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1
@@ -49,7 +49,7 @@ function createLegend(layer, title){
         createLegend_choro(layer, field, title, field, 0);
 
     else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map)
-        createLegend_choro(layer, field, title, field, 4);
+        createLegend_choro(layer, field, title, field, 0);
 
     else if (current_layers[layer].renderer.indexOf("Carto_doug") != -1)
         createLegend_nothing(layer, field, "Dougenik Cartogram", field);
@@ -543,8 +543,6 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
                 })
               .attr('width', boxwidth)
               .attr('height', boxheight)
-//              .attr('width', d => d.image[1])
-//              .attr('height', d => d.image[1])
               .attr("xlink:href", d => d.image[0]);
 
     if(current_layers[layer].renderer.indexOf('Choropleth') > -1
@@ -593,6 +591,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
+
 
 function createlegendEditBox(legend_id, layer_name){
     function bind_selections(){

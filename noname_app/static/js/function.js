@@ -313,7 +313,7 @@ function fillMenu_TypoSymbol(){
                       .append('button')
                       .attr("disabled", true)
                       .attr('id', 'yesTypoSymbols')
-                      .attr('class', 'button_st2')
+                      .attr('class', 'button_st3')
                       .text(i18next.t('Compute and render'))
                       .on("click", function(){
                           render_TypoSymbols(rendering_params);
@@ -465,7 +465,7 @@ function fillMenu_Discont(){
                       .styles({"text-align": "right", margin: "auto"})
                       .append('button')
                       .attr('id', 'yes')
-                      .attr('class', 'params button_st2')
+                      .attr('class', 'params button_st3')
                       .text(i18next.t('Compute and render'));
 
     d3.selectAll(".params").attr("disabled", true);
@@ -885,7 +885,7 @@ function fillMenu_FlowMap(){
 
     let ok_button = dv2.append('button')
                         .attr('id', 'yes')
-                        .attr('class', 'params button_st2')
+                        .attr('class', 'params button_st3')
                         .styles({"text-align": "right", margin: "auto"})
                         .text(i18next.t('Compute and render'));
 
@@ -997,7 +997,7 @@ function fillMenu_Test(){
 
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
-        .attrs({id: 'Test_yes', class: "params button_st2"})
+        .attrs({id: 'Test_yes', class: "params button_st3"})
         .html('"Compute"...')
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -1143,7 +1143,7 @@ function fillMenu_PropSymbolChoro(layer){
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
                         .attr('id', 'propChoro_yes')
-                        .attr('class', 'button_st2')
+                        .attr('class', 'button_st3')
                         .attr('disabled', true)
                         .text('Render');
 
@@ -1342,7 +1342,7 @@ var fillMenu_Label = function(){
     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'Label_yes')
-        .attr('class', 'button_st2')
+        .attr('class', 'button_st3')
         .html(i18next.t('Render'))
         .on("click", function(){
             rendering_params["label_field"] = field_selec.node().value;
@@ -1510,7 +1510,7 @@ var fillMenu_Typo = function(){
         .append("button")
         .attr('id', 'Typo_yes')
         .attr("disabled", true)
-        .attr('class', 'button_st2')
+        .attr('class', 'button_st3')
         .html('Render')
         .on("click", function(){
             if(rendering_params){
@@ -1580,7 +1580,7 @@ function fillMenu_Choropleth(){
         .append("button")
         .attr('id', 'choro_yes')
         .attr("disabled", true)
-        .attr('class', 'button_st2')
+        .attr('class', 'button_st3')
         .html('Render')
         .on("click", function(){
             if(rendering_params){
@@ -1746,7 +1746,7 @@ function fillMenu_MTA(){
                         .append("button")
                         .attr("value", "yes")
                         .attr("id", "yes")
-                        .attr("class", "params button_st2")
+                        .attr("class", "params button_st3")
                         .html(i18next.t("Compute and render"));
 
 
@@ -2005,7 +2005,7 @@ function fillMenu_Stewart(){
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'stewart_yes')
-        .attr('class', "params button_st2")
+        .attr('class', "params button_st3")
         .text(i18next.t('Compute and render'))
         .on('click', function(){
             let formToSend = new FormData(),
@@ -2204,7 +2204,7 @@ function fillMenu_Anamorphose(){
 
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
-        .attrs({id: 'Anamorph_yes', class: "params button_st2"})
+        .attrs({id: 'Anamorph_yes', class: "params button_st3"})
         .html('Compute')
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2714,7 +2714,7 @@ function fillMenu_PropSymbol(layer){
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'yes')
-        .attr("class", "params button_st2")
+        .attr("class", "params button_st3")
         .html('Compute')
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2908,7 +2908,7 @@ function fillMenu_griddedMap(layer){
     dialog_content.insert("p")
         .styles({"text-align": "right", margin: "auto"})
         .append('button')
-        .attr("class", "params button_st2")
+        .attr("class", "params button_st3")
         .attr('id', 'Gridded_yes')
         .html(i18next.t('Compute and render'))
         .on("click", function(){

@@ -859,8 +859,8 @@ var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, cl
 function remove_layer(name){
     name = name || this.parentElement.parentElement.getAttribute("layer_name");
     swal({
-        title: [i18next.t("Remove layer"), " ", name, "?"].join(''),
-        text: "",
+        title: "",
+        text: [i18next.t("Remove layer"), " ", name, "?"].join(''),
         type: "warning",
         showCancelButton: true,
         allowOutsideClick: false,
@@ -875,8 +875,8 @@ function remove_layer(name){
 
 function remove_ext_dataset(){
     swal({
-        title: i18next.t("Remove tabular dataset") + "?",
-        text: "",
+        title: "",
+        text: i18next.t("Remove tabular dataset") + "?",
         type: "warning",
         showCancelButton: true,
         allowOutsideClick: false,
@@ -1800,7 +1800,7 @@ function handle_export(){
         box_content = d3.select("#dialog").append("div");
 
     box_content.append("button")
-        .attr("class", "button_st2")
+        .attr("class", "button_st4")
         .html(i18next.t("Export to PNG"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
@@ -1808,7 +1808,7 @@ function handle_export(){
         });
 
     box_content.append("button")
-        .attr("class", "button_st2")
+        .attr("class", "button_st4")
         .html(i18next.t("Export to SVG"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
@@ -1816,7 +1816,7 @@ function handle_export(){
         });
 
     box_content.append("button")
-        .attr("class", "button_st2")
+        .attr("class", "button_st4")
         .html(i18next.t("Export layers to a geographic format"))
         .on("click", function(){
             dialogBox.dialog("destroy").remove();
@@ -1915,7 +1915,7 @@ function make_export_layer_box(){
         ["KML", "kml"]]);
 
     box_content.append("p").append("button")
-            .attr("class", "button_st2")
+            .attr("class", "button_st4")
             .html("Export")
             .on("click", function(){
                 let layer = selec_layer.node().value,

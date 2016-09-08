@@ -28,9 +28,9 @@ def make_diamond_grid(gdf, height):
     xmin, ymin, xmax, ymax = gdf.total_bounds
     height = height * 1.45
     rows = ceil((ymax-ymin) / height) + 1
-    cols = ceil((xmax-xmin) / height) + 1
+    cols = ceil((xmax-xmin) / height) + 2
 
-    x_left_origin = xmin
+    x_left_origin = xmin - height
     y_bottom_origin = ymin - height
 
     res_geoms = []
@@ -112,10 +112,10 @@ def make_grid(gdf, height):
 
 def make_hex_grid(gdf, height):
     xmin, ymin, xmax, ymax = gdf.total_bounds
-    rows = ceil((ymax-ymin) / height)
+    rows = ceil((ymax-ymin) / height) + 1
     cols = ceil((xmax-xmin) / height)
 
-    x_left_origin = xmin
+    x_left_origin = xmin - height
     y_bottom_origin = ymin - height
 
 
