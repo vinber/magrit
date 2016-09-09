@@ -38,8 +38,7 @@ function valid_join_check_display(val, prop){
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        //button.innerHTML = " -<b> Join now</b>";
-        button.innerHTML = " -<b> " + i18next.t("Join now") + "</b>";
+        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("Join now") + '</button>'
         button.onclick = handle_join;
         join_sec.appendChild(button);
     } else {
@@ -51,7 +50,6 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = null;
 
         let join_sec = document.getElementById("join_section");
-        //join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
         join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
 
         let button = document.createElement("button");

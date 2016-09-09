@@ -114,6 +114,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         col_div.selectAll('.color_txt').remove();
         col_div.selectAll('.color_txt2').remove();
         col_div.selectAll('.central_class').remove();
+        col_div.selectAll('.central_color').remove();
         col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
                                                 .attr("class", "color_txt")
@@ -147,12 +148,24 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         col_div.selectAll('#reverse_pal_btn').remove();
         col_div.insert('p')
                 .attr("class", "central_class")
-                .html("Central class : ")
+                .html("Break on ")
                .insert("input").attrs({
                    type: "number", class: "central_class", id: "centr_class",
                    min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
-                   })
+                   }).style("width", "40px")
                .on("change", function(){redisplay.draw();});
+
+        let central_color = col_div.insert('p').attr("class", "central_color");
+        central_color.insert("input")
+                    .attr("type", "checkbox")
+                    .attr("checked", "true")
+                    .on("change", function(){
+                        redisplay.draw();
+                    })
+        central_color.insert("label").html("colored central class")
+        central_color.append("p")
+            .insert("input")
+            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"});
 
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
@@ -378,10 +391,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
             } else if(col_scheme === "Diverging"){
                 var left_palette = d3.select('.color_params_left').node().value,
                     right_palette = d3.select('.color_params_right').node().value,
-                    ctl_class_value = +d3.select('#centr_class').node().value;
+                    ctl_class_value = +d3.select('#centr_class').node().value,
+                    ctl_class_color = d3.select(".central_color").select("input").node().checked
+                                    ? d3.select("#central_color_val").node().value
+                                    : [];
 
-                let class_right = nb_class - ctl_class_value,
-                    class_left = ctl_class_value,
+                let class_right = nb_class - ctl_class_value + 1,
+                    class_left = ctl_class_value - 1,
                     max_col_nb = Math.max(class_right, class_left),
                     right_pal = getColorBrewerArray(max_col_nb, right_palette),
                     left_pal = getColorBrewerArray(max_col_nb, left_palette);
@@ -389,7 +405,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 left_pal = left_pal.slice(0, class_left).reverse();
                 right_pal = right_pal.slice(0, class_right);
 
-                color_array = [].concat(left_pal, right_pal);
+                color_array = [].concat(left_pal, ctl_class_color, right_pal);
             }
             to_reverse = false;
             } else {

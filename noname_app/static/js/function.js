@@ -249,7 +249,7 @@ function make_style_box_indiv_symbol(label_node){
         });
     let box_content = d3.select(".styleTextAnnotation").insert("div");
     box_content.append("p").html("Image size ")
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.getAttribute("width").slice(0,-2)})
+            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
             .on("change", function(){
                 let new_val = this.value + "px";
                 label_node.setAttribute("width", new_val);
@@ -1303,11 +1303,11 @@ var fillMenu_Label = function(){
 
     var max_font_size = prop_menu.append("p").html("Maximum font size ")
                             .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 35, value: 11, step: 0.1});
+                            .attrs({min: 0, max: 35, value: 11, step: "any"});
 
     var ref_font_size = dv2.append("p").html("Reference font size ")
                             .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 35, value: 9, step: 0.1});
+                            .attrs({min: 0, max: 35, value: 9, step: "any"});
 
 
     var choice_font = dv2.append("p").html("Font ")
@@ -1403,7 +1403,7 @@ function make_style_box_indiv_label(label_node){
         });
     let box_content = d3.select(".styleTextAnnotation").insert("div");
     box_content.append("p").html("Font size ")
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: +label_node.style.fontSize.slice(0,-2)})
+            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
             .on("change", function(){
                 label_node.style.fontSize = this.value + "px";
             });
@@ -3107,50 +3107,58 @@ let xrange = function*(start = 0, stop, step = 1) {
         yield i;
 }
 
-function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        ratio = fixed_size / sqrt(fixed_value / d3.zoomTransform(map.node()).k),
-        res = [];
-
-    if(type_symbol == "circle")
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * ratio), val[2]]
-                );
-        }
-    else
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * ratio), val[2]]
-                );
-        }
-    return res
-}
 
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         abs = Math.abs,
         sqrt = Math.sqrt,
         arr_len = arr.length,
-        ratio = fixed_size / sqrt(fixed_value / d3.zoomTransform(map.node()).k),
         res = [];
 
-//    fixed_value = sqrt(fixed_value / z_scale);
-//    let ratio = fixed_size / fixed_value;
-    if(type_symbol == "circle")
-        for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * ratio));
+    if(!fixed_value || fixed_value == 0)
+        fixed_value = max_fast(arr);
 
-    else
+    if(type_symbol == "circle"){
+        let smax = fixed_size * fixed_size * pi;
         for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * ratio));
+            res.push(sqrt(abs(arr[i]) * smax / fixed_value) / pi);
 
+    } else {
+        let smax = fixed_size * fixed_size;
+        for(let i=0; i < arr_len; ++i)
+            res.push(sqrt(abs(arr[i]) * smax / fixed_value));
+    }
     return res;
+}
+
+function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
+    let pi = Math.PI,
+        abs = Math.abs,
+        sqrt = Math.sqrt,
+        arr_len = arr.length,
+        res = [];
+
+    if(!fixed_value || fixed_value == 0)
+        fixed_value = max_fast(arr);
+
+    if(type_symbol == "circle") {
+        let smax = fixed_size * fixed_size * pi;
+        for(let i=0; i < arr_len; ++i){
+            let val = arr[i];
+            res.push(
+                [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
+                );
+        }
+    } else {
+        let smax = fixed_size * fixed_size;
+        for(let i=0; i < arr_len; ++i){
+            let val = arr[i];
+            res.push(
+                [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
+                );
+        }
+    }
+    return res
 }
 
 function get_nb_decimals(nb){

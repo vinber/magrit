@@ -235,15 +235,25 @@ function setUpInterface()
             //.text("Reset center/zooming/rotation")
             .text(i18next.t("Reset center/zooming/rotation"))
             .on("click", function(){
-                map.node().__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
-                zoom_without_redraw();
-                let proj_params = get_approx_zoom(h, w);
+                // Todo : improve the behavior of this button
+                // Reset the rotation :
                 proj.scale(0).translate(0,0);
                 document.getElementById('form_projection_center').value = 0;
                 document.getElementById('form_rotate').value = 0;
                 proj.rotate([0,,]);
                 reproj_symbol_layer();
                 rotate_global(0);
+
+                // Reset the projection :
+                setSelected(document.getElementById("form_projection"), document.getElementById("form_projection").options[0].value);
+                let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+                if(layer_name){
+                    center_map(layer_name);
+                    zoom_without_redraw();
+                } else {
+                    map.node().__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
+                    zoom_without_redraw();
+                }
             });
 
     let background = map.append("g")
@@ -724,18 +734,36 @@ function displayInfoOnMove(){
         info_features.style("display", "none");
         document.getElementById("map").style.cursor="";
     } else {
+        let layers = document.querySelectorAll(".layer"),
+            nb_layer = layers.length,
+            top_visible_layer = null;
+
+        for(let i = nb_layer-1; i > -1; i--){
+            if(layers[i].style.visibility != "hidden"){
+                top_visible_layer = layers[i].id
+                break;
+            }
+        }
+
+        if(!top_visible_layer){
+            swal("", "Error : no visible layer found", "error");
+            return;
+        }
+
+/*
         var nb_layer = map.selectAll(".layer")._groups[0].length,
             top_layer = map.selectAll(".layer")._groups[0][nb_layer-1].id;
+*/
 
-        let id_top_layer = "#" + top_layer,
-            symbol = current_layers[top_layer].symbol;
+        let id_top_layer = "#" + top_visible_layer,
+            symbol = current_layers[top_visible_layer].symbol;
 
         d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
         if(symbol){
-            let ref_layer_name = current_layers[top_layer].ref_layer_name;
+            let ref_layer_name = current_layers[top_visible_layer].ref_layer_name;
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-                let ref_id = current_layers[top_layer].features_order ? current_layers[top_layer].features_order[i][0] : +i;
-                let txt_info = ["<h3>", top_layer, "</h3><i>Feature ",
+                let ref_id = current_layers[top_visible_layer].features_order ? current_layers[top_visible_layer].features_order[i][0] : +i;
+                let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
                                 ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><p>"];
                 let properties = user_data[ref_layer_name][ref_id];
                 Object.getOwnPropertyNames(properties).forEach(function(el, i){
@@ -748,8 +776,8 @@ function displayInfoOnMove(){
         } else {
             symbol = "path"
             map.select(id_top_layer).selectAll("path").on("mouseover", function(d,i){
-                let txt_info = ["<h3>", top_layer, "</h3><i>Feature ",
-                                i + 1, "/", current_layers[top_layer].n_features, "</i><p>"];
+                let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
+                                i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
                 Object.getOwnPropertyNames(d.properties).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+d.properties[el]);
                     });
@@ -898,6 +926,9 @@ function remove_ext_dataset(){
             document.getElementById("remove_dataset").remove();
             document.getElementById("join_section").innerHTML = "";
             document.getElementById('sample_zone').style.display = null;
+            if(Object.getOwnPropertyNames(user_data).length == 0){
+                document.getElementById("browse_button").disabled = true;
+            }
             $("#data_ext").qtip("destroy");
         }, () => { null; });
 }
@@ -944,7 +975,7 @@ function remove_layer_cleanup(name){
         document.getElementById('sample_zone').style.display = null;
 
         // Restore the state of the bottom of the section 1 :
-        if(d3.select("#join_button").node() != null)
+        if(!d3.select("#join_button").node())
             d3.select("#join_section").html("");
 
         // If after this removal there isn't nor a targeted layer neither an external dataset :
@@ -1394,7 +1425,8 @@ function handle_active_layer(name){
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    map.select("#"+name).style("opacity", fill_value);
+    //map.select("#"+name).style("opacity", fill_value);
+    map.select("#"+name).style("visibility", fill_value == 0 ? "hidden" : "initial");
     map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
 }
 

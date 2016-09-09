@@ -350,12 +350,10 @@ function add_dataset(readed_dataset){
     document.getElementById("remove_dataset").onmouseout = function(){
         this.style.opacity = 0.5;
     };
-    valid_join_check_display(false);
     if(targeted_layer_added){
-        document.getElementById("join_button").disabled = false;
+        valid_join_check_display(false);
+//        document.getElementById("join_button").disabled = false;
         document.getElementById('sample_zone').style.display = "none";
-    } else {
-        document.getElementById("join_button").disabled = true;
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
@@ -514,8 +512,7 @@ function add_layer_topojson(text, options){
                 document.getElementById("browse_button").disabled = false;
 
             if(joined_dataset.length != 0){
-                if(document.getElementById("join_button"))
-                    document.getElementById("join_button").disabled = false;
+                valid_join_check_display(false);
                 section1.select(".s1").html("").on("click", null);
                 document.getElementById('sample_zone').style.display = "none";
             }
