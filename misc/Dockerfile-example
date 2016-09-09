@@ -8,10 +8,7 @@
 # $ docker build -t "noname_app:latest" .
 # $ docker run --publish "9999:9999" -it "noname_app:latest"
 #
-# ... then in the provided shell :
-#
-#   # service redis-server start
-#   # noname_app
+
 
 FROM ubuntu:latest
 MAINTAINER mth
@@ -68,4 +65,5 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ -b "dev" \
 
 EXPOSE 9999
 
-CMD ["/bin/sh"]
+#CMD ["/bin/sh"]
+CMD service redis-server start && noname_app
