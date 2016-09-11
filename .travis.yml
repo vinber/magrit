@@ -30,7 +30,6 @@ install:
 script:
   - noname_app --help
   - py.test tests/test.py
-  - py.test tests/tests_web.py
 addons:
   apt:
     sources:
@@ -43,6 +42,7 @@ addons:
       - gdal-bin
       - libgdal-dev
       - libproj-dev
+      - libspatialindex-dev
       - libv8-3.14-dev
       - libffi-dev
       - redis-server

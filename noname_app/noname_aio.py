@@ -33,6 +33,7 @@ from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO
+from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
@@ -56,7 +57,7 @@ try:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from helpers.grid_layer import get_grid_layer2
+    from helpers.grid_layer import get_grid_layer
 
 except:
     from .helpers.misc import (
@@ -69,10 +70,7 @@ except:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from .helpers.grid_layer import get_grid_layer2
-
-
-from geopandas import GeoDataFrame
+    from .helpers.grid_layer import get_grid_layer
 
 pp = '(aiohttp_app) '
 
@@ -583,7 +581,7 @@ async def carto_gridded(posted_data, user_id, app):
 
     result_geojson = await app.loop.run_in_executor(
         app["ProcessPool"],
-        get_grid_layer2,
+        get_grid_layer,
         filenames['src_layer'],
         posted_data["cellsize"],
         n_field_name,

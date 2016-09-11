@@ -15,7 +15,7 @@ MAINTAINER mth
 
 RUN apt-get update && apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base \
         python3.5 python3.5-dev nodejs python3-numpy python3-pip gdal-bin libgdal-dev \
-        libfreetype6-dev libfreetype6 libproj-dev libv8-3.14-dev libffi-dev \
+        libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server git wget \
         && npm -g install topojson \
         && rm -rf /var/lib/apt/lists/* \
