@@ -293,6 +293,13 @@ function handle_dataset(f){
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
         let tmp_dataset =  d3.csvParse(data);
+        let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
+        if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+            if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+                add_csv_geom(data, dataset_name);
+                return;
+            }
+        }
         add_dataset(tmp_dataset);
     };
     reader.readAsText(f);
@@ -304,14 +311,6 @@ function handle_dataset(f){
 *
 */
 function add_dataset(readed_dataset){
-    let field_name = Object.getOwnPropertyNames(readed_dataset[0]);
-    if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
-        if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-            add_csv_geom(data, dataset_name);
-            return;
-        }
-    }
-
     // Check if their is an empty name in the columns name (typically the first one) and replace it by UID:
     if(readed_dataset[0].hasOwnProperty('')){
         let new_col_name = !readed_dataset[0].hasOwnProperty('UID') ? 'UID' :'Undefined_Name';
@@ -324,7 +323,8 @@ function add_dataset(readed_dataset){
     joined_dataset.push(readed_dataset);
 
     let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-        nb_features = joined_dataset[0].length;
+        nb_features = joined_dataset[0].length,
+        field_names = Object.getOwnPropertyNames(readed_dataset[0]);
 
     d3.select("#img_data_ext")
         .attrs({"id": "img_data_ext",
@@ -338,7 +338,7 @@ function add_dataset(readed_dataset){
         .html([' <b>', d_name,
                '</b> - <i><span style="font-size:9px;"> ',
                nb_features, ' features - ',
-               field_name.length, " fields</i></span>"].join(''));
+               field_names.length, " fields</i></span>"].join(''));
 //    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
     document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
     document.getElementById("remove_dataset").onclick = () => {

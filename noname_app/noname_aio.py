@@ -608,11 +608,19 @@ async def compute_olson(posted_data, user_id, app):
     st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
+
     ref_layer = await app['redis_conn'].get(f_name)
     ref_layer = await ajson_loads(ref_layer.decode())
+
     scale_values = posted_data['scale_values']
     ref_layer_geojson = convert_from_topo(ref_layer)
-    olson_transform(ref_layer_geojson, scale_values)
+
+    await app.loop.run_in_executor(
+        app["ThreadPool"],
+        olson_transform,
+        ref_layer_geojson,
+        scale_values)
+
     tmp_part = get_name()
     f_name = "".join(["/tmp/", tmp_part, ".geojson"])
     savefile(f_name, json.dumps(ref_layer_geojson).encode())
@@ -626,47 +634,9 @@ async def compute_olson(posted_data, user_id, app):
         app['redis_conn'].set('_'.join([
             user_id, hash_val, "NQ"]), res))
     app['logger'].info(
-        '{} - timing : olson-like cartogeam : {:.4f}s'
+        '{} - timing : olson-like cartogram : {:.4f}s'
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
-
-
-#async def call_mta_simpl(posted_data, user_id, app):
-#    posted_data = json.loads(posted_data.get("json"))
-#    if "territorial" in posted_data["method"]:
-#        commande = b'mta_territorialdev(x, var1, var2, key, type_dev)'
-#        data = json.dumps({
-#            "x": json.dumps(posted_data['table']).encode(),
-#            "var1": posted_data['var1_name'],
-#            "var2": posted_data['var2_name'],
-#            "key": posted_data["key_field_name"],
-#            "type_dev": posted_data["type_dev"]
-#            }).encode()
-#
-#    elif "general" in posted_data["method"]:
-#        commande = b'mta_generaldev(x, var1, var2, ref, type_dev)'
-#        data = json.dumps({
-#            "x": json.dumps(posted_data['table']).encode(),
-#            "var1": posted_data['var1_name'],
-#            "var2": posted_data['var2_name'],
-#            "ref": posted_data["ref_value"],
-#            "type_dev": posted_data["type_dev"]
-#            }).encode()
-#
-#    else:
-#        return json.dumps({"Error": "Unknow MTA method"})
-#
-#    content = await R_client_fuw_async(
-#        url_client, commande, data, app['async_ctx'], user_id)
-#    content = content.decode()
-#
-#    try:
-#        assert '{' in content
-#        return content
-#    except:
-#        return json.dumps(
-#            {"Error": "Something went wrong...:\n{}"
-#                      .format(content if content else "Unknown Error")})
 
 
 async def receiv_layer(request):
@@ -687,50 +657,6 @@ async def receiv_layer(request):
     asyncio.ensure_future(
         request.app['redis_conn'].set(f_nameNQ, res))
     return web.Response(text=''.join(['{"key":', str(h_val), '}']))
-
-
-#async def call_mta_geo(posted_data, user_id, app):
-#    s_t = time.time()
-#    posted_data = json.loads(posted_data.get("json"))
-#    f_name = '_'.join([user_id, posted_data['topojson'], "--no-quantization"])
-#    ref_layer = await app['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#
-#    new_field1 = json.loads(posted_data['var1'])
-#    name_field1 = list(new_field1.keys())[0]
-#
-#    new_field2 = json.loads(posted_data['var2'])
-#    name_field2 = list(new_field2.keys())[0]
-#
-#    if len(new_field1[name_field1]) > 0:
-#        join_field_topojson(ref_layer, new_field1[name_field1], name_field1)
-#
-#    if len(new_field2[name_field2]) > 0:
-#        join_field_topojson(ref_layer, new_field2[name_field2], name_field2)
-#
-#    tmp_part = get_name()
-#    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
-#                 "result": None}
-#    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-#    commande = b'mta_localdev(geojson_path, var1, var2, order, dist, type_dev)'
-#    data = json.dumps({
-#        "geojson_path": filenames['src_layer'],
-#        "var1": name_field1,
-#        "var2": name_field2,
-#        "order": posted_data["order"],
-#        "dist": posted_data["dist"],
-#        "type_dev": posted_data["type_dev"]}).encode()
-#    print('Python - p2 : {:.4f}'.format(time.time()-s_t))
-#    content = await R_client_fuw_async(
-#        url_client, commande, data, app['async_ctx'], user_id)
-#    content = content.decode()
-#    try:
-#        assert '{' in content
-#        return content
-#    except:
-#        return json.dumps(
-#            {"Error": "Something went wrong...:\n{}"
-#                      .format(content if content else "Unknown Error")})
 
 
 async def call_stewart(posted_data, user_id, app):
@@ -979,13 +905,14 @@ async def convert_csv_geo(request):
     st = time.time()
     file_name = posted_data.get("filename")
     data = posted_data.get("csv_file")
-    f_name = '_'.join([user_id, file_name.split('.')[0], "--no-quantization"])
-
+    hash_val = str(mmh3_hash(data))
+    f_name = '_'.join([user_id, hash_val, "NQ"])
     result = await request.app['redis_conn'].get(f_name)
     if result:
         request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
-        return web.Response(text=result.decode())
+        return web.Response(text=''.join(
+            ['{"key":', hash_val, ',"file":', result.decode(), '}']))
 
     res = await rawcsv_to_geo(data)
 
@@ -994,13 +921,19 @@ async def convert_csv_geo(request):
         f.write(res.encode())
     result = await geojson_to_topojson(filepath)
     if len(result) == 0:
-        result = json.dumps({'Error': 'GeoJSON layer provided without CRS'})
+        result = json.dumps({'Error': 'Wrong CSV input'})
     else:
-        asyncio.ensure_future(request.app['redis_conn'].set(f_name, result))
+        asyncio.ensure_future(
+            request.app['redis_conn'].set(
+                '_'.join([user_id, hash_val, "NQ"]), result))
+
     request.app['logger'].info(
         '{} - timing : csv -> geojson -> topojson : {:.4f}s'
         .format(user_id, time.time()-st))
-    return web.Response(text=result)
+
+    return web.Response(text=''.join(
+        ['{"key":', hash_val, ',"file":', result, '}']
+        ))
 
 
 def prepare_list_svg_symbols():
