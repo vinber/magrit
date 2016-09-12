@@ -58,7 +58,6 @@ try:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from helpers.grid_layer import get_grid_layer2
 
 except:
     from .r_py.rclient_worker_queue import R_client_fuw_async, url_client
@@ -72,8 +71,6 @@ except:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from .helpers.grid_layer import get_grid_layer2
-
 
 from geopandas import GeoDataFrame
 
@@ -566,11 +563,17 @@ async def compute_discont(posted_data, user_id, app):
 #    app['logger'].info(
 #        '{} - timing : links_on_py : {:.4f}s'
 #        .format(user_id, time.time()-st))
+<<<<<<< HEAD
 #
 #    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 async def links_map(posted_data, user_id, app):
     st = time.time()
+=======
+#    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+
+async def carto_gridded(posted_data, user_id, app):
+>>>>>>> parent of 2ba551f... Improve error alerts + add python written get_grid_layer function
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
@@ -586,6 +589,7 @@ async def links_map(posted_data, user_id, app):
     filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+<<<<<<< HEAD
     commande = \
         b'getLinkLayer_json(layer_json_path, csv_table, i, j, fij, join_field)'
     data = json.dumps({
@@ -595,6 +599,13 @@ async def links_map(posted_data, user_id, app):
         "j": posted_data["field_j"],
         "fij": posted_data["field_fij"],
         "join_field": n_field_name
+=======
+    commande = b'make_gridded_map(layer_json_path, var_name, cellsize)'
+    data = json.dumps({
+        "layer_json_path": filenames['src_layer'],
+        "var_name": n_field_name,
+        "cellsize": posted_data["cellsize"]
+>>>>>>> parent of 2ba551f... Improve error alerts + add python written get_grid_layer function
         }).encode()
     content = await R_client_fuw_async(
         url_client, commande, data, app['async_ctx'], user_id)
@@ -608,6 +619,7 @@ async def links_map(posted_data, user_id, app):
 
     if "additional_infos" in content:
         app['logger'].info(
+<<<<<<< HEAD
             '{} - Links - {}'.format(user_id, content["additional_infos"]))
 
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
@@ -658,6 +670,10 @@ async def carto_gridded(posted_data, user_id, app):
         app['logger'].info(
             '{} - Gridded - {}'.format(user_id, content["additional_infos"]))
 
+=======
+            '{} - Gridded - {}'.format(user_id, content["additional_infos"]))
+
+>>>>>>> parent of 2ba551f... Improve error alerts + add python written get_grid_layer function
     res = await geojson_to_topojson(content['geojson_path'], remove=True)
     new_name = '_'.join(['Gridded',
                          str(posted_data["cellsize"]),
@@ -708,7 +724,6 @@ async def carto_gridded(posted_data, user_id, app):
 #    asyncio.ensure_future(
 #        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
 #    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
-
 
 
 async def compute_olson(posted_data, user_id, app):
@@ -1337,7 +1352,11 @@ async def init(loop, port=9999, nb_r_workers='2'):
     app['ThreadPool'] = ThreadPoolExecutor(4)
     app['ProcessPool'] = ProcessPoolExecutor(2)
     app['R_function'] = {
+<<<<<<< HEAD
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+=======
+        "stewart": call_stewart2, "gridded": carto_gridded, "links": links_map,
+>>>>>>> parent of 2ba551f... Improve error alerts + add python written get_grid_layer function
         "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
 #    app.on_startup.append(on_startup)
