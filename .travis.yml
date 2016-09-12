@@ -30,7 +30,7 @@ install:
 script:
   - noname_app --help
   - py.test tests/test.py
-  - py.test tests/test_web2.py
+  - py.test tests/tests_web2.py
 addons:
   sauce_connect:
     username: "mthh"
