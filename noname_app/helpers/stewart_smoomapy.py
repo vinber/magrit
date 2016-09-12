@@ -13,7 +13,7 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
     result = StePot.render(nb_class,
                            disc_kind,
                            user_defined_breaks,
-                           func_grid="matplotlib",
+                           func_grid="scipy",
                            output="GeoDataFrame",
                            new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
@@ -64,7 +64,7 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     result = StePot.render(nb_class,
                            disc_kind,
                            user_defined_breaks,
-                           func_grid="matplotlib" if not mask else "scipy",
+                           func_grid="scipy",
                            output="GeoDataFrame")
     _min, _max = result[["min", "max"]].values.T.tolist()
     return (result[::-1].to_json().encode(),

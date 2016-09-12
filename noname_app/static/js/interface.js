@@ -43,8 +43,12 @@ function click_button_add_layer(){
                     && target_layer_on_add) {
             handle_dataset(files[0])
             target_layer_on_add = false;
-        }
-        else if(files.length >= 4){
+        } else if((files[0].name.toLowerCase().indexOf('.xls') > -1
+                    || files[0].name.toLowerCase().indexOf('.ods') > -1)
+                    && target_layer_on_add) {
+            convert_dataset(files[0]);
+            target_layer_on_add = false;
+        } else if(files.length >= 4){
             var files_to_send = [];
             Array.prototype.forEach.call(files, f =>
                 f.name.indexOf('.shp') > -1
@@ -180,6 +184,18 @@ function prepare_drop_section(){
                               allowOutsideClick: false});
                     target_layer_on_add = false;
                }
+              else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
+                || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        convert_dataset(files[0]);
+                    else
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t('Only layout layers can be added here'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    target_layer_on_add = false;
+               }
               else {
                     elem.style.border = '3px dashed red';
                     let shp_part;
@@ -206,6 +222,25 @@ function prepare_drop_section(){
     });
 }
 
+function convert_dataset(file){
+    var ajaxData = new FormData();
+    ajaxData.append("action", "submit_form");
+    ajaxData.append('file[]', file);
+     $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/convert_tabular',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) {console.log(error); },
+        success: function(data) {
+                data = JSON.parse(data);
+                dataset_name = data.name;
+                add_dataset(d3.csvParse(data.file));
+            }
+        });
+}
+
 
 function handle_shapefile(files){
     var ajaxData = new FormData();
@@ -222,7 +257,6 @@ function handle_shapefile(files){
         success: function(data) {add_layer_topojson(data);},
         error: function(error) {console.log(error); }
         });
-
 }
 
 function handle_TopoJSON_files(files) {
@@ -252,6 +286,28 @@ function handle_TopoJSON_files(files) {
     });
 };
 
+function handle_reload_TopoJSON(text, param_add_func){
+    var ajaxData = new FormData();
+    var f = new Blob([text], {type: "application/json"});
+    ajaxData.append('file[]', f);
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/cache_topojson/user',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) { console.log(error);},
+        success: function(res){
+            let key = JSON.parse(res).key;
+            let topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
+            console.log(topoObjText)
+            add_layer_topojson(topoObjText, param_add_func);
+        }
+    });
+
+}
+
 /**
 * Handle a csv dataset by parsing it as an array of Object (ie features) or by
 * converting it to topojson if it contains valid x/y/lat/lon/etc. columns and
@@ -271,6 +327,13 @@ function handle_dataset(f){
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
         let tmp_dataset =  d3.csvParse(data);
+        let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
+        if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+            if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+                add_csv_geom(data, dataset_name);
+                return;
+            }
+        }
         add_dataset(tmp_dataset);
     };
     reader.readAsText(f);
@@ -282,14 +345,6 @@ function handle_dataset(f){
 *
 */
 function add_dataset(readed_dataset){
-    let field_name = Object.getOwnPropertyNames(readed_dataset[0]);
-    if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
-        if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-            add_csv_geom(data, dataset_name);
-            return;
-        }
-    }
-
     // Check if their is an empty name in the columns name (typically the first one) and replace it by UID:
     if(readed_dataset[0].hasOwnProperty('')){
         let new_col_name = !readed_dataset[0].hasOwnProperty('UID') ? 'UID' :'Undefined_Name';
@@ -302,7 +357,8 @@ function add_dataset(readed_dataset){
     joined_dataset.push(readed_dataset);
 
     let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-        nb_features = joined_dataset[0].length;
+        nb_features = joined_dataset[0].length,
+        field_names = Object.getOwnPropertyNames(readed_dataset[0]);
 
     d3.select("#img_data_ext")
         .attrs({"id": "img_data_ext",
@@ -316,19 +372,25 @@ function add_dataset(readed_dataset){
         .html([' <b>', d_name,
                '</b> - <i><span style="font-size:9px;"> ',
                nb_features, ' features - ',
-               field_name.length, " fields</i></span>"].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
-
-    valid_join_check_display(false);
+               field_names.length, " fields</i></span>"].join(''));
+//    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
+    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    document.getElementById("remove_dataset").onclick = () => {
+        remove_ext_dataset()
+    };
+    document.getElementById("remove_dataset").onmouseover = function(){
+        this.style.opacity = 1;
+    };
+    document.getElementById("remove_dataset").onmouseout = function(){
+        this.style.opacity = 0.5;
+    };
     if(targeted_layer_added){
-        document.getElementById("join_button").disabled = false;
+        valid_join_check_display(false);
+//        document.getElementById("join_button").disabled = false;
         document.getElementById('sample_zone').style.display = "none";
-    } else {
-        document.getElementById("join_button").disabled = true;
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
-    document.getElementById("remove_dataset").onclick = () => { remove_ext_dataset() };
     if(document.getElementById("browse_button").disabled === true)
         document.getElementById("browse_button").disabled = false;
     $("[layer-target-tooltip!='']").qtip("destoy");
@@ -444,7 +506,7 @@ function add_layer_topojson(text, options){
               .attr("id", function(d, ix) {
                     if(data_to_load){
                         if(field_names.length > 0){
-                            if(d.id != ix){
+                            if(d.id != undefined && d.id != ix){
                                 d.properties["_uid"] = d.id;
                                 d.id = +ix;
                             }
@@ -484,8 +546,7 @@ function add_layer_topojson(text, options){
                 document.getElementById("browse_button").disabled = false;
 
             if(joined_dataset.length != 0){
-                if(document.getElementById("join_button"))
-                    document.getElementById("join_button").disabled = false;
+                valid_join_check_display(false);
                 section1.select(".s1").html("").on("click", null);
                 document.getElementById('sample_zone').style.display = "none";
             }
@@ -503,9 +564,16 @@ function add_layer_topojson(text, options){
                 .attr("layer-target-tooltip", layer_tooltip_content)
                 .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
                        nb_fields, ' fields</i></span>'].join(''));
-            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
-            document.getElementById("remove_target").onclick = function(){
+//            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
+            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">'
+            document.getElementById("remove_target").onclick = () => {
                 remove_layer(lyr_name_to_add);
+            };
+            document.getElementById("remove_target").onmouseover = function(){
+                this.style.opacity = 1;
+            };
+            document.getElementById("remove_target").onmouseout = function(){
+                this.style.opacity = 0.5;
             };
             targeted_layer_added = true;
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
@@ -519,7 +587,7 @@ function add_layer_topojson(text, options){
                 }
             });
         } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
+            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
         } else {
             li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
         }
@@ -544,8 +612,7 @@ function add_layer_topojson(text, options){
     binds_layers_buttons(lyr_name_to_add);
     target_layer_on_add = false;
 
-    //if(!skip_alert) swal("Success!", "Layer successfully added to the map", "success")
-    if(!skip_alert) swal(i18next.t("Success") + "!", i18next.t("Layer successfully added to the map"), "success")
+    if(!skip_alert) swal("", i18next.t("Layer successfully added to the map"), "success")
     return lyr_name_to_add;
 };
 
@@ -598,7 +665,6 @@ function center_map(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-    console.log(bbox_layer_path)
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     let _zoom = map.node().__zoom;

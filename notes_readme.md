@@ -43,7 +43,7 @@ Following dependencies are needed :
 Ubuntu 16.04
 ```
 sudo apt-get install libgdal-dev gdal-bin libproj-dev libv8-dev libffi-dev \
-python3.5 libpython3.5-dev r-base redis-server nodejs nodejs-dev node-gyp npm \
+python3.5 libpython3.5-dev libspatialindex-dev redis-server nodejs nodejs-dev node-gyp npm \
 libfftw3-dev libzmq3-dev
 ```
 

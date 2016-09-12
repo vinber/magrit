@@ -30,7 +30,12 @@ install:
 script:
   - noname_app --help
   - py.test tests/test.py
+  - py.test tests/tests_web2.py
 addons:
+  sauce_connect:
+    username: "mthh"
+    access_key:
+      secure: "WsGZcHNpu36b71fORcabhyiAJOYf6B9cGjxcNa/6jKvvGIndmLFV3odQoKiH8Reim5qxcHI8DrFj2ztqMcSG/+NRuIzwelhkD4WGbhLOKl4jDonYMJZEy//yT/aHs6kOKea8wBx0li8nWToQTfH5bVOAIrzf3aZBeA/geC2jn5euVkCc1Ww2nLok8vBWv/1JqORiglWnebpLQL+SBRZ8iI6YmenikU7Ot6Qu3HnM5jw59DJzFJzNeaYDmEfLqnh9WpyokSkHnNgvEf35xiabCdNZVWb45YEsrsRIJnBOI7eV1fEv1dgvmcxAbp/0C77IBlvQPzEx+UAm6q4hKgdViW/5PMTzq8qZIu3cm3se5KUzrjZIXJ4yIL58QmJpK0+ykfwaOToySmsaH+zCRwpNZJTk9fABuxaPgJSESres9Bcgg8ogEqM7Zv7bQ2QeF61TKYOtovjSbgT68MjnfQwLmN0vR3+ysAdPJ7mdL6esgmN+Bal0lbwhsRI3XVp5EtaSLb/MTFlpuJVGG2LA60JKDKsq/TxqNKB9Fz1pabUuza5QpvZ+s2KWDVDEhSR1sIE0f3PSTPgIPjpnD8lCB2lJcE9DGXveW5ZCg6cpXWIxtu7W8RkGGXf4gjPI+s41WDCmVHbqHDTzhPJg4lLONek0tUUjrKwWhlOQ2aFSz9Kvh44="
   apt:
     sources:
       - deadsnakes

@@ -2,14 +2,13 @@ TODO list:
 - /!\ fix reloading a project from previously exported one
 - /!\ Correct many nonsenses due to the incremental way in which were added some features, aka "clean the code"
 - /!\ Choose some fonts (to be served by the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts in the current browser.
-- /!\ fix the zoom by rectangular zone (to do with d3 v4 as this behavior may have slightly changed)
+- /!\ fix the zoom by rectangular zone
 - Switch to CeCILL licence ?
 - Handle correctly missing values according to the functionnality used
 - Do more data validation (client and/or server side) to avoid weird user-uploads
 - Add soem specials options for the garticule in the "stylebox"
 - Improve the new "Textbox" class (in order to have the same behavior with chromium than with firefox)
 - Make a fancy chart for selecting class and size for values quantization in discontinuities / links
-- Offer to choose the color and opacity of the rectangle under the legend
 - Allow the PNG export with a better resolution ? (currently it fits stricly the pixel size defined in "basemap options")
 - Design a favicon
 - (Partially done) Create an index page + Insert message about how cookies are used for EU visitors to comply with whatever directive it is

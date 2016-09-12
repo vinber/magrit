@@ -11,6 +11,53 @@ import unittest
 import time
 from contextlib import closing
 from socket import socket, AF_INET, SOCK_STREAM
+import os
+import sys
+
+
+RUN_LOCAL = os.environ.get('RUN_TESTS_LOCAL') == 'True'
+
+if RUN_LOCAL:
+    browsers = ['Firefox']
+else:
+    from sauceclient import SauceClient
+
+    USERNAME = os.environ.get('SAUCE_USERNAME')
+    ACCESS_KEY = os.environ.get('SAUCE_ACCESS_KEY')
+    sauce = SauceClient(USERNAME, ACCESS_KEY)
+
+    browsers = [
+        {"platform": "Linux",
+         "browserName": "chrome",
+         "version": "47"},
+#        {"platform": "Windows 8.1",
+#         "browserName": "internet explorer",
+#         "version": "11"},
+        {"platform": "Linux",
+         "browserName": "firefox",
+         "version": "40"}]
+
+
+def on_platforms(platforms, local):
+    if local:
+        def decorator(base_class):
+            module = sys.modules[base_class.__module__].__dict__
+            for i, platform in enumerate(platforms):
+                d = dict(base_class.__dict__)
+                d['browser'] = platform
+                name = "%s_%s" % (base_class.__name__, i + 1)
+                module[name] = type(name, (base_class,), d)
+            pass
+        return decorator
+
+    def decorator(base_class):
+        module = sys.modules[base_class.__module__].__dict__
+        for i, platform in enumerate(platforms):
+            d = dict(base_class.__dict__)
+            d['desired_capabilities'] = platform
+            name = "%s_%s" % (base_class.__name__, i + 1)
+            module[name] = type(name, (base_class,), d)
+    return decorator
 
 
 def get_port_available(port_nb):
@@ -39,18 +86,72 @@ def tearDownModule():
         pass
 
 
+@on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
+    """
+    Runs a test using travis-ci and saucelabs
+    """
+
     def setUp(self):
+        if RUN_LOCAL:
+            self.setUpLocal()
+        else:
+            self.setUpSauce()
+
+    def tearDown(self):
+        if RUN_LOCAL:
+            self.tearDownLocal()
+        else:
+            self.tearDownSauce()
+
+    def setUpSauce(self):
+        self.desired_capabilities['name'] = self.id()
+        self.desired_capabilities['tunnel-identifier'] = \
+            os.environ['TRAVIS_JOB_NUMBER']
+        self.desired_capabilities['build'] = os.environ['TRAVIS_BUILD_NUMBER']
+        self.desired_capabilities['tags'] = \
+            [os.environ['TRAVIS_PYTHON_VERSION'], 'CI']
+
+        print(self.desired_capabilities)
+        self.verificationErrors = []
+        self.driver = webdriver.Remote(
+            desired_capabilities=self.desired_capabilities,
+            command_executor="http://%s:%s@ondemand.saucelabs.com:80/wd/hub" %
+            (USERNAME, ACCESS_KEY)
+        )
+        self.driver.implicitly_wait(10)
+        self.base_url = "http://localhost:{}/modules".format(port)
+        self.verificationErrors = []
+        self.accept_next_alert = True
+
+    def setUpLocal(self):
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(20)
         self.base_url = "http://localhost:{}/modules".format(port)
         self.verificationErrors = []
         self.accept_next_alert = True
 
+
+    def tearDownLocal(self):
+        self.assertEqual([], self.verificationErrors)
+        self.driver.quit()
+
+    def tearDownSauce(self):
+        self.assertEqual([], self.verificationErrors)
+        print("\nLink to your job: \n "
+              "https://saucelabs.com/jobs/%s \n" % self.driver.session_id)
+        try:
+            if sys.exc_info() == (None, None, None):
+                sauce.jobs.update_job(self.driver.session_id, passed=True)
+            else:
+                sauce.jobs.update_job(self.driver.session_id, passed=False)
+        finally:
+            self.driver.quit()
+
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
-        if not self.try_element_present(By.ID, "sample_link"):
+        if not self.try_element_present(By.ID, "sample_link", 30):
             self.fail("Time out")
         driver.find_element_by_css_selector("#sample_link > b").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
@@ -204,10 +305,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         finally:
             self.accept_next_alert = True
 
-    def tearDown(self):
-        self.assertEqual([], self.verificationErrors)
-        self.driver.quit()
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -4,7 +4,9 @@ function handle_join(){
     var layer_name = Object.getOwnPropertyNames(user_data);
 
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
-        alert("Unable to join geometries and dataset")
+        swal("",
+             i18next.t("Unable to join geometries and dataset"),
+             "error");
         return;
     } else if(field_join_map.length != 0){
         make_confirm_dialog("A successful join is already selected. Forget and select a new one ?", "Ok", "Cancel", "").then(function(confirmed){
@@ -38,8 +40,7 @@ function valid_join_check_display(val, prop){
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        //button.innerHTML = " -<b> Join now</b>";
-        button.innerHTML = " -<b> " + i18next.t("Join now") + "</b>";
+        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("Join now") + '</button>'
         button.onclick = handle_join;
         join_sec.appendChild(button);
     } else {
@@ -51,7 +52,6 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = null;
 
         let join_sec = document.getElementById("join_section");
-        //join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
         join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
 
         let button = document.createElement("button");
@@ -82,7 +82,9 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set2 = new Set(join_values2);
     if(join_set2.size != join_values2.length){
-        alert(i18next.t("The values on which operate have to be uniques"));
+        swal("",
+             i18next.t("The values on which operate have to be uniques"),
+             "warning");
         return;
     }
 
@@ -92,7 +94,9 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set1 = new Set(join_values1);
     if(join_set1.size != join_values1.length){
-        alert(i18next.t("The values on which operate have to be uniques"));
+        swal("",
+             i18next.t("The values on which operate have to be uniques"),
+             "warning");
         return;
     }
 
@@ -156,7 +160,10 @@ function valid_join_on(layer_name, field1, field2){
         }
 
     } else {
-        alert("No match found...");
+        swal("",
+             ["No match found between fields <i>'", field1,
+              "'</i> and <i>'", field2,"'</i>"].join(''),
+             "error");
         field_join_map = [];
         return false;
     }
