@@ -29,13 +29,13 @@ else:
     browsers = [
         {"platform": "Linux",
          "browserName": "chrome",
-         "version": "35"},
-        {"platform": "Windows 8.1",
-         "browserName": "internet explorer",
-         "version": "11"},
+         "version": "47"},
+#        {"platform": "Windows 8.1",
+#         "browserName": "internet explorer",
+#         "version": "11"},
         {"platform": "Linux",
          "browserName": "firefox",
-         "version": "38"}]
+         "version": "40"}]
 
 
 def on_platforms(platforms, local):
@@ -87,7 +87,7 @@ def tearDownModule():
 
 
 @on_platforms(browsers, RUN_LOCAL)
-class HelloSauceTest(unittest.TestCase):
+class MainFunctionnalitiesTest(unittest.TestCase):
     """
     Runs a test using travis-ci and saucelabs
     """
@@ -114,10 +114,10 @@ class HelloSauceTest(unittest.TestCase):
 
         print(self.desired_capabilities)
         self.verificationErrors = []
-        sauce_url = "http://%s:%s@ondemand.saucelabs.com:80/wd/hub"
         self.driver = webdriver.Remote(
             desired_capabilities=self.desired_capabilities,
-            command_executor=sauce_url % (USERNAME, ACCESS_KEY)
+            command_executor="http://%s:%s@ondemand.saucelabs.com:80/wd/hub" %
+            (USERNAME, ACCESS_KEY)
         )
         self.driver.implicitly_wait(10)
         self.base_url = "http://localhost:{}/modules".format(port)
@@ -151,7 +151,7 @@ class HelloSauceTest(unittest.TestCase):
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
-        if not self.try_element_present(By.ID, "sample_link"):
+        if not self.try_element_present(By.ID, "sample_link", 30):
             self.fail("Time out")
         driver.find_element_by_css_selector("#sample_link > b").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
