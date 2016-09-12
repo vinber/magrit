@@ -113,13 +113,16 @@ class HelloSauceTest(unittest.TestCase):
             [os.environ['TRAVIS_PYTHON_VERSION'], 'CI']
 
         print(self.desired_capabilities)
-
+        self.verificationErrors = []
         sauce_url = "http://%s:%s@ondemand.saucelabs.com:80/wd/hub"
         self.driver = webdriver.Remote(
             desired_capabilities=self.desired_capabilities,
             command_executor=sauce_url % (USERNAME, ACCESS_KEY)
         )
         self.driver.implicitly_wait(10)
+        self.base_url = "http://localhost:{}/modules".format(port)
+        self.verificationErrors = []
+        self.accept_next_alert = True
 
     def setUpLocal(self):
         self.driver = webdriver.Firefox()
