@@ -285,7 +285,7 @@ async def convert(request):
         list_files = []
         for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
-            file_name = ''.join(['/tmp/', user_id, field[1]])
+            file_name = ''.join(['/tmp/', user_id, '_', field[1]])
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
@@ -314,7 +314,8 @@ async def convert(request):
     results = await request.app['redis_conn'].keys(f_name)
     if results:
         result = await request.app['redis_conn'].get(f_nameQ)
-        request.app['logger'].info('{} - Used result from redis'.format(user_id))
+        request.app['logger'].info(
+            '{} - Used result from redis'.format(user_id))
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
             ))
@@ -343,7 +344,9 @@ async def convert(request):
             shp_path = [i for i in list_files if 'shp' in i][0]
             myzip.extractall(path=dir_path)
             res = await ogr_to_geojson(shp_path, to_latlong=True)
-            filepath2 = shp_path.replace('.shp', '.geojson')
+            filepath2 = shp_path.replace(
+                "{}{}/".format(user_id, hashed_input), "").replace(
+                '.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = await geojson_to_topojson(filepath2, "-q 1e6")
@@ -363,7 +366,8 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
             res = await ogr_to_geojson(filepath, to_latlong=True)
-            request.app['logger'].info('{} - Transform coordinates from GeoJSON'.format(user_id))
+            request.app['logger'].info(
+                '{} - Transform coordinates from GeoJSON'.format(user_id))
             os.remove(filepath)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(res)
