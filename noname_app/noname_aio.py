@@ -277,6 +277,7 @@ async def ajson_loads(str_data):
 async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis, request.app['app_users'])
 
     # If a shapefile is provided as multiple files
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
@@ -284,7 +285,7 @@ async def convert(request):
         list_files = []
         for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
-            file_name = ''.join(['/tmp/', field[1]])
+            file_name = ''.join(['/tmp/', user_id, field[1]])
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
@@ -298,14 +299,14 @@ async def convert(request):
             name = field[1]
             data = field[2].read()
             datatype = field[3]
+            print(datatype)
             hashed_input = mmh3_hash(data)
-            filepath = ''.join(['/tmp/', name])
+            filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
             print("posted data :\n", posted_data)
             print("err\n", err)
             return web.Response(text='{"Error": "Incorrect datatype"}')
 
-    user_id = get_user_id(session_redis, request.app['app_users'])
     f_name = '_'.join([user_id, str(hashed_input)])
     f_nameQ = '_'.join([f_name, "Q"])
     f_nameNQ = '_'.join([f_name, "NQ"])
@@ -324,6 +325,7 @@ async def convert(request):
         with open(filepath2, 'w') as f:
             f.write(res)
         result = await geojson_to_topojson(filepath2, "-q 1e6")
+        result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             store_non_quantized(
                 filepath2, f_nameNQ, request.app['redis_conn']))
@@ -331,27 +333,28 @@ async def convert(request):
             request.app['redis_conn'].set(f_nameQ, result))
         [os.remove(file) for file in list_files]
 
-    elif 'zip' in datatype:
-        with open(filepath+'archive', 'wb') as f:
-            f.write(data)
-        with ZipFile(filepath+'archive') as myzip:
+    elif datatype in ('application/x-zip-compressed', 'application/zip'):
+        dataZip = BytesIO(data)
+        dir_path = '/tmp/{}{}/'.format(user_id, hashed_input)
+        os.mkdir(dir_path)
+        with ZipFile(dataZip) as myzip:
             list_files = myzip.namelist()
-            list_files = ['/tmp/' + i for i in list_files]
+            list_files = [dir_path + i for i in list_files]
             shp_path = [i for i in list_files if 'shp' in i][0]
-            layer_name = shp_path.split(os.path.sep)[2]
-            myzip.extractall(path='/tmp')
+            myzip.extractall(path=dir_path)
             res = await ogr_to_geojson(shp_path, to_latlong=True)
-            filepath2 = '/tmp/' + layer_name.replace('.shp', '.geojson')
+            filepath2 = shp_path.replace('.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
             result = await geojson_to_topojson(filepath2, "-q 1e6")
+            result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
             asyncio.ensure_future(
                 store_non_quantized(
                     filepath2, f_nameNQ, request.app['redis_conn']))
-        os.remove(filepath+'archive')
-        [os.remove(file) for file in list_files]
+        [os.remove(dir_path + file) for file in os.listdir(dir_path)]
+        os.removedirs(dir_path)
 
     elif 'octet-stream' in datatype and "geojson" in name.lower():
         data = data.decode()
@@ -375,6 +378,7 @@ async def convert(request):
             return web.Response(text=json.dumps(
                 {'Error': 'GeoJSON layer provided without CRS'}))
         else:
+            result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
                     filepath, f_nameNQ, request.app['redis_conn']))
@@ -394,6 +398,7 @@ async def convert(request):
             return web.Response(
                 text='{"Error": "Error converting reading kml file"}')
         else:
+            result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
                     filepath, f_nameNQ, request.app['redis_conn']))
@@ -401,6 +406,7 @@ async def convert(request):
                 request.app['redis_conn'].set(f_nameQ, result))
     else:
         return web.Response(text='{"Error": "Incorrect datatype"}')
+
     request.app['logger'].info(
         '{} - Converted, stored in redis and sent back to client'
         .format(user_id))

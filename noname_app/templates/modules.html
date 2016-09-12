@@ -975,8 +975,7 @@ function remove_layer_cleanup(name){
         document.getElementById('sample_zone').style.display = null;
 
         // Restore the state of the bottom of the section 1 :
-        if(!d3.select("#join_button").node())
-            d3.select("#join_section").html("");
+        d3.select("#join_section").html("");
 
         // If after this removal there isn't nor a targeted layer neither an external dataset :
         if(joined_dataset.length == 0)

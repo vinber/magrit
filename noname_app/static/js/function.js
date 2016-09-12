@@ -383,6 +383,12 @@ var fields_Discont = {
             fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
             field_discont = d3.select("#field_Discont"),
             field_id = d3.select("#field_id_Discont");
+
+        if(fields_num.length == 0){
+            display_error_num_field();
+            return;
+        }
+
         fields_num.forEach(function(field){
                 field_discont.append("option").text(field).attr("value", field);
         });
@@ -1036,6 +1042,11 @@ var fields_PropSymbolChoro = {
             field1_selec = d3.select("#PropSymbolChoro_field_1"),
             field2_selec = d3.select("#PropSymbolChoro_field_2");
 
+        if(fields.length == 0){
+            display_error_num_field();
+            return;
+        }
+
         fields.forEach(function(field){
             field1_selec.append("option").text(field).attr("value", field);
             field2_selec.append("option").text(field).attr("value", field);
@@ -1194,6 +1205,12 @@ function fillMenu_PropSymbolChoro(layer){
     d3.selectAll(".params").attr("disabled", true);
 }
 
+function display_error_num_field(){
+    swal({title: "",
+          text: "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
+          type: "error"});
+};
+
 var fields_Choropleth = {
     fill: function(layer){
         if(!layer) return;
@@ -1202,9 +1219,10 @@ var fields_Choropleth = {
             field_selec = d3.select("#choro_field_1");
 
         if(fields.length === 0){
-            alert("The targeted layer doesn't seems to contain any numerical field or contains too many empty values");
+            display_error_num_field();
             return;
         }
+
         fields.forEach(field => {
             field_selec.append("option").text(field).attr("value", field);
         });
@@ -1592,321 +1610,6 @@ function fillMenu_Choropleth(){
     d3.selectAll(".params").attr("disabled", true);
 }
 
-
-var fields_MTA = {
-    fill: function(layer){
-        if(!layer) return;
-        d3.selectAll(".params").attr("disabled", null);
-        let fields = type_col(layer, "number"),
-            fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
-            nb_features = user_data[layer].length,
-            field1_selec = d3.select("#MTA_field_1"),
-            field2_selec = d3.select("#MTA_field_2"),
-            field_key_agg = d3.select("#MTA_field_key_agg");
-
-            fields.forEach(function(field){
-                field1_selec.append("option").text(field).attr("value", field);
-                field2_selec.append("option").text(field).attr("value", field);
-            });
-            fields_all.forEach(function(field){
-                field_key_agg.append("option").text(field).attr("value", field);
-            });
-
-
-    },
-    unfill: function(){
-        let field1_selec = document.getElementById("MTA_field_1"),
-            field2_selec = document.getElementById("MTA_field_2"),
-            field_key_agg = document.getElementById("MTA_field_key_agg");
-
-        for(let i = field1_selec.childElementCount - 1; i > -1; i--){
-            field1_selec.removeChild(field1_selec.children[i]);
-            field2_selec.removeChild(field2_selec.children[i]);
-        }
-
-        unfillSelectInput(field_key_agg);
-        d3.selectAll(".params").attr("disabled", true);
-    }
-};
-
-
-function fillMenu_MTA(){
-    var prepare_mta = function(choosen_method, var1_name, var2_name, layer, nb_features){
-        var table_to_send = {},
-            object_to_send = {};
-        if (choosen_method != "local_dev"){
-            table_to_send[var1_name] = [];
-            table_to_send[var2_name] = [];
-            for(let i=0; i<nb_features; i++){
-                table_to_send[var1_name].push(+user_data[layer][i][var1_name]);
-                table_to_send[var2_name].push(+user_data[layer][i][var2_name]);
-            }
-            object_to_send["method"] = choosen_method;
-            if(choosen_method == "territorial_dev"){
-                let key_name = field_key_agg.node().value;
-                table_to_send[key_name] = user_data[layer].map(i => i[key_name]);
-                object_to_send["key_field_name"] = key_name;
-            } else if(choosen_method == "general_dev"){
-                object_to_send["ref_value"] = +ref_ratio.node().value;
-            }
-            object_to_send["table"] = table_to_send;
-            object_to_send["var1_name"] = var1_name;
-            object_to_send["var2_name"] = var2_name;
-
-        } else if (choosen_method == "local_dev"){
-            let val = +val_param_general_dev.node().value,
-                param_name = param_general_dev.node().value == "dist" ? "dist" : "order",
-                val1_to_send = {},
-                val2_to_send = {};
-
-            if(current_layers[layer].original_fields.has(var1_name))
-                val1_to_send[var1_name] = [];
-            else
-                val1_to_send[var1_name] = user_data[layer].map(i => +i[var1_name]);
-
-            if(current_layers[layer].original_fields.has(var2_name))
-                val2_to_send[var2_name] = [];
-            else
-                val2_to_send[var2_name] = user_data[layer].map(i => +i[var2_name]);
-
-            object_to_send["topojson"] = current_layers[layer].key_name;
-            object_to_send["var1"] = JSON.stringify(val1_to_send);
-            object_to_send["var2"] = JSON.stringify(val2_to_send);
-            object_to_send["order"] = (param_name == "order") ? val : null;
-            object_to_send["dist"] = (param_name == "dist") ? val : null;
-        }
-        return object_to_send;
-    }
-
-    var MTA_methods = [["General Deviation", "general_dev"],
-                       ["Territorial deviation", "territorial_dev"],
-                       ["Local deviation", "local_dev"]];
-
-    var dv2 = section2.append("p").attr("class", "form-rendering");
-
-    var method_selec = dv2.append("p").style("margin", "auto").html("Analysis method")
-                            .insert("select").attr("class", "params");
-    MTA_methods.forEach(method => { method_selec.append("option").text(method[0]).attr("value", method[1]) });
-    // TODO : (de)activate the appropriates options according to the selected method (key / ref / etc.)
-    var field1_selec = dv2.append("p").html("First field :")
-                            .insert("select").attr("class", "params").attr("id", "MTA_field_1");
-    var field2_selec = dv2.append("p").html("Second field :")
-                            .insert("select").attr("class", "params").attr("id", "MTA_field_2");
-    var field_key_agg = dv2.append("p").html("Aggregation key field :")
-                            .insert("select").attr("class", "params").attr("id", "MTA_field_key_agg").attr("disabled", true);
-    var ref_ratio = dv2.append("p").html("Reference ratio :")
-                            .insert("input").attrs({type: "number", min: 0, max: 10000000, step: 0.1});
-    var type_deviation = dv2.append("p").html("Type of deviation")
-                            .insert("select").attr("class", "params");
-    [["Relative deviation", "rel"],
-     ["Absolute deviation", "abs"],
-     ["Compute both", "both"]].forEach(type_dev => {
-        type_deviation.append("option").text(type_dev[0]).attr("value", type_dev[1]) });
-
-    var a = dv2.append('div').style("margin-bottom", "15px");
-
-    var param_general_dev = a.insert("select")
-                                .styles({"background-color": "#e5e5e5", "border-color": "transparent"})
-                                .attr("class", "params")
-                                .attr("disabled", true);
-
-    [["Distance defining the contiguity", "dist"],
-     ["Contiguity order", "order"]].forEach( param => {
-            param_general_dev.append("option").text(param[0]).attr("value", param[1])  });
-
-    var val_param_general_dev = a.insert('input')
-                                    .style("width", "85px")
-                                    .attrs({type: "number", min: 0, max:1000000, step:1})
-                                    .attr("disabled", true);
-
-    // Each MTA method (global/local/medium) is associated with some
-    // specific arguments to enable/disabled accordingly
-    method_selec.on("change", function(){
-        if(this.value == "general_dev"){
-            ref_ratio.attr("disabled", null);
-            field_key_agg.attr("disabled", true);
-            param_general_dev.attr("disabled", true);
-            val_param_general_dev.attr("disabled", true);
-        } else if(this.value == "territorial_dev"){
-            ref_ratio.attr("disabled", true);
-            field_key_agg.attr("disabled", null);
-            param_general_dev.attr("disabled", true);
-            val_param_general_dev.attr("disabled", true);
-        } else if(this.value == "local_dev"){
-            ref_ratio.attr("disabled", true);
-            field_key_agg.attr("disabled", true);
-            param_general_dev.attr("disabled", null);
-            val_param_general_dev.attr("disabled", null);
-        }
-    });
-
-    // TODO : check that fields are correctly filled before trying to prepare the query
-    // ... and only enable the "compute" button when they are
-    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-                        .append("button")
-                        .attr("value", "yes")
-                        .attr("id", "yes")
-                        .attr("class", "params button_st3")
-                        .html(i18next.t("Compute and render"));
-
-
-    // Where the real job is done :
-    ok_button.on("click", function(){
-        let choosen_method = method_selec.node().value,
-            var1_name = field1_selec.node().value,
-            var2_name = field2_selec.node().value,
-            formToSend = new FormData(),
-            layer = Object.getOwnPropertyNames(user_data)[0],
-            nb_features = user_data[layer].length,
-            opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_features)),
-            object_to_send = prepare_mta(choosen_method, var1_name, var2_name, layer, nb_features),
-            target_url = (choosen_method == "local_dev") ? "/R_compute/MTA_geo" : "/R_compute/MTA_d",
-            type_dev = type_deviation.node().value;
-
-        if(type_dev != "both"){
-            object_to_send["type_dev"] = type_dev;
-            formToSend.append("json", JSON.stringify(object_to_send))
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: target_url,
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
-                    current_layers[layer].is_result = true;
-                    let result_values = JSON.parse(data),
-                        type_dev = (type_deviation.node().value == "abs") ? "AbsoluteDeviation" : "RelativeDeviation";
-
-                    if(result_values.values){
-                        let field_name = [choosen_method, type_dev, var1_name, var2_name].join('_');
-                        for(let i=0; i<nb_features; ++i)
-                            user_data[layer][i][field_name] = result_values.values[i];
-                        if(type_dev == "RelativeDeviation"){
-                            let lyr_name_to_add = check_layer_name([layer, "MTA", type_dev, field_name].join('_'));
-                            let disc_result = discretize_to_colors(result_values.values, "Quantiles", opt_nb_class, "Reds");
-                            let rendering_params = {
-                                nb_class: opt_nb_class,
-                                type: "Quantiles",
-                                breaks: disc_result[2],
-                                colors: disc_result[3],
-                                colorsByFeature: disc_result[4],
-                                renderer:  ["Choropleth", "MTA", choosen_method].join('_'),
-                                rendered_field: field_name,
-                                new_name: lyr_name_to_add
-                                    };
-                            render_choro(layer, rendering_params);
-                            current_layers[lyr_name_to_add].colors_breaks = disc_result[2];
-                            current_layers[lyr_name_to_add].renderer = ["MTA", type_dev].join('_');
-                            current_layers[lyr_name_to_add].rendered_field = field_name;
-                        } else if (type_dev == "AbsoluteDeviation"){
-                            let new_lyr_name = check_layer_name(["MTA", "AbsoluteDev", var1_name, var2_name].join('_')),
-                                rand_color = Colors.random(),
-                                rendering_params = {
-                                    new_name: new_lyr_name,
-                                    field: field_name,
-                                    nb_features: nb_features,
-                                    ref_layer_name: layer,
-                                    symbol: "circle",
-                                    max_size: 22,
-                                    ref_size: 0.1,
-                                    fill_color: rand_color,
-                                    values_to_use: result_values.values
-                                    };
-                            make_prop_symbols(rendering_params);
-                            current_layers[new_lyr_name].renderer = "PropSymbols_MTA";
-                            zoom_without_redraw();
-                            switch_accordion_section();
-                        }
-                    } else if(result_values.Error){
-                        alert(result_values.Error);
-                        return;
-                    }
-                }
-            });
-        } else if (type_dev == "both"){
-            object_to_send["type_dev"] = "abs";
-            formToSend.append("json", JSON.stringify(object_to_send));
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: target_url,
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
-                    let result_values_abs = JSON.parse(data);
-                    if(result_values_abs.values){
-                        var field_name2 = [choosen_method, "AbsoluteDeviation", var1_name, var2_name].join('_');
-                        for(let i=0; i<nb_features; ++i)
-                            user_data[layer][i][field_name2] = +result_values_abs.values[i];
-                    } else if (result_values.Error){
-                        alert(result_values.Error);
-                        return;
-                    }
-                    object_to_send["type_dev"] = "rel";
-                    formToSend = new FormData();
-                    formToSend.append("json", JSON.stringify(object_to_send));
-                    $.ajax({
-                        processData: false,
-                        contentType: false,
-                        url: target_url,
-                        data: formToSend,
-                        type: 'POST',
-                        error: function(error) { display_error_during_computation(); console.log(error); },
-                        success: function(data2){
-                            let result_values_rel = JSON.parse(data2),
-                                disc_result;
-                            if(result_values_rel.values){
-                                let field_name1 = [choosen_method, "RelativeDeviation", var1_name, var2_name].join('_'),
-                                    new_lyr_name = check_layer_name(["MTA", var1_name, var2_name].join('_'));
-                                for(let i=0; i<nb_features; ++i)
-                                    user_data[layer][i][field_name1] = +result_values_rel.values[i];
-                                while(true){
-                                    let disc_meth = "Quantiles";
-                                    disc_result = discretize_to_colors(result_values_rel.values, disc_meth, opt_nb_class + 1, "Reds");
-                                    if(disc_result) break;
-                                    else {
-                                        disc_meth = "Jenks";
-                                        disc_result = discretize_to_colors(result_values_rel.values, disc_meth, opt_nb_class + 1, "Reds");
-                                    }
-                                    if(disc_result) break;
-                                    opt_nb_class = opt_nb_class - 1;
-                                }
-                                console.log(disc_result)
-                                let rendering_params = {
-                                        new_name: new_lyr_name,
-                                        field: field_name2,
-                                        nb_features: nb_features,
-                                        ref_layer_name: layer,
-                                        symbol: "circle",
-                                        max_size: 22,
-                                        ref_size: 0.1,
-                                        fill_color: disc_result[4],
-                                        values_to_use: result_values_abs.values.concat([])
-                                        };
-                                make_prop_symbols(rendering_params);
-                                let col_breaks = [];
-                                for(let i = 0, len_i = disc_result[2].length - 1; i < len_i; ++i)
-                                    col_breaks.push([[disc_result[2][i], disc_result[2][i+1]].join(' - '), disc_result[3][i]])
-                                current_layers[new_lyr_name].colors_breaks = col_breaks;
-                                current_layers[new_lyr_name].fill_color = {class: current_layers[new_lyr_name].features_order.map(obj => obj[3])}
-                                current_layers[new_lyr_name].renderer = "PropSymbolsChoro_MTA";
-                                current_layers[new_lyr_name].rendered_field2 = field_name1;
-                                switch_accordion_section();
-
-                            } else if (result_values.Error){
-                                alert(result_values.Error);
-                                return;
-                            }
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
-
 var get_first_guess_span = function(){
     let bbox = _target_layer_file.bbox,
         abs = Math.abs;
@@ -1932,6 +1635,12 @@ var fields_Stewart = {
             let fields = type_col(layer, "number"),
                 field_selec = d3.select("#stewart_field"),
                 field_selec2 = d3.select("#stewart_field2");
+
+            if(fields.length == 0){
+                display_error_num_field();
+                return;
+            }
+
             field_selec2.append("option").text(" ").attr("value", "None");
             fields.forEach(field => {
                 field_selec.append("option").text(field).attr("value", field);
@@ -2086,6 +1795,12 @@ var fields_Anamorphose = {
         if(!layer) return;
         let fields = type_col(layer, "number"),
             field_selec = d3.select("#Anamorph_field");
+
+        if(fields.length == 0){
+            display_error_num_field();
+            return;
+        }
+
         d3.selectAll(".params").attr("disabled", null);
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field);
@@ -3185,16 +2900,20 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         result[field] = [];
         for(let i=0; i < deepth_test; ++i){
             tmp_type = typeof table[i][field];
-            if(tmp_type === "string" && !isNaN(Number(table[i][field])))
+            if(tmp_type == "string" && table[i][field].length == 0)
+                tmp_type = "empty";
+            else if(tmp_type === "string" && !isNaN(Number(table[i][field])))
                 tmp_type = "number";
             else if(tmp_type === "object" && isFinite(table[i][field]))
                 tmp_type = "empty"
             result[fields[j]].push(tmp_type);
         }
     }
+    console.log(result)
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
-        if(result[field].every(function(ft){return ft === "number" || ft === "empty";}) && result[field].indexOf("number") > -1)
+        if(result[field].every(function(ft){return ft === "number" || ft === "empty";})
+            && result[field].indexOf("number") > -1)
             result[field] = "number";
         else
             result[field] = "string";

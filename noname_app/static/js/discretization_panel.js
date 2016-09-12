@@ -161,11 +161,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                     .attr("checked", "true")
                     .on("change", function(){
                         redisplay.draw();
-                    })
+                    });
         central_color.insert("label").html("colored central class")
         central_color.append("p")
             .insert("input")
-            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"});
+            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
+            .on("change", function(){
+                        redisplay.draw();
+                    });
 
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
