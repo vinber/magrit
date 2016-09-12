@@ -32,7 +32,7 @@ from base64 import b64encode
 from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
-from io import StringIO
+from io import StringIO, BytesIO
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
@@ -603,7 +603,6 @@ async def carto_gridded(posted_data, user_id, app):
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
-
 async def compute_olson(posted_data, user_id, app):
     st = time.time()
     posted_data = json.loads(posted_data.get("json"))
@@ -745,16 +744,16 @@ async def call_stewart(posted_data, user_id, app):
 
     new_name = '_'.join(['StewartPot', n_field_name1])
     res = res.replace(tmp_part, new_name)
-    hash_val = mmh3_hash(res)
+    hash_val = str(mmh3_hash(res))
 
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+        app['redis_conn'].set('_'.join([user_id, hash_val, "NQ"]), res))
     app['logger'].info(
         '{} - timing : stewart_on_py : {:.4f}s'
         .format(user_id, time.time()-st))
 
     return "|||".join([
-        ''.join(['{"key":', str(hash_val), ',"file":', res, '}']),
+        ''.join(['{"key":', hash_val, ',"file":', res, '}']),
         json.dumps(breaks)
         ])
 
@@ -936,6 +935,35 @@ async def convert_csv_geo(request):
         ))
 
 
+async def convert_tabular(request):
+    st = time.time()
+    posted_data = await request.post()
+
+    # For xls, ods and xlsx files :
+    allowed_datatypes = (
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.oasis.opendocument.spreadsheet")
+
+    _, name, data, datatype = posted_data.get('file[]')
+
+    if datatype in allowed_datatypes:
+        data = BytesIO(data.read())
+        df = pd.read_excel(data)
+        result = df.to_csv()
+    else:
+        result = "Unknown tabular file format"
+        request.app['logger'].info(
+            'Unknown tabular file format : {} / {}'
+            .format(name, datatype))
+
+    request.app['logger'].info(
+        ' - timing : spreadsheet -> csv : {:.4f}s'
+        .format(time.time()-st))
+    return web.Response(text=json.dumps({"file": result, "name": name}))
+
+
+
 def prepare_list_svg_symbols():
     symbols = os.listdir("static/img/svg_symbols/")
     with open("static/json/list_symbols.json", "w") as f:
@@ -962,7 +990,7 @@ async def on_shutdown(app):
             task.cancel()
         elif "RedisPool" in info[1] and "pending" in info[0]:
             try:
-                _ = await asyncio.wait_for(task, 1)
+                await asyncio.wait_for(task, 1)
             except asyncio.TimeoutError:
                 task.cancel()
 
@@ -992,10 +1020,10 @@ async def init(loop, port=9999):
     add_route('POST', '/R_compute/{function}', geo_compute)
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
+    add_route('POST', '/convert_tabular', convert_tabular)
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
-#    app['async_ctx'] = zmq.asyncio.Context(2)
     app['redis_conn'] = redis_conn
     app['app_users'] = set()
     app['logger'] = logger
@@ -1005,7 +1033,6 @@ async def init(loop, port=9999):
     app['ProcessPool'] = ProcessPoolExecutor(4)
     app['geo_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
-#        "MTA_d": call_mta_simpl, "MTA_geo": call_mta_geo,
         "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
 #    app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
@@ -1031,7 +1058,6 @@ def main():
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
 
-#    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(init(loop, port))

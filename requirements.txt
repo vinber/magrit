@@ -11,10 +11,11 @@ geopandas >= 0.1.1
 hiredis >= 0.2.0
 Jinja2 == 2.8
 murmurhash3 == 2.3.5
-numpy == 1.11.1
+numpy >= 1.11.1
 pandas == 0.18.1
 pyproj >= 1.9.5.1
 Rtree >= 0.8.2
-Shapely == 1.5.15
+Shapely >= 1.5.15
 ujson >= 1.35
-psutil == 4.3.0
+psutil >= 4.3.0
+xlrd >= 1.0.0

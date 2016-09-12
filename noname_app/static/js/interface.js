@@ -43,8 +43,12 @@ function click_button_add_layer(){
                     && target_layer_on_add) {
             handle_dataset(files[0])
             target_layer_on_add = false;
-        }
-        else if(files.length >= 4){
+        } else if((files[0].name.toLowerCase().indexOf('.xls') > -1
+                    || files[0].name.toLowerCase().indexOf('.ods') > -1)
+                    && target_layer_on_add) {
+            convert_dataset(files[0]);
+            target_layer_on_add = false;
+        } else if(files.length >= 4){
             var files_to_send = [];
             Array.prototype.forEach.call(files, f =>
                 f.name.indexOf('.shp') > -1
@@ -180,6 +184,18 @@ function prepare_drop_section(){
                               allowOutsideClick: false});
                     target_layer_on_add = false;
                }
+              else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
+                || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        convert_dataset(files[0]);
+                    else
+                        swal({title: i18next.t("Error") + "!",
+                              text: i18next.t('Only layout layers can be added here'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    target_layer_on_add = false;
+               }
               else {
                     elem.style.border = '3px dashed red';
                     let shp_part;
@@ -206,6 +222,25 @@ function prepare_drop_section(){
     });
 }
 
+function convert_dataset(file){
+    var ajaxData = new FormData();
+    ajaxData.append("action", "submit_form");
+    ajaxData.append('file[]', file);
+     $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/convert_tabular',
+        data: ajaxData,
+        type: 'POST',
+        error: function(error) {console.log(error); },
+        success: function(data) {
+                data = JSON.parse(data);
+                dataset_name = data.name;
+                add_dataset(d3.csvParse(data.file));
+            }
+        });
+}
+
 
 function handle_shapefile(files){
     var ajaxData = new FormData();
@@ -222,7 +257,6 @@ function handle_shapefile(files){
         success: function(data) {add_layer_topojson(data);},
         error: function(error) {console.log(error); }
         });
-
 }
 
 function handle_TopoJSON_files(files) {
