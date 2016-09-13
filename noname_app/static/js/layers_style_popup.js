@@ -543,13 +543,15 @@ function createStyleBox(layer_name){
             previous_stroke_opacity = selection.style("stroke-opacity");
         selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
         let threshold_part = popup.append('p').html('Only display flows larger than ...<br>')
+        // The legend will be updated in order to start on the minimum value displayed instead of
+        //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_part.insert('input')
                     .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
                     .style("width", "70px")
                     .on("change", function(){
                         let val = +this.value;
                         popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-                        selection.style("stroke-opacity", d => (+d.properties.fij > val) ? 1 : 0)
+                        selection.style("display", d => (+d.properties.fij > val) ? null : "none");
                         current_layers[layer_name].min_display = val;
                     });
         threshold_part.insert('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
@@ -563,7 +565,6 @@ function createStyleBox(layer_name){
                                                          "User defined")
                         .then(function(result){
                             if(result){
-//                                console.log(result);
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);
@@ -602,7 +603,6 @@ function createStyleBox(layer_name){
                                                          "User defined")
                         .then(function(result){
                             if(result){
-//                                console.log(result);
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);

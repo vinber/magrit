@@ -1027,7 +1027,7 @@ async def init(loop, port=9999):
     add_route('POST', '/layers/delete', remove_layer)
     add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     add_route('POST', '/get_layer2', handler_exists_layer2)
-    add_route('POST', '/R_compute/{function}', geo_compute)
+    add_route('POST', '/compute/{function}', geo_compute)
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
     add_route('POST', '/convert_tabular', convert_tabular)

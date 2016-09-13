@@ -187,9 +187,22 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     let ref_symbols_params = new Array();
 
-    for(let b_val of breaks)
-        ref_symbols_params.push({value:b_val[0], size:b_val[1]})
+    // Prepare symbols for the legend, taking care of not representing values
+    // under the display threshold defined by the user (if any) :
+    if(current_layers[layer].renderer == "Links"){
+        let current_min_value = +current_layers[layer].min_display;
+        for(let b_val of breaks)
+            if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1])
+                ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
+            else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1])
+                ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+    } else {
+        for(let b_val of breaks)
+            ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+    }
+    console.log(ref_symbols_params)
     ref_symbols_params.reverse();
+
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)

@@ -926,7 +926,7 @@ function fillMenu_FlowMap(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                url: '/R_compute/links',
+                url: '/compute/links',
                 data: formToSend,
                 type: 'POST',
                 error: function(error) { display_error_during_computation(); console.log(error); },
@@ -954,6 +954,7 @@ function fillMenu_FlowMap(){
                     current_layers[new_layer_name].size = [min_size, max_size];
                     current_layers[new_layer_name].rendered_field = fij_field_name;
                     current_layers[new_layer_name].ref_layer_name = ref_layer;
+                    current_layers[new_layer_name].min_display = 0;
 
                     let links_byId = current_layers[new_layer_name].linksbyId;
 
@@ -1020,7 +1021,7 @@ function fillMenu_Test(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                url: '/R_compute/nothing',
+                url: '/compute/nothing',
                 data: formToSend,
                 type: 'POST',
                 error: function(error) { display_error_during_computation(); console.log(error); },
@@ -1756,7 +1757,7 @@ function fillMenu_Stewart(){
             $.ajax({
                 processData: false,
                 contentType: false,
-                url: '/R_compute/stewart',
+                url: '/compute/stewart',
                 data: formToSend,
                 type: 'POST',
                 error: function(error) { display_error_during_computation(); console.log(error); },
@@ -1994,7 +1995,7 @@ function fillMenu_Anamorphose(){
                 $.ajax({
                     processData: false,
                     contentType: false,
-                    url: '/R_compute/olson',
+                    url: '/compute/olson',
                     data: formToSend,
                     type: 'POST',
                     error: function(error) { display_error_during_computation(); console.log(error); },
@@ -2035,7 +2036,7 @@ function fillMenu_Anamorphose(){
                 $.ajax({
                     processData: false,
                     contentType: false,
-                    url: '/R_compute/carto_doug',
+                    url: '/compute/carto_doug',
                     data: formToSend,
                     type: 'POST',
                     error: function(error) { display_error_during_computation(); console.log(error); },
@@ -2646,7 +2647,7 @@ function fillMenu_griddedMap(layer){
             $.ajax({
                 processData: false,
                 contentType: false,
-                url: '/R_compute/gridded',
+                url: '/compute/gridded',
                 data: formToSend,
                 type: 'POST',
                 error: function(error) { display_error_during_computation(); console.log(error); },
