@@ -51,10 +51,10 @@ ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
 
 RUN pip3 install -U pip \
         && mkdir /home/app && cd /home/app \
-#        && git clone http://github.com/mthh/jenkspy/ \
-#        && cd jenkspy/ \
-#        && python3 setup.py install
-        && git clone http://github.com/mthh/noname-stuff/ -b "with-no-R" \
+        && git clone http://github.com/mthh/jenkspy/ \
+        && cd jenkspy/ \
+        && python3 setup.py install \
+        && git clone http://github.com/mthh/noname-stuff/ \
         && cd noname-stuff/ \
         && pip3 install -r requirements-dev.txt \
         && python3 setup.py install
@@ -65,5 +65,4 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ -b "dev" \
 
 EXPOSE 9999
 
-#CMD ["/bin/sh"]
 CMD service redis-server start && noname_app

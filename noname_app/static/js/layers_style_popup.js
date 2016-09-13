@@ -462,7 +462,12 @@ function createStyleBox(layer_name){
                 if(renderer == "Choropleth")
                     table_layer_name = current_layers[layer_name].ref_layer_name;
                 var fields = type_col(table_layer_name, "number");
-                var field_selec = popup.append('p').html('Field :').insert('select').attr('class', 'params').on("change", function(){ field_to_discretize = this.value; });
+                var field_selec = popup.append('p').html('Field :')
+                                        .insert('select')
+                                        .attr('class', 'params')
+                                        .on("change", function(){
+                                            field_to_discretize = this.value;
+                                        });
                 field_to_discretize = fields[0];
                 fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
                 if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
@@ -473,7 +478,10 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html("Display and arrange class")
                 .on("click", function(){
-                    display_discretization(table_layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "Quantiles")
+                    display_discretization(table_layer_name,
+                                           field_to_discretize,
+                                           current_layers[layer_name].colors_breaks.length,
+                                           "Quantiles")
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
@@ -486,7 +494,7 @@ function createStyleBox(layer_name){
                                     field: field_to_discretize
                                 };
                                 selection.style('fill-opacity', 0.9)
-                                         .style("fill", function(d, i){ return rendering_params.colorsByFeature[i] });
+                                         .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                             }
                         });
                 });
@@ -534,35 +542,37 @@ function createStyleBox(layer_name){
         let max_val = 0,
             previous_stroke_opacity = selection.style("stroke-opacity");
         selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
-        popup.append('p').html('Only display flows larger than ...')
-                        .insert('input').attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-                        .on("change", function(){
-                            let val = +this.value;
-                            popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-                            selection.style("stroke-opacity", function(d, i){
-                                if(+d.properties.fij > val)
-                                    return 1;
-                                return 0;
-                            });
-                            current_layers[layer_name].min_display = val;
-                        });
-        popup.append('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
+        let threshold_part = popup.append('p').html('Only display flows larger than ...<br>')
+        threshold_part.insert('input')
+                    .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
+                    .style("width", "70px")
+                    .on("change", function(){
+                        let val = +this.value;
+                        popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                        selection.style("stroke-opacity", d => (+d.properties.fij > val) ? 1 : 0)
+                        current_layers[layer_name].min_display = val;
+                    });
+        threshold_part.insert('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
         popup.append("button")
                 .attr("class", "button_disc")
                 .html("Modify size by class")
                 .on("click", function(){
-                    display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "User defined")
+                    display_discretization_links_discont(layer_name,
+                                                         current_layers[layer_name].rendered_field,
+                                                         current_layers[layer_name].breaks.length,
+                                                         "User defined")
                         .then(function(result){
                             if(result){
-                                console.log(result);
+//                                console.log(result);
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);
-                                let links_byId = current_layers[new_layer_name].linksbyId;
+                                let links_byId = current_layers[layer_name].linksbyId;
                                 current_layers[layer_name].breaks = result[1];
                                 for(let i = 0; i < nb_ft; ++i){
                                     links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                                 }
+                                console.log(links_byId);
                                 selection.style('fill-opacity', 0)
                                         .style("stroke-width", (d,i) => {return links_byId[i][2]});
                             }
@@ -586,10 +596,13 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html("Modify size by class")
                 .on("click", function(){
-                    display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "User defined")
+                    display_discretization_links_discont(layer_name,
+                                                         "disc_value",
+                                                         current_layers[layer_name].breaks.length,
+                                                         "User defined")
                         .then(function(result){
                             if(result){
-                                console.log(result);
+//                                console.log(result);
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);
@@ -685,17 +698,7 @@ function createStyleBox_ProbSymbol(layer_name){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
                     let lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
-                    if(lgd_prop_symb){
-                        let transform_param = lgd_prop_symb.getAttribute("transform"),
-                            lgd_title = lgd_prop_symb.querySelector("#legendtitle").innerHTML,
-                            lgd_subtitle = lgd_prop_symb.querySelector("#legendsubtitle").innerHTML,
-                            nested = lgd_prop_symb.getAttribute("nested");
-                        lgd_prop_symb.remove();
-                        createLegend_symbol(layer_name, field_used, lgd_title, lgd_subtitle, nested);
-                        lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
-                        if(transform_param)
-                            lgd_prop_symb.setAttribute("transform", transform_param);
-                    }
+                    if(lgd_prop_symb){ redraw_legends_symbols(lgd_prop_symb); }
                 }
 
                 if(type_method == "PropSymbolsChoro"){
@@ -773,23 +776,25 @@ function createStyleBox_ProbSymbol(layer_name){
         let field_color = current_layers[layer_name].rendered_field2;
          popup.append('p').style("margin", "auto").html("Field used for <strong>symbol colors</strong> : <i>" + field_color + "</i><br>")
             .append("button").attr("class", "button_disc").html("Display and arrange class")
-            .on("click", function(){display_discretization(ref_layer_name, field_color, current_layers[layer_name].colors_breaks.length, "Quantiles")
-          .then(function(confirmed){
-            if(confirmed){
-                rendering_params = {
-                    nb_class: confirmed[0], type: confirmed[1],
-                    breaks: confirmed[2], colors:confirmed[3],
-                    colorsByFeature: confirmed[4],
-                    renderer:"PropSymbolsChoro",
-                    field: field_color
-                    };
-                selection.style('fill-opacity', 0.9)
-                         .style("fill", function(d, i){
-                    let ft_id = +current_layers[layer_name].features_order[i][0];
-                    return rendering_params.colorsByFeature[ft_id];
+            .on("click", function(){
+                display_discretization(ref_layer_name,
+                                       field_color,
+                                       current_layers[layer_name].colors_breaks.length,
+                                       "Quantiles")
+                  .then(function(confirmed){
+                    if(confirmed){
+                        rendering_params = {
+                            nb_class: confirmed[0], type: confirmed[1],
+                            breaks: confirmed[2], colors:confirmed[3],
+                            colorsByFeature: confirmed[4],
+                            renderer:"PropSymbolsChoro",
+                            field: field_color
+                            };
+                        let features = current_layer[layer_name].features_order;
+                        selection.style('fill-opacity', 0.9)
+                                 .style("fill", (d,i) => rendering_params.colorsByFeature[+features[i][0]]);
+                    }
                 });
-             }
-            });
         });
     } else if(current_layers[layer_name].break_val != undefined){
         let fill_color_section = popup.append('div').attr("id", "fill_color_section");

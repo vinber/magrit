@@ -1268,8 +1268,12 @@ function zoom_without_redraw(){
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
 };
 
-function redraw_legends_symbols(){
-    let legend_nodes = document.querySelectorAll("#legend_root2");
+function redraw_legends_symbols(targeted_node){
+    if(!targeted_node)
+        var legend_nodes = document.querySelectorAll("#legend_root2");
+    else
+        var legend_nodes = [targeted_node];
+
     for(let i=0; i<legend_nodes.length; ++i){
         let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
             rendered_field = current_layers[layer_name].rendered_field,

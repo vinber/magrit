@@ -13,8 +13,27 @@ function handle_legend(layer){
         if(d3.selectAll(class_name).node()){
             if(!d3.selectAll(class_name).attr("display"))
                 d3.selectAll(class_name).attr("display", "none");
-            else
+            else {
                 d3.selectAll(class_name).attr("display", null);
+                // Redisplay the legend(s) and also
+                // verify if still in the visible part
+                // of the map, if not, move them in:
+                // .. so it's actually a feature if the legend is redrawn on its origin location
+                // after being moved too close to the outer border of the map :
+                let tol = 7.5,
+                    limit_left = 355 - tol,
+                    limit_right = 355 + +w + tol,
+                    limit_top = 32 - tol,
+                    limit_bottom = 32 + +h + tol;
+                let legends = document.querySelectorAll(class_name);
+                for(let i = 0; i < legends.length; i++){
+                    let bbox_legend = legends[i].getBoundingClientRect();
+                    console.log(bbox_legend)
+                    if(bbox_legend.left < limit_left || bbox_legend.right > limit_right
+                            || bbox_legend.top < limit_top || bbox_legend.bottom > limit_bottom)
+                        legends[i].setAttribute("transform", "translate(0, 0)")
+                }
+            }
         } else {
             createLegend(layer, "")
         }
@@ -240,12 +259,16 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
     under_rect.attrs({"width": 0, height: 0});
     let bbox_legend = legend_root.node().getBoundingClientRect();
+    console.log(bbox_legend);
     under_rect.attr("class", "legend_feature").attr("id", "under_rect")
                      .attr("height", Math.round(bbox_legend.height / 5) * 5 + 20)
                      .attr("width", Math.round(bbox_legend.width / 5) * 5 + 25)
 
+    let tmp = bbox_legend.Left - 350;
+    tmp = tmp < 0 ? Math.abs(tmp)  : 2.5;
+
     if(xpos && ypos)
-        under_rect.attr("x", xpos - 2.5).attr("y", ypos - 12.5)
+        under_rect.attr("x", xpos - tmp).attr("y", ypos - 12.5)
     if(!fill || (!fill.color || !fill.opacity)){
         under_rect.style("fill", "green")
                   .style("fill-opacity", 0);
@@ -296,24 +319,6 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         type_param = symbol_type === 'circle' ? 'r' : 'width';
 
     let sqrt = Math.sqrt;
-
-//    let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
-//        id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
-//        val_min = Math.abs(+user_data[ref_layer_name][id_ft_val_min][field]),
-//        val_max = Math.abs(+user_data[ref_layer_name][id_ft_val_max][field]),
-//        val_1 = Math.pow((sqrt(val_max) - sqrt(val_min)) / 3, 2),
-//        val_2 = Math.pow(sqrt(val_1) + (sqrt(val_max) - sqrt(val_min)) / 3, 2),
-//        d_values = [val_max, val_2, val_1, val_min],
-//        z_scale = d3.zoomTransform(map.node()).k,
-//        nb_decimals = get_nb_decimals(val_max),
-//        ref_symbols_params = [];
-//
-//    let prop_values = prop_sizer3_e(d_values, current_layers[layer].size[0], current_layers[layer].size[1], symbol_type);
-//
-//    prop_values.forEach((val,i) => {
-//        ref_symbols_params.push({value: d_values[i].toFixed(nb_decimals),
-//                                 size: val * z_scale});
-//    });
 
     let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
         id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
