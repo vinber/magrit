@@ -155,7 +155,7 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -167,9 +167,10 @@ function createStyleBoxTypoSymbols(layer_name){
             .styles({"text-align": "center", "color": "grey"})
             .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
                    '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+
     popup.append("p").style("text-align", "center")
             .insert("button")
-            .attr("id","reset_symn_loc")
+            .attr("id","reset_symb_loc")
             .attr("class", "button_st4")
             .text("Reset symbols location")
             .on("click", function(){
@@ -179,12 +180,30 @@ function createStyleBoxTypoSymbols(layer_name){
 
     popup.append("p").style("text-align", "center")
             .insert("button")
-            .attr("id","reset_symn_loc")
+            .attr("id","reset_symb_display")
             .attr("class", "button_st4")
             .text("Redraw deleted symbols")
             .on("click", function(){
                 selection.style("display", undefined);
             });
+
+    popup.append("p").style("text-align", "center")
+            .insert("button")
+            .attr("id","modif_symb")
+            .attr("class", "button_st4")
+            .text("Modify your symbols")
+            .on("click", function(){
+                fields_Symbol.box_typo().then(function(confirmed){
+                    if(confirmed){
+                        rendering_params = {
+                            nb_cat: confirmed[0],
+                            symbols_map: confirmed[1],
+                            field: field_selec.node().value
+                        };
+                    }
+                });
+            });
+
 }
 
 function createStyleBoxLabel(layer_name){
@@ -225,7 +244,8 @@ function createStyleBoxLabel(layer_name){
         ref_coords = [];
 
     var prev_settings = [],
-        prev_settings_defaults = {};
+        prev_settings_defaults = {},
+        rendering_params = {};
 
     get_prev_settings();
 
@@ -233,7 +253,7 @@ function createStyleBoxLabel(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -256,9 +276,9 @@ function createStyleBoxLabel(layer_name){
 
     popup.append("p").style("text-align", "center")
             .insert("button")
-            .attr("id","reset_symn_loc")
+            .attr("id","reset_labels_display")
             .attr("class", "button_st4")
-            .text("Redraw deleted symbols")
+            .text("Redraw deleted labels")
             .on("click", function(){
                 selection.style("display", undefined);
             });
@@ -310,7 +330,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
@@ -623,11 +643,18 @@ function createStyleBox(layer_name){
                         selection.style("stroke", this.value);
                         current_layers[layer_name].fill_color.single = this.value;
                         });
-     popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
-                      .insert('input')
+     let opacity_section = popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
+     opacity_section.insert('input')
                       .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
                       .style("width", "70px")
-                      .on('change', function(){selection.style('stroke-opacity', this.value)});
+                      .on('change', function(){
+                        opacity_section.select("#opacity_val_txt").html(" " + this.value)
+                        selection.style('stroke-opacity', this.value)
+                      });
+
+    opacity_section.append("span").attr("id", "opacity_val_txt")
+                     .style("display", "inline")
+                     .html(" " + border_opacity);
 
     if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
@@ -696,7 +723,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
@@ -855,7 +882,9 @@ function createStyleBox_ProbSymbol(layer_name){
     }
 
     popup.append('p').html('Fill opacity<br>')
-          .insert('input').attr('type', 'range')
+          .insert('input')
+          .style("width", "70px")
+          .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
           .on('change', function(){selection.style('fill-opacity', this.value)});
 
@@ -876,23 +905,21 @@ function createStyleBox_ProbSymbol(layer_name){
 
     let prop_val_content = popup.append("p").html([
         "Field used for <strong>proportionals values</strong> : <i>", field_used,
-        "</i><br><br>Symbol fixed size<br>"].join(''))
+        "</i><br><br>Symbol fixed size "].join(''))
     prop_val_content
-          .insert('input').attr("type", "range")
-          .attrs({id: "max_size_range", min: 0.1, max: 40, step: 0.1, value: current_layers[layer_name].size[1]})
+          .insert('input').attr("type", "number").style("width", "50px")
+          .attrs({id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
           .on("change", function(){
               let f_size = +this.value,
                   prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
-
               current_layers[layer_name].size[1] = f_size;
-              prop_val_content.select("#txt_symb_size").html([f_size, " px"].join(''))
               redraw_prop_val(prop_values);
           });
-    prop_val_content.append("span").attr('id', 'txt_symb_size').html([current_layers[layer_name].size[1], ' px'].join(''));
+    prop_val_content.append("span").html(' px');
 
     let max_val_prop_symbol = Math.max.apply(null, user_data[ref_layer_name].map(obj => +obj[field_used]));
 
-    popup.append("p").html("on value ...")
+    prop_val_content.append("p").html("on value ...")
         .insert("input")
         .style("width", "100px")
         .attrs({type: "number", min: 0.1, max: max_val_prop_symbol,

@@ -65,12 +65,14 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
         sorted_values = serie.sorted(),
         nb_class = nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
         col_ramp_name = col_ramp_name || "Reds",
-        breaks = new Array(),
-        stock_class = new Array(),
-        bounds = new Array(),
-        rendering_params = new Object(),
-        colors_map = new Array(),
-        tmp, color_array, ir;
+        breaks = [],
+        stock_class = [],
+        bounds = [],
+        rendering_params = {},
+        colors_map = [],
+        tmp,
+        color_array,
+        ir;
 
     var val = func_switch.to(type);
     if(type === "Q6"){
@@ -423,8 +425,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
             var y = d3.scaleLinear()
                 .range([svg_h, 0]);
 
-            x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
-            y.domain([0, d3.max(bins.map(function(d) { return d.height + d.height / 5; }))]);
+            x.domain([0, d3.max(bins.map(d => d.offset + d.width))]);
+            y.domain([0, d3.max(bins.map(d => d.height + (d.height / 5)))]);
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
@@ -432,30 +434,32 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                 .attr("class", "bar")
                 .attr("id", (d,i) => "bar_" + i)
                 .attr("transform", "translate(0, -7.5)")
-                .style("fill", function(d){return d.color;})
+                .style("fill", d => d.color)
                 .styles({"opacity": 0.95, "stroke-opacity":1})
-                .attr("x", function(d){ return x(d.offset);})
-                .attr("width", function(d){ return x(d.width);})
-                .attr("y", function(d){ return y(d.height) - margin.bottom;})
-                .attr("height", function(d){ return svg_h - y(d.height);})
-                .on("mouseover", function(){ this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null; })
-                .on("mouseout", function(){ this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none"; });
+                .attr("x", d => x(d.offset))
+                .attr("width", d => x(d.width))
+                .attr("y", d => y(d.height) - margin.bottom)
+                .attr("height", d => svg_h - y(d.height))
+                .on("mouseover", function(){
+                    this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null;
+                    })
+                .on("mouseout", function(){
+                    this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none";
+                    });
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
                 .attr("dy", ".75em")
-                .attr("y", function(d){
-                    return y(d.height) - margin.top * 2 - margin.bottom - 1.5;
-                    })
-                .attr("x", function(d){return x(d.offset + d.width /2)})
+                .attr("y", d => (y(d.height) - margin.top * 2 - margin.bottom - 1.5))
+                .attr("x", d => x(d.offset + d.width /2))
                 .attr("text-anchor", "middle")
                 .attr("class", "text_bar")
                 .attr("id", (d,i) => "text_bar_" + i)
                 .style("color", "black")
                 .style("cursor", "default")
                 .style("display", "none")
-                .text(function(d) { return formatCount(d.val); })
+                .text(d => formatCount(d.val))
 
             svg_histo.append("g")
                 .attr("class", "y_axis")
@@ -559,7 +563,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                             });
 
     var svg_h = h / 5 > 100 ? h / 5 : 100,
-        svg_w = w - (w / 8),
+        svg_w = 760 > (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
+//        svg_w = w - (w / 8),
 //        margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         margin = {top: 7.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;

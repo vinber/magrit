@@ -249,7 +249,7 @@ function make_style_box_indiv_symbol(label_node){
         });
     let box_content = d3.select(".styleTextAnnotation").insert("div");
     box_content.append("p").html("Image size ")
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
+            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
             .on("change", function(){
                 let new_val = this.value + "px";
                 label_node.setAttribute("width", new_val);
@@ -355,6 +355,9 @@ function render_TypoSymbols(rendering_params){
         .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("dblclick", function(){
+            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+            })
         .on("contextmenu", function(){
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
             })
@@ -431,24 +434,24 @@ function fillMenu_Discont(){
           ["Absolute", "abs"] ].forEach(function(k){
             disc_kind.append("option").text(k[0]).attr("value", k[1]); });
 
-        let min_size_field = dv2.append('p').html('Reference min. size ')
-                     .insert('input')
-                     .style('width', '60px')
-                     .attrs({type: 'number', class: 'params', id: 'Discont_min_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 0.5, step: 0.1});
-
-        dv2.append('p').html('Reference max. size ')
-                     .insert('input')
-                     .style('width', '60px')
-                     .attrs({type: 'number', class: 'params', id: 'Discont_max_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 10, step: 0.1})
-                     .on("change", function(){
-                        min_size_field.attr("max", this.value);
-                      });
+//        let min_size_field = dv2.append('p').html('Reference min. size ')
+//                     .insert('input')
+//                     .style('width', '60px')
+//                     .attrs({type: 'number', class: 'params', id: 'Discont_min_size'})
+//                     .attrs({min: 0.1, max: 66.0, value: 0.5, step: "any"});
+//
+//        dv2.append('p').html('Reference max. size ')
+//                     .insert('input')
+//                     .style('width', '60px')
+//                     .attrs({type: 'number', class: 'params', id: 'Discont_max_size'})
+//                     .attrs({min: 0.1, max: 66.0, value: 10, step: 0.1})
+//                     .on("change", function(){
+//                        min_size_field.attr("max", this.value);
+//                      });
 
         dv2.append('p').html(' Number of class ')
                 .insert('input')
-                .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 8})
+                .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 4})
                 .style("width", "50px");
 
         let disc_type = dv2.append('p').html(' Discretization type ')
@@ -456,11 +459,12 @@ function fillMenu_Discont(){
         ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
             .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
     }
-    dv2.append('p').html('Discontinuity threshold ')
-                 .insert('input')
-                 .style('width', '60px')
-                 .attrs({type: 'number', class: 'params', id: 'Discont_threshold'})
-                 .attrs({min: 0.0, max: 9999.0, value: 0.5, step: 0.1});
+
+//    dv2.append('p').html('Discontinuity threshold ')
+//                 .insert('input')
+//                 .style('width', '60px')
+//                 .attrs({type: 'number', class: 'params', id: 'Discont_threshold'})
+//                 .attrs({min: 0.0, max: 9999.0, value: 0.5, step: 0.1});
 
     dv2.append('p').html('Color ')
                 .insert('input')
@@ -501,9 +505,12 @@ var render_discont = function(){
     let layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
         field_id = document.getElementById("field_id_Discont").value,
-        min_size = +document.getElementById("Discont_min_size").value,
-        max_size = +document.getElementById("Discont_max_size").value,
-        threshold = +document.getElementById("Discont_threshold").value,
+//        min_size = +document.getElementById("Discont_min_size").value,
+//        max_size = +document.getElementById("Discont_max_size").value,
+//        threshold = +document.getElementById("Discont_threshold").value,
+        min_size = 1,
+        max_size = 10,
+        threshold = 0,
         disc_kind = document.getElementById("kind_Discont").value,
         nb_class = +document.getElementById("Discont_nbClass").value,
         user_color = document.getElementById("color_Discont").value,
@@ -1088,18 +1095,15 @@ function fillMenu_PropSymbolChoro(layer){
 
     var ref_size = dv2.append('p').style("display", "inline").html('Fixed size ')
                      .insert('input')
-                     .attrs({type: 'range', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 10.0, step: 0.1})
-                     .style("width", "8em")
-                     .on("change", function(){ d3.select("#max_size_txt").html(this.value + " px") });
+                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
+                     .attrs({min: 0.1, max: 66.0, value: 10.0, step: "any"})
+                     .style("width", "50px");
 
-    var max_size_txt = dv2.append('label-item')
-                            .attr("id", "max_size_txt")
-                            .html('10 px');
+    dv2.append('label-item').html('10 px');
 
     var ref_value = dv2.append('p').html('on value ... ')
                      .insert('input')
-                     .styles({'width': '100px', "margin-left": "65px"})
+                     .styles({'width': '100px', "margin-left": "10px"})
                      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
                      .attrs({min: 0.1, step: 0.1});
 
@@ -1322,7 +1326,7 @@ var fillMenu_Label = function(){
 
     var max_font_size = prop_menu.append("p").html("Maximum font size ")
                             .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 35, value: 11, step: "any"});
+                            .attrs({min: 0, max: 70, value: 11, step: "any"});
 
     var ref_font_size = dv2.append("p").html("Reference font size ")
                             .insert("input").attr("type", "number")
@@ -1471,6 +1475,11 @@ var render_label = function(layer, rendering_params){
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("dblclick", function(){
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems(this)); })
+
         .on("contextmenu", function(){
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
@@ -1679,7 +1688,7 @@ function fillMenu_Stewart(){
                             .text("Span ");
         var span = p_span.append('input')
                         .style("width", "60px")
-                        .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: 0.001});
+                        .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
         p_span.insert("span").html(" km");
 
         var beta = dialog_content
@@ -1688,20 +1697,27 @@ function fillMenu_Stewart(){
                             .html('Beta ')
                         .insert('input')
                             .style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: 0.1});
+                            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
         let p_reso = dialog_content
                             .append('p').text('Resolution (opt.) ');
         var resolution = p_reso.insert('input').style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: 0.1});
+                            .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
         p_reso.insert("span").html(" km");
     }
 
-    var func_selec = dialog_content.append('p').html('Function type ').insert('select').attrs({class: 'params', id: "stewart_func"}),
-        nb_class = dialog_content.append("p").html("Number of class ").insert("input").attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}).style("width", "50px"),
-        disc_kind = dialog_content.append("p").html("Discretization type ").insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
-        breaks_val = dialog_content.append("p").html("Break values (opt.)").insert("textarea").attrs({class: 'params', id: "stewart_breaks"}).styles({"width": "260px", "height": "30px"}),
-        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ').insert('select').attrs({class: 'params', id: "stewart_mask"});
+    var func_selec = dialog_content.append('p').html('Function type ')
+                                .insert('select').attrs({class: 'params', id: "stewart_func"}),
+        nb_class = dialog_content.append("p").html("Number of class ")
+                                .insert("input").style("width", "50px")
+                                .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
+        disc_kind = dialog_content.append("p").html("Discretization type ")
+                                .insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
+        breaks_val = dialog_content.append("p").html("Break values (opt.)")
+                                .insert("textarea").attrs({class: 'params', id: "stewart_breaks"})
+                                .styles({"width": "260px", "height": "30px"}),
+        mask_selec = dialog_content.append('p').html('Clipping mask layer (opt.) ')
+                                .insert('select').attrs({class: 'params', id: "stewart_mask"});
 
     ['Exponential', 'Pareto'].forEach(function(fun_name){
         func_selec.append("option").text(fun_name).attr("value", fun_name);
@@ -1914,7 +1930,6 @@ function fillMenu_Anamorphose(){
 
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
-/*     ['Gastner & Newman (2004)', 'gastner'],*/
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
@@ -1927,9 +1942,6 @@ function fillMenu_Anamorphose(){
                 algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
                 field_name = field_selec.node().value;
-//            if(algo === "gastner"){
-//                alert('Not implemented (yet!)')
-//            } else
             if (algo === "olson"){
                 let field_n = field_selec.node().value,
                     layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2381,7 +2393,7 @@ function fillMenu_PropSymbol(layer){
     var ref_value = dialog_content.append('p').attr("id", "PropSymbol_ref_value")
                             .html('on value ... ')
                             .insert('input')
-                            .styles({'width': '100px', "margin-left": "65px"})
+                            .styles({'width': '100px', "margin-left": "10px"})
                             .attrs({type: 'number', class: "params", min: 0.1, step: 0.1});
 
     var symb_selec = dialog_content

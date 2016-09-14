@@ -48,13 +48,15 @@ RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download
 
 ENV PATH="${GDALINST}/gdal-2.1.0/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
+ENV DATE_UPDATE=$(date)
 
 RUN pip3 install -U pip \
         && mkdir /home/app && cd /home/app \
         && git clone http://github.com/mthh/jenkspy/ \
         && cd jenkspy/ \
-        && python3 setup.py install \
-        && git clone http://github.com/mthh/noname-stuff/ \
+        && python3 setup.py install
+
+RUN  cd /home/app && git clone http://github.com/mthh/noname-stuff/ \
         && cd noname-stuff/ \
         && pip3 install -r requirements-dev.txt \
         && python3 setup.py install
