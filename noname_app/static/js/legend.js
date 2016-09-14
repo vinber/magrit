@@ -53,16 +53,16 @@ function createLegend(layer, title){
 
     if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
         let field2 = current_layers[layer].rendered_field2;
-        createLegend_choro(layer, field2, title, 0);
-        createLegend_symbol(layer, field);
+        createLegend_choro(layer, field2, title, field2, 0);
+        createLegend_symbol(layer, field, title, field);
     }
     else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1
             || current_layers[layer].renderer.indexOf("DorlingCarto") != -1)
-        createLegend_symbol(layer, field, title);
+        createLegend_symbol(layer, field, title, field);
 
     else if (current_layers[layer].renderer.indexOf("Links") != -1
             || current_layers[layer].renderer.indexOf("DiscLayer") != -1)
-        createLegend_discont_links(layer, field);
+        createLegend_discont_links(layer, field, title, field);
 
     else if (current_layers[layer].renderer.indexOf("Choropleth") > -1)
         createLegend_choro(layer, field, title, field, 0);
@@ -143,6 +143,7 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
     legend_root.insert('text').attr("id","legendtitle")
             .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem)
+            .attr("y", ypos)
 
     legend_root.insert('text').attr("id","legendsubtitle")
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
@@ -162,8 +163,7 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
 }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value){
-    var subtitle = subtitle || field,
-        space_elem = 18,
+    var space_elem = 18,
         boxgap = 12,
         xpos = 30,
         ypos = 30,
@@ -185,21 +185,21 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
             .attr("x", xpos + space_elem)
             .attr("y", ypos + 15);
 
-    let ref_symbols_params = new Array();
+    let ref_symbols_params = [];
 
     // Prepare symbols for the legend, taking care of not representing values
     // under the display threshold defined by the user (if any) :
-    if(current_layers[layer].renderer == "Links"){
-        let current_min_value = +current_layers[layer].min_display;
-        for(let b_val of breaks)
-            if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1])
-                ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
-            else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1])
-                ref_symbols_params.push({value:b_val[0], size:b_val[1]});
-    } else {
-        for(let b_val of breaks)
+//    if(current_layers[layer].renderer == "Links"){
+    let current_min_value = +current_layers[layer].min_display;
+    for(let b_val of breaks)
+        if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1])
+            ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
+        else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1])
             ref_symbols_params.push({value:b_val[0], size:b_val[1]});
-    }
+//    } else {
+//        for(let b_val of breaks)
+//            ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+//    }
     console.log(ref_symbols_params)
     ref_symbols_params.reverse();
 
@@ -298,8 +298,7 @@ function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
 }
 
 function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value){
-    var subtitle = subtitle || field,
-        space_elem = 18,
+    var space_elem = 18,
         boxgap = 4,
         xpos = 30,
         ypos = 30,
@@ -320,7 +319,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                         .style("cursor", "grab");
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id","legendtitle")
-            .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
+            .text(title).style("font", "bold 12px 'Enriqueta', arial, serif")
             .attr("x", xpos + space_elem)
             .attr("y", ypos)
     legend_root.insert('text').attr("id","legendsubtitle")
@@ -484,8 +483,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 }
 
 function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision){
-    var subtitle = subtitle || field,
-        boxheight = 18,
+    var boxheight = 18,
         boxwidth = 18,
         xpos = w - (w / 8),
         ypos = 30,
@@ -622,7 +620,9 @@ function createlegendEditBox(legend_id, layer_name){
         legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
     };
 
-    var box_class, legend_node, title_content,subtitle_content,note_content,source_content,legend_node_d3,legend_boxes,rect_fill_value;
+    var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
+    var legend_node_d3, legend_boxes, rect_fill_value = {};
+
     bind_selections();
     let original_params = {
         title_content: title_content.textContent, subtitle_content: subtitle_content.textContent,
@@ -744,8 +744,6 @@ function createlegendEditBox(legend_id, layer_name){
                         document.getElementById('lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
-
-
         }
     }
 
@@ -809,7 +807,8 @@ function createlegendEditBox(legend_id, layer_name){
     let rectangle_options = box_body.insert('p').html('Display a rectangle under the legend');
     rectangle_options.insert("input")
                 .attrs({type: "checkbox",
-                        checked: rect_fill_value === undefined ? null : true,
+                        value: rect_fill_value.color || "#ededed",
+                        checked: rect_fill_value.color === undefined ? null : true,
                         id: "rect_lgd_checkbox"})
                 .on("change", function(){
                     if(this.checked){

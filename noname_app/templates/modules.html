@@ -405,8 +405,11 @@ function setUpInterface()
     // Set-up all the accordions :
     $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
 
-    // Start with the first always open :
-    $("#accordion1").accordion("option", "active", 0);
+    // Start with the first always opened and open the two accordions
+    // on which we can drop files if they are closed when
+    // we are starting to drag a file in this direction:
+    $("#accordion1").accordion({active: 0, event: "click dragenter"});
+    $("#accordion3").accordion("option", "event", "click dragenter")
 
     // Close the functionnality options accordion when the user intend to choose another function :
     $("#accordion2_pre").on("accordionbeforeactivate", function(){
@@ -730,7 +733,6 @@ function displayInfoOnMove(){
         map.selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
         info_features.node().innerHTML = "";
-        //info_features.style({});
         info_features.style("display", "none");
         document.getElementById("map").style.cursor="";
     } else {
@@ -749,11 +751,6 @@ function displayInfoOnMove(){
             swal("", "Error : no visible layer found", "error");
             return;
         }
-
-/*
-        var nb_layer = map.selectAll(".layer")._groups[0].length,
-            top_layer = map.selectAll(".layer")._groups[0][nb_layer-1].id;
-*/
 
         let id_top_layer = "#" + top_visible_layer,
             symbol = current_layers[top_visible_layer].symbol;

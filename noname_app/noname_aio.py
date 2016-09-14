@@ -1068,6 +1068,7 @@ def main():
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
 
+#    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(init(loop, port))

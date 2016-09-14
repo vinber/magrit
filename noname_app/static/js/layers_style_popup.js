@@ -316,7 +316,7 @@ function createStyleBox(layer_name){
                 // Update the object holding the properties of the layer if Yes is clicked
 //                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
 //                    current_layers[layer_name].fixed_stroke = true;
-                if(current_layers[layer_name].renderer != undefined
+                if(renderer != undefined
                      && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
                     let colors_breaks = [];
@@ -333,23 +333,26 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
                 }
                 // Also change the legend if there is one displayed :
-                let ttt = (renderer == "DiscLayer" || renderer == "Links")
-                let lgd = document.querySelector([ttt ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
+                let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
+                let lgd = document.querySelector(
+                    [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
+                    );
                 if(lgd){
                     let transform_param = lgd.getAttribute("transform"),
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
                         boxgap = lgd.getAttribute("boxgap");
                     lgd.remove();
-                    if(ttt)
+                    if(_type_layer_links)
                         createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle);
                     else
                         createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
-                    lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+                    lgd = document.querySelector(
+                        [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
+                        );
                     if(transform_param)
                         lgd.setAttribute("transform", transform_param);
                 }
-                sendPreferences();
                 zoom_without_redraw();
             } else {
                 // Reset to original values the rendering parameters if "no" is clicked

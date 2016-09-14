@@ -19,7 +19,8 @@ def make_index(bounds):
                              Interleaved=True)
 
 
-def get_grid_layer(input_file, height, field_name, grid_shape="square",  output="GeoJSON"):
+def get_grid_layer(input_file, height, field_name,
+                   grid_shape="square", output="GeoJSON"):
     proj4_eck4 = ("+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 "
                   "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
