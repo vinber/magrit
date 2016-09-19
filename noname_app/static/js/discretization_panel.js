@@ -755,7 +755,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         modal:true,
         resizable: true,
         width: svg_w + margin.top + margin.bottom + 80,
-        height: +h - 20,
+        height: window.innerHeight - 40,
         buttons:[{
             text: "Confirm",
             click: function(){
