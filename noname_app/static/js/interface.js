@@ -955,6 +955,11 @@ var scaleBar = {
             z_trans = [transform.x, transform.y],
             z_scale = transform.k;
 
+        if(isNaN(this.bar_size)){
+            console.log("scaleBar.bar_size : NaN");
+            this.bar_size = 1;
+        }
+
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
 

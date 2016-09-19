@@ -413,8 +413,8 @@ function setUpInterface()
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
     document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
-    let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-    /* document.getElementById("brush_zoom_button").onclick = brush_rect; */
+    /* let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
+    document.getElementById("brush_zoom_button").onclick = brush_rect; */
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -1047,6 +1047,7 @@ function handle_click_hand(){
     }
 }
 
+/*
 // Trying to handle zooming using a rectangle on the map
 function handle_click_zoom_select(){
     var last_click_behavior;
@@ -1125,7 +1126,7 @@ function handle_click_zoom_select(){
         }
     }
 }
-
+*/
 function get_map_template(){
     var map_config = new Object(),
         layers_style = [],

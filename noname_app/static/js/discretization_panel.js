@@ -117,7 +117,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                             .append("p").html(no_data + " features without data");
         section.append("input")
                 .attr("type", "color")
-                .attr("id", "no_data_color");
+                .attr("id", "no_data_color")
+                .style("margin", "0px 10px");
     };
 
     var make_sequ_button = function(){

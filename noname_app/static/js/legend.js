@@ -595,15 +595,15 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return d.value; });
 
-    if(current_layers[layer].no_data){
+    if(current_layers[layer].options_disc.no_data){
         let gp_no_data = legend_root.append("g");
         gp_no_data.attr("class", "legend_feature")
                 .append('rect')
                 .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight})
                 .attr('width', boxwidth)
                 .attr('height', boxheight)
-                .style('fill', current_layers[layer].no_data)
-                .style('stroke', current_layers[layer].no_data);
+                .style('fill', current_layers[layer].options_disc.no_data)
+                .style('stroke', current_layers[layer].options_disc.no_data);
 
         gp_no_data
           .append('text')

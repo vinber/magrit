@@ -193,7 +193,7 @@ async def cache_input_topojson(request):
             res = await ogr_to_geojson(path, to_latlong=True)
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
-            f_path = '/tmp/' + f_name
+            f_path = '/tmp/' + f_name + ".geojson"
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
             result = await geojson_to_topojson(f_path, "-q 1e6")

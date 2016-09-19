@@ -1195,9 +1195,9 @@ function fillMenu_PropSymbolChoro(layer){
                     ]);
             }
 
-            let options_disc = {schema: rendering_params[selected_field].schema,
-                                colors: rendering_params[selected_field].colors,
-                                no_data: rendering_params[selected_field].no_data}
+            let options_disc = {schema: rendering_params[color_field].schema,
+                                colors: rendering_params[color_field].colors,
+                                no_data: rendering_params[color_field].no_data}
 
             current_layers[new_layer_name] = {
                 renderer: "PropSymbolsChoro",
