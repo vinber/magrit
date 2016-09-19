@@ -189,10 +189,9 @@ function setUpInterface()
             .attrs({id: "input-height", type: "number", "value": h})
             .on("change", function(){canvas_mod_size([null,this.value])});
     dv4.append("p")
-            .styles({"text-align": "center","margin": "5px 0px 0px 50px", "display": "inline-block"})
-            //.html("Map title<br>")
-            .html(i18next.t("Map title") + "<br>")
-            .insert("input").attr("id", "title")
+            .styles({"text-align": "center", "display": "inline-block"})
+            .html(i18next.t("Map title"))
+            .insert("input").attr("id", "title").style("margin", "0px 1px")
             .on("keyup", function(){handle_title(this.value);});
     dv4.insert("_img")
             .styles({display: "inline", top: "4px", cursor: "pointer"})
@@ -203,6 +202,26 @@ function setUpInterface()
             .attrs({type: "color", id: "bg_color", value: "#ffffff"})
             .on("change", function(){handle_bg_color(this.value);});
 
+    let canvas_rotation = dv4.append("p")
+            .style("text-align", "center")
+            .html(i18next.t("Canvas rotation"));
+
+    canvas_rotation
+        .append("input")
+        .attr("type", "range")
+        .attr("id","form_rotate")
+        .attr("value", 0).attr("min", 0)
+        .attr("max", 360).attr("step", 1)
+        .styles({width: "80px", "vertical-align": "middle"})
+        .on("input", function(){
+            rotate_global(this.value);
+            document.getElementById("canvas_rotation_value_txt").innerHTML = this.value + "°";
+        });
+
+    canvas_rotation.append("span")
+        .attr("id", "canvas_rotation_value_txt")
+        .html("0°");
+
     dv4.append("p")
             //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
             .style("cursor", "pointer")
@@ -210,29 +229,38 @@ function setUpInterface()
             .on("click", select_layout_features);
 
     let section5 = d3.select("#section5");
-    let dv5 = section5.append("p").attr("class", "form-item");
+    let dv5 = section5.append("p")
+                .style("text-align", "center")
+                .attr("class", "form-item");
+
     dv5.insert('label-item').html("<b>" + i18next.t("Projection") + " </b><br>");
 
-    section5.append("div").html(i18next.t("Canvas rotation"));
-    section5.append("input")
-            .attr("type", "range")
-            .attr("id","form_rotate")
-            .attr("value",0).attr("min",0)
-            .attr("max",360).attr("step",1)
-            .on("input", function(){rotate_global(this.value)});
+    let rotation_param = section5.append("div")
+                            .attr("id", "rotation_params")
+                            .styles({"text-align": "center", "width": "300px"})
+                            .html(i18next.t("Projection center (longitude)"));
 
-    window.rotation_param = section5.append("div").html(i18next.t("Projection center (λ-axis rotation)"))
     rotation_param.append("input")
             .attr("type", "range")
             .attr("id","form_projection_center")
             .attr("value", 0).attr("min", -180)
-            .attr("max", 180).attr("step", 0.5)
-            .on("input", function(){handle_proj_center_button([this.value, null, null])});
+            .attr("max", 180).attr("step", 1)
+            .style("vertical-align", "middle")
+            .on("input", function(){
+                handle_proj_center_button([this.value, null, null]);
+                document.getElementById("proj_center_value_txt").innerHTML = this.value + "°";
+            });
 
-    section5.append("div").insert("button")
+    rotation_param.append("span")
+            .attr("id", "proj_center_value_txt")
+            .style("float", "right")
+            .html("0°");
+
+    section5.append("div")
+            .style("text-align", "center")
+            .insert("button")
             .attr("id","reset_center_rotation")
             .attr("class", "button_st4")
-            //.text("Reset center/zooming/rotation")
             .text(i18next.t("Reset center/zooming/rotation"))
             .on("click", function(){
                 // Todo : improve the behavior of this button
@@ -240,6 +268,7 @@ function setUpInterface()
                 proj.scale(0).translate(0,0);
                 document.getElementById('form_projection_center').value = 0;
                 document.getElementById('form_rotate').value = 0;
+                document.getElementById('proj_center_value_txt').innerHTML = "0°";
                 proj.rotate([0,,]);
                 reproj_symbol_layer();
                 rotate_global(0);
@@ -1380,7 +1409,9 @@ function change_projection(proj_name) {
 
     // Set specifics mouse events according to the projection :
     if(current_proj_name.indexOf('Orthographic') > -1){
-        var current_params = proj.rotate();
+        var current_params = proj.rotate(),
+            rotation_param = d3.select("#rotation_params");
+
         rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("Projection center (φ-axis rotation)"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_phi"})
@@ -1393,9 +1424,7 @@ function change_projection(proj_name) {
                 .attrs({value: current_params[2], min: -90, max: 90, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, null, this.value])});
     } else {
-        var options_ortho = d3.selectAll(".options_ortho");
-        if(options_ortho.node())
-            options_ortho.remove();
+        d3.selectAll(".options_ortho").remove();
     }
     d3.select("svg").on("mousedown", null)
                     .on("mousemove", null)
@@ -1404,7 +1433,12 @@ function change_projection(proj_name) {
 
 // Function to switch the visibility of a layer the open/closed eye button
 function handle_active_layer(name){
-    var fill_value, parent_div, selec;
+    var fill_value, parent_div, selec, at_end;
+
+    if(document.getElementById("info_features").className == "active"){
+        displayInfoOnMove();
+        at_end = true;
+    }
     if(!name) {
         selec = this;
         parent_div = selec.parentElement;
@@ -1428,6 +1462,10 @@ function handle_active_layer(name){
     //map.select("#"+name).style("opacity", fill_value);
     map.select("#"+name).style("visibility", fill_value == 0 ? "hidden" : "initial");
     map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+
+    if(at_end){
+        displayInfoOnMove();
+    }
 }
 
 // Function to handle the title add and changes
@@ -1510,7 +1548,7 @@ function handle_title_properties(){
 function handle_proj_center_button(param){
     let current_rotation = proj.rotate();
     if(param[0]){
-        proj.rotate([param[0] - w/2, current_rotation[1], current_rotation[2]]);
+        proj.rotate([param[0], current_rotation[1], current_rotation[2]]);
         map.selectAll("path").attr("d", path);
     }
     if(param[1]){

@@ -96,7 +96,8 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
     return [nb_class, type, breaks, color_array, colors_map];
 }
 
-var display_discretization = function(layer_name, field_name, nb_class, type, provided_colors){
+//var display_discretization = function(layer_name, field_name, nb_class, type, provided_colors){
+var display_discretization = function(layer_name, field_name, nb_class, type, options){
     var func_switch = {
         to: function(name){return this.target[name];},
         target: {
@@ -109,6 +110,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
             "user_defined": "getBreaks_userDefined(values, user_break_list)"
         }
     }
+
+    var make_no_data_section = function(){
+        var section = d3.select("#color_div")
+                            .append("div").attr("id", "no_data_section")
+                            .append("p").html(no_data + " features without data");
+        section.append("input")
+                .attr("type", "color")
+                .attr("id", "no_data_color");
+    };
 
     var make_sequ_button = function(){
         var col_div = d3.select("#color_div");
@@ -160,14 +170,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         let central_color = col_div.insert('p').attr("class", "central_color");
         central_color.insert("input")
                     .attr("type", "checkbox")
-                    .attr("checked", "true")
                     .on("change", function(){
                         redisplay.draw();
                     });
+        central_color.select("input").node().checked = true;
         central_color.insert("label").html("colored central class")
-        central_color.append("p")
+        central_color
             .insert("input")
             .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
+            .style("margin", "0px 10px")
             .on("change", function(){
                         redisplay.draw();
                     });
@@ -195,11 +206,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
     };
 
     var make_box_histo_option = function(){
-        var histo_options = newBox.append('div').attr("id", "histo_options");
+        var histo_options = newBox.append('div')
+                            .attr("id", "histo_options")
+                            .style("margin-left", "10px");
 
-        var a = histo_options.append("p").style("margin", 0).style("display", "inline");
-        var b = histo_options.append("p").style("margin", 0).style("display", "inline");
-        var c = histo_options.append("p").style("margin", 0).style("display", "inline");
+        var a = histo_options.append("p").style("margin", 0).style("display", "inline"),
+            b = histo_options.append("p").style("margin", 0).style("display", "inline"),
+            c = histo_options.append("p").style("margin", 0).style("display", "inline");
 
         a.insert("input")
             .attrs({type: "checkbox", value: "mean"})
@@ -290,7 +303,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
             .domain([0, d3.max(data, function(d) { return d.length; })])
             .range([height, 0]);
 
-        console.log(data)
         var bar = svg_ref_histo.selectAll(".bar")
             .data(data)
           .enter()
@@ -328,7 +340,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
         newBox.append("div").attr("id", "summary")
                         .style("font-size", "10px").style("float", "right")
-                        .styles({"margin-left": "25px", "margin-right": "50px"})
+                        .style("margin", "0px 10px")
                         .insert("p")
                         .html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
     }
@@ -485,11 +497,25 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
 
-    var color_array = new Array(),
+    var color_array = [],
         nb_values = db_data.length,
-        values = new Array(nb_values);
+        indexes = [],
+        values = [],
+        no_data;
 
-    for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
+    for(let i=0; i<nb_values; i++){
+        if(db_data[i][field_name] != null){
+            values.push(+db_data[i][field_name]);
+            indexes.push(i);
+        }
+    }
+
+    if(nb_values == values.length){
+        no_data = 0;
+    } else {
+        no_data = nb_values - values.length;
+        nb_values = values.length;
+    }
 
     var serie = new geostats(values),
         breaks = [], stock_class = [],
@@ -508,9 +534,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
-    var discretization = newBox.append('div') // .styles({"margin-top": "30px", "padding-top": "10px"})
+    var discretization = newBox.append('div')
                                 .attr("id", "discretization_panel")
-                                .insert("p").html("Type ")
+                                .insert("p")
                                 .insert("select").attr("class", "params")
                                 .on("change", function(){
                                     type = this.value;
@@ -527,17 +553,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
         discretization.append("option").text(name).attr("value", name);
     });
 
-    discretization.node().value = type;
-    make_box_histo_option();
-    make_summary();
-    display_ref_histo();
-
     var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
-                            .style("display", "inline")
-                            .attr("id", "nb_class_range")
-                            .attr("type", "range")
+                            .styles({display: "inline", width: "60px", "vertical-align": "middle"})
+                            .attrs({id: "nb_class_range", type: "range"})
                             .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
@@ -562,10 +582,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
                                 }
                             });
 
+    discretization.node().value = type;
+    make_box_histo_option();
+    make_summary();
+    display_ref_histo();
+
     var svg_h = h / 5 > 100 ? h / 5 : 100,
-        svg_w = 760 > (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
-//        svg_w = w - (w / 8),
-//        margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
+        svg_w = 760 < (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
         margin = {top: 7.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
 
@@ -696,25 +719,71 @@ var display_discretization = function(layer_name, field_name, nb_class, type, pr
     $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
     $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
 
-    make_sequ_button();
+    if(!options.schema){
+        make_sequ_button();
+    } else if(options.schema.length == 1){
+        make_sequ_button();
+        document.querySelector(".color_params").value = options.schema[0];
+    } else if(options.schema.length > 1){
+        make_diverg_button();
+        document.getElementById("button_Diverging").checked = true;
+        let tmp = 0;
+        document.querySelector(".color_params_left").value = options.schema[0];
+        if(options.schema.length > 2){
+            document.getElementById("central_color_val").value = options.schema[1];
+            tmp = 1;
+            document.querySelector(".central_color").querySelector("input").checked = true;
+        } else {
+            document.querySelector(".central_color").querySelector("input").checked = false;
+        }
+        document.querySelector(".color_params_right").value = options.schema[1 + tmp];
+    }
+
+    if(no_data > 0){
+        make_no_data_section();
+        if(options.no_data){
+            document.getElementById("no_data_color").value = options.no_data;
+        }
+    }
+
     redisplay.compute();
-    redisplay.draw(provided_colors);
+    redisplay.draw(options.colors);
 
     var deferred = Q.defer();
     $("#discretiz_charts").dialog({
         modal:true,
         resizable: true,
-        width: +w - 10,
-        height: +h + 60,
+        width: svg_w + margin.top + margin.bottom + 80,
+        height: +h - 20,
         buttons:[{
             text: "Confirm",
             click: function(){
                     var colors_map = [];
-                    for(let j=0; j<db_data.length; ++j){
-                        var idx = serie.getClass(+db_data[j][field_name])
-                        colors_map.push(color_array[idx])
+                    let no_data_color = null;
+                    if(no_data > 0){
+                        no_data_color = document.getElementById("no_data_color").value;
                     }
-                    deferred.resolve([nb_class, type, breaks, color_array, colors_map]);
+                    for(let j=0; j < db_data.length; ++j){
+                        let value = +db_data[j][field_name];
+                        if(value){
+                            let idx = serie.getClass(+value);
+                            colors_map.push(color_array[idx]);
+                        } else {
+                            colors_map.push(no_data_color);
+                        }
+                    }
+                    let col_schema = [];
+                    if(!d3.select('.color_params_left').node()){
+                        col_schema.push(document.querySelector(".color_params").value);
+                    } else {
+                        col_schema.push(document.querySelector(".color_params_left").value);
+                        if(document.querySelector(".central_color").querySelector("input").checked){
+                            col_schema.push(document.getElementById("central_color_val").value);
+                        }
+                        col_schema.push(document.querySelector(".color_params_right").value);
+                    }
+                    deferred.resolve(
+                        [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
                     $(this).dialog("close");
                     }
                 },

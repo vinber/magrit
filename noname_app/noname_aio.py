@@ -24,7 +24,7 @@ import docopt
 import logging
 
 import asyncio
-#import uvloop
+import uvloop
 import pandas as pd
 import numpy as np
 import matplotlib; matplotlib.use('Agg')
@@ -1068,7 +1068,7 @@ def main():
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
 
-#    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(init(loop, port))

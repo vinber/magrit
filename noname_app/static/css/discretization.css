@@ -1,13 +1,13 @@
 #discretization_panel, #histo_options {
-    width: 22%;
     float: left;
-    margin-top: 20px;
+    font-size: 10.5px;
+    margin-top: 11px;
 }
 
 #ref_histo_box {
     float: right;
-    margin-top: 20px;
-    font-size: 11px;
+    margin-top: 11px;
+    font-size: 10.5px;
 }
 
 label_it_inline {

@@ -504,7 +504,8 @@ function createStyleBox(layer_name){
                     display_discretization(table_layer_name,
                                            field_to_discretize,
                                            current_layers[layer_name].colors_breaks.length,
-                                           "Quantiles")
+                                           "Quantiles",
+                                           current_layers[layer_name].options_disc)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
@@ -810,7 +811,8 @@ function createStyleBox_ProbSymbol(layer_name){
                 display_discretization(ref_layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
-                                       "Quantiles")
+                                       "Quantiles",
+                                       current_layers[layer_name].options_disc)
                   .then(function(confirmed){
                     if(confirmed){
                         rendering_params = {
@@ -917,13 +919,11 @@ function createStyleBox_ProbSymbol(layer_name){
           });
     prop_val_content.append("span").html(' px');
 
-    let max_val_prop_symbol = Math.max.apply(null, user_data[ref_layer_name].map(obj => +obj[field_used]));
-
     prop_val_content.append("p").html("on value ...")
         .insert("input")
         .style("width", "100px")
-        .attrs({type: "number", min: 0.1, max: max_val_prop_symbol,
-               value: +current_layers[layer_name].size[0], step: 0.1})
+        .attrs({type: "number", min: 0.1, step: 0.1,
+                value: +current_layers[layer_name].size[0]})
         .on("change", function(){
             let f_val = +this.value,
                 prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);

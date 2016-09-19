@@ -28,10 +28,9 @@ function handle_legend(layer){
                 let legends = document.querySelectorAll(class_name);
                 for(let i = 0; i < legends.length; i++){
                     let bbox_legend = legends[i].getBoundingClientRect();
-                    console.log(bbox_legend)
                     if(bbox_legend.left < limit_left || bbox_legend.right > limit_right
                             || bbox_legend.top < limit_top || bbox_legend.bottom > limit_bottom)
-                        legends[i].setAttribute("transform", "translate(0, 0)")
+                        legends[i].setAttribute("transform", "translate(0, 0)");
                 }
             }
         } else {
@@ -596,10 +595,28 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return d.value; });
 
+    if(current_layers[layer].no_data){
+        let gp_no_data = legend_root.append("g");
+        gp_no_data.attr("class", "legend_feature")
+                .append('rect')
+                .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight})
+                .attr('width', boxwidth)
+                .attr('height', boxheight)
+                .style('fill', current_layers[layer].no_data)
+                .style('stroke', current_layers[layer].no_data);
+
+        gp_no_data
+          .append('text')
+          .attrs({x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight})
+          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text("No data");
+
+        last_pos = last_pos + 2 * boxheight;
+    }
 
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x:  xpos + boxheight, y: last_pos + 2*boxheight})
+            .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight})
             .style("font", "11px 'Enriqueta', arial, serif")
             .text('');
     legend_root.call(drag_legend_func(legend_root));

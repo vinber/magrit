@@ -1139,17 +1139,21 @@ function fillMenu_PropSymbolChoro(layer){
                                                                selected_field,
                                                                rendering_params[selected_field].nb_class,
                                                                rendering_params[selected_field].type,
-                                                               rendering_params[selected_field].colors);
+                                                               {schema: rendering_params[selected_field].schema,
+                                                                colors: rendering_params[selected_field].colors,
+                                                                no_data: rendering_params[selected_field].no_data});
                     else
-                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles", null);
+                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles", {});
 
                     conf_disc_box.then(function(confirmed){
                         if(confirmed){
                             dv2.select('#propChoro_yes').attr("disabled", null);
                             rendering_params[selected_field] = {
                                 nb_class: confirmed[0], type: confirmed[1],
+                                schema: confirmed[5], no_data: confirmed[6],
                                 breaks: confirmed[2], colors: confirmed[3],
-                                colorsByFeature: confirmed[4], renderer: "PropSymbolsChoro"
+                                colorsByFeature: confirmed[4],
+                                renderer: "PropSymbolsChoro"
                                 };
                         } else
                             return;
@@ -1190,11 +1194,17 @@ function fillMenu_PropSymbolChoro(layer){
                         rendering_params[color_field]['colors'][i-1]
                     ]);
             }
+
+            let options_disc = {schema: rendering_params[selected_field].schema,
+                                colors: rendering_params[selected_field].colors,
+                                no_data: rendering_params[selected_field].no_data}
+
             current_layers[new_layer_name] = {
                 renderer: "PropSymbolsChoro",
                 features_order: id_map,
                 symbol: rd_params.symbol,
                 ref_layer_name: layer,
+                options_disc: options_disc,
                 rendered_field: field1_selec.node().value,
                 rendered_field2: field2_selec.node().value,
                 size: [+ref_value.node().value, +ref_size.node().value],
@@ -1582,13 +1592,16 @@ function fillMenu_Choropleth(){
                 conf_disc_box = display_discretization(layer_name, selected_field,
                                                        rendering_params[selected_field].nb_class,
                                                        rendering_params[selected_field].type,
-                                                       rendering_params[selected_field].colors);
+                                                       {schema: rendering_params[selected_field].schema,
+                                                        colors: rendering_params[selected_field].colors,
+                                                        no_data: rendering_params[selected_field].no_data});
+
             else
                 conf_disc_box = display_discretization(layer_name,
                                                        selected_field,
                                                        opt_nb_class,
                                                        "Quantiles",
-                                                       null);
+                                                       {});
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
@@ -1596,6 +1609,7 @@ function fillMenu_Choropleth(){
                     rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
                             breaks: confirmed[2], colors: confirmed[3],
+                            schema: confirmed[5], no_data: confirmed[6],
                             colorsByFeature: confirmed[4], renderer:"Choropleth",
                             rendered_field: selected_field,
                             new_name: check_layer_name([layer_name, selected_field, "Choro"].join('_'))
@@ -2681,6 +2695,7 @@ function fillMenu_griddedMap(layer){
                         rendering_params = {
                             nb_class: opt_nb_class,
                             type: "Quantiles",
+                            schema: [col_pal.node().value],
                             breaks: disc_result[2],
                             colors: disc_result[3],
                             colorsByFeature: disc_result[4],
@@ -2768,6 +2783,9 @@ function render_choro(layer, rendering_params){
         layer = rendering_params.new_name;
     }
     let breaks = rendering_params["breaks"];
+    let options_disc = {schema: rendering_params.schema,
+                        colors: rendering_params.colors,
+                        no_data: rendering_params.no_data}
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
@@ -2780,7 +2798,9 @@ function render_choro(layer, rendering_params){
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
     current_layers[layer]['stroke-width-const'] = 0.75;
+//    current_layers[layer].no_data = rendering_params.no_data;
     current_layers[layer].is_result = true;
+    current_layers[layer].options_disc = options_disc;
     let colors_breaks = [];
     for(let i = breaks.length-1; i > 0; --i){
         colors_breaks.push([
@@ -2922,7 +2942,7 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
             result[fields[j]].push(tmp_type);
         }
     }
-    console.log(result)
+
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         if(result[field].every(function(ft){return ft === "number" || ft === "empty";})
