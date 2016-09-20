@@ -4,7 +4,7 @@
     <meta  content="text/html" charset="utf-8"  http-equiv="content-type">
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
-    <title> GeoPossum </title>
+    <title> {{ app_name }} </title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
@@ -39,14 +39,20 @@
   </head>
   <body>
       <div id="header">
-        <p style="display:inline;margin-left:10px;"><i><a href="/">GeoPossum</a></i></p>
+        <p style="display:inline;margin-left:10px;"><i><a href="/"> {{ app_name }}</a></i></p>
         <p id="rgt" class="header_options"><a href="https://github.com/riatelab/noname-stuff/">Sources</a>  <a href="">Documentation</a>&emsp;</p></div>
       <div id="menu"></div>
   	 <div id="map"></div>
-      <div id="user_id" style="display:none">{{ user_id }}</div>
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
+
+function cleanInterface(){
+    let menu_elements = document.getElementById("menu");
+    for(let i = menu_elements.children.length - 1; i > -1; i--){
+        menu_elements.children[i].remove();
+    }
+}
 
 /**
 * Function setting-up main elements of the interface
@@ -186,6 +192,7 @@ function setUpInterface()
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-width", type: "number", value: w, width: "55px"})
             .on("change", function(){canvas_mod_size([this.value,null])});
+
     let b = dv4.append("li").style("margin", "1px");
     b.append("p").attr("class", "list_elem_section4")
             .html("<b>" + i18next.t("Canvas height") + " (px)</b>");
@@ -193,15 +200,16 @@ function setUpInterface()
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-height", type: "number", "value": h})
             .on("change", function(){canvas_mod_size([null,this.value])});
+
     let c = dv4.append("li").style("margin", "1px");
     c.append("p").attr("class", "list_elem_section4")
-            .html(i18next.t("Map title"))
+            .html(i18next.t("Map title"));
     c.append("p").attr("class", "list_elem_section4")
             .insert("input").attr("id", "title")
             .styles({"margin": "0px 0px 0px 15px"})
             .on("keyup", function(){handle_title(this.value);});
     c.insert("span")
-            .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "middle"})
+            .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
 
@@ -209,14 +217,16 @@ function setUpInterface()
     d.append("p").attr("class", "list_elem_section4")
             .html(i18next.t("Background color"));
     d.append("p").attr("class", "list_elem_section4")
-            .insert("input").style("margin-left", "15px")
+            .insert("input")
+            .styles({"vertical-align": "middle", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff"})
-            .on("change", function(){handle_bg_color(this.value);});
+            .on("change", function(){
+                handle_bg_color(this.value);
+            });
 
     let e = dv4.append("li").style("margin", "1px");
     e.append("p").attr("class", "list_elem_section4")
             .html(i18next.t("Canvas rotation"));
-
     e.append("input")
             .attr("type", "range")
             .attr("id","form_rotate")
@@ -237,62 +247,7 @@ function setUpInterface()
             .style("cursor", "pointer")
             .html("<b>" + i18next.t("Add layout features") + "... </b> " + sys_run_button)
             .on("click", select_layout_features);
-/*
-    let dv4 = section4.append("p").attr("class", "form-item").style("margin", "auto");
-    dv4.append("div")
-            .styles({float: "left", width: "50%", "text-align": "center"})
-            //.html("<b>Canvas width (px)</b><br>")
-            .html("<b>" + i18next.t("Canvas width") + " (px)</b><br>")
-            .insert("input").style("width", "60px")
-            .attrs({id: "input-width", type: "number", value: w, width: "55px"})
-            .on("change", function(){canvas_mod_size([this.value,null])});
-    dv4.append("div")
-            .styles({float: "right", width: "50%", "text-align": "center"})
-            //.html("<b>Canvas height (px)</b><br>")
-            .html("<b>" + i18next.t("Canvas height") + " (px)</b><br>")
-            .insert("input").style("width", "60px")
-            .attrs({id: "input-height", type: "number", "value": h})
-            .on("change", function(){canvas_mod_size([null,this.value])});
-    dv4.append("p")
-            .styles({"text-align": "center", "display": "inline-block"})
-            .html(i18next.t("Map title"))
-            .insert("input").attr("id", "title").style("margin", "0px 1px")
-            .on("keyup", function(){handle_title(this.value);});
-    dv4.insert("_img")
-            .styles({display: "inline", top: "4px", cursor: "pointer"})
-            .html(sys_run_button.replace("submit", "Title properties"))
-            .on("click", handle_title_properties);
-    dv4.append("p").style("text-align", "center").html(i18next.t("Background color"))
-            .insert("input").style("margin-left", "15px")
-            .attrs({type: "color", id: "bg_color", value: "#ffffff"})
-            .on("change", function(){handle_bg_color(this.value);});
 
-    let canvas_rotation = dv4.append("p")
-            .style("text-align", "center")
-            .html(i18next.t("Canvas rotation"));
-
-    canvas_rotation
-        .append("input")
-        .attr("type", "range")
-        .attr("id","form_rotate")
-        .attr("value", 0).attr("min", 0)
-        .attr("max", 360).attr("step", 1)
-        .styles({width: "80px", "vertical-align": "middle"})
-        .on("input", function(){
-            rotate_global(this.value);
-            document.getElementById("canvas_rotation_value_txt").innerHTML = this.value + "°";
-        });
-
-    canvas_rotation.append("span")
-        .attr("id", "canvas_rotation_value_txt")
-        .html("0°");
-
-    dv4.append("p")
-            //.html(sys_run_button + " Add layout features (arrow, scale, etc.)")
-            .style("cursor", "pointer")
-            .html(sys_run_button + " " + i18next.t("Add layout features"))
-            .on("click", select_layout_features);
-*/
     let section5 = d3.select("#section5");
     let dv5 = section5.append("p")
                 .style("text-align", "center")
@@ -805,14 +760,16 @@ var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width=
 
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}};
 
+{% raw %}
+
 (function(){
     i18next.use(i18nextXHRBackend)
       .init({
           debug: true,
           lng: window.navigator.language || 'en',
-          fallbackLng: "fr",
+          fallbackLng: "en",
           backend: {
-            loadPath: "/static/locales/fr/translation.json"
+            loadPath: "/static/locales/{{lng}}/translation.json"
           }
     }, (err, t) => {
         if(err)
@@ -822,6 +779,7 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
     });
 })();
 
+{% endraw %}
 
 function up_legend(){
     let legend_features = svg_map.querySelectorAll('.legend');

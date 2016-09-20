@@ -481,7 +481,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     make_legend_context_menu(legend_root, layer);
 }
 
-function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision){
+function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt){
     var boxheight = 18,
         boxwidth = 18,
         xpos = w - (w / 8),
@@ -607,9 +607,9 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
 
         gp_no_data
           .append('text')
-          .attrs({x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight})
+          .attrs({x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt"})
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text("No data");
+          .text(no_data_txt != null ? no_data_txt : "No data");
 
         last_pos = last_pos + 2 * boxheight;
     }
@@ -633,17 +633,23 @@ function createlegendEditBox(legend_id, layer_name){
         title_content = legend_node.querySelector("#legendtitle");
         subtitle_content = legend_node.querySelector("#legendsubtitle");
         note_content = legend_node.querySelector("#legend_bottom_note");
+        no_data_txt = legend_node.querySelector("#no_data_txt");
         legend_node_d3 = d3.select(legend_node);
         legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
     };
 
     var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
-    var legend_node_d3, legend_boxes, rect_fill_value = {};
+    var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {};
 
     bind_selections();
     let original_params = {
-        title_content: title_content.textContent, subtitle_content: subtitle_content.textContent,
-        note_content: note_content.textContent }; //, source_content: source_content.textContent ? source_content.textContent : ""
+        title_content: title_content.textContent,
+        subtitle_content: subtitle_content.textContent,
+        note_content: note_content.textContent,
+        no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
+        }; //, source_content: source_content.textContent ? source_content.textContent : ""
+
+
     if(legend_node.getAttribute("visible_rect") == "true"){
         rect_fill_value = {
             color: legend_node.querySelector("#under_rect").style.fill,
@@ -657,6 +663,9 @@ function createlegendEditBox(legend_id, layer_name){
                 title_content.textContent = original_params.title_content;
                 subtitle_content.textContent = original_params.subtitle_content;
                 note_content.textContent = original_params.note_content;
+                if(no_data_txt){
+                    no_data_txt.textContent = original_params.no_data_txt;
+                }
             }
             bind_selections();
             make_underlying_rect(legend_node_d3,
@@ -814,6 +823,16 @@ function createlegendEditBox(legend_id, layer_name){
 //                alert("to be done!");
 //            });
 
+//    if(current_layers[layer].options_disc && current_layers[layer].options_disc.no_data){
+    if(no_data_txt){
+        box_body.insert('p').html(i18next.t("No data category name"))
+                .insert('input').attr("value", no_data_txt.textContent)
+                .style("font-family", "12px Gill Sans Extrabold, sans-serif")
+                .on("keyup", function(){
+                    no_data_txt.textContent = this.value;
+                });
+   }
+
     box_body.insert('p').html('Additionnal legend notes<br>')
             .insert('input').attr("value", note_content.textContent)
             .style("font-family", "12px Gill Sans Extrabold, sans-serif")
@@ -855,7 +874,7 @@ function createlegendEditBox(legend_id, layer_name){
                                          undefined, undefined,
                                          rect_fill_value
                                          );
-                })
+                });
 }
 
 var get_max_nb_dec = function(layer_name){

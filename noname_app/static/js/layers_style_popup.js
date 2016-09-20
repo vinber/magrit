@@ -348,6 +348,10 @@ function createStyleBox(layer_name){
                     }
                     current_layers[layer_name].colors_breaks = colors_breaks;
                     current_layers[layer_name].rendered_field = rendering_params.field;
+                    current_layers[layer_name].options_disc = {
+                            schema: rendering_params.schema,
+                            colors: rendering_params.colors,
+                            no_data: rendering_params.no_data };
                 } else if (renderer == "Stewart"){
                     current_layers[layer_name].colors_breaks = rendering_params.breaks;
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
@@ -362,11 +366,16 @@ function createStyleBox(layer_name){
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
                         boxgap = lgd.getAttribute("boxgap");
-                    lgd.remove();
-                    if(_type_layer_links)
+
+                    if(_type_layer_links){
+                        lgd.remove();
                         createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle);
-                    else
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
+                    } else {
+                        let no_data_txt = document.getElementById("no_data_txt");
+                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+                        lgd.remove();
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, undefined, no_data_txt);
+                    }
                     lgd = document.querySelector(
                         [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
                         );
@@ -514,6 +523,8 @@ function createStyleBox(layer_name){
                                     breaks: confirmed[2],
                                     colors:confirmed[3],
                                     colorsByFeature: confirmed[4],
+                                    schema: confirmed[5],
+                                    no_data: confirmed[6],
                                     renderer:"Choropleth",
                                     field: field_to_discretize
                                 };

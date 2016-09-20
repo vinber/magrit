@@ -230,11 +230,25 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
 
-    var color_array = new Array(),
+    var color_array = [],
         nb_values = db_data.length,
-        values = new Array(nb_values);
+        indexes = [],
+        values = [],
+        no_data;
 
-    for(let i=0; i<nb_values; i++){values[i] = +db_data[i][field_name];}
+    for(let i=0; i<nb_values; i++){
+        if(db_data[i][field_name] != null){
+            values.push(+db_data[i][field_name]);
+            indexes.push(i);
+        }
+    }
+
+    if(nb_values == values.length){
+        no_data = 0;
+    } else {
+        no_data = nb_values - values.length;
+        nb_values = values.length;
+    }
 
     var serie = new geostats(values),
         breaks_info = [].concat(current_layers[layer_name].breaks),

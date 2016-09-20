@@ -93,5 +93,24 @@
         "rendered_field": "Valeur représentée",
         "ok": "Valider",
         "cancel": "Annuler"
+    },
+    "index":{
+        "buttons": {
+            "overview": "Fonctionnalitées",
+            "examples": "Exemples",
+            "doc": "Documentation",
+            "sources": "Sources",
+            "start_now": "Démarrer"
+        },
+        "overview_section": {
+            "intro": "Foobar"
+        },
+        "documentation_section": {
+            "intro": "Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
+        },
+        "source_section":{
+            "intro": "Le projet est entièrement libre et utilise une licence libre (licence CeCILL, compatible avec la GNU GPL). Il repose sur de nombreuses bibliothèques libres et open-source (telles que GDAL, d3.js).",
+            "contrib": "Les rapports d'erreurs et contributions sont les bienvenues. Elles sont possibles via la plateforme GitHub."
+        }
     }
 }

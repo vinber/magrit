@@ -21,7 +21,6 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
         class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step)),
         breaks_prop = [],
         rendering_params = {},
-        cmp_fun = (a,b) => a - b,
         tmp;
 
     var val = func_switch.to(type);
@@ -116,8 +115,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                             .append("div").attr("id", "no_data_section")
                             .append("p").html(no_data + " features without data");
         section.append("input")
-                .attr("type", "color")
-                .attr("id", "no_data_color")
+                .attrs({type: "color", value: "#ebebcd", id: "no_data_color"})
                 .style("margin", "0px 10px");
     };
 
@@ -704,7 +702,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
     user_defined_breaks.insert("textarea")
                         .attr("id","user_breaks_area")
-                        .style("width", w / 3 + "px");
+                        .style("width", "600px");
+
     user_defined_breaks.insert("button").text("Valid")
             .on("click", function(){
                     let old_nb_class = nb_class;
@@ -719,6 +718,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
     $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
     $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
+
+    if(no_data > 0){
+        make_no_data_section();
+        if(options.no_data){
+            document.getElementById("no_data_color").value = options.no_data;
+        }
+    }
 
     if(!options.schema){
         make_sequ_button();
@@ -740,13 +746,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         document.querySelector(".color_params_right").value = options.schema[1 + tmp];
     }
 
-    if(no_data > 0){
-        make_no_data_section();
-        if(options.no_data){
-            document.getElementById("no_data_color").value = options.no_data;
-        }
-    }
-
     redisplay.compute();
     redisplay.draw(options.colors);
 
@@ -754,7 +753,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     $("#discretiz_charts").dialog({
         modal:true,
         resizable: true,
-        width: svg_w + margin.top + margin.bottom + 80,
+        width: svg_w + margin.top + margin.bottom + 90,
         height: window.innerHeight - 40,
         buttons:[{
             text: "Confirm",

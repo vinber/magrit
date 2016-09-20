@@ -5,15 +5,16 @@ noname_app
 
 Usage:
   noname_app
-  noname_app [--port <port_nb>]
-  noname_app [-p <port_nb>]
+  noname_app [--port <port_nb> --name-app <name>]
+  noname_app [-p <port_nb> -n <name>]
   noname_app --version
   noname_app --help
 
 Options:
-  -h, --help                Show this screen.
-  --version                 Show version.
-  -p <port>, --port <port>  Port number to use (exit if not available) [default: 9999]
+  -h, --help                        Show this screen.
+  --version                         Show version.
+  -p <port>, --port <port>          Port number to use (exit if not available) [default: 9999]
+  -n <name>, --name-app <name>      Name of the application [default: GeoPossum]
 """
 
 import os
@@ -75,7 +76,7 @@ except:
 pp = '(aiohttp_app) '
 
 
-@aiohttp_jinja2.template('index.html')
+@aiohttp_jinja2.template('index2.html')
 async def index_handler(request):
     session = await get_session(request)
     if 'last_visit' in session:
@@ -84,7 +85,8 @@ async def index_handler(request):
     else:
         date = ''
     session['last_visit'] = time.time()
-    return {'last_visit': date}
+    return {'last_visit': date,
+            'app_name': request.app['app_name']}
 
 ##########################################################
 #### A few functions to open (server side)
@@ -422,13 +424,8 @@ async def convert(request):
 @aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
     session_redis = await get_session(request)
-    user_id = get_user_id(session_redis, request.app['app_users'])
-    return {"user_id": user_id}
-
-
-@aiohttp_jinja2.template('about.html')
-async def about_handler(request):
-    return {}
+    get_user_id(session_redis, request.app['app_users'])
+    return {"app_name": request.app["app_name"]}
 
 
 async def nothing(posted_data, user_id, app):
@@ -1018,7 +1015,6 @@ async def init(loop, port=9999):
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
-    add_route('GET', '/about/', about_handler)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)
@@ -1072,7 +1068,7 @@ def main():
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(init(loop, port))
-
+    app['app_name'] = arguments["--name-app"]
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
     try:
         loop.run_forever()

@@ -25,5 +25,24 @@
         "rendered_field": "Rendered field",
         "ok": "Confirm",
         "cancel": "Close without saving"
+    },
+    "index":{
+        "buttons": {
+            "overview": "Overview",
+            "examples": "Examples",
+            "doc": "Documentation",
+            "sources": "Sources",
+            "start_now": "Start now"
+        },
+        "overview_section": {
+            "intro": "Foobar"
+        },
+        "documentation_section": {
+            "intro": "A full description of each of the methods is available on the website http://onapastrouvedenom.fr. The website also includes detailed information on the technologies employed and is used to announce the latest changes."
+        },
+        "source_section":{
+            "intro": "Fully free and open-sourced project (licenced under CeCILL, compatible with GNU GPL) and backed against a solid suite of Free and Open-Source libraries (GDAL, d3.js and more).",
+            "contrib": "Bug reports and contributions are welcome. Please use project page on GitHub."
+        }
     }
 }

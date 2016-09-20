@@ -553,9 +553,14 @@ var render_discont = function(){
     let arr_disc = [],
         arr_tmp = [];
     for(let kv of result_value.entries()){
-        arr_disc.push(kv);
-        arr_tmp.push(kv[1]);
+        if(!isNaN(kv[1])){
+            arr_disc.push(kv);
+            arr_tmp.push(kv[1]);
+        }
     }
+
+    arr_disc.sort((a,b) => a[1] - b[1]);
+    arr_tmp.sort((a,b) => a - b);
 
     let nb_ft = arr_tmp.length,
         step = (max_size - min_size) / (nb_class - 1),
@@ -3041,12 +3046,22 @@ function add_table_field(table, layer_name, parent){
         else if(options.type_operation === "math_compute"){
             let math_func = get_fun_operator(operation)
             if(fi2 != "user_const_value"){
-                for(let i=0; i<table.length; i++)
-                    table[i][new_name_field] = math_func(+table[i][fi1], +table[i][fi2]);
+                for(let i=0; i<table.length; i++){
+                    if(table[i][fi1] != null && table[i][fi2] != null){
+                        table[i][new_name_field] = math_func(+table[i][fi1], +table[i][fi2]);
+                    } else {
+                        table[i][new_name_field] = null;
+                    }
+                }
             } else {
                 opt_val = +opt_val;
-                for(let i=0; i<table.length; i++)
-                    table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
+                for(let i=0; i<table.length; i++){
+                    if(table[i][fi1] != null && table[i][fi2] != null){
+                        table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
+                    } else {
+                        table[i][new_name_field] = null;
+                    }
+                }
             }
             return Promise.resolve(true);
         } else {
