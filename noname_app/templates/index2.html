@@ -11,14 +11,13 @@
     <title>{{ app_name }} - Put your data on the map !</title>
 
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/scrolling-nav.css" rel="stylesheet">
+    <link href="/static/css/style-index.css" rel="stylesheet">
     <script src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script src="/static/js/lib/i18next.min.js"></script>
     <script src="/static/js/lib/jquery-i18next.min.js"></script>
     <script src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/jquery.easing.min.js"></script>
-    <script src="/static/js/scrolling-nav.js"></script>jquery-i18next.min.js
 </head>
 
 <!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
@@ -59,7 +58,17 @@
                         <a class="page-scroll" href="#source">Source</a>
                     </li>
                 </ul>
-                <a href="/modules" class="btn navbar-btn i18n" style="float:right;color:greenyellow;" data-i18n="[html]index.buttons.start_now"></a>
+                <a href="/modules" class="btn btn-default i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]index.buttons.start_now"></a>
+                <div class="btn-group" style="float:right;margin-top:7px;";>
+                    <button id="lang_current" type="button" class="btn btn-default" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a id="lang1"></a></li>
+                        <li><a id="lang2"></a></li>
+                    </ul>
+                    </div>
             </div>
             <!-- /.navbar-collapse -->
         </div>
@@ -67,35 +76,55 @@
     </div>
     </nav>
 
-    <!-- Intro Section -->
     <section id="intro" class="intro-section">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <h1>{{ app_name }} - Online mapping application</h1>
-                    <p><strong>Easily render thematic maps</strong> ... and more with 7 kinds of cartographic methods availables
-                    </p>
-                    <form>
-                        <button class="button_st3" formaction="/modules" style="margin:5px;">Enter!</button>
-                        <button class="button_st3" formaction="/modules" style="margin:5px;">Resume last project...</button>
-                    </form>
+            <h1>{{ app_name }} - Online mapping application</h1>
+            <hr class="grad-transp"></hr>
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                    <p style="text-align:left;">
+                        <span class="i18n" data-i18n="[html]index.intro_section.arg1"></span><br>
+                        <span class="i18n" data-i18n="[html]index.intro_section.arg2"></span><br>
+                        <span class="i18n" data-i18n="[html]index.intro_section.arg3"></span><br>
+                        <span class="i18n" data-i18n="[html]index.intro_section.arg4"></span><br>
+                    </p><br>
                 </div>
+                <div class="box-wrap clearfix"></div>
+                <p style="col-md-12">
+                    <a href="/modules" class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]index.buttons.enter"></a>
+                    <a href="/modules" class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
+                </p>
             </div>
         </div>
+        <div class="end_div_divider" style="background-image:url('/static/img/divider_europe_1843_wikimedia.png');"></div>
     </section>
 
     <section id="overview" class="overview-section">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <h1>Overview</h1>
-                    <ul>
-                        <li>No hassle cartography</li>
-                        <li>Awesome results</li>
-                        <li>Everyone happy</li>
-                    </ul>
-                    <img src='/static/img/abc.png' alt='Everyone happy' style="max-height: 120px">
+            <h1>Overview</h1>
+            <hr class="grad-transp"></hr>
+                <div class="col-md-6">
+                    <p style="text-align:left;">
+                        <strong><span class="i18n" data-i18n="[html]index.overview_section.list_func1"></span></strong><br>
+                        <span class="i18n" data-i18n="[html]index.overview_section.list_func2"></span><br><br>
+                        <strong><span class="i18n" data-i18n="[html]index.overview_section.import1"></span></strong><br>
+                        <span class="i18n" data-i18n="[html]index.overview_section.import2"></span><br><br>
+                        <strong><span class="i18n" data-i18n="[html]index.overview_section.customize1"></span></strong><br>
+                        <span class="i18n" data-i18n="[html]index.overview_section.customize2"></span>
+                    </p>
                 </div>
+                <div class="col-md-6">
+                    <p style="text-align:left;">
+                        <strong><span class="i18n" data-i18n="[html]index.overview_section.export1"></span></strong><br>
+                        <span class="i18n" data-i18n="[html]index.overview_section.export2"></span><br><br>
+                        <strong><span class="i18n" data-i18n="[html]index.overview_section.export_geo1"></span></strong><br>
+                        <span class="i18n" data-i18n="[html]index.overview_section.export_geo2"></span><br><br>
+                        <strong><em><span class="i18n" data-i18n="[html]index.overview_section.conclusion"></span></strong></em>
+                    </p>
+                </div>
+            <img src='/static/img/abc.png' alt='Everyone happy' style="max-height: 120px">
             </div>
         </div>
     </section>
@@ -103,10 +132,16 @@
     <section id="examples" class="examples-section">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <h1>Examples</h1>
-                    <img src="/static/img/gallery/choropleth_map.png" alt="Choropleth map" style="max-height:90px">
-                    <img src="/static/img/gallery/smoothed.png" alt="Smoothed map" style="max-height:90px">
+            <h1>Examples</h1>
+            <hr class="grad-transp"></hr>
+                <div class="col-md-3">
+                    <img class="img-responsive" title="choropleth" src="/static/img/gallery/choropleth_map.png" alt="Choropleth map" style="max-height:100px;margin:5px;cursor:pointer;">
+                </div>
+                <div class="col-md-3">
+                    <img class="img-responsive" title="smoothed" src="/static/img/gallery/smoothed.png" alt="Smoothed map" style="max-height:100px;margin:5px;cursor:pointer;">
+                </div>
+                <div class="col-md-12">
+                    <p style="margin-top: 25px;" class="i18n" data-i18n="[html]index.examples_section.gallery"></p>
                 </div>
             </div>
         </div>
@@ -115,12 +150,10 @@
     <section id="documentation" class="documentation-section">
         <div class="container">
             <div class="row">
+            <h1>Documentation</h1>
+            <hr class="grad-transp"></hr>
                 <div class="col-lg-12">
-                    <h1>Documentation</h1>
                         <p class="i18n" data-i18n="[html]index.documentation_section.intro"></p>
-                        <!-- <p>Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr.<br>
-                        Le site inclut également des informations détaillée sur les technologies utilisées et est
-                        utilisé pour annoncer les dernières modifications.</p>  -->
                 </div>
             </div>
         </div>
@@ -129,15 +162,32 @@
     <section id="source" class="source-section">
         <div class="container">
             <div class="row">
+            <h1>Source</h1>
+            <hr class="grad-transp"></hr>
                 <div class="col-lg-12">
-                    <h1>Source</h1>
                     <p class="i18n" data-i18n="[html]index.source_section.intro"></p>
                     <p class="i18n" data-i18n="[html]index.source_section.contrib"></p>
-                    <img src="/static/img/fork_me.png" alt="Form me on github">
+                    <img src="/static/img/fork_me.png" alt="Fork me on github">
                 </div>
             </div>
         </div>
     </section>
+    <footer id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3"></div>
+                <div class="col-lg-3">
+                    <a href="http://riate.cnrs.fr"><img src="/static/img/logo_riate.svg" alt="RIATE logo" style="max-height:18px;"></a>
+                </div>
+                <div class="col-lg-3">
+                    foo bar collaboration
+                </div>
+                <div class="col-lg-3">
+                    egg parrot financement
+                </div>
+            </div>
+        </div>
+    </footer>
 {% raw %}
 <script>
 
@@ -176,10 +226,29 @@ $(function() {
         else{
             jqueryI18next.init(i18next, $);
             $(".i18n").localize();
+            let current_lang =  i18next.language,
+                other_lang = current_lang == "en" ? "fr" : "en";
+            document.getElementById("lang_current").innerHTML = current_lang;
+            document.getElementById("lang1").innerHTML = current_lang;
+            document.getElementById("lang2").innerHTML = other_lang;
         }
     });
 })();
 
+document.getElementById("lang1").onclick = bind_change_lang;
+document.getElementById("lang2").onclick = bind_change_lang;
+
+function bind_change_lang(){
+    let lang = this.innerHTML;
+    change_lang(lang);
+}
+
+function change_lang(new_lang){
+    i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
+    document.getElementById("lang_current").innerHTML = new_lang;
+    document.getElementById("lang2").innerHTML = document.getElementById("lang1").innerHTML;
+    document.getElementById("lang1").innerHTML = new_lang;
+}
 </script>
 {% endraw %}
 </body>

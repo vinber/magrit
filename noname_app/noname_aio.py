@@ -14,7 +14,7 @@ Options:
   -h, --help                        Show this screen.
   --version                         Show version.
   -p <port>, --port <port>          Port number to use (exit if not available) [default: 9999]
-  -n <name>, --name-app <name>      Name of the application [default: GeoPossum]
+  -n <name>, --name-app <name>      Name of the application [default: FreeCarto]
 """
 
 import os

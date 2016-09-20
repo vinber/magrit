@@ -96,21 +96,42 @@
     },
     "index":{
         "buttons": {
+            "enter": "Démarrer",
+            "resume": "Continuer le projet en cours...",
             "overview": "Fonctionnalitées",
             "examples": "Exemples",
             "doc": "Documentation",
             "sources": "Sources",
             "start_now": "Démarrer"
         },
+        "intro_section": {
+            "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
+            "arg2": "<strong>Utilisez votre propres données</strong>(Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
+            "arg4": "<strong>Exportez ou sauvegarder facilement votre composition!</strong>(exports PNG et SVG, sauvegarde de projet)"
+        },
         "overview_section": {
-            "intro": "Foobar"
+            "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
+            "list_func2": "(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.).",
+            "import1": "Accepte de nombreux formats d'entrée",
+            "import2": "(Shapefile, GeoJSON, kml, fichier tabulaire avec données géoréférencées ou avec données à joindre).",
+            "customize1": "Personnalisez votre carte selon vos souhaits",
+            "customize2": "(grâce notamment à des nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.).",
+            "export1": "Exporte vos compositions facilement",
+            "export2": "(en sélectionnant un export en PNG ou en SVG)",
+            "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
+            "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
+            "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
+        },
+        "examples_section": {
+            "gallery": "Des examples supplémentaires sont visibles dans la gallerie"
         },
         "documentation_section": {
             "intro": "Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
         },
         "source_section":{
-            "intro": "Le projet est entièrement libre et utilise une licence libre (licence CeCILL, compatible avec la GNU GPL). Il repose sur de nombreuses bibliothèques libres et open-source (telles que GDAL, d3.js).",
-            "contrib": "Les rapports d'erreurs et contributions sont les bienvenues. Elles sont possibles via la plateforme GitHub."
+            "intro": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
+            "contrib": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub."
         }
     }
 }
