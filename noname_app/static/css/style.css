@@ -468,29 +468,6 @@ a.menu {
     box-shadow: none;
 }
 
-/*
-.button_st4 {
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf));
-	background:-moz-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
-	background:-webkit-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
-	background:-o-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
-	background:-ms-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
-	background:linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
-	background-color:#ededed;
-	-moz-border-radius:6px;
-	-webkit-border-radius:6px;
-	border-radius:6px;
-	border:1px solid #dcdcdc;
-	display:inline-block;
-	cursor:pointer;
-	color:#777777;
-	font-family:Verdana;
-	font-size:11px;
-	padding:6px 14px;
-	text-decoration:none;
-}
-*/
-
 .button_st4 {
     background:linear-gradient(to bottom, #173a50 5%, #002e56 100%);
     background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #173a50), color-stop(1, #002e56));

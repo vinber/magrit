@@ -874,10 +874,13 @@ function displayInfoOnMove(){
         if(symbol){
             let ref_layer_name = current_layers[top_visible_layer].ref_layer_name;
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-                let ref_id = current_layers[top_visible_layer].features_order ? current_layers[top_visible_layer].features_order[i][0] : +i;
+                //let ref_id = current_layers[top_visible_layer].features_order ? current_layers[top_visible_layer].features_order[i][0] : +i;
+                //let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
+                //                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><p>"];
+                //let properties = user_data[ref_layer_name][ref_id];
                 let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
-                                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><p>"];
-                let properties = user_data[ref_layer_name][ref_id];
+                                i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+                let properties = result_data[top_visible_layer][i];
                 Object.getOwnPropertyNames(properties).forEach(function(el, i){
                     txt_info.push("<br><b>"+el+"</b> : "+properties[el]);
                     });

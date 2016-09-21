@@ -16,7 +16,10 @@
 	{"name": "Eckert III", "projection": "d3.geoEckert3().scale(525).translate([150, 125])"},
 	{"name": "Eckert IV", "projection": "d3.geoEckert4().scale(525).translate([150, 125])"},
 	{"name": "Eckert V", "projection": "d3.geoEckert5().scale(400)"},
-	{"name": "Eckert VI", "projection": "d3.geoEckert6().scale(400)"}
+	{"name": "Eckert VI", "projection": "d3.geoEckert6().scale(400)"},
+	{"name": "Eisenlohr", "projection": "d3.geoEisenlohr().scale(400)"},
+	{"name": "Gringorten", "projection": "d3.geoGringorten().scale(400)"},
+	{"name": "Robinson", "projection": "d3.geoRobinson().scale(400)"}
  ]
 
 

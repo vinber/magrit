@@ -52,13 +52,6 @@ function get_menu_option(func){
             "desc":"Render a gridded map on a numerical field of your data",
             "fields_handler": "fields_griddedMap",
             },
-        "mta":{
-            "name": "mta",
-            "title": i18next.t("Multiscalar Territorial Analysis"),
-            "menu_factory": "fillMenu_MTA",
-            "desc":"Compute and render various methods of multiscalar territorial analysis",
-            "fields_handler": "fields_MTA",
-            },
         "flow":{
             "name": "flow",
             "title": i18next.t("Link/FLow map"),
@@ -1216,7 +1209,8 @@ function fillMenu_PropSymbolChoro(layer){
                 "stroke-width-const": 1,
                 fill_color: { "class": id_map.map(obj => obj[3]) },
                 colors_breaks: colors_breaks,
-                is_result: true
+                is_result: true,
+                n_features: nb_features
             };
             zoom_without_redraw();
             switch_accordion_section();
@@ -2495,7 +2489,7 @@ function make_prop_symbols(rendering_params){
         field = rendering_params.field,
         nb_features = rendering_params.nb_features,
         values_to_use = rendering_params.values_to_use,
-        d_values = [],
+        _values = [],
         abs = Math.abs,
         comp = function(a,b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
@@ -2505,17 +2499,18 @@ function make_prop_symbols(rendering_params){
         layer_to_add = rendering_params.new_name,
         zs = d3.zoomTransform(map.node()).k;
 
+    let res_data = [];
     if(values_to_use)
         for(let i = 0; i < nb_features; ++i){
 //            let centr = path.centroid(ref_layer_selection[i].__data__);
-            d_values.push([i, +values_to_use[i],
+            _values.push([i, +values_to_use[i],
                            path.centroid(ref_layer_selection[i].__data__)]);
         }
     else {
         let data_table = user_data[layer];
         for(let i = 0; i < nb_features; ++i){
 //            let centr = path.centroid(ref_layer_selection[i].__data__);
-            d_values.push([i, +data_table[i][field],
+            _values.push([i, +data_table[i][field],
                            path.centroid(ref_layer_selection[i].__data__)]);
         }
     }
@@ -2525,13 +2520,13 @@ function make_prop_symbols(rendering_params){
             col2 = rendering_params.fill_color.two[1];
         var tmp_fill_color = [];
         for(let i = 0; i < nb_features; ++i){
-            tmp_fill_color.push(d_values[i][1] > rendering_params.break_val ? col2 : col1)
+            tmp_fill_color.push(_values[i][1] > rendering_params.break_val ? col2 : col1)
         }
     } else {
         var tmp_fill_color = rendering_params.fill_color;
     }
 
-    d_values = prop_sizer3(d_values, ref_value, ref_size, symbol_type);
+    var d_values = prop_sizer3(_values, ref_value, ref_size, symbol_type);
     d_values.sort(comp);
 
     /*
@@ -2561,14 +2556,20 @@ function make_prop_symbols(rendering_params){
     if(symbol_type === "circle"){
         for(let i = 0; i < nb_features; i++){
             let params = d_values[i];
+            let id_ref = params[0];
             symbol_layer.append('circle')
                 .attr('cx', params[2][0])
                 .attr("cy", params[2][1])
                 .attr("r", params[1])
-                .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
+                .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
                 .style("fill", params[3])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);
+            let res_obj = {};
+            res_obj["uid"] = i;
+            res_obj["id_layer_reference"] = id_ref;
+            res_obj[field] = _values[id_ref][1];
+            res_data.push(res_obj);
         }
     } else if(symbol_type === "rect"){
         for(let i = 0; i < nb_features; i++){
@@ -2584,6 +2585,11 @@ function make_prop_symbols(rendering_params){
                 .style("fill", params[3])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);
+            res_obj = {};
+            res_obj["uid"] = i;
+            res_obj["id_layer_reference"] = id_ref;
+            res_obj[field] = _values[id_ref][1];
+            res_data.push(res_obj);
         };
     }
 
@@ -2608,6 +2614,7 @@ function make_prop_symbols(rendering_params){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
     up_legend();
+    result_data[layer_to_add] = res_data;
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
     return d_values;
 }
@@ -2785,6 +2792,9 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
 function render_choro(layer, rendering_params){
     if(rendering_params.new_name){
         copy_layer(layer, rendering_params.new_name, "choro");
+        //Assign the same key to the cloned layer so it could be used transparently on server side
+        // after deletion of the reference layer if needed :
+        current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
     let breaks = rendering_params["breaks"];
@@ -2803,7 +2813,6 @@ function render_choro(layer, rendering_params){
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
     current_layers[layer]['stroke-width-const'] = 0.75;
-//    current_layers[layer].no_data = rendering_params.no_data;
     current_layers[layer].is_result = true;
     current_layers[layer].options_disc = options_disc;
     let colors_breaks = [];

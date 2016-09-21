@@ -7,9 +7,24 @@ class Textbox {
         this.y = position[1];
         this.fontsize = 14;
 
+        function end_edit_action(){
+            inner_ft.attr("contentEditable", "false");
+            inner_ft.style("background-color", "transparent");
+            inner_ft.style("border", "");
+            // Recompute the size of the p inside the foreignObj
+            let inner_bbox = inner_p.getBoundingClientRect();
+            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
+            d3.select("body").classed("noselect", false);
+            state = null;
+        };
+
+        var current_timeout, state;
         let context_menu = new ContextMenu(),
             getItems = () =>  [
                 {"name": "Edit style...", "action": () => { this.editStyle(); }},
+                {"name": "Up element", "action": () => { this.up_element(); }},
+                {"name": "Down element", "action": () => { this.down_element(); }},
                 {"name": "Delete", "action": () => { this.text_annot.remove(); }}
             ];
 
@@ -56,8 +71,17 @@ class Textbox {
         foreign_obj.appendChild(inner_p);
         parent.appendChild(foreign_obj);
 
-        let frgn_obj = map.select("#" + new_id_txt_annot);
-        let inner_ft = frgn_obj.select('p');
+        // foreignObj size was set to 100% for fully rendering its content,
+        // now we can reduce its size to the inner content
+        // (it will avoid it to overlay some other svg elements)
+        {
+            let inner_bbox = inner_p.getBoundingClientRect();
+            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
+        }
+
+        var frgn_obj = map.select("#" + new_id_txt_annot),
+            inner_ft = frgn_obj.select('p');
         inner_ft.call(drag_txt_annot);
 
         inner_ft.on("contextmenu", () => {
@@ -72,16 +96,26 @@ class Textbox {
                     inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
                     inner_ft.style("background-color", "white");
                     inner_ft.style("border", "1px solid red");
+                    inner_ft.on("keyup", () => {
+                        clearTimeout(current_timeout);
+                        current_timeout = setTimeout(end_edit_action, 7500);
+                        state = "keyup";
+                    })
+                    // toogle the size of the container to 100% while we are using it :
+                    foreign_obj.setAttributeNS(null, "width", "100%");
+                    foreign_obj.setAttributeNS(null, "height", "100%");
                     d3.select("body").classed("noselect", true);
                 })
                 .on("mouseout", () => {
-                    inner_ft.attr("contentEditable", "false");
-                    inner_ft.style("background-color", "transparent");
-                    inner_ft.style("border", "");
-                    d3.select("body").classed("noselect", false);
+                    // use a small delay after leaving the box before deactiving it :
+                    if(!state){
+                        clearTimeout(current_timeout);
+                        current_timeout = setTimeout(end_edit_action, 2500);
+                    }
                 });
 
         this.text_annot = frgn_obj;
+        this.id = new_id_txt_annot;
     }
 
     editStyle(){
@@ -111,4 +145,40 @@ class Textbox {
                 });
         document.getElementById("annotation_content").value = current_options.content;
     }
+
+    up_element(){
+        let lgd_features = document.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == nb_lgd_features){
+            return;
+        } else {
+            console.log(lgd_features[self_position])
+            console.log(lgd_features[self_position + 1])
+            map.node().insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
+        }
+    }
+
+    down_element(){
+        let lgd_features = document.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == 0){
+            return;
+        } else {
+            map.node().insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+        }
+
+    }
+
 }
