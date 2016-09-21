@@ -338,6 +338,14 @@ function setUpInterface()
             available_projections.set(d.name, d.projection);
             p.append("option").text(d.name).attr("value", d.projection);
            });
+        if(window.location.search && window.location.search.indexOf("resume") > -1){
+            var json_params = window.localStorage.getItem("noname_map_project");
+            if(json_params){
+                apply_user_preferences(json_params);
+            }
+        } else {
+            window.localStorage.removeItem("noname_app_project");
+        }
     });
 
     let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline")
@@ -680,6 +688,8 @@ var w = Math.round(window.innerWidth - 360),
     h = window.innerHeight - 75;
     //h = Math.round(window.innerHeight / 1.24);
 
+var existing_lang = ["en", "fr"];
+
 var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
 
 var path = d3.geoPath().projection(proj).pointRadius(4),
@@ -763,19 +773,22 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
 {% raw %}
 
 (function(){
+    let lang = window.navigator.language.split('-')[0];
+    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
       .init({
           debug: true,
-          lng: window.navigator.language || 'en',
-          fallbackLng: "en",
+          lng: lang,
+          fallbackLng: existing_lang[0],
           backend: {
             loadPath: "/static/locales/{{lng}}/translation.json"
           }
     }, (err, t) => {
         if(err)
             throw err;
-        else
+        else {
             setUpInterface();
+        }
     });
 })();
 
@@ -1276,6 +1289,11 @@ function get_map_template(){
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
+            let color_by_id = [];
+            selection.each(function(){
+                color_by_id.push(rgb2hex(this.style.fill));
+            });
+            layers_style[i].color_by_id = color_by_id;
         } else if (current_layers[layer_name].renderer == "Links"
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
@@ -1776,8 +1794,6 @@ function apply_user_preferences(json_pref){
             symbol,
             layer_selec;
 
-        current_layers[layer_name] = {};
-
         let fill_opacity = layers[i].fill_opacity,
             stroke_opacity = layers[i].stroke_opacity;
 
@@ -1786,63 +1802,59 @@ function apply_user_preferences(json_pref){
             if(layers[i].targeted)
                 target_layer_on_add = true;
             else if(layers[i].renderer){
-                current_layers[layer_name].renderer = layers[i].renderer;
                 tmp['func_name'] = func_name_corresp.get(layers[i].renderer)
                 tmp['result_layer_on_add'] = true;
             }
 
-            handle_reload_TopoJSON(layers[i].topo_geom, tmp);
-
-            symbol = "path";
-            layer_selec = map.select("#" + layer_name);
-
-            current_layers[layer_name].rendered_field = layers[i].rendered_field;
-            current_layers[layer_name]['stroke-width-const'] = layers[i]['stroke-width-const'];
-            current_layers[layer_name].fixed_stroke = layers[i].fixed_stroke;
-            if(layers[i].ref_layer_name)
-                current_layers[layer_name].ref_layer_name = layers[i].ref_layer_name;
-            if(layers[i].size)
-                current_layers[layer_name].size = layers[i].size;
-            if(layers[i].colors_breaks)
-                current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
-            if(layers[i].fill_color)
-                current_layers[layer_name].fill_color = layers[i].fill_color;
-            console.log(layers[i])
-            if(layers[i].renderer){
-                if(layers[i].renderer == "Choropleth"
-                    || layers[i].renderer == "Stewart"
-                    || layers[i].renderer == "Gridded"){
-                    layer_selec.selectAll("path")
-                            .style("fill", (d,j) => layers[i].fill_color.class[j])
-                    if(layers[i].renderer == "Choropleth"){
-                        insert_legend_button(layer_name);
-                        binds_layers_buttons(layer_name);
-                    }
-                } else if (layers[i].renderer == "Links"){
-                    current_layers[layer_name].linksbyId = layers[i].linksbyId;
-                    current_layers[layer_name].min_display = layers[i].min_display;
-                } else if (layers[i].renderer == "DiscLayer"){
-                    current_layers[layer_name].result = new Map(layers[i].result);
-                    layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
+            handle_reload_TopoJSON(layers[i].topo_geom, tmp).then(function(n_layer_name){
+                console.log([layer_name, n_layer_name])
+                layer_name = n_layer_name;
+                if(layers[i].renderer){
+                    current_layers[layer_name].renderer = layers[i].renderer;
                 }
-            } else if(layers[i].fill_color.random) {
-                    layer_selec
-                        .selectAll(symbol)
-                        .style("fill", () => Colors.names[Colors.random()]);
-            }
-            layer_selec.selectAll(symbol)
-                    .style("fill-opacity", fill_opacity)
-                    .style("stroke-opacity", stroke_opacity)
 
+                symbol = "path";
+                layer_selec = map.select("#" + layer_name);
+
+                current_layers[layer_name].rendered_field = layers[i].rendered_field;
+                current_layers[layer_name]['stroke-width-const'] = layers[i]['stroke-width-const'];
+                current_layers[layer_name].fixed_stroke = layers[i].fixed_stroke;
+                if(layers[i].ref_layer_name)
+                    current_layers[layer_name].ref_layer_name = layers[i].ref_layer_name;
+                if(layers[i].size)
+                    current_layers[layer_name].size = layers[i].size;
+                if(layers[i].colors_breaks)
+                    current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
+                if(layers[i].fill_color)
+                    current_layers[layer_name].fill_color = layers[i].fill_color;
+                console.log(layers[i])
+                if(layers[i].renderer){
+                    if(layers[i].renderer == "Choropleth"
+                        || layers[i].renderer == "Stewart"
+                        || layers[i].renderer == "Gridded"){
+                        layer_selec.selectAll("path")
+                                .style("fill", (d,j) => layers[i].color_by_id[j])
+                    } else if (layers[i].renderer == "Links"){
+                        current_layers[layer_name].linksbyId = layers[i].linksbyId;
+                        current_layers[layer_name].min_display = layers[i].min_display;
+                    } else if (layers[i].renderer == "DiscLayer"){
+                        current_layers[layer_name].result = new Map(layers[i].result);
+                        layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
+                    }
+                } else if(layers[i].fill_color.random) {
+                        layer_selec
+                            .selectAll(symbol)
+                            .style("fill", () => Colors.names[Colors.random()]);
+                }
+                layer_selec.selectAll(symbol)
+                        .style("fill-opacity", fill_opacity)
+                        .style("stroke-opacity", stroke_opacity)
+            });
         } else if (layer_name == "Sphere" || layer_name == "Simplified_land_polygons"){
-            layer_selec = map.select("#"+layer_name);
-            symbol = "path";
-            layer_selec.selectAll(symbol)
-                    .style("fill-opacity", fill_opacity)
-                    .style("stroke-opacity", stroke_opacity)
+            add_layout_feature(layer_name);
         } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
             let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
-            let zs = zoom_scale;
+            let zs = map_config.zoom_scale;
             let full_params = JSON.parse(layers[i].features_order);
             let n_ft = full_params.length;
             symbol = layers[i].symbol;
@@ -1898,17 +1910,7 @@ function apply_user_preferences(json_pref){
             layer_selec.selectAll(symbol)
                     .style("fill-opacity", fill_opacity)
                     .style("stroke-opacity", stroke_opacity);
-
-            let layers_listed = layer_list.node(),
-                li = document.createElement("li");
-
-            li.setAttribute("layer_name", layer_name);
-            li.setAttribute("class", "ui-state-default sortable_result " + layer_name);
-            li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Point - ", n_ft, " features"].join(''));
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, button_legend, eye_open0, button_type_blank['Point'], "</div> ", layer_name].join('');
-            layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-            binds_layers_buttons(layer_name);
-
+            create_li_layer_elem(layer_name, n_ft, ["Point", "prop"], "result");
         } else {
             null;
         }
@@ -2113,14 +2115,18 @@ function make_export_layer_box(){
 // Only ask for confirmation before leaving page if things have been done
 // (layer added, etc..)
 window.addEventListener("beforeunload", event => {
+    get_map_template().then(function(json_params){
+        window.localStorage.removeItem("noname_app_project");
+        window.localStorage.setItem("noname_map_project", json_params);
+    });
     event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0) ? "Confirm exit" : "";
 });
-
 
 // Remove some layers from the server when user leave the page
 // (ie. result layers are removed but targeted layer and layout layers stay
 // in cache as they have more chance to be added again)
 window.addEventListener("unload", function(){
+
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
         if(sample_no_values.has(name) || !(current_layers[name].hasOwnProperty("key_name")))
             return 0;

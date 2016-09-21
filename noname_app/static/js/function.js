@@ -3056,7 +3056,7 @@ function add_table_field(table, layer_name, parent){
             } else {
                 opt_val = +opt_val;
                 for(let i=0; i<table.length; i++){
-                    if(table[i][fi1] != null && table[i][fi2] != null){
+                    if(table[i][fi1] != null){
                         table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
                     } else {
                         table[i][new_name_field] = null;

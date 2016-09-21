@@ -178,28 +178,29 @@ async def cache_input_topojson(request):
         name = posted_data.get('layer_name')
         path = request.app['db_layers'][name]
         hash_val = str(mmh3_hash(path))
+        fp_name = '_'.join([user_id, name])
         f_name = '_'.join([user_id, hash_val])
         f_nameQ = '_'.join([f_name, "Q"])
         f_nameNQ = '_'.join([f_name, "NQ"])
 
-        result = await request.app['redis_conn'].get(f_nameNQ)
+        result = await request.app['redis_conn'].get(f_nameQ)
         if result:
             result = result.decode()
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
             return web.Response(text=''.join([
                 '{"key":', hash_val,
-                ',"file":', result.replace(f_name, name), '}'
+                ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
                 ]))
         else:
             res = await ogr_to_geojson(path, to_latlong=True)
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
-            f_path = '/tmp/' + f_name + ".geojson"
+            f_path = '/tmp/' + fp_name + ".geojson"
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
             result = await geojson_to_topojson(f_path, "-q 1e6")
-            result = result.replace(f_name, name)
+            result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
                     f_path, f_nameNQ, request.app['redis_conn']))
@@ -786,7 +787,7 @@ async def handler_exists_layer(request):
     res = await request.app['redis_conn'].get(
         '_'.join([user_id, request.match_info['expr'], "NQ"]))
     if res:
-        return web.Response(text=res.decode())
+        return web.Response(text=res.decode().replace(''.join([user_id, "_"]), ''))
     else:
         return web.Response(text="")
 

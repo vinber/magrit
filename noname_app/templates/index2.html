@@ -93,11 +93,11 @@
                 <div class="box-wrap clearfix"></div>
                 <p style="col-md-12">
                     <a href="/modules" class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]index.buttons.enter"></a>
-                    <a href="/modules" class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
+                    <a href="/modules?resume" id="resume_btn" class="btn btn-success i18n" disabled style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
                 </p>
             </div>
         </div>
-        <div class="end_div_divider" style="background-image:url('/static/img/divider_europe_1843_wikimedia.png');"></div>
+        <div class="end_div_divider col-lg-8" style="background-image:url('/static/img/divider_europe_1843_wikimedia.png');"></div>
     </section>
 
     <section id="overview" class="overview-section">
@@ -135,11 +135,27 @@
             <h1>Examples</h1>
             <hr class="grad-transp"></hr>
                 <div class="col-md-3">
-                    <img class="img-responsive" title="choropleth" src="/static/img/gallery/choropleth_map.png" alt="Choropleth map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    <a class="pop">
+                    <img class="img-responsive" data-toggle="popover" data-placement="auto" title="Choropleth map" src="/static/img/gallery/choropleth_map.png" alt="Choropleth map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    </a>
                 </div>
                 <div class="col-md-3">
-                    <img class="img-responsive" title="smoothed" src="/static/img/gallery/smoothed.png" alt="Smoothed map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    <a class="pop">
+                    <img class="img-responsive" data-toggle="popover" data-placement="auto" title="Smoothed map" src="/static/img/gallery/smoothed.png" alt="Smoothed map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    </a>
                 </div>
+                <div class="col-md-3">
+                    <a class="pop">
+                    <img class="img-responsive" data-toggle="popover" data-placement="auto" title="Discontinuity map" src="/static/img/gallery/discont.png" alt="Discontinuity map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a class="pop">
+                    <img class="img-responsive" data-toggle="popover" data-placement="auto" title="Density map" src="/static/img/gallery/gridded.png" alt="Density map" style="max-height:100px;margin:5px;cursor:pointer;">
+                    </a>
+                </div>
+
                 <div class="col-md-12">
                     <p style="margin-top: 25px;" class="i18n" data-i18n="[html]index.examples_section.gallery"></p>
                 </div>
@@ -188,8 +204,30 @@
             </div>
         </div>
     </footer>
+<div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+      	<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <img src="" class="imagepreview" style="width: 100%;" >
+      </div>
+    </div>
+  </div>
+</div>
 {% raw %}
 <script>
+//jQuery for initialising tooltips
+$('[data-toggle="popover"]').popover({
+    trigger: 'hover'
+});
+
+//jQuery for image preview
+$(function(){
+    $(".pop").on("click", function(){
+        $(".imagepreview").attr("src", $(this).find("img").attr("src"));
+        $("#imagemodal").modal("show");
+    });
+});
 
 //jQuery to collapse the navbar on scroll
 $(window).scroll(function() {
@@ -212,11 +250,14 @@ $(function() {
 });
 
 (function(){
+    var existing_lang = ["en", "fr"]
+    let lang = window.navigator.language.split('-')[0];
+    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
       .init({
           debug: true,
-          lng: window.navigator.language || 'en',
-          fallbackLng: "fr",
+          lng: lang,
+          fallbackLng: existing_lang[0],
           backend: {
             loadPath: "/static/locales/{{lng}}/translation.json"
           }
@@ -231,6 +272,11 @@ $(function() {
             document.getElementById("lang_current").innerHTML = current_lang;
             document.getElementById("lang1").innerHTML = current_lang;
             document.getElementById("lang2").innerHTML = other_lang;
+
+            if(window.localStorage.getItem("noname_map_project")){
+                document.getElementById("resume_btn").removeAttribute("disabled");
+            }
+
         }
     });
 })();

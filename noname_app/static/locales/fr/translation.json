@@ -106,9 +106,9 @@
         },
         "intro_section": {
             "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
-            "arg2": "<strong>Utilisez votre propres données</strong>(Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg2": "<strong>Utilisez votre propres données</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
             "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
-            "arg4": "<strong>Exportez ou sauvegarder facilement votre composition!</strong>(exports PNG et SVG, sauvegarde de projet)"
+            "arg4": "<strong>Exportez ou sauvegarder facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
         },
         "overview_section": {
             "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",

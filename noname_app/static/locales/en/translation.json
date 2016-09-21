@@ -38,9 +38,9 @@
         },
         "intro_section": {
             "arg1": "<strong>Hassle-free thematic mapping</strong>",
-            "arg2": "<strong>Use your own data</strong>(Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg2": "<strong>Use your own data</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
             "arg3": "<strong>Custom your map as you wish</strong>",
-            "arg4": "<strong>Export or save your composition with ease!</strong>(SVG and PNG exports, project saving in human-readable fashion)"
+            "arg4": "<strong>Export or save your composition with ease!</strong> (SVG and PNG exports, project saving in human-readable fashion)"
         },
         "overview_section": {
             "list_func1": "Conventional cartographic methods coupled with innovative techniques",

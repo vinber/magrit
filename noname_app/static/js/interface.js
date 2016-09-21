@@ -290,22 +290,14 @@ function handle_reload_TopoJSON(text, param_add_func){
     var ajaxData = new FormData();
     var f = new Blob([text], {type: "application/json"});
     ajaxData.append('file[]', f);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/cache_topojson/user',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) { console.log(error);},
-        success: function(res){
-            let key = JSON.parse(res).key;
-            let topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
-            console.log(topoObjText)
-            add_layer_topojson(topoObjText, param_add_func);
-        }
-    });
 
+    return request_data("POST", '/cache_topojson/user', ajaxData).then(function(response){
+        let res = response.target.responseText,
+            key = JSON.parse(res).key,
+            topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
+        let layer_name = add_layer_topojson(topoObjText, param_add_func);
+        return layer_name;
+    });
 }
 
 /**
