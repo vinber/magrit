@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 #from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
@@ -16,9 +17,13 @@ import sys
 
 
 RUN_LOCAL = os.environ.get('RUN_TESTS_LOCAL') == 'True'
+RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
 
 if RUN_LOCAL:
     browsers = ['Firefox']
+elif RUN_DOCKER:
+    browsers = [DesiredCapabilities.CHROME,
+                DesiredCapabilities.FIREFOX]
 else:
     from sauceclient import SauceClient
 
@@ -95,6 +100,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def setUp(self):
         if RUN_LOCAL:
             self.setUpLocal()
+        elif RUN_DOCKER:
+            self.setUpDocker()
         else:
             self.setUpSauce()
 
@@ -113,12 +120,20 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             [os.environ['TRAVIS_PYTHON_VERSION'], 'CI']
 
         print(self.desired_capabilities)
-        self.verificationErrors = []
         self.driver = webdriver.Remote(
             desired_capabilities=self.desired_capabilities,
             command_executor="http://%s:%s@ondemand.saucelabs.com:80/wd/hub" %
             (USERNAME, ACCESS_KEY)
         )
+        self.driver.implicitly_wait(10)
+        self.base_url = "http://localhost:{}/modules".format(port)
+        self.verificationErrors = []
+        self.accept_next_alert = True
+
+    def setUpDocker(self):
+        self.driver = webdriver.Remote(
+            desired_capabilities=self.desired_capabilities,
+            command_executor="http://localhost:4444/wd/hub")
         self.driver.implicitly_wait(10)
         self.base_url = "http://localhost:{}/modules".format(port)
         self.verificationErrors = []

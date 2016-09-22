@@ -784,9 +784,12 @@ var northArrow = {
             y_pos = h - 100,
             self = this;
 
-        let arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend");
-        this.x = x_pos;
-        this.y = y_pos;
+        let arrow_gp = map.append("g")
+                        .attr("id", "north_arrow")
+                        .attr("class", "legend")
+                        .style("cursor", "pointer");
+        this.x_center = 79.50;
+        this.y_center = 50.75;
         this.svg_node = arrow_gp;
         this.displayed = true;
 
@@ -796,40 +799,50 @@ var northArrow = {
         ];
 
         let arrow_context_menu = new ContextMenu();
+        let arrow_svg = arrow_gp.append("g")
+        arrow_svg.append("polygon")
+                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
+                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
+        arrow_svg.append("polygon")
+                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
+                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
+        arrow_svg.insert("path")
+                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
 
-//        arrow_gp.append("polygon")
-//                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
-//                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
-//        arrow_gp.append("polygon")
-//                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
-//                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
-//        arrow_gp.insert("path")
-//                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
+        let bbox = document.getElementById("north_arrow").getBoundingClientRect(),
+            xy0_map = get_map_xy0();
+
         this.under_rect = arrow_gp.append("g")
             .insert("rect")
                 .style("fill", "green")
                 .style("fill-opacity", 0)
-                .attr("x", x_pos - (36 - 30) / 2)
-                .attr("y", y_pos - (36 - 30) / 2)
-                .attr("height", "36px")
-                .attr("width", "36px");
+                .attr("x", bbox.x - xy0_map.x)
+                .attr("y", bbox.y - xy0_map.y)
+                .attr("height", bbox.height)
+                .attr("width", bbox.width);
+//        this.under_rect = arrow_gp.append("g")
+//            .insert("rect")
+//                .style("fill", "green")
+//                .style("fill-opacity", 0)
+//                .attr("x", x_pos - (36 - 30) / 2)
+//                .attr("y", y_pos - (36 - 30) / 2)
+//                .attr("height", "36px")
+//                .attr("width", "36px");
 
-        this.arrow_img = arrow_gp.insert("image")
-            .attr("x", x_pos)
-            .attr("y", y_pos)
-            .attr("height","30px")
-            .attr("width", "30px")
-            .attr("xlink:href", "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxOC4xLjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FscXVlXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIzMTEgMjc4LjYgMzYuOSA1MC41IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDMxMSAyNzguNiAzNi45IDUwLjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPHBvbHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50cz0iMzEyLjMsMzI3LjkgMzI4LjksMzE4LjUgMzI4LjksMjk2LjQgIi8+DQo8cG9seWdvbiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIzMjkuOSwyOTYuNCAzMjkuOSwzMTguNSAzNDYuNywzMjcuOCAiLz4NCjxnPg0KCTxwYXRoIGQ9Ik0zMjIuOCwyNzguNmgyLjlsNi43LDEwLjN2LTEwLjNoM3YxNS43aC0yLjlsLTYuNy0xMC4zdjEwLjNoLTNWMjc4LjZ6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==");
+//        this.arrow_img = arrow_gp.insert("image")
+//            .attr("x", x_pos)
+//            .attr("y", y_pos)
+//            .attr("height","30px")
+//            .attr("width", "30px")
+//            .attr("xlink:href", "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxOC4xLjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FscXVlXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIzMTEgMjc4LjYgMzYuOSA1MC41IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDMxMSAyNzguNiAzNi45IDUwLjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPHBvbHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50cz0iMzEyLjMsMzI3LjkgMzI4LjksMzE4LjUgMzI4LjksMjk2LjQgIi8+DQo8cG9seWdvbiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIzMjkuOSwyOTYuNCAzMjkuOSwzMTguNSAzNDYuNywzMjcuOCAiLz4NCjxnPg0KCTxwYXRoIGQ9Ik0zMjIuOCwyNzguNmgyLjlsNi43LDEwLjN2LTEwLjNoM3YxNS43aC0yLjlsLTYuNy0xMC4zdjEwLjNoLTNWMjc4LjZ6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==");
 
         arrow_gp.call(drag_lgd_features);
 
         arrow_gp
             .on("mouseover", function(){
-                this.style.cursor = "pointer";
                 self.under_rect.style("fill-opacity", 0.1);
                 })
             .on("mouseout", function(){
-                this.style.cursor = "initial";
                 self.under_rect.style("fill-opacity", 0);
                 })
             .on("contextmenu", (d,i) => {
@@ -840,6 +853,7 @@ var northArrow = {
     },
     remove: function(){
         this.svg_node.remove();
+        this.displayed = false;
     },
     editStyle: function(){
         var new_val,
@@ -857,23 +871,25 @@ var northArrow = {
         box_body.append("p").style("margin-bottom", "0")
                 .html("Arrow size ");
         box_body.append("input")
-                .attrs({type: "range", min: 2, max: 75, step: 0.1})
-                .attr("value", self.arrow_img.attr("width").slice(0, -2))
+                .attrs({type: "range", min: 0, max: 2, step: 0.1})
+                .attr("value", !isNaN(+self.svg_node.attr("scale")) ? +self.svg_node.attr("scale") : 1)
                 .on("change", function(){
-                    let new_val = this.value + "px",
-                        new_val_rect = (+this.value + 6) + "px";
-                    self.arrow_img.attr("width", new_val)
-                                  .attr("height", new_val);
-                    self.under_rect
-                                .attr("width", new_val_rect)
-                                .attr("height", new_val_rect);
+                    let translate_param = self.svg_node.attr("transform"),
+                        rotate_value = self.svg_node.attr("rotate");
+//                    rotate_value = rotate_value ? "rotate(" + rotate_value + ", 79.50,50.75)" : "";
+                    rotate_value = rotate_value ? "rotate("+ [rotate_value, self.x_center, self.y_center] +")" : "";
+                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
+                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
+                                            : "";
+
+                    self.svg_node.attr("scale", +this.value);
+                    self.svg_node.attr("transform", translate_param + rotate_value + "scale(" + this.value + ")");
                 });
         box_body.append("p").style("margin-bottom", "0")
                 .html("Arrow rotation ");
         box_body.append("input")
-                .attr("type", "range")
-                .attr("value", self.svg_node.attr("rotate") || 0)
-                .attrs({min: 0, max: 360, step: 0.1})
+                .attrs({type: "range", min: 0, max: 360, step: 0.1})
+                .attr("value", !isNaN(+self.svg_node.attr("rotate")) ? +self.svg_node.attr("rotate") : 0)
                 .on("change", function(){
                     let translate_param = self.svg_node.attr("transform"),
                         scale_value = self.svg_node.attr("scale");
@@ -882,8 +898,8 @@ var northArrow = {
                                             ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
                                             : "";
 
-                    self.svg_node.attr("rotate", this.value);
-                    self.svg_node.attr("transform", translate_param + scale_value + "rotate(" + this.value + ",0,0)");
+                    self.svg_node.attr("rotate", +this.value);
+                    self.svg_node.attr("transform", translate_param + scale_value + "rotate(" + [this.value, self.x_center, self.y_center] + ")");
                 });
     },
     displayed: false
@@ -1173,4 +1189,9 @@ function list_existing_layers_server(){
         success: function(data){ console.log(JSON.parse(data)) },
         error: function(error) { console.log(error); }
     });
+}
+
+function get_map_xy0(){
+    let bbox = svg_map.getBoundingClientRect();
+    return {x: bbox.x, y: bbox.y}
 }

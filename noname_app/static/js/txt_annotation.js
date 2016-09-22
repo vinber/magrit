@@ -65,7 +65,7 @@ class Textbox {
         inner_p.setAttribute("id", "in_" + new_id_txt_annot);
         inner_p.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
         inner_p.style = "display:table-cell;padding:10px;color:#000;"
-            + "opacity:1;font-family:Verdana;font-size:14px;white-space: pre;"
+            + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
             + "word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;"
         inner_p.innerHTML = "Enter your text...";
         foreign_obj.appendChild(inner_p);
@@ -115,6 +115,7 @@ class Textbox {
                 });
 
         this.text_annot = frgn_obj;
+        this.font_family = 'Verdana,Geneva,sans-serif';
         this.id = new_id_txt_annot;
     }
 
@@ -130,20 +131,42 @@ class Textbox {
                     self.fontsize = current_options.size;
                 }
             });
-        let box_content = d3.select(".styleTextAnnotation").insert("div");
+        let box_content = d3.select(".styleTextAnnotation").insert("div").attr("id", "styleTextAnnotation");
         box_content.append("p").html("Font size ")
                 .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
                 .on("change", function(){
                     self.fontsize = +this.value;
                     self.text_annot.select("p").style("font-size", self.fontsize + "px")
                 });
-        box_content.append("p").html("Content ")
-                .append("textarea").attr("id", "annotation_content")
+        let font_select = box_content.append("p").html("Default font family ")
+                .insert("select")
+                .on("change", function(){
+                    self.text_annot.select("p").style("font-family", this.value);
+                });
+        available_fonts.forEach(function(font){
+            font_select.append("option").text(font[0]).attr("value", font[1])
+        });
+        font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
+
+        let content_modif_zone = box_content.append("p");
+        content_modif_zone.append("span")
+                .html("Content ");
+        content_modif_zone.append("img")
+            .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information"})
+            .styles({"cursor": "pointer", "vertical-align": "bottom"});
+        content_modif_zone.append("span")
+                .html("<br>");
+        content_modif_zone.append("textarea")
+                .attr("id", "annotation_content")
+                .style("margin", "5px 0px 0px")
                 .on("keyup", function(){
                     self._text = this.value;
                     self.text_annot.select("p").html(this.value)
                 });
+
+
         document.getElementById("annotation_content").value = current_options.content;
+
     }
 
     up_element(){

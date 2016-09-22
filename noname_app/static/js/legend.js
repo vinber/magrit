@@ -133,7 +133,7 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
         space_elem = 18,
         boxgap = 12,
         xpos = 30,
-        ypos = 30,
+        ypos = h / 2,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         legend_root = map.insert('g').attr('id', 'legend_root_nothing').attr("class", tmp_class_name).style("cursor", "grab");
 
@@ -301,7 +301,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         boxgap = 4,
         xpos = 30,
         ypos = 30,
-        y_pos2 =  ypos + space_elem,
+        y_pos2 =  ypos + space_elem * 1.5,
         ref_layer_name = current_layers[layer].ref_layer_name,
         nb_features = user_data[ref_layer_name].length,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
@@ -478,16 +478,19 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     legend_root.attr("nested", nested);
     make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
+    if(current_layers[layer].renderer == "PropSymbolsChoro"){
+        legend_root.attr("transform", "translate(120, 0)")
+    }
     make_legend_context_menu(legend_root, layer);
 }
 
 function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt){
     var boxheight = 18,
         boxwidth = 18,
-        xpos = w - (w / 8),
+        xpos = 30,
         ypos = 30,
         last_pos = null,
-        y_pos2 =  ypos + boxheight * 2,
+        y_pos2 =  ypos + boxheight * 1.8,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         nb_class,
         data_colors_label;

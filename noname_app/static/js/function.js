@@ -503,7 +503,7 @@ var render_discont = function(){
 //        threshold = +document.getElementById("Discont_threshold").value,
         min_size = 1,
         max_size = 10,
-        threshold = 0,
+        threshold = 1,
         disc_kind = document.getElementById("kind_Discont").value,
         nb_class = +document.getElementById("Discont_nbClass").value,
         user_color = document.getElementById("color_Discont").value,
@@ -581,63 +581,66 @@ var render_discont = function(){
     // This is bad and should be replaced by somthing better as we are
     // traversing the whole topojson again and again
     // looking for each "border" from its "id" (though it isn't that slow)
-    let chunk_size = 450 > nb_ft ? nb_ft : 450,
-        _s = 0;
+//    let chunk_size = 450 > nb_ft ? nb_ft : 450,
+//        _s = 0;
+//
+//    var compute = function(){
+//        for(let i=_s; i<chunk_size; i++){
+////            let id_ft = arr_disc[i][0],
+////                val = arr_disc[i][1],
+//            let [id_ft, val] = arr_disc[i],
+//                p_size = class_size[serie.getClass(val)];
+//            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
+//            result_layer.append("path")
+//                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+////                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
+//                    let [a_id, b_id] = id_ft.split("_");
+//                    return a != b
+//                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
+//                .attrs({d: path, id: ["feature", i].join('_')})
+//                .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
+//                .style("stroke-opacity", val >= threshold ? 1 : 0);
+//            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+//        }
+//        _s = chunk_size;
+//        if(_s < nb_ft){
+//            chunk_size += 450;
+//            if(chunk_size > nb_ft) chunk_size = nb_ft;
+//            setTimeout(compute, 0);
+//            return;
+//        }
+//    }
+//
+//    compute();
 
+//    var datums = [];
+    var d_res = [];
     var compute = function(){
-        for(let i=_s; i<chunk_size; i++){
-//            let id_ft = arr_disc[i][0],
-//                val = arr_disc[i][1],
-            let [id_ft, val] = arr_disc[i],
-                p_size = class_size[serie.getClass(val)];
-            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
-            result_layer.append("path")
-                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-//                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-                    let [a_id, b_id] = id_ft.split("_");
+        for(let i=0; i<nb_ft; i++){
+            let id_ft = arr_disc[i][0],
+                val = arr_disc[i][1],
+                p_size = class_size[serie.getClass(val)],
+                datum = topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
                     return a != b
-                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
-                .attrs({d: path, id: ["feature", i].join('_')})
-                .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
-                .style("stroke-opacity", val >= threshold ? 1 : 0);
-            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-        }
-        _s = chunk_size;
-        if(_s < nb_ft){
-            chunk_size += 450;
-            if(chunk_size > nb_ft) chunk_size = nb_ft;
-            setTimeout(compute, 0);
-            return;
+                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); });
+            d_res.push([val, {id: id_ft, disc_value: val, prop_value: p_size}, datum, p_size]);
         }
     }
 
     compute();
+    d_res.sort((a,b) => b[0] - a[0]);
 
-//    var datums = [];
-//    var compute = function(){
-//        for(let i=0; i<nb_ft; i++){
-//            let id_ft = arr_disc[i][0],
-//                val = arr_disc[i][1],
-//                p_size = class_size[serie.getClass(val)],
-//                datum = topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-//                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-//                    return a != b
-//                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); });
-//            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
-//            datums.push(datum);
-//        }
-//    }
-//    compute();
-//    for(let i=0; i<nb_ft; i++){
-//        let val = arr_disc[i][1],
-//            p_size = class_size[serie.getClass(val)];
-//        result_layer.append("path")
-//            .datum(datums[i])
-//            .attrs({d: path, id: ["feature", i].join('_')})
-//            .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
-//            .style("stroke-opacity", val >= threshold ? 1 : 0);
-//        result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-//    }
+    for(let i=0; i<nb_ft; i++){
+        let val = d_res[i][0];
+        result_layer.append("path")
+            .datum(d_res[i][2])
+            .attrs({d: path, id: ["feature", i].join('_')})
+            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent"})
+            .style("stroke-opacity", val >= threshold ? 1 : 0);
+        data_result.push(d_res[i][1])
+        result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+    }
 
     current_layers[new_layer_name] = {
         "renderer": "DiscLayer",
@@ -2585,7 +2588,7 @@ function make_prop_symbols(rendering_params){
                 .style("fill", params[3])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);
-            res_obj = {};
+            let res_obj = {};
             res_obj["uid"] = i;
             res_obj["id_layer_reference"] = id_ref;
             res_obj[field] = _values[id_ref][1];
@@ -3161,7 +3164,7 @@ function add_table_field(table, layer_name, parent){
                 document.querySelector("body").style.cursor = "wait";
                 compute_and_add(chooses_handler).then(
                     function(resolved){
-                        if(window.fields_handler){
+                        if(window.fields_handler && current_layers[layer_name].targeted){
                             fields_handler.unfill();
                             fields_handler.fill(layer_name);
                         }

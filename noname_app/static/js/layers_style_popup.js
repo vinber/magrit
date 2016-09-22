@@ -568,10 +568,16 @@ function createStyleBox(layer_name){
                                         recolor_stewart(pal_name, true);
                                      });
          }
-         popup.append('p').html('Fill opacity<br>')
-                          .insert('input').attr('type', 'range')
+         let fill_opacity_section = popup.append('p');
+         fill_opacity_section.append("span").html('Fill opacity<br>')
+         fill_opacity_section.insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
-                          .on('change', function(){selection.style('fill-opacity', this.value)});
+                          .styles({"width": "70px", "vertical-align": "middle"})
+                          .on('change', function(){
+                            selection.style('fill-opacity', this.value)
+                            fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
+                          });
+        fill_opacity_section.append("span").attr("id", "fill_opacity_txt").html((+opacity * 100) + "%");
     } else if (type === "Line" && renderer == "Links"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = 0,
@@ -582,7 +588,7 @@ function createStyleBox(layer_name){
         //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_part.insert('input')
                     .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-                    .style("width", "70px")
+                    .styles({width: "70px", "vertical-align": "middle"})
                     .on("change", function(){
                         let val = +this.value;
                         popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
@@ -619,12 +625,13 @@ function createStyleBox(layer_name){
         let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
         let disc_part = popup.append("p").html("Discontinuity threshold ");
         disc_part.insert("input")
-                .attrs({type: "range", min: 0, max: max_val, step: 0.1, value: prev_min_display})
-                .style("width", "70px")
+                .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
+                .styles({width: "70px", "vertical-align": "middle"})
                 .on("change", function(){
                     let val = +this.value;
+                    let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
                     popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
-                    selection.style("stroke-opacity", (d,i) => +d.properties.disc_value > val ? 1 : 0 );
+                    selection.style("display", (d,i) => i <= lim ? null : "none" );
                     current_layers[layer_name].min_display = val;
                 });
         disc_part.insert("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
@@ -658,7 +665,7 @@ function createStyleBox(layer_name){
      let opacity_section = popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
      opacity_section.insert('input')
                       .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-                      .style("width", "70px")
+                      .styles({"width": "70px", "vertical-align": "middle"})
                       .on('change', function(){
                         opacity_section.select("#opacity_val_txt").html(" " + this.value)
                         selection.style('stroke-opacity', this.value)
@@ -670,7 +677,9 @@ function createStyleBox(layer_name){
 
     if(renderer != "DiscLayer" && renderer != "Links")
          popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
-                          .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
+                          .insert('input').attr('type', 'number')
+                          .attrs({min: 0, step: 0.1, value: stroke_width})
+                          .style("width", "70px")
                           .on('change', function(){
                                 let val = +this.value;
                                 let zoom_scale = +d3.zoomTransform(map.node()).k;
@@ -894,23 +903,37 @@ function createStyleBox_ProbSymbol(layer_name){
         setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
     }
 
-    popup.append('p').html('Fill opacity<br>')
+    let fill_opct_section = popup.append('p').html('Fill opacity<br>');
+    fill_opct_section
           .insert('input')
-          .style("width", "70px")
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-          .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
-          .on('change', function(){selection.style('fill-opacity', this.value)});
-
+          .styles({width: "70px", "vertical-align": "middle"})
+          .on('change', function(){
+            selection.style('fill-opacity', this.value);
+            fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
+          });
+    fill_opct_section.append("span").attr("id", "fill_opacity_txt").html((+opacity * 100) + "%");
     popup.append('p').html('Border color<br>')
           .insert('input').attr('type', 'color').attr("value", stroke_prev)
-          .on('change', function(){selection.style("stroke", this.value)});
+          .on('change', function(){
+            selection.style("stroke", this.value);
+          });
 
-    popup.append('p').html('Border opacity<br>')
-          .insert('input').attr('type', 'range').attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", border_opacity)
-          .on('change', function(){selection.style('stroke-opacity', this.value)});
+    let border_opacity_section = popup.append('p').html('Border opacity<br>');
+    border_opacity_section
+          .insert('input')
+          .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+          .styles({width: "70px", "vertical-align": "middle"})
+          .on('change', function(){
+            selection.style('stroke-opacity', this.value);
+            border_opacity_section.select("#border_opacity_txt").html((+this.value * 100) + "%");
+          });
+    border_opacity_section.append("span").attr("id", "border_opacity_txt").html((+border_opacity * 100) + "%");
 
     popup.append('p').html('Border width<br>')
-          .insert('input').attr('type', 'number').attrs({min: 0, step: 0.1, value: stroke_width})
+          .insert('input').attr('type', 'number')
+          .attrs({min: 0, step: 0.1, value: stroke_width})
+          .style("width", "70px")
           .on('change', function(){
                 selection.style("stroke-width", this.value+"px");
                 current_layers[layer_name]['stroke-width-const'] = +this.value
@@ -918,8 +941,8 @@ function createStyleBox_ProbSymbol(layer_name){
 
     let prop_val_content = popup.append("p").html([
         "Field used for <strong>proportionals values</strong> : <i>", field_used,
-        "</i><br><br>Symbol fixed size "].join(''))
-    prop_val_content
+        "</i><br><br>Symbol fixed size "].join(''));
+    prop_val_contents
           .insert('input').attr("type", "number").style("width", "50px")
           .attrs({id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
           .on("change", function(){

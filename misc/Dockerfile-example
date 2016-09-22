@@ -1,12 +1,23 @@
 ####################################################################
 # Working config file building an "all-in one" (and heavy..)
 # image of the app and making it accessible on port 9999
-# (but it should be splited in multiple containers)
+# (but it should be splited in multiple containers).
+# Configured in order to avoid using cache when fetching the code of the
+# application and the code of smoomapy (stewart) package.
 ####################################################################
-# Can be build and run like this :
+# Can be build like this :
 #
 # $ docker build -t "noname_app:latest" .
+#
+#
+# App can be started like this (exposing port 9999 in the host):
+#
 # $ docker run --publish "9999:9999" -it "noname_app:latest"
+#
+#
+# Access to a shell in the container can be obtained with a command like :
+#
+# $ docker run -it --entrypoint=/bin/bash "noname_app:latest"
 #
 
 
@@ -48,9 +59,8 @@ RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download
 
 ENV PATH="${GDALINST}/gdal-2.1.0/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
-ENV DATE_UPDATE=$(date)
 
-RUN pip3 install -U pip \
+RUN DATE_UPDATE=$(date) && pip3 install -U pip \
         && mkdir /home/app && cd /home/app \
         && git clone http://github.com/mthh/jenkspy/ \
         && cd jenkspy/ \
@@ -61,10 +71,11 @@ RUN  cd /home/app && git clone http://github.com/mthh/noname-stuff/ \
         && pip3 install -r requirements-dev.txt \
         && python3 setup.py install
 
-RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ -b "dev" \
+RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
         && cd smoomapy/ && pip3 install -r requirements.txt \
         && python3 setup.py install && cd /home/app
 
 EXPOSE 9999
 
 CMD service redis-server start && noname_app
+#CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py

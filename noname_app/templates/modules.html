@@ -768,6 +768,26 @@ var eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id=
 var sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
     sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="16" height="16" alt="Layer_rendering" style="float:right;margin-top:4px;"/>';
 
+// Reference to the availables fonts that the user could select :
+var available_fonts = [
+    ['Arial', 'Arial,Helvetica,sans-serif'],
+    ['Arial Black', 'Arial Black,Gadget,sans-serif'],
+    ['Arimo', 'Arimo,sans-serif'],
+    ['Bitter', 'Bitter,sans-serif'],
+    ['Dosis', 'Dosis,sans-serif'],
+    ['Humor Sans', 'Humor Sans'],
+    ['Roboto', 'Roboto,sans-serif'],
+    ['Lobster', 'Lobster,sans-serif'],
+    ['Impact', 'Impact,Charcoal,sans-serif'],
+    ['Georgia', 'Georgia,serif'],
+    ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
+    ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
+    ['Tahoma', 'Tahoma,Geneva,sans-serif'],
+    ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
+    ['Verdana', 'Verdana,Geneva,sans-serif']
+    ];
+
+
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}};
 
 {% raw %}
@@ -1314,6 +1334,14 @@ function get_map_template(){
                 layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
                 layers_style[i].linksbyId = current_layers[layer_name].linksbyId.splice(0, nb_ft)
             }
+        } else if (current_layers[layer_name].renderer == "TypoSymbols"){
+            selection = map.select("#" + layer_name).selectAll("image")
+            layers_style[i].symbols_map = JSON.stringify([...current_layers[layer_name].symbols_map]);
+            layers_style[i].rendered_field = current_layers[layer_name].renderer_field;
+        } else if(current_layers[layer_name].renderer == "Label") {
+            selection = map.select("#" + layer_name).selectAll("text");
+            layers_style[i].rendered_field = current_layers[layer_name].renderer_field;
+            layers_style[i].contents_pos = [];
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
         }
@@ -1600,23 +1628,7 @@ function handle_title_properties(){
                 .attrs({x: title_props.position_x, y: title_props.position_y});
         });
     var box_content = d3.select(".mapTitleitleDialogBox").append("div");
-    var available_fonts = [
-        ['Arial', 'Arial,Helvetica,sans-serif'],
-        ['Arial Black', 'Arial Black,Gadget,sans-serif'],
-        ['Arimo', 'Arimo,sans-serif'],
-        ['Bitter', 'Bitter,sans-serif'],
-        ['Dosis', 'Dosis,sans-serif'],
-        ['Humor Sans', 'Humor Sans'],
-        ['Roboto', 'Roboto,sans-serif'],
-        ['Lobster', 'Lobster,sans-serif'],
-        ['Impact', 'Impact,Charcoal,sans-serif'],
-        ['Georgia', 'Georgia,serif'],
-        ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
-        ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
-        ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-        ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
-        ['Verdana', 'Verdana,Geneva,sans-serif']
-        ];
+
     box_content.append("p").html("Font-size :<br>")
         .insert("input").attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
         .on("change", function(){  title.style("font-size", this.value + "px");  });
@@ -1669,21 +1681,31 @@ function move_legends(new_shape){
         document.querySelectorAll("#legend_root_links")
         ];
 
-    let right_menu_size = 350;
+    let xy0_map = get_map_xy0();
 
     for(let j=0; j < 3; ++j){
         let legends_type = legends[j];
         for(let i=0, i_len = legends_type.length; i < i_len; ++i){
             let legend_bbox = legends_type[i].getBoundingClientRect();
-            if((legend_bbox.x + legend_bbox.width) > (+new_shape[0] + right_menu_size)){
+            if((legend_bbox.x + legend_bbox.width / 2) > (+new_shape[0] + xy0_map.x)){
                 console.log(legend_bbox)
                 let current_transform = legends_type[i].getAttribute("transform");
                 let regtranslate = new RegExp(/\(([^\)]+)\)/);
                 let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
-                let trans_x = legend_bbox.x +legend_bbox.width - (+new_shape[0] + right_menu_size);
+                let trans_x = legend_bbox.x +legend_bbox.width - (+new_shape[0] + xy0_map.x);
                 legends_type[i].setAttribute("transform",
                     ["translate(", +val_x - trans_x, val_y, ")"].join(''));
             }
+            if((legend_bbox.y + legend_bbox.height / 2) > (+new_shape[1] + xy0_map.y)){
+                console.log(legend_bbox)
+                let current_transform = legends_type[i].getAttribute("transform");
+                let regtranslate = new RegExp(/\(([^\)]+)\)/);
+                let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
+                let trans_y = legend_bbox.y +legend_bbox.height - (+new_shape[1] + xy0_map.y);
+                legends_type[i].setAttribute("transform",
+                    ["translate(", val_x, +val_y - trans_y, ")"].join(''));
+            }
+
         }
     }
 }
@@ -1712,7 +1734,7 @@ function canvas_mod_size(shape){
             .call(zoom_without_redraw);
         map_div.style("height", h + "px");
     }
-    move_legends(shape);
+    move_legends([w, h]);
 }
 
 function export_compo_svg(){
