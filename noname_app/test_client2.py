@@ -7,6 +7,7 @@ import zmq
 import zmq.asyncio
 import aiozmq
 import uvloop
+import sys
 
 
 class Protocol(aiozmq.ZmqProtocol):
@@ -42,14 +43,14 @@ class Protocol(aiozmq.ZmqProtocol):
         self.received.put_nowait(data)
 
 
-def main():
-    loop = zmq.asyncio.ZMQEventLoop()
+def main(client_url):
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
-
     async def run(loop):
-        res = await client_async(b"foobar_request", b'"barbaz_data"', loop, 1)
+        res = await client_async(b"foobar_request", b'"barbaz_data"', loop, 1, client_url)
         print("Result in client: ", res.decode())
-        res = await client_async(b"make_cartogram", b"[1,2,3]", loop, 1)
+        res = await client_async(b"make_cartogram", b"[1,2,3]", loop, 1, client_url)
         print("Result in client: ", res.decode())
 
     try:
@@ -58,14 +59,14 @@ def main():
         return
 
 
-async def client_async(request, data, loop, i):
+async def client_async(request, data, loop, i, client_url):
     transp, protocol = await aiozmq.create_zmq_connection(
         lambda: Protocol(loop),
         zmq.REQ,
         loop=loop)
     await protocol.connected
     transp.setsockopt(zmq.IDENTITY, '{}'.format(i).encode())
-    await transp.connect('ipc:///tmp/feeds/clients')
+    await transp.connect(client_url)
 
     transp.write([request, b'', data])
     res = await protocol.received.get()
@@ -74,34 +75,10 @@ async def client_async(request, data, loop, i):
     return res[0]
 
 
-#def main():
-#    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-#    loop = asyncio.get_event_loop()
-#    asyncio.set_event_loop(loop)
-#
-#    async def run(loop):
-#        transp, protocol = await aiozmq.create_zmq_connection(
-#            lambda: Protocol(loop),
-#            zmq.REQ,
-#            loop=loop)
-#        await protocol.connected
-#        transp.setsockopt(zmq.IDENTITY, b'foobar')
-#        await transp.connect('ipc:///tmp/feeds/clients')
-#        print("Starting...")
-#        res = await client_async(b"foobar_request", b'"barbaz_data"', transp, protocol, 1)
-#        print("Result in client: ", res[0].decode())
-##        res = await client_async(b"make_cartogram", b"[1,2,3]", transp, protocol, 1)
-##        print("Result in client: ", res)
-#
-#    try:
-#        loop.run_until_complete(run(loop))
-#    except KeyboardInterrupt:
-#        return
-#
-#async def client_async(request, data, transport, protocol, i):
-#    transport.write([request, b'', data])
-#    return await protocol.received.get()
-
-
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 2 or "ipc" in sys.argv[1]:
+        CLIENT_URL = 'ipc:///tmp/feeds/clients'
+    else:
+        CLIENT_URL = "tcp://localhost:5559"
+    main(CLIENT_URL)
+

@@ -12,12 +12,14 @@ import unittest
 import time
 from contextlib import closing
 from socket import socket, AF_INET, SOCK_STREAM
+from subprocess import PIPE
 import os
 import sys
 
 
-RUN_LOCAL = os.environ.get('RUN_TESTS_LOCAL') == 'True'
+RUN_TRAVIS_SAUCELABS = os.environ.get('TRAVIS_BUILD_DIR') is not None
 RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
+RUN_LOCAL = not RUN_TRAVIS_SAUCELABS and not RUN_DOCKER
 
 if RUN_LOCAL:
     browsers = ['Firefox']
@@ -78,7 +80,7 @@ def setUpModule():
     global p  # Could very likely be changed to avoid global variable
     global port
     port = get_port_available(7878)
-    p = psutil.Popen(["noname_app", "--port", port])
+    p = psutil.Popen(["noname_app", "--port", port], stdout=PIPE, stderr=PIPE)
     time.sleep(5)
 
 
@@ -166,8 +168,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
-        if not self.try_element_present(By.ID, "sample_link", 30):
-            self.fail("Time out")
         driver.find_element_by_css_selector("#sample_link > b").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
@@ -192,6 +192,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             self.fail("Time out")
         driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
         time.sleep(1)  # Delay for the sweet alert to close
+        driver.find_element_by_id("legend_button").click()
+        if not self.try_element_present(By.ID, "legend_root", 5):
+            self.fail("Legeng won't display")
 
     def test_cartogram_new_field(self):
         driver = self.driver
@@ -280,9 +283,84 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("choro_class").click()
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("choro_yes").click()
+        time.sleep(1)  # Little delay for the map to be rendered
         driver.find_element_by_id("legend_button").click()
-        if not self.try_element_present(By.ID, "legend_root"):
+        if not self.try_element_present(By.ID, "legend_root", 5):
             self.fail("Legeng won't display")
+
+    def test_discont_joined_field(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        driver.find_element_by_css_selector("#sample_link > b").click()
+        Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Martinique (FR overseas region) communes (Polygons)")
+        Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("Martinique INSEE census dataset (To link with martinique communes geometries)")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
+            self.fail("Time out")
+        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        time.sleep(1)  # Delay for the sweet alert to close
+        driver.find_element_by_id("join_button").click()
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_id("ui-id-2").click()
+        driver.find_element_by_css_selector("img[title=\"Render a map displaying discontinuities between polygons features\"]").click()
+        time.sleep(0.5)
+        Select(driver.find_element_by_id("field_Discont")).select_by_visible_text("P13_POP")
+        Select(driver.find_element_by_id("Discont_discKind")).select_by_visible_text("Quantiles")
+        driver.find_element_by_id("Discont_nbClass").clear()
+        driver.find_element_by_id("Discont_nbClass").send_keys("6")
+        if not self.is_element_present(By.ID, "color_Discont"):
+            self.fail("Missing features in the interface")
+        driver.execute_script("document.getElementById('color_Discont').value = '#da2929';")
+        driver.find_element_by_id("yes").click()
+        time.sleep(1)  # Delay for the discontinuities to be computed
+        driver.find_element_by_id("legend_button").click()
+        if not self.try_element_present(By.ID, "legend_root_links", 5):
+            self.fail("Legeng won't display")
+
+    def test_propSymbols(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        driver.find_element_by_css_selector("#sample_link > b").click()
+        Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Grand Paris municipalities (Polygons)")
+        Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("\"Grand Paris\" incomes dataset (To link with Grand Paris municipality geometries)")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
+            self.fail("Time out")
+        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        time.sleep(1)  # Delay for the sweet alert to close
+        driver.find_element_by_id("join_button").click()
+        Select(driver.find_element_by_id("button_field2")).select_by_visible_text("DEPCOM")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_id("ui-id-2").click()
+        driver.find_element_by_css_selector("img[title=\"Display proportional symbols with appropriate discretisation on a numerical field of your data\"]").click()
+        time.sleep(1)
+        Select(driver.find_element_by_id("PropSymbol_field_1")).select_by_visible_text("TH")
+        Select(driver.find_element_by_xpath("//div[@id='section2']/p/p[4]/select")).select_by_visible_text("Square")
+        Select(driver.find_element_by_id("PropSymbol_nb_colors")).select_by_visible_text("Two colors")
+        driver.find_element_by_id("PropSymbol_break_val").clear()
+        driver.find_element_by_id("PropSymbol_break_val").send_keys("14553")
+
+        if not self.is_element_present(By.ID, "PropSymbol_color1") \
+                or not self.is_element_present(By.ID, "PropSymbol_color2"):
+            self.fail("Missing features in the interface")
+
+        driver.execute_script("document.getElementById('PropSymbol_color1').value = '#e3a5f3';")
+        driver.execute_script("document.getElementById('PropSymbol_color1').value = '#ffff00';")
+        driver.find_element_by_id("yes").click()
+        time.sleep(1.5)
+        driver.find_element_by_css_selector("img.style_target_layer").click()
+        driver.find_element_by_css_selector("#fill_color_section > input[type=\"number\"]").clear()
+        driver.find_element_by_css_selector("#fill_color_section > input[type=\"number\"]").send_keys("100000")
+        driver.find_element_by_xpath("(//input[@value='145535'])[2]").clear()
+        driver.find_element_by_xpath("(//input[@value='145535'])[2]").send_keys("15535")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_id("legend_button").click()
+        if not self.try_element_present(By.ID, "legend_root2", 5):
+            self.fail("Legeng won't display")
+#        driver.find_element_by_css_selector("span.context-menu-item-name").click()
+#        driver.find_element_by_id("style_lgd").click()
+#        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+
 
     def is_element_present(self, how, what):
         try:

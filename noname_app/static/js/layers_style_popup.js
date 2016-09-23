@@ -942,7 +942,7 @@ function createStyleBox_ProbSymbol(layer_name){
     let prop_val_content = popup.append("p").html([
         "Field used for <strong>proportionals values</strong> : <i>", field_used,
         "</i><br><br>Symbol fixed size "].join(''));
-    prop_val_contents
+    prop_val_content
           .insert('input').attr("type", "number").style("width", "50px")
           .attrs({id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
           .on("change", function(){

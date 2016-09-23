@@ -157,8 +157,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         breaks_info = [];
         last_min = tmp_breaks.sizes[0];
         last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
+        if(+tmp_breaks.mins[0] > +serie.min()){
+            breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
+        }
+
         for(let i = 0; i<tmp_breaks.sizes.length; i++)
             breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
+        console.log(breaks_info)
         breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
         if(user_defined){
             make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info);
@@ -166,7 +171,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     }
 
     var redisplay = {
-        compute: function(old_nb_class){
+        compute: function(){
             bins = [];
             for(let i = 0, len = breaks_info.length; i < len; i++){
                 let bin = {};
@@ -187,6 +192,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 bins[i].color = ColorsSelected.random();
 
             var x = d3.scaleLinear()
+                .domain([serie.min(), serie.max()])
                 .range([0, svg_w]);
 
             var y = d3.scaleLinear()

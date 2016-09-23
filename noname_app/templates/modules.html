@@ -1283,7 +1283,9 @@ function get_map_template(){
         if(current_layers[layer_name].colors_breaks)
             layers_style[i].colors_breaks = JSON.stringify(current_layers[layer_name].colors_breaks);
 
-        if(layer_name.indexOf('PropSymbols') !== -1){
+        if(!current_layers[layer_name].renderer){
+            selection = map.select("#" + layer_name).selectAll("path");
+        } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layers[layer_name].symbol;
             selection = map.select("#" + layer_name).selectAll(type_symbol);
             layers_style[i].symbol = type_symbol;
@@ -1337,10 +1339,23 @@ function get_map_template(){
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
             layers_style[i].symbols_map = JSON.stringify([...current_layers[layer_name].symbols_map]);
-            layers_style[i].rendered_field = current_layers[layer_name].renderer_field;
+            layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
+
+            let state_to_save = [];
+            let selec = selection._groups[0];
+            for(let i = 0; i < selec.length ; i++){
+                let ft = selec[i];
+                state_to_save.push({display: ft.style.display,
+                                    data: ft.__data__,
+                                    pos: [ft.getAttribute('x'), ft.getAttribute('y')],
+                                    size: ft.getAttribute('width')
+                                    });
+            }
+            layers_style[i].current_state = state_to_save;
         } else if(current_layers[layer_name].renderer == "Label") {
             selection = map.select("#" + layer_name).selectAll("text");
-            layers_style[i].rendered_field = current_layers[layer_name].renderer_field;
+            layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].contents_pos = [];
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
@@ -1936,6 +1951,47 @@ function apply_user_preferences(json_pref){
                     .style("fill-opacity", fill_opacity)
                     .style("stroke-opacity", stroke_opacity);
             create_li_layer_elem(layer_name, n_ft, ["Point", "prop"], "result");
+        } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
+            let layer_to_append = map.append("g").attr("id", layer_name)
+                                        .attr("class", "result_layer layer");
+            let nb_ft = layers[i].n_features;
+            let symbols_map = new Map(layers[i].symbols_map);
+            current_layers[layer_name] = {
+                n_features: nb_ft,
+                renderer: "TypoSymbols",
+                symbols_map: symbols_map,
+                symbol: "image",
+                renderer_field: layers[i].rendered_field,
+                is_result: true,
+                default_size: undefined
+            }
+
+            let current_state = layers[i].current_state;
+            result_data[layer_name] = [];
+            for(let j = 0; j < nb_ft; j++){
+                result_data[layer_name].push(current_state[j].data);
+            }
+
+            layer_to_append.selectAll('image')
+                .data(result_data[layer_name]).enter()
+                .insert("image")
+                .attr("x", (d,i) => current_state[i].pos[0])
+                .attr("y", (d,i) => current_state[i].pos[1])
+                .attr("width", (d,i) => current_state[i].size)
+                .attr("height", (d,i) => current_state[i].size)
+                .attr("xlink:href", (d,i) => symbols_map.get(d.Symbol_field)[0])
+                .style("display", (d,i) => current_state[i].display)
+                .on("mouseover", function(){ this.style.cursor = "pointer";})
+                .on("mouseout", function(){ this.style.cursor = "initial";})
+                /* .on("dblclick", function(){
+                    context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                    })
+                .on("contextmenu", function(){
+                    context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                    }) */
+                .call(drag_elem_geo);
+            create_li_layer_elem(layer_name, nb_ft, ["Point", "symbol"], "result");
+
         } else {
             null;
         }

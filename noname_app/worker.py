@@ -18,7 +18,7 @@ def default_func(*args):
 
 
 class WorkerTask:
-    def __init__(self, worker_id, url_workers='ipc:///tmp/feeds/workers'):
+    def __init__(self, worker_id, url_workers):
         self.available_functions = {
             b"quick_stewart_mod": quick_stewart_mod,
             b"resume_stewart": resume_stewart,
@@ -44,6 +44,7 @@ class WorkerTask:
     async def set_ready_worker(self, url_workers):
         self.context = Context()
         self.socket = self.context.socket(REQ)
+
         socket = self.socket
         socket.setsockopt_string(IDENTITY, self.worker_id)
         socket.connect(url_workers)
@@ -63,7 +64,13 @@ class WorkerTask:
 
 if __name__ == "__main__":
     print(sys.argv)
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         sys.exit()
     worker_id = sys.argv[1]
-    w = WorkerTask(worker_id)
+    address_worker = {
+        "ipc": 'ipc:///tmp/feeds/workers',
+        "tcp": 'tcp://localhost:5560'
+        }.get(sys.argv[2], None)
+    if not address_worker:
+        sys.exit()
+    w = WorkerTask(worker_id, address_worker)

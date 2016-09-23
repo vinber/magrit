@@ -462,7 +462,7 @@ function add_layer_topojson(text, options){
     for(let i=0; i < layers_names.length; i++){
         var random_color1 = ColorsSelected.random(),
             lyr_name = layers_names[i],
-            lyr_name_to_add = check_layer_name(lyr_name);
+            lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name);
         let nb_ft = topoObj.objects[lyr_name].geometries.length,
             topoObj_objects = topoObj.objects[lyr_name],
             field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -787,6 +787,8 @@ var northArrow = {
         let arrow_gp = map.append("g")
                         .attr("id", "north_arrow")
                         .attr("class", "legend")
+                        .attr("scale", 1)
+                        .attr("rotate", null)
                         .style("cursor", "pointer");
         this.x_center = 79.50;
         this.y_center = 50.75;
@@ -874,16 +876,22 @@ var northArrow = {
                 .attrs({type: "range", min: 0, max: 2, step: 0.1})
                 .attr("value", !isNaN(+self.svg_node.attr("scale")) ? +self.svg_node.attr("scale") : 1)
                 .on("change", function(){
+                    let scale_val = +this.value;
                     let translate_param = self.svg_node.attr("transform"),
                         rotate_value = self.svg_node.attr("rotate");
 //                    rotate_value = rotate_value ? "rotate(" + rotate_value + ", 79.50,50.75)" : "";
                     rotate_value = rotate_value ? "rotate("+ [rotate_value, self.x_center, self.y_center] +")" : "";
-                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
-                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
-                                            : "";
-
-                    self.svg_node.attr("scale", +this.value);
-                    self.svg_node.attr("transform", translate_param + rotate_value + "scale(" + this.value + ")");
+//                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
+//                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
+//                                            : "";
+                    let regtranslate = new RegExp(/\(([^\)]+)\)/);
+                    let translate_values = translate_param ? regtranslate.exec(translate_param)[1].split(',').map(d => +d)
+                                            : [0, 0];
+                    let t_x = translate_values[0] - (self.x_center) * (scale_val-1),
+                        t_y = translate_values[1] - (self.y_center) * (scale_val-1);
+                    translate_param = "translate(" + [t_x, t_y] + ")";
+                    self.svg_node.attr("scale", scale_val);
+                    self.svg_node.attr("transform", translate_param + rotate_value + "scale(" + scale_val + ")");
                 });
         box_body.append("p").style("margin-bottom", "0")
                 .html("Arrow rotation ");

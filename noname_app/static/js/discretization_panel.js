@@ -431,7 +431,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 bins[i].color = color_array[i];
 
             var x = d3.scaleLinear()
-                .range([0, svg_w]);
+                        .domain([serie.min(), serie.max()])
+                        .range([0, svg_w]);
 
             var y = d3.scaleLinear()
                 .range([svg_h, 0]);

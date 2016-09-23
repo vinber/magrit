@@ -301,6 +301,12 @@ function fillMenu_TypoSymbol(){
             });
         });
 
+    dv2.append('p').html('Output name :<br>')
+        .insert('input')
+        .style("width", "200px")
+        .attr('class', 'params')
+        .attr("id", "TypoSymbols_output_name");
+
     let ok_button = dv2.append("p")
                       .styles({"text-align": "right", margin: "auto"})
                       .append('button')
@@ -309,18 +315,17 @@ function fillMenu_TypoSymbol(){
                       .attr('class', 'button_st3')
                       .text(i18next.t('Compute and render'))
                       .on("click", function(){
-                          render_TypoSymbols(rendering_params);
+                          let new_name = document.getElementById("TypoSymbols_output_name").value;
+                          render_TypoSymbols(rendering_params, new_name);
                       });
 
     d3.selectAll(".params").attr("disabled", true);
 }
 
-function render_TypoSymbols(rendering_params){
+function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     let field = rendering_params.field;
-    let layer_to_add = check_layer_name([layer_name,
-                                         field,
-                                         "Symbols"].join('_'));
+    let layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ["Symbols", field, layer_name].join("_"));
     let new_layer_data = [];
 
     let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
@@ -897,6 +902,12 @@ function fillMenu_FlowMap(){
                         .attr('class', 'params')
                         .attr("id", "FlowMap_field_join");
 
+    var uo_layer_name = dv2.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "FlowMap_output_name");
+
     let ok_button = dv2.append('button')
                         .attr('id', 'yes')
                         .attr('class', 'params button_st3')
@@ -1161,6 +1172,12 @@ function fillMenu_PropSymbolChoro(layer){
                     });
                 });
 
+    var uo_layer_name = dv2.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "PropSymbolChoro_output_name");
+
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
                         .attr('id', 'propChoro_yes')
@@ -1243,6 +1260,11 @@ var fields_Choropleth = {
         fields.forEach(field => {
             field_selec.append("option").text(field).attr("value", field);
         });
+
+        field_selec.on("change", function(){
+            document.getElementById("Choro_output_name").value = ["Choro", this.value, layer].join('_');
+        });
+
         d3.selectAll(".params").attr("disabled", null);
     },
 
@@ -1271,6 +1293,11 @@ var fields_Typo = {
             if(f_name != '_uid' && f_name != "UID")
                 field_selec.append("option").text(f_name).attr("value", f_name);
         });
+
+        field_selec.on("change", function(){
+            document.getElementById("Typo_output_name").value = ["Typo", this.value, layer].join('_');
+        });
+
         d3.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
@@ -1293,12 +1320,12 @@ var fields_Label = {
             field_selec = d3.select("#Label_field_1"),
             field_prop_selec = d3.select("#Label_field_prop");
 
-
         fields_name.forEach(f_name => {
             field_selec.append("option").text(f_name).attr("value", f_name);
             if(fields[f_name] == "number")
                 field_prop_selec.append("option").text(f_name).attr("value", f_name);
         });
+        document.getElementById("Label_output_name").value = "Labels_" + layer;
         d3.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
@@ -1374,6 +1401,12 @@ var fillMenu_Label = function(){
 
     prop_menu.style("display", "none");
 
+    var uo_layer_name = dv2.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "Label_output_name");
+
     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'Label_yes')
@@ -1388,6 +1421,7 @@ var fillMenu_Label = function(){
             rendering_params["font"] = choice_font.node().value;
             rendering_params["ref_font_size"] = ref_font_size.node().value;
             rendering_params["color"] = choice_color.node().value;
+            rendering_params["uo_layer_name"] = uo_layer_name.node().value;
             let layer = Object.getOwnPropertyNames(user_data)[0];
             let new_layer_name = render_label(layer, rendering_params);
             binds_layers_buttons(new_layer_name);
@@ -1462,7 +1496,9 @@ var render_label = function(layer, rendering_params){
     let font_size = rendering_params.ref_font_size + "px"
     let new_layer_data = [];
     let ref_selection = document.getElementById(layer).querySelectorAll("path");
-    let layer_to_add = check_layer_name("labels_" + layer);
+    let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
+                    ? check_layer_name(rendering_params.uo_layer_name)
+                    : check_layer_name("Labels_" + layer);
     let nb_ft = ref_selection.length;
     for(let i=0; i<nb_ft; i++){
         let ft = ref_selection[i].__data__;
@@ -1546,6 +1582,12 @@ var fillMenu_Typo = function(){
                 });
         });
 
+    var uo_layer_name = dv2.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "Typo_output_name");
+
     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attr('id', 'Typo_yes')
@@ -1614,11 +1656,17 @@ function fillMenu_Choropleth(){
                             schema: confirmed[5], no_data: confirmed[6],
                             colorsByFeature: confirmed[4], renderer:"Choropleth",
                             rendered_field: selected_field,
-                            new_name: check_layer_name([layer_name, selected_field, "Choro"].join('_'))
+                            new_name: ""
                         };
                 }
             });
         });
+
+    dv2.append('p').html('Output name :<br>')
+        .insert('input')
+        .style("width", "200px")
+        .attr('class', 'params')
+        .attr("id", "Choro_output_name");
 
     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
@@ -1628,8 +1676,12 @@ function fillMenu_Choropleth(){
         .html('Render')
         .on("click", function(){
             if(rendering_params){
-                let layer = Object.getOwnPropertyNames(user_data)[0];
-                render_choro(layer, rendering_params[field_selec.node().value]);
+                let layer = Object.getOwnPropertyNames(user_data)[0],
+                    user_new_layer_name = document.getElementById("Choro_output_name").value,
+                    field_to_render = field_selec.node().value;
+                rendering_params[field_to_render].new_name = check_layer_name(
+                    user_new_layer_name.length > 0 ? user_new_layer_name : ["Choro", field, mayer].join('_'));
+                render_choro(layer, rendering_params[field_to_render]);
                 switch_accordion_section();
             }
          });
@@ -1673,6 +1725,11 @@ var fields_Stewart = {
                 field_selec2.append("option").text(field).attr("value", field);
             });
             document.getElementById("stewart_span").value = get_first_guess_span();
+
+            field_selec.on("change", function(){
+                document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
+            });
+
         }
         d3.selectAll(".params").attr("disabled", null);
     },
@@ -1744,6 +1801,12 @@ function fillMenu_Stewart(){
     disc_kind.append("option").text("Equal interval").attr("value", "equal_interval");
     disc_kind.append("option").text("Geometric progression").attr("value", "prog_geom");
 
+    dialog_content.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "stewart_output_name");
+
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'stewart_yes')
@@ -1757,7 +1820,8 @@ function fillMenu_Stewart(){
                 var2_to_send = {},
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 bval = breaks_val.node().value.trim(),
-                reso = +resolution.node().value * 1000;
+                reso = +resolution.node().value * 1000,
+                new_user_layer_name = document.getElementById("stewart_output_name").value;
 
             bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
@@ -1797,7 +1861,9 @@ function fillMenu_Stewart(){
                     {
                         let data_split = data.split('|||'),
                             raw_topojson = data_split[0];
-                        var n_layer_name = add_layer_topojson(raw_topojson, {result_layer_on_add: true});
+                        let options = {result_layer_on_add: true};
+                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        var n_layer_name = add_layer_topojson(raw_topojson, options);
                         if(!n_layer_name)
                             return;
                         var class_lim = JSON.parse(data_split[1]);
@@ -1841,9 +1907,12 @@ var fields_Anamorphose = {
 
         field_selec.on("change", function(){
             let field_name = this.value,
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
                 ref_value_field = document.getElementById("Anamorph_opt3");
+
+            document.getElementById("Anamorph_output_name").value = ["Cartogram", this.value, layer].join('_');
+
             if(ref_value_field){
+                let max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
                 ref_value_field.setAttribute("max", max_val_field);
                 ref_value_field.value = max_val_field;
             }
@@ -1949,6 +2018,12 @@ function fillMenu_Anamorphose(){
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
+    var uo_layer_name = dialog_content.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "Anamorph_output_name");
+
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append("button")
         .attrs({id: 'Anamorph_yes', class: "params button_st3"})
@@ -1957,7 +2032,9 @@ function fillMenu_Anamorphose(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
-                field_name = field_selec.node().value;
+                field_name = field_selec.node().value,
+                new_user_layer_name = document.getElementById("Anamorph_output_name").value;
+
             if (algo === "olson"){
                 let field_n = field_selec.node().value,
                     layer = Object.getOwnPropertyNames(user_data)[0],
@@ -2028,7 +2105,9 @@ function fillMenu_Anamorphose(){
                     type: 'POST',
                     error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(result){
-                        let n_layer_name = add_layer_topojson(result, {result_layer_on_add: true});
+                        let options = {result_layer_on_add: true};
+                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        let n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
                         current_layers[n_layer_name].rendered_field = field_n;
                         current_layers[n_layer_name].scale_max = scale_max;
@@ -2069,7 +2148,9 @@ function fillMenu_Anamorphose(){
                     type: 'POST',
                     error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(data){
-                        let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
+                        let options = {result_layer_on_add: true};
+                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        let n_layer_name = add_layer_topojson(data, options);
                         current_layers[n_layer_name].fill_color = { "random": true };
                         current_layers[n_layer_name].is_result = true;
                         current_layers[n_layer_name]['stroke-width-const'] = 0.8;
@@ -2086,8 +2167,10 @@ function fillMenu_Anamorphose(){
             } else if (algo === "dorling"){
                 let fixed_value = +document.getElementById("Anamorph_opt3").value,
                     fixed_size = +document.getElementById("Anamorph_opt2").value,
-                    layer_to_add =  check_layer_name(["DorlingCarto", layer, field_name].join('_')),
                     shape_symbol = option1_val.node().value;
+
+                let layer_to_add = check_layer_name(
+                    new_user_layer_name.length > 0 ? new_user_layer_name : ["DorlingCarto", field_name, layer].join('_'));
 
                 let features_order = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
                 current_layers[layer_to_add] = {
@@ -2373,6 +2456,9 @@ var fields_PropSymbol = {
                 max_val_field = max_fast(field_values),
                 has_neg = has_negative(field_values),
                 ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
+
+            document.getElementById("PropSymbol_output_name").value = ["PropSymbol", this.value, layer].join('_');
+
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
             if(has_neg){
@@ -2441,11 +2527,11 @@ function fillMenu_PropSymbol(layer){
     var col_p = dialog_content.append("p").style("display", "inline");
     var fill_color = col_p.insert('input')
                                 .attr('type', 'color')
-                                .attrs({class: "params", "value": ColorsSelected.random()});
+                                .attrs({class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
     var fill_color2 = col_p.insert('input')
                                 .attr('type', 'color')
                                 .style("display", "none")
-                                .attrs({class: "params", "value": ColorsSelected.random()});
+                                .attrs({class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
     var col_b = dialog_content.insert("p");
     var fill_color_text = col_b.insert("span").style("display", "none")
                                 .html("Break value ");
@@ -2455,6 +2541,12 @@ function fillMenu_PropSymbol(layer){
                                 .style("display", "none")
                                 .style("width", "75px");
 
+    var uo_layer_name = dialog_content.append('p').html('Output name :<br>')
+        .insert('input')
+        .style("width", "200px")
+        .attr('class', 'params')
+        .attr("id", "PropSymbol_output_name");
+
     dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
         .append('button')
         .attr('id', 'yes')
@@ -2463,8 +2555,10 @@ function fillMenu_PropSymbol(layer){
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 nb_features = user_data[layer].length,
-                new_layer_name = check_layer_name(layer + "_PropSymbols"),
-                rendering_params = { "field": field_selec.node().value,
+                field_to_render = field_selec.node().value,
+                user_new_layer_name = uo_layer_name.node().value,
+                new_layer_name = check_layer_name(user_new_layer_name.length > 0 ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
+                rendering_params = { "field": field_to_render,
                                      "nb_features": nb_features,
                                      "new_name": new_layer_name,
                                      "ref_layer_name": layer,
@@ -2577,6 +2671,7 @@ function make_prop_symbols(rendering_params){
     } else if(symbol_type === "rect"){
         for(let i = 0; i < nb_features; i++){
             let params = d_values[i],
+                id_ref = params[0],
                 size = params[1];
 
             symbol_layer.append('rect')
@@ -2631,6 +2726,9 @@ var fields_griddedMap = {
 
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field); });
+        field_selec.on("change", function(){
+            document.getElementById("Gridded_output_name").value = ["Gridded", this.value, layer].join('_');
+        });
         d3.selectAll(".params").attr("disabled", null);
         document.getElementById("Gridded_cellsize").value = get_first_guess_span();
     },
@@ -2648,7 +2746,7 @@ function fillMenu_griddedMap(layer){
     var cellsize = dialog_content.append('p').html('Cell size <i>(km)</i> ')
                         .insert('input').attrs({
                             type: 'number', class: 'params', id: "Gridded_cellsize",
-                            value: 10.0, min: 1.000, max: 7000, step: 0.001});
+                            value: 10.0, min: 1.000, max: 7000, step: "any"});
     var grid_shape = dialog_content.append('p').html('Grid shape ')
                         .insert('select').attrs({class: 'params', id: "Gridded_shape"});
     var col_pal = dialog_content.append('p').html('Colorramp ')
@@ -2661,6 +2759,12 @@ function fillMenu_griddedMap(layer){
     ['Square', 'Diamond', 'Hexagon'].forEach( d => {
         grid_shape.append("option").text(d).attr("value",d);
     });
+
+    var uo_layer_name = dialog_content.append('p').html('Output name :<br>')
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "Gridded_output_name");
 
     dialog_content.insert("p")
         .styles({"text-align": "right", margin: "auto"})

@@ -10,12 +10,8 @@ from psutil import Popen
 from threading import Thread
 from zmq.asyncio import Context, Poller, ZMQEventLoop
 
-url_worker = 'ipc:///tmp/feeds/workers'
-url_client = 'ipc:///tmp/feeds/clients'
 
-
-async def client_fuw_async(request, data, context, i,
-                             client_url='ipc:///tmp/feeds/clients'):
+async def client_fuw_async(request, data, context, i, client_url):
     """Basic client sending a request (REQ) to a ROUTER (the broker)"""
     socket = context.socket(zmq.REQ)
     socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
@@ -27,6 +23,7 @@ async def client_fuw_async(request, data, context, i,
     reply = await socket.recv()
     socket.close()
     return reply
+
 
 class LogPipe(Thread):
     '''
@@ -64,23 +61,25 @@ class LogPipe(Thread):
 
 class WorkerPoolQueue:
     # TODO: write some tests
-    def __init__(self, n_process=4, start_broker=True, *args):
+    def __init__(self, n_process, urls, start_broker=True):
         # Check the path we plan to use for zmq communications is OK :
-        if not os.path.isdir('/tmp/feeds'):
-            try:
-                os.mkdir('/tmp/feeds')
-            except Exception as err:
-                print(err)
-                sys.exit()
-
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger("noname_app.async_brooker")
         self.logpipe = LogPipe(self.logger)
         self.available_workers = deque()
         self.worker_process = {}
         self.init_nb = n_process
+        self.url_client, self.url_worker = urls
+        self.protocol = "ipc" if "ipc" in self.url_client else "tcp"
+        if "ipc" in self.url_client:
+            if not os.path.isdir('/tmp/feeds'):
+                try:
+                    os.mkdir('/tmp/feeds')
+                except Exception as err:
+                    print(err)
+                    sys.exit()
 
-        # Start the R workers :
+        # Start the workers :
         if start_broker:
             self.start_broker(n_process)
 
@@ -105,7 +104,7 @@ class WorkerPoolQueue:
     def launch_worker(self, nb=1):
         for i in range(nb):
             id_ = str(len(self.worker_process)+1)
-            p = Popen([sys.executable, "worker.py", id_],
+            p = Popen([sys.executable, "worker.py", id_, self.protocol],
                       stdout=self.logpipe, stderr=self.logpipe)
             # TODO: Use something like prlimit to control processus ressource
             self.worker_process[id_] = p
@@ -113,12 +112,13 @@ class WorkerPoolQueue:
     async def run_async_broker(self, loop, n_process=None):
         self.context = Context()
         frontend = self.context.socket(zmq.ROUTER)
-        frontend.bind(url_client)
+        frontend.bind(self.url_client)
         backend = self.context.socket(zmq.ROUTER)
-        backend.bind(url_worker)
+        backend.bind(self.url_worker)
         self.logger.info('(async_broker) is ON - Starting with {} workers'
                          .format(self.init_nb))
-
+        self.logger.info('(async_broker) Protocol used : {}'
+                         .format(self.protocol))
         poller = Poller()
         poller.register(backend, zmq.POLLIN)
         poller.register(frontend, zmq.POLLIN)
@@ -167,15 +167,24 @@ class WorkerPoolQueue:
         return 0
 
 
-def start_queue(nb_process=4):
-    Q = WorkerPoolQueue(nb_process, True)
+def start_queue(nb_process=4,
+                urls=('ipc:///tmp/feeds/clients', 'ipc:///tmp/feeds/workers')):
+    Q = WorkerPoolQueue(nb_process, urls, True)
     # Penser a changer la limite du nombre de descripteurs de fichiers et du
     # nombre de fichiers ouverts pour l'utitilisateur qui execute ce programme
     # si beaucoup de workers sont lancés
     # ... Changement dans /etc/security/limits.conf et dans /etc/sysctl.conf
 
+
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        start_queue(int(sys.argv[1]))
-    else:
-        start_queue()
+    if len(sys.argv) < 3:
+        sys.exit()
+    nb_process = int(sys.argv[1])
+    urls = {
+        "ipc": ('ipc:///tmp/feeds/clients', 'ipc:///tmp/feeds/workers'),
+        "tcp": ('tcp://127.0.0.1:5559', 'tcp://127.0.0.1:5560')
+    }.get(sys.argv[2], None)
+    if not urls:
+        sys.exit()
+
+    start_queue(nb_process, urls)

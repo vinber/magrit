@@ -190,11 +190,15 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     // under the display threshold defined by the user (if any) :
 //    if(current_layers[layer].renderer == "Links"){
     let current_min_value = +current_layers[layer].min_display;
-    for(let b_val of breaks)
-        if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1])
-            ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
-        else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1])
-            ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+    for(let b_val of breaks){
+        if (b_val[1] != 0) {
+            if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1]) {
+                ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
+            } else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1]) {
+                ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+            }
+        }
+    }
 //    } else {
 //        for(let b_val of breaks)
 //            ref_symbols_params.push({value:b_val[0], size:b_val[1]});
@@ -598,7 +602,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
           .text(function(d) { return d.value; });
 
-    if(current_layers[layer].options_disc.no_data){
+    if(current_layers[layer].options_disc && current_layers[layer].options_disc.no_data){
         let gp_no_data = legend_root.append("g");
         gp_no_data.attr("class", "legend_feature")
                 .append('rect')
