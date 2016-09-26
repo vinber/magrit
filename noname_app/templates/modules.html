@@ -20,6 +20,7 @@
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
+    <script  src="/static/js/lib/jschardet.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
     <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
@@ -339,11 +340,24 @@ function setUpInterface()
             p.append("option").text(d.name).attr("value", d.projection);
            });
         if(window.location.search && window.location.search.indexOf("resume") > -1){
+            let old_url = "modules?resume",
+                new_url = "modules";
+            // First avoid to let the "?resume" part in the url:
+            if (typeof (history.pushState) != "undefined") {
+                var obj = {Page: old_url, Url: new_url};
+                history.pushState(obj, obj.Page, obj.Url);
+            }
+
+            // Fetch the last snapchot in localStorage :
             var json_params = window.localStorage.getItem("noname_map_project");
+
+            // Apply the preferences :
             if(json_params){
                 apply_user_preferences(json_params);
             }
         } else {
+            // If we don't want to resume from the last project, we can
+            // remove it :
             window.localStorage.removeItem("noname_app_project");
         }
     });
@@ -716,7 +730,6 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
-    target_layer_on_add = false,
     targeted_layer_added = false,
     current_layers = new Object(),
     last_params = new Object(),
@@ -1283,7 +1296,13 @@ function get_map_template(){
         if(current_layers[layer_name].colors_breaks)
             layers_style[i].colors_breaks = JSON.stringify(current_layers[layer_name].colors_breaks);
 
-        if(!current_layers[layer_name].renderer){
+        if (current_layers[layer_name].targeted){
+            selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].fill_opacity = selection.style("fill-opacity");
+            layers_style[i].targeted = true;
+            layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+        } else if(!current_layers[layer_name].renderer){
             selection = map.select("#" + layer_name).selectAll("path");
         } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layers[layer_name].symbol;
@@ -1295,18 +1314,9 @@ function get_map_template(){
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
             layers_style[i].features_order = JSON.stringify(current_layers[layer_name].features_order);
-        } else if (current_layers[layer_name].targeted){
-            selection = map.select("#" + layer_name).selectAll("path");
-            layers_style[i].fill_opacity = selection.style("fill-opacity");
-            layers_style[i].targeted = true;
-            layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
-            layers_style[i].fill_color = current_layers[layer_name].fill_color;
-            if(current_layers[layer_name].renderer && current_layers[layer_name].renderer.startsWith("Choro")){
-                layers_style[i].renderer = current_layers[layer_name].renderer;
-                layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
-            }
         } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
+                    || current_layers[layer_name].renderer == "Choro"
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -1319,6 +1329,7 @@ function get_map_template(){
                 color_by_id.push(rgb2hex(this.style.fill));
             });
             layers_style[i].color_by_id = color_by_id;
+            layers_style[i].options_disc = current_layers[layer_name].options_disc;
         } else if (current_layers[layer_name].renderer == "Links"
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
@@ -1839,9 +1850,9 @@ function apply_user_preferences(json_pref){
 
         if(layers[i].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
             let tmp = {skip_alert: true};
-            if(layers[i].targeted)
-                target_layer_on_add = true;
-            else if(layers[i].renderer){
+            if(layers[i].targeted){
+                tmp['target_layer_on_add'] = true;
+            } else if(layers[i].renderer){
                 tmp['func_name'] = func_name_corresp.get(layers[i].renderer)
                 tmp['result_layer_on_add'] = true;
             }

@@ -146,10 +146,13 @@ async def remove_layer(request):
     user_id = get_user_id(session_redis, request.app['app_users'])
     f_names = posted_data.getall('layer_name')
     for f_name in f_names:
-        f_name = '_'.join([user_id, f_name, "NQ"])
+        f_name_q = '_'.join([user_id, f_name, "NQ"])
+        f_name_nq = '_'.join([user_id, f_name, "NQ"])
         print("Deleting  " + f_name)
         asyncio.ensure_future(
-            request.app["redis_conn"].delete(f_name))
+            request.app["redis_conn"].delete(f_name_q))
+        asyncio.ensure_future(
+            request.app["redis_conn"].delete(f_name_nq))
     return web.Response(text=json.dumps({"code": "Ok"}))
 
 
@@ -199,7 +202,7 @@ async def cache_input_topojson(request):
             f_path = '/tmp/' + fp_name + ".geojson"
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, "-q 1e6")
+            result = await geojson_to_topojson(f_path, "-q 1e3")
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
@@ -328,7 +331,7 @@ async def convert(request):
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'w') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, "-q 1e6")
+        result = await geojson_to_topojson(filepath2, "-q 1e3")
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             store_non_quantized(
@@ -352,7 +355,7 @@ async def convert(request):
                 '.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, "-q 1e6")
+            result = await geojson_to_topojson(filepath2, "-q 1e3")
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
@@ -379,7 +382,7 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
 
-        result = await geojson_to_topojson(filepath, "-q 1e6")
+        result = await geojson_to_topojson(filepath, "-q 1e3")
 
         if len(result) == 0 and not crs:
             return web.Response(text=json.dumps(
@@ -400,7 +403,7 @@ async def convert(request):
         os.remove(filepath)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e6")
+        result = await geojson_to_topojson(filepath, "-q 1e3")
         if len(result) == 0:
             return web.Response(
                 text='{"Error": "Error converting reading kml file"}')
@@ -507,7 +510,7 @@ async def compute_discont(posted_data, user_id, app):
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     with open(tmp_path, 'wb') as f:
         f.write(json.dumps(ref_layer_geojson).encode())
-    new_topojson = await geojson_to_topojson(tmp_path, "-q 1e4")
+    new_topojson = await geojson_to_topojson(tmp_path, "-q 1e3")
     new_topojson = json.loads(new_topojson)
     res_geojson = app.loop.run_in_executor(
         app["ProcessPool"],

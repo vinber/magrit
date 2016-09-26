@@ -687,7 +687,9 @@ function send_layer_server(layer_name, url){
         data: formToSend,
         global: false,
         type: 'POST',
-        error: function(error) { display_error_during_computation(); console.log(error); },
+        error: function(error) {
+            display_error_during_computation(); console.log(error);
+        },
         success: function(data){
                 let key = JSON.parse(data).key;
                 current_layers[layer_name].key_name = key;
@@ -1680,7 +1682,9 @@ function fillMenu_Choropleth(){
                     user_new_layer_name = document.getElementById("Choro_output_name").value,
                     field_to_render = field_selec.node().value;
                 rendering_params[field_to_render].new_name = check_layer_name(
-                    user_new_layer_name.length > 0 ? user_new_layer_name : ["Choro", field, mayer].join('_'));
+                    user_new_layer_name.length > 0 ? user_new_layer_name
+                    : ["Choro", field_to_render, layer].join('_')
+                    );
                 render_choro(layer, rendering_params[field_to_render]);
                 switch_accordion_section();
             }

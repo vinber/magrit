@@ -20,7 +20,7 @@ function click_button_add_layer(){
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function(event){
-        target_layer_on_add = (self.id === "input_geom") ? true :
+        let target_layer_on_add = (self.id === "input_geom") ? true :
                               (self.id === "img_in_geom") ? true :
                               (self.id === "img_data_ext") ? true :
                               (self.id === "data_ext") ? true : false;
@@ -33,11 +33,11 @@ function click_button_add_layer(){
             }
         }
         if(files[0].name.indexOf('topojson') > -1){
-            handle_TopoJSON_files(files);
+            handle_TopoJSON_files(files, target_layer_on_add);
         } else if(files.length == 1 && (files[0].name.toLowerCase().indexOf("geojson") > -1
                     || files[0].name.toLowerCase().indexOf('zip') > -1
                     || files[0].name.toLowerCase().indexOf('kml') > -1)){
-            handle_single_file(files[0]);
+            handle_single_file(files[0], target_layer_on_add);
         } else if((files[0].name.toLowerCase().indexOf('.csv') > -1
                     || files[0].name.toLowerCase().indexOf('.tsv') > -1)
                     && target_layer_on_add) {
@@ -57,7 +57,7 @@ function click_button_add_layer(){
                     || f.name.indexOf('.prj') > -1
                     ? files_to_send.push(f) : null)
             if(files_to_send.length >= 4)
-                handle_shapefile(files_to_send);
+                handle_shapefile(files_to_send, target_layer_on_add);
             else
                 swal(i18next.t("Error") + "!", i18next.t("Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile"), "error");
         } else {
@@ -90,7 +90,6 @@ function prepare_drop_section(){
             elem.addEventListener("dragenter", function(e){
                 e.preventDefault();
                 e.stopPropagation();
-                target_layer_on_add = false;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragover", function(e){
@@ -106,7 +105,8 @@ function prepare_drop_section(){
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();
                 let files = e.dataTransfer.files,
-                    self_section = elem.id;
+                    self_section = elem.id,
+                    target_layer_on_add;
 
                 e.stopPropagation();
 
@@ -139,7 +139,7 @@ function prepare_drop_section(){
                                   type: "error",
                                   allowOutsideClick: false});
                     } else if(files_to_send.length == 4){
-                        handle_shapefile(files_to_send);
+                        handle_shapefile(files_to_send, target_layer_on_add);
                     } else {
                         elem.style.border = '3px dashed red';
                         swal({title: i18next.t("Error") + "!",
@@ -157,7 +157,7 @@ function prepare_drop_section(){
                                   type: "error",
                                   allowOutsideClick: false});
                        // Most direct way to add a layer :
-                       else handle_TopoJSON_files(files);
+                       else handle_TopoJSON_files(files, target_layer_on_add);
                }
                else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
                     files[0].name.toLowerCase().indexOf('zip') > -1 ||
@@ -170,19 +170,18 @@ function prepare_drop_section(){
                                   type: "error",
                                   allowOutsideClick: false});
                        // Send the file to the server for conversion :
-                       else handle_single_file(files[0]);
+                       else handle_single_file(files[0], target_layer_on_add);
                }
               else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
                 || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
                     elem.style.border = '';
                     if(self_section === "section1")
-                        handle_dataset(files[0]);
+                        handle_dataset(files[0], target_layer_on_add);
                     else
                         swal({title: i18next.t("Error") + "!",
                               text: i18next.t('Only layout layers can be added here'),
                               type: "error",
                               allowOutsideClick: false});
-                    target_layer_on_add = false;
                }
               else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
                 || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
@@ -194,7 +193,6 @@ function prepare_drop_section(){
                               text: i18next.t('Only layout layers can be added here'),
                               type: "error",
                               allowOutsideClick: false});
-                    target_layer_on_add = false;
                }
               else {
                     elem.style.border = '3px dashed red';
@@ -242,7 +240,7 @@ function convert_dataset(file){
 }
 
 
-function handle_shapefile(files){
+function handle_shapefile(files, target_layer_on_add){
     var ajaxData = new FormData();
     ajaxData.append("action", "submit_form");
     for(let j=0; j<files.length; j++){
@@ -254,12 +252,14 @@ function handle_shapefile(files){
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
-        success: function(data) {add_layer_topojson(data);},
+        success: function(data) {
+            add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
+        },
         error: function(error) {console.log(error); }
         });
 }
 
-function handle_TopoJSON_files(files) {
+function handle_TopoJSON_files(files, target_layer_on_add) {
     var f = files[0],
         name = files[0].name,
         reader = new FileReader(),
@@ -278,8 +278,7 @@ function handle_TopoJSON_files(files) {
             reader.onloadend = function(){
                 let text = reader.result;
                 let topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
-                console.log(topoObjText)
-                add_layer_topojson(topoObjText);
+                add_layer_topojson(topoObjText, {target_layer_on_add: target_layer_on_add});
                 }
             reader.readAsText(f);
         }
@@ -300,6 +299,23 @@ function handle_reload_TopoJSON(text, param_add_func){
     });
 }
 
+//var UTF8 = {
+//    encode: function(s){
+//        for(let c, i = -1, l = (s = s.split("")).length, o = String.fromCharCode; ++i < l;
+//            s[i] = (c = s[i].charCodeAt(0)) >= 127 ? o(0xc0 | (c >>> 6)) + o(0x80 | (c & 0x3f)) : s[i]
+//		);
+//		return s.join("");
+//    },
+//    decode: function(s){
+//        for(let a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l;
+//            ((a = s[i][c](0)) & 0x80) &&
+//            (s[i] = (a & 0xfc) == 0xc0 && ((b = s[i + 1][c](0)) & 0xc0) == 0x80 ?
+//            o(((a & 0x03) << 6) + (b & 0x3f)) : o(128), s[++i] = "")
+//            );
+//		return s.join("");
+//	}
+//};
+
 /**
 * Handle a csv dataset by parsing it as an array of Object (ie features) or by
 * converting it to topojson if it contains valid x/y/lat/lon/etc. columns and
@@ -318,7 +334,21 @@ function handle_dataset(f){
     reader.onload = function(e) {
         var data = e.target.result;
         dataset_name = name.substring(0, name.indexOf('.csv'));
-        let tmp_dataset =  d3.csvParse(data);
+        let sep = data.split("\n")[0];
+        if(sep.indexOf("\t") > -1) {
+            sep = "\t";
+        } else if (sep.indexOf(";") > -1){
+            sep = ";";
+        } else {
+            sep = ",";
+        }
+        let encoding = jschardet.detect(data);
+        if(encoding.encoding != "utf-8"
+                || encoding.confidence){
+            console.log(encoding);
+            // Todo : do something in order to get a correct encoding
+        }
+        let tmp_dataset = d3.dsvFormat(sep).parse(data);
         let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
         if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
             if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
@@ -409,8 +439,7 @@ function add_csv_geom(file, name){
         error: function(error) {  console.log(error);  },
         success: function(data) {
             dataset_name = undefined;
-            target_layer_on_add = true;
-            add_layer_topojson(data);
+            add_layer_topojson(data, {target_layer_on_add: true});
         }
     });
 }
@@ -420,7 +449,7 @@ function add_csv_geom(file, name){
 * the converted layer added to the map
 * @param {File} file
 */
-function handle_single_file(file) {
+function handle_single_file(file, target_layer_on_add) {
     var ajaxData = new FormData();
     ajaxData.append("action", "single_file");
     ajaxData.append('file[]', file);
@@ -430,7 +459,9 @@ function handle_single_file(file) {
         url: '/convert_to_topojson',
         data: ajaxData,
         type: 'POST',
-        success: function(data) {add_layer_topojson(data);},
+        success: function(data) {
+            add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
+        },
         error: function(error) {console.log(error);}
     });
 };
@@ -446,6 +477,7 @@ function add_layer_topojson(text, options){
 
     var parsedJSON = JSON.parse(text),
         result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
+        target_layer_on_add = (options && options.target_layer_on_add) ? true : false,
         skip_alert = (options && options.skip_alert) ? true : false;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
@@ -514,7 +546,7 @@ function add_layer_topojson(text, options){
               .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
                        "stroke-opacity": .4,
                        "fill": type != 'Line' ? random_color1 : null,
-                       "fill-opacity": type != 'Line' ? 0.75 : 0})
+                       "fill-opacity": type != 'Line' ? 0.95 : 0})
               .attrs({"height": "100%", "width": "100%"});
 
         let class_name = [
@@ -602,7 +634,6 @@ function add_layer_topojson(text, options){
     up_legend();
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
-    target_layer_on_add = false;
 
     if(!skip_alert) swal("", i18next.t("Layer successfully added to the map"), "success")
     return lyr_name_to_add;
@@ -1124,8 +1155,7 @@ function add_sample_layer(){
             if(confirmed){
                 let url = undefined;
                 if(selec.target){
-                    target_layer_on_add = true;
-                    add_sample_geojson(selec.target);
+                    add_sample_geojson(selec.target, {target_layer_on_add: true});
                 }
                 if(selec.dataset){
                     url = sample_datasets[selec.dataset];
@@ -1158,7 +1188,7 @@ function add_sample_layer(){
 }
 
 
-function add_sample_geojson(name){
+function add_sample_geojson(name, options){
     var formToSend = new FormData();
     formToSend.append("layer_name", name);
     $.ajax({
@@ -1167,7 +1197,7 @@ function add_sample_geojson(name){
         url: '/cache_topojson/sample_data',
         data: formToSend,
         type: 'POST',
-        success: function(data){ add_layer_topojson(data); },
+        success: function(data){ add_layer_topojson(data, options); },
         error: function(error) { console.log(error); }
     });
 }
