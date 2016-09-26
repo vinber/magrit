@@ -60,11 +60,13 @@ RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download
 ENV PATH="${GDALINST}/gdal-2.1.0/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
 
-RUN DATE_UPDATE=$(date) && pip3 install -U pip \
+RUN pip3 install -U pip \
         && mkdir /home/app && cd /home/app \
         && git clone http://github.com/mthh/jenkspy/ \
         && cd jenkspy/ \
         && python3 setup.py install
+
+ARG CACHEBUST=1
 
 RUN  cd /home/app && git clone http://github.com/mthh/noname-stuff/ \
         && cd noname-stuff/ \
@@ -78,4 +80,6 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
 EXPOSE 9999
 
 CMD service redis-server start && noname_app
+#CMD service redis-server start \
+#    && gunicorn "noname_app.noname_aio:create_app()" --bind localhost:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname_stuff/
 #CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py

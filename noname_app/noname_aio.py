@@ -115,8 +115,8 @@ async def geojson_to_topojson(
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["topojson", "--no-stitch-poles", quantization, "--bbox",
-                     "-p", "--", filepath,],
-                     stdout=PIPE, stderr=PIPE)
+                     "-p", "--", filepath],
+                    stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     if remove:
         os.remove(filepath)
@@ -787,7 +787,8 @@ async def handler_exists_layer(request):
     res = await request.app['redis_conn'].get(
         '_'.join([user_id, request.match_info['expr'], "NQ"]))
     if res:
-        return web.Response(text=res.decode().replace(''.join([user_id, "_"]), ''))
+        return web.Response(
+            text=res.decode().replace(''.join([user_id, "_"]), ''))
     else:
         return web.Response(text="")
 
@@ -971,7 +972,6 @@ async def convert_tabular(request):
     return web.Response(text=json.dumps({"file": result, "name": name}))
 
 
-
 def prepare_list_svg_symbols():
     symbols = os.listdir("static/img/svg_symbols/")
     with open("static/json/list_symbols.json", "w") as f:
@@ -1003,7 +1003,7 @@ async def on_shutdown(app):
                 task.cancel()
 
 
-async def init(loop, port=9999):
+async def init(loop, port):
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("noname_app.main")
     redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50)
@@ -1044,13 +1044,31 @@ async def init(loop, port=9999):
 #    app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
-    handler = app.make_handler()
-    srv = await loop.create_server(
-        handler, '0.0.0.0', port)
-    return srv, app, handler
+    if not port:
+        return app
+    else:
+        handler = app.make_handler()
+        srv = await loop.create_server(
+            handler, '0.0.0.0', port)
+        return srv, app, handler
+
+def create_app(app_name="FreeCarto"):
+    # Entry point when using Gunicorn to run the application with something like :
+    # $ gunicorn "noname_app.noname_aio:create_app('AppName')" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if app_real_path != os.getcwd():
+        os.chdir(app_real_path)
+    loop = asyncio.get_event_loop()
+    app = loop.run_until_complete(init(loop, None))
+    app['app_name'] = app_name
+    return app
 
 
 def main():
+    # Entry point used when the application is started directly like :
+    # $ ./noname_app/noname_aio.py --name AppName --port 9999
+    #   or when installed and started like :
+    # $ noname_app --name AppName --port 9999
     arguments = docopt.docopt(__doc__, version='noname_app 0.0.0 (Unreleased)')
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])

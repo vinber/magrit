@@ -1,0 +1,21 @@
+proxy:
+  restart: always
+  image: jwilder/nginx-proxy:latest
+  volumes:
+    - "/var/run/docker.sock:/tmp/docker.sock:ro"
+  ports:
+    - "80:80"
+
+noname_app:
+  restart: always
+  build: .
+  links:
+    - proxy
+    - redis
+  expose:
+    - "3030"
+  command: gunicorn "noname_app.noname_aio:create_app('FreeCarto')" --bind 0.0.0.0:3030 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 4 --chdir /home/app/noname_stuff/
+
+redis:
+  restart: always
+  image: redis:3.0
