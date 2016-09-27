@@ -35,12 +35,12 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = handle_join;
 
         let join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [prop, i18next.t('Data not joined')].join('');
+        join_sec.innerHTML = [prop, i18next.t('app_page.join_box.state_not_joined')].join('');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("Join now") + '</button>'
+        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("app_page.join_box.button_join") + '</button>'
         button.onclick = handle_join;
         join_sec.appendChild(button);
     } else {
@@ -51,13 +51,17 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.style.height = "28px";
         ext_dataset_img.onclick = null;
 
+        let [v1, v2] = prop.split("/").map(d => +d);
+
         let join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
+//        join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
+        join_sec.innerHTML = [' <b>', prop, i18next.t("app_page.join_box.match", {count: v1}), '</b>'].join(' ');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        button.innerHTML = " - <i> Change join field </i>";
+//        button.innerHTML = " - <i> Change join field </i>";
+        button.innerHTML = [" - <i> ", i18next.t("app_page.join_box.change_field"), " </i>"].join('');
         button.onclick = handle_join;
         join_sec.appendChild(button);
     }
@@ -83,7 +87,7 @@ function valid_join_on(layer_name, field1, field2){
     var join_set2 = new Set(join_values2);
     if(join_set2.size != join_values2.length){
         swal("",
-             i18next.t("The values on which operate have to be uniques"),
+             i18next.t("app_page.join_box.error_not_uniques"),
              "warning");
         return;
     }
@@ -95,7 +99,7 @@ function valid_join_on(layer_name, field1, field2){
     var join_set1 = new Set(join_values1);
     if(join_set1.size != join_values1.length){
         swal("",
-             i18next.t("The values on which operate have to be uniques"),
+             i18next.t("app_page.join_box.error_not_uniques"),
              "warning");
         return;
     }
@@ -137,7 +141,8 @@ function valid_join_on(layer_name, field1, field2){
         valid_join_check_display(true, prop);
         return true;
     } else if(hits > 0){
-        var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
+//        var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
+        var rep = confirm(i18next.t("app_page.join_box.partial_join", {ratio: prop}));
         if(rep){
             let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
                 i_id = fields_name_to_add.indexOf("id");
@@ -161,9 +166,11 @@ function valid_join_on(layer_name, field1, field2){
 
     } else {
         swal("",
-             ["No match found between fields <i>'", field1,
-              "'</i> and <i>'", field2,"'</i>"].join(''),
+             i18next.t("app_page.join_box.no_match", {field1: field1, field2: field2}),
              "error");
+//             ["No match found between fields <i>'", field1,
+//              "'</i> and <i>'", field2,"'</i>"].join(''),
+//             "error");
         field_join_map = [];
         return false;
     }
@@ -189,7 +196,9 @@ function createJoinBox(layer){
     button2.push("</select>");
 
     let inner_box = [
-         '<p><b><i>Select fields on which operate the join</i></b></p>',
+         '<p><b><i>',
+         i18next.t("app_page.join_box.select_fields"),
+        '</i></b></p>',
          '<div style="padding:10px"><p>Geometrie layer field :</p>',
          button1.join(''), '<em style="float:right;">(', layer, ')</em></div>',
          '<div style="padding:15px 10px 10px"><p>External dataset field :<br></p>',
@@ -197,7 +206,7 @@ function createJoinBox(layer){
          '<br><p><strong>Join datasets ?<strong></p></div>'
         ].join('');
 
-    make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
+    make_confirm_dialog(inner_box, i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.join_box.title"), "joinBox")
         .then(function(confirmed){
             if(confirmed){
                 let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);

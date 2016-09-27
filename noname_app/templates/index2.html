@@ -285,14 +285,18 @@ document.getElementById("lang1").onclick = bind_change_lang;
 document.getElementById("lang2").onclick = bind_change_lang;
 
 function bind_change_lang(){
-    let lang = this.innerHTML;
-    change_lang(lang);
+    if(this.id == "lang1" && i18next.language == this.innerHTML){
+        return;
+    }
+    let lang = this.innerHTML,
+        old_lang = document.getElementById("lang_current").innerHTML;
+    change_lang(lang, old_lang);
 }
 
-function change_lang(new_lang){
+function change_lang(new_lang, old_lang){
     i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
     document.getElementById("lang_current").innerHTML = new_lang;
-    document.getElementById("lang2").innerHTML = document.getElementById("lang1").innerHTML;
+    document.getElementById("lang2").innerHTML = old_lang;
     document.getElementById("lang1").innerHTML = new_lang;
 }
 </script>

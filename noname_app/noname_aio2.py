@@ -47,6 +47,8 @@ from aioredis import create_pool, create_reconnecting_redis
 from aiohttp import web, MultiDict
 from aiohttp_session import get_session, session_middleware, redis_storage
 
+from test_client2 import client_async as run_task_worker
+
 try:
     from helpers.misc import (
         savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
@@ -58,7 +60,7 @@ try:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from helpers.grid_layer import get_grid_layer
+#    from helpers.grid_layer import get_grid_layer
 
 except:
     from .helpers.misc import (
@@ -71,7 +73,7 @@ except:
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
         make_geojson_links)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from .helpers.grid_layer import get_grid_layer
+#    from .helpers.grid_layer import get_grid_layer
 
 pp = '(aiohttp_app) '
 
@@ -431,32 +433,34 @@ async def serve_main_page(request):
     get_user_id(session_redis, request.app['app_users'])
     return {"app_name": request.app["app_name"]}
 
-#async def nothing(posted_data, user_id, app):
-#    posted_data = json.loads(posted_data.get("json"))
-#    key = posted_data['topojson']
-#    f_name = '_'.join([user_id, str(key), "NQ"])
-#    ref_layer = await app['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = posted_data['var_name']
-#    n_field_name = list(new_field.keys())[0]
-#    if len(new_field[n_field_name]) > 0:
-#        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
-#    tmp_part = get_name()
-#    tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
-#    savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
-#    gdf = GeoDataFrame.from_file(tmp_path)
-#    os.remove(tmp_path)
-#    result = gdf.to_json()
-#    savefile(tmp_path, result.encode())
-#    res = await geojson_to_topojson(tmp_path, remove=True)
-#    hash_val = mmh3_hash(res)
-#    return ''.join([
-#             '{"key":',
-#             str(hash_val),
-#             ',"file":',
-#             res.replace(tmp_part, '_'.join(["Nope", n_field_name])),
-#             '}'
-#         ])
+
+async def nothing(posted_data, user_id, app):
+    posted_data = json.loads(posted_data.get("json"))
+    key = posted_data['topojson']
+    f_name = '_'.join([user_id, str(key), "NQ"])
+    ref_layer = await app['redis_conn'].get(f_name)
+    ref_layer = json.loads(ref_layer.decode())
+    new_field = posted_data['var_name']
+    n_field_name = list(new_field.keys())[0]
+    if len(new_field[n_field_name]) > 0:
+        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    tmp_part = get_name()
+    tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
+    savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
+    gdf = GeoDataFrame.from_file(tmp_path)
+    os.remove(tmp_path)
+    result = gdf.to_json()
+    savefile(tmp_path, result.encode())
+    res = await geojson_to_topojson(tmp_path, remove=True)
+    hash_val = mmh3_hash(res)
+    return ''.join([
+             '{"key":',
+             str(hash_val),
+             ',"file":',
+             res.replace(tmp_part, '_'.join(["Nope", n_field_name])),
+             '}'
+         ])
+
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
@@ -474,10 +478,19 @@ async def carto_doug(posted_data, user_id, app):
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 
-    result = await app.loop.run_in_executor(
-        app["ThreadPool"],
-        make_cartogram,
-        GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+#    result = await app.loop.run_in_executor(
+#        app["ThreadPool"],
+#        make_cartogram,
+#        GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+
+    result = await run_task_worker(
+        b'make_geojson_cartogram',
+        [tmp_path, n_field_name, iterations],
+        app.loop,
+        user_id,
+        'ipc:///tmp/feeds/clients',
+        "pickle")
+
     os.remove(tmp_path)
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path, remove=True)
@@ -510,11 +523,18 @@ async def compute_discont(posted_data, user_id, app):
         f.write(json.dumps(ref_layer_geojson).encode())
     new_topojson = await geojson_to_topojson(tmp_path, "-q 1e3")
     new_topojson = json.loads(new_topojson)
-    res_geojson = app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_borders_to_geojson,
-        new_topojson
-        )
+#    res_geojson = app.loop.run_in_executor(
+#        app["ProcessPool"],
+#        get_borders_to_geojson,
+#        new_topojson
+#        )
+    res_geojson = await run_task_worker(
+        b"get_border_to_geojson",
+        [new_topojson],
+        app.loop,
+        user_id,
+        'ipc:///tmp/feeds/clients')
+
     savefile(tmp_path, res_geojson)
     res = await geojson_to_topojson(tmp_path, remove=True)
     new_name = ''.join(["Discont_", n_field_name])
@@ -543,19 +563,31 @@ async def links_map(posted_data, user_id, app):
         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
     ref_layer = convert_from_topo(ref_layer)
 
-    result_geojson = await app.loop.run_in_executor(
-        app["ThreadPool"],
-        make_geojson_links,
-        ref_layer,
-        posted_data["csv_table"],
-        posted_data["field_i"],
-        posted_data["field_j"],
-        posted_data["field_fij"],
-        n_field_name)
+    result_geojson = await run_task_worker(
+        b"make_geojson_links",
+        [ref_layer,
+         posted_data["csv_table"],
+         posted_data["field_i"],
+         posted_data["field_j"],
+         posted_data["field_fij"],
+         n_field_name],
+        app.loop,
+        user_id,
+        'ipc:///tmp/feeds/clients')
+
+#    result_geojson = await app.loop.run_in_executor(
+#        app["ThreadPool"],
+#        make_geojson_links,
+#        ref_layer,
+#        posted_data["csv_table"],
+#        posted_data["field_i"],
+#        posted_data["field_j"],
+#        posted_data["field_fij"],
+#        n_field_name)
 
     tmp_part = get_name()
     tmp_name = ''.join(['/tmp/', tmp_part, '.geojson'])
-    savefile(tmp_name, result_geojson)
+    savefile(tmp_name, result_geojson.encode())
     res = await geojson_to_topojson(tmp_name, remove=True)
     new_name = ''.join(["Links_", n_field_name])
     res = res.replace(tmp_part, new_name)
@@ -588,13 +620,20 @@ async def carto_gridded(posted_data, user_id, app):
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
-    result_geojson = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_grid_layer,
-        filenames['src_layer'],
-        posted_data["cellsize"],
-        n_field_name,
-        posted_data["grid_shape"].lower())
+#    result_geojson = await app.loop.run_in_executor(
+#        app["ProcessPool"],
+#        get_grid_layer,
+#        filenames['src_layer'],
+#        posted_data["cellsize"],
+#        n_field_name,
+#        posted_data["grid_shape"].lower())
+    result_geojson = await run_task_worker(
+        b"get_grid_layer",
+        [filenames['src_layer'], posted_data["cellsize"],
+         n_field_name, posted_data["grid_shape"].lower()],
+        app.loop,
+        user_id,
+        'ipc:///tmp/feeds/clients')
 
     savefile(filenames['src_layer'], result_geojson.encode())
     res = await geojson_to_topojson(filenames['src_layer'], remove=True)
@@ -606,10 +645,10 @@ async def carto_gridded(posted_data, user_id, app):
                          str(posted_data["cellsize"]),
                          n_field_name])
     res = res.replace(tmp_part, new_name)
-    hash_val = str(mmh3_hash(res))
+    hash_val = mmh3_hash(res)
     asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([user_id, hash_val, "NQ"]), res))
-    return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
+        app['redis_conn'].set('_'.join([user_id, str(hash_val), "NQ"]), res))
+    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def compute_olson(posted_data, user_id, app):
@@ -729,26 +768,43 @@ async def call_stewart(posted_data, user_id, app):
             filenames["mask_layer"])
 
     else:
-        res, breaks, dump_obj = await app.loop.run_in_executor(
-            app["ProcessPool"],
-            quick_stewart_mod,
-            filenames['point_layer'],
-            n_field_name1,
-            int(posted_data['span']),
-            float(posted_data['beta']),
-            posted_data['typefct'].lower(),
-            int(posted_data['nb_class']),
-            posted_data["disc_kind"],
-            posted_data['resolution'],
-            filenames["mask_layer"],
-            n_field_name2,
-            posted_data['user_breaks'])
+        res, breaks, dump_obj = await run_task_worker(
+            b"quick_stewart_mod",
+            [filenames['point_layer'],
+             n_field_name1,
+             int(posted_data['span']),
+             float(posted_data['beta']),
+             posted_data['typefct'].lower(),
+             int(posted_data['nb_class']),
+             posted_data["disc_kind"],
+             posted_data['resolution'],
+             filenames["mask_layer"],
+             n_field_name2,
+             posted_data['user_breaks']],
+            app.loop,
+            user_id,
+            'ipc:///tmp/feeds/clients'
+            "pickle")
+#        res, breaks, dump_obj = await app.loop.run_in_executor(
+#            app["ProcessPool"],
+#            quick_stewart_mod,
+#            filenames['point_layer'],
+#            n_field_name1,
+#            int(posted_data['span']),
+#            float(posted_data['beta']),
+#            posted_data['typefct'].lower(),
+#            int(posted_data['nb_class']),
+#            posted_data["disc_kind"],
+#            posted_data['resolution'],
+#            filenames["mask_layer"],
+#            n_field_name2,
+#            posted_data['user_breaks'])
 
         asyncio.ensure_future(
             app['redis_conn'].set(reusable_val, dump_obj))
 
     os.remove(filenames['point_layer'])
-    savefile(filenames['point_layer'], res)
+    savefile(filenames['point_layer'], res.encode())
     res = await geojson_to_topojson(filenames['point_layer'], remove=True)
 
     new_name = '_'.join(['StewartPot', n_field_name1])
@@ -990,7 +1046,7 @@ def check_port_available(port_nb):
 
 async def on_shutdown(app):
     app["redis_conn"].quit()
-    app["ProcessPool"].shutdown()
+#    app["ProcessPool"].shutdown()
     app["ThreadPool"].shutdown()
     for task in asyncio.Task.all_tasks():
         await asyncio.sleep(0)
@@ -1039,13 +1095,15 @@ async def init(loop, port):
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
-    app['ProcessPool'] = ProcessPoolExecutor(4)
+    print(os.getcwd())
+    app['broker'] = Popen([sys.executable, "worker_queue.py", "4", "ipc"])
     app['geo_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
-        "carto_doug": carto_doug, "olson": compute_olson}
+        "carto_doug": carto_doug, "nothing": nothing, "olson": compute_olson}
 #    app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
+
     if not port:
         return app
     else:
@@ -1053,6 +1111,7 @@ async def init(loop, port):
         srv = await loop.create_server(
             handler, '0.0.0.0', port)
         return srv, app, handler
+
 
 def create_app(app_name="FreeCarto"):
     # Entry point when using Gunicorn to run the application with something like :

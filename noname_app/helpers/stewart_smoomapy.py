@@ -67,6 +67,8 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
                            func_grid="scipy",
                            output="GeoDataFrame")
     _min, _max = result[["min", "max"]].values.T.tolist()
+#    return (result[::-1].to_json().encode(),
+#            {"min": _min[::-1], "max": _max[::-1]})
     return (result[::-1].to_json().encode(),
             {"min": _min[::-1], "max": _max[::-1]},
-            pickle.dumps(StePot))
+            StePot)

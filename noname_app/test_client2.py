@@ -5,8 +5,10 @@
 import asyncio
 import zmq
 import zmq.asyncio
+import ujson as json
 import aiozmq
 import uvloop
+import pickle
 import sys
 
 
@@ -48,10 +50,10 @@ def main(client_url):
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     async def run(loop):
-        res = await client_async(b"foobar_request", b'"barbaz_data"', loop, 1, client_url)
-        print("Result in client: ", res.decode())
-        res = await client_async(b"make_cartogram", b"[1,2,3]", loop, 1, client_url)
-        print("Result in client: ", res.decode())
+        res = await client_async(b"foobar_request", "barbaz_data", loop, 1, client_url)
+        print("Result in client: ", res)
+        res = await client_async(b"test_func", ["field_name", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], loop, 1, client_url)
+        print("Result in client: ", res)
 
     try:
         loop.run_until_complete(run(loop))
@@ -59,7 +61,7 @@ def main(client_url):
         return
 
 
-async def client_async(request, data, loop, i, client_url):
+async def client_async(request, data, loop, i, client_url, serialization="json"):
     transp, protocol = await aiozmq.create_zmq_connection(
         lambda: Protocol(loop),
         zmq.REQ,
@@ -68,11 +70,19 @@ async def client_async(request, data, loop, i, client_url):
     transp.setsockopt(zmq.IDENTITY, '{}'.format(i).encode())
     await transp.connect(client_url)
 
-    transp.write([request, b'', data])
+    transp.write([
+        request,
+        b'',
+        json.dumps(data).encode(),
+        b'',
+        serialization.encode()
+        ])
+
     res = await protocol.received.get()
     transp.close()
     asyncio.ensure_future(protocol.closed)
-    return res[0]
+
+    return json.loads(res[0]) if "json" in serialization else pickle.loads(res[0])
 
 
 if __name__ == "__main__":

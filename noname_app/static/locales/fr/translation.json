@@ -1,83 +1,243 @@
 {
-    "Add your data" : "Ajout de données",
-    "Choose a function": "Choix de la représentation",
-    "Function options": "Options de la représentation",
-    "Layers": "Gestionnaire de couches",
-    "Basemap configuration": "Configuration de la carte",
-    "Projection options": "Options de projection",
-    "Add geometry layer": "Ajout d'une couche géographique",
-    "Add additional dataset": "Ajout d'un jeu de données",
-    "Select available sample dataset": "Sélection d'un jeu de données d'exemple",
-    "(or drop it)": "(ou glisser-déposer)",
-    "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-    "Drop new layout layer or click to browse locally and add one. Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML": "Faites glissez un fichier d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton.<br> Types supportés: GeoJSON, TopoJSON, Shapefile et KML",
-    "Explore your table(s)": "Afficher les données",
-    "No choosen functionnality": "Aucune fonctionnalitée choisie",
-    "Canvas width": "Largeur de la carte",
-    "Canvas height": "Hauteur de la carte",
-    "Map title": "Titre de la carte",
-    "Add layout features": "Ajout d'éléments d'habillage",
-    "Save your preferences": "Sauvegarder le projet",
-    "Load a preference JSON": "Charger un projet",
-    "Projection": "Projection",
-    "Canvas rotation": "Rotation de la carte",
-    "Projection center (longitude)": "Centre de la projection (longitude)",
-    "Projection center (φ-axis rotation)": "Centre de la projection (rotation de l'axe φ)",
-    "Projection center (γ-axis rotation)": "Centre de la projection (rotation de l'axe γ)",
-    "Reset center/zooming/rotation": "Réinitialiser la vue",
-    "Data not joined": "Tables non jointes",
-    "Join now": "Joindre",
-    "features": "entitées",
-    "fields": "champs",
-    "Field": "Champ",
-    "matches": "correspondances",
+    "app_page": {
+        "common": {
+            "loading_results": "Chargement en cours",
+            "save_preferences": "Sauvegarder le projet",
+            "load_preferences": "Charger un projet",
+            "layer_success": "Résultat ajouté à la carte!",
+            "success": "Validé",
+            "confirm": "Confirmation",
+            "remove_layer": "Enlever la couche {{layer}} ?",
+            "remove_tabular": "Enlever le jeu de données ajouté ?",
+            "cancel": "Annulation",
+            "delete": "Suppression",
+            "deleted": "Supprimée",
+            "valid": "Confirmation",
+            "feature": "feature",
+            "feature_plural": "features",
+            "field": "field",
+            "field_plural": "fields"
+        },
+        "section1": {
+            "title": "Ajout de données",
+            "add_geom": "Ajout d'une couche géographique <i>(ou glisser-déposer)</i>",
+            "add_ext_dataset": "Ajout d'un jeu de données",
+            "add_sample_data": "Sélection d'un jeu de données d'exemple",
+            "explore_table": "Afficher les données"
+        },
+        "section2_pre": {
+            "title": "Choix de la représentation"
+        },
+        "section2": {
+            "title": "Option de la fonctionnalité",
+            "no_func": "Aucune fonctionnalitée choisie"
+        },
+        "section3": {
+            "title": "Gestionnaire de couches"
+        },
+        "section4": {
+            "title": "Configuration de la carte",
+            "map_width": "Largeur de la carte (px) ",
+            "map_height": "Hauteur de la carte (px) ",
+            "map_title": "Titre de la carte ",
+            "background_color": "Couleur de l'arrière-plan",
+            "canvas_rotation": "Rotation de la carte",
+            "layout_features": "Ajout d'éléments d'habillage "
+        },
+        "section5": {
+            "title": "Options de projection",
+            "projection": "Projection",
+            "projection_center_lambda": "Centre de la projection (longitude)",
+            "projection_center_phi": "Centre de la projection (rotation de l'axe φ)",
+            "projection_center_gamma": "Centre de la projection (rotation de l'axe γ)",
+            "reset": "Réinitialiser la vue"
+        },
+        "tooltips": {
+            "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "section3": "Faites glissez un fichier d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton.<br> Types supportés: GeoJSON, TopoJSON, Shapefile et KML"
+        },
+        "func_description" : {
+            "smooth": "Réalisation d'une carte lissée avec un l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
+            "prop": "Réalisation d'un carte en symboles proportionnels sur un champ numérique du jeu de données",
+            "choroprop": "Réalisation d'une carte en symbols proportionnels cholorés selon la méthode choroplèthe",
+            "choro": "Réalisation d'une carte choroplèthe",
+            "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
+            "grid": "Réalisation d'une grille de densité",
+            "flow": "Réalisation d'une carte de flux (taille des liens proportionnelle au volume du flux)",
+            "discont": "Réalisation d'une carte de discontinuités",
+            "typo": "Réalisation d'une carte catégorielle utilisant une variable qualitative",
+            "label": "Affichage et personnalisation du label des entités",
+            "typosymbol": "Affichage de symboles utilisant une variable qualitative"
+        },
+        "func_title" : {
+            "smooth": "Carte lissée",
+            "prop": "Symboles proportionnels",
+            "choroprop": "Symboles proportionnels colorés",
+            "choro": "Carte choroplèthe",
+            "cartogram": "Anamorphose",
+            "grid": "Représentation griddée",
+            "flow": "Carte de flux/liens",
+            "discont": "Carte des discontinuités",
+            "typo": "Typologie par à-plat de couleurs",
+            "label": "Représentation des labels",
+            "typosymbol": "Typologie avec utilisation de symboles"
+        },
+        "layout_features_box": {
+            "title": "Élements d'habillage",
+            "subtitle": "Élement à ajouter",
+            "north_arrow": "Fleche nord",
+            "scale": "Échelle",
+            "sphere": "Fond de l'emprise du globe",
+            "graticule": "Graticule",
+            "text_annot": "Annotation de texte"
+        },
+        "sample_layer_box": {
+            "title": "Jeux de données d'exemple",
+            "subtitle1": "Choix d'une couche géographique à ajouter :",
+            "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :"
+        },
+        "export_box": {
+            "title": "Choix d'un format...",
+            "png": "Export au format PNG",
+            "svg": "Export au format SVG",
+            "geo": "Exporter vers un format compatible SIG",
+            "geo_title_box": "Choix de la couche et du format...",
+            "options": "Options d'export",
+            "option_layer": "Couche à exporter",
+            "option_datatype": "Format",
+            "option_projection": "Projection"
+        },
+        "join_box": {
+            "title": "Option de jointure",
+            "diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entitées",
+            "ask_continue": "Continuer",
+            "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques",
+            "state_not_joined": "Tables non jointes",
+            "button_join": "Joindre",
+            "select_fields": "Selection des champs à joindre ",
+            "match": "correspondance",
+            "match_plural": "correspondances",
+            "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
+            "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?"
+        },
+        "explore_box": {
+
+        },
+        "lm_buttons":{
+            "zoom+": "Zoom positif",
+            "zoom-": "Zoom negatif",
+            "i": "Information sur l'entitée survolée",
+            "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
+            "zoom_rect": "Zoom sur un sélection rectangulaire"
+        },
+        "func_options": {
+            "common": {
+                "field": "Champ ",
+                "color": "Couleur",
+                "symbol_circle": "Cercle",
+                "symbol_square": "Carré",
+                "output": "Nom du résultat<br>",
+                "render": "Déssiner le résultat"
+            },
+            "smooth": {
+                "field": "Valeur ",
+                "divide_field": "Diviseur ",
+                "span": "Span ",
+                "beta": "Beta ",
+                "resolution": "Resolution (opt.) ",
+                "function": "Type de function ",
+                "func_exponential": "Exponentielle ",
+                "func_pareto": "Pareto ",
+                "nb_class": "Nombre de classes ",
+                "discretization": "Type de discrétisation ",
+                "break_values": "Limites de classes (opt.) ",
+                "mask": "Couche de masquaque (opt.) "
+            },
+            "prop": {
+                "field": "Valeur ",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ... ",
+                "symbol_type": "Type de symbole ",
+                "symbol_circle": "Cercle",
+                "symbol_square": "Carré",
+                "symbol_color": "Couleur du symbole ",
+                "options_one_color": "Une couleur",
+                "options_two_colors": "Deux couleurs",
+                "options_break_two_colors": "Valeur limite "
+            },
+            "typo": {
+                "field": "Champ",
+                "color_choice": "Choix des couleurs "
+            },
+            "choroprop": {
+                "field1": "Valeur 1 (taille du symbole) ",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ...",
+                "symbol_type": "Type de symbole ",
+                "field2": "Valeur 2 (couleur du symbole) ",
+                "discretization_choice": "Choix de la discrétisation ..."
+            },
+            "flow": {
+                "subtitle1": "Choix des champs à utiliser",
+                "discretization": "Type de discrétisation ",
+                "nb_class": "Nombre de classes "
+            },
+            "grid": {
+                "field": "Valeur",
+                "cellsize": "Taille des carreaux <i>km</i> ",
+                "shape": "Forme des carreaux ",
+                "coloramp": "Palette de couleurs "
+            },
+            "cartogram": {
+                "algo": " Algorithme à utiliser ",
+                "field": "Champ ",
+                "dorling_symbol": "Type de symbole ",
+                "dorling_symbol_circle": "Cercle",
+                "dorling_symbol_square": "Carré",
+                "dorling_fixed_size": "Taille fixée ",
+                "dorling_on_value": "sur la valeur ...",
+                "dougenik_iterations": "Nombre d'itérations",
+                "olson_scale_txt": "Dimensionner la taille de référence sur :",
+                "olson_scale_max_scale": "Modification maximum de la taille des entitées ",
+                "olson_scale_max": "Valeur maximum (évite le chevauchement des entitées)",
+                "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
+            },
+            "disc": {
+                "field": "Champ à utiliser ",
+                "id_field": "Champ d'ID à conserver ",
+                "type_discontinuity": "Type de discontinuité ",
+                "type_relative": "Relative",
+                "type_absolute": "Absolue",
+                "nb_class": "Nombre de classes ",
+                "discretization": "Type de discrétisation ",
+                "color": "Couleur "
+            },
+            "typosymbol": {
+                "field": "Champ à utiliser ",
+                "symbols_choice": "Choix des symboles"
+            },
+            "label": {
+                "field": "Champ de labels ",
+                "prop_labels": "Labels proportionnels",
+                "font_size": "Taille par défaut ",
+                "font_type": "Type de police ",
+                "color": "Couleur ",
+                "content": "Contenu ",
+                "title_box_indiv": "Option de l'intitulé"
+            }
+        }
+    },
     "Layer": "La couche",
-    "Loading results": "Chargement en cours",
-    "Background color": "Couleur d'arrière plan",
-    "Compute and render": "Dessiner le résultat",
-    "Render": "Dessiner le résultat",
-    "Layer successfully added to the map": "Résultat ajouté à la carte!",
-    "Success": "Validé",
     "Display and arrange class": "Discrétisation...",
-    "Confirm": "Confirmation",
-    "Remove layer": "Enlever la couche",
-    "Cancel": "Annulation",
-    "Delete": "Suppression",
-    "Deleted": "Supprimée",
     "has been removed": "a été supprimée",
-    "The geometrie layer and the joined dataset doesn't have the same number of features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entitées",
-    "Continue anyway": "Continuer",
-    "The values on which operate have to be uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques",
-    "Export to PNG": "Export au format PNG",
-    "Export to SVG": "Export au format SVG",
-    "Export layers to a geographic format": "Exporter vers un format compatible SIG",
-    "Layer export": "Options d'export",
     "Symbol selection": "Choix du symbole",
     "Select a symbol...": "Sélectionnez un symbole",
     "Or upload your symbol ": "Ou téléchargez votre symbole",
-    "Smoothed map (Stewart potentials)": "Carte lissée",
-    "Proportional symbols": "Symboles proportionnels",
-    "Proportional colored symbols": "Symboles proportionnels colorés",
-    "Choropleth map": "Carte choroplète",
-    "Anamorphose map": "Anamorphose",
-    "Gridded map": "Représentation griddée",
-    "Multiscalar Territorial Analysis": "MTA !",
-    "Link/FLow map": "Carte de flux",
-    "Discontinuities map": "Carte de discontinuitées",
-    "Categorical map": "Typologie par à-plat de couleurs",
-    "Label map": "Représentation des labels",
-    "Symbol map": "Typologie avec utilisation de symboles",
-    "lm_buttons":{
-        "zoom+": "Zoom positif",
-        "zoom-": "Zoom negatif",
-        "i": "Information sur l'entitée survolée",
-        "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
-        "zoom_rect": "Zoom sur un sélection rectangulaire"
-    },
     "disc_box":{
         "title": "Options de discrétisation",
         "type_disc": "Type",
-        "class": " classes",
+        "class": " classe",
+        "class_plural": " classes",
         "disp_mean": "Afficher la moyenne",
         "disp_median": "Afficher la médiane",
         "disp_sd": "Afficher l'écart-type",

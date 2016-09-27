@@ -1,10 +1,228 @@
 {
-    "lm_buttons":{
-        "zoom+": "Zoom in",
-        "zoom-": "Zoom out",
-        "i": "Feature information",
-        "hand_button": "Use the cursor to move on the map (default behavior)",
-        "zoom_rect": "Zoom on rectangular selection"
+    "app_page": {
+        "common": {
+            "loading_results": "Loading results",
+            "save_preferences": "Save your preferences",
+            "load_preferences": "Load a preference JSON",
+            "layer_success": "Layer successfully added to the map",
+            "success": "Success",
+            "confirm": "confirm",
+            "remove_layer": "Remove layer {{layer}} ?",
+            "remove_tabular": "Remove tabular dataset ?",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "deleted": "Deleted",
+            "valid": "Valid",
+            "feature": "feature",
+            "feature_plural": "features",
+            "field": "field",
+            "field_plural": "fields"
+        },
+        "section1": {
+            "title": "Ajout de données",
+            "add_geom": "Add geometry layer (or drop it)",
+            "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
+            "add_sample_data": "Select available sample dataset",
+            "explore_table": "Explore your table(s)"
+        },
+        "section2_pre": {
+            "title": "Choose a representation"
+        },
+        "section2": {
+            "title": "Functionnality options",
+            "no_func": "No choosen functiionnality"
+        },
+        "section3": {
+            "title": "Layers"
+        },
+        "section4": {
+            "title": "Basemap configuration",
+            "map_width": "Map width (px) ",
+            "map_height": "Map height (px) ",
+            "map_title": "Map title ",
+            "background_color": "Background color ",
+            "canvas_rotation": "Canvas rotation ",
+            "layout_features": "Add layout features... "
+        },
+        "section5": {
+            "title": "Projection options",
+            "projection": "Projection",
+            "projection_center_lambda": "Projection center (longitude)",
+            "projection_center_phi": "Projection center (φ-axis rotation)",
+            "projection_center_gamma": "Projection center (γ-axis rotation)",
+            "reset": "Reset center/zooming/rotation"
+        },
+        "tooltips": {
+            "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
+            "section3": "Drop new layout layer or click to browse locally and add one.<br>Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"
+        },
+        "func_description" : {
+            "smooth": "Render a smoothed map (stewart potentials)",
+            "prop": "Display proportional symbols with appropriate discretisation on a numerical field of your data",
+            "choroprop": "Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
+            "choro": "Render a choropleth map on a numerical field of your data",
+            "cartogram": "Render a map using an anamorphose algorythm on a numerical field of your data",
+            "grid": "Render a gridded density map on a numerical field of your data",
+            "flow": "Render a map displaying links between features with graduated sizes",
+            "discont": "Render a map displaying discontinuities between polygons features",
+            "typo": "Render a categorical map with an attribute field of your dataset",
+            "label": "Display and customize feature labels",
+            "typosymbol": "Display symbol on the features of the maps"
+        },
+        "func_title" : {
+            "smooth": "Smoothed map (Stewart potentials)",
+            "prop": "Proportionnal symbols",
+            "choroprop": "Colored proportionnal symbols",
+            "choro": "Choropleth map",
+            "cartogram": "Cartogram map",
+            "grid": "Gridded map",
+            "flow": "Link/Flow map",
+            "discont": "Discontinuities map",
+            "typo": "Categorical map",
+            "label": "Label map",
+            "typosymbol": "Symbol map"
+        },
+        "layout_features_box": {
+            "title": "Layout features",
+            "subtitle": "Feature to add",
+            "north_arrow": "North arrow",
+            "scale": "Scale",
+            "sphere": "Sphere background",
+            "graticule": "Graticule",
+            "text_annot": "Text box"
+        },
+        "sample_layer_box": {
+            "title": "Jeux de données d'exemple",
+            "subtitle1": "Choose a layer to be rendered :",
+            "subtitle2": "Choose a dataset to link with geometries :"
+        },
+        "export_box": {
+            "title": "Choose a format...",
+            "png": "Export to PNG",
+            "svg": "Export to SVG",
+            "geo": "Export layers to a geographic format",
+            "geo_title_box": "Choose layer and datatype...",
+            "options": "Export options",
+            "option_layer": "Layer to export",
+            "option_datatype": "Datatype",
+            "option_projection": "Projection"
+        },
+        "join_box": {
+            "title": "Join options",
+            "diff_nb_features": "The geometrie layer and the joined dataset doesn't have the same number of features",
+            "ask_continue": "Continue anyway",
+            "error_not_uniques": "The values on which operate have to be uniques",
+            "state_not_joined": "Data not joined",
+            "button_join": "Join now",
+            "select_fields": "Select fields on which operate the join",
+            "match": "match",
+            "match_plural": "matches",
+            "no_match": "No match found between fields <i>{{field1}}</i> and <i>{{field2}}</i>",
+            "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?"
+        },
+        "lm_buttons":{
+            "zoom+": "Zoom in",
+            "zoom-": "Zoom out",
+            "i": "Feature information",
+            "hand_button": "Use the cursor to move on the map (default behavior)",
+            "zoom_rect": "Zoom on rectangular selection"
+        },
+        "func_options": {
+            "common": {
+                "field": "Field ",
+                "color": "Color ",
+                "symbol_circle": "Circle",
+                "symbol_square": "Square",
+                "output": "Output name<br>",
+                "render": "Render"
+            },
+            "smooth": {
+                "field": "Field ",
+                "divide_field": "Divide field ",
+                "span": "Span ",
+                "beta": "Beta ",
+                "resolution": "Resolution (opt.) ",
+                "function": "Function type ",
+                "func_exponential": "Exponential ",
+                "func_pareto": "Pareto ",
+                "nb_class": "Number of class ",
+                "discretization": "Discretization type ",
+                "break_values": "Break values (opt.) ",
+                "mask": "Clipping mask layer (opt.) "
+            },
+            "prop": {
+                "field": "Field ",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ... ",
+                "symbol_type": "Symbol type ",
+                "symbol_color": "Symbol color ",
+                "options_one_color": "One color",
+                "options_two_colors": "Two colors",
+                "options_break_two_colors": "Break value "
+            },
+            "typo": {
+                "field": "Field",
+                "color_choice": "Choose colors..."
+            },
+            "choroprop": {
+                "field1": "Field 1 (symbol size) ",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ...",
+                "symbol_type": "Symbol type",
+                "symbol_circle": "Circle",
+                "symbol_square": "Square",
+                "field2": "Field 2 (symbol color)",
+                "discretization_choice": "Choose a discretization ..."
+            },
+            "flow": {
+                "subtitle1": "Links dataset fields :",
+                "discretization": "Discretization type ",
+                "nb_class": "Number of class "
+            },
+            "grid": {
+                "field": "Field",
+                "cellsize": "Cell size <i>km</i> ",
+                "shape": "Grid shape ",
+                "coloramp": "Coloramp "
+            },
+            "cartogram": {
+                "algo": "Algorythm to use ",
+                "field": "Field ",
+                "dorling_symbol": "Type de symbole ",
+                "dorling_symbol_circle": "Circle",
+                "dorling_symbol_square": "Square",
+                "dorling_fixed_size": "Fixed size ",
+                "dorling_on_value": "on value ...",
+                "dougenik_iterations": "N. iterations ",
+                "olson_scale_txt": "Scale reference size on :",
+                "olson_scale_max_scale": "Maximum size modification (%) ",
+                "olson_scale_max": "Max. value (prevent overlapping)",
+                "olson_scale_mean": "Mean value (may cause overlapping)"
+            },
+            "discont": {
+                "field": "Value field ",
+                "id_field": "Id field ",
+                "type_discontinuity": "Discontinuity kind",
+                "type_relative": "Relative",
+                "type_absolute": "Absolute",
+                "nb_class": "Number of class ",
+                "discretization": "Discretization type ",
+                "color": "Color "
+            },
+            "typosymbol": {
+                "field": "Field to use",
+                "symbols_choice": "Choose your symbols"
+            },
+            "label": {
+                "field": "Label field ",
+                "prop_labels": "Proportionnal labels",
+                "font_size": "Reference font size ",
+                "font_type": "Font ",
+                "color": "Color ",
+                "content": "Content ",
+                "title_box_indiv": "Label options"
+            }
+        }
     },
     "disc_box":{
         "title": "Discretization Panel",

@@ -5,26 +5,38 @@
 import asyncio
 import sys
 import ujson as json
+import pickle
 from zmq import REQ, IDENTITY
 from zmq.asyncio import Context, ZMQEventLoop
+from geopandas import GeoDataFrame
 from helpers.cartogram_doug import make_cartogram
-from helpers.geo import olson_transform
+from helpers.geo import olson_transform, make_geojson_links
 from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
 from helpers.grid_layer import get_grid_layer
 
 
 def default_func(*args):
-    return "Invalid request".encode()
+    return "Invalid request\n Arguments :\n".format(*args).encode()
+
+
+def make_geojson_cartogram(tmp_path, n_field_name, iterations):
+    return make_cartogram(GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+
+def test_func(field, values1, values2):
+    res = [a + b for a,b in zip(values1, values2)]
+    return {field: res}
 
 
 class WorkerTask:
     def __init__(self, worker_id, url_workers):
         self.available_functions = {
             b"quick_stewart_mod": quick_stewart_mod,
+            b"make_geojson_links": make_geojson_links,
             b"resume_stewart": resume_stewart,
             b"get_grid_layer": get_grid_layer,
-            b"make_cartogram": make_cartogram,
-            b"olson_transform": olson_transform
+            b"make_geojson_cartogram": make_geojson_cartogram,
+            b"olson_transform": olson_transform,
+            b"test_func": test_func
             }
         self.worker_id = '{}'.format(worker_id)
         self.nb_request = 0
@@ -51,14 +63,25 @@ class WorkerTask:
 
         await socket.send(b"READY")
         while True:
-            client_addr, t1, req_func, t2, args = await socket.recv_multipart()
-            print(client_addr, t1, req_func, t2, args)
+            client_addr, t1, req_func, t2, args, t3, serialization = \
+                await socket.recv_multipart()
+#            print(client_addr, t1, req_func, t2, args)
 #            assert t1 == t2 == b''
 #            assert req_func in self.available_functions
             func = self.available_functions.get(req_func, default_func)
             args = json.loads(args)
+#            print(args)
             result = func(*args)
-            await socket.send_multipart([client_addr, b'', result])
+            if "json" in serialization.decode():
+                await socket.send_multipart([
+                    client_addr,
+                    b'',
+                    json.dumps(result).encode()])
+            else:
+                await socket.send_multipart([
+                    client_addr,
+                    b'',
+                    pickle.dumps(result)])
             self.nb_request += 1
 
 

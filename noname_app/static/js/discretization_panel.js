@@ -661,7 +661,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
-
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
         .attr("class", "x_axis")

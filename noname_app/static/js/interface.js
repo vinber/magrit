@@ -390,11 +390,17 @@ function add_dataset(readed_dataset){
                "alt": "Additional dataset"});
 
     d3.select('#data_ext')
-        .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
-        .html([' <b>', d_name,
-               '</b> - <i><span style="font-size:9px;"> ',
-               nb_features, ' features - ',
-               field_names.length, " fields</i></span>"].join(''));
+//        .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
+        .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
+                                        nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
+        .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
+               nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
+               field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
+               '</i></span>'].join(''));
+//        .html([' <b>', d_name,
+//               '</b> - <i><span style="font-size:9px;"> ',
+//               nb_features, ' features - ',
+//               field_names.length, " fields</i></span>"].join(''));
 //    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
     document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
     document.getElementById("remove_dataset").onclick = () => {
@@ -558,7 +564,10 @@ function add_layer_topojson(text, options){
         let layers_listed = layer_list.node(),
             li = document.createElement("li"),
             nb_fields = field_names.length,
-            layer_tooltip_content =  ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " features - ", nb_fields, " fields"].join(''),
+            layer_tooltip_content =  [
+                "<b>", lyr_name_to_add, "</b> - ", type, " - ",
+                nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
+                nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
             _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
         li.setAttribute("class", class_name);
@@ -586,8 +595,12 @@ function add_layer_topojson(text, options){
                 .on("click", null);
             d3.select('#input_geom')
                 .attr("layer-target-tooltip", layer_tooltip_content)
-                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
-                       nb_fields, ' fields</i></span>'].join(''));
+                .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
+                       nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
+                       nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
+                       '</i></span>'].join(''))
+//                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
+//                       nb_fields, ' fields</i></span>'].join(''));
 //            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
             document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">'
             document.getElementById("remove_target").onclick = () => {
@@ -635,7 +648,7 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
 
-    if(!skip_alert) swal("", i18next.t("Layer successfully added to the map"), "success")
+    if(!skip_alert) swal("", i18next.t("app_page.common.layer_success"), "success")
     return lyr_name_to_add;
 };
 
@@ -700,16 +713,22 @@ function center_map(name){
 };
 
 function select_layout_features(){
-    var available_features = ["North arrow", "Scale", "Sphere background", "Graticule", "Text annotation"],
-        selected_ft = undefined;
+    var available_features = [
+         ["north_arrow", i18next.t("app_page.layout_features_box.north_arrow")],
+         ["scale", i18next.t("app_page.layout_features_box.scale")],
+         ["sphere", i18next.t("app_page.layout_features_box.sphere")],
+         ["graticule", i18next.t("app_page.layout_features_box.graticule")],
+         ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
+        ];
+    var selected_ft;
 
-    make_confirm_dialog("", "Valid", "Cancel", "Layout features", "sampleLayoutFtDialogBox").then(
+    make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.layout_features_box.title"), "sampleLayoutFtDialogBox").then(
             confirmed => { if(confirmed) add_layout_feature(selected_ft);
         });
 
     var box_body = d3.select(".sampleLayoutFtDialogBox");
     box_body.node().parentElement.style.width = "auto";
-    box_body.append('h3').html("Choose a feature to be added : ");
+    box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
 
     var layout_ft_selec = box_body.append('p').html('')
                             .insert('select')
@@ -717,7 +736,7 @@ function select_layout_features(){
                                     size: available_features.length});
 
     available_features.forEach(function(ft){
-        layout_ft_selec.append("option").html(ft).attr("value", ft);
+        layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
     });
     layout_ft_selec.on("change", function(){ selected_ft = this.value; });
 }
@@ -742,6 +761,7 @@ function add_layout_feature(selected_feature){
             } else continue;
         }
         if(!(new_id)){
+            // TODO : Replace by a "sweet alert"
             alert("Maximum number of text annotations has been reached")
             return;
         }
@@ -776,7 +796,7 @@ function add_layout_feature(selected_feature){
         if(!(scaleBar.displayed))
             scaleBar.create();
         else
-            alert("Only one scale bar can be added - Use right click to change its properties");
+            alert("Only one scale bar can be added - Use right click to change its properties"); // TODO : Replace by a "sweet alert"
     } else if (selected_feature == "North arrow"){
         northArrow.display();
     }
@@ -1150,7 +1170,7 @@ function add_sample_layer(){
                     ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
                     ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
 
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layers...", "sampleDialogBox").then(
+    var a = make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.sample_layer_box.title"), "sampleDialogBox").then(
         function(confirmed){
             if(confirmed){
                 let url = undefined;
@@ -1169,18 +1189,18 @@ function add_sample_layer(){
 
     var box_body = d3.select(".sampleDialogBox");
     box_body.node().parentElement.style.width = "auto";
-    var title_tgt_layer = box_body.append('h3').html("Choose a layer to be rendered : ");
+    var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
     target_layers.forEach(function(layer_info){t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
     t_layer_selec.on("change", function(){selec.target = this.value;});
 
     if(targeted_layer_added){
-        title_tgt_layer.style("color", "grey").html("<i>Choose a layer to be rendered : </i>");
+        title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
         }
 
-    box_body.append('h3').html("Choose a dataset to link with geometries: ");
+    box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
 
     var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
     tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});

@@ -11,18 +11,18 @@ from threading import Thread
 from zmq.asyncio import Context, Poller, ZMQEventLoop
 
 
-async def client_fuw_async(request, data, context, i, client_url):
-    """Basic client sending a request (REQ) to a ROUTER (the broker)"""
-    socket = context.socket(zmq.REQ)
-    socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
-    socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+40))
-    socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
-    socket.setsockopt(zmq.LINGER, 0)
-    socket.connect(client_url)
-    await socket.send_multipart([request, b'', data])
-    reply = await socket.recv()
-    socket.close()
-    return reply
+#async def client_fuw_async(request, data, context, i, client_url):
+#    """Basic client sending a request (REQ) to a ROUTER (the broker)"""
+#    socket = context.socket(zmq.REQ)
+#    socket.setsockopt_string(zmq.IDENTITY, '{}'.format(i))
+#    socket.setsockopt(zmq.SNDBUF, int(len(request)+len(data)+40))
+#    socket.setsockopt(zmq.RCVBUF, int(len(request)+len(data))*2)
+#    socket.setsockopt(zmq.LINGER, 0)
+#    socket.connect(client_url)
+#    await socket.send_multipart([request, b'', data])
+#    reply = await socket.recv()
+#    socket.close()
+#    return reply
 
 
 class LogPipe(Thread):
@@ -62,7 +62,6 @@ class LogPipe(Thread):
 class WorkerPoolQueue:
     # TODO: write some tests
     def __init__(self, n_process, urls, start_broker=True):
-        # Check the path we plan to use for zmq communications is OK :
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger("noname_app.async_brooker")
         self.logpipe = LogPipe(self.logger)
@@ -71,6 +70,7 @@ class WorkerPoolQueue:
         self.init_nb = n_process
         self.url_client, self.url_worker = urls
         self.protocol = "ipc" if "ipc" in self.url_client else "tcp"
+        # Check the path we plan to use for zmq communications is OK :
         if "ipc" in self.url_client:
             if not os.path.isdir('/tmp/feeds'):
                 try:
@@ -143,21 +143,21 @@ class WorkerPoolQueue:
                 # If it's a reply to a client:
                 if client_addr != b'READY':
                     assert message[3] == b""
-                    reply = message[4]  # Send it back to the client :
+                    reply = message[4:]  # Send it back to the client :
                     asyncio.ensure_future(
-                        frontend.send_multipart([client_addr, b"", reply]))
+                        frontend.send_multipart([client_addr, b""] + reply))
                     if b'exiting' in reply:
                         self.available_workers.remove(worker_addr)
 
             # poll on frontend (client request) only if workers are available :
             if frontend in socks and socks[frontend] == zmq.POLLIN:
-                client_addr, empty, request, empty2, data = \
+                client_addr, empty, request, empty2, data, empty3, serializ = \
                     await frontend.recv_multipart()
                 assert empty == b"" and empty2 == b''
                 #  Dequeue and drop the next worker address
                 worker_id = self.available_workers.popleft()
                 asyncio.ensure_future(backend.send_multipart(
-                    [worker_id, b"", client_addr, b"", request, b"", data]))
+                    [worker_id, b"", client_addr, b"", request, b"", data, b"", serializ]))
 
         await asyncio.sleep(0.5)
         frontend.close()
