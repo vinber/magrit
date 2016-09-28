@@ -136,7 +136,7 @@ class WorkerPoolQueue:
                 worker_addr = message[0]
                 self.available_workers.append(worker_addr)
                 # Should always be empty :
-                assert message[1] == b""
+#                assert message[1] == b""
                 # Third frame is 'READY' (from a Ready worker)
                 # ... or else a client reply address
                 client_addr = message[2]
@@ -151,13 +151,14 @@ class WorkerPoolQueue:
 
             # poll on frontend (client request) only if workers are available :
             if frontend in socks and socks[frontend] == zmq.POLLIN:
-                client_addr, empty, request, empty2, data, empty3, serializ = \
-                    await frontend.recv_multipart()
-                assert empty == b"" and empty2 == b''
+#                client_addr, empty, request, empty2, data = \
+#                    await frontend.recv_multipart()
+#                assert empty == b"" and empty2 == b''
+                msg = await frontend.recv_multipart()
                 #  Dequeue and drop the next worker address
                 worker_id = self.available_workers.popleft()
                 asyncio.ensure_future(backend.send_multipart(
-                    [worker_id, b"", client_addr, b"", request, b"", data, b"", serializ]))
+                    [worker_id, b""] + msg))
 
         await asyncio.sleep(0.5)
         frontend.close()

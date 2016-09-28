@@ -28,7 +28,7 @@ function click_button_add_layer(){
         let files = event.target.files;
         for(let i=0; i < files.length; i++){
             if(files[i].size > MAX_INPUT_SIZE){
-                swal(i18next.t("Error") + "!", i18next.t("Too large input file (should currently be under 8Mb"), "error");
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.too_large_input"), "error");
                 return;
             }
         }
@@ -59,7 +59,7 @@ function click_button_add_layer(){
             if(files_to_send.length >= 4)
                 handle_shapefile(files_to_send, target_layer_on_add);
             else
-                swal(i18next.t("Error") + "!", i18next.t("Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile"), "error");
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload1"), "error");
         } else {
             let shp_part;
             Array.prototype.forEach.call(files, f =>
@@ -69,9 +69,9 @@ function click_button_add_layer(){
                     || f.name.indexOf('.prj') > -1
                     ? shp_part = true : null);
             if(shp_part){
-                swal(i18next.t("Error") + "!", i18next.t('All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload'), "error");
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload_shp"), "error");
             } else {
-                swal(i18next.t("Error") + "!", i18next.t('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)'), "error");
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload_invalid"), "error");
             }
         }
     };
@@ -323,42 +323,58 @@ function handle_reload_TopoJSON(text, param_add_func){
 * @param {File} f - The input csv file
 */
 function handle_dataset(f){
-    if(joined_dataset.length !== 0){
-        var rep = confirm("An additional dataset as already been provided. Replace by this one ?");
-        if(!rep){ return; }
-        else joined_dataset = [];
-    }
-    var reader = new FileReader(),
-        name = f.name;
 
-    reader.onload = function(e) {
-        var data = e.target.result;
-        dataset_name = name.substring(0, name.indexOf('.csv'));
-        let sep = data.split("\n")[0];
-        if(sep.indexOf("\t") > -1) {
-            sep = "\t";
-        } else if (sep.indexOf(";") > -1){
-            sep = ";";
-        } else {
-            sep = ",";
-        }
-        let encoding = jschardet.detect(data);
-        if(encoding.encoding != "utf-8"
-                || encoding.confidence){
-            console.log(encoding);
-            // Todo : do something in order to get a correct encoding
-        }
-        let tmp_dataset = d3.dsvFormat(sep).parse(data);
-        let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
-        if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
-            if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-                add_csv_geom(data, dataset_name);
-                return;
+    function check_dataset(){
+        var reader = new FileReader(),
+            name = f.name;
+
+        reader.onload = function(e) {
+            var data = e.target.result;
+            dataset_name = name.substring(0, name.indexOf('.csv'));
+            let sep = data.split("\n")[0];
+            if(sep.indexOf("\t") > -1) {
+                sep = "\t";
+            } else if (sep.indexOf(";") > -1){
+                sep = ";";
+            } else {
+                sep = ",";
             }
-        }
-        add_dataset(tmp_dataset);
-    };
-    reader.readAsText(f);
+            let encoding = jschardet.detect(data);
+            if(encoding.encoding != "utf-8"
+                    || encoding.confidence){
+                console.log(encoding);
+                // Todo : do something in order to get a correct encoding
+            }
+            let tmp_dataset = d3.dsvFormat(sep).parse(data);
+            let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
+            if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+                if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+                    add_csv_geom(data, dataset_name);
+                    return;
+                }
+            }
+            add_dataset(tmp_dataset);
+        };
+        reader.readAsText(f);
+    }
+
+    if(joined_dataset.length !== 0){
+        swal({
+            title: "",
+            text: i18next.t("app_page.common.ask_replace_dataset"),
+            type: "warning",
+            showCancelButton: true,
+            allowOutsideClick: false,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: i18next.t("app_page.common.confirm"),
+            closeOnConfirm: true
+            }).then(() => {
+                remove_ext_dataset_cleanup();
+                check_dataset();
+            }, () => { null; });
+    } else {
+        check_dataset();
+    }
 }
 
 
@@ -532,6 +548,7 @@ function add_layer_topojson(text, options){
               .selectAll(".subunit")
               .data(topojson.feature(topoObj, topoObj_objects).features)
               .enter().append("path")
+              .attr("clip-path", "url(#clip)")
               .attr("d", path)
               .attr("id", function(d, ix) {
                     if(data_to_load){
@@ -743,7 +760,7 @@ function select_layout_features(){
 
 
 function add_layout_feature(selected_feature){
-    if(selected_feature == "Text annotation"){
+    if(selected_feature == "text_annot"){
         let existing_annotation = document.querySelectorAll(".txt_annot"),
             existing_id = [],
             new_id;
@@ -762,12 +779,13 @@ function add_layout_feature(selected_feature){
         }
         if(!(new_id)){
             // TODO : Replace by a "sweet alert"
+            swal(i18next.t("Error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
             alert("Maximum number of text annotations has been reached")
             return;
         }
         let txt_box = new Textbox(map.node(), new_id);
 
-    } else if (selected_feature == "Sphere background"){
+    } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
         current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}};
         map.append("g").attrs({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
@@ -775,10 +793,11 @@ function add_layout_feature(selected_feature){
             .datum({type: "Sphere"})
             .styles({fill: "lightblue", "fill-opacity": 0.2})
             .attr("id", "sphere")
+            .attr("clip-path", "url(#clip)")
             .attr("d", path);
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
-    } else if (selected_feature == "Graticule"){
+    } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined)
             return;
         map.append("g").attrs({id: "Graticule", class: "layer"})
@@ -786,18 +805,19 @@ function add_layout_feature(selected_feature){
                .attr("class", "graticule")
                .style("stroke-dasharray",  5)
                .datum(d3.geoGraticule())
+               .attr("clip-path", "url(#clip)")
                .attr("d", path)
                .style("fill", "none")
                .style("stroke", "grey");
         current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
-    } else if (selected_feature == "Scale"){
+    } else if (selected_feature == "scale"){
         if(!(scaleBar.displayed))
             scaleBar.create();
         else
             alert("Only one scale bar can be added - Use right click to change its properties"); // TODO : Replace by a "sweet alert"
-    } else if (selected_feature == "North arrow"){
+    } else if (selected_feature == "north_arrow"){
         northArrow.display();
     }
 }

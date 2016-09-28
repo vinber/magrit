@@ -5,7 +5,6 @@
 import asyncio
 import zmq
 import zmq.asyncio
-import ujson as json
 import aiozmq
 import uvloop
 import pickle
@@ -52,7 +51,11 @@ def main(client_url):
     async def run(loop):
         res = await client_async(b"foobar_request", "barbaz_data", loop, 1, client_url)
         print("Result in client: ", res)
-        res = await client_async(b"test_func", ["field_name", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], loop, 1, client_url)
+        res = await client_async(b"test_func1", ["field_name", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], loop, 1, client_url)
+        print("Result in client: ", res)
+        res = await client_async(b"test_func2", ["field_name", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], loop, 1, client_url)
+        print("Result in client: ", res)
+        res = await client_async(b"test_func2", ["field_name", ["a", 2], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]], loop, 1, client_url)
         print("Result in client: ", res)
 
     try:
@@ -61,7 +64,8 @@ def main(client_url):
         return
 
 
-async def client_async(request, data, loop, i, client_url, serialization="json"):
+async def client_async(request, data, loop,
+                       i, client_url, raise_exception=True):
     transp, protocol = await aiozmq.create_zmq_connection(
         lambda: Protocol(loop),
         zmq.REQ,
@@ -73,16 +77,16 @@ async def client_async(request, data, loop, i, client_url, serialization="json")
     transp.write([
         request,
         b'',
-        json.dumps(data).encode(),
-        b'',
-        serialization.encode()
+        pickle.dumps(data)
         ])
 
     res = await protocol.received.get()
     transp.close()
     asyncio.ensure_future(protocol.closed)
-
-    return json.loads(res[0]) if "json" in serialization else pickle.loads(res[0])
+    result = pickle.loads(res[0])
+    if isinstance(result, Exception) and raise_exception:
+        raise result
+    return result
 
 
 if __name__ == "__main__":

@@ -2330,14 +2330,15 @@ var boxExplore = {
         this.top_buttons
              .insert("button")
              .attrs({id: "add_field_button", class: "button_st3"})
-             .html("Add a new field...")
+             .html(i18next.t("app_page.explore_box.button_add_field"))
              .on('click', function(){
                 add_table_field(the_table, table_name, self);
              });
         let txt_intro = [
-            "<b>", table_name, "</b><br>",
-            this.nb_features, " features - ",
-            this.columns_names.length, " fields"].join('');
+             "<b>", table_name, "</b><br>",
+             this.nb_features, " ", i18next.t("app_page.common.feature"), " - ",
+             this.columns_names.length, " ", i18next.t("app_page.common.field")
+            ].join('');
         this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
         this.box_table.append("table")
                       .attrs({class: "display compact", id: "myTable"})
@@ -2353,11 +2354,11 @@ var boxExplore = {
             result_layers = Object.getOwnPropertyNames(result_data),
             available = new Map();
         for(let lyr_name of target_layer)
-            available.set(lyr_name, ["Target layer", user_data[lyr_name]]);
+            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
         if(ext_dataset)
-            available.set(dataset_name, ["Ext. dataset", joined_dataset[0]]);
+            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
         for(let lyr_name of result_layers)
-            available.set(lyr_name, ["Result layer", result_data[lyr_name]]);
+            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
         return available;
     },
     create: function(){
@@ -2368,8 +2369,8 @@ var boxExplore = {
         this.columns_names = undefined;
         this.current_table = undefined,
         this.box_table = d3.select("body").append("div")
-                            .attrs({id: "browse_data_box", title: "Explore dataset"})
-                            .style("font-size", "0.75em");
+                            .style("font-size", "0.75em")
+                            .attrs({id: "browse_data_box", title: i18next.t("app_page.explore_box.title")});
 
         let self = this;
 
@@ -2377,7 +2378,7 @@ var boxExplore = {
                                     .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
         let select_a_table = this.box_table
-                                .append('p').html("Available tables :")
+                                .append('p').html(i18next.t("app_page.explore_box.available_table"))
                                 .insert("select").attr("id", "select_table")
                                 .on("change", function(){
                                     self.display_table(this.value);
@@ -3116,8 +3117,8 @@ function add_table_field(table, layer_name, parent){
             opt_val = options.opt_val;
 
         if(!regexp_name.test(new_name_field)){
-            swal({title: i18next.t("Error") + "!",
-                  text: i18next.t("Unauthorized column name !"),
+            swal({title: "",
+                  text: i18next.t("app_page.explore_box.add_field_box.invalid_name"),
                   type: "error",
                   allowOutsideClick: false});
             return Promise.reject("Invalid name");
@@ -3168,11 +3169,11 @@ function add_table_field(table, layer_name, parent){
             }
             return Promise.resolve(true);
         } else {
-            if(operation == "Truncate"){
+            if(operation == "truncate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
 
-            } else if (operation == "Concatenate"){
+            } else if (operation == "concatenate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
             }
@@ -3211,7 +3212,9 @@ function add_table_field(table, layer_name, parent){
             txt_op.text("");
             chooses_handler.operator = math_operation[0];
         } else {
-            string_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
+            string_operation.forEach(function(op){
+                operator.append("option").text(op[0]).attr("value", op[1]);
+            })
             for(let k in fields_type){
                 if(fields_type[k] == "string"){
                     field1.append("option").text(k).attr("value", k);
@@ -3219,7 +3222,7 @@ function add_table_field(table, layer_name, parent){
                 }
             }
             val_opt.style("display", null);
-            txt_op.html("Character to join the two fields (can stay blank) :<br>");
+            txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
             chooses_handler.operator = string_operation[0];
         }
         chooses_handler.field1 = field1.node().value;
@@ -3233,11 +3236,11 @@ function add_table_field(table, layer_name, parent){
                 txt_op.text("");
             }
         } else {
-            if(subtype == "Truncate"){
-                txt_op.html("Number of char to keep (from the left) :<br>");
+            if(subtype == "truncate"){
+                txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
                 field2.attr("disabled", true);
             } else {
-                txt_op.html("Character used to join the two fields (can stay blank) :<br>");
+                txt_op.html("app_page.explore_box.add_field_box.join_char");
                 field2.attr("disabled", null);
             }
         }
@@ -3249,7 +3252,7 @@ function add_table_field(table, layer_name, parent){
         opt_val: undefined, new_name: 'NewFieldName'
         }
 
-    var box = make_confirm_dialog("", "Valid", "Cancel", "Add a new field",
+    var box = make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.explore_box.button_add_field"),
                     "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
@@ -3277,18 +3280,20 @@ function add_table_field(table, layer_name, parent){
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 
-    var new_name = div1.append("p").html("New field name :<br>")
+    var new_name = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_name"))
                             .insert("input").attr('value', 'NewFieldName')
                             .on("keyup", check_name);
-    var type_content = div1.append("p").html("New field content :<br>")
+    var type_content = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_content"))
                             .insert("select").attr("id", "type_content_select")
                             .on("change", function(){
                                 chooses_handler.type_operation = this.value;
                                 refresh_type_content(this.value); });
 
-    [["Computation based on two existing numerical fields", "math_compute"],
-     ["Modification on a character field", "string_field"]]
-        .forEach(function(d,i){ type_content.append("option").text(d[0]).attr("value", d[1]); });
+    [[i18next.t("app_page.explore_box.add_field_box.between_numerical"), "math_compute"],
+     [i18next.t("app_page.explore_box.add_field_box.between_string"), "string_field"]
+    ].forEach(function(d,i){
+        type_content.append("option").text(d[0]).attr("value", d[1]);
+    });
 
     var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
         operator = div1.append("select").on("change", function(){
@@ -3302,8 +3307,12 @@ function add_table_field(table, layer_name, parent){
                         .style("display", "none")
                         .on("change", function(){ chooses_handler.opt_val = this.value;});
 
-    var math_operation = ["+", "-", "*", "/", "^"],
-        string_operation = ["Concatenate", "Truncate"];
+    var math_operation = ["+", "-", "*", "/", "^"];
+
+    var string_operation = [
+         [i18next.t("app_page.explore_box.add_field_box.concatenate"), "concatenate"],
+         [i18next.t("app_page.explore_box.add_field_box.truncate"), "truncate"]
+        ];
 
     {
         let a = type_content.node(),
@@ -3480,3 +3489,6 @@ function display_error_during_computation(msg){
           allowOutsideClick: false});
 }
 
+function getDecimalSeparator(){
+    return 1.1.toLocaleString().substr(1,1)
+}

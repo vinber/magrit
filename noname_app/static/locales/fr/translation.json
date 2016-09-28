@@ -4,7 +4,15 @@
             "loading_results": "Chargement en cours",
             "save_preferences": "Sauvegarder le projet",
             "load_preferences": "Charger un projet",
+            "too_large_input": "Fichier d'entrée trop volumineux (8Mo maximum)",
+            "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doivent être fournis.",
+            "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doivent être fournis.",
+            "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
+            "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
+            "target_layer": "Couche cible",
+            "result_layer": "Couche de résultat",
+            "ext_dataset": "Jeu de données externe",
             "success": "Validé",
             "confirm": "Confirmation",
             "remove_layer": "Enlever la couche {{layer}} ?",
@@ -13,10 +21,10 @@
             "delete": "Suppression",
             "deleted": "Supprimée",
             "valid": "Confirmation",
-            "feature": "feature",
-            "feature_plural": "features",
-            "field": "field",
-            "field_plural": "fields"
+            "feature": "entité",
+            "feature_plural": "entités",
+            "field": "champ",
+            "field_plural": "champs"
         },
         "section1": {
             "title": "Ajout de données",
@@ -109,10 +117,14 @@
         },
         "join_box": {
             "title": "Option de jointure",
-            "diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entitées",
-            "ask_continue": "Continuer",
-            "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques",
+            "ask_diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entités.<br>Continuer ?",
+            "ask_forget_join": "Une jointure a déjà été réalisée. Effacer et en faire une nouvelle ?",
+            "unable_join": "Impossible de joindre le jeu de données et la couche géographique.",
+            "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques.",
             "state_not_joined": "Tables non jointes",
+            "ext_datasate_field": "Champ du jeu de données externe :",
+            "geom_layer_field": "Champ de la couche géographique :",
+            "ask_join": "Joindre les données ?",
             "button_join": "Joindre",
             "select_fields": "Selection des champs à joindre ",
             "match": "correspondance",
@@ -121,7 +133,20 @@
             "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?"
         },
         "explore_box": {
-
+            "title": "Table de données",
+            "button_add_field": "Ajout d'un champ...",
+            "available_table": "Données présentes ",
+            "add_field_box": {
+                "new_name": "Nom du nouveau champ<br>",
+                "new_content": "Contenu du nouveau champ<br>",
+                "between_numerical": "Calcul d'une valeur entre champs numériques",
+                "between_string": "Opération sur un champ de valeur non-numériques",
+                "truncate": "Tronquer",
+                "concatenate": "Concatener",
+                "join_char": "Charactère à insérer entre les deux valeurs (peut rester vide) :<br>",
+                "keep_char": "Nombre de charactère à conserver (en partant de la gauche) :<br>",
+                "invalid_name": "Nom de colonne invalide !"
+            }
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",
@@ -137,7 +162,7 @@
                 "symbol_circle": "Cercle",
                 "symbol_square": "Carré",
                 "output": "Nom du résultat<br>",
-                "render": "Déssiner le résultat"
+                "render": "Dessiner le résultat"
             },
             "smooth": {
                 "field": "Valeur ",
@@ -227,9 +252,7 @@
             }
         }
     },
-    "Layer": "La couche",
     "Display and arrange class": "Discrétisation...",
-    "has been removed": "a été supprimée",
     "Symbol selection": "Choix du symbole",
     "Select a symbol...": "Sélectionnez un symbole",
     "Or upload your symbol ": "Ou téléchargez votre symbole",

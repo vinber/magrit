@@ -5,18 +5,18 @@ function handle_join(){
 
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
         swal("",
-             i18next.t("Unable to join geometries and dataset"),
+             i18next.t("app_page.join_box.unable_join"),
              "error");
         return;
     } else if(field_join_map.length != 0){
-        make_confirm_dialog("A successful join is already selected. Forget and select a new one ?", "Ok", "Cancel", "").then(function(confirmed){
+        make_confirm_dialog(i18next.t("app_page.join_box.ask_forget_join"), "Ok", i18next.t("app_page.common.cancel"), "").then(function(confirmed){
             if(confirmed){
                 field_join_map = [];
                 createJoinBox(layer_name[0]);
                 }
             });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog(i18next.t("The geometry layer and the joined dataset doesn't have the same number of features") + ". " + i18next.t("Continue anyway") +  "?", "Ok", i18next.t("Cancel"), "").then(function(confirmed){
+        make_confirm_dialog(i18next.t("app_page.join_box.ask_diff_nb_features"), "Ok", i18next.t("app_page.common.cancel"), "").then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {
@@ -168,9 +168,6 @@ function valid_join_on(layer_name, field1, field2){
         swal("",
              i18next.t("app_page.join_box.no_match", {field1: field1, field2: field2}),
              "error");
-//             ["No match found between fields <i>'", field1,
-//              "'</i> and <i>'", field2,"'</i>"].join(''),
-//             "error");
         field_join_map = [];
         return false;
     }
@@ -197,13 +194,14 @@ function createJoinBox(layer){
 
     let inner_box = [
          '<p><b><i>',
-         i18next.t("app_page.join_box.select_fields"),
-        '</i></b></p>',
-         '<div style="padding:10px"><p>Geometrie layer field :</p>',
+         i18next.t("app_page.join_box.select_fields"), '</i></b></p>',
+         '<div style="padding:10px"><p>',
+         i18next.t("app_page.join_box.geom_layer_field"), '</p>',
          button1.join(''), '<em style="float:right;">(', layer, ')</em></div>',
-         '<div style="padding:15px 10px 10px"><p>External dataset field :<br></p>',
+         '<div style="padding:15px 10px 10px"><p>',
+         i18next.t("app_page.join_box.ext_dataset_field"), '<br></p>',
          button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>',
-         '<br><p><strong>Join datasets ?<strong></p></div>'
+         '<br><p><strong>', i18next.t("app_page.join_box.ask_join"), '<strong></p></div>'
         ].join('');
 
     make_confirm_dialog(inner_box, i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.join_box.title"), "joinBox")

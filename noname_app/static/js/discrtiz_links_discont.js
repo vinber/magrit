@@ -226,7 +226,12 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     //////////////////////////////////////////////////////////////////////////
 
-    var formatCount = d3.format(",.0f");
+    var formatCount = d3.formatLocale({
+                        decimal: getDecimalSeparator(),
+                        thousands: "",
+                        grouping: 3,
+                        currency: ["", ""]
+                        }).format('.2f');
 
     var newBox = d3.select("body").append("div")
                      .style("font-size", "12px")

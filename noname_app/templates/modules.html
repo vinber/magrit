@@ -318,6 +318,7 @@ function setUpInterface()
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
                   .enter()
                   .append('path')
+                  .attr("clip-path", "url(#clip)")
                   .attr("d", path)
                   .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
         map.selectAll("path").attr("d", path);
@@ -1063,26 +1064,30 @@ function remove_ext_dataset(){
         confirmButtonText: "Delete!",
         closeOnConfirm: true
         }).then(() => {
-            field_join_map = new Array();
-            joined_dataset = new Array();
-            dataset_name = undefined;
-            let ext_dataset_img = document.getElementById("img_data_ext");
-            ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.svg");
-            ext_dataset_img.setAttribute("alt", "Additional dataset");
-            ext_dataset_img.style.cursor = "pointer";
-            ext_dataset_img.onclick = click_button_add_layer;
-            let data_ext_txt = document.getElementById("data_ext");
-            data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
-            //data_ext_txt.innerHTML = "<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>";
-            data_ext_txt.onclick = click_button_add_layer;
-            document.getElementById("remove_dataset").remove();
-            document.getElementById("join_section").innerHTML = "";
-            document.getElementById('sample_zone').style.display = null;
-            if(Object.getOwnPropertyNames(user_data).length == 0){
-                document.getElementById("browse_button").disabled = true;
-            }
-            $("#data_ext").qtip("destroy");
+            remove_ext_dataset_cleanup();
         }, () => { null; });
+}
+
+function remove_ext_dataset_cleanup(){
+    field_join_map = new Array();
+    joined_dataset = new Array();
+    dataset_name = undefined;
+    let ext_dataset_img = document.getElementById("img_data_ext");
+    ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.svg");
+    ext_dataset_img.setAttribute("alt", "Additional dataset");
+    ext_dataset_img.style.cursor = "pointer";
+    ext_dataset_img.onclick = click_button_add_layer;
+    let data_ext_txt = document.getElementById("data_ext");
+    data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
+    //data_ext_txt.innerHTML = "<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>";
+    data_ext_txt.onclick = click_button_add_layer;
+    document.getElementById("remove_dataset").remove();
+    document.getElementById("join_section").innerHTML = "";
+    document.getElementById('sample_zone').style.display = null;
+    if(Object.getOwnPropertyNames(user_data).length == 0){
+        document.getElementById("browse_button").disabled = true;
+    }
+    $("#data_ext").qtip("destroy");
 }
 
 // Do some clean-up when a layer is removed
@@ -1096,7 +1101,9 @@ function remove_layer_cleanup(name){
         d3.selectAll([".lgdf_", name].join('')).remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
-        if(current_layers[name].hasOwnProperty("key_name"))
+        if(current_layers[name].hasOwnProperty("key_name")
+           && current_layers[name].renderer.indexOf("Choropleth") < 0
+           && current_layers[name].renderer.indexOf("Categorical") < 0)
             send_remove_server(name);
     }
 
@@ -1137,7 +1144,6 @@ function remove_layer_cleanup(name){
     // There is probably better ways in JS to delete the object,
     // but in order to make it explicit that we are removing it :
     delete current_layers[name];
-    //swal(i18next.t("Deleted") + "!", [i18next.t("Layer"), name, i18next.t("has been removed")].join(' '), "success");
 }
 
 function load_map_template(){
@@ -1417,7 +1423,7 @@ function zoom_without_redraw(){
           .duration(50)
           .style("stroke-width", function(){
                 let lyr_name = this.id;
-                return current_layers[lyr_name].fixed_stroke
+                return !current_layers[lyr_name] || current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
 
@@ -1431,7 +1437,7 @@ function zoom_without_redraw(){
                   .duration(50)
                   .style("stroke-width", function(){
                         let lyr_name = this.id;
-                        return current_layers[lyr_name].fixed_stroke
+                        return !current_layers[lyr_name] || current_layers[lyr_name].fixed_stroke
                                 ? this.style.strokeWidth
                                 : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
                     })
@@ -1548,6 +1554,34 @@ function rotate_global(angle){
         }
 };
 
+function handleClipPath(proj_name){
+    if(proj_name.indexOf("Interrupted") > -1 || proj_name.indexOf("Armadillo") > -1 || proj_name.indexOf("Healpix") > -1){
+        let defs = document.querySelector("defs");
+        if(defs){ defs.remove(); }
+
+        defs = map.append("defs");
+
+        defs.append("path")
+            .datum({type: "Sphere"})
+            .attr("id", "sphere")
+            .attr("d", path);
+
+        defs.append("clipPath")
+            .attr("id", "clip")
+          .append("use")
+            .attr("xlink:href", "#sphere");
+
+        map.node().insertBefore(map.node().querySelector("defs"), map.node().childNodes[0]);
+    } else {
+        let defs = document.querySelector("defs");
+        if(defs){
+            defs.remove();
+            map.selectAll(".layer").selectAll("path")
+                .attr("clip-path", null);
+        }
+    }
+}
+
 function change_projection(proj_name) {
     var current_proj_name = proj_name.split('()')[0].split('.')[1];
 
@@ -1559,6 +1593,9 @@ function change_projection(proj_name) {
 
     // Do the reprojection :
     reproj();
+
+    // Set or remove the clip-path according to the projection:
+    handleClipPath(current_proj_name);
 
     // Set specifics mouse events according to the projection :
     if(current_proj_name.indexOf('Orthographic') > -1){

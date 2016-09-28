@@ -488,8 +488,7 @@ async def carto_doug(posted_data, user_id, app):
         [tmp_path, n_field_name, iterations],
         app.loop,
         user_id,
-        'ipc:///tmp/feeds/clients',
-        "pickle")
+        'ipc:///tmp/feeds/clients')
 
     os.remove(tmp_path)
     savefile(tmp_path, result.encode())
@@ -768,7 +767,7 @@ async def call_stewart(posted_data, user_id, app):
             filenames["mask_layer"])
 
     else:
-        res, breaks, dump_obj = await run_task_worker(
+        res = await run_task_worker(
             b"quick_stewart_mod",
             [filenames['point_layer'],
              n_field_name1,
@@ -783,8 +782,11 @@ async def call_stewart(posted_data, user_id, app):
              posted_data['user_breaks']],
             app.loop,
             user_id,
-            'ipc:///tmp/feeds/clients'
-            "pickle")
+            'ipc:///tmp/feeds/clients')
+        if len(res) == 3:
+            res, breaks, dump_obj = res
+        else:
+            print(res)
 #        res, breaks, dump_obj = await app.loop.run_in_executor(
 #            app["ProcessPool"],
 #            quick_stewart_mod,
