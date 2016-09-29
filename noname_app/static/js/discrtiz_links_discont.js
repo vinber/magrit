@@ -88,7 +88,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
         var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
         ref_histo.append('p').style("margin", "auto")
-                  .html('<b>Distribution reference histogram</b>');
+                  .html(i18next.t("disc_box.hist_ref_title"));
 
         var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
             .attr("width", svg_w + margin.left + margin.right)
@@ -142,11 +142,11 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     }
 
     var make_summary = function(){
-        let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
+        let content_summary = make_content_summary(serie);
         newBox.append("div").attr("id","summary")
                         .style("font-size", "10px").style("float", "right")
                         .styles({"margin-left": "25px", "margin-right": "50px"})
-                        .insert("p").html(["<b>Summary</b><br>", content_summary].join(""));
+                        .insert("p").html(["<b>", i18next.t("disc_box.summary"),"</b><br>", content_summary].join(""));
     }
 
     var update_breaks = function(user_defined){
@@ -154,14 +154,17 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div");
         }
         let tmp_breaks = fetch_min_max_table_value("sizes_div");
+        let len_breaks = tmp_breaks.sizes.length;
         breaks_info = [];
         last_min = tmp_breaks.sizes[0];
         last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
         if(+tmp_breaks.mins[0] > +serie.min()){
+            nb_class += 1;
+            txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
         }
 
-        for(let i = 0; i<tmp_breaks.sizes.length; i++)
+        for(let i = 0; i<len_breaks; i++)
             breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
         console.log(breaks_info)
         breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
@@ -236,7 +239,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var newBox = d3.select("body").append("div")
                      .style("font-size", "12px")
                      .attr("id", "discretiz_charts")
-                     .attr("title", ["Discretization panel - ", layer_name, " - ", field_name].join(''));
+                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -310,7 +313,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     make_summary();
     display_ref_histo();
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
+    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", {count: nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .style("display", "inline")
@@ -355,6 +358,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .range([0, svg_w]);
 
     let mean_val = serie.mean(),
+        median = serie.median(),
         stddev = serie.stddev();
 
     var line_mean = overlay_svg.append("line")
@@ -376,9 +380,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var line_median = overlay_svg.append("line")
         .attr("class", "line_med")
-        .attr("x1", x(serie.median()))
+        .attr("x1", x(median))
         .attr("y1", 10)
-        .attr("x2", x(serie.median()))
+        .attr("x2", x(median))
         .attr("y2", svg_h - margin.bottom)
         .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
         .classed("active", false);
@@ -386,7 +390,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var txt_median = overlay_svg.append("text")
         .attr("y", 0)
         .attr("dy", "0.75em")
-        .attr("x", x(serie.median()))
+        .attr("x", x(median))
         .style("fill", "none")
         .attr("text-anchor", "middle")
         .text("Median");
@@ -444,14 +448,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         buttons:[{
             text: "Confirm",
             click: function(){
-                    breaks[0] = serie.min();
-                    breaks[nb_class] = serie.max();
-//                    if(breaks[0] < serie.min())
-//                        breaks[0] = serie.min();
-//
-//                    if(breaks[nb_class] > serie.max())
-//                        breaks[nb_class] = serie.max();
-
+                    breaks[0] = round_value(values[0], 6);
+                    breaks[nb_class] = round_value(values[values.length - 1], 6);
                     deferred.resolve([serie, breaks_info, breaks]);
                     $(this).dialog("close");
                     }

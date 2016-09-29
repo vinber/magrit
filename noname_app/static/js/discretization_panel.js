@@ -320,7 +320,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom()
                 .scale(x)
-                .ticks(4))
+                .ticks(4)
+                .tickFormat(formatCount))
             .selectAll("text")
                 .attr("y", 4).attr("x", -4)
                 .attr("dy", ".45em")
@@ -332,11 +333,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .style("font-size", "10px")
             .call(d3.axisLeft()
                 .scale(y)
-                .ticks(5));
+                .ticks(5)
+                .tickFormat(formatCount));
     }
 
     var make_summary = function(){
-        let content_summary = (serie.info()).split("-").join("<br>").split("\n").join("<br>");
+        let content_summary = make_content_summary(serie);
         newBox.append("div").attr("id", "summary")
                         .style("font-size", "10px").style("float", "right")
                         .style("margin", "0px 10px")
@@ -478,7 +480,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
                 .call(d3.axisLeft()
                     .scale(y)
-                    .ticks(5));
+                    .ticks(5)
+                    .tickFormat(formatCount));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
             return true;
@@ -670,7 +673,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .attr("class", "x_axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom()
-        .scale(x));
+        .scale(x)
+        .tickFormat(formatCount));
 
     var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
     accordion_colors.append("h3").html("<b>Color scheme</b>");

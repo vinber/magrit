@@ -690,8 +690,6 @@ function scale_to_lyr(name){
             bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
         }
     });
-//    let prev_trans = proj.translate(),
-//        prev_scale = proj.scale();
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     proj.scale(s);
     map.selectAll("g.layer").selectAll("path").attr("d", path);
@@ -720,13 +718,10 @@ function center_map(name){
     });
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    let _zoom = map.node().__zoom;
+    let _zoom = svg_map.__zoom;
     _zoom.k = zoom_scale;
     _zoom.x = zoom_translate[0];
     _zoom.y = zoom_translate[1];
-//    map.node().__zoom = d3.zoomIdentity.scale(zoom_scale).translate(zoom_translate[0]/zoom_scale, zoom_translate[1]/zoom_scale);
-//    zoom.scaleTo(map.selectAll(".layer"), zoom_scale)
-//    zoom.translateBy(map.selectAll(".layer"), zoom_translate[0], zoom_translate[1])
 };
 
 function select_layout_features(){
@@ -758,6 +753,14 @@ function select_layout_features(){
     layout_ft_selec.on("change", function(){ selected_ft = this.value; });
 }
 
+function setSphereBottom(){
+    let layers = document.querySelectorAll(".layer"),
+        layers_list = document.querySelector(".layer_list");
+
+    svg_map.insertBefore(layers[layers.length - 1], layers[0]);
+    layers_list.appendChild(layers_list.childNodes[0]);
+ }
+
 
 function add_layout_feature(selected_feature){
     if(selected_feature == "text_annot"){
@@ -783,7 +786,7 @@ function add_layout_feature(selected_feature){
             alert("Maximum number of text annotations has been reached")
             return;
         }
-        let txt_box = new Textbox(map.node(), new_id);
+        let txt_box = new Textbox(svg_map, new_id);
 
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
@@ -797,6 +800,7 @@ function add_layout_feature(selected_feature){
             .attr("d", path);
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
+        setSphereBottom();
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined)
             return;
@@ -1038,7 +1042,7 @@ var scaleBar = {
     getDist: function(){
         let x_pos = w / 2,
             y_pos = h / 2,
-            transform = d3.zoomTransform(map.node()),
+            transform = d3.zoomTransform(svg_map),
             z_trans = [transform.x, transform.y],
             z_scale = transform.k;
 

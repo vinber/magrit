@@ -10,6 +10,7 @@
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
+            "error_message": "Une erreur s'est produite : {{msg}}",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -24,12 +25,14 @@
             "feature": "entité",
             "feature_plural": "entités",
             "field": "champ",
-            "field_plural": "champs"
+            "field_plural": "champs",
+            "save_project_json": "Sauvegarder le projet (format JSON)",
+            "load_project_json": "Charger un projet au format JSON"
         },
         "section1": {
             "title": "Ajout de données",
             "add_geom": "Ajout d'une couche géographique <i>(ou glisser-déposer)</i>",
-            "add_ext_dataset": "Ajout d'un jeu de données",
+            "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
             "add_sample_data": "Sélection d'un jeu de données d'exemple",
             "explore_table": "Afficher les données"
         },
@@ -47,6 +50,9 @@
             "title": "Configuration de la carte",
             "map_width": "Largeur de la carte (px) ",
             "map_height": "Hauteur de la carte (px) ",
+            "map_center_x": "Centre de la carte (x)",
+            "map_center_y": "Centre de la carte (y)",
+            "map_scale_k": "Facteur de zoom",
             "map_title": "Titre de la carte ",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte",
@@ -59,6 +65,16 @@
             "projection_center_phi": "Centre de la projection (rotation de l'axe φ)",
             "projection_center_gamma": "Centre de la projection (rotation de l'axe γ)",
             "reset": "Réinitialiser la vue"
+        },
+        "stat_summary": {
+            "population": "Population",
+            "min": "Min",
+            "max": "Max",
+            "mean": "Moyenne",
+            "median": "Médiane",
+            "variance": "Variance",
+            "stddev": "Écart-type",
+            "cov": "Coefficient de variation"
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
@@ -148,12 +164,16 @@
                 "invalid_name": "Nom de colonne invalide !"
             }
         },
+        "help_box": {
+            "title": "Aide d'urgence!",
+            "message_invite": "Saisir un terme à rechercher dans la documentation :"
+        },
         "lm_buttons":{
             "zoom+": "Zoom positif",
             "zoom-": "Zoom negatif",
-            "i": "Information sur l'entitée survolée",
+            "i": "Information sur l'entité survolée",
             "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
-            "zoom_rect": "Zoom sur un sélection rectangulaire"
+            "zoom_rect": "Zoom sur une sélection rectangulaire"
         },
         "func_options": {
             "common": {
@@ -223,11 +243,11 @@
                 "dorling_on_value": "sur la valeur ...",
                 "dougenik_iterations": "Nombre d'itérations",
                 "olson_scale_txt": "Dimensionner la taille de référence sur :",
-                "olson_scale_max_scale": "Modification maximum de la taille des entitées ",
-                "olson_scale_max": "Valeur maximum (évite le chevauchement des entitées)",
+                "olson_scale_max_scale": "Modification maximum de la taille des entités ",
+                "olson_scale_max": "Valeur maximum (évite le chevauchement des entités)",
                 "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
             },
-            "disc": {
+            "discont": {
                 "field": "Champ à utiliser ",
                 "id_field": "Champ d'ID à conserver ",
                 "type_discontinuity": "Type de discontinuité ",
@@ -252,15 +272,11 @@
             }
         }
     },
-    "Display and arrange class": "Discrétisation...",
-    "Symbol selection": "Choix du symbole",
-    "Select a symbol...": "Sélectionnez un symbole",
-    "Or upload your symbol ": "Ou téléchargez votre symbole",
     "disc_box":{
         "title": "Options de discrétisation",
         "type_disc": "Type",
-        "class": " classe",
-        "class_plural": " classes",
+        "class": "{{count}} classe",
+        "class_plural": "{{count}} classes",
         "disp_mean": "Afficher la moyenne",
         "disp_median": "Afficher la médiane",
         "disp_sd": "Afficher l'écart-type",
@@ -269,7 +285,9 @@
         "title_color_scheme": "Choix des couleurs",
         "title_break_values": "Choix manuel des limites de classes",
         "mean": "Moyenne",
-        "median": "Médiane"
+        "median": "Médiane",
+        "line_size": "<b>Taille des segments :</b>",
+        "apply": "Appliquer les modifications"
     },
     "style_box":{
         "ref_layer": "Couche de référence",

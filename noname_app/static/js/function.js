@@ -1846,6 +1846,7 @@ function fillMenu_Stewart(){
                     current_layers[n_layer_name].renderer = "Stewart";
                     current_layers[n_layer_name].colors_breaks = colors_breaks;
                     current_layers[n_layer_name].rendered_field = field_selec.node().value;
+                    current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
                     d3.select("#"+n_layer_name)
                             .selectAll("path")
                             .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
@@ -2142,7 +2143,7 @@ function fillMenu_Anamorphose(){
                 let layer_to_add = check_layer_name(
                     new_user_layer_name.length > 0 ? new_user_layer_name : ["DorlingCarto", field_name, layer].join('_'));
 
-                let features_order = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
+                let [features_order, animation] = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
                 current_layers[layer_to_add] = {
                     "renderer": "DorlingCarto",
                     "type": "Point",
@@ -2153,7 +2154,8 @@ function fillMenu_Anamorphose(){
                     "is_result": true,
                     "features_order": features_order,
                     "ref_layer_name": layer,
-                    "fill_color": {"random": true}
+                    "fill_color": {"random": true},
+                    "animation": animation
                     };
                 create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
                 up_legend();
@@ -2169,12 +2171,9 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
-        zs = d3.zoomTransform(map.node()).k,
         symbol_layer = undefined,
         comp = (a,b) => b[1] - a[1],
-        force = d3.forceSimulation()
-                    .force("charge", d3.forceManyBody().distanceMin(0).distanceMax(0).strength(d => d.value))
-                    .force("collide", d3.forceCollide().radius(function(d) { return d.r + 0.5; }).iterations(2));
+        tmp = [];
 
     for(let i = 0; i < nb_features; ++i){
         let val = +user_data[layer][i][field_name];
@@ -2183,9 +2182,11 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     }
     d_values = prop_sizer3(d_values, fixed_value, fixed_size, shape_symbol);
     d_values.sort(comp);
+    let min_value = +d_values[nb_features - 1][1],
+        max_value = +d_values[0][1];
 
     let nodes = d_values.map(function(d, i){
-        let val = +ref_layer_selection[d[0]].__data__.properties[field_name];
+        let val = (+ref_layer_selection[d[0]].__data__.properties[field_name] - min_value) / (max_value - min_value);
         return {x: d[2][0], y: d[2][1],
                 x0: d[2][0], y0: d[2][1],
                 r: d[1],
@@ -2193,10 +2194,16 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                 ix: d[0]};
         });
 
+    let animation = d3.forceSimulation(nodes)
+                .force("x", d3.forceX(d => d.x0).strength(0.5))
+                .force("y", d3.forceY(d => d.y0).strength(0.5))
+                .force("charge", d3.forceManyBody().distanceMin(0).distanceMax(0).strength(d => -0.1 * d.value))
+                .force("collide", d3.forceCollide().radius(function(d) { return d.r; }).strength(0.5).iterations(1))
+                .on("tick", tick);
+
+
     let bg_color = Colors.random(),
         stroke_color = "black";
-
-    force.nodes(nodes).on("tick", tick);
 
     if(shape_symbol == "circle") {
         symbol_layer = map.append("g").attr("id", layer_to_add)
@@ -2223,90 +2230,15 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
 
     function tick(e){
         if(shape_symbol == "circle")
-            symbol_layer.attr("cx", d => d.x).attr("cy", d => d.y);
+            symbol_layer
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
         else
-            symbol_layer.attr("x", function(d){ return d.x - d.r})
-                .attr("y", function(d){ return d.y - d.r})
+            symbol_layer
+                .attr("x", d => d.x - d.r)
+                .attr("y", d => d.y - d.r)
     }
-
-//    function tick(e){
-//        if(shape_symbol == "circle"){
-//            symbol_layer.each(gravity(e.alpha * 0.1))
-//                .each(collide(.5))
-//                .attr("cx", function(d){ return d.x })
-//                .attr("cy", function(d){ return d.y })
-//        } else {
-//            symbol_layer.each(gravity(e.alpha * 0.1))
-//                .each(collide(.5))
-//                .attr("x", function(d){ return d.x - d.r})
-//                .attr("y", function(d){ return d.y - d.r})
-//        }
-//    }
-//    function gravity(k) {
-//        return function(d) {
-//            d.x += (d.x0 - d.x) * k;
-//            d.y += (d.y0 - d.y) * k;
-//        };
-//    }
-//
-//    function collide(k) {
-//        var q = d3.geom.quadtree(nodes);
-//        if(shape_symbol == "circle"){
-//            return function(node) {
-//                let nr = node.r,
-//                    nx1 = node.x - nr,
-//                    nx2 = node.x + nr,
-//                    ny1 = node.y - nr,
-//                    ny2 = node.y + nr;
-//                q.visit(function(quad, x1, y1, x2, y2) {
-//                    if (quad.point && (quad.point !== node)) {
-//                        let x = node.x - quad.point.x,
-//                            y = node.y - quad.point.y,
-//                            l = x * x + y * y,
-//                            r = nr + quad.point.r;
-//                        if (l < r * r) {
-//                            l = ((l = Math.sqrt(l)) - r) / l * k;
-//                            node.x -= x *= l;
-//                            node.y -= y *= l;
-//                            quad.point.x += x;
-//                            quad.point.y += y;
-//                        }
-//                    }
-//                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-//                });
-//            };
-//        } else {
-//            return function(node) {
-//                let nr = node.r,
-//                    nx1 = node.x - nr,
-//                    nx2 = node.x + nr,
-//                    ny1 = node.y - nr,
-//                    ny2 = node.y + nr;
-//                q.visit(function(quad, x1, y1, x2, y2) {
-//                    if (quad.point && (quad.point !== node)) {
-//                        let x = node.x - quad.point.x,
-//                            y = node.y - quad.point.y,
-//                            lx = Math.abs(x),
-//                            ly = Math.abs(y),
-//                            r = nr + quad.point.r;
-//                        if (lx < r && ly < r) {
-//                            if(lx > ly){
-//                                lx = (lx - r) * (x < 0 ? -k : k);
-//                                node.x -= lx;
-//                                quad.point.x += lx;
-//                            } else {
-//                                ly = (ly - r) * (y < 0 ? -k : k);
-//                                node.y -= ly;
-//                                quad.point.y += ly;
-//                            }
-//                        }
-//                    }
-//                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-//                });
-//            };
-//        }
-//    }
-    return d_values;
+    return [d_values, animation];
 }
 
 
@@ -2570,7 +2502,7 @@ function make_prop_symbols(rendering_params){
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
-        zs = d3.zoomTransform(map.node()).k;
+        zs = d3.zoomTransform(svg_map).k;
 
     let res_data = [];
     if(values_to_use)
@@ -2837,7 +2769,7 @@ function render_categorical(layer, rendering_params){
         layer = rendering_params.new_name;
     }
     map.select("#" + layer).style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(map.node()).k + "px");
+            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
@@ -2899,7 +2831,7 @@ function render_choro(layer, rendering_params){
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(map.node()).k, + "px");
+            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
     layer_to_render.style('fill-opacity', 0.9)
                    .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
                    .style('stroke-opacity', 0.9)
@@ -3377,10 +3309,10 @@ function haversine_dist(A, B){
 
 function standardize_values(array_values){
     let new_values = [];
-    let minV = min_fast(values_json);
-    let maxV = max_fast(values_json);
-    for(let i=0; i<values_json.length; i++) {
-        new_values.push((values_json[i] - minV ) / ( maxV - minV ));
+    let minV = min_fast(array_values);
+    let maxV = max_fast(array_values);
+    for(let i=0; i<array_values.length; i++) {
+        new_values.push((array_values[i] - minV ) / ( maxV - minV ));
     }
     return new_values;
 }
@@ -3491,4 +3423,17 @@ function display_error_during_computation(msg){
 
 function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
+}
+
+function make_content_summary(serie, precision=6){
+    return [
+        i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>",
+        i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ",
+        i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>",
+        i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>",
+        i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>",
+        i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>",
+        i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>",
+        i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)
+    ].join('')
 }

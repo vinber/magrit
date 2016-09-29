@@ -403,7 +403,9 @@ function createStyleBox(layer_name){
                                .style("stroke", stroke_prev);
                 }
                 else {
-                    if(fill_meth == "single") {
+                    if(current_layers[layer_name].renderer == "Stewart"){
+                        recolor_stewart(prev_palette.name, prev_palette.reversed);
+                    } else if(fill_meth == "single") {
                         selection.style('fill', fill_prev.single)
                                  .style('stroke', stroke_prev);
                     } else if(fill_meth == "class") {
@@ -536,15 +538,16 @@ function createStyleBox(layer_name){
          } else if (renderer == "Stewart"){
             let field_to_colorize = "min",
                 nb_ft = current_layers[layer_name].n_features;
-
+            var prev_palette = cloneObj(current_layers[layer_name].color_palette);
             rendering_params = {breaks: [].concat(current_layers[layer_name].colors_breaks)};
 
-            let recolor_stewart = function(coloramp_name, reversed){
+            var recolor_stewart = function(coloramp_name, reversed){
                 let new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
                 if(reversed) new_coloramp.reverse();
                 for(let i=0; i < nb_ft; ++i)
                     rendering_params.breaks[i][1] = new_coloramp[i];
                 selection.style("fill", (d,i) => new_coloramp[i] );
+                current_layers[layer_name].color_palette = {name: coloramp_name, reversed: reversed};
             }
 
             let seq_color_select = popup.insert("p")
@@ -552,12 +555,13 @@ function createStyleBox(layer_name){
                                         .insert("select")
                                         .attr("id", "coloramp_params")
                                         .on("change", function(){
-                                            recolor_stewart(this.value)
+                                            recolor_stewart(this.value, false);
                                          });
 
             ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
              'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(name){
                 seq_color_select.append("option").text(name).attr("value", name); });
+            seq_color_select.node().value = prev_palette.name;
 
             var button_reverse = popup.insert("button")
                                     .styles({"display": "inline", "margin-left": "10px"})
@@ -645,6 +649,7 @@ function createStyleBox(layer_name){
                                                          "User defined")
                         .then(function(result){
                             if(result){
+                                console.log(result)
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);

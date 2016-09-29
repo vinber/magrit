@@ -23,6 +23,7 @@
     <script  src="/static/js/lib/jschardet.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
+    <script src="/static/js/lib/jquery-i18next.min.js"></script>
     <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
@@ -78,12 +79,12 @@ function setUpInterface()
         accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
         accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
 
-    accordion1.append("h3").html(i18next.t("app_page.section1.title"));
-    accordion2_pre.append("h3").html(i18next.t("app_page.section2_pre.title"));
-    accordion2.append("h3").html(i18next.t("app_page.section2.title"));
-    accordion3.append("h3").html(i18next.t("app_page.section3.title"));
-    accordion4.append("h3").html(i18next.t("app_page.section4.title"));
-    accordion5.append("h3").html(i18next.t("app_page.section5.title"));
+    accordion1.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section1.title");
+    accordion2_pre.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section2_pre.title");
+    accordion2.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section2.title");
+    accordion3.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section3.title");
+    accordion4.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section4.title");
+    accordion5.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section5.title");
 
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
@@ -105,9 +106,9 @@ function setUpInterface()
         .on('click',  click_button_add_layer);
 
     dv11.append("p")
-        .attrs({id: "input_geom", class: "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html("<b>" + i18next.t("app_page.section1.add_geom") + "</b>")
+        .attrs({id: "input_geom", class: "user_panel i18n"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+        .attr("data-i18n", "[html]app_page.section1.add_geom")
         .on('click',  click_button_add_layer);
 
     let dv12 = dv1.append("div");
@@ -117,9 +118,9 @@ function setUpInterface()
         .on('click',  click_button_add_layer);
 
     dv12.append("p")
-        .attrs({"id": "data_ext", "class": "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html("<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>")
+        .attrs({"id": "data_ext", "class": "user_panel i18n"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+        .attr("data-i18n", "[html]app_page.section1.add_ext_dataset")
         .on('click',  click_button_add_layer);
 
     let div_sample = dv1.append("div").attr("id", "sample_zone");
@@ -129,9 +130,9 @@ function setUpInterface()
         .on('click', add_sample_layer);
 
     div_sample.append("span")
-        .attrs({"id": "sample_link", "class": "user_panel"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super"})
-        .html("<b>" + i18next.t("app_page.section1.add_sample_data") + "</b>")
+        .attrs({"id": "sample_link", "class": "user_panel i18n"})
+        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+        .attr("data-i18n", "[html]app_page.section1.add_sample_data")
         .on('click', add_sample_layer);
 
     dv1.append("p")
@@ -144,9 +145,9 @@ function setUpInterface()
         .attr("align", "center")
         .html("")
         .append("button")
-        .attrs({id: "browse_button", class: "button_st3", disabled: true})
+        .attrs({id: "browse_button", class: "button_st3 i18n", disabled: true})
         .style("font-size", "12px")
-        .html(i18next.t("app_page.section1.explore_table"))
+        .attr("data-i18n", "[html]app_page.section1.explore_table")
         .on("click", () => {  boxExplore.create(); });
 
     make_ico_choice();
@@ -203,24 +204,63 @@ function setUpInterface()
                 canvas_mod_size([null, this.value])
             });
 
-    let c = dv4.append("li").style("margin", "1px");
-    c.append("p").attr("class", "list_elem_section4")
+    let zoom_prop = svg_map.__zoom;
+
+    let c1 = dv4.append("li").style("margin", "1px");
+    c1.append("p").attr("class", "list_elem_section4")
+            .html("<b>" + i18next.t("app_page.section4.map_center_x") + "</b>");
+    c1.append("p").attr("class", "list_elem_section4")
+            .insert("input").style("width", "60px").style("margin-left", "15px")
+            .attrs({id: "input-center-x", type: "number", "value": round_value(zoom_prop.x, 2), step: "any"})
+            .on("change", function(){
+                svg_map.__zoom.x = +this.value;
+                zoom_without_redraw();
+            });
+
+    let c2 = dv4.append("li").style("margin", "1px");
+    c2.append("p").attr("class", "list_elem_section4")
+            .html("<b>" + i18next.t("app_page.section4.map_center_y") + "</b>");
+    c2.append("p").attr("class", "list_elem_section4")
+            .insert("input").style("width", "60px").style("margin-left", "15px")
+            .attrs({id: "input-center-y", type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
+            .on("change", function(){
+                svg_map.__zoom.y = +this.value;
+                zoom_without_redraw();
+            });
+
+
+    let d = dv4.append("li").style("margin", "1px");
+    d.append("p").attr("class", "list_elem_section4")
+            .html("<b>" + i18next.t("app_page.section4.map_scale_k") + "</b>");
+    d.append("p").attr("class", "list_elem_section4")
+            .insert("input").style("width", "60px").style("margin-left", "15px")
+            .attrs({id: "input-scale-k",
+                    type: "number",
+                    value: round_value(zoom_prop.k * proj.scale(), 2),
+                    step: "any"})
+            .on("change", function(){
+                svg_map.__zoom.k = +this.value / proj.scale();
+                zoom_without_redraw();
+            });
+
+    let e = dv4.append("li").style("margin", "1px");
+    e.append("p").attr("class", "list_elem_section4")
             .html(i18next.t("app_page.section4.map_title"));
-    c.append("p").attr("class", "list_elem_section4")
+    e.append("p").attr("class", "list_elem_section4")
             .insert("input").attr("id", "title")
             .styles({"margin": "0px 0px 0px 15px"})
             .on("keyup", function(){
                 handle_title(this.value);
             });
-    c.insert("span")
+    e.insert("span")
             .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
 
-    let d = dv4.append("li").style("margin", "1px");
-    d.append("p").attr("class", "list_elem_section4")
+    let f = dv4.append("li").style("margin", "1px");
+    f.append("p").attr("class", "list_elem_section4")
             .html(i18next.t("app_page.section4.background_color"));
-    d.append("p").attr("class", "list_elem_section4")
+    f.append("p").attr("class", "list_elem_section4")
             .insert("input")
             .styles({"vertical-align": "middle", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff"})
@@ -228,10 +268,10 @@ function setUpInterface()
                 handle_bg_color(this.value);
             });
 
-    let e = dv4.append("li").style("margin", "1px");
-    e.append("p").attr("class", "list_elem_section4")
+    let g = dv4.append("li").style("margin", "1px");
+    g.append("p").attr("class", "list_elem_section4")
             .html(i18next.t("app_page.section4.canvas_rotation"));
-    e.append("input")
+    g.append("input")
             .attr("type", "range")
             .attr("id","form_rotate")
             .attr("value", 0).attr("min", 0)
@@ -242,12 +282,12 @@ function setUpInterface()
                 document.getElementById("canvas_rotation_value_txt").innerHTML = this.value + "°";
             });
 
-    e.append("span")
+    g.append("span")
         .attr("id", "canvas_rotation_value_txt")
         .html("0°");
 
-    let f = dv4.append("li");
-    f.append("p")
+    let _h = dv4.append("li");
+    _h.append("p")
             .style("cursor", "pointer")
             .html("<b>" + i18next.t("app_page.section4.layout_features") + "</b> " + sys_run_button)
             .on("click", select_layout_features);
@@ -304,7 +344,7 @@ function setUpInterface()
                     center_map(layer_name);
                     zoom_without_redraw();
                 } else {
-                    map.node().__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
+                    svg_map.__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
                     zoom_without_redraw();
                 }
             });
@@ -384,12 +424,12 @@ function setUpInterface()
                         document.getElementById("menu_pref").remove();
                     else {
                         let actions = [
-                            {"name": i18next.t("Save your preferences"), "callback": save_map_template},
-                            {"name": i18next.t("Load a preference JSON"), "callback": load_map_template}
+                            {"name": i18next.t("app_page.common.save_project_json"), "callback": save_map_template},
+                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
                             ];
                         let menu = document.createElement("div");
                         menu.style.top = "30px";
-                        menu.style.right = "35px";
+                        menu.style.right = "38px";
                         menu.className = "context-menu";
                         menu.id = "menu_pref";
                         let list_elems = document.createElement("ul");
@@ -441,8 +481,8 @@ function setUpInterface()
         {id: "zoom_out", title: i18next.t("app_page.lm_buttons.zoom-"), class: "zoom_button", html: "-"},
         {id: "zoom_in", title: i18next.t("app_page.lm_buttons.zoom+"), class: "zoom_button", html: "+"},
         {id: "info_button", title: i18next.t("app_page.lm_buttons.i"), class: "info_button", html: "i"},
-        {id: "hand_button", title: i18next.t("app_page.lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'} /*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("app_page.lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'} */
+        {id: "hand_button", title: i18next.t("app_page.lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'},
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("app_page.lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
     ];
 
     let selec = lm.selectAll("input")
@@ -459,8 +499,7 @@ function setUpInterface()
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
     document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
-    /* let brush_rect = handle_click_zoom_select(); // Pretty ugly closure to remember the last click-on-the-map behavior
-    document.getElementById("brush_zoom_button").onclick = brush_rect; */
+    document.getElementById("brush_zoom_button").onclick = brush_rect;
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -475,6 +514,7 @@ function setUpInterface()
 
     d3.select("#header")
         .insert("span")
+        .attr("id", "current_app_lang")
         .style("position", "absolute")
         .style("color", "white")
         .style("font-size", "14px")
@@ -502,7 +542,7 @@ function setUpInterface()
                 for (let i = 0; i < actions.length; i++) {
                     let item = document.createElement("li");
                     list_elems.appendChild(item);
-                    item.setAttribute("data-index",i);
+                    item.setAttribute("data-index", i);
                     let name = document.createElement("span");
                     name.className = "context-menu-item-name";
                     name.style.color = "white";
@@ -649,8 +689,19 @@ function make_eye_button(state){
 }
 
 function change_lang(){
-    null;
+    let new_lang = this.name;
+    if(new_lang == i18next.language){
+        return;
+    } else {
+        let other_lang = new_lang == "fr" ? "en" : "fr";
+        i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
+        document.getElementById("current_app_lang").innerHTML = new_lang;
+        let menu = document.getElementById("menu_lang");
+        if(menu)
+            menu.remove();
+    }
 }
+
 
 function make_ico_choice(){
     let list_fun_ico = ['icon_prop.png',
@@ -718,7 +769,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
 
-/*Titre de la carte
+/*
 A bunch of global variable, storing oftently reused informations :
     - user_data[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
             (+ the joined features if a join is done)
@@ -751,6 +802,8 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
                 .attr("height", h)
                 .style("position", "absolute")
                 .call(zoom);
+
+var brush = d3.brush().on("end", brush_action);
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
@@ -824,7 +877,9 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         if(err)
             throw err;
         else {
+            jqueryI18next.init(i18next, $);
             setUpInterface();
+            $(".i18n").localize();
         }
     });
 })();
@@ -835,6 +890,10 @@ function up_legend(){
     let legend_features = svg_map.querySelectorAll('.legend');
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);
+    }
+    let defs = document.querySelector("defs");
+    if(defs && svg_map.childNodes[0].tagName != "defs"){
+        svg_map.insertBefore(defs, svg_map.childNodes[0]);
     }
 }
 
@@ -1079,7 +1138,6 @@ function remove_ext_dataset_cleanup(){
     ext_dataset_img.onclick = click_button_add_layer;
     let data_ext_txt = document.getElementById("data_ext");
     data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
-    //data_ext_txt.innerHTML = "<b>" + i18next.t("Add additional dataset") + " <i>" + i18next.t("(or drop it)") + "</i></b>";
     data_ext_txt.onclick = click_button_add_layer;
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
@@ -1179,93 +1237,49 @@ function handle_click_hand(){
     }
 }
 
-/*
-// Trying to handle zooming using a rectangle on the map
-function handle_click_zoom_select(){
-    var last_click_behavior;
-    return function(){
-        var hand_button = d3.select('.hand_button'),
-            zoom_sel_button = d3.select('.brush_zoom_button');
-        if(zoom_sel_button.classed("active")){
-            zoom_sel_button.style('box-shadow', "none").classed("active", false);
-            if(last_click_behavior == "zoom"){
-                map.on("mousedown", null);
-                zoom.on("zoom", zoom_without_redraw);
-                map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
-                hand_button.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
-            } else {
-                zoom.on("zoom", null);
-                map.on("mousedown", null)
-                    .on("mousemove.zoomRect", null)
-                    .on("mouseup.zoomRect", null);
-            }
-        } else {
-            if(hand_button.classed("active")){
-                hand_button.style('box-shadow', "none")
-                            .classed("active", false);
-                zoom.on("zoom", null);
-                last_click_behavior = "zoom";
-            } else last_click_behavior = "";
-            zoom_sel_button.classed("active", true);
-            zoom_sel_button.style('box-shadow', 'inset 2px 2px 1px black');
-            let k = map.node().__zoom.k;
-            let prev_t = [map.node().__zoom.x, map.node().__zoom.y];
-            map.on("mousedown", function(){
-                let e = this,
-                    origin = d3.mouse(e),
-                    rect = d3.select("svg").append("g").append("rect").attr("class", "zoom_rect");
-                d3.select("body").classed("noselect", true);
-                var _origin = origin.slice();
-                origin[0] = Math.max(0, Math.min(w, origin[0]));
-                origin[1] = Math.max(0, Math.min(h, origin[1]));
-                map.on("mousemove.zoomRect", function() {
-                        var m = d3.mouse(e);
-                        m[0] = Math.max(0, Math.min(w, m[0]));
-                        m[1] = Math.max(0, Math.min(h, m[1]));
-                        rect.attr("x", Math.min(origin[0], m[0]))
-                        .attr("y", Math.min(origin[1], m[1]))
-                        .attr("width", Math.abs(m[0] - origin[0]))
-                        .attr("height", Math.abs(m[1] - origin[1]));
-                        })
-                   .on("mouseup.zoomRect", function() {
-                        map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
-                        d3.select("body").classed("noselect", false);
-                        var m = d3.mouse(e);
-                        //m[0] = Math.max(0, Math.min(w, m[0]));
-                        //m[1] = Math.max(0, Math.min(h, m[1]));
-                        if (m[0] !== origin[0] && m[1] !== origin[1]) {
-                            let b = [proj.invert([_origin[0] * k, _origin[1] * k]),
-                                     proj.invert([m[0] * k, m[1] * k])];
-                            let s = Math.abs(.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h)),
-                                t = [((w - s * (b[1][0] + b[0][0])) / 2) + prev_t[0],
-                                     ((h - s * (b[1][1] + b[0][1])) / 2) + prev_t[1]];
+function brush_action() {
+    var s = d3.event.selection;
+    console.log(s)
+    var x0 = s[0][0],
+        y0 = s[0][1],
+        dx = s[1][0],
+        dy = s[1][1];
+    console.log(proj.invert([x0, y0]));
+    console.log(proj.invert([dx, dy]));
+    console.log(proj([x0, y0]));
+    console.log(proj([dx, dy]));
+    s = [proj.invert([x0, y0]), proj.invert([dx, dy])]
+    let zoom_scale = .95 / Math.max((s[1][0] - s[0][0]) / w, (s[1][1] - s[0][1]) / h);
+    let zoom_translate = [(w - zoom_scale * (s[1][0] + s[0][0])) / 2, (h - zoom_scale * (s[1][1] + s[0][1])) / 2];
+    let _zoom = svg_map.__zoom;
+    _zoom.k = zoom_scale;
+    _zoom.x = zoom_translate[0];
+    _zoom.y = zoom_translate[1];
+    zoom_without_redraw();
+}
 
-                                //t = [(w - s * (b[1][0] + b[0][0])) / 2 + proj.translate()[0],
-                                //     (h - s * (b[1][1] + b[0][1])) / 2 + proj.translate()[1]];
-                            console.log(b);
-                            console.log(s, t);
-                            let _zoom = map.node().__zoom;
-                            _zoom.k = s;
-                            _zoom.x = t[0];
-                            _zoom.y = t[1];
-                        }
-                        rect.remove();
-                        zoom_without_redraw();
-                      }, true);
-                d3.event.stopPropagation();
-            });
-            d3.selectAll(".zoom_rect").remove();
-        }
+
+function brush_rect(){
+    let zoom_brush_button = d3.select(".brush_zoom_button"),
+        hb = d3.select('.hand_button');
+    if(zoom_brush_button.classed("active")){
+        zoom_brush_button.style('box-shadow', "none").classed("active", false);
+        map.select(".brush").remove();
+    } else {
+        zoom_brush_button.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
+        map.append("g")
+            .attr("class", "brush")
+            .call(brush);
     }
 }
-*/
+
 function get_map_template(){
     var map_config = new Object(),
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
         displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
-        zoom_transform = d3.zoomTransform(map.node());
+        zoom_transform = d3.zoomTransform(svg_map);
 
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
@@ -1326,7 +1340,7 @@ function get_map_template(){
             layers_style[i].features_order = JSON.stringify(current_layers[layer_name].features_order);
         } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
-                    || current_layers[layer_name].renderer == "Choro"
+                    || current_layers[layer_name].renderer == "Choropleth"
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -1417,16 +1431,15 @@ function zoom_without_redraw(){
     var rot_val = canvas_rotation_value || "";
     var transform;
     if(!d3.event || !d3.event.transform || !d3.event.sourceEvent){
-        transform = d3.zoomTransform(map.node());
+        transform = d3.zoomTransform(svg_map);
         map.selectAll(".layer")
           .transition()
           .duration(50)
           .style("stroke-width", function(){
                 let lyr_name = this.id;
-                return !current_layers[lyr_name] || current_layers[lyr_name].fixed_stroke
+                return current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
-
             })
           .attr("transform", transform.toString());
     } else {
@@ -1437,7 +1450,7 @@ function zoom_without_redraw(){
                   .duration(50)
                   .style("stroke-width", function(){
                         let lyr_name = this.id;
-                        return !current_layers[lyr_name] || current_layers[lyr_name].fixed_stroke
+                        return current_layers[lyr_name].fixed_stroke
                                 ? this.style.strokeWidth
                                 : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
                     })
@@ -1451,6 +1464,10 @@ function zoom_without_redraw(){
         clearTimeout(legendRedrawTimeout);
     }
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
+    let zoom_params = svg_map.__zoom;
+    document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
+    document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
+    document.getElementById("input-scale-k").value = round_value(zoom_params.k * proj.scale(), 2);
 };
 
 function redraw_legends_symbols(targeted_node){
@@ -1487,17 +1504,15 @@ function redraw_legends_symbols(targeted_node){
 
 function interpolateZoom(translate, scale) {
     var self = this;
-    var transform = d3.zoomTransform(map.node());
+    var transform = d3.zoomTransform(svg_map);
     return d3.transition().duration(225).tween("zoom", function () {
         var iTranslate = d3.interpolate([transform.x, transform.y], translate),
             iScale = d3.interpolate(transform.k, scale);
         return function (t) {
-            map.node().__zoom.k = iScale(t);
+            svg_map.__zoom.k = iScale(t);
             let _t =  iTranslate(t);
-            map.node().__zoom.x = _t[0];
-            map.node().__zoom.y = _t[1];
-            //zoom.scaleTo(map.selectAll(".layer"), iScale(t));
-            //zoom.translateBy(map.selectAll(".layer"), iTranslate(t));
+            svg_map.__zoom.x = _t[0];
+            svg_map.__zoom.y = _t[1];
             zoom_without_redraw()
         };
     });
@@ -1509,7 +1524,7 @@ function zoomClick() {
         factor = 0.1,
         target_zoom = 1,
         center = [w / 2, h / 2],
-        transform = d3.zoomTransform(map.node()),
+        transform = d3.zoomTransform(svg_map),
         translate = [transform.x, transform.y],
         translate0 = [],
         l = [],
@@ -1537,7 +1552,7 @@ function zoomClick() {
 function rotate_global(angle){
     canvas_rotation_value = ["rotate(", angle, ",", w / 2,",", h / 2, ")"].join('');
 
-    let zoom_transform = d3.zoomTransform(map.node());
+    let zoom_transform = d3.zoomTransform(svg_map);
 
     map.selectAll("g.layer")
       .transition()
@@ -1571,7 +1586,7 @@ function handleClipPath(proj_name){
           .append("use")
             .attr("xlink:href", "#sphere");
 
-        map.node().insertBefore(map.node().querySelector("defs"), map.node().childNodes[0]);
+        svg_map.insertBefore(svg_map.querySelector("defs"), svg_map.childNodes[0]);
     } else {
         let defs = document.querySelector("defs");
         if(defs){
@@ -1666,7 +1681,7 @@ function handle_title(txt){
         title.text(txt);
     } else {
         map.append("g")
-             .attr("class", "legend_feature title")
+             .attr("class", "legend legend_feature title")
           .insert("text")
              .attrs({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
              .styles({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt);
@@ -1898,7 +1913,7 @@ function apply_user_preferences(json_pref){
                 tmp['func_name'] = func_name_corresp.get(layers[i].renderer)
                 tmp['result_layer_on_add'] = true;
             }
-
+            tmp['choosed_name'] = layer_name;
             handle_reload_TopoJSON(layers[i].topo_geom, tmp).then(function(n_layer_name){
                 console.log([layer_name, n_layer_name])
                 layer_name = n_layer_name;
@@ -2044,7 +2059,19 @@ function apply_user_preferences(json_pref){
                     }) */
                 .call(drag_elem_geo);
             create_li_layer_elem(layer_name, nb_ft, ["Point", "symbol"], "result");
-
+        } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
+            let rendering_params = {
+                    "nb_class": "",
+                    "type":"",
+                    "schema": layers[i].options_disc.schema,
+                    "no_data": layers[i].options_disc.no_data,
+                    "colors": layers[i].options_disc.colors,
+                    "colorsByFeature": layers[i].color_by_id,
+                    "renderer": "Choropleth",
+                    "rendered_field": layers[i].rendered_field,
+                    "new_name": layer_name
+                };
+            render_choro(layers[i].ref_layer_name, rendering_params);
         } else {
             null;
         }
@@ -2052,7 +2079,7 @@ function apply_user_preferences(json_pref){
         if(layers[i].is_result && map_config.displayed_legend)
             handle_legend(layer_name);
     }
-    let _zoom = map.node().__zoom;
+    let _zoom = svg_map.__zoom;
     _zoom.k = map_config.zoom_scale;
     _zoom.x = map_config.zoom_translate[0];
     _zoom.y = map_config.zoom_translate[1];
@@ -2229,7 +2256,7 @@ function make_export_layer_box(){
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
                         if(data.indexOf("Error:") == 0){
-                            swal("Oops...", "Something went wrong : " + data.substring(6, data.length), "error");
+                            swal("Oops...", i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}), "error");
                             return;
                         }
                         let ext = extensions.get(type),
@@ -2274,7 +2301,9 @@ window.addEventListener("unload", function(){
             return 0;
         else if(current_layers[name].renderer
                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-                    || current_layers[name].renderer.indexOf("Dorling") > -1))
+                    || current_layers[name].renderer.indexOf("Dorling") > -1
+                    || current_layers[name].renderer.indexOf("Choropleth") > -1
+                    || current_layers[name].renderer.indexOf("Categorical") > -1))
             return 0;
         return 1;
     });

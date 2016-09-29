@@ -10,6 +10,7 @@
             "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)",
             "layer_success": "Layer successfully added to the map",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
+            "error_message": "Something went wrong : {{msg}}",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",
@@ -24,10 +25,12 @@
             "feature": "feature",
             "feature_plural": "features",
             "field": "field",
-            "field_plural": "fields"
+            "field_plural": "fields",
+            "save_project_json": "Save the current project (JSON format)",
+            "load_project_json": "Load a JSON project file"
         },
         "section1": {
-            "title": "Ajout de données",
+            "title": "Add your data",
             "add_geom": "Add geometry layer (or drop it)",
             "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
             "add_sample_data": "Select available sample dataset",
@@ -47,6 +50,9 @@
             "title": "Basemap configuration",
             "map_width": "Map width (px) ",
             "map_height": "Map height (px) ",
+            "map_center_x": "Map center (x)",
+            "map_center_y": "Map center (y)",
+            "map_scale_k": "Zoom scale",
             "map_title": "Map title ",
             "background_color": "Background color ",
             "canvas_rotation": "Canvas rotation ",
@@ -59,6 +65,16 @@
             "projection_center_phi": "Projection center (φ-axis rotation)",
             "projection_center_gamma": "Projection center (γ-axis rotation)",
             "reset": "Reset center/zooming/rotation"
+        },
+        "stat_summary": {
+            "population": "Population",
+            "min": "Min",
+            "max": "Max",
+            "mean": "Mean",
+            "median": "Median",
+            "variance": "Variance",
+            "stddev": "Standard deviation",
+            "cov": "Coefficient of variation"
         },
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
@@ -147,6 +163,10 @@
                 "keep_char": "Number of char to keep (from the left) :<br>",
                 "invalid_name": "Unauthorized column name !"
             }
+        },
+        "help_box": {
+            "title": "Emergency help!",
+            "message_invite": "Write something to be searched in the documentation :"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",
@@ -255,7 +275,7 @@
     "disc_box":{
         "title": "Discretization Panel",
         "type_disc": "Type",
-        "class": " class",
+        "class": "{{count}} class",
         "disp_mean": "Display mean",
         "disp_median": "Display median",
         "disp_sd": "Display standard deviation",
@@ -264,7 +284,9 @@
         "title_color_scheme": "Color scheme",
         "title_break_values": "Current break values",
         "mean": "Mean",
-        "median": "Median"
+        "median": "Median",
+        "line_size": "<b>Line size :</b>",
+        "apply": "Apply changes"
     },
     "style_box":{
         "ref_layer": "Reference layer",
