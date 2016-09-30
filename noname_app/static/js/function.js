@@ -3425,6 +3425,17 @@ function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
 }
 
+function setChangeListener (elem, listener) {
+    elem.addEventListener("blur", listener);
+    elem.addEventListener("keyup", listener);
+    elem.addEventListener("paste", listener);
+    elem.addEventListener("copy", listener);
+    elem.addEventListener("cut", listener);
+    elem.addEventListener("delete", listener);
+    elem.addEventListener("mouseup", listener);
+}
+
+
 function make_content_summary(serie, precision=6){
     return [
         i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>",

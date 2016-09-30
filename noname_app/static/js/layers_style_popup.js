@@ -769,12 +769,12 @@ function createStyleBox_ProbSymbol(layer_name){
                     }
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
-                    let lgd_choro =document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+                    let lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     if(lgd_choro){
                         let transform_param = lgd_choro.getAttribute("transform"),
                             lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
                             lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
-                            boxgap = lgd_prop_symb.getAttribute("boxgap");
+                            boxgap = lgd_choro.getAttribute("boxgap");
                         lgd_choro.remove();
                         createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
                         lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
@@ -847,7 +847,8 @@ function createStyleBox_ProbSymbol(layer_name){
                             renderer:"PropSymbolsChoro",
                             field: field_color
                             };
-                        let features = current_layer[layer_name].features_order;
+                        console.log(rendering_params)
+                        let features = current_layers[layer_name].features_order;
                         selection.style('fill-opacity', 0.9)
                                  .style("fill", (d,i) => rendering_params.colorsByFeature[+features[i][0]]);
                     }

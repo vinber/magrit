@@ -154,7 +154,8 @@ function setUpInterface()
 
     section2.append("p")
             .style("font-size", "18px")
-            .html(i18next.t("app_page.section2.no_func"));
+            .attr("class", "i18n")
+            .attr("data-i18n", "[html]app_page.section2.no_func");
 
     let section3 = d3.select("#section3");
 
@@ -186,17 +187,18 @@ function setUpInterface()
                              display: "inline-block",
                              padding: "0px",
                              width: "100%"});
+
     let a = dv4.append("li").style("margin", "1px");
-    a.append("p").attr("class", "list_elem_section4")
-            .html("<b>" + i18next.t("app_page.section4.map_width") + "</b>");
+    a.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_width");
     a.append("p").attr("class", "list_elem_section4")
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-width", type: "number", value: w, width: "55px"})
             .on("change", function(){canvas_mod_size([this.value,null])});
 
     let b = dv4.append("li").style("margin", "1px");
-    b.append("p").attr("class", "list_elem_section4")
-            .html("<b>" + i18next.t("app_page.section4.map_height") + "</b>");
+    b.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_height");
     b.append("p").attr("class", "list_elem_section4")
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-height", type: "number", "value": h})
@@ -207,8 +209,8 @@ function setUpInterface()
     let zoom_prop = svg_map.__zoom;
 
     let c1 = dv4.append("li").style("margin", "1px");
-    c1.append("p").attr("class", "list_elem_section4")
-            .html("<b>" + i18next.t("app_page.section4.map_center_x") + "</b>");
+    c1.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_center_x");
     c1.append("p").attr("class", "list_elem_section4")
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-center-x", type: "number", "value": round_value(zoom_prop.x, 2), step: "any"})
@@ -218,8 +220,8 @@ function setUpInterface()
             });
 
     let c2 = dv4.append("li").style("margin", "1px");
-    c2.append("p").attr("class", "list_elem_section4")
-            .html("<b>" + i18next.t("app_page.section4.map_center_y") + "</b>");
+    c2.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_center_y");
     c2.append("p").attr("class", "list_elem_section4")
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-center-y", type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
@@ -230,8 +232,8 @@ function setUpInterface()
 
 
     let d = dv4.append("li").style("margin", "1px");
-    d.append("p").attr("class", "list_elem_section4")
-            .html("<b>" + i18next.t("app_page.section4.map_scale_k") + "</b>");
+    d.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_scale_k");
     d.append("p").attr("class", "list_elem_section4")
             .insert("input").style("width", "60px").style("margin-left", "15px")
             .attrs({id: "input-scale-k",
@@ -244,8 +246,8 @@ function setUpInterface()
             });
 
     let e = dv4.append("li").style("margin", "1px");
-    e.append("p").attr("class", "list_elem_section4")
-            .html(i18next.t("app_page.section4.map_title"));
+    e.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_title");
     e.append("p").attr("class", "list_elem_section4")
             .insert("input").attr("id", "title")
             .styles({"margin": "0px 0px 0px 15px"})
@@ -258,8 +260,8 @@ function setUpInterface()
             .on("click", handle_title_properties);
 
     let f = dv4.append("li").style("margin", "1px");
-    f.append("p").attr("class", "list_elem_section4")
-            .html(i18next.t("app_page.section4.background_color"));
+    f.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.background_color");
     f.append("p").attr("class", "list_elem_section4")
             .insert("input")
             .styles({"vertical-align": "middle", "margin-left": "15px"})
@@ -269,8 +271,8 @@ function setUpInterface()
             });
 
     let g = dv4.append("li").style("margin", "1px");
-    g.append("p").attr("class", "list_elem_section4")
-            .html(i18next.t("app_page.section4.canvas_rotation"));
+    g.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
     g.append("input")
             .attr("type", "range")
             .attr("id","form_rotate")
@@ -297,12 +299,15 @@ function setUpInterface()
                 .style("text-align", "center")
                 .attr("class", "form-item");
 
-    dv5.insert('label-item').html("<b>" + i18next.t("app_page.section5.projection") + " </b><br>");
+    dv5.insert('label-item').attr("class", "i18n")
+            .attr("data-i18n", "[html]app_page.section5.projection");
 
     let rotation_param = section5.append("div")
-                            .attr("id", "rotation_params")
-                            .styles({"text-align": "center", "width": "300px"})
-                            .html(i18next.t("app_page.section5.projection_center_lambda"));
+                            .styles({"text-align": "center", "width": "300px"});
+
+    rotation_param.append("p")
+            .attrs({id: "rotation_params", class: "i18n"})
+            .attr("data-i18n", "[html]app_page.section5.projection_center_lambda");
 
     rotation_param.append("input")
             .attr("type", "range")
@@ -312,27 +317,31 @@ function setUpInterface()
             .style("vertical-align", "middle")
             .on("input", function(){
                 handle_proj_center_button([this.value, null, null]);
-                document.getElementById("proj_center_value_txt").innerHTML = this.value + "°";
+                document.getElementById("proj_center_value_txt").innerHTML = this.value;
             });
 
     rotation_param.append("span")
             .attr("id", "proj_center_value_txt")
-            .style("float", "right")
-            .html("0°");
+            .style("cursor", "pointer")
+            .html("0")
+            .on("click", handleProjTxtChange);
+
+    rotation_param.append("span")
+            .html("°");
 
     section5.append("div")
             .style("text-align", "center")
             .insert("button")
             .attr("id","reset_center_rotation")
-            .attr("class", "button_st4")
-            .text(i18next.t("app_page.section5.reset"))
+            .attr("class", "button_st4 i18n")
+            .attr("data-i18n", "[html]app_page.section5.reset")
             .on("click", function(){
                 // Todo : improve the behavior of this button
                 // Reset the rotation :
                 proj.scale(0).translate(0,0);
                 document.getElementById('form_projection_center').value = 0;
                 document.getElementById('form_rotate').value = 0;
-                document.getElementById('proj_center_value_txt').innerHTML = "0°";
+                document.getElementById('proj_center_value_txt').innerHTML = "0";
                 proj.rotate([0,,]);
                 reproj_symbol_layer();
                 rotate_global(0);
@@ -358,7 +367,6 @@ function setUpInterface()
                   .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
                   .enter()
                   .append('path')
-                  .attr("clip-path", "url(#clip)")
                   .attr("d", path)
                   .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
         map.selectAll("path").attr("d", path);
@@ -371,6 +379,7 @@ function setUpInterface()
                 .attr("id","form_projection")
                 .style("align", "center")
                 .on("change", function(){
+                    current_proj_name = this.selectedOptions[0].textContent;
                     change_projection(this.value);
                     let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
                     if(layer_name){
@@ -803,7 +812,7 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
                 .style("position", "absolute")
                 .call(zoom);
 
-var brush = d3.brush().on("end", brush_action);
+var brush;
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
@@ -1120,7 +1129,7 @@ function remove_ext_dataset(){
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Delete!",
+        confirmButtonText: i18next.t("app_page.common.delete") + "!",
         closeOnConfirm: true
         }).then(() => {
             remove_ext_dataset_cleanup();
@@ -1239,22 +1248,28 @@ function handle_click_hand(){
 
 function brush_action() {
     var s = d3.event.selection;
-    console.log(s)
+    if(!s){
+        return;
+    }
+    console.log(s);
+
     var x0 = s[0][0],
         y0 = s[0][1],
         dx = s[1][0],
         dy = s[1][1];
-    console.log(proj.invert([x0, y0]));
-    console.log(proj.invert([dx, dy]));
-    console.log(proj([x0, y0]));
-    console.log(proj([dx, dy]));
+    var _zoom = svg_map.__zoom;
+
     s = [proj.invert([x0, y0]), proj.invert([dx, dy])]
     let zoom_scale = .95 / Math.max((s[1][0] - s[0][0]) / w, (s[1][1] - s[0][1]) / h);
+    let new_zoom = d3.zoomIdentity.scale(zoom_scale).translate((s[1][0] + s[0][0]) / 2, (s[1][1] + s[0][1]) / 2)
+
     let zoom_translate = [(w - zoom_scale * (s[1][0] + s[0][0])) / 2, (h - zoom_scale * (s[1][1] + s[0][1])) / 2];
-    let _zoom = svg_map.__zoom;
-    _zoom.k = zoom_scale;
-    _zoom.x = zoom_translate[0];
-    _zoom.y = zoom_translate[1];
+    console.log(new_zoom)
+    _zoom.k = new_zoom.k
+    _zoom.x = new_zoom.x
+    _zoom.y = new_zoom.y
+    map.select(".brush").remove();
+    brush = null;
     zoom_without_redraw();
 }
 
@@ -1266,6 +1281,8 @@ function brush_rect(){
         zoom_brush_button.style('box-shadow', "none").classed("active", false);
         map.select(".brush").remove();
     } else {
+        brush = d3.brush()
+            .on("end", brush_action);
         zoom_brush_button.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
         map.append("g")
             .attr("class", "brush")
@@ -1586,19 +1603,31 @@ function handleClipPath(proj_name){
           .append("use")
             .attr("xlink:href", "#sphere");
 
+        map.selectAll(".layer")
+            .attr("clip-path", "url(#clip)");
+
         svg_map.insertBefore(svg_map.querySelector("defs"), svg_map.childNodes[0]);
     } else {
         let defs = document.querySelector("defs");
         if(defs){
             defs.remove();
-            map.selectAll(".layer").selectAll("path")
+            map.selectAll(".layer")
                 .attr("clip-path", null);
         }
     }
 }
 
+function handleClipPathLayer(layer_name){
+    if(current_proj_name.indexOf("Interrupted") > -1
+        || current_proj_name.indexOf("Armadillo") > -1
+        || current_proj_name.indexOf("Healpix") > -1){
+            map.select("#" + layer_name)
+                .attr("clip-path", "url(#clip)");
+    }
+}
+
 function change_projection(proj_name) {
-    var current_proj_name = proj_name.split('()')[0].split('.')[1];
+    var new_proj_name = proj_name.split('()')[0].split('.')[1];
 
     // Update global variables:
     proj = eval(proj_name);
@@ -1606,14 +1635,17 @@ function change_projection(proj_name) {
     t = proj.translate();
     s = proj.scale();
 
+    // Reset the projection center input :
+    document.getElementById("form_projection_center").value = 0;
+
     // Do the reprojection :
     reproj();
 
     // Set or remove the clip-path according to the projection:
-    handleClipPath(current_proj_name);
+    handleClipPath(new_proj_name);
 
     // Set specifics mouse events according to the projection :
-    if(current_proj_name.indexOf('Orthographic') > -1){
+    if(new_proj_name.indexOf('Orthographic') > -1){
         var current_params = proj.rotate(),
             rotation_param = d3.select("#rotation_params");
 
@@ -1636,6 +1668,40 @@ function change_projection(proj_name) {
                     .on("mousemove", null)
                     .on("mouseup", null);
 }
+
+// Function making editable the text value for the projection center
+// and triggering appropriate changes according to the input value
+// (refuse the value or change the projection center)
+function handleProjTxtChange(){
+    let self = this;
+    return function(){
+        let prev_value = self.innerHTML;
+        self.contentEditable = true;
+        self.style.cursor = "text";
+        setChangeListener(self, function(event){
+            if(!event){ return; }
+            if(event.type == "blur" || (event.type == "keyup" && event.keyCode && event.keyCode == 13)){
+                event.stopPropagation();
+                self.contentEditable = false;
+                self.style.cursor = "pointer";
+                self.innerHTML = self.innerHTML.replace("<br>", "").trim();
+                console.log(self.innerHTML)
+                let val = +self.innerHTML.replace(",", ".");
+                if(!isNaN(val) && val <= 180 && val >= -180){
+                    handle_proj_center_button([val,,]);
+                    document.getElementById("form_projection_center").value = val;
+                    let _old = document.getElementById("proj_center_value_txt");
+                    let new_elem = _old.cloneNode(true);
+                    _old.parentElement.replaceChild(new_elem, _old);
+                    new_elem.onclick = handleProjTxtChange;
+                } else {
+                    this.innerHTML = prev_value;
+                }
+            }
+        });
+    }();
+}
+
 
 // Function to switch the visibility of a layer the open/closed eye button
 function handle_active_layer(name){

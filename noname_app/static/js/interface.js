@@ -116,8 +116,8 @@ function prepare_drop_section(){
                 for(let i=0; i < files.length; i++){
                     if(files[i].size > MAX_INPUT_SIZE){
                         elem.style.border = '3px dashed red';
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t("Too large input file (should currently be under 8Mb"),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t("app_page.common.too_large_input"),
                               type: "error",
                               allowOutsideClick: false});
                         elem.style.border = '';
@@ -134,16 +134,16 @@ function prepare_drop_section(){
                             ? files_to_send.push(f) : null)
                     elem.style.border = '';
                     if(target_layer_on_add && targeted_layer_added){
-                            swal({title: i18next.t("Error") + "!",
-                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common'),
                                   type: "error",
                                   allowOutsideClick: false});
                     } else if(files_to_send.length == 4){
                         handle_shapefile(files_to_send, target_layer_on_add);
                     } else {
                         elem.style.border = '3px dashed red';
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t("Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile"),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t("app_page.common.alert_upload1"),
                               type: "error",
                               allowOutsideClick: false});
                         elem.style.border = '';
@@ -152,8 +152,8 @@ function prepare_drop_section(){
                 else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
                        elem.style.border = '';
                        if(target_layer_on_add && targeted_layer_added)
-                            swal({title: i18next.t("Error") + "!",
-                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common.error_only_one'),
                                   type: "error",
                                   allowOutsideClick: false});
                        // Most direct way to add a layer :
@@ -165,8 +165,8 @@ function prepare_drop_section(){
                        elem.style.border = '';
 
                        if(target_layer_on_add && targeted_layer_added)
-                            swal({title: i18next.t("Error") + "!",
-                                  text: i18next.t('Only one layer can be added by this functionnality'),
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common.error_only_one'),
                                   type: "error",
                                   allowOutsideClick: false});
                        // Send the file to the server for conversion :
@@ -178,8 +178,8 @@ function prepare_drop_section(){
                     if(self_section === "section1")
                         handle_dataset(files[0], target_layer_on_add);
                     else
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t('Only layout layers can be added here'),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_pageS.common.error_only_layout'),
                               type: "error",
                               allowOutsideClick: false});
                }
@@ -189,8 +189,8 @@ function prepare_drop_section(){
                     if(self_section === "section1")
                         convert_dataset(files[0]);
                     else
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t('Only layout layers can be added here'),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.error_only_layout'),
                               type: "error",
                               allowOutsideClick: false});
                }
@@ -204,13 +204,13 @@ function prepare_drop_section(){
                             || f.name.indexOf('.prj') > -1
                             ? shp_part = true : null);
                     if(shp_part){
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t('All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload'),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.alert_upload_shp'),
                               type: "error",
                               allowOutsideClick: false});
                     } else {
-                        swal({title: i18next.t("Error") + "!",
-                              text: i18next.t('Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)'),
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.alert_upload_invalid'),
                               type: "error",
                               allowOutsideClick: false});
                     }
@@ -406,18 +406,13 @@ function add_dataset(readed_dataset){
                "alt": "Additional dataset"});
 
     d3.select('#data_ext')
-//        .attr("layer-target-tooltip", "<b>" + dataset_name + '.csv</b> - ' + nb_features + ' features')
         .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
-                                        nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
+                                        nb_features, ' ',
+                                        i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
         .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
                nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
                field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
                '</i></span>'].join(''));
-//        .html([' <b>', d_name,
-//               '</b> - <i><span style="font-size:9px;"> ',
-//               nb_features, ' features - ',
-//               field_names.length, " fields</i></span>"].join(''));
-//    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_dataset" style="float:right;margin-top:10px;">';
     document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
     document.getElementById("remove_dataset").onclick = () => {
         remove_ext_dataset()
@@ -548,7 +543,6 @@ function add_layer_topojson(text, options){
               .selectAll(".subunit")
               .data(topojson.feature(topoObj, topoObj_objects).features)
               .enter().append("path")
-              .attr("clip-path", "url(#clip)")
               .attr("d", path)
               .attr("id", function(d, ix) {
                     if(data_to_load){
@@ -571,6 +565,8 @@ function add_layer_topojson(text, options){
                        "fill": type != 'Line' ? random_color1 : null,
                        "fill-opacity": type != 'Line' ? 0.95 : 0})
               .attrs({"height": "100%", "width": "100%"});
+
+        handleClipPathLayer(lyr_name_to_add);
 
         let class_name = [
             "ui-state-default ",
@@ -616,9 +612,6 @@ function add_layer_topojson(text, options){
                        nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
                        nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
                        '</i></span>'].join(''))
-//                .html(['<b>', _lyr_name_display,'</b> - <i><span style="font-size:9px;">', nb_ft, ' features - ',
-//                       nb_fields, ' fields</i></span>'].join(''));
-//            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="15" height="15" src="/static/img/Red_x.svg" id="remove_target" style="float:right;margin-top:10px;">'
             document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">'
             document.getElementById("remove_target").onclick = () => {
                 remove_layer(lyr_name_to_add);
@@ -691,8 +684,8 @@ function scale_to_lyr(name){
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s);
-    map.selectAll("g.layer").selectAll("path").attr("d", path);
+    proj.scale(s).translate([0,0]).rotate([0,0,0]);
+    map.selectAll("path").attr("d", path);
 };
 
 /**
@@ -731,6 +724,7 @@ function select_layout_features(){
          ["sphere", i18next.t("app_page.layout_features_box.sphere")],
          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
+         ["arrow", i18next.t("app_page.layout_features.arrow")]
         ];
     var selected_ft;
 
@@ -781,9 +775,7 @@ function add_layout_feature(selected_feature){
             } else continue;
         }
         if(!(new_id)){
-            // TODO : Replace by a "sweet alert"
-            swal(i18next.t("Error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
-            alert("Maximum number of text annotations has been reached")
+            swal(i18next.t("app_page.common.error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
             return;
         }
         let txt_box = new Textbox(svg_map, new_id);
@@ -820,9 +812,11 @@ function add_layout_feature(selected_feature){
         if(!(scaleBar.displayed))
             scaleBar.create();
         else
-            alert("Only one scale bar can be added - Use right click to change its properties"); // TODO : Replace by a "sweet alert"
+            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_existing_scalebar"), "error");
     } else if (selected_feature == "north_arrow"){
         northArrow.display();
+    } else {
+        swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
 }
 

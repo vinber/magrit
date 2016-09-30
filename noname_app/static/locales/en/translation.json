@@ -11,6 +11,9 @@
             "layer_success": "Layer successfully added to the map",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
             "error_message": "Something went wrong : {{msg}}",
+            "error_only_layout": "Only layout layers can be added here",
+            "error_only_one": "Only one layer can be added by this functionnality",
+            "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",
@@ -22,6 +25,7 @@
             "delete": "Delete",
             "deleted": "Deleted",
             "valid": "Valid",
+            "error": "Error",
             "feature": "feature",
             "feature_plural": "features",
             "field": "field",
@@ -48,8 +52,8 @@
         },
         "section4": {
             "title": "Basemap configuration",
-            "map_width": "Map width (px) ",
-            "map_height": "Map height (px) ",
+            "map_width": "<b>Map width (px) </b>",
+            "map_height": "<b>Map height (px) </b>",
             "map_center_x": "Map center (x)",
             "map_center_y": "Map center (y)",
             "map_scale_k": "Zoom scale",
@@ -113,7 +117,8 @@
             "scale": "Scale",
             "sphere": "Sphere background",
             "graticule": "Graticule",
-            "text_annot": "Text box"
+            "text_annot": "Text box",
+            "arrow": "Customizable arrow"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
@@ -330,8 +335,14 @@
             "intro": "A full description of each of the methods is available on the website http://onapastrouvedenom.fr. The website also includes detailed information on the technologies employed and is used to announce the latest changes."
         },
         "source_section":{
-            "intro": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
-            "contrib": "Bug reports and contributions are welcome. Please use project page on GitHub."
+            "box1_title": "Free and Open-Source",
+            "box2_title": "Open to contributions",
+            "box3_title": "Translated/translatable content",
+            "box4_title": "Under active developpement",
+            "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
+            "box2_text": "Bug reports and contributions are welcome. Please use project page on GitHub.",
+            "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
+            "box4_text": "Project is still under developpement. More features to come, hang tight!"
         }
     }
 }

@@ -192,7 +192,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     let current_min_value = +current_layers[layer].min_display;
     for(let b_val of breaks){
         if (b_val[1] != 0) {
-            if(current_min_value > +b_val[0][0] && current_min_value < +b_val[0][1]) {
+            if(current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {
                 ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
             } else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1]) {
                 ref_symbols_params.push({value:b_val[0], size:b_val[1]});

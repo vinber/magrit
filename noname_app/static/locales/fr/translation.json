@@ -11,6 +11,9 @@
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
             "error_message": "Une erreur s'est produite : {{msg}}",
+            "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
+            "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
+            "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -22,6 +25,7 @@
             "delete": "Suppression",
             "deleted": "Supprimée",
             "valid": "Confirmation",
+            "error": "Erreur",
             "feature": "entité",
             "feature_plural": "entités",
             "field": "champ",
@@ -48,8 +52,8 @@
         },
         "section4": {
             "title": "Configuration de la carte",
-            "map_width": "Largeur de la carte (px) ",
-            "map_height": "Hauteur de la carte (px) ",
+            "map_width": "<b>Largeur de la carte (px) </b>",
+            "map_height": "<b>Hauteur de la carte (px) </b>",
             "map_center_x": "Centre de la carte (x)",
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
@@ -109,11 +113,12 @@
         "layout_features_box": {
             "title": "Élements d'habillage",
             "subtitle": "Élement à ajouter",
-            "north_arrow": "Fleche nord",
+            "north_arrow": "Flèche nord",
             "scale": "Échelle",
             "sphere": "Fond de l'emprise du globe",
             "graticule": "Graticule",
-            "text_annot": "Annotation de texte"
+            "text_annot": "Annotation de texte",
+            "arrow": "Flèche"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
@@ -331,8 +336,14 @@
             "intro": "Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
         },
         "source_section":{
-            "intro": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
-            "contrib": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub."
+            "box1_title": "Libre et gratuit",
+            "box2_title": "Ouvert aux contributions",
+            "box3_title": "Contenus traduits/traduisibles",
+            "box4_title": "En developpement actif",
+            "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
+            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub.",
+            "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
+            "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
         }
     }
 }
