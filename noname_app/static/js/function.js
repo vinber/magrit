@@ -398,6 +398,11 @@ function insert_legend_button(layer_name){
 function fillMenu_Discont(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
 
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     dv2.append('p').html(i18next.t("app_page.func_options.discont.field"))
                 .insert('select')
                 .attrs({class: 'params', id: "field_Discont"});
@@ -831,6 +836,12 @@ function fetch_min_max_table_value(parent_id){
 
 function fillMenu_FlowMap(){
     var dv2 = section2.append("p").attr("class", "form-rendering");
+
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     dv2.append('p').html('<b>' + i18next.t("app_page.func_options.flow.subtitle1") + '</b>');
 
     var field_i = dv2.append('p').html('<b><i> i </i></b> field ')
@@ -1054,6 +1065,11 @@ var fields_PropSymbolChoro = {
 function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
         dv2 = section2.append("p").attr("class", "form-rendering");
+
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
 
     var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field1"))
                           .insert('select')
@@ -1301,6 +1317,11 @@ var fillMenu_Label = function(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
         rendering_params = {};
 
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.label.field"))
                          .insert('select')
@@ -1513,6 +1534,11 @@ var fillMenu_Typo = function(){
     var dv2 = section2.append("p").attr("class", "form-rendering"),
         rendering_params = {};
 
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.typo.color_choice"))
                          .insert('select')
@@ -1565,6 +1591,11 @@ var fillMenu_Typo = function(){
 function fillMenu_Choropleth(){
     var dv2 = section2.append("p").attr("class", "form-rendering");
     let rendering_params = fields_Choropleth.rendering_params;
+
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
 
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.common.field"))
@@ -1708,17 +1739,23 @@ var fields_Stewart = {
 function fillMenu_Stewart(){
     var dialog_content = section2.append("div").attr("class", "form-rendering");
 
+    dialog_content.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
+
     var field_selec = dialog_content.append('p')
-                            .style("margin", "10px 0px 0px")
-                            .html(i18next.t("app_page.func_options.smooth.field"))
-                            .insert('select')
-                            .attrs({class: 'params marg_auto', id: "stewart_field"});
+                        .style("margin", "10px 0px 0px")
+                        .html(i18next.t("app_page.func_options.smooth.field"))
+                        .insert('select')
+                        .attrs({class: 'params marg_auto', id: "stewart_field"});
 
     var field_selec2 = dialog_content.append('p')
-                            .style("margin", "10px 0px 0px")
-                            .html(i18next.t("app_page.func_options.smooth.divide_field"))
-                            .insert('select')
-                            .attrs({class: 'params marg_auto', id: "stewart_field2"});
+                        .style("margin", "10px 0px 0px")
+                        .html(i18next.t("app_page.func_options.smooth.divide_field"))
+                        .insert('select')
+                        .attrs({class: 'params marg_auto', id: "stewart_field2"});
 
     {
         let p_span = dialog_content
@@ -1739,7 +1776,7 @@ function fillMenu_Stewart(){
                             .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
         let p_reso = dialog_content
-                            .append('p').text(i18next.t("app_page.func_options.smooth.resolution"));
+                        .append('p').text(i18next.t("app_page.func_options.smooth.resolution"));
         var resolution = p_reso.insert('input').style("width", "60px")
                             .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
         p_reso.insert("span").html(" km");
@@ -1951,8 +1988,14 @@ function fillMenu_Anamorphose(){
         option2_txt2.html("");
     };
 
-    var dialog_content = section2.append("div").attr("class", "form-rendering"),
-        algo_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.algo")).insert('select').attr('class', 'params'),
+    var dialog_content = section2.append("div").attr("class", "form-rendering");
+
+    dialog_content.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
+    var algo_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.algo")).insert('select').attr('class', 'params'),
         field_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.field")).insert('select').attrs({class: 'params', id: 'Anamorph_field'}),
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html(i18next.t("app_page.func_options.cartogram.dorling_symbol")),
         option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"}),
@@ -2383,8 +2426,15 @@ var fields_PropSymbol = {
 
 function fillMenu_PropSymbol(layer){
     var max_allowed_size = Math.round(h/2 - h/20),
-        dialog_content = section2.append("p").attr("class", "form-rendering"),
-        field_selec = dialog_content.append('p')
+        dialog_content = section2.append("p").attr("class", "form-rendering");
+
+    dialog_content.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
+
+    var field_selec = dialog_content.append('p')
                           .html(i18next.t("app_page.func_options.common.field"))
                           .insert('select')
                           .attrs({class: 'params', 'id': "PropSymbol_field_1"}),
@@ -2649,6 +2699,12 @@ var fields_griddedMap = {
 
 function fillMenu_griddedMap(layer){
     var dialog_content = section2.append("p").attr("class", "form-rendering");
+
+    dialog_content.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     var field_selec = dialog_content.append('p')
                         .html(i18next.t("app_page.func_options.common.field"))
                         .insert('select')

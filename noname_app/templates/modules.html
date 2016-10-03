@@ -23,7 +23,7 @@
     <script  src="/static/js/lib/jschardet.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
-    <script src="/static/js/lib/jquery-i18next.min.js"></script>
+    <script src="/static/js/lib/loc-i18next.min.js"></script>
     <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
@@ -44,6 +44,7 @@
         <p style="display:inline;margin-left:10px;"><i><a href="/"> {{ app_name }}</a></i></p>
         <p id="rgt" class="header_options"><a href="https://github.com/riatelab/noname-stuff/">Sources</a>  <a href="">Documentation</a>&emsp;</p></div>
       <div id="menu"></div>
+      <div id="menu_block"></div>
   	 <div id="map"></div>
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
@@ -88,12 +89,13 @@ function setUpInterface()
 
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
-                        .attr("data-tooltip", i18next.t("app_page.tooltips.section1"));
+                        .attr("class", "i18n")
+                        .attr("data-i18n", "[data-tooltip]app_page.tooltips.section1");
+                        //.attr("data-tooltip", i18next.t("app_page.tooltips.section1"));
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre").style("padding", "0");
     window.section2 =  accordion2.append("div").attr("id","section2");
     accordion3.append("div")
-        .attrs({"id": "section3",
-               "data-tooltip": i18next.t("app_page.tooltips.section3")}),
+        .attrs({id: "section3", class: "i18n", "data-i18n": "[data-tooltip]app_page.tooltips.section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -659,19 +661,21 @@ function setUpInterface()
         }).ajaxComplete(function() {
             document.getElementById("overlay").style.display = "none";
     });
+}
 
+function bindTooltips(){
     // bind the mains tooltips
     $("#section1[data-tooltip!='']").qtip({
         content: { attr: "data-tooltip" },
         style: { classes: 'qtip-youtube qtip-section1' },
         position: { my: 'center left', at: 'center right', target: this }
-    })
+    });
 
     $("#section3[data-tooltip!='']").qtip({
         content: { attr: "data-tooltip" },
         style: { classes: 'qtip-youtube qtip-section3' },
         position: { my: 'center left', at: 'center right', target: this }
-    })
+    });
 }
 
 
@@ -703,7 +707,13 @@ function change_lang(){
         return;
     } else {
         let other_lang = new_lang == "fr" ? "en" : "fr";
-        i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
+        //i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
+        i18next.changeLanguage(new_lang, () => {
+            localize(".i18n");
+            $("#section1[data-tooltip!='']").qtip("destroy", true);
+            $("#section3[data-tooltip!='']").qtip("destroy", true);
+            bindTooltips();
+        });
         document.getElementById("current_app_lang").innerHTML = new_lang;
         let menu = document.getElementById("menu_lang");
         if(menu)
@@ -749,6 +759,14 @@ function make_ico_choice(){
                 selec_title.innerHTML = selec_title.innerHTML.replace(selec_title.innerText, current_functionnality.title);
                 clean_menu_function();
                 make_menu();
+
+                $("#btn_info[data-tooltip_help!='']").qtip({
+                    content: {text: i18next.t("app_page.func_help." + func_name + ".block"),
+                              title: i18next.t("app_page.func_help." + func_name + ".title") },
+                    style: { classes: 'qtip-tipped qtip_help' },
+                    position: { my: 'top left', at: 'center right', target: this },
+                    hide: { fixed: true }
+                });
 
                 if(targeted_layer_added){
                     let target_layer = Object.getOwnPropertyNames(user_data)[0];
@@ -886,9 +904,12 @@ current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":12
         if(err)
             throw err;
         else {
-            jqueryI18next.init(i18next, $);
+            window.localize = locI18next.init(i18next);
+            //jqueryI18next.init(i18next, $);
             setUpInterface();
-            $(".i18n").localize();
+            localize(".i18n");
+            bindTooltips();
+            //$(".i18n").localize();
         }
     });
 })();
@@ -1587,7 +1608,8 @@ function rotate_global(angle){
 };
 
 function handleClipPath(proj_name){
-    if(proj_name.indexOf("Interrupted") > -1 || proj_name.indexOf("Armadillo") > -1 || proj_name.indexOf("Healpix") > -1){
+    proj_name = proj_name.toLowerCase();
+    if(proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1){
         let defs = document.querySelector("defs");
         if(defs){ defs.remove(); }
 
@@ -1618,9 +1640,10 @@ function handleClipPath(proj_name){
 }
 
 function handleClipPathLayer(layer_name){
-    if(current_proj_name.indexOf("Interrupted") > -1
-        || current_proj_name.indexOf("Armadillo") > -1
-        || current_proj_name.indexOf("Healpix") > -1){
+    let _proj_name = current_proj_name.toLowerCase();
+    if(_proj_name.indexOf("interrupted") > -1
+        || _proj_name.indexOf("armadillo") > -1
+        || _proj_name.indexOf("healpix") > -1){
             map.select("#" + layer_name)
                 .attr("clip-path", "url(#clip)");
     }

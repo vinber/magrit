@@ -14,7 +14,7 @@
     <link href="/static/css/style-index.css" rel="stylesheet">
     <script src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script src="/static/js/lib/i18next.min.js"></script>
-    <script src="/static/js/lib/jquery-i18next.min.js"></script>
+    <script src="/static/js/lib/loc-i18next.min.js"></script>
     <script src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/jquery.easing.min.js"></script>
@@ -368,7 +368,7 @@ function handle_change_lang(){
 
 // Actually change the content of the page :
 function change_lang(new_lang, old_lang){
-    i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
+    i18next.changeLanguage(new_lang, () => { localize(".i18n");});
     document.getElementById("lang_current").innerHTML = new_lang;
     document.getElementById("lang2").innerHTML = old_lang;
     document.getElementById("lang1").innerHTML = new_lang;
@@ -391,8 +391,8 @@ function change_lang(new_lang, old_lang){
         if(err)
             throw err;
         else{
-            jqueryI18next.init(i18next, $);
-            $(".i18n").localize();
+            window.localize = locI18next.init(i18next);
+            localize(".i18n");
             let current_lang =  i18next.language,
                 other_lang = current_lang == "en" ? "fr" : "en";
             document.getElementById("lang_current").innerHTML = current_lang;

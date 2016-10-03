@@ -724,7 +724,7 @@ function select_layout_features(){
          ["sphere", i18next.t("app_page.layout_features_box.sphere")],
          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
-         ["arrow", i18next.t("app_page.layout_features.arrow")]
+         ["arrow", i18next.t("app_page.layout_features_box.arrow")]
         ];
     var selected_ft;
 
