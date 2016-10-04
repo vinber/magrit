@@ -436,10 +436,11 @@ function add_dataset(readed_dataset){
     $("[layer-target-tooltip!='']").qtip({
         content: { attr: "layer-target-tooltip" },
         style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-        events: {
-            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-        }
+        events: {show: {solo: true}}
+//        events: {
+//            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+//            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+//        }
     });
 }
 
@@ -628,10 +629,11 @@ function add_layer_topojson(text, options){
             $("[layer-target-tooltip!='']").qtip({
                 content: { attr: "layer-target-tooltip" },
                 style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-                events: {
-                    show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-                    hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-                }
+                events: {show: {solo: true}}
+//                events: {
+//                    show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+//                    hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+//                }
             });
         } else if (result_layer_on_add) {
             li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')

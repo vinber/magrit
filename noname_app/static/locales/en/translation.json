@@ -181,45 +181,49 @@
             "zoom_rect": "Zoom on rectangular selection"
         },
         "func_help": {
-            "common": {
-                "params": "Paramètres :"
+            "choro": {
+                "title": "<b>Choropleth map</b>",
+                "block": "Ratio data (rates or intensity) are quantitative data calculated from raw data from which relationships are derived or rates calculated. They represent the characteristics of observed variables but their sum does not have a particular meaning, e.g. population density is a relationship value but the sum of population densities is not a meaningful indicator.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
+            },
+            "typo": {
+                "title": "<b>Categorical map</b>",
+                "block": "This kind of map is user to represent polygon features according to the value taken by a field whose values are grouped into categories.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
+            },
+            "typosymbol": {
+                "title": "<b>Categorical symbols map</b>",
+                "block": "This type of representation enables to include symbols on the basis of values of a categorical field of the data layer.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
             },
             "smooth": {
-                "title": "<b>Carte lissée</b>",
-                "block": "Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit \"de Stewart\") et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.<br><br><b><i>Paramètres</i></b><br><b>Valeur:</b> Le nom du champ contenant les valeurs à utiliser.<br><b>Diviseur (optionnel):</b> Le nom du champ à utiliser pour calculer un ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution:</b><br><b>Type de fonction:</b><br><b>Nombre de classe:</b><br><b>Couche de masquage:</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
+                "title": "<b>Smoothed map</b>",
+                "block": "Unlike choropleth maps, which represent the data set as discrete values only valid for specific areas, isoline maps are based on the assumption that the phenomenon to be represented has a continuous distribution. Many socio-economic phenomena are distributed spatially according to continuous logic, with no breaks at the borders, which appear as artificial cuts. If the observed phenomenon is a continuous underlying distribution, i.e. it takes values that are gradually different as one moves into the space around a given point, the purpose of the \"smoothed\" map is to visualize the phenomenon respecting its spatial organization. This method is called this \"potential calculating method\" or \"smoothing method\". It allows the spatial representation of the phenomenon, regardless of the heterogeneity of the mesh and affecting at any point of the map, the value of the density of the phenomenon in the vicinity of this point.<br><br><b><i>Parameters</i></b><br><b>Field:</b> Field name of value to use.<br><b>Divide field (optionnal):</b> Field name for value to use in order to make a ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution :</b><br><b>Function type :</b><br><b>Number of classes :</b><br><b>Clipping mask layer :</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
             },
             "prop": {
-                "title": "<b>Carte de stock</b>",
-                "block": "Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).<br><br><b><i>Paramètres</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
+                "title": "<b>Raw data map / Proportionnal symbols</b>",
+                "block": "Absolute value (stock) data maps enable representation of quantitative data which can be raw data or expressed in absolute terms. A data is quantitative if it can be expressed in units that can be aggregated and their averages are meaningful. This data express concrete quantity, i.e, the sum of individual elements is meaningful; e.g. population size is an absolute value because the sum of a number of different population sizes is meaningful.<br><br><b><i>Parameters</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
             },
             "discont": {
-                "title": "<b>Carte de discontinuités</b>",
-                "block": "Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que « l’espace géographique est fondamentalement discontinu ».<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le champ contenant les valeurs à utiliser.<br><b>Champ d'ID :</b> Le champ contenant des identifiants uniques permettant d'identifier des tronçons<br><b>Type de discontinuité :</b> Le rapport entre la valeur des deux entités (parmis 'relatif' ou 'absolu').<br><b>Nombre de classes :</b> Le nombre de classe à créer.<br><b>Type de discrétisation :</b> La méthode utilisée pour discrétiser les valeurs.<br><b>Couleur :</b> La couleur utilisé pour représenter les discontinuités."
+                "title": "<b>Discontinuities map</b>",
+                "block": "When combined with a choropleth representation (see ratio maps), the visualization of discontinuity lines focus on spatial ruptures of the socio-economic phenomena being observed. This is in line with Brunet and Dolphus (1990) expression \"geographical space is fundamentally discontinuous\". In this atlas, discontinuities are expressed in relative terms: Maxima (ratio1, ratio2) / Minima (ratio1, ratio2). To express the scope of the discontinuity intensity, we choose to represent it by the \"size\" of a line, the change of thickness of it being proportional to the intensity of the discontinuity. This kind of representation focus, not on the homogenous zones, but rather on border lines indicating wide variations in the phenomenon represented on the map.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use.<br><b>ID field :</b> Le champ contenant des identifiants uniques permettant d'identifier des tronçons<br><b>Discontinuity kind :</b> Le rapport entre la valeur des deux entités (parmis 'relatif' ou 'absolu').<br><b>Number of classes :</b> How many classes to be created.<br><b>Discretization type :</b> La méthode utilisée pour discrétiser les valeurs.<br><b>Couleur :</b> Method used to arrange the serie of values into dicrete classes."
             },
             "grid": {
-                "title": "<b>Carroyage</b>",
-                "block": "La méthode du carroyage est une des possibilités pour essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif. Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en « carreaux égaux et repérés » (Les mots de la géographie).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ à utiliser.<br><b>Taille des carreaux :</b> La taille des carreaux en kilomètres.<br><b>Forme des carreaux :</b><br><b>Palette de couleurs :</b> La palette de couleur à utiliser lors de l'ajout du résultat."
+                "title": "<b>Grid map</b>",
+                "block": "The cartographic representation mostly relies on an administrative meshing which is a spatial filter of the geographical information. This filter deforms all the more the message conveyed by the map as the meshing is heterogeneous.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use.<br><b>Cellsize :</b> Side size of each cell (kilometers).<br><b>Shape :</b>The shape to be taken be the created cells.<br><b>Coloramp :</b> Coloramp to be used when the result is added."
             },
             "cartogram": {
-                "title": "Anamorphose",
-                "block": "De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique. Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser<br><Type de symbole :</b> Le type de symbole à utiliser (parmis 'cercle' et 'carré')<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Sur la valeur :</b> Valeur sur laquelle fixer la taille.<br><b>Itérations :</b> Le nombre d'itérations à effectuer avant d'obtenir le résultat.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
+                "title": "<b>Cartogram</b>",
+                "block": "In a common way, an anamorphosis is a distorted projection or perspective requiring the viewer to use special devices or occupy a specific vantage point to reconstitute the image. The word is derived from the Greek prefix ana-, meaning back or again, and the word morphe, meaning shape or form. According to Webster dictionary \"An anamorphosis is a deformed image that appears in its true shape when viewed in some \"unconventional\" way\". In cartography we call them \"cartograms\" or \"anamorphic map\". A cartogram is a map in which some thematic mapping variable – such as population or Gross National Product- is substituted for land area or distance. The geometry or space of the map is distorted in order to convey the information of this alternate variable. We also can describe a cartogram as a type of graphic that depicts attributes of geographic objects as the object's area. Because a cartogram does not depict geographic space, but rather changes the size of objects depending on a certain attribute, a cartogram is not a true map.<br><br><b><i>Parameters</i></b><br><b>Field :</b>Field name for values to use<br><b>Symbol type :</b> The shape of the symbol to use.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>On value... :</b> Value on which fix the previously selected size.<br><b>Iterations :</b> How many iterations before getting the result.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
             },
             "choroprop": {
-                "title": "Stock et ratio",
-                "desc": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).",
-                "p_field": "<b>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille du symbole.",
-                "p_fixed_size": "Taille fixée: Taille (px) à appliquer sur le valeur définie à la suite",
-                "p_on_value": "<b>Sur la valeur :</b> Valeur sur laquelle fixer la taille",
-                "p_symbol_type": "<b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré)",
-                "p_field2": "<b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeur à utiliser (après discrétisation) pour colorer le symbole."
+                "title": "<b>Raw and ratio data map - Proportionnal colored symbols</b>",
+                "block": "This kind of representation enables to establish a match between raw and relationship data on a single map. Thus, the user will view a given phenomenon expressed in both raw and relationship data on the same map.<br><br><b><i>Parameters</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
             },
             "flow": {
-                "title": "Carte de flux/liens",
-                "block": "Ce type de carte représente, avec des symboles proportionnels à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.<br><br><b><i>Paramètres</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
+                "title": "<b>Flows/links map</b>",
+                "block": "This kind of representation enables to draw proportionnal lines (streams/links) according to the intensity of a phenomenon between pairs of places.<br><br><b><i>Parameters</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
             },
             "label": {
-                "title": "Carte de labels",
-                "block": "Ce type de carte permet de représenter les intitulés correspondants aux entités d'une couche.<br><br><b><i>Paramètre</i></b>"
+                "title": "<b>Label map</b>",
+                "block": "Ce type de carte permet de représenter les intitulés correspondants aux entités d'une couche.<br><br><b><i>Parameters</i></b>"
             }
         },
         "func_options": {
@@ -229,7 +233,8 @@
                 "symbol_circle": "Circle",
                 "symbol_square": "Square",
                 "output": "Output name<br>",
-                "render": "Render"
+                "render": "Render",
+                "discretization_choice": "Choose a discretization ..."
             },
             "smooth": {
                 "field": "Field ",
@@ -266,8 +271,7 @@
                 "symbol_type": "Symbol type",
                 "symbol_circle": "Circle",
                 "symbol_square": "Square",
-                "field2": "Field 2 (symbol color)",
-                "discretization_choice": "Choose a discretization ..."
+                "field2": "Field 2 (symbol color)"
             },
             "flow": {
                 "subtitle1": "Links dataset fields :",

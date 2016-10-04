@@ -22,7 +22,7 @@ RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
 RUN_LOCAL = not RUN_TRAVIS_SAUCELABS and not RUN_DOCKER
 
 if RUN_LOCAL:
-    browsers = ['Firefox']
+    browsers = ['Chrome']
 elif RUN_DOCKER:
     browsers = [DesiredCapabilities.CHROME,
                 DesiredCapabilities.FIREFOX]
@@ -85,6 +85,7 @@ def setUpModule():
 
 
 def tearDownModule():
+    pass
     p.send_signal(SIGINT)
     p.wait(5)
     try:
@@ -92,6 +93,7 @@ def tearDownModule():
     except:
         pass
 
+#port = 9999
 
 @on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
@@ -142,8 +144,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.accept_next_alert = True
 
     def setUpLocal(self):
-        self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(20)
+        self.driver = webdriver.Chrome("/home/mz/code/chromedriver")
+        self.driver.set_window_size(1600, 900)
+        self.driver.implicitly_wait(5)
         self.base_url = "http://localhost:{}/modules".format(port)
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -165,32 +168,89 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         finally:
             self.driver.quit()
 
+    def test_languages(self):
+        menu_desc = {"fr": ["Ajout de données", "Choix de la représentation"],
+                     "en": ["Add your data", "Choose a representation"]}
+        driver = self.driver
+        driver.get(self.base_url)
+        button_lang = driver.find_element_by_css_selector("#current_app_lang")
+        current_lang = button_lang.text
+        menu1 = driver.find_element_by_css_selector("#accordion1 > h3")
+        menu2 = driver.find_element_by_css_selector("#accordion2_pre > h3")
+        self.assertEqual(menu1.text, menu_desc[current_lang][0])
+        self.assertEqual(menu2.text, menu_desc[current_lang][1])
+
+        button_lang.click()
+        driver.find_element_by_css_selector("#menu_lang").find_element_by_xpath("//li[@data-index='1']").click()
+        new_lang = driver.find_element_by_css_selector("#current_app_lang").text
+        self.assertNotEqual(current_lang, new_lang)
+
+        menu1 = driver.find_element_by_css_selector("#accordion1 > h3")
+        menu2 = driver.find_element_by_css_selector("#accordion2_pre > h3")
+        self.assertEqual(menu1.text, menu_desc[new_lang][0])
+        self.assertEqual(menu2.text, menu_desc[new_lang][1])
+
+    def test_layout_features(self):
+        driver = self.driver
+        driver.get("http://localhost:9999/modules")
+
+        driver.find_element_by_id("ui-id-5").click()
+        time.sleep(0.5)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("text_annot")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        elem = driver.find_element_by_id("in_text_annotation_0")
+        self.assertEqual(elem.is_displayed(), True)
+        action = webdriver.ActionChains(driver)
+        action.context_click(on_element=elem)
+        action.perform()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("scale")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("graticule")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("sphere")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
-        driver.find_element_by_css_selector("#sample_link > b").click()
+        driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("ui-id-3").click()
-        driver.find_element_by_id("ui-id-2").click()
-        driver.find_element_by_css_selector("img[title=\"Compute stewart potentials...\"]").click()
         time.sleep(0.5)
+        driver.find_element_by_id("ui-id-2").click()
+        time.sleep(0.5)
+        driver.find_element_by_css_selector("#button_smooth").click()
+        time.sleep(0.2)
         driver.find_element_by_id("stewart_nb_class").clear()
         driver.find_element_by_id("stewart_nb_class").send_keys("7")
         driver.find_element_by_id("stewart_span").clear()
         driver.find_element_by_id("stewart_span").send_keys("60")
         Select(driver.find_element_by_id("stewart_mask")).select_by_visible_text("nuts2_data")
         driver.find_element_by_id("stewart_yes").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root", 5):
@@ -199,12 +259,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def test_cartogram_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
-        driver.find_element_by_css_selector("#sample_link > b").click()
+        driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("ui-id-2").click()
         driver.find_element_by_id("browse_button").click()
@@ -235,32 +294,30 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName1")
         # One field based on an operation on a char string field
-        Select(driver.find_element_by_id("type_content_select")).select_by_visible_text("Modification on a character field")
-        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[2]")).select_by_visible_text("Truncate")
+        Select(driver.find_element_by_id("type_content_select")).select_by_value("string_field")
+        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[2]")).select_by_value("truncate")
         driver.find_element_by_id("val_opt").clear()
         driver.find_element_by_id("val_opt").send_keys("2")
         driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
         driver.find_element_by_xpath("//button[@type='button']").click()
         #  Test the dougenik cartogram functionnality...
-        driver.find_element_by_css_selector("img[title=\"Render a map using an anamorphose algorythm on a numerical field of your data\"]").click()
+        driver.find_element_by_css_selector("#button_cartogram").click()
         time.sleep(0.5)
         Select(driver.find_element_by_css_selector("select.params")).select_by_visible_text("Dougenik & al. (1985)")
         #  ... using one of these previously computed field :
         Select(driver.find_element_by_id("Anamorph_field")).select_by_visible_text("NewFieldName2")
         driver.find_element_by_id("Anamorph_yes").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
 
     def test_new_field_choro_many_features(self):
         driver = self.driver
         driver.get(self.base_url)
-        driver.find_element_by_css_selector("#sample_link > b").click()
+        driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("U.S.A counties (Polygons)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("browse_button").click()
         time.sleep(1)
@@ -275,7 +332,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("ui-id-2").click()
-        driver.find_element_by_css_selector("img[title=\"Render a choropleth map on a numerical field of your data\"]").click()
+        time.sleep(0.3)
+        driver.find_element_by_css_selector("#button_choro").click()
         time.sleep(0.5)
         #  Let's use this new field to render a choropleth map :
         Select(driver.find_element_by_id("choro_field_1")).select_by_visible_text("Ratio")
@@ -291,18 +349,18 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def test_discont_joined_field(self):
         driver = self.driver
         driver.get(self.base_url)
-        driver.find_element_by_css_selector("#sample_link > b").click()
+        driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Martinique (FR overseas region) communes (Polygons)")
         Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("Martinique INSEE census dataset (To link with martinique communes geometries)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("join_button").click()
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("ui-id-2").click()
-        driver.find_element_by_css_selector("img[title=\"Render a map displaying discontinuities between polygons features\"]").click()
+        time.sleep(0.3)
+        driver.find_element_by_css_selector("#button_discont").click()
         time.sleep(0.5)
         Select(driver.find_element_by_id("field_Discont")).select_by_visible_text("P13_POP")
         Select(driver.find_element_by_id("Discont_discKind")).select_by_visible_text("Quantiles")
@@ -320,23 +378,22 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def test_propSymbols(self):
         driver = self.driver
         driver.get(self.base_url)
-        driver.find_element_by_css_selector("#sample_link > b").click()
+        driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Grand Paris municipalities (Polygons)")
         Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("\"Grand Paris\" incomes dataset (To link with Grand Paris municipality geometries)")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm"):
-            self.fail("Time out")
-        driver.find_element_by_css_selector("button.swal2-confirm.styled").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("join_button").click()
         Select(driver.find_element_by_id("button_field2")).select_by_visible_text("DEPCOM")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("ui-id-2").click()
-        driver.find_element_by_css_selector("img[title=\"Display proportional symbols with appropriate discretisation on a numerical field of your data\"]").click()
+        driver.find_element_by_css_selector("#button_prop").click()
         time.sleep(1)
         Select(driver.find_element_by_id("PropSymbol_field_1")).select_by_visible_text("TH")
-        Select(driver.find_element_by_xpath("//div[@id='section2']/p/p[4]/select")).select_by_visible_text("Square")
-        Select(driver.find_element_by_id("PropSymbol_nb_colors")).select_by_visible_text("Two colors")
+        Select(driver.find_element_by_xpath("//div[@id='section2']/p/p[4]/select")).select_by_value("rect")
+        Select(driver.find_element_by_id("PropSymbol_nb_colors")).select_by_value("2")
         driver.find_element_by_id("PropSymbol_break_val").clear()
         driver.find_element_by_id("PropSymbol_break_val").send_keys("14553")
 
@@ -357,10 +414,23 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legeng won't display")
+
 #        driver.find_element_by_css_selector("span.context-menu-item-name").click()
 #        driver.find_element_by_id("style_lgd").click()
 #        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
 
+
+    def get_button_ok_displayed(self, selector="button.swal2-confirm.styled", delay=30):
+        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm.styled", delay):
+            self.fail("Time out")
+        else:
+            button_ok = self.driver.find_element_by_css_selector("button.swal2-confirm.styled")
+            for i in range(delay):
+                if not button_ok.is_displayed():
+                    time.sleep(1)
+                else:
+                    return button_ok
+            self.fail("Time out")
 
     def is_element_present(self, how, what):
         try:

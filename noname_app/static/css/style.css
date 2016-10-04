@@ -121,15 +121,15 @@ body {
 
 #menu {
     position: absolute;
-    padding: 0px;
-    width: 350px;
+    padding: 5px 10px 5px 10px;
+    width: 330px;
     font-size: 11px;
 }
 
 #map {
     padding: 0px;
     left: 355px;
-    margin-top: 1px;
+    margin-top: 5px;
     background-color: white;
     position: relative;
     border: 1px solid lightgrey;
@@ -248,8 +248,10 @@ a.menu {
     z-index: 0;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.33);
-    font-family: Verdana,Arial,sans-serif;
+    //background: rgba(0, 0, 0, 0.33);
+    background: rgba(197, 69, 168, 0.47);
+    font-family: Dosis;
+    font-size: 20px;
 }
 
 .zoom_button,.info_button,.hand_button,.brush_zoom_button {
@@ -481,12 +483,12 @@ a.menu {
 }
 
 .button_st4 {
-    background:linear-gradient(to bottom, #173a50 5%, #002e56 100%);
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #173a50), color-stop(1, #002e56));
-    background:-moz-linear-gradient(top, #173a50 5%, #002e56 100%);
-    background:-webkit-linear-gradient(top, #173a50 5%, #002e56 100%);
-    background:-o-linear-gradient(top, #173a50 5%, #002e56 100%);
-    background:-ms-linear-gradient(top, #173a50 5%, #002e56 100%);
+    background:linear-gradient(to bottom, #3071a9 5%, #002e56 100%);
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #3071a9), color-stop(1, #002e56));
+    background:-moz-linear-gradient(top, #3071a9 5%, #002e56 100%);
+    background:-webkit-linear-gradient(top, #3071a9 5%, #002e56 100%);
+    background:-o-linear-gradient(top, #3071a9 5%, #002e56 100%);
+    background:-ms-linear-gradient(top, #3071a9 5%, #002e56 100%);
     background-color:#1d5966;
     border-radius: 6px;
     border: 1px solid #1d5966;
@@ -513,21 +515,19 @@ a.menu {
     padding: 1em 1em 1em 2em;
     font-size: 1.1em;
     font-family: Baloo Bhaina;
+    color: #fff;
 }
 
 .ui-accordion .ui-state-active, .ui-accordion .ui-state-default{
-    background: #e3e3da;
-    border: none;
+    background: #595959;
+    border: 0.4px solid #d3d3d3;
 }
 
 .ui-accordion .ui-accordion-content {
     border-top-color: rgb(170, 170, 170);
     border-top-style: solid;
     border-top-width: 1px;
-}
-.ui-accordion .ui-corner-bottom {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    margin-bottom: 10px;
 }
 
 .ui-accordion-header .ui-corner-all, .ui-accordion .ui-corner-all  {
@@ -537,9 +537,66 @@ a.menu {
     border-bottom-left-radius: 0;
 }
 
+.ui-corner-bottom {
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.ui-corner-top {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
 .qtip_help {
     font-size: 0.9em;
     line-height: 18px;
     max-width: 600px;
     font-family: Verdana,Arial,sans-serif;
+}
+
+.without_spinner {
+    -moz-appearance: textfield;
+    text-align: right;
+    border: none;
+    border-bottom-style: dashed;
+    border-bottom-width: 0.5px;
+}
+
+.without_spinner::-webkit-inner-spin-button,
+.without_spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Removes leftover margin */
+}
+
+/* For the loading animation : */
+.load-wrapp {
+    float: left;
+    width: 100px;
+    height: 60px;
+    margin: 0 10px 10px 0;
+    padding: 20px 20px 20px;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #d8d8d8;
+}
+
+.load-wrapp p {padding: 0 0 20px;}
+.load-wrapp:last-child {margin-right: 0;}
+
+.line {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
+    background-color: #4b9cdb;
+}
+
+.load-1 .line:nth-last-child(1) {animation: loadingA 1.5s 1s infinite;}
+.load-1 .line:nth-last-child(2) {animation: loadingA 1.5s .5s infinite;}
+.load-1 .line:nth-last-child(3) {animation: loadingA 1.5s 0s infinite;}
+
+@keyframes loadingA {
+    0 {height: 15px;}
+    50% {height: 35px;}
+    100% {height: 15px;}
 }

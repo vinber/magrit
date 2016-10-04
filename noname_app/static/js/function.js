@@ -260,6 +260,12 @@ var fields_Symbol = {
 
 function fillMenu_TypoSymbol(){
     let dv2 = section2.append("p").attr("class", "form-rendering");
+
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
     let field_selec = dv2.append("p").html(i18next.t("app_page.func_options.typosymbol.field"))
                     .insert('select')
                     .attrs({class: "params", id: "field_Symbol"});
@@ -1113,7 +1119,7 @@ function fillMenu_PropSymbolChoro(layer){
     dv2.insert('p').style("margin", "auto").html("")
                 .append("button").attr('class', 'params button_disc')
                 .styles({"font-size": "0.8em", "text-align": "center"})
-                .html(i18next.t("app_page.func_options.choroprop.discretization_choice"))
+                .html(i18next.t("app_page.func_options.common.discretization_choice"))
                 .on("click", function(){
                     let layer = Object.getOwnPropertyNames(user_data)[0],
                         selected_field = field2_selec.node().value,
@@ -1614,7 +1620,7 @@ function fillMenu_Choropleth(){
         .append("button")
         .attrs({id: "choro_class", class: "button_disc params"})
         .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("Display and arrange class"))
+        .html(i18next.t("app_page.func_options.common.discretization_choice"))
         .on("click", function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0],
                 selected_field = field_selec.node().value,

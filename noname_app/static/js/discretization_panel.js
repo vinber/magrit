@@ -524,6 +524,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         nb_values = values.length;
     }
 
+    // Rounding values like that seems to do the job
+    // to fix an error when loading a serie of values with great precision
+    // with geostats :
+    values = values.map(v => +v.toFixed(20));
+
     var serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
@@ -563,7 +568,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
-                            .styles({display: "inline", width: "60px", "vertical-align": "middle"})
+                            .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
                             .attrs({id: "nb_class_range", type: "range"})
                             .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){

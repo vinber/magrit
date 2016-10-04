@@ -316,9 +316,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", {count: nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
-                            .style("display", "inline")
-                            .attr("id", "nb_class_range")
-                            .attr("type", "range")
+                            .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
+                            .attrs({id: "nb_class_range", type: "range"})
                             .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
