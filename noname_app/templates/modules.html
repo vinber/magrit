@@ -9,6 +9,7 @@
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/style-slider.css" rel="stylesheet"  type="text/css">
+    <link href="/static/css/style-fonts.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
@@ -19,7 +20,7 @@
     <script  src="/static/js/lib/topojson.v1.min.js"></script>
     <script  src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
-    <script  src="/static/js/lib/geostats.min.js"></script>
+    <script  src="/static/js/lib/geostats2.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <script  src="/static/js/lib/jschardet.min.js"></script>
     <script  src="/static/js/lib/q.js"></script>
@@ -42,22 +43,15 @@
   </head>
   <body>
       <div id="header">
-        <p style="display:inline;margin-left:10px;"><i><a href="/"> {{ app_name }}</a></i></p>
+        <p style="display:inline;margin-left:15px;">
+        <a href="/"><img src="/static/img/magrit.png" alt="Export" width="auto" height="20" style="position: absolute; top: 6px;"></a>
+        </p>
         <p id="rgt" class="header_options"></p></div>
       <div id="menu"></div>
-      <div id="menu_block"></div>
   	 <div id="map"></div>
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
 "use strict";
-
-function cleanInterface(){
-    let menu_elements = document.getElementById("menu");
-    for(let i = menu_elements.children.length - 1; i > -1; i--){
-        menu_elements.children[i].remove();
-    }
-}
-
 /**
 * Function setting-up main elements of the interface
 *
@@ -379,7 +373,7 @@ function setUpInterface()
                   .append('path')
                   .attr("d", path)
                   .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
-        map.selectAll("path").attr("d", path);
+        map.selectAll(".layer").selectAll("path").attr("d", path);
         scale_to_lyr("Simplified_land_polygons");
         center_map("Simplified_land_polygons");
         zoom_without_redraw();
@@ -438,6 +432,8 @@ function setUpInterface()
             if(document.getElementById("menu_lang"))
                 document.getElementById("menu_lang").remove();
             else {
+                if(document.getElementById("menu_pref"))
+                    document.getElementById("menu_pref").remove();
                 let current_lang = i18next.language;
                 let other_lang = current_lang == "en" ? "fr" : "en"
                 let actions = [
@@ -446,7 +442,7 @@ function setUpInterface()
                     ];
                 let menu = document.createElement("div");
                 menu.style.top = "30px";
-                menu.style.right = "125px";
+                menu.style.right = "85px";
                 menu.className = "context-menu";
                 menu.id = "menu_lang";
                 menu.style.minWidth = "30px";
@@ -470,33 +466,32 @@ function setUpInterface()
                 }
                 document.querySelector("body").appendChild(menu);
             }
-
         });
 
-
-    const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Export your composition")
-              .style("cursor", "pointer")
-              .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif.png" width="20" height="20" alt="Export"/>')
-              .style("margin-top", "none")
-              .on("click", handle_export);
-
-    const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Export / Load your map preferences")
-              .style("cursor", "pointer")
-              .html('<img src="/static/img/High-contrast-system-run.svg" width="20" height="20" alt="export_load_preferences"/>')
-              .style("margin-top", "none")
+    const_options.append("button")
+              .attrs({class: "const_buttons", id: "export_btn",
+                      title: "Export / Load your map preferences"})
+              .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
+              .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif_blank.png" width="20" height="20" alt="export_load_preferences"/>')
               .on("click", function(){
-                    if(document.getElementById("menu_pref"))
+                    if(document.getElementById("menu_pref")) {
                         document.getElementById("menu_pref").remove();
-                    else {
+                        return;
+                    } else {
+                        if(document.getElementById("menu_lang"))
+                            document.getElementById("menu_lang").remove();
+
                         let actions = [
+                            {"name": i18next.t("app_page.export_box.svg"), "callback": export_compo_svg},
+                            {"name": i18next.t("app_page.export_box.png"), "callback": export_compo_png},
                             {"name": i18next.t("app_page.common.save_project_json"), "callback": save_map_template},
-                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
+                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template},
+                            {"name": i18next.t("app_page.export_box.geo"), "callback": make_export_layer_box}
                             ];
                         let menu = document.createElement("div");
                         menu.style.top = "30px";
                         menu.style.right = "38px";
+                        menu.style.background = "#173a50";
                         menu.className = "context-menu";
                         menu.id = "menu_pref";
                         let list_elems = document.createElement("ul");
@@ -507,7 +502,6 @@ function setUpInterface()
                             item.setAttribute("data-index",i);
                             let name = document.createElement("span");
                             name.className = "context-menu-item-name";
-                            name.style.color = "#000";
                             name.textContent = actions[i].name;
                             item.appendChild(name);
                             item.onclick = function(){
@@ -519,12 +513,15 @@ function setUpInterface()
                     }
                 });
 
-    const_options.append("button").attr("class", "const_buttons")
-              .attr("title", "Help")
-              .style("cursor", "pointer")
-              .html('<img src="/static/img/High-contrast-help-browser.png" width="20" height="20" alt="export_load_preferences"/>')
-              .style("margin-top", "none")
+    const_options.append("button")
+              .attrs({id: "help_btn", class: "const_buttons", title: "help"})
+              .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
+              .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences"/>')
               .on("click", function(){
+                  if(document.getElementById("menu_lang"))
+                      document.getElementById("menu_lang").remove();
+                  if(document.getElementById("menu_pref"))
+                      document.getElementById("menu_pref").remove();
                   swal({
                       title: "Emergency help !",
                       text: "Write something to be searched in the documentation :",
@@ -548,8 +545,8 @@ function setUpInterface()
         {id: "zoom_out", title: i18next.t("app_page.lm_buttons.zoom-"), class: "zoom_button", html: "-"},
         {id: "zoom_in", title: i18next.t("app_page.lm_buttons.zoom+"), class: "zoom_button", html: "+"},
         {id: "info_button", title: i18next.t("app_page.lm_buttons.i"), class: "info_button", html: "i"},
-        {id: "hand_button", title: i18next.t("app_page.lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'},
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("app_page.lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}
+        {id: "hand_button", title: i18next.t("app_page.lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'}/*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("app_page.lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
     ];
 
     let selec = lm.selectAll("input")
@@ -566,7 +563,7 @@ function setUpInterface()
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
     document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
-    document.getElementById("brush_zoom_button").onclick = brush_rect;
+    //document.getElementById("brush_zoom_button").onclick = brush_rect;
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -847,7 +844,8 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
                 .style("position", "absolute")
                 .call(zoom);
 
-var brush;
+var defs = map.append("defs");
+
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
@@ -887,19 +885,29 @@ var available_fonts = [
     ['Arial', 'Arial,Helvetica,sans-serif'],
     ['Arial Black', 'Arial Black,Gadget,sans-serif'],
     ['Arimo', 'Arimo,sans-serif'],
+    ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
     ['Bitter', 'Bitter,sans-serif'],
     ['Dosis', 'Dosis,sans-serif'],
     ['Humor Sans', 'Humor Sans'],
     ['Roboto', 'Roboto,sans-serif'],
     ['Lobster', 'Lobster,sans-serif'],
     ['Impact', 'Impact,Charcoal,sans-serif'],
+    ['Inconsolata', 'Inconsolata,sans-serif'],
     ['Georgia', 'Georgia,serif'],
+    ['Lobster', 'Lobster,serif'],
     ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
     ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
+    ['Roboto', 'Roboto'],
+    ['Scope One', 'Scope One'],
     ['Tahoma', 'Tahoma,Geneva,sans-serif'],
     ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
     ['Verdana', 'Verdana,Geneva,sans-serif']
     ];
+
+// This variable have to be (well, we could easily do this in an other way!) up to date
+// with the style-fonts.css file as we are using their order to lookup for their definition
+// the .css file.
+var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
 
 current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}};
@@ -986,9 +994,9 @@ function displayInfoOnMove(){
     var info_features = d3.select("#info_features");
     if(info_features.classed("active")){
         d3.select(".info_button").style('box-shadow', null);
-        map.selectAll("path").on("mouseover", null);
-        map.selectAll("circle").on("mouseover", null);
-        map.selectAll("rect").on("mouseover", null);
+        map.selectAll(".layer").selectAll("path").on("mouseover", null);
+        map.selectAll(".layer").selectAll("circle").on("mouseover", null);
+        map.selectAll(".layer").selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
         info_features.node().innerHTML = "";
         info_features.style("display", "none");
@@ -1055,7 +1063,7 @@ function displayInfoOnMove(){
 
 function reproj(){
   proj.translate([t[0], t[1]]).scale(s);
-  map.selectAll("path").attr("d", path);
+  map.selectAll(".layer").selectAll("path").attr("d", path);
   reproj_symbol_layer();
 }
 
@@ -1285,49 +1293,6 @@ function handle_click_hand(){
     }
 }
 
-function brush_action() {
-    var s = d3.event.selection;
-    if(!s){
-        return;
-    }
-    console.log(s);
-
-    var x0 = s[0][0],
-        y0 = s[0][1],
-        dx = s[1][0],
-        dy = s[1][1];
-    var _zoom = svg_map.__zoom;
-
-    s = [proj.invert([x0, y0]), proj.invert([dx, dy])]
-    let zoom_scale = .95 / Math.max((s[1][0] - s[0][0]) / w, (s[1][1] - s[0][1]) / h);
-    let new_zoom = d3.zoomIdentity.scale(zoom_scale).translate((s[1][0] + s[0][0]) / 2, (s[1][1] + s[0][1]) / 2)
-
-    let zoom_translate = [(w - zoom_scale * (s[1][0] + s[0][0])) / 2, (h - zoom_scale * (s[1][1] + s[0][1])) / 2];
-    console.log(new_zoom)
-    _zoom.k = new_zoom.k
-    _zoom.x = new_zoom.x
-    _zoom.y = new_zoom.y
-    map.select(".brush").remove();
-    brush = null;
-    zoom_without_redraw();
-}
-
-
-function brush_rect(){
-    let zoom_brush_button = d3.select(".brush_zoom_button"),
-        hb = d3.select('.hand_button');
-    if(zoom_brush_button.classed("active")){
-        zoom_brush_button.style('box-shadow', "none").classed("active", false);
-        map.select(".brush").remove();
-    } else {
-        brush = d3.brush()
-            .on("end", brush_action);
-        zoom_brush_button.style('box-shadow', 'inset 2px 2px 1px black').classed("active", true);
-        map.append("g")
-            .attr("class", "brush")
-            .call(brush);
-    }
-}
 
 function get_map_template(){
     var map_config = new Object(),
@@ -1628,10 +1593,10 @@ function rotate_global(angle){
 function handleClipPath(proj_name){
     proj_name = proj_name.toLowerCase();
     if(proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1){
-        let defs = document.querySelector("defs");
-        if(defs){ defs.remove(); }
-
-        defs = map.append("defs");
+        let defs_sphere = defs.node().querySelector("#sphere"),
+            defs_clipPath = defs.node().querySelector("clipPath");
+        if(defs_sphere){ defs_sphere.remove(); }
+        if(defs_clipPath){ defs_clipPath.remove(); }
 
         defs.append("path")
             .datum({type: "Sphere"})
@@ -1646,14 +1611,14 @@ function handleClipPath(proj_name){
         map.selectAll(".layer")
             .attr("clip-path", "url(#clip)");
 
-        svg_map.insertBefore(svg_map.querySelector("defs"), svg_map.childNodes[0]);
+        //svg_map.insertBefore(svg_map.querySelector("defs"), svg_map.childNodes[0]);
     } else {
-        let defs = document.querySelector("defs");
-        if(defs){
-            defs.remove();
-            map.selectAll(".layer")
+        let defs_sphere = defs.node().querySelector("#sphere"),
+            defs_clipPath = defs.node().querySelector("clipPath");
+        if(defs_sphere){ defs_sphere.remove(); }
+        if(defs_clipPath){ defs_clipPath.remove(); }
+        map.selectAll(".layer")
                 .attr("clip-path", null);
-        }
     }
 }
 
@@ -1801,9 +1766,11 @@ function handle_title_properties(){
     var font_select = box_content.append("p").html("Font family :<br>")
         .insert("select").attr("class", "params")
         .on("change", function(){  title.style("font-family", this.value); });
-    available_fonts.forEach(function(font){ font_select.append("option").text(font[0]).attr("value", font[1]) });
+    available_fonts.forEach(function(font){
+        font_select.append("option").text(font[0]).attr("value", font[1])
+    });
     font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title
+    // TODO : Allow the display a rectangle (resizable + selection color) under the title + allow to move the title with the mouse
     return;
 }
 
@@ -1813,25 +1780,20 @@ function handle_proj_center_button(param){
     let current_rotation = proj.rotate();
     if(param[0]){
         proj.rotate([param[0], current_rotation[1], current_rotation[2]]);
-        map.selectAll("path").attr("d", path);
+        map.selectAll(".layer").selectAll("path").attr("d", path);
     }
     if(param[1]){
         proj.rotate([current_rotation[0], param[1] - h/2, current_rotation[2]]);
-        map.selectAll("path").attr("d", path);
+        map.selectAll(".layer").selectAll("path").attr("d", path);
     }
     if(param[2]){
         proj.rotate([current_rotation[0], current_rotation[1], param[2] - h/2]);
-        map.selectAll("path").attr("d", path);
+        map.selectAll(".layer").selectAll("path").attr("d", path);
     }
     reproj_symbol_layer();
 }
 
 function move_legends(new_shape){
-    /*
-    let legends_choro_typo = document.querySelectorAll("#legend_root"),
-        legends_symbols = document.querySelectorAll("#legend_root2"),
-        legends_links_discont = document.querySelectorAll("#legend_root_links");
-    */
     let legends = [
         document.querySelectorAll("#legend_root"),
         document.querySelectorAll("#legend_root2"),
@@ -1894,7 +1856,51 @@ function canvas_mod_size(shape){
     move_legends([w, h]);
 }
 
+function patchSvgForFonts(){
+    function getListUsedFonts(){
+        let elems = [
+            svg_map.querySelectorAll('text'),
+            svg_map.querySelectorAll('p')
+        ];
+        let needed_definitions = [];
+        elems.map(d => d ? d : []);
+        for(let j=0; j < 2; j++){
+            for(let i=0; i < elems[j].length; i++){
+                let font_elem = elems[j][i].style.fontFamily;
+                customs_fonts.forEach(font => {
+                    if(font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) == -1){
+                        needed_definitions.push(font);
+                    }
+                });
+            }
+        }
+        return needed_definitions;
+    }
+
+    var needed_definitions = getListUsedFonts();
+    if(needed_definitions.length == 0){
+        return;
+    } else {
+        let fonts_definitions = Array.prototype.filter.call(
+            document.styleSheets,
+            i => i.href.indexOf("style-fonts.css") > -1 ? i : null
+            )[0].cssRules;
+        let fonts_to_add = needed_definitions.map(name => String(fonts_definitions[customs_fonts.indexOf(name)].cssText));
+        let style_elem = document.createElement("style");
+        style_elem.innerHTML = fonts_to_add.join(' ');
+        svg_map.querySelector("defs").appendChild(style_elem);
+    }
+}
+
+function unpatchSvgForFonts(){
+    let defs_style = svg_map.querySelector("defs").querySelector("style");
+    if(defs_style)
+        defs_style.remove();
+}
+
 function export_compo_svg(){
+    patchSvgForFonts();
+
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
@@ -1917,11 +1923,11 @@ function export_compo_svg(){
     document.body.appendChild(dl_link);
     dl_link.click();
     dl_link.remove();
-
+    unpatchSvgForFonts();
 }
 
 function export_compo_png(){
-    // Todo : ask for output format (svg / png) before conversion / ! \
+    patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
         svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
@@ -1942,6 +1948,7 @@ function export_compo_png(){
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
+        unpatchSvgForFonts();
     }
 }
 
@@ -1969,7 +1976,7 @@ function apply_user_preferences(json_pref){
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     path = d3.geoPath().projection(proj).pointRadius(4);
-    map.selectAll("path").attr("d", path);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
 
     for(let i = map_config.n_layers - 1; i > -1; --i){
         let layer_name = layers[i].layer_name,
@@ -2177,50 +2184,6 @@ function apply_user_preferences(json_pref){
     }
 }
 
-function handle_export(){
-    var dialogBox = document.querySelector(".exportDialogBox");
-    if(dialogBox){
-        dialogBox.parentElement.remove();
-        return;
-    }
-
-    d3.select("body").append("div")
-        .attrs({"id": "dialog", "class": "exportDialogBox"})
-        .attr("title", i18next.t("app_page.export_box.title")).html("");
-
-    dialogBox = $(".exportDialogBox");
-    var box_content = d3.select(".exportDialogBox").append("div");
-
-    box_content.append("button")
-        .attr("class", "button_st4")
-        .html(i18next.t("app_page.export_box.png"))
-        .on("click", function(){
-            dialogBox.dialog("destroy").remove();
-            export_compo_png();
-        });
-
-    box_content.append("button")
-        .attr("class", "button_st4")
-        .html(i18next.t("app_page.export_box.svg"))
-        .on("click", function(){
-            dialogBox.dialog("destroy").remove();
-            export_compo_svg();
-        });
-
-    box_content.append("button")
-        .attr("class", "button_st4")
-        .html(i18next.t("app_page.export_box.geo"))
-        .on("click", function(){
-            dialogBox.dialog("destroy").remove();
-            make_export_layer_box();
-        });
-
-    dialogBox.dialog({
-        position: { my: "center", at: "top" },
-        modal: false,
-        close: function(event, ui){ $(this).dialog("destroy").remove(); }
-      });
-}
 
 function make_export_layer_box(){
     d3.select("body").append("div")

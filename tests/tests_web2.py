@@ -11,11 +11,34 @@ import psutil
 import unittest
 import time
 from contextlib import closing
+from functools import wraps
 from socket import socket, AF_INET, SOCK_STREAM
 from subprocess import PIPE
 import os
 import sys
 
+
+def retry(ExceptionToCheck, tries=4, delay=2):
+    """
+    Retry calling a decorated function
+
+    Credits :
+      http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
+      original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
+    """
+    def deco_retry(f):
+        @wraps(f)
+        def f_retry(*args, **kwargs):
+            mtries, mdelay = tries, delay
+            while mtries > 1:
+                try:
+                    return f(*args, **kwargs)
+                except ExceptionToCheck:
+                    time.sleep(mdelay)
+                    mtries -= 1
+            return f(*args, **kwargs)
+        return f_retry  # true decorator
+    return deco_retry
 
 RUN_TRAVIS_SAUCELABS = os.environ.get('TRAVIS_BUILD_DIR') is not None
 RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
@@ -94,6 +117,10 @@ def tearDownModule():
         pass
 
 #port = 9999
+
+## TODO :
+# - test outputs (image / geo layer)
+# - test typosymbol / typo / label functionnalities
 
 @on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
@@ -225,6 +252,63 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(list_elem).select_by_value("sphere")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
 
+    def test_flow(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        driver.find_element_by_css_selector("#sample_link").click()
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2_data")
+        Select(driver.find_element_by_css_selector("select.sample_dataset")
+            ).select_by_value("twincities")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(0.5)
+        driver.find_element_by_id("ui-id-2").click()
+        time.sleep(0.5)
+        driver.find_element_by_css_selector("#button_flow").click()
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("FlowMap_field_i")
+            ).select_by_visible_text("i")
+        Select(driver.find_element_by_id("FlowMap_field_j")
+            ).select_by_visible_text("j")
+        Select(driver.find_element_by_id("FlowMap_field_fij")
+            ).select_by_visible_text("fij")
+
+        driver.find_element_by_id("yes").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(1)  # Delay for the sweet alert to close
+        self.click_element_with_retry("#legend_button")
+        if not self.try_element_present(By.ID, "legend_root_links", 5):
+            self.fail("Legend won't display")
+
+    def test_gridded(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        driver.find_element_by_css_selector("#sample_link").click()
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(0.5)
+        driver.find_element_by_id("ui-id-2").click()
+        time.sleep(0.5)
+        driver.find_element_by_css_selector("#button_grid").click()
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("Gridded_field")).select_by_visible_text("birth_2008")
+        driver.find_element_by_id("Gridded_cellsize").clear()
+        driver.find_element_by_id("Gridded_cellsize").send_keys("145")
+        Select(driver.find_element_by_id("Gridded_shape")).select_by_value("Diamond")
+        driver.find_element_by_id("Gridded_yes").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(1)  # Delay for the sweet alert to close
+        self.click_element_with_retry("#legend_button")
+        if not self.try_element_present(By.ID, "legend_root", 5):
+            self.fail("Legend won't display")
+
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -252,9 +336,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
-        driver.find_element_by_id("legend_button").click()
+        self.click_element_with_retry("#legend_button")
         if not self.try_element_present(By.ID, "legend_root", 5):
-            self.fail("Legeng won't display")
+            self.fail("Legend won't display")
 
     def test_cartogram_new_field(self):
         driver = self.driver
@@ -344,7 +428,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(1)  # Little delay for the map to be rendered
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root", 5):
-            self.fail("Legeng won't display")
+            self.fail("Legend won't display")
 
     def test_discont_joined_field(self):
         driver = self.driver
@@ -373,7 +457,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(1)  # Delay for the discontinuities to be computed
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root_links", 5):
-            self.fail("Legeng won't display")
+            self.fail("Legend won't display")
 
     def test_propSymbols(self):
         driver = self.driver
@@ -413,12 +497,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root2", 5):
-            self.fail("Legeng won't display")
+            self.fail("Legend won't display")
 
 #        driver.find_element_by_css_selector("span.context-menu-item-name").click()
 #        driver.find_element_by_id("style_lgd").click()
 #        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
 
+    @retry(Exception, 3, 1)
+    def click_element_with_retry(self, selector):
+        self.driver.find_element_by_css_selector(selector).click()
 
     def get_button_ok_displayed(self, selector="button.swal2-confirm.styled", delay=30):
         if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm.styled", delay):

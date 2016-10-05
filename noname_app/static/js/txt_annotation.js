@@ -1,5 +1,127 @@
 "use strict";
 
+class UserArrow {
+    constructor(id, origin_pt, destination_pt, parent=undefined){
+        this.parent = parent || svg_map;
+        this.svg_elem = d3.select(this.parent);
+        this.pt1 = origin_pt;
+        this.pt2 = destination_pt;
+        this.id = id;
+
+        this.drag_behavior = d3.drag()
+             .subject(function() {
+                    var t = d3.select(this),
+                        prev_translate = t.attr("transform");
+                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                    return {
+                        x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
+                    };
+                })
+            .on("start", () => {
+                d3.event.sourceEvent.stopPropagation();
+                if(map_div.select("#hand_button").classed("active"))
+                    zoom.on("zoom", null);
+              })
+            .on("end", () => {
+                if(map_div.select("#hand_button").classed("active"))
+                    zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", function(){
+                d3.event.sourceEvent.preventDefault();
+                let t = d3.select(this),
+                    scale_value = t.attr("scale"),
+                    rotation_value = t.attr("rotate");
+                scale_value = scale_value ? "scale(" + scale_value + ")" : "";
+                rotation_value = rotation_value ? "rotate(" + rotation_value + ",0,0)" : "";
+                t.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')' + scale_value + rotation_value);
+              });
+
+        let defs = parent.querySelector("defs"),
+            markers = defs ? defs.querySelector("marker") : null;
+
+        if(!markers){
+            this.add_defs_marker();
+        }
+        this.draw()
+    }
+
+    add_defs_marker(){
+        defs.append("marker")
+            .attrs({"id":"arrow_head", "viewBox":"0 -5 10 10",
+                  "refX":5, "refY":0, "orient":"auto",
+                  "markerWidth":4, "markerHeight":4})
+            .style("stroke-width", 1)
+        	.append("path")
+        	.attr("d", "M0,-5L10,0L0,5")
+        	.attr("class","arrowHead");
+        if(this.parent.childNodes[0].tagName != "defs"){
+            this.parent.insertBefore(defs.node(), this.parent.childNodes[0]);
+        }
+    }
+
+    draw(){
+        let context_menu = new ContextMenu(),
+            getItems = () =>  [
+                {"name": "Edit style/position...", "action": () => { this.editStyle(); }},
+                {"name": "Up element", "action": () => { this.up_element(); }},
+                {"name": "Down element", "action": () => { this.down_element(); }},
+                {"name": "Delete", "action": () => { this.arrow.remove(); }}
+            ];
+
+        this.arrow = this.svg_elem.append('g')
+                .attrs({"class": "arrow legend_features legend", "id": this.id});
+
+        this.arrow.insert("line")
+        		.attrs({"class":"legend_features",
+        			  "marker-end":"url(#arrow_head)",
+        			  "x1": this.pt1[0], "y1": this.pt1[1],
+        			  "x2":this.pt2[0], "y2": this.pt2[1]})
+                .styles({"stroke-width": 5, stroke: "#000"});
+
+        this.arrow.call(this.drag_behavior);
+
+        this.arrow.on("contextmenu", () => {
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems());
+            });
+    }
+
+    up_element(){
+        let lgd_features = this.parent.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == nb_lgd_features - 1){
+            return;
+        } else {
+            this.parent.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
+        }
+    }
+
+    down_element(){
+        let lgd_features = this.parent.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == 0){
+            return;
+        } else {
+            this.parent.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+        }
+
+    }
+
+}
+
 class Textbox {
     // woo lets use ES2015 classes !
     constructor(parent, new_id_txt_annot, position=[10, 30]){

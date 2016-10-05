@@ -14,6 +14,7 @@
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
             "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
+            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",

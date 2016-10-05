@@ -14,6 +14,7 @@
             "error_only_layout": "Only layout layers can be added here",
             "error_only_one": "Only one layer can be added by this functionnality",
             "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
+            "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",

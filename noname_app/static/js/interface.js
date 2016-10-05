@@ -687,7 +687,7 @@ function scale_to_lyr(name){
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     proj.scale(s).translate([0,0]).rotate([0,0,0]);
-    map.selectAll("path").attr("d", path);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
 };
 
 /**
@@ -817,6 +817,8 @@ function add_layout_feature(selected_feature){
             swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_existing_scalebar"), "error");
     } else if (selected_feature == "north_arrow"){
         northArrow.display();
+    } else if (selected_feature == "arrow"){
+        handleClickAddArrow();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
@@ -1272,4 +1274,73 @@ function list_existing_layers_server(){
 function get_map_xy0(){
     let bbox = svg_map.getBoundingClientRect();
     return {x: bbox.x, y: bbox.y}
+}
+
+function handleClickAddArrow(){
+    let getId = () => {
+        let arrows = document.querySelectorAll(".arrow");
+        if(!arrows){
+            return 0;
+        } else if (arrows.length > 30){
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            return null;
+        } else {
+            let ids = [];
+            for(let i=0; i<arrows.length; i++){
+                ids.push(+arrows[i].id.split("arrow_")[1])
+            }
+            if(ids.indexOf(arrows.length) == -1){
+                return arrows.length;
+            } else {
+                for(let i=0; i<arrows.length; i++){
+                    if(ids.indexOf(i) == -1){
+                        return i;
+                    }
+                }
+            }
+            return null;
+        }
+        return null;
+    };
+
+    let start_point,
+        tmp_start_point,
+        end_point,
+        tmp_end_point,
+        id = getId();
+
+    if(id === null){
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error");
+        return;
+    } else {
+        id = "arrow_" + id;
+    }
+
+    map.style("cursor", "crosshair")
+        .on("click", function(){
+            if(!start_point){
+                start_point = [d3.event.layerX, d3.event.layerY];
+                tmp_start_point = map.append("rect")
+                    .attr("x", start_point[0] - 2)
+                    .attr("y", start_point[1] - 2)
+                    .attr("height", 4).attr("width", 4)
+                    .style("fill", "red");
+            } else {
+                end_point = [d3.event.layerX, d3.event.layerY];
+                tmp_end_point = map.append("rect")
+                    .attr("x", end_point[0] - 2)
+                    .attr("y", end_point[1] - 2)
+                    .attr("height", 4).attr("width", 4)
+                    .style("fill", "red");
+            }
+            if(start_point && end_point){
+                setTimeout(function(){
+                    tmp_start_point.remove();
+                    tmp_end_point.remove();
+                }, 1000);
+                map.style("cursor", "")
+                    .on("click", null);
+                new UserArrow("abc", start_point, end_point, svg_map);
+            }
+        });
 }
