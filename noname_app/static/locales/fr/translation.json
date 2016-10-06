@@ -119,7 +119,8 @@
             "sphere": "Fond de l'emprise du globe",
             "graticule": "Graticule",
             "text_annot": "Annotation de texte",
-            "arrow": "Flèche"
+            "arrow": "Flèche",
+            "symbol": "Insertion d'un symbole"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
@@ -174,9 +175,18 @@
             "title": "Aide d'urgence!",
             "message_invite": "Saisir un terme à rechercher dans la documentation :"
         },
+        "text_box_edit_box": {
+            "title": "Options de la boite de texte"
+        },
+        "arrow_edit_box": {
+            "title": "Options de la fleche",
+            "arrowWeight": "Taille de la fleche",
+            "arrowColor": "Couleur de la fleche",
+            "move_points": "Déplacement des points (départ/arrivée) de la fleche"
+        },
         "lm_buttons":{
             "zoom+": "Zoom positif",
-            "zoom-": "Zoom negatif",
+            "zoom-": "Zoom négatif",
             "i": "Information sur l'entité survolée",
             "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
             "zoom_rect": "Zoom sur une sélection rectangulaire"
@@ -395,6 +405,11 @@
             "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
+        },
+        "cookie_div": {
+            "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",
+            "accept": "J'ai compris",
+            "more_info": "En savoir plus"
         }
     }
 }

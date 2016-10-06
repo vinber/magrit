@@ -982,20 +982,6 @@ function display_categorical_box(layer, field){
 }
 
 var display_box_symbol_typo = function(layer, field){
-
-    var prepare_available_symbols = function(){
-        let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
-                .then(function(list_res){
-                   list_res = JSON.parse(list_res.target.responseText);
-                   Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
-                    .then(function(symbols){
-                        for(let i=0; i<list_res.length; i++){
-                            default_symbols.push([list_res[i], symbols[i].target.responseText]);
-                        }
-                    });
-                })
-    }
-
     var fetch_symbol_categories = function(){
         let categ = document.querySelectorAll(".typo_class"),
             symbol_map = new Map();

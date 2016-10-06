@@ -18,6 +18,8 @@
     <script src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/jquery.easing.min.js"></script>
+    <script src="/static/js/lib/cookies.js"></script>
+
 </head>
 
 <!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
@@ -62,7 +64,7 @@
                         <a class="page-scroll" href="#source">Source</a>
                     </li>
                 </ul>
-                <a href="/modules" class="btn btn-default i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]index.buttons.start_now"></a>
+                <a class="btn btn-default enter_button i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]index.buttons.start_now"></a>
                 <div class="btn-group" style="float:right;margin-top:7px;";>
                     <button id="lang_current" type="button" class="btn btn-default" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
@@ -96,7 +98,7 @@
                 </div>
                 <div class="box-wrap clearfix"></div>
                 <p style="col-md-12">
-                    <a href="/modules" class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]index.buttons.enter"></a>
+                    <a class="btn btn-success enter_button i18n" style="margin: 5px;" data-i18n="[html]index.buttons.enter"></a>
                     <a href="/modules?resume" id="resume_btn" class="btn btn-success i18n" disabled style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
                 </p>
             </div>
@@ -321,6 +323,11 @@
     </div>
   </div>
 </div>
+<div style="box-shadow:0em 0em 1em black;position:fixed;left:50%;transform:translateX(-50%);font-size:14px;width:auto;bottom:0px;opacity:0.85;text-align:center;background-color:black;color:white;padding:0.5em;" id="cookieLaw">
+    <span class="i18n" data-i18n="index.cookie_div.message"></span><br>
+    <span id="understood_cookie" class="i18n" style="line-height: 1.7em; cursor:pointer;border-radius: 0.4em;background-color:#4BA5FC;color:white;margin-left:1em;margin-right:1em;padding:0.2em;padding-left:1em;padding-right:1em;" data-i18n="index.cookie_div.accept">I understand</span>
+    <a style="color:#4BA5FC" href="/about/#cookie" class="i18n" data-i18n="index.cookie_div.more_info"></a>
+</div>
 {% raw %}
 <script>
 //jQuery for initialising tooltips
@@ -374,6 +381,50 @@ function change_lang(new_lang, old_lang){
     document.getElementById("lang1").innerHTML = new_lang;
 }
 
+
+function bind_enter_buttons(){
+    let enter = () => {
+        if(!docCookies.getItem("cookie_law_validated")){
+            docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
+        }
+        window.location = "/modules";
+    };
+    let elems = document.querySelectorAll(".enter_button");
+    for(let i=0; i < elems.length; i++){
+        elems[i].onclick = enter;
+    }
+    if(window.localStorage.getItem("noname_map_project")){
+        document.getElementById("resume_btn").removeAttribute("disabled");
+    }
+}
+
+
+function handle_div_cookie(){
+    let cookie_div = document.getElementById("cookieLaw");
+    if(docCookies.getItem("cookie_law_validated")){
+        cookie_div.style.display = "none";
+    } else {
+        cookie_div.querySelector("#understood_cookie")
+            .onclick = () => {
+                document.getElementById("cookieLaw").remove();
+                docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
+            };
+    }
+}
+
+
+function prepare_lang_buttons(){
+    let current_lang =  i18next.language,
+        other_lang = current_lang == "en" ? "fr" : "en";
+    document.getElementById("lang_current").innerHTML = current_lang;
+    let button_lang1 = document.getElementById("lang1");
+    button_lang1.innerHTML = current_lang;
+    button_lang1.onclick = handle_change_lang;
+    let button_lang2 = document.getElementById("lang2");
+    button_lang2.innerHTML = other_lang;
+    button_lang2.onclick = handle_change_lang;
+}
+
 //i18n initialization :
 (function(){
     var existing_lang = ["en", "fr"]
@@ -390,21 +441,12 @@ function change_lang(new_lang, old_lang){
     }, (err, t) => {
         if(err)
             throw err;
-        else{
+        else {
             window.localize = locI18next.init(i18next);
             localize(".i18n");
-            let current_lang =  i18next.language,
-                other_lang = current_lang == "en" ? "fr" : "en";
-            document.getElementById("lang_current").innerHTML = current_lang;
-            let button_lang1 = document.getElementById("lang1");
-            button_lang1.innerHTML = current_lang;
-            button_lang1.onclick = handle_change_lang;
-            let button_lang2 = document.getElementById("lang2");
-            button_lang2.innerHTML = other_lang;
-            button_lang2.onclick = handle_change_lang;
-            if(window.localStorage.getItem("noname_map_project")){
-                document.getElementById("resume_btn").removeAttribute("disabled");
-            }
+            bind_enter_buttons();
+            handle_div_cookie();
+            prepare_lang_buttons();
         }
     });
 })();

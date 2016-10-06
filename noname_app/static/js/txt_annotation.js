@@ -7,16 +7,19 @@ class UserArrow {
         this.pt1 = origin_pt;
         this.pt2 = destination_pt;
         this.id = id;
+        this.lineWeight = 4;
+        this.headWeight = 1;
+        this.color = "rgb(0, 0, 0)";
 
+        let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
-                    var t = d3.select(this),
-                        prev_translate = t.attr("transform");
-                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
-                    return {
-                        x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
-                    };
-                })
+                    let t = d3.select(this.querySelector("line"));
+                    return { x: +t.attr("x2") - +t.attr("x1"),
+                             y: +t.attr("y2") - +t.attr("y1"),
+                             x1: t.attr("x1"), x2: t.attr("x2"),
+                             y1: t.attr("y1"), y2: t.attr("y2") };
+              })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
                 if(map_div.select("#hand_button").classed("active"))
@@ -28,12 +31,16 @@ class UserArrow {
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
-                let t = d3.select(this),
-                    scale_value = t.attr("scale"),
-                    rotation_value = t.attr("rotate");
-                scale_value = scale_value ? "scale(" + scale_value + ")" : "";
-                rotation_value = rotation_value ? "rotate(" + rotation_value + ",0,0)" : "";
-                t.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')' + scale_value + rotation_value);
+                let _t = this.querySelector("line"),
+                    subject = d3.event.subject,
+                    tx = +d3.event.x - +subject.x,
+                    ty = +d3.event.y - +subject.y;
+                self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
+                self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
+                _t.x1.baseVal.value = self.pt1[0];
+                _t.x2.baseVal.value = self.pt2[0];
+                _t.y1.baseVal.value = self.pt1[1];
+                _t.y2.baseVal.value = self.pt2[1];
               });
 
         let defs = parent.querySelector("defs"),
@@ -76,11 +83,11 @@ class UserArrow {
         			  "marker-end":"url(#arrow_head)",
         			  "x1": this.pt1[0], "y1": this.pt1[1],
         			  "x2":this.pt2[0], "y2": this.pt2[1]})
-                .styles({"stroke-width": 5, stroke: "#000"});
+                .styles({"stroke-width": this.lineWeight, stroke: "rgb(0, 0, 0)"});
 
         this.arrow.call(this.drag_behavior);
 
-        this.arrow.on("contextmenu", () => {
+        this.arrow.on("contextmenu dblclick", () => {
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
                                   getItems());
@@ -117,9 +124,92 @@ class UserArrow {
         } else {
             this.parent.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
         }
-
     }
 
+    editStyle(){
+        let current_options = {lineWeight: this.lineWeight,
+                               headWeight: this.headWeight,
+                               color: this.color};
+        let self = this,
+            line = self.arrow.node().querySelector("line");
+
+        var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.arrow_edit_box.title"), "styleBoxArrow")
+            .then(function(confirmed){
+                if(!confirmed){
+                    self.headWeight = current_options.headWeight;
+                    self.lineWeight = current_options.lineWeight;
+                }
+            });
+        let box_content = d3.select(".styleBoxArrow").insert("div").attr("id", "styleBoxArrow");
+        let s1 = box_content.append("p");
+        s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+        s1.append("input")
+            .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
+            .on("change", function(){
+                self.lineWeight = +this.value;
+                line.style.strokeWidth = this.value;
+                txt_line_weight.html(this.value + "px");
+            });
+        let txt_line_weight = s1.append("span").html(self.lineWeight + " px");
+
+        let s2 = box_content.append("p");
+        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowColor"))
+        s2.insert("input")
+            .attrs({id: "arrow_headWeight", type: "color", value: self.color })
+            .on("change", function(){
+                line.style.stroke = this.value;
+                self.color = this.value;
+            });
+
+        let s3 = box_content.append("p");
+        s2.append("button")
+            .attr("class", "button_st4")
+            .html(i18next.t("app_page.arrow_edit_box.move_points"))
+            .on("click", function(){
+                let tmp_start_point = map.append("rect")
+                    .attr("x", self.pt1[0] - 3)
+                    .attr("y", self.pt1[1] - 3)
+                    .attr("height", 6).attr("width", 6)
+                    .style("fill", "red")
+                    .style("cursor", "grab")
+                    .call(d3.drag().on("drag", function(){
+                        let t = d3.select(this);
+                        let nx = d3.event.x,
+                            ny = d3.event.y;
+                        t.attr("x", nx).attr("y", ny);
+                        line.x1.baseVal.value = nx;
+                        line.y1.baseVal.value = ny;
+                        self.pt1 = [nx, ny];
+                    }));
+
+                let tmp_end_point = map.append("rect")
+                    .attr("x", self.pt2[0] - 3)
+                    .attr("y", self.pt2[1] - 3)
+                    .attr("height", 6).attr("width", 6)
+                    .style("fill", "red")
+                    .style("cursor", "grab")
+                    .call(d3.drag().on("drag", function(){
+                        let t = d3.select(this);
+                        let nx = d3.event.x,
+                            ny = d3.event.y;
+                        t.attr("x", nx).attr("y", ny);
+                        line.x2.baseVal.value = nx;
+                        line.y2.baseVal.value = ny;
+                        self.pt2 = [nx, ny];
+                    }));
+                document.getElementById("styleBoxArrow").style.display = "none";
+                document.querySelector(".ui-widget-overlay").style.display = "none";
+                let el = document.createElement("span");
+                el.innerHTML = "Done";
+                el.onclick = function(){
+                    document.getElementById("styleBoxArrow").style.display = "";
+                    document.querySelector(".ui-widget-overlay").style.display = "";
+                    tmp_end_point.remove();
+                    tmp_start_point.remove();
+                }
+                document.querySelector(".styleBoxArrow").appendChild(el);
+            });
+    }
 }
 
 class Textbox {
@@ -246,7 +336,7 @@ class Textbox {
                                content: this.text_annot.select("p").html(),
                                font: ""};
         let self = this;
-        var a = make_confirm_dialog("", "Valid", "Cancel", "Textbox options", "styleTextAnnotation")
+        var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.text_box_edit_box.title"), "styleTextAnnotation")
             .then(function(confirmed){
                 if(!confirmed){
                     self.text_annot.select("p").text(current_options.content);
@@ -300,7 +390,7 @@ class Textbox {
                 self_position = i;
             }
         }
-        if(self_position == nb_lgd_features){
+        if(self_position == nb_lgd_features - 1){
             return;
         } else {
             console.log(lgd_features[self_position])

@@ -119,7 +119,8 @@
             "sphere": "Sphere background",
             "graticule": "Graticule",
             "text_annot": "Text box",
-            "arrow": "Customizable arrow"
+            "arrow": "Customizable arrow",
+            "symbol": "Single symbol"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
@@ -173,6 +174,15 @@
         "help_box": {
             "title": "Emergency help!",
             "message_invite": "Write something to be searched in the documentation :"
+        },
+        "text_box_edit_box": {
+            "title": "Textbox options"
+        },
+        "arrow_edit_box": {
+            "title": "Arrow options",
+            "arrowWeight": "Arrow weight",
+            "arrowColor": "Arrow color",
+            "move_points": "Move arrow start or end point"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",
@@ -390,6 +400,11 @@
             "box2_text": "Bug reports and contributions are welcome. Please use project page on GitHub.",
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!"
+        },
+        "cookie_div": {
+            "message": "We do NOT use cookies to profile or track users.",
+            "accept": "I understand",
+            "more_info": "More information"
         }
     }
 }

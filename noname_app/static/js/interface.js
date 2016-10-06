@@ -726,7 +726,8 @@ function select_layout_features(){
          ["sphere", i18next.t("app_page.layout_features_box.sphere")],
          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
-         ["arrow", i18next.t("app_page.layout_features_box.arrow")]
+         ["arrow", i18next.t("app_page.layout_features_box.arrow")],
+         ["symbol", i18next.t("app_page.layout_features_box.symbol")]
         ];
     var selected_ft;
 
@@ -747,6 +748,11 @@ function select_layout_features(){
         layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
     });
     layout_ft_selec.on("change", function(){ selected_ft = this.value; });
+
+    if(!window.default_symbols){
+        window.default_symbols = [];
+        prepare_available_symbols();
+    }
 }
 
 function setSphereBottom(){
@@ -819,9 +825,39 @@ function add_layout_feature(selected_feature){
         northArrow.display();
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
+    } else if (selected_feature == "symbol"){
+        let a = box_choice_symbol(window.default_symbols).then(function(result){
+            if(result){
+                add_single_symbol(result);
+            }
+        })
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
+}
+
+function add_single_symbol(symbol_dataurl){
+    let context_menu = new ContextMenu(),
+        getItems = (self_parent) => [
+            {"name": "Edit style...", "action": () => { make_style_box_indiv_symbol(self_parent); }},
+            {"name": "Delete", "action": () => {self_parent.style.display = "none"; }}
+    ];
+
+    map.append("g")
+        .attrs({class: "legend_features legend single_symbol"})
+        .insert("image")
+        .attr("x", w/2)
+        .attr("y", h/2)
+        .attr("width", "30px")
+        .attr("height", "30px")
+        .attr("xlink:href", symbol_dataurl.split("url(")[1].substring(1).slice(0,-2))
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("dblclick contextmenu", function(){
+            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+            })
+        .call(drag_elem_geo);
+
 }
 
 var drag_lgd_features = d3.drag()
@@ -1343,4 +1379,17 @@ function handleClickAddArrow(){
                 new UserArrow("abc", start_point, end_point, svg_map);
             }
         });
+}
+
+function prepare_available_symbols(){
+    let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
+            .then(function(list_res){
+               list_res = JSON.parse(list_res.target.responseText);
+               Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
+                .then(function(symbols){
+                    for(let i=0; i<list_res.length; i++){
+                        default_symbols.push([list_res[i], symbols[i].target.responseText]);
+                    }
+                });
+            })
 }
