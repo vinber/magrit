@@ -157,7 +157,7 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
             .attrs({x: xpos, y: ypos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('');
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
@@ -262,9 +262,15 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
             .attrs({x: xpos + space_elem, y: last_pos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .html('');
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
+}
+
+function get_distance(pt1, pt2){
+    let xs = pt2[0] - pt1[1],
+        ys = pt2[1] - pt1[1];
+    return Math.sqrt((xs*xs)+(ys*ys));
 }
 
 /**
@@ -273,19 +279,34 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 * eg. longer title, switching to nested symbols, etc..)
 *
 */
-function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
+function make_underlying_rect(legend_root, under_rect, fill){
     under_rect.attrs({"width": 0, height: 0});
-    let bbox_legend = legend_root.node().getBoundingClientRect();
-    console.log(bbox_legend);
-    under_rect.attr("class", "legend_feature").attr("id", "under_rect")
-                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 20)
-                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 25)
+    console.log(legend_root)
+    let bbox_legend = legend_root.node().getBoundingClientRect(),
+        translate = legend_root.attr("transform"),
+        map_xy0 = get_map_xy0();
 
-    let tmp = bbox_legend.Left - 350;
-    tmp = tmp < 0 ? Math.abs(tmp)  : 2.5;
+    translate = translate
+            ? translate.split("translate(")[1].split(")")[0].split(",").map(d => +d)
+            : [0, 0];
 
-    if(xpos && ypos)
-        under_rect.attr("x", xpos - tmp).attr("y", ypos - 12.5)
+    let bbox = {
+        x_top_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
+        y_top_left: bbox_legend.top - map_xy0.y - 5 - translate[1],
+        x_top_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
+        y_top_right: bbox_legend.top - map_xy0.y - 5 - translate[1],
+        x_bottom_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
+        y_bottom_left: bbox_legend.bottom - map_xy0.y + 5 - translate[1],
+        x_bottom_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
+        y_bottom_right: bbox_legend.bottom - map_xy0.y + 5 - translate[1]
+    }
+    let rect_height = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_bottom_left, bbox.y_bottom_left]),
+        rect_width = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_top_right, bbox.y_top_right]);
+
+    under_rect.attrs({"class": "legend_feature", "id": "under_rect",
+                      "height": rect_height, "width": rect_width});
+    under_rect.attr("x", bbox.x_top_left).attr("y", bbox.y_top_left)
+
     if(!fill || (!fill.color || !fill.opacity)){
         under_rect.style("fill", "green")
                   .style("fill-opacity", 0);
@@ -300,6 +321,35 @@ function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
 
     }
 }
+
+//function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
+//    under_rect.attrs({"width": 0, height: 0});
+//    let bbox_legend = legend_root.node().getBoundingClientRect(),
+//        map_xy0 = get_map_xy0();
+//    console.log(bbox_legend);
+//    under_rect.attr("class", "legend_feature").attr("id", "under_rect")
+//                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 20)
+//                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 25)
+//
+//    let tmp = bbox_legend.Left - 350;
+//    tmp = tmp < 0 ? Math.abs(tmp)  : 2.5;
+//
+//    if(xpos && ypos)
+//        under_rect.attr("x", xpos - tmp).attr("y", ypos - 12.5)
+//    if(!fill || (!fill.color || !fill.opacity)){
+//        under_rect.style("fill", "green")
+//                  .style("fill-opacity", 0);
+//        legend_root.attr("visible_rect", "false");
+//        legend_root.on("mouseover", ()=>{ under_rect.style("fill-opacity", 0.1); })
+//                   .on("mouseout", ()=>{ under_rect.style("fill-opacity", 0); });
+//    } else {
+//        under_rect.style("fill", fill.color)
+//                  .style("fill-opacity", fill.opacity);
+//        legend_root.attr("visible_rect", "true");
+//        legend_root.on("mouseover", null).on("mouseout", null);
+//
+//    }
+//}
 
 function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value){
     var space_elem = 18,
@@ -481,7 +531,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
     legend_root.call(drag_legend_func(legend_root));
     legend_root.attr("nested", nested);
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     if(current_layers[layer].renderer == "PropSymbolsChoro"){
         legend_root.attr("transform", "translate(120, 0)")
@@ -628,7 +678,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             .style("font", "11px 'Enriqueta', arial, serif")
             .text('');
     legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, xpos, ypos, rect_fill_value);
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
 }
@@ -678,82 +728,92 @@ function createlegendEditBox(legend_id, layer_name){
             bind_selections();
             make_underlying_rect(legend_node_d3,
                                  legend_node_d3.select("#under_rect"),
-                                 undefined, undefined,
                                  rect_fill_value);
         });
 
     var box_body = d3.select([".", box_class].join('')),
         current_nb_dec;
 
-    box_body.append('h3').html('Legend customization')
-            .append('p').html('Legend title<br>')
+    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"))
+            .append('p').html(i18next.t("app_page.legend_style_box.lgd_title"))
             .insert('input')
             .attr("value", title_content.textContent)
             .on("keyup", function(){
                 title_content.textContent = this.value
             });
-    box_body.append('p').html('Variable name<br>')
+    box_body.append('p').html(i18next.t("app_page.legend_style_box.var_name"))
             .insert('input')
             .attr("value", subtitle_content.textContent)
             .on("keyup", function(){
                 subtitle_content.textContent = this.value
             });
 
+    console.log(legend_boxes);
+
     if(legend_boxes._groups[0].length > 0 && current_layers[layer_name].renderer != "Categorical"
         && current_layers[layer_name].renderer != "TypoSymbols"){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)
-        let max_nb_decimals = 0;
+        let max_nb_decimals = 0,
+            max_nb_left = 0;
         if(legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1){
             max_nb_decimals = get_max_nb_dec(layer_name);
+            max_nb_left = get_max_nb_left_sep(layer_name);
         } else {
-            let first_value = String(legend_boxes._groups[0][0].__data__.value),
-                fourth_value = String(legend_boxes._groups[0][3].__data__.value);
-            let p0 = first_value.indexOf("."),
-                p3 = fourth_value.indexOf(".");
-            if(p0 > -1){
-                max_nb_decimals = first_value.length - p0 - 1;
-            }
-            if(p3 > -1 && (first_value.length - p3 - 1) > max_nb_decimals){
-                max_nb_decimals = first_value.length - p3 - 1;
-            }
+            let nb_dec = [],
+                nb_left = [];
+            legend_boxes.each( d => {
+                nb_dec.push(get_nb_decimals(d.value));
+                nb_left.push(get_nb_left_separator(d.value));
+            });
+            max_nb_decimals = max_fast(nb_dec);
+            max_nb_left = min_fast(nb_left);
         }
 
         if(max_nb_decimals > 0){
             if(legend_node.getAttribute("rounding_precision"))
                 current_nb_dec = legend_node.getAttribute("rounding_precision");
+            else {
+                let nbs = [],
+                    nb_dec = [];
+                legend_boxes.each(function(){ nbs.push(this.textContent); });
+                for(let i=0; i < nbs.length; i++){
+                    nb_dec.push(get_nb_decimals(nbs[i]));
+                }
+                current_nb_dec = max_fast(nb_dec);
+            }
             if(max_nb_decimals > +current_nb_dec && max_nb_decimals > 18)
                 max_nb_decimals = 18;
             box_body.append('p')
                         .style("display", "inline")
                         .attr("id", "precision_change_txt")
-                        .html(['Floating number rounding precision<br> ', current_nb_dec, ' '].join(''));
+                        .html([i18next.t("app_page.legend_style_box.float_rounding"), current_nb_dec, ' '].join(''));
             if(legend_id === "legend_root")
                 box_body.append('input')
-                    .attrs({id: "precision_range", type: "range", min: -5, max: max_nb_decimals, step: 1, value: current_nb_dec})
-                    .style("display", "inline")
+                    .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
+                    .styles({display: "inline", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
                     .on('change', function(){
                         let nb_float = +this.value;
                         d3.select("#precision_change_txt")
-                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            .html([i18next.t("app_page.legend_style_box.float_rounding"), nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let values = legend_boxes._groups[0][i].__data__.value.split(' - ');
                             legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float);
                         }
                         let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
-                        document.getElementById('lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
+                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
             else if(legend_id === "legend_root2")
                 box_body.append('input')
-                    .attrs({id: "precision_range", type: "range", min: 0, max: max_nb_decimals, step: 1, value: current_nb_dec})
-                    .style("display", "inline")
+                    .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
+                    .styles({display: "inline", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
                     .on('change', function(){
                         let nb_float = +this.value,
                             dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                         d3.select("#precision_change_txt")
-                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            .html([i18next.t("app_page.legend_style_box.float_rounding"), nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value;
                             legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
@@ -762,20 +822,20 @@ function createlegendEditBox(legend_id, layer_name){
                     });
             else if(legend_id === "legend_root_links")
                 box_body.append('input')
-                    .attrs({id: "precision_range", type: "range", min: 0, max: max_nb_decimals, step: 1, value: current_nb_dec})
-                    .style("display", "inline")
+                    .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
+                    .styles({display: "inline", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
                     .on('change', function(){
                         let nb_float = +this.value,
                             dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
                         d3.select("#precision_change_txt")
-                            .html(['Floating number rounding precision<br> ', nb_float, ' '].join(''))
+                            .html([i18next.t("app_page.legend_style_box.float_rounding"), nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value[1];
                             legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
                         }
                         legend_node.setAttribute("rounding_precision", nb_float);
                         let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
-                        document.getElementById('lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
+                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
         }
@@ -783,7 +843,7 @@ function createlegendEditBox(legend_id, layer_name){
 
     if(legend_id === "legend_root"){
         let current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
-        box_body.insert("p").html("No gap between color boxes")
+        box_body.insert("p").html(i18next.t("app_page.legend_style_box.gap_boxes"))
                 .insert("input").attr("type", "checkbox")
                 .attr("id", "style_lgd")
                 .on("change", function(){
@@ -804,7 +864,7 @@ function createlegendEditBox(legend_id, layer_name){
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root2"){
         let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
-        box_body.insert("p").html("Nested symbols")
+        box_body.insert("p").html(i18next.t("app_page.legend_style_box.nested_symbols"))
                 .insert("input").attr("type", "checkbox")
                 .attr("id", "style_lgd")
                 .on("change", function(){
@@ -833,7 +893,7 @@ function createlegendEditBox(legend_id, layer_name){
 
 //    if(current_layers[layer].options_disc && current_layers[layer].options_disc.no_data){
     if(no_data_txt){
-        box_body.insert('p').html(i18next.t("No data category name"))
+        box_body.insert('p').html(i18next.t("app_page.legend_style_box.no_data"))
                 .insert('input').attr("value", no_data_txt.textContent)
                 .style("font-family", "12px Gill Sans Extrabold, sans-serif")
                 .on("keyup", function(){
@@ -841,14 +901,14 @@ function createlegendEditBox(legend_id, layer_name){
                 });
    }
 
-    box_body.insert('p').html('Additionnal legend notes<br>')
+    box_body.insert('p').html(i18next.t("app_page.legend_style_box.additionnal_notes"))
             .insert('input').attr("value", note_content.textContent)
             .style("font-family", "12px Gill Sans Extrabold, sans-serif")
             .on("keyup", function(){
                 note_content.textContent = this.value;
             });
 
-    let rectangle_options = box_body.insert('p').html('Display a rectangle under the legend');
+    let rectangle_options = box_body.insert('p').html(i18next.t("app_page.legend_style_box.under_rectangle"));
     rectangle_options.insert("input")
                 .attrs({type: "checkbox",
                         value: rect_fill_value.color || "#ededed",
@@ -866,7 +926,6 @@ function createlegendEditBox(legend_id, layer_name){
                     }
                     make_underlying_rect(legend_node_d3,
                                          legend_node_d3.select("#under_rect"),
-                                         undefined, undefined,
                                          rect_fill_value
                                          );
                 });
@@ -879,7 +938,6 @@ function createlegendEditBox(legend_id, layer_name){
                     rect_fill_value = {color: this.value, opacity: 1};
                     make_underlying_rect(legend_node_d3,
                                          legend_node_d3.select("#under_rect"),
-                                         undefined, undefined,
                                          rect_fill_value
                                          );
                 });
@@ -900,4 +958,17 @@ var get_max_nb_dec = function(layer_name){
                 max = tmp[1].length - 1 - tmp[1].indexOf('.');
         });
     return max;
+}
+
+var get_max_nb_left_sep = function(layer_name){
+    if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
+        return;
+    let nb_left = [];
+    current_layers[layer_name].colors_breaks.forEach( el => {
+        let tmp = el[0].split(' - ');
+        let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
+        nb_left.push(p1);
+        nb_left.push(p2);
+        });
+    return min_fast(nb_left);
 }

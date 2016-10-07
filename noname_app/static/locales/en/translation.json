@@ -172,6 +172,18 @@
                 "invalid_name": "Unauthorized column name !"
             }
         },
+        "legend_style_box": {
+            "title": "Layer style options - {{layer_name}}",
+            "subtitle": "Legend customization",
+            "lgd_title": "Legend title<br>",
+            "var_name": "Variable name<br>",
+            "float_rounding": "Floating number rounding precision<br> ",
+            "gap_boxes": "No gap between color boxes",
+            "nested_symbols": "Nested symbols",
+            "no_data": "No data category name",
+            "additionnal_notes": "Additionnal legend notes<br>",
+            "under_rectangle": "Display a rectangle under the legend"
+        },
         "help_box": {
             "title": "Emergency help!",
             "message_invite": "Write something to be searched in the documentation :"

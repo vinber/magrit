@@ -172,6 +172,18 @@
                 "invalid_name": "Nom de colonne invalide !"
             }
         },
+        "legend_style_box": {
+            "title": "Style de la couche - {{layer_name}}",
+            "subtitle": "Personnalisation de la légende",
+            "lgd_title": "Titre de la légende<br>",
+            "var_name": "Nom de la variable<br>",
+            "float_rounding": "Arrondi des nombres flottants<br> ",
+            "gap_boxes": "Pas d'espaces entre les boites",
+            "nested_symbols": "Symboles encastrés",
+            "no_data": "Affichage de la catégorie \"absence de données\"",
+            "additionnal_notes": "Notes additionnelles de la légende<br>",
+            "under_rectangle": "Afficher un rectangle sous la légende"
+        },
         "help_box": {
             "title": "Aide d'urgence!",
             "message_invite": "Saisir un terme à rechercher dans la documentation :"

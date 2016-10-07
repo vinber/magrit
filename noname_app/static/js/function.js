@@ -3413,6 +3413,11 @@ function get_nb_decimals(nb){
     return tmp.length < 2 ? 0 : tmp[1].length;
 }
 
+function get_nb_left_separator(nb){
+    let tmp = nb.toString().split('.');
+    return tmp[0].length;
+}
+
 function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
 }

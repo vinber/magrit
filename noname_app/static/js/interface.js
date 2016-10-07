@@ -1299,7 +1299,7 @@ function send_remove_server(layer_name){
 
 function get_map_xy0(){
     let bbox = svg_map.getBoundingClientRect();
-    return {x: bbox.x, y: bbox.y}
+    return {x: bbox.left, y: bbox.top}
 }
 
 function handleClickAddArrow(){
