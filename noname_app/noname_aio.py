@@ -821,11 +821,24 @@ async def handler_exists_layer2(request):
             return web.Response(
                 text="Error: Unable to understand the projection string")
         if "GeoJSON" in file_format:
+            res_geojson = json.loads(res_geojson)
             if out_proj == "epsg:4326":
-                return web.Response(text=res_geojson)
+                res_geojson["crs"] = {
+                    'type': 'name', 'properties': {
+                        'name': 'urn:ogc:def:crs:OGC:1.3:CRS84'
+                        }
+                    }
+                return web.Response(text=json.dumps(res_geojson))
             else:
                 reproj_layer(res_geojson, out_proj)
-                return web.Response(text=res_geojson)
+                if "epsg" in out_proj:
+                    res_geojson["crs"] = {
+                        'type': 'name', 'properties': {
+                            'name': 'urn:ogc:def:crs:{}'
+                                .format(out_proj.replace("epsg", "EPSG:"))
+                            }
+                        }
+                return web.Response(text=json.dumps(res_geojson))
         else:
             available_formats = {"ESRI Shapefile": ".shp",
                                  "KML": ".kml",

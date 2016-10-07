@@ -15,6 +15,7 @@
             "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
+            "error_no_title": "Aucun titre à mettre en forme",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -176,6 +177,7 @@
             "message_invite": "Saisir un terme à rechercher dans la documentation :"
         },
         "text_box_edit_box": {
+            "constructor_default": "Saisir du texte...",
             "title": "Options de la boite de texte"
         },
         "arrow_edit_box": {
@@ -183,6 +185,14 @@
             "arrowWeight": "Taille de la fleche",
             "arrowColor": "Couleur de la fleche",
             "move_points": "Déplacement des points (départ/arrivée) de la fleche"
+        },
+        "title_box": {
+            "title": "Propriétés du titre",
+            "font_size": "Font size :<br>",
+            "font_color": "Font color :<br>",
+            "font_family": "Font family :<br>",
+            "xpos": "Position en X (% depuis de la gauche) :<br>",
+            "ypos": "Position en Y (% depuis le haut) :<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",

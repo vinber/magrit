@@ -339,12 +339,12 @@ function handle_dataset(f){
             } else {
                 sep = ",";
             }
-            let encoding = jschardet.detect(data);
-            if(encoding.encoding != "utf-8"
-                    || encoding.confidence){
-                console.log(encoding);
-                // Todo : do something in order to get a correct encoding
-            }
+//            let encoding = jschardet.detect(data);
+//            if(encoding.encoding != "utf-8"
+//                    || encoding.confidence){
+//                console.log(encoding);
+//                // Todo : do something in order to get a correct encoding
+//            }
             let tmp_dataset = d3.dsvFormat(sep).parse(data);
             let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
@@ -774,8 +774,7 @@ function add_layout_feature(selected_feature){
                             existing_annotation,
                             elem => +elem.childNodes[0].id.split('text_annotation_')[1]
                             );
-        for(let i in range(25)){
-            i = +i;
+        for(let i=0; i < 25; i++){
             if(existing_id.indexOf(i) == -1){
                 existing_id.push(i);
                 new_id = ["text_annotation_", i].join('');
@@ -956,7 +955,7 @@ var northArrow = {
             .on("mouseout", function(){
                 self.under_rect.style("fill-opacity", 0);
                 })
-            .on("contextmenu", (d,i) => {
+            .on("contextmenu dblclick", (d,i) => {
                 d3.event.preventDefault();
                 return arrow_context_menu
                    .showMenu(d3.event, document.querySelector("body"), getItems());
@@ -1171,11 +1170,9 @@ function add_layout_layers(){
                          ["World country capitals <i>(Points)</i>", "world_cities"],
                          ];
 
-
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Sample layout layers", "sampleLayoutDialogBox").then(
+    var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), "Sample layout layers", "sampleLayoutDialogBox").then(
         function(confirmed){
             if(confirmed){
-                let url = undefined;
                 if(selec.layout && selec.layout.length > 0){
                     for(let i = 0; i < selec.layout.length; ++i){
                         add_sample_geojson(selec.layout[i]);
@@ -1228,7 +1225,12 @@ function add_sample_layer(){
                     ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
                     ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
 
-    var a = make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.sample_layer_box.title"), "sampleDialogBox").then(
+    var confirm_dialog = make_confirm_dialog("",
+                                i18next.t("app_page.common.valid"),
+                                i18next.t("app_page.common.cancel"),
+                                i18next.t("app_page.sample_layer_box.title"),
+                                "sampleDialogBox");
+    confirm_dialog.then(
         function(confirmed){
             if(confirmed){
                 let url = undefined;
@@ -1290,18 +1292,6 @@ function send_remove_server(layer_name){
         url: '/layers/delete',
         data: formToSend,
         type: 'POST',
-        success: function(data){ console.log(JSON.parse(data)) },
-        error: function(error) { console.log(error); }
-    });
-}
-
-function list_existing_layers_server(){
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/layers',
-        type: 'GET',
         success: function(data){ console.log(JSON.parse(data)) },
         error: function(error) { console.log(error); }
     });

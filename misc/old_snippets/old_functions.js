@@ -441,3 +441,55 @@ function path_to_geojson2(id_layer){
         features: result_geojson
     });
 }
+
+function standardize_values(array_values){
+    let new_values = [];
+    let minV = min_fast(array_values);
+    let maxV = max_fast(array_values);
+    for(let i=0; i<array_values.length; i++) {
+        new_values.push((array_values[i] - minV ) / ( maxV - minV ));
+    }
+    return new_values;
+}
+
+// Function trying to mimic the R "seq" function or the python 2 "range" function
+// (ie its not generator based and returns a real array)
+let range = function(start = 0, stop, step = 1) {
+    let cur = (stop === undefined) ? 0 : start;
+    let max = (stop === undefined) ? start : stop;
+    let res = [];
+    for(let i = cur; step < 0 ? i > max : i < max; i += step)
+        res.push(i);
+    return res;
+}
+
+// Function trying to mimic the python 2 "xrange" / python 3 "range" function
+// (ie. its a generator and returns values "on request")
+let xrange = function*(start = 0, stop, step = 1) {
+    let cur = (stop === undefined) ? 0 : start;
+    let max = (stop === undefined) ? start : stop;
+    for(let i = cur; step < 0 ? i > max : i < max; i += step)
+        yield i;
+}
+
+function list_existing_layers_server(){
+    $.ajax({
+        processData: false,
+        contentType: false,
+        global: false,
+        url: '/layers',
+        type: 'GET',
+        success: function(data){ console.log(JSON.parse(data)) },
+        error: function(error) { console.log(error); }
+    });
+}
+
+function get_zoom_param(scale){
+    let transform = map.select(".layer").attr("transform"),
+        zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
+    if(scale) return zoom_scale;
+    else {
+        let zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
+        return {scale: zoom_scale, translate: zoom_translate}
+    }
+}

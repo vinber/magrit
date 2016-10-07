@@ -8,7 +8,6 @@ class UserArrow {
         this.pt2 = destination_pt;
         this.id = id;
         this.lineWeight = 4;
-        this.headWeight = 1;
         this.color = "rgb(0, 0, 0)";
 
         let self = this;
@@ -128,16 +127,25 @@ class UserArrow {
 
     editStyle(){
         let current_options = {lineWeight: this.lineWeight,
-                               headWeight: this.headWeight,
                                color: this.color};
         let self = this,
             line = self.arrow.node().querySelector("line");
 
         var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.arrow_edit_box.title"), "styleBoxArrow")
             .then(function(confirmed){
-                if(!confirmed){
-                    self.headWeight = current_options.headWeight;
-                    self.lineWeight = current_options.lineWeight;
+                if(confirmed) {
+                    // Store shorcut of useful values :
+                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+                    self.lineWeight = line.style.strokeWidth;
+                    self.color = line.style.stroke;
+                } else {
+                    line.x1.baseVal.value = self.pt1[0];
+                    line.y1.baseVal.value = self.pt1[1];
+                    line.x2.baseVal.value = self.pt2[0];
+                    line.y2.baseVal.value = self.pt2[1];
+                    line.style.strokeWidth = self.lineWeight;
+                    line.style.stroke = self.color;
                 }
             });
         let box_content = d3.select(".styleBoxArrow").insert("div").attr("id", "styleBoxArrow");
@@ -146,7 +154,6 @@ class UserArrow {
         s1.append("input")
             .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
             .on("change", function(){
-                self.lineWeight = +this.value;
                 line.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
@@ -158,7 +165,6 @@ class UserArrow {
             .attrs({id: "arrow_headWeight", type: "color", value: self.color })
             .on("change", function(){
                 line.style.stroke = this.value;
-                self.color = this.value;
             });
 
         let s3 = box_content.append("p");
@@ -179,7 +185,6 @@ class UserArrow {
                         t.attr("x", nx).attr("y", ny);
                         line.x1.baseVal.value = nx;
                         line.y1.baseVal.value = ny;
-                        self.pt1 = [nx, ny];
                     }));
 
                 let tmp_end_point = map.append("rect")
@@ -195,14 +200,13 @@ class UserArrow {
                         t.attr("x", nx).attr("y", ny);
                         line.x2.baseVal.value = nx;
                         line.y2.baseVal.value = ny;
-                        self.pt2 = [nx, ny];
                     }));
                 document.getElementById("styleBoxArrow").style.display = "none";
                 document.querySelector(".ui-widget-overlay").style.display = "none";
                 let el = document.createElement("span");
                 el.innerHTML = "Done";
                 el.onclick = function(){
-                    document.getElementById("styleBoxArrow").style.display = "";
+                    document.getElementById("styleBoxArrow").style.display = "initial";
                     document.querySelector(".ui-widget-overlay").style.display = "";
                     tmp_end_point.remove();
                     tmp_start_point.remove();
@@ -279,7 +283,7 @@ class Textbox {
         inner_p.style = "display:table-cell;padding:10px;color:#000;"
             + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
             + "word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;"
-        inner_p.innerHTML = "Enter your text...";
+        inner_p.innerHTML = i18next.t("app_page.text_box_edit_box.constructor_default");
         foreign_obj.appendChild(inner_p);
         parent.appendChild(foreign_obj);
 
@@ -336,7 +340,7 @@ class Textbox {
                                content: this.text_annot.select("p").html(),
                                font: ""};
         let self = this;
-        var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.text_box_edit_box.title"), "styleTextAnnotation")
+        make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.text_box_edit_box.title"), "styleTextAnnotation")
             .then(function(confirmed){
                 if(!confirmed){
                     self.text_annot.select("p").text(current_options.content);
@@ -375,10 +379,7 @@ class Textbox {
                     self._text = this.value;
                     self.text_annot.select("p").html(this.value)
                 });
-
-
         document.getElementById("annotation_content").value = current_options.content;
-
     }
 
     up_element(){
@@ -393,9 +394,7 @@ class Textbox {
         if(self_position == nb_lgd_features - 1){
             return;
         } else {
-            console.log(lgd_features[self_position])
-            console.log(lgd_features[self_position + 1])
-            map.node().insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
+            svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
         }
     }
 
@@ -411,7 +410,7 @@ class Textbox {
         if(self_position == 0){
             return;
         } else {
-            map.node().insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+            svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
         }
 
     }

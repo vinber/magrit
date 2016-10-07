@@ -15,6 +15,7 @@
             "error_only_one": "Only one layer can be added by this functionnality",
             "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
+            "error_no_title": "No title to style",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",
@@ -176,6 +177,7 @@
             "message_invite": "Write something to be searched in the documentation :"
         },
         "text_box_edit_box": {
+            "constructor_default": "Enter your text...",
             "title": "Textbox options"
         },
         "arrow_edit_box": {
@@ -183,6 +185,14 @@
             "arrowWeight": "Arrow weight",
             "arrowColor": "Arrow color",
             "move_points": "Move arrow start or end point"
+        },
+        "title_box": {
+            "title": "Title properties",
+            "font_size": "Font size :<br>",
+            "font_color": "Couleur de la police :<br>",
+            "font_family": "Type de police :<br>",
+            "xpos": "x position (% from the left side) :<br>",
+            "ypos": "y position (% from the top) :<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

@@ -22,7 +22,7 @@
     <script  src="/static/js/lib/jquery-ui.min.js"></script>
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
-    <script  src="/static/js/lib/jschardet.min.js"></script>
+    <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
     <script src="/static/js/lib/loc-i18next.min.js"></script>
@@ -40,7 +40,6 @@
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
-    <script src="/static/js/lib/cookies.js"></script>
   </head>
   <body>
       <div id="header">
@@ -375,6 +374,10 @@ function setUpInterface()
                   .attr("d", path)
                   .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
         map.selectAll(".layer").selectAll("path").attr("d", path);
+        current_layers["Simplified_land_polygons"] = {
+            "type": "Polygon", "n_features":125,
+            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
+        };
         scale_to_lyr("Simplified_land_polygons");
         center_map("Simplified_land_polygons");
         zoom_without_redraw();
@@ -910,9 +913,6 @@ var available_fonts = [
 // the .css file.
 var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
-
-current_layers["Simplified_land_polygons"] = {"type": "Polygon", "n_features":125, "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}};
-
 {% raw %}
 
 (function(){
@@ -947,10 +947,6 @@ function up_legend(){
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);
     }
-    let defs = document.querySelector("defs");
-    if(defs && svg_map.childNodes[0].tagName != "defs"){
-        svg_map.insertBefore(defs, svg_map.childNodes[0]);
-    }
 }
 
 ////////////////
@@ -965,21 +961,15 @@ function binds_layers_buttons(layer_name){
         alert("This shouldn't happend");
         return;
     }
-    let sortable_li_elem = d3.select("#sortable").select("." + layer_name);
-    sortable_li_elem.select("#trash_button").on("click", function(){ remove_layer(layer_name); });
-    sortable_li_elem.select(".active_button").on("click", function(){ handle_active_layer(layer_name); });
-    sortable_li_elem.select("#zoom_fit_button").on("click", function(){
+    let sortable_elem = d3.select("#sortable").select("." + layer_name);
+    sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
+    sortable_elem.select(".active_button").on("click", () => { handle_active_layer(layer_name); });
+    sortable_elem.select(".style_button").on("click", () => { handle_click_layer(layer_name); });
+    sortable_elem.select(".style_target_layer").on("click", () => { handle_click_layer(layer_name) });
+    sortable_elem.select("#legend_button").on("click", () => { handle_legend(layer_name); });
+    sortable_elem.select("#zoom_fit_button").on("click", () => {
         center_map(layer_name);
         zoom_without_redraw();
-    });
-    sortable_li_elem.select(".style_button").on("click", function(){
-        handle_click_layer(layer_name);
-    });
-    sortable_li_elem.select(".style_target_layer").on("click", function(){
-        handle_click_layer(layer_name)
-    });
-    sortable_li_elem.select("#legend_button").on("click", function(){
-        handle_legend(layer_name);
     });
 
     $("[layer-tooltip!='']").qtip({
@@ -1612,7 +1602,6 @@ function handleClipPath(proj_name){
         map.selectAll(".layer")
             .attr("clip-path", "url(#clip)");
 
-        //svg_map.insertBefore(svg_map.querySelector("defs"), svg_map.childNodes[0]);
     } else {
         let defs_sphere = defs.node().querySelector("#sphere"),
             defs_clipPath = defs.node().querySelector("clipPath");
@@ -1731,7 +1720,7 @@ function handle_title(txt){
 function handle_title_properties(){
     var title = d3.select("#map_title");
     if(!title.node()){
-        alert("No title no style...");
+        swal("", i18next.t("app_page.common.error_no_title"), "error");
         return;
     }
     var title_props = {
@@ -1743,7 +1732,7 @@ function handle_title_properties(){
         };
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog("", "Valid", "Cancel", "Title properties", "mapTitleitleDialogBox", 280).then(
+    make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.title_box.title"), "mapTitleitleDialogBox", 280).then(
         function(confirmed){ if(!confirmed)
             title.style("font-size", title_props.size)
                 .style("fill", title_props.color)
@@ -1752,19 +1741,19 @@ function handle_title_properties(){
         });
     var box_content = d3.select(".mapTitleitleDialogBox").append("div");
 
-    box_content.append("p").html("Font-size :<br>")
+    box_content.append("p").html(i18next.t("app_page.title_box.font_size"))
         .insert("input").attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
         .on("change", function(){  title.style("font-size", this.value + "px");  });
-    box_content.append("p").html("x position (% from the left side) :<br>")
+    box_content.append("p").html(i18next.t("app_page.title_box.xpos"))
         .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]}).style("width", "50px")
         .on("change", function(){  title.attr("x", this.value + "%");  });
-    box_content.append("p").html("y position (% from the top) :<br>")
+    box_content.append("p").html(i18next.t("app_page.title_box.ypos"))
         .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]}).style("width", "50px")
         .on("change", function(){  title.attr("y", this.value + "%");  });
-    box_content.append("p").html("Font color :<br>")
+    box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
         .insert("input").attrs({type: "color", value: title_props.color})
         .on("change", function(){  title.style("fill", this.value);  });
-    var font_select = box_content.append("p").html("Font family :<br>")
+    var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family"))
         .insert("select").attr("class", "params")
         .on("change", function(){  title.style("font-family", this.value); });
     available_fonts.forEach(function(font){
@@ -2324,14 +2313,14 @@ window.addEventListener("beforeunload", event => {
         window.localStorage.removeItem("noname_app_project");
         window.localStorage.setItem("noname_map_project", json_params);
     });
-    event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0) ? "Confirm exit" : "";
+    event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
+                        ? "Confirm exit" : "";
 });
 
 // Remove some layers from the server when user leave the page
 // (ie. result layers are removed but targeted layer and layout layers stay
 // in cache as they have more chance to be added again)
 window.addEventListener("unload", function(){
-
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
         if(sample_no_values.has(name) || !(current_layers[name].hasOwnProperty("key_name")))
             return 0;
@@ -2353,16 +2342,6 @@ window.addEventListener("unload", function(){
         navigator.sendBeacon("/layers/delete", formToSend);
     }
 }, false);
-
-function get_zoom_param(scale){
-    let transform = map.select(".layer").attr("transform"),
-        zoom_scale = +new RegExp(/scale\(([^)]+)\)/).exec(transform)[1].split(',')[0];
-    if(scale) return zoom_scale;
-    else {
-        let zoom_translate = new RegExp(/translate\(([^)]+)\)/).exec(transform)[1].split(',').map(f => +f);
-        return {scale: zoom_scale, translate: zoom_translate}
-    }
-}
 
 </script>
 </body>

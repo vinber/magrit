@@ -21,11 +21,12 @@ function handle_legend(layer){
                 // .. so it's actually a feature if the legend is redrawn on its origin location
                 // after being moved too close to the outer border of the map :
                 let tol = 7.5,
-                    limit_left = 355 - tol,
-                    limit_right = 355 + +w + tol,
-                    limit_top = 32 - tol,
-                    limit_bottom = 32 + +h + tol;
-                let legends = document.querySelectorAll(class_name);
+                    map_xy0 = get_map_xy0(),
+                    limit_left = map_xy0.x - tol,
+                    limit_right = map_xy0.x + +w + tol,
+                    limit_top = map_xy0.y - tol,
+                    limit_bottom = map_xy0.y + +h + tol;
+                let legends = svg_map.querySelectorAll(class_name);
                 for(let i = 0; i < legends.length; i++){
                     let bbox_legend = legends[i].getBoundingClientRect();
                     if(bbox_legend.left < limit_left || bbox_legend.right > limit_right

@@ -127,9 +127,6 @@ def reproj_convert_layer(geojson_path, output_path,
 
 
 def reproj_layer(geojson, output_crs, input_crs="epsg:4326"):
-    if isinstance(geojson, str):
-        geojson = json_loads(geojson)
-
     reproj = partial(pyproj_transform,
                      pyproj_Proj(init=input_crs),
                      pyproj_Proj(output_crs))

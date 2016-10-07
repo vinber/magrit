@@ -692,14 +692,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                     .insert('input').attrs({
                         type: "radio", name: "color_scheme", value: el, id: "button_"+el})
                      .on("change", function(){
-                        if(this.value === "Sequential"){
-                            make_sequ_button();
-                            redisplay.draw();
-                        }
-                        else if(this.value === "Diverging"){
-                            make_diverg_button();
-                            redisplay.draw();
-                        }
+                        this.value === "Sequential" ? make_sequ_button()
+                                                    : make_diverg_button();
+                        redisplay.draw();
                       });
     });
     var to_reverse = false;
@@ -724,7 +719,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                     type = "user_defined";
                     nb_class = user_break_list.split('-').length - 1;
                     txt_nb_class.html(nb_class + " class");
-                    d3.select("#nb_class_range").node().value = nb_class;
+                    document.getElementById("nb_class_range").value = nb_class;
                     redisplay.compute(old_nb_class);
                     redisplay.draw();
              });
@@ -1056,7 +1051,6 @@ var display_box_symbol_typo = function(layer, field){
                 .attr("title", "Click me to choose a symbol!")
                 .attr("class", "symbol_section")
                 .style("margin", "auto")
-                //.style("background-image", "url('')")
                 .style("background-image", d => d.img)
                 .style("vertical-align", "middle")
                 .styles({width: "32px", height: "32px", margin: "0px 1px 0px 1px",

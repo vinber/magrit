@@ -341,10 +341,7 @@ function render_TypoSymbols(rendering_params, new_name){
         .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
-        .on("dblclick", function(){
-            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-            })
-        .on("contextmenu", function(){
+        .on("contextmenu dblclick", function(){
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
             })
         .call(drag_elem_geo);
@@ -429,21 +426,6 @@ function fillMenu_Discont(){
             disc_kind.append("option").text(k[0]).attr("value", k[1]);
         });
 
-//        let min_size_field = dv2.append('p').html('Reference min. size ')
-//                     .insert('input')
-//                     .style('width', '60px')
-//                     .attrs({type: 'number', class: 'params', id: 'Discont_min_size'})
-//                     .attrs({min: 0.1, max: 66.0, value: 0.5, step: "any"});
-//
-//        dv2.append('p').html('Reference max. size ')
-//                     .insert('input')
-//                     .style('width', '60px')
-//                     .attrs({type: 'number', class: 'params', id: 'Discont_max_size'})
-//                     .attrs({min: 0.1, max: 66.0, value: 10, step: 0.1})
-//                     .on("change", function(){
-//                        min_size_field.attr("max", this.value);
-//                      });
-
         dv2.append('p').html(i18next.t("app_page.func_options.discont.nb_class"))
                 .insert('input')
                 .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 4})
@@ -457,12 +439,6 @@ function fillMenu_Discont(){
         ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
             .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
     }
-
-//    dv2.append('p').html('Discontinuity threshold ')
-//                 .insert('input')
-//                 .style('width', '60px')
-//                 .attrs({type: 'number', class: 'params', id: 'Discont_threshold'})
-//                 .attrs({min: 0.0, max: 9999.0, value: 0.5, step: 0.1});
 
     dv2.append('p').html(i18next.t("app_page.func_options.discont.color"))
                 .insert('input')
@@ -503,9 +479,6 @@ var render_discont = function(){
     let layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
         field_id = document.getElementById("field_id_Discont").value,
-//        min_size = +document.getElementById("Discont_min_size").value,
-//        max_size = +document.getElementById("Discont_max_size").value,
-//        threshold = +document.getElementById("Discont_threshold").value,
         min_size = 1,
         max_size = 10,
         threshold = 1,
@@ -1361,18 +1334,6 @@ var fillMenu_Label = function(){
                             .insert("select")
                             .attr("class", "params")
                             .attr("id", "Label_font_name");
-    var available_fonts = [
-        ['Arial', 'Arial,Helvetica,sans-serif'],
-        ['Arial Black', 'Arial Black,Gadget,sans-serif'],
-        ['Comic Sans MS', 'Comic Sans MS,cursive,sans-serif'],
-        ['Impact', 'Impact,Charcoal,sans-serif'],
-        ['Georgia', 'Georgia,serif'],
-        ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
-        ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
-        ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-        ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
-        ['Verdana', 'Verdana,Geneva,sans-serif']
-        ];
 
     available_fonts.forEach( name => {
         choice_font.append("option").attr("value", name[1]).text(name[0]);
@@ -2938,27 +2899,6 @@ function unfillSelectInput(select_node){
         select_node.removeChild(select_node.children[i]);
 }
 
-// Function trying to mimic the R "seq" function or the python 2 "range" function
-// (ie its not generator based and returns a real array)
-let range = function(start = 0, stop, step = 1) {
-    let cur = (stop === undefined) ? 0 : start;
-    let max = (stop === undefined) ? start : stop;
-    let res = [];
-    for(let i = cur; step < 0 ? i > max : i < max; i += step)
-        res.push(i);
-    return res;
-}
-
-// Function trying to mimic the python 2 "xrange" / python 3 "range" function
-// (ie. its a generator and returns values "on request")
-let xrange = function*(start = 0, stop, step = 1) {
-    let cur = (stop === undefined) ? 0 : start;
-    let max = (stop === undefined) ? start : stop;
-    for(let i = cur; step < 0 ? i > max : i < max; i += step)
-        yield i;
-}
-
-
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         abs = Math.abs,
@@ -3010,11 +2950,6 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
         }
     }
     return res
-}
-
-function get_nb_decimals(nb){
-    let tmp = nb.toString().split('.');
-    return tmp.length < 2 ? 0 : tmp[1].length;
 }
 
 var type_col = function(layer_name, target, skip_if_empty_values=false){
@@ -3324,15 +3259,6 @@ function add_table_field(table, layer_name, parent){
     return box;
 }
 
-/**
-* @param {Array} arr - The array to test
-* @return {Boolean} result - True or False, according to whether it contains empty values or not
-*/
-var contains_empty_val = function(arr){
-    for(let i = arr.length - 1; i > -1; --i)
-        if(arr[i] == null) return true;
-    return false;
-}
 
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
@@ -3369,16 +3295,6 @@ function haversine_dist(A, B){
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function standardize_values(array_values){
-    let new_values = [];
-    let minV = min_fast(array_values);
-    let maxV = max_fast(array_values);
-    for(let i=0; i<array_values.length; i++) {
-        new_values.push((array_values[i] - minV ) / ( maxV - minV ));
-    }
-    return new_values;
-}
-
 function path_to_geojson(id_layer){
     if(id_layer.indexOf('#') != 0)
         id_layer = ["#", id_layer].join('');
@@ -3400,6 +3316,14 @@ function path_to_geojson(id_layer){
     });
 }
 
+function display_error_during_computation(msg){
+    msg = msg ? "Details : " + msg : "",
+    swal({title: i18next.t("Error") + "!",
+          text: i18next.t("Something wrong happened - Current operation has been aborted") + msg,
+          type: "error",
+          allowOutsideClick: false});
+}
+
 /**
 * Perform an asynchronous request
 *
@@ -3417,7 +3341,6 @@ function request_data(method, url, data){
         request.send(data);
     });
 }
-
 
 /**
 * Function computing the min of an array of values (tking care of empty/null/undefined slot)
@@ -3466,6 +3389,16 @@ function has_negative(arr){
   return false;
 }
 
+/**
+* @param {Array} arr - The array to test
+* @return {Boolean} result - True or False, according to whether it contains empty values or not
+*/
+var contains_empty_val = function(arr){
+    for(let i = arr.length - 1; i > -1; --i)
+        if(arr[i] == null) return true;
+    return false;
+}
+
 var round_value = function(val, nb){
     if(nb == undefined)
         return val;
@@ -3475,28 +3408,14 @@ var round_value = function(val, nb){
         : Math.round(+val / dec_mult) * dec_mult;
 }
 
-function display_error_during_computation(msg){
-    msg = msg ? "Details : " + msg : "",
-    swal({title: i18next.t("Error") + "!",
-          text: i18next.t("Something wrong happened - Current operation has been aborted") + msg,
-          type: "error",
-          allowOutsideClick: false});
+function get_nb_decimals(nb){
+    let tmp = nb.toString().split('.');
+    return tmp.length < 2 ? 0 : tmp[1].length;
 }
 
 function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
 }
-
-function setChangeListener (elem, listener) {
-    elem.addEventListener("blur", listener);
-    elem.addEventListener("keyup", listener);
-    elem.addEventListener("paste", listener);
-    elem.addEventListener("copy", listener);
-    elem.addEventListener("cut", listener);
-    elem.addEventListener("delete", listener);
-    elem.addEventListener("mouseup", listener);
-}
-
 
 function make_content_summary(serie, precision=6){
     return [
