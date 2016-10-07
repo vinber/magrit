@@ -1,19 +1,6 @@
 "use strict";
 
 function discretize_to_size(values, type, nb_class, min_size, max_size){
-    var func_switch = {
-        to: function(name){return this.target[name];},
-        target: {
-            "Jenks": "serie.getJenks(nb_class)",
-            "Equal interval": "serie.getEqInterval(nb_class)",
-            "Standard deviation": "serie.getStdDeviation(nb_class)",
-            "Quantiles": "serie.getQuantile(nb_class)",
-            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)",
-            "Geometric progression": "serie.getGeometricProgression(nb_class)"
-        }
-    }
-
     var serie = new geostats(values),
         nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
         step = (max_size - min_size) / (nb_class - 1),
@@ -23,23 +10,23 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
         rendering_params = {},
         tmp;
 
-    var val = func_switch.to(type);
+    var func_switch = new Map([
+            ["Jenks", "getJenks"],
+            ["Equal interval", "getEqInterval"],
+            ["Standard deviation", "getStdDeviation"],
+            ["Quantiles", "getQuantile"],
+            ["Arithmetic progression", "getArithmeticProgression"],
+            ["Q6", "getBreaksQ6"],
+            ["Geometric progression", "getGeometricProgression"]
+        ]);
+
+    var _func = func_switch.get(type);
     if(type === "Q6"){
-        tmp = eval(val);
+        tmp = _func(values);
         breaks = tmp.breaks;
         serie.setClassManually(breaks);
     } else {
-        breaks = eval(val);
-//        // In order to avoid class limit falling out the serie limits with Std class :
-//        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-
-//        ir = serie.getInnerRanges();
-//        if(!ir){
-//            ir = [];
-//            for(let i = 0; i < breaks.length - 1; i++){
-//                ir.push([breaks[i], breaks[i+1]].join(' - '))
-//            }
-//        }
+        breaks = serie[_func](nb_class);
     }
     for(let i = 0; i<breaks.length-1; ++i)
         breaks_prop.push([[breaks[i], breaks[i+1]], class_size[i]]);
@@ -70,21 +57,22 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
         rendering_params = {},
         colors_map = [],
         tmp,
-        color_array,
-        ir;
+        color_array;
 
     var val = func_switch.to(type);
     if(type === "Q6"){
         tmp = eval(val);
         stock_class = tmp.stock_class;
         breaks = tmp.breaks;
+        breaks[0] = breaks[0] != serie.min() ? serie.min() : breaks[0];
+        breaks[5] = breaks[5] != serie.max() ? serie.max() : breaks[5];
         serie.setClassManually(breaks);
     } else {
         breaks = eval(val);
         // In order to avoid class limit falling out the serie limits with Std class :
         breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-        ir = serie.getInnerRanges();
-        if(!ir) return false;
+//        ir = serie.getInnerRanges();
+//        if(!ir) return false;
     }
 
     color_array = getColorBrewerArray(nb_class, col_ramp_name);
@@ -364,18 +352,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 serie.setClassManually(breaks);
             } else {
                 breaks = eval(val);
-                let ir = serie.getInnerRanges();
-                if(!ir){ nb_class = old_nb_class; return false; }
-                ir = ir.map(function(el){let tmp=el.split(' - ');return [+tmp[0], +tmp[1]]});
-                stock_class = [];
-                let _min = undefined, _max = undefined;
-                for(let j=0, len_j=ir.length; j < len_j; j++){
-                    _min=values.lastIndexOf(ir[j][0]);
-                    _max=values.lastIndexOf(ir[j][1]);
-                    stock_class.push(_max - _min);
+                stock_class = Array.prototype.slice.call(serie.counter);
+                if(stock_class.length == 0){
+                    return;
                 }
             }
-
             // In order to avoid class limit falling out the serie limits with Std class :
 //            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
 //            ^^^ well finally not ?
@@ -398,13 +379,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
             if(!provided_colors){
             var col_scheme = d3.select('.color_params_left').node() ? "Diverging" : "Sequential";
-
+            console.log(color_array)
             if(col_scheme === "Sequential"){
                 if(to_reverse)
                     color_array = color_array.reverse();
                 else {
-                var selected_palette = d3.select('.color_params').node().value;
-                color_array = getColorBrewerArray(nb_class, selected_palette);
+                    var selected_palette = d3.select('.color_params').node().value;
+                    color_array = getColorBrewerArray(nb_class, selected_palette);
+                    color_array = color_array.slice(0, nb_class);
                 }
             } else if(col_scheme === "Diverging"){
                 var left_palette = d3.select('.color_params_left').node().value,
@@ -554,7 +536,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                     type = this.value;
                                     if(type === "Q6"){
                                         nb_class = 6;
-                                        txt_nb_class.html("6" + i18next.t("disc_box.class"));
+                                        txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                         d3.select("#nb_class_range").node().value = 6;
                                     }
                                     redisplay.compute(nb_class);
@@ -565,7 +547,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         discretization.append("option").text(name).attr("value", name);
     });
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(nb_class+" class"),
+    var txt_nb_class = d3.select("#discretization_panel")
+                            .insert("p")
+                            .style("display", "inline")
+                            .html(i18next.t("disc_box.class", {count: nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
@@ -578,12 +563,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                     this.value = 6;
                                     return;
                                 }
-                                nb_class = this.value;
-                                txt_nb_class.html(nb_class + i18next.t("disc_box.class"));
+                                nb_class = +this.value;
+                                txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                 var ret_val = redisplay.compute(old_nb_class);
                                 if(!ret_val){
                                     this.value = old_nb_class;
-                                    txt_nb_class.html(old_nb_class + i18next.t("disc_box.class"));
+                                    txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                 } else {
                                     redisplay.draw();
                                     var ctl_class = document.getElementById("centr_class");
@@ -682,7 +667,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .tickFormat(formatCount));
 
     var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
-    accordion_colors.append("h3").html("<b>Color scheme</b>");
+    accordion_colors.append("h3").html(i18next.t("disc_box.title_break_values"));
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
                             .append("form_action");
@@ -703,7 +688,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var accordion_breaks = newBox.append("div")
                                 .attrs({id: "accordion_breaks_vals",
                                        class: "accordion_disc"});
-    accordion_breaks.append("h3").html("<b>Current break values</b>");
+    accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
 
     var user_defined_breaks =  d3.select("#accordion_breaks_vals")
                                 .append("div").attr("id","user_breaks");
@@ -718,7 +703,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                     user_break_list = d3.select("#user_breaks_area").node().value;
                     type = "user_defined";
                     nb_class = user_break_list.split('-').length - 1;
-                    txt_nb_class.html(nb_class + " class");
+                    txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
                     document.getElementById("nb_class_range").value = nb_class;
                     redisplay.compute(old_nb_class);
                     redisplay.draw();

@@ -202,7 +202,7 @@ async def cache_input_topojson(request):
             f_path = '/tmp/' + fp_name + ".geojson"
             with open(f_path, 'w', encoding='utf-8') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, "-q 1e3")
+            result = await geojson_to_topojson(f_path, "-q 1e5")
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
@@ -331,7 +331,7 @@ async def convert(request):
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'w') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, "-q 1e3")
+        result = await geojson_to_topojson(filepath2, "-q 1e5")
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             store_non_quantized(
@@ -355,7 +355,7 @@ async def convert(request):
                 '.shp', '.geojson')
             with open(filepath2, 'w') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, "-q 1e3")
+            result = await geojson_to_topojson(filepath2, "-q 1e5")
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
@@ -382,7 +382,7 @@ async def convert(request):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
 
-        result = await geojson_to_topojson(filepath, "-q 1e3")
+        result = await geojson_to_topojson(filepath, "-q 1e5")
 
         if len(result) == 0 and not crs:
             return web.Response(text=json.dumps(
@@ -403,7 +403,7 @@ async def convert(request):
         os.remove(filepath)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e3")
+        result = await geojson_to_topojson(filepath, "-q 1e5")
         if len(result) == 0:
             return web.Response(
                 text='{"Error": "Error converting reading kml file"}')
