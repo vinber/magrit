@@ -1,103 +1,45 @@
 "use strict";
 
-function discretize_to_size(values, type, nb_class, min_size, max_size){
+function getBreaks(values, type, nb_class){
     var serie = new geostats(values),
         nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
-        step = (max_size - min_size) / (nb_class - 1),
-        breaks = [],
-        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step)),
-        breaks_prop = [],
-        rendering_params = {},
-        tmp;
-
-    var func_switch = new Map([
-            ["Jenks", "getJenks"],
-            ["Equal interval", "getEqInterval"],
-            ["Standard deviation", "getStdDeviation"],
-            ["Quantiles", "getQuantile"],
-            ["Arithmetic progression", "getArithmeticProgression"],
-            ["Q6", "getBreaksQ6"],
-            ["Geometric progression", "getGeometricProgression"]
-        ]);
-
-    var _func = func_switch.get(type);
+        breaks = [];
     if(type === "Q6"){
-        tmp = _func(values);
+        let tmp = getBreaksQ6(serie.sorted());
         breaks = tmp.breaks;
         serie.setClassManually(breaks);
     } else {
+        let _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
     }
+    return [serie, breaks, nb_class];
+}
+
+function discretize_to_size(values, type, nb_class, min_size, max_size){
+    var [serie, breaks, nb_class] = getBreaks(values, type, nb_class);
+    var step = (max_size - min_size) / (nb_class - 1),
+        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step)),
+        breaks_prop = [];
+
     for(let i = 0; i<breaks.length-1; ++i)
         breaks_prop.push([[breaks[i], breaks[i+1]], class_size[i]]);
     return [nb_class, type, breaks_prop, serie];
 }
 
-
 function discretize_to_colors(values, type, nb_class, col_ramp_name){
-    var func_switch = {
-        to: function(name){return this.target[name];},
-        target: {
-            "Jenks": "serie.getJenks(nb_class)",
-            "Equal interval": "serie.getEqInterval(nb_class)",
-            "Standard deviation": "serie.getStdDeviation(nb_class)",
-            "Quantiles": "serie.getQuantile(nb_class)",
-            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)",
-        }
-    }
-
-    var serie = new geostats(values),
+    col_ramp_name = col_ramp_name || "Reds";
+    var [serie, breaks, nb_class] = getBreaks(values, type, nb_class),
+        color_array = getColorBrewerArray(nb_class, col_ramp_name),
         sorted_values = serie.sorted(),
-        nb_class = nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
-        col_ramp_name = col_ramp_name || "Reds",
-        breaks = [],
-        stock_class = [],
-        bounds = [],
-        rendering_params = {},
-        colors_map = [],
-        tmp,
-        color_array;
-
-    var val = func_switch.to(type);
-    if(type === "Q6"){
-        tmp = eval(val);
-        stock_class = tmp.stock_class;
-        breaks = tmp.breaks;
-        breaks[0] = breaks[0] != serie.min() ? serie.min() : breaks[0];
-        breaks[5] = breaks[5] != serie.max() ? serie.max() : breaks[5];
-        serie.setClassManually(breaks);
-    } else {
-        breaks = eval(val);
-        // In order to avoid class limit falling out the serie limits with Std class :
-        breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-//        ir = serie.getInnerRanges();
-//        if(!ir) return false;
-    }
-
-    color_array = getColorBrewerArray(nb_class, col_ramp_name);
+        colors_map = [];
     for(let j=0; j<sorted_values.length; ++j){
-        var idx = serie.getClass(values[j])
+        let idx = serie.getClass(values[j])
         colors_map.push(color_array[idx])
     }
     return [nb_class, type, breaks, color_array, colors_map];
 }
 
-//var display_discretization = function(layer_name, field_name, nb_class, type, provided_colors){
 var display_discretization = function(layer_name, field_name, nb_class, type, options){
-    var func_switch = {
-        to: function(name){return this.target[name];},
-        target: {
-            "Jenks": "serie.getJenks(nb_class)",
-            "Equal interval": "serie.getEqInterval(nb_class)",
-            "Standard deviation": "serie.getStdDeviation(nb_class)",
-            "Quantiles": "serie.getQuantile(nb_class)",
-            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)",
-            "user_defined": "getBreaks_userDefined(values, user_break_list)"
-        }
-    }
-
     var make_no_data_section = function(){
         var section = d3.select("#color_div")
                             .append("div").attr("id", "no_data_section")
@@ -176,13 +118,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         var left_color_select = col_div.insert("p")
                         .attr("class", "color_txt")
                         .style("display", "inline")
-                        .html("Left-side color ramp ")
+                        .html(i18next.t("disc_box.left_colramp"))
                         .insert("select").attr("class", "color_params_left")
                         .on("change", function(){ redisplay.draw() });
         var right_color_select = col_div.insert("p")
                         .styles({display: "inline", "margin-left": "70px"})
                         .attr("class", "color_txt2")
-                        .html("Right-side color ramp ")
+                        .html(i18next.t("disc_box.right_colramp"))
                         .insert("select").attr("class", "color_params_right")
                         .on("change", function(){ redisplay.draw() });
         pal_names.forEach(function(name){
@@ -337,21 +279,23 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var redisplay = {
         compute: function(old_nb_class){
             serie = new geostats(values);
-            breaks = []
-            values = serie.sorted()
-            var val = func_switch.to(type);
+            breaks = [];
+            values = serie.sorted();
+
             if(type === "Q6"){
-                var tmp = eval(val);
+                var tmp = getBreaksQ6(values);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
-                var tmp = eval(val);
+                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 serie.setClassManually(breaks);
             } else {
-                breaks = eval(val);
+                let _func = discretiz_geostats_switch.get(type);
+                breaks = serie[_func](nb_class);
+                serie.doCount();
                 stock_class = Array.prototype.slice.call(serie.counter);
                 if(stock_class.length == 0){
                     return;
@@ -373,41 +317,41 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         },
         draw: function(provided_colors){
                 // Clean-up previously made histogram :
-            d3.select("#svg_discretization").selectAll(".bar").remove();
-            d3.select("#svg_discretization").selectAll(".text_bar").remove();
-            d3.select("#svg_discretization").selectAll(".y_axis").remove();
+            newBox.select("#svg_discretization").selectAll(".bar").remove();
+            newBox.select("#svg_discretization").selectAll(".text_bar").remove();
+            newBox.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if(!provided_colors){
-            var col_scheme = d3.select('.color_params_left').node() ? "Diverging" : "Sequential";
-            console.log(color_array)
-            if(col_scheme === "Sequential"){
-                if(to_reverse)
-                    color_array = color_array.reverse();
-                else {
-                    var selected_palette = d3.select('.color_params').node().value;
-                    color_array = getColorBrewerArray(nb_class, selected_palette);
-                    color_array = color_array.slice(0, nb_class);
+                var col_scheme = newBox.select('.color_params_left').node() ? "Diverging" : "Sequential";
+                console.log(color_array)
+                if(col_scheme === "Sequential"){
+                    if(to_reverse){
+                        color_array = color_array.reverse();
+                        to_reverse = false;
+                    } else {
+                        var selected_palette = document.querySelector('.color_params').value;
+                        color_array = getColorBrewerArray(nb_class, selected_palette);
+                        color_array = color_array.slice(0, nb_class);
+                    }
+                } else if(col_scheme === "Diverging"){
+                    var left_palette = document.querySelector('.color_params_left').value,
+                        right_palette = document.querySelector('.color_params_right').value,
+                        ctl_class_value = +document.getElementById('centr_class').value,
+                        ctl_class_color =  document.querySelector(".central_color > input").checked
+                                        ? document.getElementById("central_color_val").value
+                                        : [];
+
+                    let class_right = nb_class - ctl_class_value + 1,
+                        class_left = ctl_class_value - 1,
+                        max_col_nb = Math.max(class_right, class_left),
+                        right_pal = getColorBrewerArray(max_col_nb, right_palette),
+                        left_pal = getColorBrewerArray(max_col_nb, left_palette);
+
+                    left_pal = left_pal.slice(0, class_left).reverse();
+                    right_pal = right_pal.slice(0, class_right);
+
+                    color_array = [].concat(left_pal, ctl_class_color, right_pal);
                 }
-            } else if(col_scheme === "Diverging"){
-                var left_palette = d3.select('.color_params_left').node().value,
-                    right_palette = d3.select('.color_params_right').node().value,
-                    ctl_class_value = +d3.select('#centr_class').node().value,
-                    ctl_class_color = d3.select(".central_color").select("input").node().checked
-                                    ? d3.select("#central_color_val").node().value
-                                    : [];
-
-                let class_right = nb_class - ctl_class_value + 1,
-                    class_left = ctl_class_value - 1,
-                    max_col_nb = Math.max(class_right, class_left),
-                    right_pal = getColorBrewerArray(max_col_nb, right_palette),
-                    left_pal = getColorBrewerArray(max_col_nb, left_palette);
-
-                left_pal = left_pal.slice(0, class_left).reverse();
-                right_pal = right_pal.slice(0, class_right);
-
-                color_array = [].concat(left_pal, ctl_class_color, right_pal);
-            }
-            to_reverse = false;
             } else {
                 color_array = provided_colors.slice();
             }
@@ -506,11 +450,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         nb_values = values.length;
     }
 
-    // Rounding values like that seems to do the job
-    // to fix an error when loading a serie of values with great precision
-    // with geostats :
-    values = values.map(v => +v.toFixed(20));
-
     var serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
@@ -525,7 +464,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression"];
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push("Geometric progression");
-        func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
     var discretization = newBox.append('div')
@@ -537,7 +475,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                     if(type === "Q6"){
                                         nb_class = 6;
                                         txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
-                                        d3.select("#nb_class_range").node().value = 6;
+                                        document.getElementById("nb_class_range").value = 6;
                                     }
                                     redisplay.compute(nb_class);
                                     redisplay.draw();
@@ -667,7 +605,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .tickFormat(formatCount));
 
     var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
-    accordion_colors.append("h3").html(i18next.t("disc_box.title_break_values"));
+    accordion_colors.append("h3").html(i18next.t("disc_box.title_color_scheme"));
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
                             .append("form_action");
@@ -690,8 +628,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                        class: "accordion_disc"});
     accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
 
-    var user_defined_breaks =  d3.select("#accordion_breaks_vals")
-                                .append("div").attr("id","user_breaks");
+    var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
     user_defined_breaks.insert("textarea")
                         .attr("id","user_breaks_area")
@@ -700,7 +637,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     user_defined_breaks.insert("button").text("Valid")
             .on("click", function(){
                     let old_nb_class = nb_class;
-                    user_break_list = d3.select("#user_breaks_area").node().value;
+                    user_break_list = document.getElementById("user_breaks_area").value;
                     type = "user_defined";
                     nb_class = user_break_list.split('-').length - 1;
                     txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
@@ -821,12 +758,10 @@ function getBreaks_userDefined(serie, breaks_list){
         len_break_val = break_values.length,
         stock_class = new Array(len_break_val-1);
 
-    console.log(serie)
-
     for(let i=1; i<len_break_val; ++i){
         let class_max = break_values[i];
         stock_class[i-1] = 0;
-        while(serie[j] < class_max){
+        while(serie[j] <= class_max){
             stock_class[i-1] += 1;
             j++;
         }
@@ -1065,11 +1000,10 @@ var display_box_symbol_typo = function(layer, field){
                 .style("display", "inline-block")
                 .html(" px");
 
-          $( "#typo_categories" ).sortable({
+        $( "#typo_categories" ).sortable({
             placeholder: "ui-state-highlight",
             helper: 'clone'  // Avoid propagation of the click event to the enclosed button
-          });
-
+        });
 
         var deferred = Q.defer();
         $("#symbol_box").dialog({

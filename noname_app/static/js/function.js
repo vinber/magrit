@@ -1469,12 +1469,7 @@ var render_label = function(layer, rendering_params){
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
-        .on("dblclick", function(){
-            context_menu.showMenu(d3.event,
-                                  document.querySelector("body"),
-                                  getItems(this)); })
-
-        .on("contextmenu", function(){
+        .on("dblclick contextmenu", function(){
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
                                   getItems(this)); })
@@ -2476,7 +2471,7 @@ function fillMenu_PropSymbol(layer){
         .append('button')
         .attr('id', 'yes')
         .attr("class", "params button_st3")
-        .html('Compute')
+        .html(i18next.t('app_page.func_options.common.render'))
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 nb_features = user_data[layer].length,

@@ -14,7 +14,7 @@ Options:
   -h, --help                        Show this screen.
   --version                         Show version.
   -p <port>, --port <port>          Port number to use (exit if not available) [default: 9999]
-  -n <name>, --name-app <name>      Name of the application [default: FreeCarto]
+  -n <name>, --name-app <name>      Name of the application [default: Magrit]
 """
 
 import os
@@ -431,32 +431,6 @@ async def serve_main_page(request):
     get_user_id(session_redis, request.app['app_users'])
     return {"app_name": request.app["app_name"]}
 
-#async def nothing(posted_data, user_id, app):
-#    posted_data = json.loads(posted_data.get("json"))
-#    key = posted_data['topojson']
-#    f_name = '_'.join([user_id, str(key), "NQ"])
-#    ref_layer = await app['redis_conn'].get(f_name)
-#    ref_layer = json.loads(ref_layer.decode())
-#    new_field = posted_data['var_name']
-#    n_field_name = list(new_field.keys())[0]
-#    if len(new_field[n_field_name]) > 0:
-#        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
-#    tmp_part = get_name()
-#    tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
-#    savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
-#    gdf = GeoDataFrame.from_file(tmp_path)
-#    os.remove(tmp_path)
-#    result = gdf.to_json()
-#    savefile(tmp_path, result.encode())
-#    res = await geojson_to_topojson(tmp_path, remove=True)
-#    hash_val = mmh3_hash(res)
-#    return ''.join([
-#             '{"key":',
-#             str(hash_val),
-#             ',"file":',
-#             res.replace(tmp_part, '_'.join(["Nope", n_field_name])),
-#             '}'
-#         ])
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()

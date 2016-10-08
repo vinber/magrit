@@ -16,6 +16,7 @@
             "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",
+            "error_no_visible": "Error : no visible layer found",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",
@@ -26,6 +27,7 @@
             "cancel": "Cancel",
             "delete": "Delete",
             "deleted": "Deleted",
+            "done": "Done!",
             "valid": "Valid",
             "error": "Error",
             "feature": "feature",
@@ -123,6 +125,12 @@
             "arrow": "Customizable arrow",
             "symbol": "Single symbol"
         },
+        "layout_layer_box": {
+            "title": "Layout layers",
+            "msg_select_layer": "Choose layer(s) to be used as layout : ",
+            "msg_select_multi": "<i>(multiple layers can be selected)</i>",
+            "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"
+        },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choose a layer to be rendered :",
@@ -188,9 +196,22 @@
             "title": "Emergency help!",
             "message_invite": "Write something to be searched in the documentation :"
         },
+        "north_arrow_edit_box": {
+            "title": "North arrow options",
+            "size": "Arrow size ",
+            "rotation": "Arrow rotation "
+        },
+        "scale_bar_edit_box": {
+            "title": "Scale bar options",
+            "fixed_size": "Fixed size "
+        },
         "text_box_edit_box": {
             "constructor_default": "Enter your text...",
-            "title": "Textbox options"
+            "title": "Textbox options",
+            "font_size": "Font size ",
+            "default_font": "Default font family ",
+            "content": "Content ",
+            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed."
         },
         "arrow_edit_box": {
             "title": "Arrow options",
@@ -367,10 +388,14 @@
         "summary": "Summary",
         "title_color_scheme": "Color scheme",
         "title_break_values": "Current break values",
+        "left_colramp": "Left-side coloramp",
+        "right_colramp": "Right-side coloramp",
         "mean": "Mean",
         "median": "Median",
         "line_size": "<b>Line size :</b>",
-        "apply": "Apply changes"
+        "apply": "Apply changes",
+        "sequential": "Sequential",
+        "diverging": "Diverging"
     },
     "style_box":{
         "ref_layer": "Reference layer",

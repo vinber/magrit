@@ -9,12 +9,15 @@ function handle_join(){
              "error");
         return;
     } else if(field_join_map.length != 0){
-        make_confirm_dialog(i18next.t("app_page.join_box.ask_forget_join"), "Ok", i18next.t("app_page.common.cancel"), "").then(function(confirmed){
-            if(confirmed){
-                field_join_map = [];
-                createJoinBox(layer_name[0]);
-                }
-            });
+        make_confirm_dialog(i18next.t("app_page.join_box.ask_forget_join"),
+                            i18next.t("app_page.common.valid"),
+                            i18next.t("app_page.common.cancel"), "")
+            .then(function(confirmed){
+                if(confirmed){
+                    field_join_map = [];
+                    createJoinBox(layer_name[0]);
+                    }
+                });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
         make_confirm_dialog(i18next.t("app_page.join_box.ask_diff_nb_features"), "Ok", i18next.t("app_page.common.cancel"), "").then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
@@ -54,13 +57,11 @@ function valid_join_check_display(val, prop){
         let [v1, v2] = prop.split("/").map(d => +d);
 
         let join_sec = document.getElementById("join_section");
-//        join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
         join_sec.innerHTML = [' <b>', prop, i18next.t("app_page.join_box.match", {count: v1}), '</b>'].join(' ');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-//        button.innerHTML = " - <i> Change join field </i>";
         button.innerHTML = [" - <i> ", i18next.t("app_page.join_box.change_field"), " </i>"].join('');
         button.onclick = handle_join;
         join_sec.appendChild(button);

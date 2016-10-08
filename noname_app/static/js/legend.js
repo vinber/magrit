@@ -104,6 +104,7 @@ function make_legend_context_menu(legend_node, layer){
         });
 }
 
+
 var drag_legend_func = function(legend_group){
     return d3.drag()
              .subject(function() {
@@ -204,30 +205,30 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 //        for(let b_val of breaks)
 //            ref_symbols_params.push({value:b_val[0], size:b_val[1]});
 //    }
-    console.log(ref_symbols_params)
     ref_symbols_params.reverse();
 
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
                                   .enter().insert('g')
-                                  .attr('class', function(d, i) { return "legend_feature lg legend_" + i; });
+                                  .attr('class', (d, i) => "legend_feature lg legend_" + i);
 
     let max_size = current_layers[layer].size[1],
         last_size = 0,
         last_pos = y_pos2,
-        color = current_layers[layer].fill_color.single;
+        color = current_layers[layer].fill_color.single,
+        xrect = xpos + space_elem + max_size / 2;
 
     legend_elems
           .append("rect")
-          .attr("x", function(d, i){ return xpos + space_elem + max_size / 2;})
-          .attr("y", function(d, i){
-                    last_pos = boxgap + last_pos + last_size;
-                    last_size = d.size;
-                    return last_pos;
-                    })
+          .attr("x", xrect)
+          .attr("y", d => {
+                last_pos = boxgap + last_pos + last_size;
+                last_size = d.size;
+                return last_pos;
+                })
           .attr('width', 45)
-          .attr('height', function(d, i){  return d.size;  })
+          .attr('height', d => d.size)
           .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
 
     last_pos = y_pos2;
@@ -237,23 +238,20 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     let tmp_pos;
     legend_elems.append("text")
         .attr("x", x_text_pos)
-        .attr("y", function(d, i){
-                    last_pos = boxgap + last_pos + last_size;
-                    last_size = d.size;
-                    tmp_pos = last_pos - (d.size / 4)
-                    return tmp_pos;
-                    })
+        .attr("y", d => {
+                last_pos = boxgap + last_pos + last_size;
+                last_size = d.size;
+                tmp_pos = last_pos - (d.size / 4)
+                return tmp_pos;
+                })
         .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(function(d, i){return d.value[1];});
+        .text(d => d.value[1]);
 
     legend_root.insert('text').attr("id", "lgd_choro_min_val")
         .attr("x", x_text_pos)
-        .attr("y", function(d, i){
-          return tmp_pos + boxgap;
-          })
+        .attr("y", tmp_pos + boxgap)
         .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(function(d) { return ref_symbols_params[ref_symbols_params.length -1].value[0] });
-
+        .text(ref_symbols_params[ref_symbols_params.length -1].value[0]);
 
     legend_root.call(drag_legend_func(legend_root));
 
@@ -296,9 +294,7 @@ function make_underlying_rect(legend_root, under_rect, fill){
         x_top_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
         y_top_right: bbox_legend.top - map_xy0.y - 5 - translate[1],
         x_bottom_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
-        y_bottom_left: bbox_legend.bottom - map_xy0.y + 5 - translate[1],
-        x_bottom_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
-        y_bottom_right: bbox_legend.bottom - map_xy0.y + 5 - translate[1]
+        y_bottom_left: bbox_legend.bottom - map_xy0.y + 5 - translate[1]
     }
     let rect_height = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_bottom_left, bbox.y_bottom_left]),
         rect_width = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_top_right, bbox.y_top_right]);
@@ -321,35 +317,6 @@ function make_underlying_rect(legend_root, under_rect, fill){
 
     }
 }
-
-//function make_underlying_rect(legend_root, under_rect, xpos, ypos, fill){
-//    under_rect.attrs({"width": 0, height: 0});
-//    let bbox_legend = legend_root.node().getBoundingClientRect(),
-//        map_xy0 = get_map_xy0();
-//    console.log(bbox_legend);
-//    under_rect.attr("class", "legend_feature").attr("id", "under_rect")
-//                     .attr("height", Math.round(bbox_legend.height / 5) * 5 + 20)
-//                     .attr("width", Math.round(bbox_legend.width / 5) * 5 + 25)
-//
-//    let tmp = bbox_legend.Left - 350;
-//    tmp = tmp < 0 ? Math.abs(tmp)  : 2.5;
-//
-//    if(xpos && ypos)
-//        under_rect.attr("x", xpos - tmp).attr("y", ypos - 12.5)
-//    if(!fill || (!fill.color || !fill.opacity)){
-//        under_rect.style("fill", "green")
-//                  .style("fill-opacity", 0);
-//        legend_root.attr("visible_rect", "false");
-//        legend_root.on("mouseover", ()=>{ under_rect.style("fill-opacity", 0.1); })
-//                   .on("mouseout", ()=>{ under_rect.style("fill-opacity", 0); });
-//    } else {
-//        under_rect.style("fill", fill.color)
-//                  .style("fill-opacity", fill.opacity);
-//        legend_root.attr("visible_rect", "true");
-//        legend_root.on("mouseover", null).on("mouseout", null);
-//
-//    }
-//}
 
 function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value){
     var space_elem = 18,
@@ -942,6 +909,41 @@ function createlegendEditBox(legend_id, layer_name){
                                          );
                 });
 }
+
+function move_legends(new_shape){
+    let legends = [
+        document.querySelectorAll("#legend_root"),
+        document.querySelectorAll("#legend_root2"),
+        document.querySelectorAll("#legend_root_links")
+        ];
+
+    let xy0_map = get_map_xy0();
+
+    for(let j=0; j < 3; ++j){
+        let legends_type = legends[j];
+        for(let i=0, i_len = legends_type.length; i < i_len; ++i){
+            let legend_bbox = legends_type[i].getBoundingClientRect();
+            if((legend_bbox.x + legend_bbox.width / 2) > (+new_shape[0] + xy0_map.x)){
+                let current_transform = legends_type[i].getAttribute("transform");
+                let regtranslate = new RegExp(/\(([^\)]+)\)/);
+                let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
+                let trans_x = legend_bbox.x +legend_bbox.width - (+new_shape[0] + xy0_map.x);
+                legends_type[i].setAttribute("transform",
+                    ["translate(", +val_x - trans_x, val_y, ")"].join(''));
+            }
+            if((legend_bbox.y + legend_bbox.height / 2) > (+new_shape[1] + xy0_map.y)){
+                let current_transform = legends_type[i].getAttribute("transform");
+                let regtranslate = new RegExp(/\(([^\)]+)\)/);
+                let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
+                let trans_y = legend_bbox.y +legend_bbox.height - (+new_shape[1] + xy0_map.y);
+                legends_type[i].setAttribute("transform",
+                    ["translate(", val_x, +val_y - trans_y, ")"].join(''));
+            }
+
+        }
+    }
+}
+
 
 var get_max_nb_dec = function(layer_name){
     if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))

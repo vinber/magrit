@@ -1,17 +1,6 @@
 "use strict";
 
 var display_discretization_links_discont = function(layer_name, field_name, nb_class, type){
-    var func_switch = {to: function(name){return this.target[name];},
-        target: {
-            "Jenks": "serie.getJenks(nb_class)",
-            "Equal interval": "serie.getEqInterval(nb_class)",
-            "Standard deviation": "serie.getStdDeviation(nb_class)",
-            "Quantiles": "serie.getQuantile(nb_class)",
-            "Arithmetic progression": "serie.getArithmeticProgression(nb_class)",
-            "Q6": "getBreaksQ6(values)"
-        }
-    }
-
     var make_box_histo_option = function(){
         var histo_options = newBox.append('div').attr("id", "histo_options");
 
@@ -178,7 +167,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             bins = [];
             for(let i = 0, len = breaks_info.length; i < len; i++){
                 let bin = {};
-//                bin.val = stock_class[i] + 1;
                 bin.offset = i == 0 ? 0 : (bins[i-1].width + bins[i-1].offset);
                 bin.width = breaks[i+1] - breaks[i];
                 bin.height = breaks_info[i][1];
@@ -285,24 +273,23 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "User defined"];
     if(!serie._hasZeroValue()){
         available_functions.push("Geometric progression");
-        func_switch.target["Geometric progression"] = "serie.getGeometricProgression(nb_class)"
     }
 
-    var discretization = newBox.append('div') // .styles({"margin-top": "30px", "padding-top": "10px"})
-                                .attr("id", "discretization_panel")
-                                .insert("p").html("Type ")
-                                .insert("select").attr("class", "params")
-                                .on("change", function(){
-                                    type = this.value;
-                                    if(type === "Q6"){
-                                        nb_class = 6;
-                                        txt_nb_class.html(6 + " class");
-                                        d3.select("#nb_class_range").node().value = 6;
-                                    }
-                                    update_breaks();
-                                    redisplay.compute();
-                                    redisplay.draw();
-                                    });
+    var discretization = newBox.append('div')
+                            .attr("id", "discretization_panel")
+                            .insert("p").html("Type ")
+                            .insert("select").attr("class", "params")
+                            .on("change", function(){
+                                type = this.value;
+                                if(type === "Q6"){
+                                    nb_class = 6;
+                                    txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+                                    document.getElementById("nb_class_range").value = 6;
+                                }
+                                update_breaks();
+                                redisplay.compute();
+                                redisplay.draw();
+                            });
 
     available_functions.forEach(function(name){
         discretization.append("option").text(name).attr("value", name);
@@ -331,7 +318,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                                     return;
                                 }
                                 nb_class = this.value;
-                                txt_nb_class.html(nb_class+" class");
+                                txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                 update_breaks();
                                 redisplay.compute();
                                 redisplay.draw();
@@ -421,14 +408,14 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .scale(x));
 
     var box_content = newBox.append("div").attr("id", "box_content");
-    box_content.append("h3").style("margin", "0").html("<b>Line size</b>");
+    box_content.append("h3").style("margin", "0").html(i18next.t("disc_box.line_size"));
     var sizes_div =  d3.select("#box_content")
                             .append("div").attr("id", "sizes_div");
     make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info);
     box_content.append("p")
             .insert("button")
             .attr("class", "button_st3")
-            .html("Apply changes")
+            .html(i18next.t("disc_box.apply"))
             .on("click", function(){
                 discretization.node().value = type;
                 update_breaks(true);

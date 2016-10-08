@@ -16,6 +16,7 @@
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "error_no_title": "Aucun titre à mettre en forme",
+            "error_no_visible": "Erreur : pas de couche visible trouvée!",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -26,6 +27,7 @@
             "cancel": "Annulation",
             "delete": "Suppression",
             "deleted": "Supprimée",
+            "done": "Fini!",
             "valid": "Confirmation",
             "error": "Erreur",
             "feature": "entité",
@@ -123,6 +125,12 @@
             "arrow": "Flèche",
             "symbol": "Insertion d'un symbole"
         },
+        "layout_layer_box": {
+            "title": "Couches d'habillage",
+            "msg_select_layer": "Selectionnez une ou plusieurs couches d'habillage : ",
+            "msg_select_multi": "<i>(plusieurs couches peuvent être selectionnées simultanément)</i>",
+            "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
+        },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choix d'une couche géographique à ajouter :",
@@ -188,9 +196,22 @@
             "title": "Aide d'urgence!",
             "message_invite": "Saisir un terme à rechercher dans la documentation :"
         },
+        "north_arrow_edit_box": {
+            "title": "North arrow options",
+            "size": "Arrow size ",
+            "rotation": "Arrow rotation "
+        },
+        "scale_bar_edit_box": {
+            "title": "Options de l'échelle",
+            "fixed_size": "Taille fixée "
+        },
         "text_box_edit_box": {
             "constructor_default": "Saisir du texte...",
-            "title": "Options de la boite de texte"
+            "title": "Options de la boite de texte",
+            "font_size": "Taille de la police ",
+            "default_font": "Police par défault ",
+            "content": "Contenu ",
+            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées."
         },
         "arrow_edit_box": {
             "title": "Options de la fleche",
@@ -370,12 +391,16 @@
         "disp_sd": "Afficher l'écart-type",
         "hist_ref_title": "Histogramme de distribution des effectifs",
         "summary": "Résumé",
-        "title_color_scheme": "<b>Choix des couleurs</b>",
+        "title_color_scheme": "<b>Choix de la progression de couleurs</b>",
         "title_break_values": "<b>Choix manuel des limites de classes</b>",
+        "left_colramp": "Palette coté gauche",
+        "right_colramp": "Palette coté droit",
         "mean": "Moyenne",
         "median": "Médiane",
         "line_size": "<b>Taille des segments :</b>",
-        "apply": "Appliquer les modifications"
+        "apply": "Appliquer les modifications",
+        "sequential": "Séquentiel",
+        "diverging": "Divergent"
     },
     "style_box":{
         "ref_layer": "Couche de référence",
