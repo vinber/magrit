@@ -657,11 +657,13 @@ async def call_stewart(posted_data, user_id, app):
                             n_field_name1)
 
     if new_field2:
+        discretization = "equal_interval"
         n_field_name2 = list(new_field2.keys())[0]
         if len(new_field2[n_field_name2]) > 0:
             join_field_topojson(point_layer, new_field2[n_field_name2],
                                 n_field_name2)
     else:
+        discretization = "jenks"
         n_field_name2 = None
 
     if posted_data['mask_layer']:
@@ -698,7 +700,7 @@ async def call_stewart(posted_data, user_id, app):
             resume_stewart,
             existing_obj,
             int(posted_data['nb_class']),
-            posted_data["disc_kind"],
+            discretization,
             posted_data['user_breaks'],
             filenames["mask_layer"])
 
@@ -712,7 +714,7 @@ async def call_stewart(posted_data, user_id, app):
             float(posted_data['beta']),
             posted_data['typefct'].lower(),
             int(posted_data['nb_class']),
-            posted_data["disc_kind"],
+            discretization,
             posted_data['resolution'],
             filenames["mask_layer"],
             n_field_name2,
@@ -981,16 +983,16 @@ async def on_shutdown(app):
     app["ThreadPool"].shutdown()
     for task in asyncio.Task.all_tasks():
         await asyncio.sleep(0)
-        info = task._repr_info()
+#        info = task._repr_info()
 #        if "RedisConnection" in info[1]:
 #            task.cancel()
-        if "RedisPool" in info[1] and "pending" in info[0]:
-            try:
-                await asyncio.wait_for(task, 1)
-            except asyncio.TimeoutError:
-                task.cancel()
-        else:
+#        if "RedisPool" in info[1] and "pending" in info[0]:
+        try:
+            await asyncio.wait_for(task, 2)
+        except asyncio.TimeoutError:
             task.cancel()
+#        else:
+#            task.cancel()
 
 async def init(loop, port):
     logging.basicConfig(level=logging.DEBUG)

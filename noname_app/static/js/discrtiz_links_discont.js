@@ -270,9 +270,17 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     values = serie.sorted();
     serie.setPrecision(6);
-    var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression", "User defined"];
-    if(!serie._hasZeroValue()){
-        available_functions.push("Geometric progression");
+    var available_functions = [
+     [i18next.t("app_page.common.equal_interval"), "equal_interval"],
+     [i18next.t("app_page.common.quantiles"), "quantiles"],
+     [i18next.t("app_page.common.std_dev"), "std_dev"],
+     [i18next.t("app_page.common.Q6"), "Q6"],
+     [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
+     [i18next.t("app_page.common.jenks"), "jenks"]
+    ];
+
+    if(!serie._hasZeroValue() && !serie._hasZeroValue()){
+        available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
 
     var discretization = newBox.append('div')
@@ -291,8 +299,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                                 redisplay.draw();
                             });
 
-    available_functions.forEach(function(name){
-        discretization.append("option").text(name).attr("value", name);
+    available_functions.forEach( func => {
+        discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
     discretization.node().value = type;
@@ -300,7 +308,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     make_summary();
     display_ref_histo();
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", {count: nb_class})),
+    var txt_nb_class = d3.select("#discretization_panel")
+                            .insert("p").style("display", "inline")
+                            .html(i18next.t("disc_box.class", {count: nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
@@ -308,9 +318,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                             .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
-                                if(type == "User defined"){
-                                    type = "Equal interval";
-                                    discretization.node().value = "Equal interval";
+                                if(type == "user_defined"){
+                                    type = "equal_interval";
+                                    discretization.node().value = "equal_interval";
                                     }
                                 var old_nb_class = nb_class;
                                 if(type === "Q6"){

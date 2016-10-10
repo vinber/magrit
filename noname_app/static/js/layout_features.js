@@ -161,14 +161,14 @@ class UserArrow {
             });
         let txt_line_weight = s1.append("span").html(self.lineWeight + " px");
 
-        let s2 = box_content.append("p");
-        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowColor"))
-        s2.insert("input")
-            .attrs({id: "arrow_headWeight", type: "color", value: self.color })
-            .style("margin-left", "15px")
-            .on("change", function(){
-                line.style.stroke = this.value;
-            });
+//        let s2 = box_content.append("p");
+//        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowColor"))
+//        s2.insert("input")
+//            .attrs({id: "arrow_headWeight", type: "color", value: self.color })
+//            .style("margin-left", "15px")
+//            .on("change", function(){
+//                line.style.stroke = this.value;
+//            });
 
         let s3 = box_content.append("p");
         s2.append("button")
@@ -204,21 +204,21 @@ class UserArrow {
                         line.x2.baseVal.value = nx;
                         line.y2.baseVal.value = ny;
                     }));
-                document.getElementById("styleBoxArrow").style.display = "none";
+                $(".styleBoxArrow").hide();
                 document.querySelector(".ui-widget-overlay").style.display = "none";
                 let el = document.createElement("button");
                 el.className = "button_st3";
                 el.innerHTML = i18next.t("app_page.common.done");
                 el.onclick = function(){
-                    document.getElementById("styleBoxArrow").style.display = "initial";
                     document.querySelector(".ui-widget-overlay").style.display = "";
                     self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
                     self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
                     tmp_end_point.remove();
                     tmp_start_point.remove();
-                    el.remove()
+                    el.remove();
+                    $(".styleBoxArrow").show();
                 }
-                document.querySelector(".styleBoxArrow").appendChild(el);
+                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
             });
     }
 }

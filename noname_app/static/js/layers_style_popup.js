@@ -28,7 +28,7 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
         g_lyr_name = "#" + layer,
         last_color = (fill_prev && fill_prev.single) ? fill_prev.single : undefined;
     fill_color_section.insert('p')
-          .html('Fill color<br>')
+          .html(i18next.t("app_page.layer_style_popup.fill_color"))
           .insert('input').attrs({type: 'color', "value": last_color})
           .on('change', function(){
                 map.select(g_lyr_name).selectAll(symbol).style("fill", this.value);
@@ -39,7 +39,7 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
 function make_random_color(layer, symbol = "path"){
     d3.select("#fill_color_section")
         .style("text-align", "center")
-        .html('<b><i>Click to toggle colors</b></i>')
+        .html(i18next.t("app_page.layer_style_popup.toggle_colors"))
         .on("click", function(d,i){
             map.select("#" + layer)
                 .selectAll(symbol)
@@ -74,7 +74,7 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
 
 function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", ref_layer){
     var fill_color_section = d3.select("#fill_color_section");
-    var field_selec = fill_color_section.insert("p").html("Categorical field :")
+    var field_selec = fill_color_section.insert("p").html(i18next.t("app_page.layer_style_popup.categorical_field"))
             .insert("select");
     fields.forEach(function(field){
         if(field != "id")
@@ -155,7 +155,10 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("",
+                i18next.t("app_page.common.confirm"),
+                i18next.t("app_page.common.cancel"),
+                layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -165,14 +168,14 @@ function createStyleBoxTypoSymbols(layer_name){
     var popup = d3.select(".styleBox");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
-            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
-                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+            .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
+                   i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
 
     popup.append("p").style("text-align", "center")
             .insert("button")
             .attr("id","reset_symb_loc")
             .attr("class", "button_st4")
-            .text("Reset symbols location")
+            .text(i18next.t("app_page.layer_style_popup.reset_symbols_location"))
             .on("click", function(){
                 selection.attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
                         .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
@@ -182,7 +185,7 @@ function createStyleBoxTypoSymbols(layer_name){
             .insert("button")
             .attr("id","reset_symb_display")
             .attr("class", "button_st4")
-            .text("Redraw deleted symbols")
+            .text(i18next.t("app_page.layer_style_popup.redraw_symbols"))
             .on("click", function(){
                 selection.style("display", undefined);
             });
@@ -191,7 +194,7 @@ function createStyleBoxTypoSymbols(layer_name){
             .insert("button")
             .attr("id","modif_symb")
             .attr("class", "button_st4")
-            .text("Modify your symbols")
+            .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
             .on("click", function(){
                 fields_Symbol.box_typo().then(function(confirmed){
                     if(confirmed){
@@ -253,7 +256,7 @@ function createStyleBoxLabel(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -262,13 +265,13 @@ function createStyleBoxLabel(layer_name){
     var popup = d3.select(".styleBox");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
-            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
-                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+            .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
+                   i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
     popup.append("p").style("text-align", "center")
             .insert("button")
             .attr("id","reset_labels_loc")
             .attr("class", "button_st4")
-            .text("Reset label location")
+            .text(i18next.t("app_page.layer_style_popup.reset_labels_location"))
             .on("click", function(){
                 selection.attr("x", (d,i) => ref_coords[i][0])
                         .attr("y", (d,i) => ref_coords[i][1]);
@@ -278,15 +281,15 @@ function createStyleBoxLabel(layer_name){
             .insert("button")
             .attr("id","reset_labels_display")
             .attr("class", "button_st4")
-            .text("Redraw deleted labels")
+            .text(i18next.t("app_page.layer_style_popup.redraw_labels"))
             .on("click", function(){
                 selection.style("display", undefined);
             });
 
     popup.insert("p").style("text-align", "center").style("font-size", "9px")
-            .html("<b><i> Following options will override settings for labels modified manually </i></b>");
+            .html(i18next.t("app_page.layer_style_popup.overrride_warning"));
     let label_sizes = popup.append("p")
-            .html("Labels default size");
+            .html(i18next.t("app_page.layer_style_popup.labels_default_size"));
     label_sizes.insert("input")
             .attr("type", "number")
             .attr("value", +current_layers[layer_name].default_size.replace("px", ""))
@@ -298,7 +301,7 @@ function createStyleBoxLabel(layer_name){
     label_sizes.insert("span")
             .html(" px")
     popup.insert("p")
-            .html("Labels default color")
+            .html(i18next.t("app_page.layer_style_popup.labels_default_color"))
             .insert("input")
             .attr("type", "color")
             .attr("value", current_layers[layer_name].fill_color)
@@ -330,7 +333,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
@@ -434,9 +437,9 @@ function createStyleBox(layer_name){
             if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
                 let fields = type_col(layer_name, "string");
                 let fill_method = popup.append("p").html("Fill color").insert("select");
-                [["Single color", "single"],
-                 ["Color according to a categorical field", "categorical"],
-                 ["Random color on each feature", "random"]].forEach(function(d,i){
+                [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
+                 [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
+                 [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function(d,i){
                         fill_method.append("option").text(d[0]).attr("value", d[1])  });
                 popup.append('div').attrs({id: "fill_color_section"})
                 fill_method.on("change", function(){
@@ -460,7 +463,7 @@ function createStyleBox(layer_name){
                 fields_name = Object.getOwnPropertyNames(fields_layer),
                 field_to_render;
 
-            var field_selec = popup.append('p').html('Field to render ')
+            var field_selec = popup.append('p').html(i18next.t("app_page.layer_style_popup.field_to_render"))
                                     .insert('select').attr('class', 'params')
                                     .on("change", function(){ field_to_render = this.value; });
 
@@ -472,7 +475,7 @@ function createStyleBox(layer_name){
                 .append("button")
                 .attr("class", "button_disc")
                 .styles({"font-size": "0.8em", "text-align": "center"})
-                .html("Choose colors")
+                .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
                     display_categorical_box(ref_layer_name, field_selec.node().value)
                         .then(function(confirmed){
@@ -496,7 +499,7 @@ function createStyleBox(layer_name){
                 if(renderer == "Choropleth")
                     table_layer_name = current_layers[layer_name].ref_layer_name;
                 var fields = type_col(table_layer_name, "number");
-                var field_selec = popup.append('p').html('Field :')
+                var field_selec = popup.append('p').html(i18next.t("app_page.layer_style_popup.field"))
                                         .insert('select')
                                         .attr('class', 'params')
                                         .on("change", function(){
@@ -510,12 +513,12 @@ function createStyleBox(layer_name){
              popup.append('p').style("margin", "auto").html("")
                 .append("button")
                 .attr("class", "button_disc")
-                .html("Display and arrange class")
+                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
                 .on("click", function(){
                     display_discretization(table_layer_name,
                                            field_to_discretize,
                                            current_layers[layer_name].colors_breaks.length,
-                                           "Quantiles",
+                                           "quantiles",
                                            current_layers[layer_name].options_disc)
                         .then(function(confirmed){
                             if(confirmed){
@@ -551,7 +554,7 @@ function createStyleBox(layer_name){
             }
 
             let seq_color_select = popup.insert("p")
-                                        .html("Color palette ")
+                                        .html(i18next.t("app_page.layer_style_popup.color_palette"))
                                         .insert("select")
                                         .attr("id", "coloramp_params")
                                         .on("change", function(){
@@ -566,14 +569,14 @@ function createStyleBox(layer_name){
             var button_reverse = popup.insert("button")
                                     .styles({"display": "inline", "margin-left": "10px"})
                                     .attrs({"class": "button_st3", "id": "reverse_colramp"})
-                                    .html("Reverse palette")
+                                    .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
                                     .on("click", function(){
                                         let pal_name = document.getElementById("coloramp_params").value;
                                         recolor_stewart(pal_name, true);
                                      });
          }
          let fill_opacity_section = popup.append('p');
-         fill_opacity_section.append("span").html('Fill opacity<br>')
+         fill_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"))
          fill_opacity_section.insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
                           .styles({"width": "70px", "vertical-align": "middle"})
@@ -587,7 +590,7 @@ function createStyleBox(layer_name){
         let max_val = 0,
             previous_stroke_opacity = selection.style("stroke-opacity");
         selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
-        let threshold_part = popup.append('p').html('Only display flows larger than ...<br>')
+        let threshold_part = popup.append('p').html(i18next.t("app_page.layer_style_popup.display_flow_larger"))
         // The legend will be updated in order to start on the minimum value displayed instead of
         //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_part.insert('input')
@@ -602,12 +605,12 @@ function createStyleBox(layer_name){
         threshold_part.insert('label').attr("id", "larger_than").html(["<i> ", prev_min_display, " </i>"].join(''));
         popup.append("button")
                 .attr("class", "button_disc")
-                .html("Modify size by class")
+                .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
                 .on("click", function(){
                     display_discretization_links_discont(layer_name,
                                                          current_layers[layer_name].rendered_field,
                                                          current_layers[layer_name].breaks.length,
-                                                         "User defined")
+                                                         "user_defined")
                         .then(function(result){
                             if(result){
                                 let serie = result[0];
@@ -627,7 +630,7 @@ function createStyleBox(layer_name){
      } else if (type === "Line" && renderer == "DiscLayer"){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
-        let disc_part = popup.append("p").html("Discontinuity threshold ");
+        let disc_part = popup.append("p").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
         disc_part.insert("input")
                 .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
                 .styles({width: "70px", "vertical-align": "middle"})
@@ -641,12 +644,12 @@ function createStyleBox(layer_name){
         disc_part.insert("label").attr("id", "discont_threshold").html(["<i> ", prev_min_display, " </i>"].join(''));
         popup.append("button")
                 .attr("class", "button_disc")
-                .html("Modify size by class")
+                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
                 .on("click", function(){
                     display_discretization_links_discont(layer_name,
                                                          "disc_value",
                                                          current_layers[layer_name].breaks.length,
-                                                         "User defined")
+                                                         "user_defined")
                         .then(function(result){
                             if(result){
                                 console.log(result)
@@ -661,13 +664,13 @@ function createStyleBox(layer_name){
                         });
                 });
     }
-     popup.append('p').html(type === 'Line' ? 'Color<br>' : 'Border color<br>')
+     popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"))
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
                       .on('change', function(){
                         selection.style("stroke", this.value);
                         current_layers[layer_name].fill_color.single = this.value;
                         });
-     let opacity_section = popup.append('p').html(type === 'Line' ? 'Opacity<br>' : 'Border opacity<br>')
+     let opacity_section = popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"))
      opacity_section.insert('input')
                       .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
                       .styles({"width": "70px", "vertical-align": "middle"})
@@ -681,7 +684,7 @@ function createStyleBox(layer_name){
                      .html(" " + border_opacity);
 
     if(renderer != "DiscLayer" && renderer != "Links")
-         popup.append('p').html(type === 'Line' ? 'Width (px)<br>' : 'Border width<br>')
+         popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"))
                           .insert('input').attr('type', 'number')
                           .attrs({min: 0, step: 0.1, value: stroke_width})
                           .style("width", "70px")
@@ -749,7 +752,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-    make_confirm_dialog("", "Confirm", "Cancel", layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
@@ -826,17 +829,19 @@ function createStyleBox_ProbSymbol(layer_name){
     var popup = d3.select(".styleBox");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
-            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
-                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+            .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
+                   i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''))
+//            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
+//                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
-         popup.append('p').style("margin", "auto").html("Field used for <strong>symbol colors</strong> : <i>" + field_color + "</i><br>")
-            .append("button").attr("class", "button_disc").html("Display and arrange class")
+         popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))
+            .append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
                 display_discretization(ref_layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
-                                       "Quantiles",
+                                       "quantiles",
                                        current_layers[layer_name].options_disc)
                   .then(function(confirmed){
                     if(confirmed){
@@ -858,7 +863,7 @@ function createStyleBox_ProbSymbol(layer_name){
         let fill_color_section = popup.append('div').attr("id", "fill_color_section");
         fill_color_section.append("p")
                     .style("text-align", "center")
-                    .html('Color according to a break value');
+                    .html(i18next.t("app_page.layer_style_popup.color_break"));
         var p2 = fill_color_section.append("p").style("display", "inline");
         var col1 = p2.insert("input").attr("type", "color")
                             .attr("id", "col1")
@@ -877,7 +882,7 @@ function createStyleBox_ProbSymbol(layer_name){
                                 selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? this.value : col1.node().value);
 
                             });
-        fill_color_section.insert("span").html("Break value ");
+        fill_color_section.insert("span").html(i18next.t("app_page.layer_style_popup.break_value"));
         var b_val = fill_color_section.insert("input")
                             .attrs({type: "number", value: current_layers[layer_name].break_val})
                             .style("width", "75px")
@@ -888,11 +893,11 @@ function createStyleBox_ProbSymbol(layer_name){
                             });
     } else {
         let fields = type_col(ref_layer_name, "string"),
-            fill_method = popup.append("p").html("Fill color").insert("select");
+            fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
 
-        [["Single color", "single"],
-         ["Color according to a categorical field", "categorical"],
-         ["Random color on each feature", "random"]]
+        [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
+         [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
+         [i18next.t("app_page.layer_style_popup.random_color"), "random"]]
             .forEach(function(d,i){
                 fill_method.append("option").text(d[0]).attr("value", d[1])
             });
@@ -909,7 +914,7 @@ function createStyleBox_ProbSymbol(layer_name){
         setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
     }
 
-    let fill_opct_section = popup.append('p').html('Fill opacity<br>');
+    let fill_opct_section = popup.append('p').html(i18next.t("app_page.layer_style_popup.fill_opacity"));
     fill_opct_section
           .insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
@@ -919,13 +924,13 @@ function createStyleBox_ProbSymbol(layer_name){
             fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
           });
     fill_opct_section.append("span").attr("id", "fill_opacity_txt").html((+opacity * 100) + "%");
-    popup.append('p').html('Border color<br>')
+    popup.append('p').html(i18next.t("app_page.layer_style_popup.border_color"))
           .insert('input').attr('type', 'color').attr("value", stroke_prev)
           .on('change', function(){
             selection.style("stroke", this.value);
           });
 
-    let border_opacity_section = popup.append('p').html('Border opacity<br>');
+    let border_opacity_section = popup.append('p').html(i18next.t("app_page.layer_style_popup.border_opacity"));
     border_opacity_section
           .insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
@@ -936,7 +941,7 @@ function createStyleBox_ProbSymbol(layer_name){
           });
     border_opacity_section.append("span").attr("id", "border_opacity_txt").html((+border_opacity * 100) + "%");
 
-    popup.append('p').html('Border width<br>')
+    popup.append('p').html(i18next.t("app_page.layer_style_popup.border_width"))
           .insert('input').attr('type', 'number')
           .attrs({min: 0, step: 0.1, value: stroke_width})
           .style("width", "70px")
@@ -946,8 +951,8 @@ function createStyleBox_ProbSymbol(layer_name){
             });
 
     let prop_val_content = popup.append("p").html([
-        "Field used for <strong>proportionals values</strong> : <i>", field_used,
-        "</i><br><br>Symbol fixed size "].join(''));
+        i18next.t("app_page.layer_style_popup.field_symbol_size", {field: field_used}),
+        i18next.t("app_page.layer_style_popup.symbol_fixed_size")].join(''));
     prop_val_content
           .insert('input').attr("type", "number").style("width", "50px")
           .attrs({id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
@@ -959,7 +964,7 @@ function createStyleBox_ProbSymbol(layer_name){
           });
     prop_val_content.append("span").html(' px');
 
-    prop_val_content.append("p").html("on value ...")
+    prop_val_content.append("p").html(i18next.t("app_page.layer_style_popup.on_value"))
         .insert("input")
         .style("width", "100px")
         .attrs({type: "number", min: 0.1, step: 0.1,

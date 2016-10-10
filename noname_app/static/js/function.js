@@ -436,8 +436,16 @@ function fillMenu_Discont(){
                             .insert('select')
                             .attrs({'class': 'params', "id": "Discont_discKind"});
 
-        ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
-            .forEach(field => { disc_type.append("option").text(field).attr("value", field) });
+        [
+         [i18next.t("app_page.common.equal_interval"), "equal_interval"],
+         [i18next.t("app_page.common.quantiles"), "quantiles"],
+         [i18next.t("app_page.common.std_dev"), "std_dev"],
+         [i18next.t("app_page.common.Q6"), "Q6"],
+         [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
+         [i18next.t("app_page.common.jenks"), "jenks"]
+        ].forEach(field => {
+             disc_type.append("option").text(field[0]).attr("value", field[1]);
+        });
     }
 
     dv2.append('p').html(i18next.t("app_page.func_options.discont.color"))
@@ -806,7 +814,9 @@ function fetch_min_max_table_value(parent_id){
     if(mins != mins.sort(comp_fun)
             || maxs != maxs.sort(comp_fun)
             || sizes != sizes.sort(comp_fun)){
-        alert("Values have to be ordered (from the minimum to the maximum)");
+        swal("",
+             i18next.t("app_page.common.error_values_order"),
+             "error");
         return false;
     }
 
@@ -830,10 +840,18 @@ function fillMenu_FlowMap(){
         field_fij = dv2.append('p').html('<b><i> fij </i></b> field ')
                         .insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
 
-    var disc_type = dv2.append('p').html(i18next.t("app_page.func_options.flow.discretization")).insert('select').attr('class', 'params').attr("id", "FlowMap_discKind");
-    ["Equal interval", "Quantiles", "Standard deviation", "Q6", "Arithmetic progression", "Jenks"]
-        .forEach(field => {
-            disc_type.append("option").text(field).attr("value", field)
+    var disc_type = dv2.append('p').html(i18next.t("app_page.func_options.flow.discretization"))
+                        .insert('select')
+                        .attrs({class: 'params', id: "FlowMap_discKind"});
+    [
+     [i18next.t("app_page.common.equal_interval"), "equal_interval"],
+     [i18next.t("app_page.common.quantiles"), "quantiles"],
+     [i18next.t("app_page.common.std_dev"), "std_dev"],
+     [i18next.t("app_page.common.Q6"), "Q6"],
+     [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
+     [i18next.t("app_page.common.jenks"), "jenks"]
+    ].forEach(field => {
+            disc_type.append("option").text(field[0]).attr("value", field[1])
         });
 
     var nb_class_input = dv2.append('p').html(i18next.t("app_page.func_options.flow.nb_class"))
@@ -1108,7 +1126,7 @@ function fillMenu_PropSymbolChoro(layer){
                                                                 colors: rendering_params[selected_field].colors,
                                                                 no_data: rendering_params[selected_field].no_data});
                     else
-                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "Quantiles", {});
+                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
 
                     conf_disc_box.then(function(confirmed){
                         if(confirmed){
@@ -1595,7 +1613,7 @@ function fillMenu_Choropleth(){
                 conf_disc_box = display_discretization(layer_name,
                                                        selected_field,
                                                        opt_nb_class,
-                                                       "Quantiles",
+                                                       "quantiles",
                                                        {});
 
             conf_disc_box.then(function(confirmed){
@@ -1749,8 +1767,8 @@ function fillMenu_Stewart(){
         nb_class = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.nb_class"))
                                 .insert("input").style("width", "50px")
                                 .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
-        disc_kind = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.discretization"))
-                                .insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
+//        disc_kind = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.discretization"))
+//                                .insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
         breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
                                 .insert("textarea").attrs({class: 'params', id: "stewart_breaks"})
                                 .styles({"width": "260px", "height": "30px"}),
@@ -1762,10 +1780,10 @@ function fillMenu_Stewart(){
         func_selec.append("option").text(fun_name[1]).attr("value", fun_name[0]);
     });
 
-    disc_kind.append("option").text("Natural breaks (Jenks)").attr("value", "jenks");
-    disc_kind.append("option").text("Quantiles").attr("value", "percentiles");
-    disc_kind.append("option").text("Equal interval").attr("value", "equal_interval");
-    disc_kind.append("option").text("Geometric progression").attr("value", "prog_geom");
+//    disc_kind.append("option").text(i18next.t("app_page.common.jenks")).attr("value", "jenks");
+//    disc_kind.append("option").text(i18next.t("app_page.common.quantiles")).attr("value", "percentiles");
+//    disc_kind.append("option").text(i18next.t("app_page.common.equal_interval")).attr("value", "equal_interval");
+//    disc_kind.append("option").text(i18next.t("app_page.common.geometric_progression")).attr("value", "prog_geom");
 
     dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
                         .insert('input')
@@ -1812,7 +1830,7 @@ function fillMenu_Stewart(){
                 "typefct": func_selec.node().value,
                 "resolution": reso > 0 ? reso : null,
                 "nb_class": nb_class.node().value,
-                "disc_kind": disc_kind.node().value,
+//                "disc_kind": disc_kind.node().value,
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
 
@@ -2748,10 +2766,10 @@ function fillMenu_griddedMap(layer){
                     }
 
                     current_layers[n_layer_name].renderer = "Gridded";
-                    let disc_result = discretize_to_colors(d_values, "Quantiles", opt_nb_class, col_pal.node().value),
+                    let disc_result = discretize_to_colors(d_values, "quantiles", opt_nb_class, col_pal.node().value),
                         rendering_params = {
                             nb_class: opt_nb_class,
-                            type: "Quantiles",
+                            type: "quantiles",
                             schema: [col_pal.node().value],
                             breaks: disc_result[2],
                             colors: disc_result[3],

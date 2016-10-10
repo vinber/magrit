@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/style-slider.css" rel="stylesheet"  type="text/css">
+    <link href="/static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/style-fonts.css" rel="stylesheet"  type="text/css">
-    <link href="/static/css/style.css" rel="stylesheet"  type="text/css">
+    <link href="/static/css/style.min.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
@@ -883,13 +883,13 @@ const sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" widt
 
 // Shortcut to the name of the methods offered by geostats library:
 const discretiz_geostats_switch = new Map([
-        ["Jenks", "getJenks"],
-        ["Equal interval", "getEqInterval"],
-        ["Standard deviation", "getStdDeviation"],
-        ["Quantiles", "getQuantile"],
-        ["Arithmetic progression", "getArithmeticProgression"],
+        ["jenks", "getJenks"],
+        ["equal_interval", "getEqInterval"],
+        ["std_dev", "getStdDeviation"],
+        ["quantiles", "getQuantile"],
+        ["arithmetic_progression", "getArithmeticProgression"],
         ["Q6", "getBreaksQ6"],
-        ["Geometric progression", "getGeometricProgression"]
+        ["geometric_progression", "getGeometricProgression"]
     ]);
 
 // Reference to the availables fonts that the user could select :
@@ -1024,10 +1024,6 @@ function displayInfoOnMove(){
         if(symbol){
             let ref_layer_name = current_layers[top_visible_layer].ref_layer_name;
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-                //let ref_id = current_layers[top_visible_layer].features_order ? current_layers[top_visible_layer].features_order[i][0] : +i;
-                //let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
-                //                ref_id + 1, "/", current_layers[ref_layer_name].n_features, "</i><p>"];
-                //let properties = user_data[ref_layer_name][ref_id];
                 let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
                                 i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
                 let properties = result_data[top_visible_layer][i];
@@ -1119,7 +1115,7 @@ function reproj_symbol_layer(){
 // which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
 var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height, top){
     html_content = html_content || "";
-    text_ok = text_ok || "Ok";
+    text_ok = text_ok || i18next.t("app_page.common.confirm");
     text_cancel = text_cancel || i18next.t("app_page.common.cancel");
     title = title || i18next.t("app_page.common.confirm");
     class_box = class_box || "dialogBox";
@@ -1158,7 +1154,7 @@ function remove_layer(name){
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Delete!",
+        confirmButtonText: i18next.t("app_page.common.delete") + "!",
         closeOnConfirm: true
     }).then(() => { remove_layer_cleanup(name); },
             () => { null; }
@@ -1373,8 +1369,7 @@ function interpolateZoom(translate, scale) {
 }
 
 function zoomClick() {
-    var clicked = d3.event.target,
-        direction = 1,
+    var direction = (this.id === 'zoom_in') ? 1 : -1,
         factor = 0.1,
         target_zoom = 1,
         center = [w / 2, h / 2],
@@ -1385,7 +1380,6 @@ function zoomClick() {
         view = {x: translate[0], y: translate[1], k: transform.k};
 
     d3.event.preventDefault();
-    direction = (this.id === 'zoom_in') ? 1 : -1;
     target_zoom = transform.k * (1 + factor * direction);
 
     translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
@@ -1420,7 +1414,7 @@ function rotate_global(angle){
             northArrow.svg_node.attr("transform", ["rotate(", angle, ",",northArrow.x,",", northArrow.y, "),"].join('') + current_transform);
         else
             northArrow.svg_node.attr("transform",  ["rotate(", angle, ",",northArrow.x,",", northArrow.y, ")"].join(''));
-        }
+    }
 };
 
 function handleClipPath(proj_name){
@@ -1536,7 +1530,6 @@ function handle_active_layer(name){
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    //map.select("#"+name).style("opacity", fill_value);
     map.select("#"+name).style("visibility", fill_value == 0 ? "hidden" : "initial");
     map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
@@ -1554,8 +1547,11 @@ function handle_title(txt){
         map.append("g")
              .attr("class", "legend legend_feature title")
           .insert("text")
-             .attrs({id: "map_title", x: "50%", y: "8%", "alignment-baseline": "middle", "text-anchor": "middle"})
-             .styles({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"}).text(txt);
+             .attrs({id: "map_title", x: "50%", y: "8%",
+                     "alignment-baseline": "middle", "text-anchor": "middle"})
+             .styles({"font-family": "Arial, Helvetica, sans-serif",
+                      "font-size": "20px", position: "absolute", color: "black"})
+             .text(txt);
     }
 }
 
@@ -1751,7 +1747,8 @@ function export_compo_png(){
 
 function make_export_layer_box(){
     d3.select("body").append("div")
-        .attrs({id: "dialogGeoExport", class: "exportGeoDialogBox", title: i18next.t("app_page.export_box.geo_title_box")})
+        .attrs({id: "dialogGeoExport", class: "exportGeoDialogBox",
+                title: i18next.t("app_page.export_box.geo_title_box")})
         .style("font-size", "0.6em")
         .html("");
 
@@ -1857,7 +1854,9 @@ function make_export_layer_box(){
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
                         if(data.indexOf("Error:") == 0){
-                            swal("Oops...", i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}), "error");
+                            swal("Oops...",
+                                 i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
+                                 "error");
                             return;
                         }
                         let ext = extensions.get(type),

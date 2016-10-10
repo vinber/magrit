@@ -74,11 +74,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         var button_reverse = d3.select(".color_txt").insert("button")
                                 .styles({"display": "inline", "margin-left": "10px"})
                                 .attrs({"class": "button_st3", "id": "reverse_pal_btn"})
-                                .html("Reverse palette")
+                                .html(i18next.t("disc_box.reverse_palette"))
                                 .on("click", function(){
                                     to_reverse = true;
                                     redisplay.draw();
-                                    });
+                                });
     };
 
     var make_diverg_button = function(){
@@ -286,6 +286,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 var tmp = getBreaksQ6(values);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
+                breaks[0] = serie.min();
+                breaks[nb_class] = serie.max();
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
@@ -322,9 +324,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             newBox.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if(!provided_colors){
-                var col_scheme = newBox.select('.color_params_left').node() ? "Diverging" : "Sequential";
+                var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
                 console.log(color_array)
-                if(col_scheme === "Sequential"){
+                if(col_scheme === "sequential"){
                     if(to_reverse){
                         color_array = color_array.reverse();
                         to_reverse = false;
@@ -333,7 +335,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         color_array = getColorBrewerArray(nb_class, selected_palette);
                         color_array = color_array.slice(0, nb_class);
                     }
-                } else if(col_scheme === "Diverging"){
+                } else if(col_scheme === "diverging"){
                     var left_palette = document.querySelector('.color_params_left').value,
                         right_palette = document.querySelector('.color_params_right').value,
                         ctl_class_value = +document.getElementById('centr_class').value,
@@ -460,10 +462,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     }
 
     values = serie.sorted();
-    serie.setPrecision(6);
-    var available_functions = ["Jenks", "Quantiles", "Equal interval", "Standard deviation", "Q6", "Arithmetic progression"];
+//    serie.setPrecision(6);
+    var available_functions = [
+     [i18next.t("app_page.common.equal_interval"), "equal_interval"],
+     [i18next.t("app_page.common.quantiles"), "quantiles"],
+     [i18next.t("app_page.common.std_dev"), "std_dev"],
+     [i18next.t("app_page.common.Q6"), "Q6"],
+     [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
+     [i18next.t("app_page.common.jenks"), "jenks"]
+    ];
+
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
-        available_functions.push("Geometric progression");
+        available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
 
     var discretization = newBox.append('div')
@@ -481,8 +491,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                     redisplay.draw();
                                     });
 
-    available_functions.forEach(function(name){
-        discretization.append("option").text(name).attr("value", name);
+    available_functions.forEach( func => {
+        discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
     var txt_nb_class = d3.select("#discretization_panel")
@@ -610,18 +620,21 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                             .append("div").attr("id", "color_div")
                             .append("form_action");
 
-    ["Sequential", "Diverging"].forEach(function(el){
-        color_scheme.insert("label").style("margin", "20px").html(el)
+    [
+     [i18next.t("disc_box.sequential"), "sequential"],
+     [i18next.t("disc_box.diverging"), "diverging"]
+    ].forEach( el => {
+        color_scheme.insert("label").style("margin", "20px").html(el[0])
                     .insert('input').attrs({
-                        type: "radio", name: "color_scheme", value: el, id: "button_"+el})
+                        type: "radio", name: "color_scheme", value: el[1], id: "button_"+el[1]})
                      .on("change", function(){
-                        this.value === "Sequential" ? make_sequ_button()
+                        this.value === "sequential" ? make_sequ_button()
                                                     : make_diverg_button();
                         redisplay.draw();
                       });
     });
     var to_reverse = false;
-    document.getElementById("button_Sequential").checked = true;
+    document.getElementById("button_sequential").checked = true;
 
     var accordion_breaks = newBox.append("div")
                                 .attrs({id: "accordion_breaks_vals",
@@ -663,7 +676,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         document.querySelector(".color_params").value = options.schema[0];
     } else if(options.schema.length > 1){
         make_diverg_button();
-        document.getElementById("button_Diverging").checked = true;
+        document.getElementById("button_diverging").checked = true;
         let tmp = 0;
         document.querySelector(".color_params_left").value = options.schema[0];
         if(options.schema.length > 2){
