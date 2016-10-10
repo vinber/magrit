@@ -657,7 +657,7 @@ async def call_stewart(posted_data, user_id, app):
                             n_field_name1)
 
     if new_field2:
-        discretization = "equal_interval"
+        discretization = "percentiles"
         n_field_name2 = list(new_field2.keys())[0]
         if len(new_field2[n_field_name2]) > 0:
             join_field_topojson(point_layer, new_field2[n_field_name2],

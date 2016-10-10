@@ -10,6 +10,7 @@ gdal == 2.1.0
 geopandas >= 0.1.1
 gunicorn >= 19.6.0
 hiredis >= 0.2.0
+jenkspy >= 0.1.2
 Jinja2 == 2.8
 matplotlib >= 1.5.3
 murmurhash3 == 2.3.5
@@ -19,6 +20,7 @@ pyproj >= 1.9.5.1
 Rtree >= 0.8.2
 scipy >= 0.18.0
 Shapely >= 1.5.15
+smoomapy >= 0.1.2
 ujson >= 1.35
 uvloop >= 0.5.3
 psutil >= 4.3.0

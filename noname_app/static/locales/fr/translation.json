@@ -17,6 +17,7 @@
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
+            "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
@@ -30,6 +31,7 @@
             "deleted": "Supprimée",
             "done": "Fini!",
             "valid": "Confirmation",
+            "edit_style": "Changer le style...",
             "error": "Erreur",
             "feature": "entité",
             "feature_plural": "entités",
@@ -44,7 +46,9 @@
             "arithmetic_progression": "Progression arithmétique",
             "jenks": "Jenks",
             "geometric_progression": "Progression géométrique",
-            "user_defined": "Personnalisé"
+            "user_defined": "Personnalisé",
+            "up_element": "Up element",
+            "down_element": "Down element"
         },
         "section1": {
             "title": "Ajout de données",
@@ -67,6 +71,7 @@
             "title": "Configuration de la carte",
             "map_width": "<b>Largeur de la carte (px) </b>",
             "map_height": "<b>Hauteur de la carte (px) </b>",
+            "map_center_menu": "Centrage de la carte ...",
             "map_center_x": "Centre de la carte (x)",
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
@@ -235,6 +240,16 @@
             "font_family": "Font family :<br>",
             "xpos": "Position en X (% depuis de la gauche) :<br>",
             "ypos": "Position en Y (% depuis le haut) :<br>"
+        },
+        "symbol_typo_box": {
+            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} features",
+            "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
+            "count_feature": " <i> ({{ nb_features }} entité)</i>",
+            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>"
+        },
+        "categorical_box": {
+            "title": "Choix des couleurs - {{ layer }} - {{ nb_features }} entités",
+            "new_random_colors": "Nouvelles couleurs aléatoires"
         },
         "layer_style_popup": {
             "toggle_colors": "<b><i>Cliquer pour modifier les couleurs</b></i>",
@@ -451,7 +466,10 @@
         "apply": "Appliquer les modifications",
         "sequential": "Séquentiel",
         "diverging": "Divergent",
-        "reverse_palette": "Inverser l'ordre des couleurs"
+        "reverse_palette": "Inverser l'ordre des couleurs",
+        "with_no_data": "{{ nb_features }} entité sans valeur",
+        "with_no_data_plural": "{{ nb_features }} entités sans valeur",
+        "colored_central_class": "classe centrale colorée"
     },
     "style_box":{
         "ref_layer": "Couche de référence",

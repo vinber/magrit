@@ -31,7 +31,16 @@
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
-    <script  src="/static/js/app.min.js"></script>
+    <script  src="/static/js/layout_features.js"></script>
+    <script  src="/static/js/interface.js"></script>
+    <script  src="/static/js/map_project.js"></script>
+    <script  src="/static/js/discrtiz_links_discont.js"></script>
+    <script  src="/static/js/layers_style_popup.js"></script>
+    <script  src="/static/js/discretization_panel.js"></script>
+    <script  src="/static/js/function.js"></script>
+    <script  src="/static/js/legend.js"></script>
+    <script  src="/static/js/join_popup.js"></script>
+    <script  src="/static/js/colors_helpers.js"></script>
   </head>
   <body>
       <div id="header">
@@ -198,7 +207,30 @@ function setUpInterface()
 
     let zoom_prop = svg_map.__zoom;
 
-    let c1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    c.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.map_center_menu")
+            .style("cursor", "pointer");
+    c.insert("span").attr("id", "map_center_menu_ico")
+        .attr("class", "ui-accordion-header-icon ui-icon ui-icon-triangle-1-e")
+        .style("display", "inline-table");
+    c.on("click", function(){
+        let sections = document.querySelectorAll(".to_hide"),
+            arg;
+        if(sections[0].style.display == "none"){
+            arg = "";
+            document.getElementById("map_center_menu_ico").classList = "ui-accordion-header-icon ui-icon ui-icon-triangle-1-s";
+        } else {
+            arg = "none";
+            document.getElementById("map_center_menu_ico").classList = "ui-accordion-header-icon ui-icon ui-icon-triangle-1-e";
+        }
+        sections[0].style.display = arg;
+        sections[1].style.display = arg;
+        sections[2].style.display = arg;
+        let ico_menu = document.getElementById("map_center_menu_ico");
+
+    });
+    let c1 = dv4.append("li").styles({margin: "1px", padding: "4px", display: "none"}).attr("class", "to_hide");
     c1.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_center_x");
     c1.append("input")
@@ -209,7 +241,7 @@ function setUpInterface()
                 zoom_without_redraw();
             });
 
-    let c2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    let c2 = dv4.append("li").styles({margin: "1px", padding: "4px", display: "none"}).attr("class", "to_hide");
     c2.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_center_y");
 
@@ -217,7 +249,7 @@ function setUpInterface()
             .attrs({id: "input-center-y", type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
             .styles({position: "absolute", right: "20px"}).style("width", "80px").style("margin-left", "15px");
 
-    let d = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    let d = dv4.append("li").styles({margin: "1px", padding: "4px", display: "none"}).attr("class", "to_hide");
     d.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_scale_k");
     d.append("input").attr("class", "list_elem_section4")

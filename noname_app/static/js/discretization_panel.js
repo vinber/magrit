@@ -42,8 +42,10 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
 var display_discretization = function(layer_name, field_name, nb_class, type, options){
     var make_no_data_section = function(){
         var section = d3.select("#color_div")
-                            .append("div").attr("id", "no_data_section")
-                            .append("p").html(no_data + " features without data");
+                .append("div").attr("id", "no_data_section")
+                .append("p")
+                .html(i18next.t("disc_box.with_no_data", {nb_features: no_data}));
+
         section.append("input")
                 .attrs({type: "color", value: "#ebebcd", id: "no_data_color"})
                 .style("margin", "0px 10px");
@@ -103,7 +105,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         redisplay.draw();
                     });
         central_color.select("input").node().checked = true;
-        central_color.insert("label").html("colored central class")
+        central_color.insert("label").html(i18next.t("disc_box.colored_central_class"));
         central_color
             .insert("input")
             .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
@@ -820,9 +822,10 @@ function display_categorical_box(layer, field){
     var newbox = d3.select("body")
                         .append("div").style("font-size", "10px")
                         .attrs({id: "categorical_box",
-                               title: ["Color a categorical field - ", layer, " - ", nb_features, " features"].join('')});
+                                title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
     newbox.append("h3").html("")
-    newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
+    newbox.append("p")
+                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
 
     newbox.append("ul").style("padding", "unset").attr("id", "sortable_typo_name")
             .selectAll("li")
@@ -860,12 +863,12 @@ function display_categorical_box(layer, field){
 
     newbox.selectAll(".typo_class")
             .insert("span")
-            .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
+            .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: +d.nb_elem}));
 
     newbox.insert("p")
         .insert("button")
         .attr("class", "button_st3")
-        .html("New random colors")
+        .html(i18next.t("app_page.categorical_box.new_random_colors"))
         .on("click", function(){
             let lines = document.querySelectorAll(".typo_class");
             for(let i=0; i<lines.length; ++i){
@@ -884,7 +887,7 @@ function display_categorical_box(layer, field){
         modal: true,
         resizable: true,
         buttons:[{
-            text: "Confirm",
+            text: i18next.t("app_page.common.confirm"),
             click: function(){
                     let color_map = fetch_categorical_colors();
                     let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
@@ -893,7 +896,7 @@ function display_categorical_box(layer, field){
                     }
                 },
            {
-            text: "Cancel",
+            text: i18next.t("app_page.common.cancel"),
             click: function(){
                 $(this).dialog("close");
                 $(this).remove();}
@@ -960,10 +963,11 @@ var display_box_symbol_typo = function(layer, field){
         var newbox = d3.select("body")
                             .append("div").style("font-size", "10px")
                             .attrs({id: "symbol_box",
-                                   title: ["Choose symbols for fields categories - ", layer, " - ", nb_features, " features"].join('')});
-        newbox.append("h3").html("")
-        newbox.append("p").html("<strong>Field</strong> : " + field +  "<br>" + nb_class + " categories<br>" + nb_features + " features");
+                                    title: i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features})})
 
+        newbox.append("h3").html("")
+        newbox.append("p")
+                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
         newbox.append("ul").style("padding", "unset").attr("id", "typo_categories")
                 .selectAll("li")
                 .data(cats).enter()
@@ -1001,7 +1005,7 @@ var display_box_symbol_typo = function(layer, field){
 
         newbox.selectAll(".typo_class")
                 .insert("span")
-                .html( (d,i) => [" <i> (", d.nb_elem, " features)</i>"].join('') );
+                .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: d.nb_elem}));
 
         newbox.selectAll(".typo_class")
                 .insert("input").attr("type", "number").attr("id", "symbol_size")
@@ -1023,7 +1027,7 @@ var display_box_symbol_typo = function(layer, field){
             modal: true,
             resizable: true,
             buttons:[{
-                text: "Confirm",
+                text: i18next.t("app_page.common.confirm"),
                 click: function(){
                         let symbol_map = fetch_symbol_categories();
                         deferred.resolve([nb_class, symbol_map]);
@@ -1031,7 +1035,7 @@ var display_box_symbol_typo = function(layer, field){
                         }
                     },
                {
-                text: "Cancel",
+                text: i18next.t("app_page.common.cancel"),
                 click: function(){
                     $(this).dialog("close");
                     $(this).remove();}

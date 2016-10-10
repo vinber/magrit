@@ -11,6 +11,7 @@ geopandas >= 0.1.1
 gunicorn >= 19.6.0
 hiredis >= 0.2.0
 Jinja2 >= 2.8
+jenkspy >= 0.1.2
 matplotlib >= 1.5.3
 murmurhash3 >= 2.3.5
 numpy >= 1.11.2
@@ -21,6 +22,7 @@ sauceclient >= 0.2.1
 scipy >= 0.18.0
 selenium == 2.53.6
 Shapely >= 1.5.15
+smoomapy >= 0.1.2
 ujson >= 1.35
 uvloop >= 0.5.3
 psutil >= 4.3.0

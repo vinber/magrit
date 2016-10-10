@@ -144,6 +144,7 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
         symbols_map = current_layers[layer_name].symbols_map,
+        rendered_field = current_layers[layer_name].rendered_field,
         ref_coords = [];
 
     var prev_settings = [],
@@ -168,7 +169,7 @@ function createStyleBoxTypoSymbols(layer_name){
     var popup = d3.select(".styleBox");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
-            .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
+            .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: rendered_field}),
                    i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
 
     popup.append("p").style("text-align", "center")
@@ -196,13 +197,20 @@ function createStyleBoxTypoSymbols(layer_name){
             .attr("class", "button_st4")
             .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
             .on("click", function(){
-                fields_Symbol.box_typo().then(function(confirmed){
+                display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
                     if(confirmed){
                         rendering_params = {
                             nb_cat: confirmed[0],
                             symbols_map: confirmed[1],
-                            field: field_selec.node().value
+                            field: rendered_field
                         };
+                        map.select("#" + layer_name)
+                            .selectAll("image")
+                            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+                            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+                            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+                            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+                            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
                     }
                 });
             });

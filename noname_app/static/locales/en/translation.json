@@ -17,6 +17,7 @@
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
+            "error_too_many_features": "Very many features. Navigation ease might be degraded.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
@@ -30,6 +31,7 @@
             "deleted": "Deleted",
             "done": "Done!",
             "valid": "Valid",
+            "edit_style": "Edit style...",
             "error": "Error",
             "feature": "feature",
             "feature_plural": "features",
@@ -68,6 +70,7 @@
             "title": "Basemap configuration",
             "map_width": "<b>Map width (px) </b>",
             "map_height": "<b>Map height (px) </b>",
+            "map_center_menu": "Map centering ...",
             "map_center_x": "Map center (x)",
             "map_center_y": "Map center (y)",
             "map_scale_k": "Zoom scale",
@@ -236,6 +239,16 @@
             "font_family": "Type de police :<br>",
             "xpos": "x position (% from the left side) :<br>",
             "ypos": "y position (% from the top) :<br>"
+        },
+        "symbol_typo_box": {
+            "title": "Choose symbols for fields categories - {{ layer }} - {{ nb_features }} features",
+            "field_categ": "<strong>Field</strong> : {{ field }}<br>{{ nb_class }} categories<br>{{ nb_features}} features",
+            "count_feature": " <i> ({{ nb_features }} feature)</i>",
+            "count_feature_plural": " <i> ({{ nb_features }} features)</i>"
+        },
+        "categorical_box": {
+            "title": "Color a categorical field - {{ layer }} - {{ nb_features }} features",
+            "new_random_colors": "New randoms colors"
         },
         "layer_style_popup": {
             "fill_color": "Fill color<br>",
@@ -448,7 +461,11 @@
         "apply": "Apply changes",
         "sequential": "Sequential",
         "diverging": "Diverging",
-        "reverse_palette": "Reverse palette"
+        "reverse_palette": "Reverse palette",
+        "with_no_data": "{{ nb_features }} feature without data",
+        "with_no_data_plural": "{{ nb_features }} features without data",
+        "colored_central_class": "colored central class"
+
     },
     "style_box":{
         "ref_layer": "Reference layer",

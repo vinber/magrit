@@ -277,16 +277,29 @@ function fillMenu_TypoSymbol(){
         .styles({"font-size": "0.8em", "text-align": "center"})
         .html(i18next.t("app_page.func_options.typosymbol.symbols_choice"))
         .on("click", function(){
-            fields_Symbol.box_typo().then(function(confirmed){
-                if(confirmed){
-                    ok_button.attr("disabled", null);
-                    rendering_params = {
-                        nb_cat: confirmed[0],
-                        symbols_map: confirmed[1],
-                        field: field_selec.node().value
-                    };
-                }
-            });
+            swal({
+                    title: "",
+                    text: i18next.t("app_page.common.error_too_many_features"),
+                    type: "warning",
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    closeOnConfirm: true
+                }).then(() => {
+                    fields_Symbol.box_typo().then(function(confirmed){
+                        if(confirmed){
+                            ok_button.attr("disabled", null);
+                            rendering_params = {
+                                nb_cat: confirmed[0],
+                                symbols_map: confirmed[1],
+                                field: field_selec.node().value
+                            };
+                        }
+                    });
+                }, () => {
+                    return;
+                });
         });
 
     dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
@@ -326,8 +339,8 @@ function render_TypoSymbols(rendering_params, new_name){
 
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
-            {"name": "Edit style...", "action": () => { make_style_box_indiv_symbol(self_parent); }},
-            {"name": "Delete", "action": () => {self_parent.style.display = "none"; }}
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
     ];
 
     map.append("g").attrs({id: layer_to_add, class: "layer"})
@@ -756,7 +769,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
             .attr("type", "number")
             .attr("id", "min_class")
             .attr("step", 0.1)
-            .attr("value", +breaks[i][0][0].toFixed(2))
+            .attr("value", (+breaks[i][0][0]).toFixed(2))
             .style("width", "60px")
 
         selection
@@ -764,7 +777,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
             .attr("type", "number")
             .attr("id", "max_class")
             .attr("step", 0.1)
-            .attr("value", +breaks[i][0][1].toFixed(2))
+            .attr("value", (+breaks[i][0][1]).toFixed(2))
             .style("width", "60px")
 
         selection
@@ -772,7 +785,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
             .attr("type", "number")
             .attr("id", "size_class")
             .attr("step", 0.11)
-            .attr("value", +breaks[i][1].toFixed(2))
+            .attr("value", (+breaks[i][1]).toFixed(2))
             .style("margin-left", "20px")
             .style("width", "55px");
 
@@ -1434,7 +1447,7 @@ function make_style_box_indiv_label(label_node){
 
     let new_params = {};
     let self = this;
-    var a = make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.func_options.label.title_box_indiv"), "styleTextAnnotation")
+    var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.func_options.label.title_box_indiv"), "styleTextAnnotation")
         .then(function(confirmed){
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
@@ -1479,8 +1492,8 @@ var render_label = function(layer, rendering_params){
 
     var context_menu = new ContextMenu(),
         getItems = (self_parent) =>  [
-            {"name": "Edit style...", "action": () => { make_style_box_indiv_label(self_parent); }},
-            {"name": "Delete", "action": () => { self_parent.style.display = "none"; }}
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_label(self_parent); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
         ];
 
     map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})

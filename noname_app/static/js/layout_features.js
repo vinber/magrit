@@ -68,10 +68,10 @@ class UserArrow {
     draw(){
         let context_menu = new ContextMenu(),
             getItems = () =>  [
-                {"name": "Edit style/position...", "action": () => { this.editStyle(); }},
-                {"name": "Up element", "action": () => { this.up_element(); }},
-                {"name": "Down element", "action": () => { this.down_element(); }},
-                {"name": "Delete", "action": () => { this.arrow.remove(); }}
+                {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
+                {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+                {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.arrow.remove(); }}
             ];
 
         this.arrow = this.svg_elem.append('g')
@@ -245,10 +245,10 @@ class Textbox {
         var current_timeout, state;
         let context_menu = new ContextMenu(),
             getItems = () =>  [
-                {"name": "Edit style...", "action": () => { this.editStyle(); }},
-                {"name": "Up element", "action": () => { this.up_element(); }},
-                {"name": "Down element", "action": () => { this.down_element(); }},
-                {"name": "Delete", "action": () => { this.text_annot.remove(); }}
+                {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
+                {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+                {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.text_annot.remove(); }}
             ];
 
         let drag_txt_annot = d3.drag()
@@ -680,14 +680,10 @@ var northArrow = {
                     let scale_val = +this.value;
                     let translate_param = self.svg_node.attr("transform"),
                         rotate_value = self.svg_node.attr("rotate");
-//                    rotate_value = rotate_value ? "rotate(" + rotate_value + ", 79.50,50.75)" : "";
                     rotate_value = rotate_value ? "rotate("+ [rotate_value, self.x_center, self.y_center] +")" : "";
-//                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
-//                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
-//                                            : "";
-                    let regtranslate = new RegExp(/\(([^\)]+)\)/);
-                    let translate_values = translate_param ? regtranslate.exec(translate_param)[1].split(',').map(d => +d)
-                                            : [0, 0];
+                    let translate_values = translate_param
+                                        ? /\(([^\)]+)\)/.exec(translate_param)[1].split(',').map(d => +d)
+                                        : [0, 0];
                     let t_x = translate_values[0] - (self.x_center) * (scale_val-1),
                         t_y = translate_values[1] - (self.y_center) * (scale_val-1);
                     translate_param = "translate(" + [t_x, t_y] + ")";
