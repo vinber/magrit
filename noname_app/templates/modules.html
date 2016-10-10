@@ -1675,7 +1675,7 @@ function patchSvgForFonts(){
     } else {
         let fonts_definitions = Array.prototype.filter.call(
             document.styleSheets,
-            i => i.href.indexOf("style-fonts.css") > -1 ? i : null
+            i => i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null
             )[0].cssRules;
         let fonts_to_add = needed_definitions.map(name => String(fonts_definitions[customs_fonts.indexOf(name)].cssText));
         let style_elem = document.createElement("style");

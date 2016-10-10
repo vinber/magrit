@@ -313,7 +313,7 @@ function fillMenu_TypoSymbol(){
 function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     let field = rendering_params.field;
-    let layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ["Symbols", field, layer_name].join("_"));
+    let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
     let new_layer_data = [];
 
     let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
@@ -1163,7 +1163,10 @@ function fillMenu_PropSymbolChoro(layer){
                 nb_features = user_data[layer].length,
                 rd_params = {},
                 color_field = field2_selec.node().value,
-                new_layer_name = check_layer_name(layer + "_PropSymbolsChoro");
+                new_layer_name = uo_layer_name.node().value;
+
+            new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                            ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsChoro");
 
             rd_params.field = field1_selec.node().value;
             rd_params.new_name = new_layer_name;
@@ -1382,10 +1385,15 @@ var fillMenu_Label = function(){
                 rendering_params["prop_field"] = field_prop_selec.node().value;
                 rendering_params["max_size"] = max_font_size.node().value;
             }
+
+            let output_name = uo_layer_name.node().value;
+            if(!(/^\w+$/.test(output_name))){
+                output_name = "";
+            }
             rendering_params["font"] = choice_font.node().value;
             rendering_params["ref_font_size"] = ref_font_size.node().value;
             rendering_params["color"] = choice_color.node().value;
-            rendering_params["uo_layer_name"] = uo_layer_name.node().value;
+            rendering_params["uo_layer_name"] = output_name;
             let layer = Object.getOwnPropertyNames(user_data)[0];
             let new_layer_name = render_label(layer, rendering_params);
             binds_layers_buttons(new_layer_name);
@@ -1560,7 +1568,13 @@ var fillMenu_Typo = function(){
         .html(i18next.t("app_page.func_options.common.render"))
         .on("click", function(){
             if(rendering_params){
-                let layer = Object.getOwnPropertyNames(user_data)[0];
+                let layer = Object.getOwnPropertyNames(user_data)[0],
+                    output_name = uo_layer_name.node().value;
+                if(output_name.length > 0 && /^\w+$/.test(output_name)){
+                    rendering_params.new_name = check_layer_name(output_name);
+                } else {
+                    rendering_params.new_name = check_layer_name([layer, "Typo", field_selec.node().value].join('_'));
+                }
                 render_categorical(layer, rendering_params);
                 switch_accordion_section();
             }
@@ -1645,12 +1659,13 @@ function fillMenu_Choropleth(){
         .html('Render')
         .on("click", function(){
             if(rendering_params){
+
                 let layer = Object.getOwnPropertyNames(user_data)[0],
                     user_new_layer_name = document.getElementById("Choro_output_name").value,
                     field_to_render = field_selec.node().value;
                 rendering_params[field_to_render].new_name = check_layer_name(
-                    user_new_layer_name.length > 0 ? user_new_layer_name
-                    : ["Choro", field_to_render, layer].join('_')
+                    user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
+                    ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
                     );
                 render_choro(layer, rendering_params[field_to_render]);
                 switch_accordion_section();
@@ -1846,7 +1861,9 @@ function fillMenu_Stewart(){
                         let data_split = data.split('|||'),
                             raw_topojson = data_split[0];
                         let options = {result_layer_on_add: true};
-                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+                            options["choosed_name"] = new_user_layer_name;
+                        }
                         var n_layer_name = add_layer_topojson(raw_topojson, options);
                         if(!n_layer_name)
                             return;
@@ -2100,7 +2117,9 @@ function fillMenu_Anamorphose(){
                     error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(result){
                         let options = {result_layer_on_add: true};
-                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
+                            options["choosed_name"] = new_user_layer_name;
+                        }
                         let n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
                         current_layers[n_layer_name].rendered_field = field_n;
@@ -2143,7 +2162,9 @@ function fillMenu_Anamorphose(){
                     error: function(error) { display_error_during_computation(); console.log(error); },
                     success: function(data){
                         let options = {result_layer_on_add: true};
-                        if(new_user_layer_name.length > 0){ options["choosed_name"] = new_user_layer_name; }
+                        if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
+                            options["choosed_name"] = new_user_layer_name;
+                        }
                         let n_layer_name = add_layer_topojson(data, options);
                         current_layers[n_layer_name].fill_color = { "random": true };
                         current_layers[n_layer_name].is_result = true;
@@ -2164,7 +2185,9 @@ function fillMenu_Anamorphose(){
                     shape_symbol = option1_val.node().value;
 
                 let layer_to_add = check_layer_name(
-                    new_user_layer_name.length > 0 ? new_user_layer_name : ["DorlingCarto", field_name, layer].join('_'));
+                        new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)
+                        ? new_user_layer_name : ["DorlingCarto", field_name, layer].join('_')
+                    );
 
                 let [features_order, animation] = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
                 current_layers[layer_to_add] = {
@@ -2495,7 +2518,7 @@ function fillMenu_PropSymbol(layer){
                 nb_features = user_data[layer].length,
                 field_to_render = field_selec.node().value,
                 user_new_layer_name = uo_layer_name.node().value,
-                new_layer_name = check_layer_name(user_new_layer_name.length > 0 ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
+                new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
                 rendering_params = { "field": field_to_render,
                                      "nb_features": nb_features,
                                      "new_name": new_layer_name,
@@ -2732,7 +2755,8 @@ function fillMenu_griddedMap(layer){
             let field_n = field_selec.node().value,
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 formToSend = new FormData(),
-                var_to_send = {};
+                var_to_send = {},
+                new_user_layer_name = document.getElementById("Gridded_output_name").value;
 
             if(current_layers[layer].original_fields.has(field_n))
                 var_to_send[field_n] = [];
@@ -2753,7 +2777,12 @@ function fillMenu_griddedMap(layer){
                 type: 'POST',
                 error: function(error) { display_error_during_computation(); console.log(error); },
                 success: function(data){
-                    let n_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
+                    let options = {result_layer_on_add: true};
+                    if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+                        options["choosed_name"] = new_user_layer_name;
+                    }
+
+                    let n_layer_name = add_layer_topojson(data, options);
                     if(!n_layer_name)
                         return;
                     let res_data = result_data[n_layer_name],

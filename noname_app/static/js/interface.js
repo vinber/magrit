@@ -952,7 +952,7 @@ function add_sample_layer(){
                     ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
                     ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset'],
                     ['Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>', 'martinique_data'],
-                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
+//                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
                     ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
 
     var confirm_dialog = make_confirm_dialog("",

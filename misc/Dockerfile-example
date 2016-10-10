@@ -79,7 +79,7 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
 
 EXPOSE 9999
 
-CMD service redis-server start && noname_app
-#CMD service redis-server start \
-#    && gunicorn "noname_app.noname_aio:create_app()" --bind localhost:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname_stuff/
+#CMD service redis-server start && noname_app
+CMD service redis-server start \
+    && gunicorn "noname_app.noname_aio:create_app()" --bind localhost:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname_stuff/
 #CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py

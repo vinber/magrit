@@ -983,16 +983,16 @@ async def on_shutdown(app):
     app["ThreadPool"].shutdown()
     for task in asyncio.Task.all_tasks():
         await asyncio.sleep(0)
-#        info = task._repr_info()
+        info = task._repr_info()
 #        if "RedisConnection" in info[1]:
 #            task.cancel()
-#        if "RedisPool" in info[1] and "pending" in info[0]:
-        try:
-            await asyncio.wait_for(task, 2)
-        except asyncio.TimeoutError:
+        if "RedisPool" in info[1] and "pending" in info[0]:
+            try:
+                await asyncio.wait_for(task, 1)
+            except asyncio.TimeoutError:
+                task.cancel()
+        else:
             task.cancel()
-#        else:
-#            task.cancel()
 
 async def init(loop, port):
     logging.basicConfig(level=logging.DEBUG)
