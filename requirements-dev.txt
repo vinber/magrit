@@ -22,7 +22,6 @@ sauceclient >= 0.2.1
 scipy >= 0.18.0
 selenium == 2.53.6
 Shapely >= 1.5.15
-smoomapy >= 0.1.2
 ujson >= 1.35
 uvloop >= 0.5.3
 psutil >= 4.3.0
