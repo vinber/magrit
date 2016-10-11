@@ -285,6 +285,7 @@ function fillMenu_TypoSymbol(){
                     allowOutsideClick: false,
                     confirmButtonColor: "#DD6B55",
                     confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    cancelButtonText: i18next.t("app_page.common.cancel"),
                     closeOnConfirm: true
                 }).then(() => {
                     fields_Symbol.box_typo().then(function(confirmed){
@@ -486,9 +487,7 @@ function fillMenu_Discont(){
 //            })
             // ^^^^^ Currently displaying the overlay during computation dont work as expected
             document.getElementById("overlay").style.display = "";
-            console.time("discont");
             render_discont();
-            console.timeEnd("discont");
             document.getElementById("overlay").style.display = "none";
             // ^^^^^ Currently displaying the overlay during computation dont work as expected
 
@@ -1088,7 +1087,7 @@ function fillMenu_PropSymbolChoro(layer){
     var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.choroprop.fixed_size"))
                      .insert('input')
                      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 10.0, step: "any"})
+                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
                      .style("width", "50px");
 
     dv2.append('label-item').html(' px');
@@ -2257,7 +2256,7 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                 .force("x", d3.forceX(d => d.x0).strength(0.5))
                 .force("y", d3.forceY(d => d.y0).strength(0.5))
                 .force("charge", d3.forceManyBody().distanceMin(0).distanceMax(0).strength(d => -0.1 * d.value))
-                .force("collide", d3.forceCollide().radius(function(d) { return d.r; }).strength(0.5).iterations(1))
+                .force("collide", d3.forceCollide().radius(d => d.r).strength(0.5).iterations(1))
                 .on("tick", tick);
 
 
@@ -2271,8 +2270,8 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .data(nodes).enter()
                           .append("circle")
                             .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("r", function(d){ return d.r; })
-                            .style("fill", function(){ return Colors.random();})
+                            .attr("r", d => d.r )
+                            .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     } else {
         symbol_layer = map.append("g").attr("id", layer_to_add)
@@ -2281,9 +2280,9 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .data(nodes).enter()
                           .append("rect")
                             .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("height", function(d){ return d.r * 2; })
-                            .attr("width", function(d){ return d.r * 2; })
-                            .style("fill", function(){ return Colors.random();})
+                            .attr("height", d => d.r * 2 )
+                            .attr("width", d => d.r * 2 )
+                            .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     }
 
@@ -2459,7 +2458,7 @@ function fillMenu_PropSymbol(layer){
                          .html(i18next.t("app_page.func_options.prop.fixed_size"))
                          .insert('input')
                          .attrs({type: 'number', class: 'params'})
-                         .attrs({min: 0.2, max: max_allowed_size, value: 10.0, step: 0.1})
+                         .attrs({min: 0.2, max: max_allowed_size, value: 15.0, step: 0.1})
                          .style("width", "50px");
 
     dialog_content.append('span').html(" px");
@@ -2911,7 +2910,7 @@ function render_choro(layer, rendering_params){
             .style("opacity", 1)
             .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
     layer_to_render.style('fill-opacity', 0.9)
-                   .style("fill", function(d, i){ return rendering_params['colorsByFeature'][i] })
+                   .style("fill", (d,i) => rendering_params['colorsByFeature'][i] )
                    .style('stroke-opacity', 0.9)
                    .style("stroke", "black");
     current_layers[layer].renderer = rendering_params['renderer'];
@@ -3298,7 +3297,6 @@ function add_table_field(table, layer_name, parent){
          [i18next.t("app_page.explore_box.add_field_box.concatenate"), "concatenate"],
          [i18next.t("app_page.explore_box.add_field_box.truncate"), "truncate"]
         ];
-
     {
         let a = type_content.node(),
             b = false;
@@ -3311,8 +3309,7 @@ function add_table_field(table, layer_name, parent){
         a.value = b ? "math_compute" : "string_field";
         a.dispatchEvent(new Event('change'));
     }
-
-    return box;
+    return;
 }
 
 

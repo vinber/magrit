@@ -326,8 +326,7 @@ function handle_dataset(f){
             showCancelButton: true,
             allowOutsideClick: false,
             confirmButtonColor: "#DD6B55",
-            confirmButtonText: i18next.t("app_page.common.confirm"),
-            closeOnConfirm: true
+            confirmButtonText: i18next.t("app_page.common.confirm")
             }).then(() => {
                 remove_ext_dataset_cleanup();
                 check_dataset();
@@ -786,7 +785,7 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
     } else if (selected_feature == "symbol"){
-        let a = box_choice_symbol(window.default_symbols).then(function(result){
+        let a = box_choice_symbol(window.default_symbols).then( result => {
             if(result){
                 add_single_symbol(result);
             }
@@ -834,7 +833,7 @@ var drag_lgd_features = d3.drag()
             d3.event.sourceEvent.preventDefault();
             if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
           })
-        .on("end", function(){
+        .on("end", () => {
             if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
           })
         .on("drag", function(){
@@ -848,11 +847,11 @@ var drag_lgd_features = d3.drag()
 
 function add_layout_layers(){
     var selec = {layout: null};
-    var layout_layers = [["Nuts 0* (2013) European Country <i>(Polygons)</i>", "nuts0"],
-                         ["Nuts 1* (2013) European subdivisions <i>(Polygons)</i>", "nuts1"],
-                         ["Nuts 2* (2013) European subdivisions <i>(Polygons)</i>", "nuts2"],
-                         ["World countries simplified <i>(Polygons)</i>", "world_country"],
-                         ["World country capitals <i>(Points)</i>", "world_cities"],
+    var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
+                         [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
+                         [i18next.t("app_page.layout_layer_box.nuts2"), "nuts2"],
+                         [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"],
+                         [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
                          ];
 
     make_confirm_dialog("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
@@ -894,22 +893,26 @@ function add_sample_layer(){
         sample_datasets = json[0];
         });
 
-    var target_layers = [["<i>Target layer</i>",""],
-                    ["Paris hospital locations <i>(Points)</i>", "paris_hospitals"],
-                    ["Grand Paris municipalities <i>(Polygons)</i>", "GrandParisMunicipalities"],
-                    ["Martinique (FR overseas region) communes (Polygons)", "martinique"],
-                    ["Nuts 2 (2006) European subdivisions <i>(Polygons)</i>", "nuts2_data"],
-                    ["Nuts 3 (2006) European subdivisions <i>(Polygons)</i>", "nuts3_data"],
-                    ["World countries <i>(Polygons)</i>", "world_countries_50m"],
-                    ["U.S.A counties <i>(Polygons)</i>", "us_county"],
-                    ["U.S.A states <i>(Polygons)</i>", "us_states"]];
+    var target_layers = [
+         [i18next.t("app_page.sample_layer_box.target_layer"),""],
+         [i18next.t("app_page.sample_layer_box.paris_hospitals"), "paris_hospitals"],
+         [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
+         [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
+         [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
+         [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"],
+         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_50m"],
+         [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
+         [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
+        ];
 
-    var tabular_datasets = [["<i>Tabular dataset</i>",""],
-                    ["International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>", "twincities"],
-                    ['"Grand Paris" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>', 'gpm_dataset'],
-                    ['Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>', 'martinique_data'],
+    var tabular_datasets = [
+         [i18next.t("app_page.sample_layer_box.tabular_dataset"),""],
+         [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
+         [i18next.t("app_page.sample_layer_box.gpm_dataset"), 'gpm_dataset'],
+         [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
 //                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
-                    ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
+         [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
+        ];
 
     make_confirm_dialog("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
         .then(function(confirmed){
@@ -933,19 +936,26 @@ function add_sample_layer(){
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
-    target_layers.forEach(function(layer_info){t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
     t_layer_selec.on("change", function(){selec.target = this.value;});
 
-    if(targeted_layer_added){
-        title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
-        t_layer_selec.node().disabled = true;
-        }
-
-    box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
+    var title_tab_dataset = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
 
     var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
-    tabular_datasets.forEach(function(layer_info){dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);});
+    tabular_datasets.forEach(layer_info => { dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
     dataset_selec.on("change", function(){selec.dataset = this.value;});
+
+    if(targeted_layer_added){
+        title_tgt_layer.style("color", "grey")
+                .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
+        t_layer_selec.node().disabled = true;
+    }
+
+    if(joined_dataset.length > 0){
+        title_tab_dataset.style("color", "grey")
+                .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle2") + "</i>");
+        dataset_selec.node().disabled = true;
+    }
 }
 
 

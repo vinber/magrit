@@ -148,12 +148,31 @@
             "title": "Couches d'habillage",
             "msg_select_layer": "Selectionnez une ou plusieurs couches d'habillage : ",
             "msg_select_multi": "<i>(plusieurs couches peuvent être selectionnées simultanément)</i>",
+            "nuts0": "Nuts 0* (2013) Pays européens <i>(Polygones)</i>",
+            "nuts1": "Nuts 1* (2013) Subdivisions européennes <i>(Polygones)</i>",
+            "nuts2": "Nuts 2* (2013) Subdivisions européennes <i>(Polygones)</i>",
+            "world_countries": "World countries simplified <i>(Polygones)</i>",
+            "world_capitals": "World country capitals <i>(Points)</i>",
             "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choix d'une couche géographique à ajouter :",
-            "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :"
+            "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :",
+            "target_layer": "<i>Couche cible</i>",
+            "paris_hospitals": "Localisation des hopitaux de Paris <i>(Points)</i>",
+            "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
+            "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
+            "nuts2_data": "Nuts 2 (2006) avec données <i>(Polygones)</i>",
+            "nuts3_data": "Nuts 3 (2006) avec données <i>(Polygones)</i>",
+            "world_countries": "Pays du monde <i>(Polygones)</i>",
+            "us_county": "Comtés des USA <i>(Polygones)</i>",
+            "us_states": "États des USA <i>(Polygones)</i>",
+            "tabular_dataset": "<i>Jeu de données tabulaires</i>",
+            "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
+            "gpm_dataset": "Revenus du \"Grand Paris\" <i>(À joindre avec les géometries du Grand Paris)</i>",
+            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>",
+            "bondcountries": "Pays visités par James Bond <i>(À joindre avec les pays du monde)</i>"
         },
         "export_box": {
             "title": "Choix d'un format...",
@@ -181,7 +200,8 @@
             "match": "correspondance",
             "match_plural": "correspondances",
             "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
-            "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?"
+            "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?",
+            "change_field": "Changer les champs joints"
         },
         "explore_box": {
             "title": "Table de données",

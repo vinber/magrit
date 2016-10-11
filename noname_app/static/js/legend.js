@@ -807,13 +807,12 @@ function createlegendEditBox(legend_id, layer_name){
                     .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
                     .styles({display: "inline", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
                     .on('change', function(){
-                        let nb_float = +this.value,
-                            dec_mult = +["1", Array(nb_float).fill("0").join('')].join('');
+                        let nb_float = +this.value;
                         d3.select("#precision_change_txt")
                             .html([i18next.t("app_page.legend_style_box.float_rounding"), nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value;
-                            legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
+                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float);
                         }
                         legend_node.setAttribute("rounding_precision", nb_float);
                     });
@@ -828,7 +827,7 @@ function createlegendEditBox(legend_id, layer_name){
                             .html([i18next.t("app_page.legend_style_box.float_rounding"), nb_float, ' '].join(''))
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value[1];
-                            legend_boxes._groups[0][i].innerHTML = String(Math.round(+value * dec_mult) / dec_mult);
+                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float);
                         }
                         legend_node.setAttribute("rounding_precision", nb_float);
                         let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
@@ -955,16 +954,14 @@ function move_legends(new_shape){
             let legend_bbox = legends_type[i].getBoundingClientRect();
             if((legend_bbox.x + legend_bbox.width / 2) > (+new_shape[0] + xy0_map.x)){
                 let current_transform = legends_type[i].getAttribute("transform");
-                let regtranslate = new RegExp(/\(([^\)]+)\)/);
-                let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
+                let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
                 let trans_x = legend_bbox.x +legend_bbox.width - (+new_shape[0] + xy0_map.x);
                 legends_type[i].setAttribute("transform",
                     ["translate(", +val_x - trans_x, val_y, ")"].join(''));
             }
             if((legend_bbox.y + legend_bbox.height / 2) > (+new_shape[1] + xy0_map.y)){
                 let current_transform = legends_type[i].getAttribute("transform");
-                let regtranslate = new RegExp(/\(([^\)]+)\)/);
-                let [val_x, val_y] = regtranslate.exec(current_transform)[1].split(",");
+                let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
                 let trans_y = legend_bbox.y +legend_bbox.height - (+new_shape[1] + xy0_map.y);
                 legends_type[i].setAttribute("transform",
                     ["translate(", val_x, +val_y - trans_y, ")"].join(''));

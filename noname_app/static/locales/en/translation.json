@@ -148,12 +148,31 @@
             "title": "Layout layers",
             "msg_select_layer": "Choose layer(s) to be used as layout : ",
             "msg_select_multi": "<i>(multiple layers can be selected)</i>",
+            "nuts0": "Nuts 0* (2013) European Country <i>(Polygons)</i>",
+            "nuts1": "Nuts 1* (2013) European subdivisions <i>(Polygons)</i>",
+            "nuts2": "Nuts 2* (2013) European subdivisions <i>(Polygons)</i>",
+            "world_countries": "World countries simplified <i>(Polygons)</i>",
+            "world_capitals": "World country capitals <i>(Points)</i>",
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choose a layer to be rendered :",
-            "subtitle2": "Choose a dataset to link with geometries :"
+            "subtitle2": "Choose a dataset to link with geometries :",
+            "target_layer": "<i>Target layer</i>",
+            "paris_hospitals": "Paris hospital locations <i>(Points)</i>",
+            "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
+            "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
+            "nuts2_data": "Nuts 2 (2006) European subdivisions <i>(Polygons)</i>",
+            "nuts3_data": "Nuts 3 (2006) European subdivisions <i>(Polygons)</i>",
+            "world_countries": "World countries <i>(Polygons)</i>",
+            "us_county": "U.S.A counties <i>(Polygons)</i>",
+            "us_states": "U.S.A states <i>(Polygons)</i>",
+            "tabular_dataset": "<i>Tabular dataset</i>",
+            "twincities": "International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>",
+            "gpm_dataset": "\"Grand Paris\" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>",
+            "martinique_data": "Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>",
+            "bondcountries": "James Bond visited countries <i>(To link with World countries geometries)</i>"
         },
         "export_box": {
             "title": "Choose a format...",
@@ -181,7 +200,8 @@
             "match": "match",
             "match_plural": "matches",
             "no_match": "No match found between fields <i>{{field1}}</i> and <i>{{field2}}</i>",
-            "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?"
+            "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?",
+            "change_field": "Change joined fields"
         },
         "explore_box": {
             "title": "Explore dataset",
