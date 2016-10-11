@@ -213,7 +213,7 @@ function make_style_box_indiv_symbol(label_node){
                       y: +label_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
     let new_params = {};
     let self = this;
-    var a = make_confirm_dialog("", "Valid", "Cancel", "Label options", "styleTextAnnotation")
+    make_confirm_dialog("styleTextAnnotation", "Label options")
         .then(function(confirmed){
             if(!confirmed){
                 label_node.setAttribute("width", current_options.size);
@@ -561,8 +561,8 @@ var render_discont = function(){
     let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
     if(!disc_result || !disc_result[2]){
         let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-        let w = nb_class > opt_nb_class ? "smaller" : "larger"
-        swal("Oops...", "Something went wrong with choosen discretization (try with a " + w + " number of class and/or another method)", "error");
+        let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
+        swal("", i18next.t("app_page.common.error_discretization", {arg: w}), "error");
         return;
     }
     let serie = disc_result[3],
@@ -1228,7 +1228,7 @@ function fillMenu_PropSymbolChoro(layer){
 
 function display_error_num_field(){
     swal({title: "",
-          text: "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
+          text: i18next.t("app_page.common.error_numerical_fields"),
           type: "error"});
 };
 
@@ -1447,7 +1447,7 @@ function make_style_box_indiv_label(label_node){
 
     let new_params = {};
     let self = this;
-    var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.func_options.label.title_box_indiv"), "styleTextAnnotation")
+    make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
         .then(function(confirmed){
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
@@ -3236,8 +3236,9 @@ function add_table_field(table, layer_name, parent){
         opt_val: undefined, new_name: 'NewFieldName'
         }
 
-    var box = make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.explore_box.button_add_field"),
-                    "addFieldBox", 430 < w ? 430 : undefined, 280 < h ? 280 : undefined).then(function(valid){
+    make_confirm_dialog("addFieldBox", i18next.t("app_page.explore_box.button_add_field"),
+                    {width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined}
+        ).then(function(valid){
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
                 compute_and_add(chooses_handler).then(

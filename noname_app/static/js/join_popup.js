@@ -9,9 +9,7 @@ function handle_join(){
              "error");
         return;
     } else if(field_join_map.length != 0){
-        make_confirm_dialog(i18next.t("app_page.join_box.ask_forget_join"),
-                            i18next.t("app_page.common.valid"),
-                            i18next.t("app_page.common.cancel"), "")
+        make_confirm_dialog(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_forget_join")})
             .then(function(confirmed){
                 if(confirmed){
                     field_join_map = [];
@@ -19,7 +17,7 @@ function handle_join(){
                     }
                 });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog(i18next.t("app_page.join_box.ask_diff_nb_features"), "Ok", i18next.t("app_page.common.cancel"), "").then(function(confirmed){
+        make_confirm_dialog(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_diff_nb_features")}).then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {
@@ -205,7 +203,7 @@ function createJoinBox(layer){
          '<br><p><strong>', i18next.t("app_page.join_box.ask_join"), '<strong></p></div>'
         ].join('');
 
-    make_confirm_dialog(inner_box, i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.join_box.title"), "joinBox")
+    make_confirm_dialog("joinBox", i18next.t("app_page.join_box.title"), {html_content: inner_box})
         .then(function(confirmed){
             if(confirmed){
                 let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);

@@ -131,7 +131,7 @@ class UserArrow {
         let self = this,
             line = self.arrow.node().querySelector("line");
 
-        var a = make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.arrow_edit_box.title"), "styleBoxArrow")
+        make_confirm_dialog("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"))
             .then(function(confirmed){
                 if(confirmed) {
                     // Store shorcut of useful values :
@@ -347,7 +347,7 @@ class Textbox {
                                content: unescape(this.text_annot.select("p").html()),
                                font: ""};
         let self = this;
-        make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.text_box_edit_box.title"), "styleTextAnnotation")
+        make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"))
             .then(function(confirmed){
                 $("#btn_info_text_annotation[data-tooltip_info!='']").qtip("destroy");
                 if(!confirmed){
@@ -532,12 +532,8 @@ var scaleBar = {
     editStyle: function(){
         var new_val,
             self = this;
-        make_confirm_dialog("",
-                i18next.t("app_page.common.valid"),
-                i18next.t("app_page.common.cancel"),
-                i18next.t("app_page.scale_bar_edit_box.title"),
-                "scaleBarEditBox"
-            ).then(function(confirmed){
+        make_confirm_dialog("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"))
+            .then(function(confirmed){
                 if(confirmed){
                     if(new_val)
                         self.resize(new_val);
@@ -657,12 +653,8 @@ var northArrow = {
     editStyle: function(){
         var new_val,
             self = this;
-        make_confirm_dialog("",
-                i18next.t("app_page.common.valid"),
-                i18next.t("app_page.common.cancel"),
-                i18next.t("app_page.north_arrow_edit_box.title"),
-                "arrowEditBox"
-            ).then(function(confirmed){
+        make_confirm_dialog("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"))
+            .then(function(confirmed){
                 if(confirmed){
                     null;
                 }

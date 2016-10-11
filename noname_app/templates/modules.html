@@ -1135,20 +1135,22 @@ function reproj_symbol_layer(){
 }
 
 // Convenience function to make a confirm dialog returning a defered promise
-// which can be used like `myConfirmDialog("Confirm", "ok", "cancel").then(function(confirmed){if(confirmed){ ... }})
-var make_confirm_dialog = function(html_content, text_ok, text_cancel, title, class_box, width, height, top){
-    html_content = html_content || "";
-    text_ok = text_ok || i18next.t("app_page.common.confirm");
-    text_cancel = text_cancel || i18next.t("app_page.common.cancel");
+// which can be used like `myConfirmDialog(".classBox", "Title", {html_content: "..."}).then(function(confirmed){if(confirmed){ ... }})
+var make_confirm_dialog = function(class_box, title, options){
     title = title || i18next.t("app_page.common.confirm");
     class_box = class_box || "dialogBox";
+    options = options || {};
+    let html_content = options.html_content || "";
+    let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
+    let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
     var deferred = Q.defer();
     d3.select("body").append("div")
         .attr("id", "dialog").attr("class", class_box)
         .attr("title", title).html(html_content);
 
     $( "#dialog" ).dialog({
-        position: top ? { my: "center", at: "top" } : undefined, width: width, height: height, modal:true,
+        position: options.top ? { my: "center", at: "top" } : undefined,
+        width: options.width, height: options.height, modal:true,
         buttons:[
            {
             text: text_ok,
@@ -1178,6 +1180,7 @@ function remove_layer(name){
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
         confirmButtonText: i18next.t("app_page.common.delete") + "!",
+        cancelButtonText: i18next.t("app_page.common.cancel"),
         closeOnConfirm: true
     }).then(() => { remove_layer_cleanup(name); },
             () => { null; }
@@ -1194,10 +1197,11 @@ function remove_ext_dataset(){
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
         confirmButtonText: i18next.t("app_page.common.delete") + "!",
+        cancelButtonText: i18next.t("app_page.common.cancel"),
         closeOnConfirm: true
         }).then(() => {
-            remove_ext_dataset_cleanup();
-        }, () => { null; });
+                remove_ext_dataset_cleanup();
+             }, () => { null; });
 }
 
 function remove_ext_dataset_cleanup(){
@@ -1593,13 +1597,14 @@ function handle_title_properties(){
         };
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog("", i18next.t("app_page.common.valid"), i18next.t("app_page.common.cancel"), i18next.t("app_page.title_box.title"), "mapTitleitleDialogBox", 280).then(
-        function(confirmed){ if(!confirmed)
-            title.style("font-size", title_props.size)
-                .style("fill", title_props.color)
-                .style("font-family", title_props.font_family)
-                .attrs({x: title_props.position_x, y: title_props.position_y});
-        });
+    make_confirm_dialog("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {width: 280})
+        .then(function(confirmed){
+            if(!confirmed)
+                title.style("font-size", title_props.size)
+                    .style("fill", title_props.color)
+                    .style("font-family", title_props.font_family)
+                    .attrs({x: title_props.position_x, y: title_props.position_y});
+            });
     var box_content = d3.select(".mapTitleitleDialogBox").append("div");
 
     box_content.append("p").html(i18next.t("app_page.title_box.font_size"))
@@ -1883,19 +1888,14 @@ function make_export_layer_box(){
                             return;
                         }
                         let ext = extensions.get(type),
-                            dataStr = (ext.indexOf("json") > -1)
-                                    ? "data:text/json;charset=utf-8," + encodeURIComponent(data)
-                                    : (ext.indexOf("kml") > -1)
-                                    ? "data:text/xml;charset=utf-8," + encodeURIComponent(data)
-                                    : "data:application/zip;base64," + data;
-                        /*
+                            dataStr;
                         if(ext.indexOf("json") > -1)
                             dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
                         else if (ext.indexOf("kml") > -1)
                             dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
                         else
                             dataStr = "data:application/zip;base64," + data;
-                        */
+
                         let dlAnchorElem = document.getElementById('downloadAnchorElem');
                         dlAnchorElem.setAttribute("href", dataStr);
                         dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
@@ -1914,7 +1914,7 @@ window.addEventListener("beforeunload", event => {
         window.localStorage.setItem("noname_map_project", json_params);
     });
     event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
-                        ? "Confirm exit" : "";
+                        ? "Confirm exit" : undefined;
 });
 
 // Remove some layers from the server when user leave the page

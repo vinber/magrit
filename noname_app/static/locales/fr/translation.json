@@ -11,12 +11,14 @@
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
             "error_message": "Une erreur s'est produite : {{msg}}",
+            "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
             "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
+            "error_numerical_fields": "La couche cible ne semble pas contenir de champs numériques (ou ces derniers contiennent trop de valeurs nulles)",
             "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
             "target_layer": "Couche cible",
@@ -47,8 +49,10 @@
             "jenks": "Jenks",
             "geometric_progression": "Progression géométrique",
             "user_defined": "Personnalisé",
-            "up_element": "Up element",
-            "down_element": "Down element"
+            "up_element": "Vers le haut",
+            "down_element": "Vers le bas",
+            "smaller": "plus petit",
+            "larger": "plus grand"
         },
         "section1": {
             "title": "Ajout de données",

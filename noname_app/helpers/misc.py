@@ -97,7 +97,7 @@ def guess_separator(file):
 
 
 def fetch_zip_clean(dir_path, layer_name):
-    filenames = [file for file in os.listdir(dir_path)]
+    filenames = os.listdir(dir_path)
     if len(filenames) == 1:
         filename = '/'.join([dir_path, filenames[0]])
         with open(filename, 'rb') as f:
@@ -116,3 +116,24 @@ def fetch_zip_clean(dir_path, layer_name):
         zip_stream.seek(0)
         os.removedirs(dir_path)
         return zip_stream.read(), ''.join([filename.split(".")[0], ".zip"])
+
+
+def prepare_js_css_minify():
+    from csscompressor import compress
+    from jsmin import jsmin
+    os.chdir("../static/js")
+    list_files = os.listdir()
+    data_js = ['"use strict";']
+    for file in list_files:
+        if ".js" in file:
+            with open(file) as f:
+                data_js.append(f.read().replace('"use strict";', ''))
+    minified = jsmin("".join(data_js), quote_chars="'\"`")
+    with open("app.min.js", "w") as f:
+        f.write(minified)
+
+    os.chdir("../css")
+    with open("style.css") as f:
+        minified_css = compress(f.read())
+    with open("style.min.css", "w") as f:
+        f.write(minified_css)

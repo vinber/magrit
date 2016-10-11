@@ -732,7 +732,7 @@ function select_layout_features(){
         ];
     var selected_ft;
 
-    make_confirm_dialog("", "Valid", "Cancel", i18next.t("app_page.layout_features_box.title"), "sampleLayoutFtDialogBox").then(
+    make_confirm_dialog("sampleLayoutFtDialogBox", i18next.t("app_page.layout_features_box.title")).then(
             confirmed => { if(confirmed) add_layout_feature(selected_ft);
         });
 
@@ -895,20 +895,16 @@ function add_layout_layers(){
                          ["World country capitals <i>(Points)</i>", "world_cities"],
                          ];
 
-    var a = make_confirm_dialog("",
-                                i18next.t("app_page.common.valid"),
-                                i18next.t("app_page.common.cancel"),
-                                i18next.t("app_page.layout_layer_box.title"),
-                                "sampleLayoutDialogBox");
-    a.then(function(confirmed){
-        if(confirmed){
-            if(selec.layout && selec.layout.length > 0){
-                for(let i = 0; i < selec.layout.length; ++i){
-                    add_sample_geojson(selec.layout[i]);
+    make_confirm_dialog("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
+        .then(function(confirmed){
+            if(confirmed){
+                if(selec.layout && selec.layout.length > 0){
+                    for(let i = 0; i < selec.layout.length; ++i){
+                        add_sample_geojson(selec.layout[i]);
+                    }
                 }
             }
-        }
-    });
+        });
 
     var box_body = d3.select(".sampleLayoutDialogBox").style("text-align", "center");
     box_body.node().parentElement.style.width = "auto";
@@ -955,13 +951,8 @@ function add_sample_layer(){
 //                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
                     ['James Bond visited countries <i>(To link with World countries geometries)</i>', 'bondcountries']];
 
-    var confirm_dialog = make_confirm_dialog("",
-                                i18next.t("app_page.common.valid"),
-                                i18next.t("app_page.common.cancel"),
-                                i18next.t("app_page.sample_layer_box.title"),
-                                "sampleDialogBox");
-    confirm_dialog.then(
-        function(confirmed){
+    make_confirm_dialog("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
+        .then(function(confirmed){
             if(confirmed){
                 let url = undefined;
                 if(selec.target){

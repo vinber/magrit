@@ -11,12 +11,14 @@
             "layer_success": "Layer successfully added to the map",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
             "error_message": "Something went wrong : {{msg}}",
+            "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",
             "error_only_layout": "Only layout layers can be added here",
             "error_only_one": "Only one layer can be added by this functionnality",
             "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
+            "error_numerical_fields": "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
             "target_layer": "Target layer",
@@ -47,7 +49,10 @@
             "jenks": "Jenks",
             "geometric_prog": "Geometric progression",
             "user_defined": "User defined"
-
+            "up_element": "Up element",
+            "down_element": "Down element",
+            "smaller": "smaller",
+            "larger": "larger"
         },
         "section1": {
             "title": "Add your data",

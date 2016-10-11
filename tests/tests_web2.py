@@ -178,7 +178,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.tmp_folder = "/tmp/export_selenium_test_{}/".format(str(uuid4()).split('-')[4])
         os.mkdir(self.tmp_folder)
         chromeOptions = webdriver.ChromeOptions()
-        prefs = {"download.default_directory" : self.tmp_folder}
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory" : self.tmp_folder})
         self.driver = webdriver.Chrome(executable_path='/home/mz/code/chromedriver', chrome_options=chromeOptions)

@@ -677,7 +677,7 @@ function createlegendEditBox(legend_id, layer_name){
         }
     }
 
-    make_confirm_dialog("", "Confirm", "Cancel", "Layer style options - " + layer_name, box_class, undefined, undefined, true)
+    make_confirm_dialog(box_class, "Layer style options - " + layer_name, {top: true})
         .then(function(confirmed){
             if(!confirmed){
                 title_content.textContent = original_params.title_content;
@@ -934,7 +934,6 @@ function move_legends(new_shape){
                 legends_type[i].setAttribute("transform",
                     ["translate(", val_x, +val_y - trans_y, ")"].join(''));
             }
-
         }
     }
 }

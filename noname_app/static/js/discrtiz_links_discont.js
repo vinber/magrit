@@ -106,7 +106,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .attr("x", 1)
             .attr("width", x(data[1].x1) - x(data[1].x0))
             .attr("height",  d => height - y(d.length))
-            .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
+            .attr("transform", d => "translate(" + x(d.x0) + "," + y(d.length) + ")" )
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
@@ -310,7 +310,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var txt_nb_class = d3.select("#discretization_panel")
                             .insert("p").style("display", "inline")
-                            .html(i18next.t("disc_box.class", {count: nb_class})),
+                            .html(i18next.t("disc_box.class", {count: +nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
@@ -327,7 +327,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                                     this.value = 6;
                                     return;
                                 }
-                                nb_class = this.value;
+                                nb_class = +this.value;
                                 txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                 update_breaks();
                                 redisplay.compute();

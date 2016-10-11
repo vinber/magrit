@@ -43,7 +43,7 @@ function make_random_color(layer, symbol = "path"){
         .on("click", function(d,i){
             map.select("#" + layer)
                 .selectAll(symbol)
-                .style("fill", function(){ return Colors.names[Colors.random()]; });
+                .style("fill", () => Colors.names[Colors.random()]);
             current_layers[layer].fill_color = {"random": true};
             make_random_color(layer, symbol);
         });
@@ -63,9 +63,7 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
     } else if (ref_layer)
         map.select("#"+layer)
             .selectAll(symbol)
-            .style("fill", function(d, i){
-                return color_cat_map.get(data_layer[i][field_name]);
-            });
+            .style("fill", (d,i) => color_cat_map.get(data_layer[i][field_name]));
     else
         map.select("#"+layer)
             .selectAll(symbol)
@@ -156,10 +154,7 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("",
-                i18next.t("app_page.common.confirm"),
-                i18next.t("app_page.common.cancel"),
-                layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -264,7 +259,7 @@ function createStyleBoxLabel(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -341,7 +336,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
@@ -570,8 +565,9 @@ function createStyleBox(layer_name){
                                          });
 
             ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
-             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function(name){
-                seq_color_select.append("option").text(name).attr("value", name); });
+             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(name => {
+                seq_color_select.append("option").text(name).attr("value", name);
+            });
             seq_color_select.node().value = prev_palette.name;
 
             var button_reverse = popup.insert("button")
@@ -707,8 +703,8 @@ function createStyleBox(layer_name){
 
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
-        ref_layer_name = current_layers[layer_name].ref_layer_name || layer_name.substring(0, layer_name.indexOf("_Prop")),
-        type_method = current_layers[layer_name].renderer.indexOf("PropSymbolsChoro") > -1 ? "PropSymbolsChoro" : current_layers[layer_name].renderer,
+        ref_layer_name = current_layers[layer_name].ref_layer_name,
+        type_method = current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,
         field_used = current_layers[layer_name].rendered_field,
         selection = d3.select(g_lyr_name).selectAll(type_symbol),
@@ -716,10 +712,10 @@ function createStyleBox_ProbSymbol(layer_name){
         old_size = [current_layers[layer_name].size[0],
                     current_layers[layer_name].size[1]];
 
-     var stroke_prev = selection.style('stroke'),
-         opacity = selection.style('fill-opacity'),
-         border_opacity = selection.style('stroke-opacity'),
-         stroke_width = selection.style('stroke-width');
+    var stroke_prev = selection.style('stroke'),
+        opacity = selection.style('fill-opacity'),
+        border_opacity = selection.style('stroke-opacity'),
+        stroke_width = selection.style('stroke-width');
 
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
@@ -760,7 +756,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-    make_confirm_dialog("", i18next.t("app_page.common.confirm"), i18next.t("app_page.common.cancel"), layer_name, "styleBox", undefined, undefined, true)
+    make_confirm_dialog("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
@@ -838,9 +834,7 @@ function createStyleBox_ProbSymbol(layer_name){
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
-                   i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''))
-//            .html(['<i>Rendered field : <b>', current_layers[layer_name].rendered_field, '</b></i><br>',
-//                   '<i>Reference layer : <b>', ref_layer_name,'</b></i><br>'].join(''));
+                   i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
          popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))

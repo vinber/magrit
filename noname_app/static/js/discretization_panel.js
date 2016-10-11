@@ -486,7 +486,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                     type = this.value;
                                     if(type === "Q6"){
                                         nb_class = 6;
-                                        txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+                                        txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
                                         document.getElementById("nb_class_range").value = 6;
                                     }
                                     redisplay.compute(nb_class);
@@ -500,7 +500,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var txt_nb_class = d3.select("#discretization_panel")
                             .insert("p")
                             .style("display", "inline")
-                            .html(i18next.t("disc_box.class", {count: nb_class})),
+                            .html(i18next.t("disc_box.class", {count: +nb_class})),
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
@@ -518,7 +518,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                 var ret_val = redisplay.compute(old_nb_class);
                                 if(!ret_val){
                                     this.value = old_nb_class;
-                                    txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+                                    txt_nb_class.html(i18next.t("disc_box.class", {count: +old_nb_class}));
                                 } else {
                                     redisplay.draw();
                                     var ctl_class = document.getElementById("centr_class");
@@ -825,7 +825,7 @@ function display_categorical_box(layer, field){
                                 title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
     newbox.append("h3").html("")
     newbox.append("p")
-                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
+                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));
 
     newbox.append("ul").style("padding", "unset").attr("id", "sortable_typo_name")
             .selectAll("li")
