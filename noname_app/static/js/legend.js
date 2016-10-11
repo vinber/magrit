@@ -80,11 +80,47 @@ function createLegend(layer, title){
              "warning");
 }
 
+function up_legend(legend_node){
+    let lgd_features = svg_map.querySelectorAll(".legend"),
+        nb_lgd_features = +lgd_features.length,
+        self_position;
+    for(let i=0; i<nb_lgd_features; i++){
+        if(lgd_features[i].id == legend_node.id
+            && lgd_features[i].classList == legend_node.classList){
+                self_position = i;
+        }
+    }
+    if(self_position == nb_lgd_features - 1){
+        return;
+    } else {
+        svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position]);
+    }
+}
+
+function down_legend(legend_node){
+    let lgd_features = svg_map.querySelectorAll(".legend"),
+        nb_lgd_features = +lgd_features.length,
+        self_position;
+    for(let i=0; i<nb_lgd_features; i++){
+        if(lgd_features[i].id == legend_node.id
+            && lgd_features[i].classList == legend_node.classList){
+                self_position = i;
+        }
+    }
+    if(self_position == 0){
+        return;
+    } else {
+        svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+    }
+}
+
 function make_legend_context_menu(legend_node, layer){
    let context_menu = new ContextMenu(),
        getItems = () =>  [
-        {"name": "Edit style...", "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
-        {"name": "Hide", "action": () => {
+        {"name": i18next.t("app_page.common.edit_style"), "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
+        {"name": i18next.t("app_page.common.up_element"), "action": () => {  up_legend(legend_node.node());  }},
+        {"name": i18next.t("app_page.common.down_element"), "action": () => { down_legend(legend_node.node()); }},
+        {"name": i18next.t("app_page.common.hide"), "action": () => {
             if(!legend_node.attr("display"))
                 legend_node.attr("display", "none");
             else
@@ -103,7 +139,6 @@ function make_legend_context_menu(legend_node, layer){
                               getItems());
         });
 }
-
 
 var drag_legend_func = function(legend_group){
     return d3.drag()

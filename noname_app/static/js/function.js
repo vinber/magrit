@@ -370,7 +370,7 @@ function render_TypoSymbols(rendering_params, new_name){
         "symbol": "image",
         "ref_layer_name": layer_name,
         };
-    up_legend();
+    up_legends();
     zoom_without_redraw();
     switch_accordion_section();
 }
@@ -656,7 +656,7 @@ var render_discont = function(){
         };
     create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
     send_layer_server(new_layer_name, "/layers/add");
-    up_legend();
+    up_legends();
     zoom_without_redraw();
     switch_accordion_section();
 //    resolve(true);
@@ -1526,7 +1526,7 @@ var render_label = function(layer, rendering_params){
         "ref_layer_name": layer,
         "default_size": font_size
         };
-    up_legend();
+    up_legends();
     zoom_without_redraw();
     return layer_to_add;
 }
@@ -2217,7 +2217,7 @@ function fillMenu_Anamorphose(){
                     "animation": animation
                     };
                 create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
-                up_legend();
+                up_legends();
                 zoom_without_redraw();
                 switch_accordion_section();
                 }
@@ -2685,7 +2685,7 @@ function make_prop_symbols(rendering_params){
     if(rendering_params.break_val != undefined){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
-    up_legend();
+    up_legends();
     result_data[layer_to_add] = res_data;
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
     return d_values;
@@ -2837,7 +2837,7 @@ function copy_layer(ref_layer, new_name, type_result){
     let selec_dest = document.getElementById(new_name).querySelectorAll("path");
     for(let i = 0; i < selec_src.length; i++)
         selec_dest[i].__data__ = selec_src[i].__data__;
-    up_legend();
+    up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 

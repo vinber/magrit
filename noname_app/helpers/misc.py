@@ -123,6 +123,9 @@ def prepare_js_css_minify():
     from jsmin import jsmin
     os.chdir("../static/js")
     list_files = os.listdir()
+    if "app.min.js" in list_files:
+        os.remove("app.min.js")
+        list_files.remove("app.min.js")
     data_js = ['"use strict";']
     for file in list_files:
         if ".js" in file:
@@ -133,6 +136,8 @@ def prepare_js_css_minify():
         f.write(minified)
 
     os.chdir("../css")
+    if os.path.exists("style.min.css"):
+        os.remove("style.min.css")
     with open("style.css") as f:
         minified_css = compress(f.read())
     with open("style.min.css", "w") as f:

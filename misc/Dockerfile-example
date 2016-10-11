@@ -25,7 +25,7 @@ FROM ubuntu:latest
 MAINTAINER mth
 
 RUN apt-get update && apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base \
-        python3.5 python3.5-dev nodejs python3-numpy python3-pip gdal-bin libgdal-dev \
+        python3.5 python3.5-dev nodejs python3-pip gdal-bin libgdal-dev \
         libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev git wget \
         && npm -g install topojson \
@@ -60,26 +60,20 @@ RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download
 ENV PATH="${GDALINST}/gdal-2.1.0/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
 
-RUN pip3 install -U pip \
-        && mkdir /home/app && cd /home/app \
-        && git clone http://github.com/mthh/jenkspy/ \
-        && cd jenkspy/ \
-        && python3 setup.py install
-
 ARG CACHEBUST=1
 
-RUN  cd /home/app && git clone http://github.com/mthh/noname-stuff/ \
+RUN  mkdir /home/app && cd /home/app \
+		&& git clone http://github.com/mthh/noname-stuff/ \
         && cd noname-stuff/ \
-        && pip3 install -r requirements-dev.txt \
+        && pip3 install -U -r requirements-dev.txt \
         && python3 setup.py install
 
 RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
-        && cd smoomapy/ && pip3 install -r requirements.txt \
-        && python3 setup.py install && cd /home/app
+        && cd smoomapy/ && python3 setup.py install && cd /home/app
 
 EXPOSE 9999
 
 #CMD service redis-server start && noname_app
 CMD service redis-server start \
-    && gunicorn "noname_app.noname_aio:create_app()" --bind localhost:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname_stuff/
+    && gunicorn "noname_app.noname_aio:create_app()" --bind localhost:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname-stuff/
 #CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py

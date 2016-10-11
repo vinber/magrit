@@ -186,29 +186,29 @@ function createStyleBoxTypoSymbols(layer_name){
                 selection.style("display", undefined);
             });
 
-    popup.append("p").style("text-align", "center")
-            .insert("button")
-            .attr("id","modif_symb")
-            .attr("class", "button_st4")
-            .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
-            .on("click", function(){
-                display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
-                    if(confirmed){
-                        rendering_params = {
-                            nb_cat: confirmed[0],
-                            symbols_map: confirmed[1],
-                            field: rendered_field
-                        };
-                        map.select("#" + layer_name)
-                            .selectAll("image")
-                            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-                            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-                            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-                            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-                            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
-                    }
-                });
-            });
+//    popup.append("p").style("text-align", "center")
+//            .insert("button")
+//            .attr("id","modif_symb")
+//            .attr("class", "button_st4")
+//            .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
+//            .on("click", function(){
+//                display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
+//                    if(confirmed){
+//                        rendering_params = {
+//                            nb_cat: confirmed[0],
+//                            symbols_map: confirmed[1],
+//                            field: rendered_field
+//                        };
+//                        map.select("#" + layer_name)
+//                            .selectAll("image")
+//                            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+//                            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+//                            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+//                            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+//                            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
+//                    }
+//                });
+//            });
 
 }
 

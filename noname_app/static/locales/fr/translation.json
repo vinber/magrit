@@ -5,8 +5,8 @@
             "save_preferences": "Sauvegarder le projet",
             "load_preferences": "Charger un projet",
             "too_large_input": "Fichier d'entrée trop volumineux (8Mo maximum)",
-            "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doivent être fournis.",
-            "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doivent être fournis.",
+            "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
+            "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
@@ -51,6 +51,7 @@
             "user_defined": "Personnalisé",
             "up_element": "Vers le haut",
             "down_element": "Vers le bas",
+            "hide": "Masquer",
             "smaller": "plus petit",
             "larger": "plus grand"
         },

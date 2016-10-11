@@ -25,12 +25,14 @@
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
     <script  src="/static/js/lib/q.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
-    <script src="/static/js/lib/loc-i18next.min.js"></script>
+    <script  src="/static/js/lib/loc-i18next.min.js"></script>
     <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
     <script  src="/static/js/lib/context-menu.js"></script>
+    <script  src="/static/js/app.min.js"></script>
+<!--
     <script  src="/static/js/layout_features.js"></script>
     <script  src="/static/js/interface.js"></script>
     <script  src="/static/js/map_project.js"></script>
@@ -41,6 +43,7 @@
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
+-->
   </head>
   <body>
       <div id="header">
@@ -973,7 +976,7 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
 
 {% endraw %}
 
-function up_legend(){
+function up_legends(){
     let legend_features = svg_map.querySelectorAll('.legend');
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);

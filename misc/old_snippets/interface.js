@@ -26,119 +26,57 @@ function click_button_add_layer(){
                               (self.id === "data_ext") ? true : false;
 
         let files = event.target.files;
-
-        handle_upload_files(files, target_layer_on_add, self);
+        for(let i=0; i < files.length; i++){
+            if(files[i].size > MAX_INPUT_SIZE){
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.too_large_input"), "error");
+                return;
+            }
+        }
+        if(files[0].name.indexOf('topojson') > -1){
+            handle_TopoJSON_files(files, target_layer_on_add);
+        } else if(files.length == 1 && (files[0].name.toLowerCase().indexOf("geojson") > -1
+                    || files[0].name.toLowerCase().indexOf('zip') > -1
+                    || files[0].name.toLowerCase().indexOf('kml') > -1)){
+            handle_single_file(files[0], target_layer_on_add);
+        } else if((files[0].name.toLowerCase().indexOf('.csv') > -1
+                    || files[0].name.toLowerCase().indexOf('.tsv') > -1)
+                    && target_layer_on_add) {
+            handle_dataset(files[0])
+            target_layer_on_add = false;
+        } else if((files[0].name.toLowerCase().indexOf('.xls') > -1
+                    || files[0].name.toLowerCase().indexOf('.ods') > -1)
+                    && target_layer_on_add) {
+            convert_dataset(files[0]);
+            target_layer_on_add = false;
+        } else if(files.length >= 4){
+            var files_to_send = [];
+            Array.prototype.forEach.call(files, f =>
+                f.name.indexOf('.shp') > -1
+                    || f.name.indexOf('.dbf') > -1
+                    || f.name.indexOf('.shx') > -1
+                    || f.name.indexOf('.prj') > -1
+                    ? files_to_send.push(f) : null)
+            if(files_to_send.length >= 4)
+                handle_shapefile(files_to_send, target_layer_on_add);
+            else
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload1"), "error");
+        } else {
+            let shp_part;
+            Array.prototype.forEach.call(files, f =>
+                f.name.indexOf('.shp') > -1
+                    || f.name.indexOf('.dbf') > -1
+                    || f.name.indexOf('.shx') > -1
+                    || f.name.indexOf('.prj') > -1
+                    ? shp_part = true : null);
+            if(shp_part){
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload_shp"), "error");
+            } else {
+                swal(i18next.t("Error") + "!", i18next.t("app_page.common.alert_upload_invalid"), "error");
+            }
+        }
     };
 
     input.dispatchEvent(new MouseEvent("click"))
-}
-
-function handle_upload_files(files, target_layer_on_add, elem){
-
-    for(let i=0; i < files.length; i++){
-        if(files[i].size > MAX_INPUT_SIZE){
-            elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t("app_page.common.too_large_input"),
-                  type: "error",
-                  allowOutsideClick: false});
-            elem.style.border = '';
-            return;
-        }
-    }
-
-    if(!(files.length == 1)){
-        var files_to_send = [];
-        Array.prototype.forEach.call(files, f =>
-            f.name.indexOf('.shp') > -1
-                || f.name.indexOf('.dbf') > -1
-                || f.name.indexOf('.shx') > -1
-                || f.name.indexOf('.prj') > -1
-                ? files_to_send.push(f) : null)
-        elem.style.border = '';
-        if(target_layer_on_add && targeted_layer_added){
-                swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common'),
-                      type: "error",
-                      allowOutsideClick: false});
-        } else if(files_to_send.length == 4){
-            handle_shapefile(files_to_send, target_layer_on_add);
-        } else {
-            elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t("app_page.common.alert_upload1"),
-                  type: "error",
-                  allowOutsideClick: false});
-            elem.style.border = '';
-        }
-    }
-    else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
-           elem.style.border = '';
-           if(target_layer_on_add && targeted_layer_added)
-                swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common.error_only_one'),
-                      type: "error",
-                      allowOutsideClick: false});
-           // Most direct way to add a layer :
-           else handle_TopoJSON_files(files, target_layer_on_add);
-   }
-   else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
-        files[0].name.toLowerCase().indexOf('zip') > -1 ||
-        files[0].name.toLowerCase().indexOf('kml') > -1){
-           elem.style.border = '';
-
-           if(target_layer_on_add && targeted_layer_added)
-                swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common.error_only_one'),
-                      type: "error",
-                      allowOutsideClick: false});
-           // Send the file to the server for conversion :
-           else handle_single_file(files[0], target_layer_on_add);
-   }
-  else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
-    || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
-        elem.style.border = '';
-        if(target_layer_on_add)
-            handle_dataset(files[0], target_layer_on_add);
-        else
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t('app_page.common.error_only_layout'),
-                  type: "error",
-                  allowOutsideClick: false});
-   }
-  else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
-    || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
-        elem.style.border = '';
-        if(target_layer_on_add)
-            convert_dataset(files[0]);
-        else
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t('app_page.common.error_only_layout'),
-                  type: "error",
-                  allowOutsideClick: false});
-   }
-  else {
-        elem.style.border = '3px dashed red';
-        let shp_part;
-        Array.prototype.forEach.call(files, f =>
-            f.name.indexOf('.shp') > -1
-                || f.name.indexOf('.dbf') > -1
-                || f.name.indexOf('.shx') > -1
-                || f.name.indexOf('.prj') > -1
-                ? shp_part = true : null);
-        if(shp_part){
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t('app_page.common.alert_upload_shp'),
-                  type: "error",
-                  allowOutsideClick: false});
-        } else {
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t('app_page.common.alert_upload_invalid'),
-                  type: "error",
-                  allowOutsideClick: false});
-        }
-        elem.style.border = '';
-    }
 }
 
 /**
@@ -175,7 +113,109 @@ function prepare_drop_section(){
                 if(self_section === "section1")
                     target_layer_on_add = true;
 
-                handle_upload_files(files, target_layer_on_add, elem);
+                for(let i=0; i < files.length; i++){
+                    if(files[i].size > MAX_INPUT_SIZE){
+                        elem.style.border = '3px dashed red';
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t("app_page.common.too_large_input"),
+                              type: "error",
+                              allowOutsideClick: false});
+                        elem.style.border = '';
+                        return;
+                    }
+                }
+                if(!(files.length == 1)){
+                    var files_to_send = [];
+                    Array.prototype.forEach.call(files, f =>
+                        f.name.indexOf('.shp') > -1
+                            || f.name.indexOf('.dbf') > -1
+                            || f.name.indexOf('.shx') > -1
+                            || f.name.indexOf('.prj') > -1
+                            ? files_to_send.push(f) : null)
+                    elem.style.border = '';
+                    if(target_layer_on_add && targeted_layer_added){
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common'),
+                                  type: "error",
+                                  allowOutsideClick: false});
+                    } else if(files_to_send.length == 4){
+                        handle_shapefile(files_to_send, target_layer_on_add);
+                    } else {
+                        elem.style.border = '3px dashed red';
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t("app_page.common.alert_upload1"),
+                              type: "error",
+                              allowOutsideClick: false});
+                        elem.style.border = '';
+                    }
+                }
+                else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
+                       elem.style.border = '';
+                       if(target_layer_on_add && targeted_layer_added)
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common.error_only_one'),
+                                  type: "error",
+                                  allowOutsideClick: false});
+                       // Most direct way to add a layer :
+                       else handle_TopoJSON_files(files, target_layer_on_add);
+               }
+               else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
+                    files[0].name.toLowerCase().indexOf('zip') > -1 ||
+                    files[0].name.toLowerCase().indexOf('kml') > -1){
+                       elem.style.border = '';
+
+                       if(target_layer_on_add && targeted_layer_added)
+                            swal({title: i18next.t("app_page.common.error") + "!",
+                                  text: i18next.t('app_page.common.error_only_one'),
+                                  type: "error",
+                                  allowOutsideClick: false});
+                       // Send the file to the server for conversion :
+                       else handle_single_file(files[0], target_layer_on_add);
+               }
+              else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
+                || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        handle_dataset(files[0], target_layer_on_add);
+                    else
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_pageS.common.error_only_layout'),
+                              type: "error",
+                              allowOutsideClick: false});
+               }
+              else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
+                || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
+                    elem.style.border = '';
+                    if(self_section === "section1")
+                        convert_dataset(files[0]);
+                    else
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.error_only_layout'),
+                              type: "error",
+                              allowOutsideClick: false});
+               }
+              else {
+                    elem.style.border = '3px dashed red';
+                    let shp_part;
+                    Array.prototype.forEach.call(files, f =>
+                        f.name.indexOf('.shp') > -1
+                            || f.name.indexOf('.dbf') > -1
+                            || f.name.indexOf('.shx') > -1
+                            || f.name.indexOf('.prj') > -1
+                            ? shp_part = true : null);
+                    if(shp_part){
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.alert_upload_shp'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    } else {
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.alert_upload_invalid'),
+                              type: "error",
+                              allowOutsideClick: false});
+                    }
+                    elem.style.border = '';
+                }
             }, true);
     });
 }

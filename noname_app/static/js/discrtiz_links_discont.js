@@ -189,20 +189,20 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             var y = d3.scaleLinear()
                 .range([svg_h, 0]);
 
-            x.domain([0, d3.max(bins.map(function(d) { return d.offset + d.width; }))]);
-            y.domain([0, d3.max(bins.map(function(d) { return d.height + d.height / 5; }))]);
+            x.domain([0, d3.max(bins.map(d => d.offset + d.width))]);
+            y.domain([0, d3.max(bins.map(d => d.height + d.height / 5))]);
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
               .enter().append("rect")
                 .attr("class", "bar")
                 .attr("transform", "translate(0, -17.5)")
-                .style("fill", function(d){return d.color;})
+                .style("fill", d => d.color )
                 .styles({"opacity": 0.5, "stroke-opacity":1})
-                .attr("x", function(d){ return x(d.offset);})
-                .attr("width", function(d){ return x(d.width);})
-                .attr("y", function(d){ return y(d.height) - margin.bottom;})
-                .attr("height", function(d){ return svg_h - y(d.height);});
+                .attr("x", d => x(d.offset) )
+                .attr("width", d => x(d.width) )
+                .attr("y", d => y(d.height) - margin.bottom )
+                .attr("height", d => svg_h - y(d.height) );
 
             svg_histo.append("g")
                 .attr("class", "y axis")
@@ -269,7 +269,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     }
 
     values = serie.sorted();
-    serie.setPrecision(6);
+//    serie.setPrecision(6);
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],

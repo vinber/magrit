@@ -48,9 +48,10 @@
             "arithmetic_prog": "Arithmetic progression",
             "jenks": "Jenks",
             "geometric_prog": "Geometric progression",
-            "user_defined": "User defined"
+            "user_defined": "User defined",
             "up_element": "Up element",
             "down_element": "Down element",
+            "hide": "Hide",
             "smaller": "smaller",
             "larger": "larger"
         },
