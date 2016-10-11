@@ -297,7 +297,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")
+            ).select_by_value("nuts2_data")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
@@ -325,7 +325,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")
+            ).select_by_value("nuts2_data")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
@@ -369,7 +369,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("epsg:3035")
 
         driver.find_element_by_id("dialogGeoExport"
-            ).find_element_by_css_selector("button.button_st4")
+            ).find_element_by_css_selector("button.button_st4").click()
         time.sleep(0.5)
         with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
             raw_geojson = f.read()
@@ -403,7 +403,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Open the appropriate menu:
         menu_options = self.get_menu_options()
 
-        # Test export to geographic layer (from the source layer):
+        # Test export to geographic layer (from a result layer):
         menu_options[4].click()
         time.sleep(0.2)
         Select(driver.find_element_by_id("layer_to_export")
@@ -414,15 +414,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("epsg:4326")
 
         driver.find_element_by_id("dialogGeoExport"
-            ).find_element_by_css_selector("button.button_st4")
+            ).find_element_by_css_selector("button.button_st4").click()
         time.sleep(0.5)
-#        with open("/tmp/export_selenium_test/nuts2_data.geojson", "r") as f:
-#            raw_geojson = f.read()
-#        parsed_geojson = json.loads(raw_geojson)
-#        self.assertIn("features", parsed_geojson)
-#        self.assertIn("type", parsed_geojson)
-#        self.assertIn("crs", parsed_geojson)
-#        os.remove("/tmp/export_selenium_test/NewLayerName.geojson")
+        with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+        self.assertIn("crs", parsed_geojson)
+        os.remove(self.tmp_folder + "NewLayerName.geojson")
 
 
     def test_stewart(self):
@@ -430,9 +430,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
+            ).select_by_value("nuts3_data")
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_visible_text("Nuts 2 (2006) European subdivisions (Polygons)")
+            ).select_by_value("nuts2_data")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
@@ -462,7 +462,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_visible_text("Nuts 3 (2006) European subdivisions (Polygons)")
+            ).select_by_value("nuts3_data")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
@@ -474,7 +474,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Test adding fields to the existing table :
         driver.find_element_by_id("add_field_button").click()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
-        driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName3")
+        driver.find_element_by_css_selector(
+            "input[value=\"NewFieldName\"]").send_keys("NewFieldName3")
 
         # One field based on an operation betweeen two numerical variables :
         Select(driver.find_element_by_css_selector(
@@ -483,7 +484,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "//div[@id='field_div1']/select[3]")).select_by_visible_text("gdppps2008")
         Select(driver.find_element_by_xpath(
             "//div[@id='field_div1']/select[2]")).select_by_visible_text("/")
-        driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
+        driver.find_element_by_css_selector(
+            ".addFieldBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[1].click()
+
         driver.find_element_by_id("add_field_button").click()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName2")
@@ -503,7 +507,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("val_opt").send_keys("1000")
         Select(driver.find_element_by_xpath(
             "//div[@id='field_div1']/select[2]")).select_by_visible_text("*")
-        driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
+        driver.find_element_by_css_selector(
+            ".addFieldBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[1].click()
         driver.find_element_by_id("add_field_button").click()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName1")
@@ -515,8 +521,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "//div[@id='field_div1']/select[2]")).select_by_value("truncate")
         driver.find_element_by_id("val_opt").clear()
         driver.find_element_by_id("val_opt").send_keys("2")
-        driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
-        driver.find_element_by_xpath("//button[@type='button']").click()
+        driver.find_element_by_css_selector(
+            ".addFieldBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[1].click()
+        driver.find_element_by_id(
+            "browse_data_box").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
 
         #  Test the dougenik cartogram functionnality...
         driver.find_element_by_css_selector("#button_cartogram").click()
@@ -535,7 +545,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
-        Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("U.S.A counties (Polygons)")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value("us_county")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
@@ -545,22 +556,34 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("add_field_button").click()
         #  Computing a new field on a layer with more than 3100 features
         #  ... will delegate the operation to the server :
-        Select(driver.find_element_by_css_selector("#field_div1 > select")).select_by_visible_text("AWATER")
-        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[2]")).select_by_visible_text("/")
-        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[3]")).select_by_visible_text("ALAND")
-        driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
-        driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("Ratio")
-        driver.find_element_by_xpath("(//button[@type='button'])[4]").click()
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        Select(driver.find_element_by_css_selector("#field_div1 > select")
+                ).select_by_visible_text("AWATER")
+        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[2]")
+                ).select_by_visible_text("/")
+        Select(driver.find_element_by_xpath("//div[@id='field_div1']/select[3]")
+                ).select_by_visible_text("ALAND")
+        driver.find_element_by_css_selector(
+            "input[value=\"NewFieldName\"]").clear()
+        driver.find_element_by_css_selector(
+            "input[value=\"NewFieldName\"]").send_keys("Ratio")
+        driver.find_element_by_css_selector(
+            ".addFieldBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[1].click()
+        driver.find_element_by_id(
+            "browse_data_box").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
         driver.find_element_by_id("ui-id-2").click()
         time.sleep(0.3)
         driver.find_element_by_css_selector("#button_choro").click()
         time.sleep(0.5)
         #  Let's use this new field to render a choropleth map :
-        Select(driver.find_element_by_id("choro_field_1")).select_by_visible_text("Ratio")
+        Select(driver.find_element_by_id("choro_field_1")
+                ).select_by_visible_text("Ratio")
         driver.find_element_by_css_selector("option[value=\"Ratio\"]").click()
         driver.find_element_by_id("choro_class").click()
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_id(
+            "discretiz_charts").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
         driver.find_element_by_id("choro_yes").click()
         time.sleep(1)  # Little delay for the map to be rendered
         driver.find_element_by_id("legend_button").click()
@@ -571,25 +594,32 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
-        Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Martinique (FR overseas region) communes (Polygons)")
-        Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("Martinique INSEE census dataset (To link with martinique communes geometries)")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value("martinique")
+        Select(driver.find_element_by_css_selector("select.sample_dataset")
+                ).select_by_value("martinique_data")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("join_button").click()
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_css_selector(
+            ".joinBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
         driver.find_element_by_id("ui-id-2").click()
         time.sleep(0.3)
         driver.find_element_by_css_selector("#button_discont").click()
         time.sleep(0.5)
-        Select(driver.find_element_by_id("field_Discont")).select_by_visible_text("P13_POP")
-        Select(driver.find_element_by_id("Discont_discKind")).select_by_visible_text("Quantiles")
+        Select(driver.find_element_by_id("field_Discont")
+                ).select_by_visible_text("P13_POP")
+        Select(driver.find_element_by_id("Discont_discKind")
+                ).select_by_visible_text("Quantiles")
         driver.find_element_by_id("Discont_nbClass").clear()
         driver.find_element_by_id("Discont_nbClass").send_keys("6")
         if not self.is_element_present(By.ID, "color_Discont"):
             self.fail("Missing features in the interface")
-        driver.execute_script("document.getElementById('color_Discont').value = '#da2929';")
+        driver.execute_script(
+            "document.getElementById('color_Discont').value = '#da2929';")
         driver.find_element_by_id("yes").click()
         time.sleep(1)  # Delay for the discontinuities to be computed
         driver.find_element_by_id("legend_button").click()
@@ -600,21 +630,29 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
-        Select(driver.find_element_by_css_selector("select.sample_target")).select_by_visible_text("Grand Paris municipalities (Polygons)")
-        Select(driver.find_element_by_css_selector("select.sample_dataset")).select_by_visible_text("\"Grand Paris\" incomes dataset (To link with Grand Paris municipality geometries)")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value("GrandParisMunicipalities")
+        Select(driver.find_element_by_css_selector("select.sample_dataset")
+                ).select_by_value("gpm_dataset")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
         time.sleep(1)  # Delay for the sweet alert to close
         driver.find_element_by_id("join_button").click()
-        Select(driver.find_element_by_id("button_field2")).select_by_visible_text("DEPCOM")
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        Select(driver.find_element_by_id("button_field2")
+                ).select_by_visible_text("DEPCOM")
+        driver.find_element_by_css_selector(
+            ".joinBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
         driver.find_element_by_id("ui-id-2").click()
         driver.find_element_by_css_selector("#button_prop").click()
         time.sleep(1)
-        Select(driver.find_element_by_id("PropSymbol_field_1")).select_by_visible_text("TH")
-        Select(driver.find_element_by_xpath("//div[@id='section2']/p/p[4]/select")).select_by_value("rect")
-        Select(driver.find_element_by_id("PropSymbol_nb_colors")).select_by_value("2")
+        Select(driver.find_element_by_id(
+            "PropSymbol_field_1")).select_by_visible_text("TH")
+        Select(driver.find_element_by_xpath(
+            "//div[@id='section2']/p/p[4]/select")).select_by_value("rect")
+        Select(driver.find_element_by_id("PropSymbol_nb_colors")
+                ).select_by_value("2")
         driver.find_element_by_id("PropSymbol_break_val").clear()
         driver.find_element_by_id("PropSymbol_break_val").send_keys("14553")
 
@@ -622,16 +660,23 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 or not self.is_element_present(By.ID, "PropSymbol_color2"):
             self.fail("Missing features in the interface")
 
-        driver.execute_script("document.getElementById('PropSymbol_color1').value = '#e3a5f3';")
-        driver.execute_script("document.getElementById('PropSymbol_color1').value = '#ffff00';")
+        driver.execute_script(
+            "document.getElementById('PropSymbol_color1').value = '#e3a5f3';")
+        driver.execute_script(
+            "document.getElementById('PropSymbol_color1').value = '#ffff00';")
         driver.find_element_by_id("yes").click()
         time.sleep(1.5)
-        driver.find_element_by_css_selector("img.style_target_layer").click()
-        driver.find_element_by_css_selector("#fill_color_section > input[type=\"number\"]").clear()
-        driver.find_element_by_css_selector("#fill_color_section > input[type=\"number\"]").send_keys("100000")
+        driver.find_element_by_css_selector(
+            "img.style_target_layer").click()
+        driver.find_element_by_css_selector(
+            "#fill_color_section > input[type=\"number\"]").clear()
+        driver.find_element_by_css_selector(
+            "#fill_color_section > input[type=\"number\"]").send_keys("100000")
         driver.find_element_by_xpath("(//input[@value='145535'])[2]").clear()
         driver.find_element_by_xpath("(//input[@value='145535'])[2]").send_keys("15535")
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        driver.find_element_by_css_selector(
+            ".styleBox").parent.find_elements_by_css_selector(
+            ".ui-dialog-buttonset > button")[0].click()
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legend won't display")
