@@ -416,11 +416,6 @@ function setUpInterface()
                 .on("change", function(){
                     current_proj_name = this.selectedOptions[0].textContent;
                     change_projection(this.value);
-                    let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
-                    if(layer_name){
-                        center_map(layer_name);
-                        zoom_without_redraw();
-                    }
                 });
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
@@ -554,8 +549,8 @@ function setUpInterface()
                   if(document.getElementById("menu_pref"))
                       document.getElementById("menu_pref").remove();
                   swal({
-                      title: "Emergency help !",
-                      text: "Write something to be searched in the documentation :",
+                      title: i18next.t("app_page.help_box.title"),
+                      text: i18next.t("app_page.help_box.message_invite"),
                       input: "text",
                       showCancelButton: true,
                       animation: "slide-from-top",
@@ -780,7 +775,8 @@ function make_ico_choice(){
             func_name = ico_name.split('.')[0].split("_")[1],
             func_desc = get_menu_option(func_name).desc;
         function_panel.append("img")
-            .attr("title", i18next.t(["app_page.func_description.", func_name].join('')))
+            .attr("class", "i18n")
+            .attr("data-i18n", ["[title]app_page.func_description.", func_name].join(''))
             .attr("src", ["/static/img/func_icons/", ico_name].join(''))
             .attr("id", "button_" + func_name)
             .style("margin", "1px")
@@ -995,6 +991,8 @@ function binds_layers_buttons(layer_name){
         return;
     }
     let sortable_elem = d3.select("#sortable").select("." + layer_name);
+    sortable_elem.on("dblclick", () => { handle_click_layer(layer_name); });
+    sortable_elem.on("contextmenu", () => { d3.event.preventDefault(); return; });
     sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
     sortable_elem.select(".active_button").on("click", () => { handle_active_layer(layer_name); });
     sortable_elem.select(".style_button").on("click", () => { handle_click_layer(layer_name); });
@@ -1081,11 +1079,6 @@ function displayInfoOnMove(){
     }
 }
 
-function reproj(){
-  proj.translate([t[0], t[1]]).scale(s);
-  map.selectAll(".layer").selectAll("path").attr("d", path);
-  reproj_symbol_layer();
-}
 
 function reproj_symbol_layer(){
   for(let lyr_name in current_layers){
@@ -1096,7 +1089,7 @@ function reproj_symbol_layer(){
       let ref_layer_name = current_layers[lyr_name].ref_layer_name,
           features_order = current_layers[lyr_name].features_order,
           symbol = current_layers[lyr_name].symbol,
-          new_coords = new Array();
+          new_coords = [];
       map.select("#" + ref_layer_name)
             .selectAll("path")
             .each((d,i) => {
@@ -1111,8 +1104,8 @@ function reproj_symbol_layer(){
       } else if (symbol == "image"){
           map.select("#"+lyr_name)
                 .selectAll(symbol)
-                .attr("x", function(d,i){ console.log(this); return new_coords[i][0] - +this.getAttribute("width").slice(0, -2) / 2; })
-                .attr("y", function(d,i){ return new_coords[i][1] - +this.getAttribute("width").slice(0, -2) / 2; })
+                .attr("x", (d,i) => new_coords[i][0] - +this.getAttribute("width").slice(0, -2) / 2)
+                .attr("y", (d,i) => new_coords[i][1] - +this.getAttribute("width").slice(0, -2) / 2)
       } else {
           let ord = features_order.map(obj => obj[0]);
           for(let i = 0; i < ord.length; i++)
@@ -1442,9 +1435,15 @@ function rotate_global(angle){
     }
 };
 
+function isInterrupted(proj_name){
+    return (proj_name.indexOf("interrupted") > -1
+            || proj_name.indexOf("armadillo") > -1
+            || proj_name.indexOf("healpix") > -1);
+}
+
 function handleClipPath(proj_name){
     proj_name = proj_name.toLowerCase();
-    if(proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1){
+    if(isInterrupted(proj_name)){
         let defs_sphere = defs.node().querySelector("#sphere"),
             defs_clipPath = defs.node().querySelector("clipPath");
         if(defs_sphere){ defs_sphere.remove(); }
@@ -1475,9 +1474,7 @@ function handleClipPath(proj_name){
 
 function handleClipPathLayer(layer_name){
     let _proj_name = current_proj_name.toLowerCase();
-    if(_proj_name.indexOf("interrupted") > -1
-        || _proj_name.indexOf("armadillo") > -1
-        || _proj_name.indexOf("healpix") > -1){
+    if(isInterrupted(_proj_name)){
             map.select("#" + layer_name)
                 .attr("clip-path", "url(#clip)");
     }
@@ -1494,25 +1491,26 @@ function change_projection(proj_name) {
 
     // Reset the projection center input :
     document.getElementById("form_projection_center").value = 0;
+    document.getElementById("proj_center_value_txt").value = 0;
 
     // Do the reprojection :
-    reproj();
-
-    // Set or remove the clip-path according to the projection:
-    handleClipPath(new_proj_name);
+    proj.translate([t[0], t[1]]).scale(s);
+    map.selectAll("path").attr("d", path);
 
     // Set specifics mouse events according to the projection :
     if(new_proj_name.indexOf('Orthographic') > -1){
         var current_params = proj.rotate(),
             rotation_param = d3.select("#rotation_params");
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_phi"))
+        rotation_param.append("div").attr("class", "options_ortho")
+                .html(i18next.t("app_page.section5.projection_center_phi"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_phi"})
                 .attrs({value: current_params[1], min: -180, max: 180, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, this.value, null])})
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_gamma"))
+        rotation_param.append("div").attr("class", "options_ortho")
+                .html(i18next.t("app_page.section5.projection_center_gamma"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_gamma"})
                 .attrs({value: current_params[2], min: -90, max: 90, step: 0.5})
@@ -1524,6 +1522,20 @@ function change_projection(proj_name) {
     map.select("svg").on("mousedown", null)
                     .on("mousemove", null)
                     .on("mouseup", null);
+
+    // Reset the scale of the projection and the center of the view :
+    let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+    if(layer_name){
+        scale_to_lyr(layer_name);
+        center_map(layer_name);
+        zoom_without_redraw();
+    }
+
+    // Reproject
+    reproj_symbol_layer();
+
+    // Set or remove the clip-path according to the projection:
+    handleClipPath(new_proj_name);
 }
 
 

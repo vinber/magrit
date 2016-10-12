@@ -33,6 +33,7 @@
             "deleted": "Supprimée",
             "done": "Fini!",
             "valid": "Confirmation",
+            "close": "Fermer",
             "edit_style": "Changer le style...",
             "error": "Erreur",
             "feature": "entité",
@@ -216,7 +217,8 @@
                 "concatenate": "Concatener",
                 "join_char": "Charactère à insérer entre les deux valeurs (peut rester vide) :<br>",
                 "keep_char": "Nombre de charactère à conserver (en partant de la gauche) :<br>",
-                "invalid_name": "Nom de colonne invalide !"
+                "invalid_name": "Nom de colonne invalide !",
+                "constant_value": "Valeur constante..."
             }
         },
         "legend_style_box": {
@@ -260,9 +262,9 @@
         },
         "title_box": {
             "title": "Propriétés du titre",
-            "font_size": "Font size :<br>",
-            "font_color": "Font color :<br>",
-            "font_family": "Font family :<br>",
+            "font_size": "Taille de police :<br>",
+            "font_color": "Couleur de police :<br>",
+            "font_family": "Famille de police :<br>",
             "xpos": "Position en X (% depuis de la gauche) :<br>",
             "ypos": "Position en Y (% depuis le haut) :<br>"
         },

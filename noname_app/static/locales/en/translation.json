@@ -33,6 +33,7 @@
             "deleted": "Deleted",
             "done": "Done!",
             "valid": "Valid",
+            "close": "Close",
             "edit_style": "Edit style...",
             "error": "Error",
             "feature": "feature",
@@ -216,7 +217,8 @@
                 "concatenate": "Concatenate",
                 "join_char": "Character to join the two fields (can stay blank) :<br>",
                 "keep_char": "Number of char to keep (from the left) :<br>",
-                "invalid_name": "Unauthorized column name !"
+                "invalid_name": "Unauthorized column name !",
+                "constant_value": "Constant value..."
             }
         },
         "legend_style_box": {
@@ -261,8 +263,8 @@
         "title_box": {
             "title": "Title properties",
             "font_size": "Font size :<br>",
-            "font_color": "Couleur de la police :<br>",
-            "font_family": "Type de police :<br>",
+            "font_color": "Font color :<br>",
+            "font_family": "Font family :<br>",
             "xpos": "x position (% from the left side) :<br>",
             "ypos": "y position (% from the top) :<br>"
         },

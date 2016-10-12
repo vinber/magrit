@@ -442,16 +442,16 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         width: +w - 10,
         height: +h + 60,
         buttons:[{
-            text: "Confirm",
+            text: i18next.t("app_page.common.confirm"),
             click: function(){
-                    breaks[0] = round_value(values[0], 6);
-                    breaks[nb_class] = round_value(values[values.length - 1], 6);
+                    breaks[0] = serie.min();
+                    breaks[nb_class] = serie.max();
                     deferred.resolve([serie, breaks_info, breaks]);
                     $(this).dialog("close");
                     }
                 },
            {
-            text: "Cancel",
+            text: i18next.t("app_page.common.cancel"),
             click: function(){
                 $(this).dialog("close");
                 $(this).remove();}

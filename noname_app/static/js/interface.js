@@ -351,8 +351,30 @@ function add_dataset(readed_dataset){
         }
     }
 
-    joined_dataset.push(readed_dataset);
+    // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
+    let cols = Object.getOwnPropertyNames(readed_dataset[0]);
+    for(let i = 0; i < cols.length; i++){
+        let tmp = [];
+        // Check that all values of this field can be coerced to Number :
+        for(let j=0; j < readed_dataset.length; j++){
+            if((readed_dataset[j][cols[i]].replace && !isNaN(+readed_dataset[j][cols[i]].replace(",", ".")))
+                    || !isNaN(+readed_dataset[j][cols[i]])) {
+                // Add the converted value to temporary field if its ok ...
+                tmp.push(+readed_dataset[j][cols[i]].replace(",", "."));
+            } else {
+                // Or break early if a value can't be coerced :
+                break; // So no value of this field will be converted
+            }
+        }
+        // If the whole field has been converted successfully, apply the modification :
+        if(tmp.length === readed_dataset.length){
+            for(let j=0; j < readed_dataset.length; j++){
+                readed_dataset[j][cols[i]] = tmp[j];
+            }
+        }
+    }
 
+    joined_dataset.push(readed_dataset);
     let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
         nb_features = joined_dataset[0].length,
         field_names = Object.getOwnPropertyNames(readed_dataset[0]);

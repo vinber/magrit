@@ -1,6 +1,6 @@
 "use strict";
 
-function get_menu_option(func){
+export default function get_menu_option(func){
     var menu_option = {
         "smooth":{
             "name": "smooth",
@@ -2385,7 +2385,7 @@ var boxExplore = {
             resizable: true,
             width: Math.round(window.innerWidth * 0.8),
             buttons:[{
-                    text: "Close",
+                    text: i18next.t("app_page.common.close"),
                     click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
                         }],
             close: function(event, ui){
@@ -3190,7 +3190,9 @@ function add_table_field(table, layer_name, parent){
                     field2.append("option").text(k).attr("value", k);
                 }
             }
-            field2.append("option").text("Constant value...").attr("value", "user_const_value");
+            field2.append("option")
+                .attr("value", "user_const_value")
+                .text(i18next.t("app_page.explore_box.add_field_box.constant_value"));
             val_opt.style("display", "none");
             txt_op.text("");
             chooses_handler.operator = math_operation[0];
@@ -3334,8 +3336,8 @@ function switch_accordion_section(id_to_close="accordion2", id_to_open="accordio
 function haversine_dist(A, B){
     let pi_dr = Math.PI / 180;
 
-    let lat1 = A[0], lon1 = A[1],
-        lat2 = B[0], lon2 = B[1];
+    let lat1 = +A[0], lon1 = +A[1],
+        lat2 = +B[0], lon2 = +B[1];
 
     let x1 = lat2 - lat1,
         dLat = x1 * pi_dr,

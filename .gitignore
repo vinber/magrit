@@ -15,6 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+
 # lib/ dont exclude lib to grab JS libs
 lib64/
 parts/
@@ -69,3 +70,11 @@ Rplots.pdf
 # Temporary folder to ignore :
 tmp/
 
+# Node / npm files to ignore :
+
+.npm
+.grunt
+.eslintcache
+.node_repl_history
+node_modules/
+jspm_packages/
