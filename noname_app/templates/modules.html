@@ -211,12 +211,12 @@ function setUpInterface()
     let zoom_prop = svg_map.__zoom;
 
     let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    c.append("span").attr("id", "map_center_menu_ico")
+        .attr("class", "ui-accordion-header-icon ui-icon ui-icon-triangle-1-e")
+        .styles({"display": "inline-table", "vertical-align": "sub", "margin-left": "-5px"});
     c.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_center_menu")
             .style("cursor", "pointer");
-    c.insert("span").attr("id", "map_center_menu_ico")
-        .attr("class", "ui-accordion-header-icon ui-icon ui-icon-triangle-1-e")
-        .style("display", "inline-table");
     c.on("click", function(){
         let sections = document.querySelectorAll(".to_hide"),
             arg;

@@ -654,7 +654,7 @@ function add_layer_topojson(text, options){
 function scale_to_lyr(name){
     name = current_layers[name].ref_layer_name || name;
     var bbox_layer_path = undefined;
-    map.select("#"+name).selectAll('path').each(function(d, i){
+    map.select("#"+name).selectAll('path').each( (d,i) => {
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
             bbox_layer_path = bbox_path;
@@ -1086,10 +1086,10 @@ function handleClickAddArrow(){
 
 function prepare_available_symbols(){
     let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
-            .then(function(list_res){
+            .then( list_res => {
                list_res = JSON.parse(list_res.target.responseText);
                Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
-                .then(function(symbols){
+                .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
                         default_symbols.push([list_res[i], symbols[i].target.responseText]);
                     }

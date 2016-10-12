@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
-from ujson import loads as json_loads
 from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation

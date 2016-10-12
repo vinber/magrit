@@ -36,6 +36,7 @@
             "close": "Fermer",
             "edit_style": "Changer le style...",
             "error": "Erreur",
+            "options": "Options",
             "feature": "entité",
             "feature_plural": "entités",
             "field": "champ",
@@ -244,7 +245,9 @@
         },
         "scale_bar_edit_box": {
             "title": "Options de l'échelle",
-            "fixed_size": "Taille fixée "
+            "fixed_size": "Taille fixée ",
+            "precision": "Précision ",
+            "unit": "Unité de mesure "
         },
         "text_box_edit_box": {
             "constructor_default": "Saisir du texte...",
@@ -255,10 +258,11 @@
             "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées."
         },
         "arrow_edit_box": {
-            "title": "Options de la fleche",
-            "arrowWeight": "Taille de la fleche",
-            "arrowColor": "Couleur de la fleche",
-            "move_points": "Déplacement des points (départ/arrivée) de la fleche"
+            "title": "Options de la flèche",
+            "arrowWeight": "Taille de la flèche",
+            "arrowColor": "Couleur de la flèche",
+            "arrowAngle": "Inclinaison de la flèche",
+            "move_points": "Déplacement des points (départ/arrivée) de la flèche"
         },
         "title_box": {
             "title": "Propriétés du titre",

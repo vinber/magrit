@@ -1,6 +1,6 @@
 "use strict";
 
-export default function get_menu_option(func){
+function get_menu_option(func){
     var menu_option = {
         "smooth":{
             "name": "smooth",
@@ -3348,6 +3348,27 @@ function haversine_dist(A, B){
                 Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
                 Math.sin(dLon/2) * Math.sin(dLon/2);
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/**
+* Return the distance in kilometers between two points (lat/long coordinates)
+* according to the spherical law of cosines
+*
+* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
+* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
+* @return {Number} distance - The distance in km between A and B
+*/
+function coslaw_dist(A, B){
+    let pi_dr = Math.PI / 180;
+
+    let lat1 = +A[0], lon1 = +A[1],
+        lat2 = +B[0], lon2 = +B[1];
+    let phi1 = lat1 * pi_dr,
+        phi2 = lat2 * pi_dr,
+        d_lambda = (lon2-lon1) * pi_dr;
+    return Math.acos(Math.sin(phi1) * Math.sin(phi2) +
+                Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)
+                ) * 6371;
 }
 
 function path_to_geojson(id_layer){

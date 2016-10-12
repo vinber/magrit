@@ -125,11 +125,26 @@ class UserArrow {
         }
     }
 
+    calcAngle(){
+        let dx = this.pt2[0] - this.pt1[0],
+            dy = this.pt2[1] - this.pt1[1];
+        return Math.atan2(dy, dx) * (180 / Math.PI);
+    }
+
+    calcDestFromOAD(origin, angle, distance){
+        let theta = angle / (180 / Math.PI),
+            dx = distance * Math.cos(theta),
+            dy = distance * Math.sin(theta);
+        return [origin[0] + dx, origin[1] + dy]
+    }
+
     editStyle(){
         let current_options = {pt1: this.pt1.slice(),
                                pt2: this.pt2.slice()};
         let self = this,
             line = self.arrow.node().querySelector("line");
+
+        let angle = (-this.calcAngle()).toFixed(0);
 
         make_confirm_dialog("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"))
             .then(function(confirmed){
@@ -151,7 +166,7 @@ class UserArrow {
             });
         let box_content = d3.select(".styleBoxArrow").insert("div").attr("id", "styleBoxArrow");
         let s1 = box_content.append("p");
-        s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+        s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.append("input")
             .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
             .styles({width: "80px", "vertical-align": "middle"})
@@ -161,17 +176,32 @@ class UserArrow {
             });
         let txt_line_weight = s1.append("span").html(self.lineWeight + " px");
 
-//        let s2 = box_content.append("p");
-//        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowColor"))
-//        s2.insert("input")
-//            .attrs({id: "arrow_headWeight", type: "color", value: self.color })
-//            .style("margin-left", "15px")
-//            .on("change", function(){
-//                line.style.stroke = this.value;
-//            });
+        let s2 = box_content.append("p");
+        s2.append("p").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
+        s2.insert("input")
+            .attrs({id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1})
+            .styles({width: "80px", "vertical-align": "middle"})
+            .on("change", function(){
+                let distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
+                let angle = -(+this.value);
+                let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+                line.x2.baseVal.value = nx;
+                line.y2.baseVal.value = ny;
+                document.getElementById("arrow_angle_text").value = +this.value;
+            });
 
+        s2.insert("input")
+            .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+            .styles({width: "30px", "margin-left": "10px"})
+            .on("input", function(){
+                let elem = document.getElementById("arrow_angle");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
+
+        s2.insert("span").html("°");
         let s3 = box_content.append("p");
-        s2.append("button")
+        s3.append("button")
             .attr("class", "button_st4")
             .html(i18next.t("app_page.arrow_edit_box.move_points"))
             .on("click", function(){
@@ -446,12 +476,14 @@ var scaleBar = {
         this.x = x_pos;
         this.y = y_pos;
         this.bar_size = bar_size;
+        this.unit = "km";
+        this.precision = 0;
         this.fixed_size = false;
         this.getDist();
 
         let getItems = () => [
-            {"name": "Edit style and size...", "action": () => { this.editStyle()}},
-            {"name": "Delete", "action": () => { this.remove(); }}
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle()}},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
         ];
 
         let scale_context_menu = new ContextMenu();
@@ -497,9 +529,12 @@ var scaleBar = {
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
 
-        let dist = haversine_dist(pt1, pt2);
-        this.dist_txt = dist > 0 ? dist.toFixed(0) : dist.toFixed(2);
-        this.dist = dist;
+        this.dist = coslaw_dist([pt1[1], pt1[0]], [pt2[1], pt2[0]]);
+        if(this.unit === "m")
+            this.dist = this.dist / 1000;
+        else if(this.unit === "mi")
+            this.dist = this.dist * 0,621371;
+        this.dist_txt = this.dist.toFixed(this.precision);
 
     },
     resize: function(desired_dist){
@@ -517,7 +552,7 @@ var scaleBar = {
     },
     changeText: function(){
         this.getDist();
-        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " km");
+        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
     },
     update: function(){
         this.changeText();
@@ -567,6 +602,32 @@ var scaleBar = {
                 .attr("disabled", self.fixed_size ? null : true)
                 .attr("value", +this.dist_txt)
                 .on("change", function(){ new_val = +this.value });
+
+        let b = box_body.append("p");
+        b.insert("span")
+                .html(i18next.t("app_page.scale_bar_edit_box.precision"));
+        b.insert("input")
+                .attr('id', "scale_precision")
+                .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.dist_txt})
+                .attr("disabled", self.fixed_size ? null : true)
+                .style("width", "60px")
+                .on("change", function(){
+                    self.precision = +this.value;
+                });
+
+        let c = box_body.append("p");
+        c.insert("span")
+                .html(i18next.t("app_page.scale_bar_edit_box.unit"));
+        let unit_select = c.insert("select")
+                .attr('id', "scale_unit")
+                .on("change", function(){
+                    self.unit = this.value;
+                });
+
+        unit_select.append("option").text("km").attr("value", "km");
+        unit_select.append("option").text("m").attr("value", "m");
+        unit_select.append("option").text("mi").attr("value", "mi");
+
     },
     displayed: false
 };
@@ -589,8 +650,8 @@ var northArrow = {
         this.displayed = true;
 
         let getItems = () => [
-            {"name": "Options...", "action": () => { this.editStyle()}},
-            {"name": "Delete", "action": () => { this.remove(); }}
+            {"name": i18next.t("app_page.common.options"), "action": () => { this.editStyle()}},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
         ];
 
         let arrow_context_menu = new ContextMenu();

@@ -35,6 +35,7 @@
             "valid": "Valid",
             "close": "Close",
             "edit_style": "Edit style...",
+            "options": "Options",
             "error": "Error",
             "feature": "feature",
             "feature_plural": "features",
@@ -244,7 +245,9 @@
         },
         "scale_bar_edit_box": {
             "title": "Scale bar options",
-            "fixed_size": "Fixed size "
+            "fixed_size": "Fixed size ",
+            "precision": "Precision ",
+            "unit": "Displayed unit "
         },
         "text_box_edit_box": {
             "constructor_default": "Enter your text...",
@@ -258,6 +261,7 @@
             "title": "Arrow options",
             "arrowWeight": "Arrow weight",
             "arrowColor": "Arrow color",
+            "arrowAngle": "Slope",
             "move_points": "Move arrow start or end point"
         },
         "title_box": {
