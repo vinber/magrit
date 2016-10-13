@@ -716,9 +716,7 @@ function setUpInterface()
         placeholder: "ui-state-highlight",
         update: function(a){
           // Set the layer order on the map in concordance with the user changes
-          // in the layer manager with a pretty rusty sorting algorythm
-          // trying to match the requested order from the actual order
-          // (currently havent been tested on a really large number of layers)
+          // in the layer manager with a pretty rusty 'sorting' algorythm :
           let at_end = null;
           if(document.getElementById("info_features").className == "active"){
             displayInfoOnMove();
@@ -879,7 +877,6 @@ function make_ico_choice(){
 
 var w = Math.round(window.innerWidth - 360),
     h = window.innerHeight - 45;
-    //h = Math.round(window.innerHeight / 1.24);
 
 var existing_lang = ["en", "fr"];
 
@@ -963,7 +960,7 @@ const sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" widt
 const discretiz_geostats_switch = new Map([
         ["jenks", "getJenks"],
         ["equal_interval", "getEqInterval"],
-        ["std_dev", "getStdDeviation"],
+        //["std_dev", "getStdDeviation"],
         ["quantiles", "getQuantile"],
         ["arithmetic_progression", "getArithmeticProgression"],
         ["Q6", "getBreaksQ6"],
@@ -1368,7 +1365,7 @@ function zoom_without_redraw(){
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
             })
-          .attr("transform", transform.toString());
+          .attr("transform", transform.toString() + rot_val);
     } else {
         map.selectAll(".layer")
                   .transition()
@@ -1379,7 +1376,7 @@ function zoom_without_redraw(){
                                 ? this.style.strokeWidth
                                 : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
                     })
-                  .attr("transform", d3.event.transform)
+                  .attr("transform", d3.event.transform + rot_val);
     }
 
     if(scaleBar.displayed)
@@ -1473,8 +1470,7 @@ function zoomClick() {
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
-    canvas_rotation_value = ["rotate(", angle, ",", w / 2,",", h / 2, ")"].join('');
-
+    canvas_rotation_value = ["rotate(", angle, ")"].join('');
     let zoom_transform = d3.zoomTransform(svg_map);
 
     map.selectAll("g.layer")
@@ -1484,12 +1480,12 @@ function rotate_global(angle){
                           ",translate(", [zoom_transform.x, zoom_transform.y], "),",
                           "scale(", zoom_transform.k, ")"].join(''));
     if(northArrow.displayed){
-        let current_transform = northArrow.svg_node.attr("transform");
-        if(current_transform)
-            northArrow.svg_node.attr("transform", ["rotate(", angle, ",",northArrow.x,",", northArrow.y, "),"].join('') + current_transform);
-        else
-            northArrow.svg_node.attr("transform",  ["rotate(", angle, ",",northArrow.x,",", northArrow.y, ")"].join(''));
+        let current_rotate = !isNaN(+northArrow.svg_node.attr("rotate")) ? +northArrow.svg_node.attr("rotate") : 0;
+        northArrow.svg_node.attr("transform", [
+            "rotate(", +angle + current_rotate, ",",northArrow.x_center,",", northArrow.y_center, ")"
+            ].join(''));
     }
+    zoom_without_redraw();
 };
 
 function isInterrupted(proj_name){
@@ -1971,17 +1967,6 @@ function make_export_layer_box(){
                 });
                 dialogBox.dialog("destroy").remove();
             });
-}
-
-function change_displayed_ratio(width, height){
-    let rounded_ratio = round_value(+width / +height, 3);
-    if(rounded_ratio == 0.707){
-        document.getElementById("map_ratio_select").value = "portait";
-    } else if (rounded_ratio == 1.414){
-        document.getElementById("map_ratio_select").value = "landscape";
-    } else {
-        document.getElementById("map_ratio_select").value = "user_ratio";
-    }
 }
 
 // Only ask for confirmation before leaving page if things have been done

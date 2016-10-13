@@ -63,7 +63,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
                                                 .attr("class", "color_txt")
-                                                .html(i18next.t("disc_box.reverse_palette"))
+                                                .html(i18next.t("disc_box.color_palette"))
                                              .insert("select")
                                                 .attr("class", "color_params")
                                                 .on("change", function(){
@@ -93,7 +93,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         col_div.selectAll('#reverse_pal_btn').remove();
         col_div.insert('p')
                 .attr("class", "central_class")
-                .html("Break on ")
+                .html(i18next.t("disc_box.break_on"))
                .insert("input").attrs({
                    type: "number", class: "central_class", id: "centr_class",
                    min: 1, max: nb_class-1, step: 1, value: Math.round(nb_class / 2)
@@ -470,7 +470,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
-     [i18next.t("app_page.common.std_dev"), "std_dev"],
+//     [i18next.t("app_page.common.std_dev"), "std_dev"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
      [i18next.t("app_page.common.jenks"), "jenks"]

@@ -515,7 +515,8 @@
         "with_no_data": "{{ nb_features }} entité sans valeur",
         "with_no_data_plural": "{{ nb_features }} entités sans valeur",
         "colored_central_class": "classe centrale colorée",
-        "color_palette": "Palette de couleur "
+        "color_palette": "Palette de couleur ",
+        "break_on": "Classe centrale "
     },
     "style_box":{
         "ref_layer": "Couche de référence",

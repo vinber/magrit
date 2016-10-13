@@ -453,7 +453,7 @@ function fillMenu_Discont(){
         [
          [i18next.t("app_page.common.equal_interval"), "equal_interval"],
          [i18next.t("app_page.common.quantiles"), "quantiles"],
-         [i18next.t("app_page.common.std_dev"), "std_dev"],
+//         [i18next.t("app_page.common.std_dev"), "std_dev"],
          [i18next.t("app_page.common.Q6"), "Q6"],
          [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
          [i18next.t("app_page.common.jenks"), "jenks"]
@@ -466,6 +466,12 @@ function fillMenu_Discont(){
                 .insert('input')
                 .attrs({class: 'params', id: "color_Discont",
                        type: "color", value: ColorsSelected.random()});
+
+    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "Discont_output_name");
 
     let ok_button = dv2.append("p")
                       .styles({"text-align": "right", margin: "auto"})
@@ -505,7 +511,11 @@ var render_discont = function(){
         disc_kind = document.getElementById("kind_Discont").value,
         nb_class = +document.getElementById("Discont_nbClass").value,
         user_color = document.getElementById("color_Discont").value,
-        method = document.getElementById("kind_Discont").value;
+        method = document.getElementById("kind_Discont").value,
+        new_layer_name = document.getElementById("Discont_output_name").value;
+
+    new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", layer, field, disc_kind].join('_'));
 
     let result_value = new Map(),
         result_geom = {},
@@ -567,8 +577,7 @@ var render_discont = function(){
     let serie = disc_result[3],
         breaks = disc_result[2].map(ft => [ft[0], ft[1]]);
 
-    let new_layer_name = check_layer_name(["Disc", layer, field, disc_kind].join('_')),
-        result_layer = map.append("g").attr("id", new_layer_name)
+    let result_layer = map.append("g").attr("id", new_layer_name)
             .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
             .attr("class", "result_layer layer");
 
@@ -858,7 +867,7 @@ function fillMenu_FlowMap(){
     [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
-     [i18next.t("app_page.common.std_dev"), "std_dev"],
+//     [i18next.t("app_page.common.std_dev"), "std_dev"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
      [i18next.t("app_page.common.jenks"), "jenks"]
@@ -1699,13 +1708,21 @@ var get_first_guess_span = function(){
 var fields_Stewart = {
     fill: function(layer){
         let other_layers = get_other_layer_names(),
-            mask_selec = d3.select("#stewart_mask");
+            mask_selec = d3.select("#stewart_mask"),
+            default_selected_mask;
 
         unfillSelectInput(mask_selec.node());
         mask_selec.append("option").text("None").attr("value", "None");
-        for(let lyr_name of other_layers)
-            if(current_layers[lyr_name].type === "Polygon")
+        for(let lyr_name of other_layers){
+            if(current_layers[lyr_name].type === "Polygon"){
                 mask_selec.append("option").text(lyr_name).attr("value", lyr_name);
+                if(current_layers[lyr_name].targeted){
+                    default_selected_mask = lyr_name;
+                }
+            }
+        }
+        if(default_selected_mask)
+            setSelected(mask_selec.node(), default_selected_mask);
 
         if(layer){
             let fields = type_col(layer, "number"),
@@ -1794,8 +1811,6 @@ function fillMenu_Stewart(){
         nb_class = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.nb_class"))
                                 .insert("input").style("width", "50px")
                                 .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
-//        disc_kind = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.discretization"))
-//                                .insert('select').attrs({class: 'params', id: "stewart_disc_kind"}),
         breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
                                 .insert("textarea").attrs({class: 'params', id: "stewart_breaks"})
                                 .styles({"width": "260px", "height": "30px"}),
@@ -1806,11 +1821,6 @@ function fillMenu_Stewart(){
      ['pareto', i18next.t("app_page.func_options.smooth.func_pareto")]].forEach(function(fun_name){
         func_selec.append("option").text(fun_name[1]).attr("value", fun_name[0]);
     });
-
-//    disc_kind.append("option").text(i18next.t("app_page.common.jenks")).attr("value", "jenks");
-//    disc_kind.append("option").text(i18next.t("app_page.common.quantiles")).attr("value", "percentiles");
-//    disc_kind.append("option").text(i18next.t("app_page.common.equal_interval")).attr("value", "equal_interval");
-//    disc_kind.append("option").text(i18next.t("app_page.common.geometric_progression")).attr("value", "prog_geom");
 
     dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
                         .insert('input')
@@ -1857,7 +1867,6 @@ function fillMenu_Stewart(){
                 "typefct": func_selec.node().value,
                 "resolution": reso > 0 ? reso : null,
                 "nb_class": nb_class.node().value,
-//                "disc_kind": disc_kind.node().value,
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
 

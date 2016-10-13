@@ -273,7 +273,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
-     [i18next.t("app_page.common.std_dev"), "std_dev"],
+//     [i18next.t("app_page.common.std_dev"), "std_dev"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
      [i18next.t("app_page.common.jenks"), "jenks"]

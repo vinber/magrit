@@ -94,35 +94,11 @@ class UserArrow {
     }
 
     up_element(){
-        let lgd_features = this.parent.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == nb_lgd_features - 1){
-            return;
-        } else {
-            this.parent.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
-        }
+        up_legend(this.arrow.node());
     }
 
     down_element(){
-        let lgd_features = this.parent.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == 0){
-            return;
-        } else {
-            this.parent.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
-        }
+        down_legend(this.arrow.node());
     }
 
     calcAngle(){
@@ -429,35 +405,11 @@ class Textbox {
     }
 
     up_element(){
-        let lgd_features = document.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == nb_lgd_features - 1){
-            return;
-        } else {
-            svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
-        }
+        up_legend(this.text_annot.node())
     }
 
     down_element(){
-        let lgd_features = document.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == 0){
-            return;
-        } else {
-            svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
-        }
+        down_legend(this.text_annot.node())
     }
 }
 
@@ -641,10 +593,43 @@ var northArrow = {
                         .attr("scale", 1)
                         .attr("rotate", null)
                         .style("cursor", "pointer");
-        this.x_center = 79.50;
-        this.y_center = 50.75;
+
         this.svg_node = arrow_gp;
         this.displayed = true;
+
+        this.arrow_img = arrow_gp.insert("image")
+            .attr("x", x_pos)
+            .attr("y", y_pos)
+            .attr("height","30px")
+            .attr("width", "30px")
+            .attr("xlink:href", "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxOC4xLjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FscXVlXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIzMTEgMjc4LjYgMzYuOSA1MC41IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDMxMSAyNzguNiAzNi45IDUwLjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPHBvbHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50cz0iMzEyLjMsMzI3LjkgMzI4LjksMzE4LjUgMzI4LjksMjk2LjQgIi8+DQo8cG9seWdvbiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIzMjkuOSwyOTYuNCAzMjkuOSwzMTguNSAzNDYuNywzMjcuOCAiLz4NCjxnPg0KCTxwYXRoIGQ9Ik0zMjIuOCwyNzguNmgyLjlsNi43LDEwLjN2LTEwLjNoM3YxNS43aC0yLjlsLTYuNy0xMC4zdjEwLjNoLTNWMjc4LjZ6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==");
+
+        this.drag_behavior = d3.drag()
+             .subject(function() {
+                    let t = d3.select(this.querySelector("image"));
+                    return { x: +t.attr("x"), y: +t.attr("y") };
+              })
+            .on("start", () => {
+                d3.event.sourceEvent.stopPropagation();
+                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
+              })
+            .on("end", () => {
+                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", function(){
+                d3.event.sourceEvent.preventDefault();
+                let t1 = this.querySelector("image"),
+                    t2 = this.querySelector("rect"),
+                    tx = +d3.event.x,
+                    ty = +d3.event.y,
+                    dim = t2.width.baseVal.value / 2;
+                t1.x.baseVal.value = tx;
+                t1.y.baseVal.value = ty;
+                t2.x.baseVal.value = tx;
+                t2.y.baseVal.value = ty;
+                self.x_center = tx + dim;
+                self.y_center = ty + dim;
+              });
 
         let getItems = () => [
             {"name": i18next.t("app_page.common.options"), "action": () => { this.editStyle()}},
@@ -652,15 +637,6 @@ var northArrow = {
         ];
 
         let arrow_context_menu = new ContextMenu();
-        let arrow_svg = arrow_gp.append("g")
-        arrow_svg.append("polygon")
-                .attrs({fill: "none", stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "62.3,77.9 78.9,68.5 78.9,46.4 "});
-        arrow_svg.append("polygon")
-                .attrs({stroke: "#000000", "stroke-miterlimit": 10,
-                       points: "79.9,46.4 79.9,68.5 96.7,77.8 "});
-        arrow_svg.insert("path")
-                .attr("d", "M72.8,28.6h2.9l6.7,10.3v-10.3h3v15.7h-2.9l-6.7-10.3v10.3h-3V78.6z");
 
         let bbox = document.getElementById("north_arrow").getBoundingClientRect(),
             xy0_map = get_map_xy0();
@@ -669,27 +645,15 @@ var northArrow = {
             .insert("rect")
                 .style("fill", "green")
                 .style("fill-opacity", 0)
-                .attr("x", bbox.x - xy0_map.x)
-                .attr("y", bbox.y - xy0_map.y)
+                .attr("x", bbox.left - xy0_map.x)
+                .attr("y", bbox.top - xy0_map.y)
                 .attr("height", bbox.height)
                 .attr("width", bbox.width);
-//        this.under_rect = arrow_gp.append("g")
-//            .insert("rect")
-//                .style("fill", "green")
-//                .style("fill-opacity", 0)
-//                .attr("x", x_pos - (36 - 30) / 2)
-//                .attr("y", y_pos - (36 - 30) / 2)
-//                .attr("height", "36px")
-//                .attr("width", "36px");
 
-//        this.arrow_img = arrow_gp.insert("image")
-//            .attr("x", x_pos)
-//            .attr("y", y_pos)
-//            .attr("height","30px")
-//            .attr("width", "30px")
-//            .attr("xlink:href", "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxOC4xLjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FscXVlXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIzMTEgMjc4LjYgMzYuOSA1MC41IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDMxMSAyNzguNiAzNi45IDUwLjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPHBvbHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50cz0iMzEyLjMsMzI3LjkgMzI4LjksMzE4LjUgMzI4LjksMjk2LjQgIi8+DQo8cG9seWdvbiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIzMjkuOSwyOTYuNCAzMjkuOSwzMTguNSAzNDYuNywzMjcuOCAiLz4NCjxnPg0KCTxwYXRoIGQ9Ik0zMjIuOCwyNzguNmgyLjlsNi43LDEwLjN2LTEwLjNoM3YxNS43aC0yLjlsLTYuNy0xMC4zdjEwLjNoLTNWMjc4LjZ6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==");
+        this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
+        this.y_center = bbox.top - xy0_map.y + bbox.height / 2
 
-        arrow_gp.call(drag_lgd_features);
+        arrow_gp.call(this.drag_behavior);
 
         arrow_gp
             .on("mouseover", function(){
@@ -709,14 +673,19 @@ var northArrow = {
         this.displayed = false;
     },
     editStyle: function(){
-        var new_val,
-            self = this;
+        var self = this,
+            old_dim = +self.under_rect.attr("width"),
+            old_rotate = !isNaN(+self.svg_node.attr("rotate")) ? +self.svg_node.attr("rotate") : 0,
+            x_pos = +self.x_center - old_dim / 2,
+            y_pos = +self.y_center - old_dim /2;
+
         make_confirm_dialog("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"))
             .then(function(confirmed){
                 if(confirmed){
                     null;
                 }
             });
+
         var box_body = d3.select(".arrowEditBox");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
@@ -724,42 +693,57 @@ var northArrow = {
         box_body.append("p").style("margin-bottom", "0")
                 .html(i18next.t("app_page.north_arrow_edit_box.size"));
         box_body.append("input")
-                .attrs({type: "range", min: 0, max: 2, step: 0.1})
-                .attr("value", !isNaN(+self.svg_node.attr("scale")) ? +self.svg_node.attr("scale") : 1)
+                .attrs({type: "range", min: 1, max: 200, step: 1,
+                        value: old_dim, id: "range_size_n_arrow"})
+                .styles({"vertical-align": "middle", "width": "140px"})
                 .on("change", function(){
-                    let scale_val = +this.value;
-                    let translate_param = self.svg_node.attr("transform"),
-                        rotate_value = self.svg_node.attr("rotate");
-                    rotate_value = rotate_value ? "rotate("+ [rotate_value, self.x_center, self.y_center] +")" : "";
-                    let translate_values = translate_param
-                                        ? /\(([^\)]+)\)/.exec(translate_param)[1].split(',').map(d => +d)
-                                        : [0, 0];
-                    let t_x = translate_values[0] - (self.x_center) * (scale_val-1),
-                        t_y = translate_values[1] - (self.y_center) * (scale_val-1);
-                    translate_param = "translate(" + [t_x, t_y] + ")";
-                    self.svg_node.attr("scale", scale_val);
-                    self.svg_node.attr("transform", translate_param + rotate_value + "scale(" + scale_val + ")");
+                    let new_size = +this.value;
+                    self.arrow_img.attr("width", new_size);
+                    self.arrow_img.attr("height", new_size);
+                    self.under_rect.attr("width", new_size);
+                    self.under_rect.attr("height", new_size);
+                    self.x_center = x_pos + new_size / 2;
+                    self.y_center = y_pos + new_size / 2;
+                    document.getElementById("txt_size_n_arrow").value = new_size;
                 });
+        box_body.append("input")
+                .attrs({type: "number", min: 0, max: 200, step: 1, value: old_dim,
+                        class: "without_spinner", id: "txt_size_n_arrow"})
+                .style("width", "40px")
+                .on("change", function(){
+                    let elem = document.getElementById("range_size_n_arrow");
+                    elem.value = +this.value;
+                    elem.dispatchEvent(new Event("change"));
+                });
+        box_body.append("span").html(" px");
+
         box_body.append("p").style("margin-bottom", "0")
                 .html(i18next.t("app_page.north_arrow_edit_box.rotation"));
         box_body.append("input")
-                .attrs({type: "range", min: 0, max: 360, step: 0.1})
-                .attr("value", !isNaN(+self.svg_node.attr("rotate")) ? +self.svg_node.attr("rotate") : 0)
+                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow"})
+                .attr("value", old_rotate)
+                .styles({"vertical-align": "middle", "width": "140px"})
                 .on("change", function(){
-                    let translate_param = self.svg_node.attr("transform"),
-                        scale_value = self.svg_node.attr("scale");
-                    scale_value = scale_value ? "scale(" + scale_value + ")" : "";
-                    translate_param  = translate_param && translate_param.indexOf("translate") > -1
-                                            ? "translate(" + translate_param.split("translate(")[1].split(')')[0] + ")"
-                                            : "";
-
-                    self.svg_node.attr("rotate", +this.value);
-                    self.svg_node.attr("transform", translate_param + scale_value + "rotate(" + [this.value, self.x_center, self.y_center] + ")");
+                    let rotate_value = +this.value;
+                    self.svg_node.attr("rotate", rotate_value);
+                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                    document.getElementById("txt_rotate_n_arrow").value = rotate_value;
                 });
+        box_body.append("input")
+                .attrs({type: "number", min: 0, max: 360, step: "any",
+                        class: "without_spinner", id: "txt_rotate_n_arrow"})
+                .attr("value", old_rotate)
+                .style("width", "40px")
+                .on("change", function(){
+                    let rotate_value = +this.value;
+                    self.svg_node.attr("rotate", rotate_value);
+                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                    document.getElementById("range_rotate_n_arrow").value = rotate_value;
+                });
+        box_body.append("span").html("°");
     },
     displayed: false
 }
-
 
 
 class UserEllipse {
@@ -830,35 +814,11 @@ class UserEllipse {
     }
 
     up_element(){
-        let lgd_features = this.parent.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == nb_lgd_features - 1){
-            return;
-        } else {
-            this.parent.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
-        }
+        up_legend(this.ellipse.node());
     }
 
     down_element(){
-        let lgd_features = this.parent.querySelectorAll(".legend"),
-            nb_lgd_features = lgd_features.length,
-            self_position;
-        for(let i=0; i<nb_lgd_features; i++){
-            if(lgd_features[i].id == this.id){
-                self_position = i;
-            }
-        }
-        if(self_position == 0){
-            return;
-        } else {
-            this.parent.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
-        }
+        down_legend(this.ellipse.node());
     }
 
     editStyle(){

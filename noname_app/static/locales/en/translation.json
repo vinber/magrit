@@ -511,8 +511,8 @@
         "with_no_data": "{{ nb_features }} feature without data",
         "with_no_data_plural": "{{ nb_features }} features without data",
         "colored_central_class": "colored central class",
-        "color_palette": "Color palette "
-
+        "color_palette": "Color palette ",
+        "break_on": "Break on "
     },
     "style_box":{
         "ref_layer": "Reference layer",
