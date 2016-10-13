@@ -144,7 +144,8 @@
             "graticule": "Graticule",
             "text_annot": "Text box",
             "arrow": "Customizable arrow",
-            "symbol": "Single symbol"
+            "symbol": "Single symbol",
+            "ellipse": "Ellipse"
         },
         "layout_layer_box": {
             "title": "Layout layers",
@@ -263,6 +264,12 @@
             "arrowColor": "Arrow color",
             "arrowAngle": "Slope",
             "move_points": "Move arrow start or end point"
+        },
+        "ellipse_edit_box": {
+            "title": "Ellipse options",
+            "stroke_width": "Stroke width",
+            "stroke_color": "Stroke color",
+            "move_points": "Move ellipse control points"
         },
         "title_box": {
             "title": "Title properties",

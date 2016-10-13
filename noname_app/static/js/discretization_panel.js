@@ -7,6 +7,8 @@ function getBreaks(values, type, nb_class){
     if(type === "Q6"){
         let tmp = getBreaksQ6(serie.sorted());
         breaks = tmp.breaks;
+        breaks[0] = serie.min();
+        breaks[nb_class] = serie.max();
         serie.setClassManually(breaks);
     } else {
         let _func = discretiz_geostats_switch.get(type);

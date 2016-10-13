@@ -709,6 +709,7 @@ function select_layout_features(){
          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
          ["arrow", i18next.t("app_page.layout_features_box.arrow")],
+         ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
          ["symbol", i18next.t("app_page.layout_features_box.symbol")]
         ];
     var selected_ft;
@@ -806,6 +807,8 @@ function add_layout_feature(selected_feature){
         northArrow.display();
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
+    } else if (selected_feature == "ellipse"){
+        handleClickAddEllipse();
     } else if (selected_feature == "symbol"){
         let a = box_choice_symbol(window.default_symbols).then( result => {
             if(result){
@@ -1015,6 +1018,61 @@ function get_map_xy0(){
     return {x: bbox.left, y: bbox.top}
 }
 
+function handleClickAddEllipse(){
+    let getId = () => {
+        let ellipses = document.querySelectorAll(".user_ellipse");
+        if(!ellipses){
+            return 0;
+        } else if (ellipses.length > 30){
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            return null;
+        } else {
+            let ids = [];
+            for(let i=0; i<ellipses.length; i++){
+                ids.push(+ellipses[i].id.split("user_ellipse_")[1])
+            }
+            if(ids.indexOf(ellipses.length) == -1){
+                return ellipses.length;
+            } else {
+                for(let i=0; i<ellipses.length; i++){
+                    if(ids.indexOf(i) == -1){
+                        return i;
+                    }
+                }
+            }
+            return null;
+        }
+        return null;
+    };
+
+    let start_point,
+        tmp_start_point,
+        ellipse_id = getId();
+
+    if(ellipse_id === null){
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error");
+        return;
+    } else {
+        ellipse_id = "user_ellipse_" + ellipse_id;
+    }
+
+    map.style("cursor", "crosshair")
+        .on("click", function(){
+            start_point = [d3.event.layerX, d3.event.layerY];
+            tmp_start_point = map.append("rect")
+                .attr("x", start_point[0] - 2)
+                .attr("y", start_point[1] - 2)
+                .attr("height", 4).attr("width", 4)
+                .style("fill", "red");
+            setTimeout(function(){
+                tmp_start_point.remove();
+            }, 1000);
+            map.style("cursor", "")
+                .on("click", null);
+            new UserEllipse(ellipse_id, start_point, svg_map);
+        });
+}
+
 function handleClickAddArrow(){
     let getId = () => {
         let arrows = document.querySelectorAll(".arrow");
@@ -1046,13 +1104,13 @@ function handleClickAddArrow(){
         tmp_start_point,
         end_point,
         tmp_end_point,
-        id = getId();
+        arrow_id = getId();
 
-    if(id === null){
+    if(arrow_id === null){
         swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error");
         return;
     } else {
-        id = "arrow_" + id;
+        arrow_id = "arrow_" + arrow_id;
     }
 
     map.style("cursor", "crosshair")
@@ -1079,7 +1137,7 @@ function handleClickAddArrow(){
                 }, 1000);
                 map.style("cursor", "")
                     .on("click", null);
-                new UserArrow("abc", start_point, end_point, svg_map);
+                new UserArrow(arrow_id, start_point, end_point, svg_map);
             }
         });
 }

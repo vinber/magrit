@@ -144,7 +144,8 @@
             "graticule": "Graticule",
             "text_annot": "Annotation de texte",
             "arrow": "Flèche",
-            "symbol": "Insertion d'un symbole"
+            "symbol": "Insertion d'un symbole",
+            "ellipse": "Ellipse"
         },
         "layout_layer_box": {
             "title": "Couches d'habillage",
@@ -263,6 +264,12 @@
             "arrowColor": "Couleur de la flèche",
             "arrowAngle": "Inclinaison de la flèche",
             "move_points": "Déplacement des points (départ/arrivée) de la flèche"
+        },
+        "ellipse_edit_box": {
+            "title": "Options de l'ellipse",
+            "stroke_width": "Épaisseur du trait",
+            "stroke_color": "Couleur du trait",
+            "move_points": "Déplacement des points de controle"
         },
         "title_box": {
             "title": "Propriétés du titre",

@@ -762,3 +762,235 @@ var northArrow = {
     },
     displayed: false
 }
+
+
+
+class UserEllipse {
+    constructor(id, origin_pt, parent=undefined){
+        this.parent = parent || svg_map;
+        this.svg_elem = d3.select(this.parent);
+        this.pt1 = origin_pt;
+        this.id = id;
+        this.strokeWeight = 4;
+        this.stroke_color = "rgb(0, 0, 0)";
+
+        let self = this;
+        this.drag_behavior = d3.drag()
+             .subject(function() {
+                    let t = d3.select(this.querySelector("ellipse"));
+                    return { x: +t.attr("cx"), y: +t.attr("cy") };
+              })
+            .on("start", () => {
+                d3.event.sourceEvent.stopPropagation();
+                if(map_div.select("#hand_button").classed("active"))
+                    zoom.on("zoom", null);
+              })
+            .on("end", () => {
+                if(map_div.select("#hand_button").classed("active"))
+                    zoom.on("zoom", zoom_without_redraw);
+              })
+            .on("drag", function(){
+                d3.event.sourceEvent.preventDefault();
+                let _t = this.querySelector("ellipse"),
+                    tx = +d3.event.x,
+                    ty = +d3.event.y;
+                _t.cx.baseVal.value = tx;
+                _t.cy.baseVal.value = ty;
+                self.pt1[0] = tx;
+                self.pt1[1] = ty;
+              });
+
+        this.draw()
+    }
+
+    draw(){
+        let context_menu = new ContextMenu(),
+            getItems = () =>  [
+                {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
+                {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+                {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.ellipse.remove(); }}
+            ];
+
+        this.ellipse = this.svg_elem.append('g')
+                .attrs({"class": "user_ellipse legend_features legend", "id": this.id});
+
+        this.ellipse.insert("ellipse")
+        		.attrs({"class":"legend_features",
+        			  "cx": this.pt1[0], "cy": this.pt1[1],
+        			  "rx": 30, "ry": 40})
+                .styles({"stroke-width": this.strokeWeight,
+                         stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                         "fill-opacity": 0});
+
+        this.ellipse.call(this.drag_behavior);
+
+        this.ellipse.on("contextmenu dblclick", () => {
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems());
+            });
+    }
+
+    up_element(){
+        let lgd_features = this.parent.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == nb_lgd_features - 1){
+            return;
+        } else {
+            this.parent.insertBefore(lgd_features[self_position + 1], lgd_features[self_position])
+        }
+    }
+
+    down_element(){
+        let lgd_features = this.parent.querySelectorAll(".legend"),
+            nb_lgd_features = lgd_features.length,
+            self_position;
+        for(let i=0; i<nb_lgd_features; i++){
+            if(lgd_features[i].id == this.id){
+                self_position = i;
+            }
+        }
+        if(self_position == 0){
+            return;
+        } else {
+            this.parent.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+        }
+    }
+
+    editStyle(){
+        let self = this,
+            ellipse_elem = self.ellipse.node().querySelector("ellipse"),
+            current_options = {
+                pt1: this.pt1.slice(),
+                rx: ellipse_elem.rx.baseVal.value,
+                ry: ellipse_elem.ry.baseVal.value
+            };
+//        let angle = (-this.calcAngle()).toFixed(0);
+
+        make_confirm_dialog("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"))
+            .then(function(confirmed){
+                map.selectAll(".ctrl_pt").remove();
+                if(confirmed) {
+                    // Store shorcut of useful values :
+                    self.strokeWeight = ellipse_elem.style.strokeWidth;
+                    self.stroke_color = ellipse_elem.style.stroke;
+                } else {
+                    //Rollback on initials parameters :
+                    ellipse_elem.cx.baseVal.value = current_options.pt1[0];
+                    ellipse_elem.cy.baseVal.value = current_options.pt1[1];
+                    ellipse_elem.rx.baseVal.value = current_options.rx;
+                    ellipse_elem.ry.baseVal.value = current_options.ry;
+                    self.pt1 = current_options.pt1.slice();
+                    ellipse_elem.style.strokeWidth = self.strokeWeight;
+                    ellipse_elem.style.stroke = self.stroke_color;
+                }
+            });
+        let box_content = d3.select(".styleBoxEllipse").insert("div").attr("id", "styleBoxEllipse");
+        let s1 = box_content.append("p");
+        s1.append("p")
+            .style("margin", "auto")
+            .html(i18next.t("app_page.ellipse_edit_box.stroke_width"));
+        s1.append("input")
+            .attrs({type: "range", id: "ellipse_strokeWeight", min: 0, max: 34, step: 0.1, value: self.strokeWeight})
+            .styles({width: "80px", "vertical-align": "middle"})
+            .on("change", function(){
+                ellipse_elem.style.strokeWidth = this.value;
+                txt_line_weight.html(this.value + "px");
+            });
+        let txt_line_weight = s1.append("span").html(self.strokeWeight + " px");
+
+        let s2 = box_content.append("p").style("margin", "auto");
+        s2.append("p")
+            .style("margin", "auto")
+            .html(i18next.t("app_page.ellipse_edit_box.stroke_color"));
+        s2.append("input")
+            .attrs({type: "color", id: "ellipse_strokeColor", value: self.stroke_color})
+            .on("change", function(){
+                ellipse_elem.style.stroke = this.value;
+            });
+
+//        let s2 = box_content.append("p");
+//        s2.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+//        s2.insert("input")
+//            .attrs({id: "ellipse_angle", type: "range", value: angle, min: 0, max: 360, step: 1})
+//            .styles({width: "80px", "vertical-align": "middle"})
+//            .on("change", function(){
+//                let distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
+//                let angle = -(+this.value);
+//                let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+//                line.x2.baseVal.value = nx;
+//                line.y2.baseVal.value = ny;
+//                document.getElementById("ellipse_angle_text").value = +this.value;
+//            });
+//
+//        s2.insert("input")
+//            .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+//            .styles({width: "30px", "margin-left": "10px"})
+//            .on("input", function(){
+//                let elem = document.getElementById("ellipse_angle");
+//                elem.value = this.value;
+//                elem.dispatchEvent(new Event('change'));
+//            });
+//
+//        s2.insert("span").html("°");
+
+        let s3 = box_content.append("p");
+
+        s3.append("button")
+            .attr("class", "button_st4")
+            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
+            .on("click", function(){
+                let tmp_start_point = map.append("rect")
+                    .attr("class", "ctrl_pt")
+                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
+                    .attr("y", self.pt1[1])
+                    .attr("height", 6).attr("width", 6)
+                    .style("fill", "red")
+                    .style("cursor", "grab")
+                    .call(d3.drag().on("drag", function(){
+                        let t = d3.select(this);
+                        let nx = d3.event.x,
+                            ny = d3.event.y;
+                        t.attr("x", nx);
+                        let dist = self.pt1[0] - +t.attr("x");
+                        ellipse_elem.rx.baseVal.value = dist;
+                    }));
+
+                let tmp_end_point = map.append("rect")
+                    .attr("class", "ctrl_pt")
+                    .attr("x", self.pt1[0])
+                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
+                    .attr("height", 6).attr("width", 6)
+                    .style("fill", "red")
+                    .style("cursor", "grab")
+                    .call(d3.drag().on("drag", function(){
+                        let t = d3.select(this);
+                        let nx = d3.event.x,
+                            ny = d3.event.y;
+                        t.attr("y", ny);
+                        let dist = self.pt1[1] - +t.attr("y");
+                        ellipse_elem.ry.baseVal.value = dist;
+                    }));
+                $(".styleBoxEllipse").hide();
+                document.querySelector(".ui-widget-overlay").style.display = "none";
+                let el = document.createElement("button");
+                el.className = "button_st3";
+                el.innerHTML = i18next.t("app_page.common.done");
+                el.onclick = function(){
+                    document.querySelector(".ui-widget-overlay").style.display = "";
+                    tmp_end_point.remove();
+                    tmp_start_point.remove();
+                    el.remove();
+                    $(".styleBoxEllipse").show();
+                }
+                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
+            });
+    }
+}

@@ -1043,7 +1043,7 @@ async def init(loop, port):
             handler, '0.0.0.0', port)
         return srv, app, handler
 
-def create_app(app_name="FreeCarto"):
+def create_app(app_name="Magrit"):
     # Entry point when using Gunicorn to run the application with something like :
     # $ gunicorn "noname_app.noname_aio:create_app('AppName')" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1060,7 +1060,7 @@ def main():
     # $ ./noname_app/noname_aio.py --name AppName --port 9999
     #   or when installed and started like :
     # $ noname_app --name AppName --port 9999
-    arguments = docopt.docopt(__doc__, version='noname_app 0.0.0 (Unreleased)')
+    arguments = docopt.docopt(__doc__, version='Magrit 0.0.0 (Unreleased)')
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
         sys.exit("Error: Invalid port value")
