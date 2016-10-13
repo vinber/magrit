@@ -78,6 +78,10 @@
             "title": "Basemap configuration",
             "map_width": "<b>Map width (px) </b>",
             "map_height": "<b>Map height (px) </b>",
+            "map_ratio": "Map ratio",
+            "ratio_user": "User defined",
+            "ratio_landscape": "Landscape",
+            "ratio_portait": "Portrait",
             "map_center_menu": "Map centering ...",
             "map_center_x": "Map center (x)",
             "map_center_y": "Map center (y)",
@@ -195,7 +199,7 @@
             "unable_join": "Unable to join geometries and dataset.",
             "error_not_uniques": "The values on which operate have to be uniques.",
             "state_not_joined": "Data not joined",
-            "ext_datasate_field": "External dataset field :",
+            "ext_dataset_field": "External dataset field :",
             "geom_layer_field": "Geometrie layer field :",
             "ask_join": "Join datasets ?",
             "button_join": "Join now",
@@ -204,7 +208,9 @@
             "match_plural": "matches",
             "no_match": "No match found between fields <i>{{field1}}</i> and <i>{{field2}}</i>",
             "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?",
-            "change_field": "Change joined fields"
+            "change_field": "Change joined fields",
+            "ref_layer_fields": "Reference layer fields",
+            "join_field": "Join field"
         },
         "explore_box": {
             "title": "Explore dataset",
@@ -237,7 +243,8 @@
         },
         "help_box": {
             "title": "Emergency help!",
-            "message_invite": "Write something to be searched in the documentation :"
+            "message_invite": "Write something to be searched in the documentation :",
+            "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -503,7 +510,8 @@
         "reverse_palette": "Reverse palette",
         "with_no_data": "{{ nb_features }} feature without data",
         "with_no_data_plural": "{{ nb_features }} features without data",
-        "colored_central_class": "colored central class"
+        "colored_central_class": "colored central class",
+        "color_palette": "Color palette "
 
     },
     "style_box":{

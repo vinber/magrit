@@ -913,11 +913,11 @@ function createlegendEditBox(legend_id, layer_name){
                 .on("change", function(){
                     if(this.checked){
                         rectangle_options.select("#choice_color_under_rect")
-                                        .attr("value", "#ffffff")
                                         .attr("disabled", null);
                         rect_fill_value = {color: "#ffffff", opacity: 1};
                     } else {
-                        rectangle_options.select("#choice_color_under_rect").attr("disabled", true);
+                        rectangle_options.select("#choice_color_under_rect")
+                                        .attr("disabled", true);
                         rect_fill_value = undefined;
                     }
                     make_underlying_rect(legend_node_d3,
@@ -928,7 +928,7 @@ function createlegendEditBox(legend_id, layer_name){
     rectangle_options.insert("input")
                 .attrs({id: "choice_color_under_rect",
                         type: "color",
-                        value: rect_fill_value === undefined ? undefined : rect_fill_value.color,
+                        value: rect_fill_value ? rgb2hex(rect_fill_value.color) : undefined,
                         disabled: rect_fill_value === undefined ? true : null})
                 .on("change", function(){
                     rect_fill_value = {color: this.value, opacity: 1};

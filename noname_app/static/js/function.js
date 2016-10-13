@@ -2326,8 +2326,8 @@ var boxExplore = {
              });
         let txt_intro = [
              "<b>", table_name, "</b><br>",
-             this.nb_features, " ", i18next.t("app_page.common.feature"), " - ",
-             this.columns_names.length, " ", i18next.t("app_page.common.field")
+             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
+             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
             ].join('');
         this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
         this.box_table.append("table")

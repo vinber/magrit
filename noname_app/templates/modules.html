@@ -190,24 +190,82 @@ function setUpInterface()
                              padding: "0px",
                              width: "100%"});
 
-    let a = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    a.append("p").attr("class", "list_elem_section4 i18n")
+    let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    a1.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_width");
-    a.append("input").attr("class", "list_elem_section4")
+    a1.append("input").attr("class", "list_elem_section4")
             .styles({position: "absolute", right: "20px"}).style("width", "80px").style("margin-left", "15px")
             .attrs({id: "input-width", type: "number", value: w})
-            .on("change", function(){ canvas_mod_size([this.value,null]); });
+            .on("change", function(){
+                let ratio_type = document.getElementById("map_ratio_select").value;
+                let new_width = +this.value;
+                if(ratio_type == "portrait"){
+                    h = round_value(new_width / 0.70707, 0);
+                    canvas_mod_size([new_width, h]);
+                } else if (ratio_type == "landscape"){
+                    h = round_value(new_width * 0.70707, 0);
+                    canvas_mod_size([new_width, h]);
+                } else {
+                    canvas_mod_size([this.value, null]);
+                }
+                document.getElementById("input-height").value = h;
+            });
 
-    let b = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    b.append("p").attr("class", "list_elem_section4 i18n")
+
+    let a2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    a2.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_height");
-    b.append("input").attr("class", "list_elem_section4")
+    a2.append("input").attr("class", "list_elem_section4")
             .styles({position: "absolute", right: "20px"}).style("width", "80px").style("margin-left", "15px")
             .attrs({id: "input-height", type: "number", "value": h})
             .on("change", function(){
-                canvas_mod_size([null, this.value]);
+                let ratio_type = document.getElementById("map_ratio_select").value;
+                let new_height = +this.value;
+                if(ratio_type == "portrait"){
+                    w = round_value(new_height * 0.70707, 0);
+                    canvas_mod_size([w, new_height]);
+                } else if (ratio_type == "landscape"){
+                    w = round_value(new_height / 0.70707, 0);
+                    canvas_mod_size([w, new_height]);
+                } else {
+                    canvas_mod_size([null, this.value]);
+                }
+                document.getElementById("input-width").value = w;
             });
 
+    let b = dv4.append("li").styles({margin: "1px"});
+    b.append("p").attr("class", "list_elem_section4 i18n")
+            .style("padding", "4px")
+            .attr("data-i18n", "[html]app_page.section4.map_ratio");
+    let ratio_select = b.append("select")
+            .attrs({"class": "list_elem_section4 i18n", "id": "map_ratio_select"})
+            .styles({position: "absolute", right: "20px", "margin-left": "15px"});
+
+    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
+    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
+    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
+    ratio_select.on("change", function(){
+        let current_ratio = w /h;
+        if(this.value == "portrait"){
+            if(current_ratio < 0.707){
+                w = round_value(h * 0.70707, 0);
+                canvas_mod_size([w, h]);
+            } else {
+                h = round_value(w / 0.70707, 0);
+                canvas_mod_size([w, h]);
+            }
+        } else if (this.value == "landscape"){
+            if(current_ratio > 0.707){
+                w = round_value(h / 0.70707, 0);
+                canvas_mod_size([w, h]);
+            } else {
+                h = round_value(w * 0.70707, 0);
+                canvas_mod_size([w, h]);
+            }
+        document.getElementById("input-width").value = w;
+        document.getElementById("input-height").value = h;
+        }
+    });
     let zoom_prop = svg_map.__zoom;
 
     let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
@@ -231,8 +289,8 @@ function setUpInterface()
         sections[1].style.display = arg;
         sections[2].style.display = arg;
         let ico_menu = document.getElementById("map_center_menu_ico");
-
     });
+
     let c1 = dv4.append("li").styles({margin: "1px", padding: "4px", display: "none"}).attr("class", "to_hide");
     c1.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_center_x");
@@ -337,9 +395,9 @@ function setUpInterface()
                             .styles({"text-align": "center", "width": "300px"});
 
     rotation_param.append("p")
-            .attrs({id: "rotation_params", class: "i18n"})
-            .attr("data-i18n", "[html]app_page.section5.projection_center_lambda");
-
+            .attrs({id: "rotation_params", class: "i18n",
+                    "data-i18n": "[html]app_page.section5.projection_center_lambda"})
+            .style("margin", "auto");
     rotation_param.append("input")
             .attrs({type: "range", id: "form_projection_center", value: 0.0,
                     min: -180.0, max: 180.0, step: 0.1})
@@ -355,8 +413,7 @@ function setUpInterface()
             .on("change", function(){
                 handle_proj_center_button([this.value, null, null]);
                 document.getElementById("form_projection_center").value = this.value;
-            })
-
+            });
     rotation_param.append("span")
             .html("°");
 
@@ -554,7 +611,7 @@ function setUpInterface()
                       input: "text",
                       showCancelButton: true,
                       animation: "slide-from-top",
-                      inputPlaceholder: "Choropleth, Discretization, Cartogram, Export, Projection"
+                      inputPlaceholder: i18next.t("app_page.help_box.list_placeholders")
                    }).then(inputValue => {
                           swal("Nice!", "You wrote: " + inputValue, "success");
                     })
@@ -567,11 +624,11 @@ function setUpInterface()
                 .styles({position:"absolute", right:"0px", bottom: "0px"});
 
     let lm_buttons = [
-        {id: "zoom_out", title: i18next.t("app_page.lm_buttons.zoom-"), class: "zoom_button", html: "-"},
-        {id: "zoom_in", title: i18next.t("app_page.lm_buttons.zoom+"), class: "zoom_button", html: "+"},
-        {id: "info_button", title: i18next.t("app_page.lm_buttons.i"), class: "info_button", html: "i"},
-        {id: "hand_button", title: i18next.t("app_page.lm_buttons.hand_button"), class: "hand_button active", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'}/*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", title: i18next.t("app_page.lm_buttons.zoom_rect"), html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
+        {id: "zoom_out", "i18n": "[title]app_page.lm_buttons.zoom-", class: "zoom_button i18n", html: "-"},
+        {id: "zoom_in", "i18n": "[title]app_page.lm_buttons.zoom+", class: "zoom_button i18n", html: "+"},
+        {id: "info_button", "i18n": "[title]app_page.lm_buttons.i", class: "info_button i18n", html: "i"},
+        {id: "hand_button", "i18n": "[title]app_page.lm_buttons.hand_button", class: "hand_button active i18n", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'}/*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[title]app_page.lm_buttons.zoom_rect", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
     ];
 
     let selec = lm.selectAll("input")
@@ -579,7 +636,7 @@ function setUpInterface()
         .append('p').style("margin", "auto")
             .insert("button")
             .attr("class", d => d.class)
-            .attr("title", d => d.title)
+            .attr("data-i18n", d => d.i18n)
             .attr("id", d => d.id)
             .html(d => d.html);
 
@@ -1914,6 +1971,17 @@ function make_export_layer_box(){
                 });
                 dialogBox.dialog("destroy").remove();
             });
+}
+
+function change_displayed_ratio(width, height){
+    let rounded_ratio = round_value(+width / +height, 3);
+    if(rounded_ratio == 0.707){
+        document.getElementById("map_ratio_select").value = "portait";
+    } else if (rounded_ratio == 1.414){
+        document.getElementById("map_ratio_select").value = "landscape";
+    } else {
+        document.getElementById("map_ratio_select").value = "user_ratio";
+    }
 }
 
 // Only ask for confirmation before leaving page if things have been done

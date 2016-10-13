@@ -530,16 +530,15 @@ var scaleBar = {
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
 
         this.dist = coslaw_dist([pt1[1], pt1[0]], [pt2[1], pt2[0]]);
-        if(this.unit === "m")
-            this.dist = this.dist / 1000;
-        else if(this.unit === "mi")
-            this.dist = this.dist * 0,621371;
-        this.dist_txt = this.dist.toFixed(this.precision);
+        let mult = this.unit == "km" ? 1
+                    : this.unit == "m" ? 1000
+                    : this.unit == "mi" ? 0.621371 : 1;
+        this.dist_txt = (this.dist * mult).toFixed(this.precision);
 
     },
     resize: function(desired_dist){
         desired_dist = desired_dist || this.fixed_size;
-        let ratio = +this.dist_txt / desired_dist;
+        let ratio = +this.dist / desired_dist;
         let new_size = this.bar_size / ratio;
 
         this.Scale.select("#rect_scale")
@@ -608,8 +607,7 @@ var scaleBar = {
                 .html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input")
                 .attr('id', "scale_precision")
-                .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.dist_txt})
-                .attr("disabled", self.fixed_size ? null : true)
+                .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.precision})
                 .style("width", "60px")
                 .on("change", function(){
                     self.precision = +this.value;
@@ -623,11 +621,10 @@ var scaleBar = {
                 .on("change", function(){
                     self.unit = this.value;
                 });
-
         unit_select.append("option").text("km").attr("value", "km");
         unit_select.append("option").text("m").attr("value", "m");
         unit_select.append("option").text("mi").attr("value", "mi");
-
+        unit_select.attr("value", self.unit);
     },
     displayed: false
 };

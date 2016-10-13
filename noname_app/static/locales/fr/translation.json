@@ -78,6 +78,10 @@
             "title": "Configuration de la carte",
             "map_width": "<b>Largeur de la carte (px) </b>",
             "map_height": "<b>Hauteur de la carte (px) </b>",
+            "map_ratio": "Ratio d'affichage",
+            "ratio_user": "Personnalisé",
+            "ratio_landscape": "Paysage",
+            "ratio_portait": "Portrait",
             "map_center_menu": "Centrage de la carte ...",
             "map_center_x": "Centre de la carte (x)",
             "map_center_y": "Centre de la carte (y)",
@@ -195,7 +199,7 @@
             "unable_join": "Impossible de joindre le jeu de données et la couche géographique.",
             "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques.",
             "state_not_joined": "Tables non jointes",
-            "ext_datasate_field": "Champ du jeu de données externe :",
+            "ext_dataset_field": "Champ du jeu de données externe :",
             "geom_layer_field": "Champ de la couche géographique :",
             "ask_join": "Joindre les données ?",
             "button_join": "Joindre",
@@ -237,7 +241,8 @@
         },
         "help_box": {
             "title": "Aide d'urgence!",
-            "message_invite": "Saisir un terme à rechercher dans la documentation :"
+            "message_invite": "Saisir un terme à rechercher dans la documentation :",
+            "list_placeholders": "Carte choroplète, Discrétisation, Anamorphose, Export, Projection"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -437,7 +442,9 @@
             "flow": {
                 "subtitle1": "Choix des champs à utiliser",
                 "discretization": "Type de discrétisation ",
-                "nb_class": "Nombre de classes "
+                "nb_class": "Nombre de classes ",
+                "ref_layer_fields": "Couche géographique de référence",
+                "join_field": "Champ de jointure"
             },
             "grid": {
                 "field": "Champ",
@@ -507,7 +514,8 @@
         "reverse_palette": "Inverser l'ordre des couleurs",
         "with_no_data": "{{ nb_features }} entité sans valeur",
         "with_no_data_plural": "{{ nb_features }} entités sans valeur",
-        "colored_central_class": "classe centrale colorée"
+        "colored_central_class": "classe centrale colorée",
+        "color_palette": "Palette de couleur "
     },
     "style_box":{
         "ref_layer": "Couche de référence",

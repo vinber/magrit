@@ -63,7 +63,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
                                                 .attr("class", "color_txt")
-                                                .html("Color palette ")
+                                                .html(i18next.t("disc_box.reverse_palette"))
                                              .insert("select")
                                                 .attr("class", "color_params")
                                                 .on("change", function(){
@@ -651,17 +651,19 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .attr("id","user_breaks_area")
                         .style("width", "600px");
 
-    user_defined_breaks.insert("button").text("Valid")
-            .on("click", function(){
-                    let old_nb_class = nb_class;
-                    user_break_list = document.getElementById("user_breaks_area").value;
-                    type = "user_defined";
-                    nb_class = user_break_list.split('-').length - 1;
-                    txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
-                    document.getElementById("nb_class_range").value = nb_class;
-                    redisplay.compute(old_nb_class);
-                    redisplay.draw();
-             });
+    user_defined_breaks
+        .insert("button")
+        .text(i18next.t("app_page.common.valid"))
+        .on("click", function(){
+            let old_nb_class = nb_class;
+            user_break_list = document.getElementById("user_breaks_area").value;
+            type = "user_defined";
+            nb_class = user_break_list.split('-').length - 1;
+            txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
+            document.getElementById("nb_class_range").value = nb_class;
+            redisplay.compute(old_nb_class);
+            redisplay.draw();
+         });
 
     $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
     $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
@@ -703,7 +705,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         width: svg_w + margin.top + margin.bottom + 90,
         height: window.innerHeight - 40,
         buttons:[{
-            text: "Confirm",
+            text: i18next.t("app_page.common.confirm"),
             click: function(){
                     var colors_map = [];
                     let no_data_color = null;
@@ -735,7 +737,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                     }
                 },
            {
-            text: "Cancel",
+            text: i18next.t("app_page.common.cancel"),
             click: function(){
                 $(this).dialog("close");
                 $(this).remove();}
