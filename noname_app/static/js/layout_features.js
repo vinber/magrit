@@ -210,10 +210,15 @@ class UserArrow {
                         line.x2.baseVal.value = nx;
                         line.y2.baseVal.value = ny;
                     }));
-                $(".styleBoxArrow").hide();
+                let arrowDialog = $(".styleBoxArrow"),
+                    original_position = arrowDialog.dialog("option", "position");
+                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+                arrowDialog.dialog("option", "draggable", false);
+                arrowDialog.hide()
                 document.querySelector(".ui-widget-overlay").style.display = "none";
                 let el = document.createElement("button");
                 el.className = "button_st3";
+                el.style = "float:right;background:forestgreen;font-size:22px;";
                 el.innerHTML = i18next.t("app_page.common.done");
                 el.onclick = function(){
                     document.querySelector(".ui-widget-overlay").style.display = "";
@@ -222,7 +227,9 @@ class UserArrow {
                     tmp_end_point.remove();
                     tmp_start_point.remove();
                     el.remove();
-                    $(".styleBoxArrow").show();
+                    arrowDialog.show();
+                    arrowDialog.dialog("option", "draggable", true);
+                    arrowDialog.dialog("option", "position", original_position);
                 }
                 document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
             });
@@ -935,17 +942,24 @@ class UserEllipse {
                         let dist = self.pt1[1] - +t.attr("y");
                         ellipse_elem.ry.baseVal.value = dist;
                     }));
-                $(".styleBoxEllipse").hide();
+                let ellipseDialog = $(".styleBoxEllipse"),
+                    original_position = ellipseDialog.dialog("option", "position");
+                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+                ellipseDialog.dialog("option", "draggable", false);
+                ellipseDialog.hide();
                 document.querySelector(".ui-widget-overlay").style.display = "none";
                 let el = document.createElement("button");
                 el.className = "button_st3";
+                el.style = "float:right;background:forestgreen;font-size:22px;";
                 el.innerHTML = i18next.t("app_page.common.done");
                 el.onclick = function(){
                     document.querySelector(".ui-widget-overlay").style.display = "";
                     tmp_end_point.remove();
                     tmp_start_point.remove();
                     el.remove();
-                    $(".styleBoxEllipse").show();
+                    ellipseDialog.show();
+                    ellipseDialog.dialog("option", "draggable", true);
+                    ellipseDialog.dialog("option", "position", original_position);
                 }
                 document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
             });

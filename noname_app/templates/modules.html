@@ -23,16 +23,16 @@
     <script  src="/static/js/lib/geostats.min.js"></script>
     <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
-    <script  src="/static/js/lib/q.js"></script>
+    <script  src="/static/js/lib/q.min.js"></script>
     <script  src="/static/js/lib/i18next.min.js"></script>
     <script  src="/static/js/lib/loc-i18next.min.js"></script>
     <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
-    <script  src="/static/js/lib/context-menu.js"></script>
     <!-- <script  src="/static/js/app.min.js"></script> -->
 
+    <script  src="/static/js/context-menu.js"></script>
     <script  src="/static/js/layout_features.js"></script>
     <script  src="/static/js/interface.js"></script>
     <script  src="/static/js/map_project.js"></script>
@@ -1522,14 +1522,6 @@ function handleClipPath(proj_name){
         if(defs_clipPath){ defs_clipPath.remove(); }
         map.selectAll(".layer")
                 .attr("clip-path", null);
-    }
-}
-
-function handleClipPathLayer(layer_name){
-    let _proj_name = current_proj_name.toLowerCase();
-    if(isInterrupted(_proj_name)){
-            map.select("#" + layer_name)
-                .attr("clip-path", "url(#clip)");
     }
 }
 

@@ -21,6 +21,7 @@
             "error_numerical_fields": "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
+            "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",

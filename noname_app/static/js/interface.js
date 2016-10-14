@@ -488,156 +488,151 @@ function add_layer_topojson(text, options){
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects);
 
-    // Loop over the layers to add them all ?
-    // Probably better open an alert asking to the user which one to load ?
-    for(let i=0; i < layers_names.length; i++){
-        var random_color1 = ColorsSelected.random(),
-            lyr_name = layers_names[i],
-            lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name);
-        let nb_ft = topoObj.objects[lyr_name].geometries.length,
-            topoObj_objects = topoObj.objects[lyr_name],
-            field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+//    // Loop over the layers to add them all ?
+//    // Probably better open an alert asking to the user which one to load ?
+//    for(let i=0; i < layers_names.length; i++){
 
-        if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
-        else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';
-        else if(topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
-
-        current_layers[lyr_name_to_add] = {
-            "type": type,
-            "n_features": nb_ft,
-            "stroke-width-const": 0.4,
-            "fill_color":  {"single": random_color1},
-            "key_name": parsedJSON.key
-            };
-
-        if(target_layer_on_add){
-            current_layers[lyr_name_to_add].targeted = true;
-            user_data[lyr_name_to_add] = [];
-            data_to_load = true;
-        } else if(result_layer_on_add){
-            result_data[lyr_name_to_add] = [];
-            current_layers[lyr_name_to_add].is_result = true;
-        }
-
-        map.append("g").attr("id", lyr_name_to_add)
-              .attr("class", data_to_load ? "targeted_layer layer" : "layer")
-              .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
-              .selectAll(".subunit")
-              .data(topojson.feature(topoObj, topoObj_objects).features)
-              .enter().append("path")
-              .attr("d", path)
-              .attr("id", function(d, ix) {
-                    if(data_to_load){
-                        if(field_names.length > 0){
-                            if(d.id != undefined && d.id != ix){
-                                d.properties["_uid"] = d.id;
-                                d.id = +ix;
-                            }
-                            user_data[lyr_name_to_add].push(d.properties);
-                        } else {
-                            user_data[lyr_name_to_add].push({"id": d.id || ix});
-                        }
-                    } else if(result_layer_on_add)
-                        result_data[lyr_name_to_add].push(d.properties);
-
-                    return "feature_" + ix;
-                })
-              .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
-                       "stroke-opacity": .4,
-                       "fill": type != 'Line' ? random_color1 : null,
-                       "fill-opacity": type != 'Line' ? 0.95 : 0})
-              .attrs({"height": "100%", "width": "100%"});
-
-        handleClipPathLayer(lyr_name_to_add);
-
-        let class_name = [
-            "ui-state-default ",
-            target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
-            lyr_name_to_add
-            ].join('');
-
-        let layers_listed = layer_list.node(),
-            li = document.createElement("li"),
-            nb_fields = field_names.length,
-            layer_tooltip_content =  [
-                "<b>", lyr_name_to_add, "</b> - ", type, " - ",
-                nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
-                nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
-            _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
-
-        li.setAttribute("class", class_name);
-        li.setAttribute("layer_name", lyr_name_to_add)
-        li.setAttribute("layer-tooltip", layer_tooltip_content)
-        if(target_layer_on_add){
-            current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-            if(document.getElementById("browse_button").disabled === true)
-                document.getElementById("browse_button").disabled = false;
-
-            if(joined_dataset.length != 0){
-                valid_join_check_display(false);
-                section1.select(".s1").html("").on("click", null);
-                document.getElementById('sample_zone').style.display = "none";
-            }
-
-            let _button = button_type.get(type),
-                nb_fields = field_names.length,
-                nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length,
-                _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
-
-            _button = _button.substring(10, _button.indexOf("class") - 2);
-            d3.select("#img_in_geom")
-                .attrs({"src": _button, "width": "26", "height": "26"})
-                .on("click", null);
-            d3.select('#input_geom')
-                .attr("layer-target-tooltip", layer_tooltip_content)
-                .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
-                       nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
-                       nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
-                       '</i></span>'].join(''))
-            document.getElementById("input_geom").parentElement.innerHTML = document.getElementById("input_geom").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">'
-            document.getElementById("remove_target").onclick = () => {
-                remove_layer(lyr_name_to_add);
-            };
-            document.getElementById("remove_target").onmouseover = function(){
-                this.style.opacity = 1;
-            };
-            document.getElementById("remove_target").onmouseout = function(){
-                this.style.opacity = 0.5;
-            };
-            targeted_layer_added = true;
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
-            $("[layer-target-tooltip!='']").qtip("destoy");
-            $("[layer-target-tooltip!='']").qtip({
-                content: { attr: "layer-target-tooltip" },
-                style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-                events: {show: {solo: true}}
-//                events: {
-//                    show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-//                    hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-//                }
-            });
-        } else if (result_layer_on_add) {
-            li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('')
-        } else {
-            li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
-        }
-        layers_listed.insertBefore(li, layers_listed.childNodes[0])
+    if(layers_names.length > 1){
+        swal("", i18next.t("app_page.common.warning_multiple_layers"), "warning");
     }
 
-    if(target_layer_on_add) {
+    var random_color1 = ColorsSelected.random(),
+        lyr_name = layers_names[0],
+        lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name);
+    let nb_ft = topoObj.objects[lyr_name].geometries.length,
+        topoObj_objects = topoObj.objects[lyr_name],
+        field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+
+    if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
+    else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';
+    else if(topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
+
+    current_layers[lyr_name_to_add] = {
+        "type": type,
+        "n_features": nb_ft,
+        "stroke-width-const": 0.4,
+        "fill_color":  {"single": random_color1},
+        "key_name": parsedJSON.key
+        };
+
+    if(target_layer_on_add){
+        current_layers[lyr_name_to_add].targeted = true;
+        user_data[lyr_name_to_add] = [];
+        data_to_load = true;
+    } else if(result_layer_on_add){
+        result_data[lyr_name_to_add] = [];
+        current_layers[lyr_name_to_add].is_result = true;
+    }
+
+    map.append("g").attr("id", lyr_name_to_add)
+          .attr("class", data_to_load ? "targeted_layer layer" : "layer")
+          .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
+          .selectAll(".subunit")
+          .data(topojson.feature(topoObj, topoObj_objects).features)
+          .enter().append("path")
+          .attr("d", path)
+          .attr("id", function(d, ix) {
+                if(data_to_load){
+                    if(field_names.length > 0){
+                        if(d.id != undefined && d.id != ix){
+                            d.properties["_uid"] = d.id;
+                            d.id = +ix;
+                        }
+                        user_data[lyr_name_to_add].push(d.properties);
+                    } else {
+                        user_data[lyr_name_to_add].push({"id": d.id || ix});
+                    }
+                } else if(result_layer_on_add)
+                    result_data[lyr_name_to_add].push(d.properties);
+
+                return "feature_" + ix;
+            })
+          .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
+                   "stroke-opacity": .4,
+                   "fill": type != 'Line' ? random_color1 : null,
+                   "fill-opacity": type != 'Line' ? 0.95 : 0})
+          .attrs({"height": "100%", "width": "100%"});
+
+    let class_name = [
+        "ui-state-default ",
+        target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
+        lyr_name_to_add
+        ].join('');
+
+    let layers_listed = layer_list.node(),
+        li = document.createElement("li"),
+        nb_fields = field_names.length,
+        layer_tooltip_content =  [
+            "<b>", lyr_name_to_add, "</b> - ", type, " - ",
+            nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
+            nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
+        _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
+
+    li.setAttribute("class", class_name);
+    li.setAttribute("layer_name", lyr_name_to_add)
+    li.setAttribute("layer-tooltip", layer_tooltip_content)
+    if(target_layer_on_add){
+        current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
+        if(document.getElementById("browse_button").disabled === true)
+            document.getElementById("browse_button").disabled = false;
+
+        if(joined_dataset.length != 0){
+            valid_join_check_display(false);
+            section1.select(".s1").html("").on("click", null);
+            document.getElementById('sample_zone').style.display = "none";
+        }
+
+        let _button = button_type.get(type),
+            nb_fields = field_names.length,
+            nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length,
+            _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
+
+        _button = _button.substring(10, _button.indexOf("class") - 2);
+        d3.select("#img_in_geom")
+            .attrs({"src": _button, "width": "26", "height": "26"})
+            .on("click", null);
+        d3.select('#input_geom')
+            .attr("layer-target-tooltip", layer_tooltip_content)
+            .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
+                   nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
+                   nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
+                   '</i></span>'].join(''))
+
+        let input_geom = document.getElementById("input_geom").parentElement;
+        input_geom.innerHTML = input_geom.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
+        let remove_target = document.getElementById("remove_target");
+        remove_target.onclick = () => { remove_layer(lyr_name_to_add); };
+        remove_target.onmouseover = function(){ this.style.opacity = 1; };
+        remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
+        targeted_layer_added = true;
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
+        $("[layer-target-tooltip!='']").qtip("destoy");
+        $("[layer-target-tooltip!='']").qtip({
+            content: { attr: "layer-target-tooltip" },
+            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+            events: {show: {solo: true}}
+        });
+
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
         if(current_functionnality)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
+        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('');
         center_map(lyr_name_to_add);
         switch_accordion_section();
+    } else {
+        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
     }
+
     if (!target_layer_on_add && current_functionnality && current_functionnality.name == "smooth"){
         fields_handler.fill();
     }
+
+    layers_listed.insertBefore(li, layers_listed.childNodes[0])
     up_legends();
+    handleClipPath(current_proj_name);
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
 

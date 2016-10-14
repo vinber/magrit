@@ -21,6 +21,7 @@
             "error_numerical_fields": "La couche cible ne semble pas contenir de champs numériques (ou ces derniers contiennent trop de valeurs nulles)",
             "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
+            "warning_multiple_layers": "Les couches provenant de TopoJSON doivent etre ajoutées une par une. Seule la 1ère va etre ajoutée",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
