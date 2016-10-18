@@ -146,6 +146,98 @@ function handle_upload_files(files, target_layer_on_add, elem){
 *
 */
 function prepare_drop_section(){
+
+//}
+//function prepare_drop_section(){
+    var timeout;
+    Array.prototype.forEach.call(
+        document.querySelectorAll("body,.overlay_drop"),
+        function(elem){
+
+            elem.addEventListener("dragenter", e => {
+                let overlay_drop = document.getElementById("overlay_drop");
+                e.preventDefault(); e.stopPropagation();
+                overlay_drop.style.display = "";
+            });
+
+            elem.addEventListener("dragover", e => {
+                e.preventDefault(); e.stopPropagation();
+                if(timeout){
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function(){
+                        let overlay_drop = document.getElementById("overlay_drop");
+                        e.preventDefault(); e.stopPropagation();
+                        overlay_drop.style.display = "none";
+                        timeout = null;
+                    }, 2500);
+                }
+            });
+
+            elem.addEventListener("dragleave", e => {
+                timeout = setTimeout(function(){
+                    let overlay_drop = document.getElementById("overlay_drop");
+                    e.preventDefault(); e.stopPropagation();
+                    overlay_drop.style.display = "none";
+                    timeout = null;
+                }, 2500);
+            });
+
+            elem.addEventListener("drop", e => {
+                let overlay_drop = document.getElementById("overlay_drop");
+                overlay_drop.style.display = "";
+                e.preventDefault(); e.stopPropagation();
+                let files = e.dataTransfer.files;
+                let layer_kind;
+                swal.setDefaults({
+                  confirmButtonText: 'Next &rarr;',
+                  allowOutsideClick: false,
+                  showCancelButton: true,
+                  showCloseButton: false,
+                  allowEscapeKey: false,
+                  animation: false,
+                  progressSteps: ['1', '2']
+                })
+
+                var steps = [
+                  {
+                    allowOutsideClick: false,
+                    title: 'Target or layout ?!',
+                    input: 'select',
+                    inputPlaceholder: 'Select the type of layer',
+                    inputOptions: {
+                        'target': 'Target layer',
+                        'layout': 'Layout layer',
+                      },
+                    inputValidator: function(value) {
+                        return new Promise(function(resolve, reject){
+                            if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                                reject("No value selected");
+                            } else {
+                                layer_kind = value;
+                                resolve();
+                                handle_upload_files(files, value === "target", elem);
+                            }
+                        })
+                    }
+                  },
+                  'Step 2'
+                ]
+
+                swal.queue(steps).then(function(result, foo, bar) {
+                  console.log(result, foo, bar, layer_kind)
+                  swal.resetDefaults()
+                  swal({
+                    title: 'All done!',
+                    text: '',
+                    confirmButtonText: 'Done!',
+                    showCancelButton: false
+                  })
+                }, function() {
+                  swal.resetDefaults()
+                })
+            });
+    });
+
     Array.prototype.forEach.call(
         document.querySelectorAll("#section1,#section3"),
         function(elem){
@@ -172,75 +264,8 @@ function prepare_drop_section(){
                 handle_upload_files(files, target_layer_on_add, elem);
             }, true);
     });
+
 }
-//function prepare_drop_section(){
-//    var timeout;
-//    Array.prototype.forEach.call(
-//        document.querySelectorAll("body,.overlay_drop"),
-//        function(elem){
-//
-//            elem.addEventListener("dragenter", e => {
-//                let overlay_drop = document.getElementById("overlay_drop");
-//                e.preventDefault(); e.stopPropagation();
-//                overlay_drop.style.display = "";
-//            });
-//
-//            elem.addEventListener("dragover", e => {
-//                e.preventDefault(); e.stopPropagation();
-//                if(timeout){
-//                    clearTimeout(timeout);
-//                    timeout = setTimeout(function(){
-//                        let overlay_drop = document.getElementById("overlay_drop");
-//                        e.preventDefault(); e.stopPropagation();
-//                        overlay_drop.style.display = "none";
-//                        timeout = null;
-//                    }, 2500);
-//                }
-//            });
-//
-//            elem.addEventListener("dragleave", e => {
-//                timeout = setTimeout(function(){
-//                    let overlay_drop = document.getElementById("overlay_drop");
-//                    e.preventDefault(); e.stopPropagation();
-//                    overlay_drop.style.display = "none";
-//                    timeout = null;
-//                }, 2500);
-//            });
-//
-//            elem.addEventListener("drop", e => {
-//                let overlay_drop = document.getElementById("overlay_drop");
-//                overlay_drop.style.display = "";
-//                e.preventDefault(); e.stopPropagation();
-//                let files = e.dataTransfer.files;
-//                swal.setDefaults({
-//                  confirmButtonText: 'Next &rarr;',
-//                  showCancelButton: true,
-//                  animation: false,
-//                  progressSteps: ['1', '2', '3']
-//                })
-//
-//                var steps = [
-//                  {
-//                    title: 'Target or layout ?!',
-//                    text: 'abcde'
-//                  },
-//                  'Step 2',
-//                  'Step 3'
-//                ]
-//
-//                swal.queue(steps).then(function() {
-//                  swal.resetDefaults()
-//                  swal({
-//                    title: 'All done!',
-//                    confirmButtonText: 'Done!',
-//                    showCancelButton: false
-//                  })
-//                }, function() {
-//                  swal.resetDefaults()
-//                })
-//            });
-//    });
-//}
 
 function convert_dataset(file){
     var ajaxData = new FormData();
@@ -708,7 +733,14 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
 
-    if(!skip_alert) swal("", i18next.t("app_page.common.layer_success"), "success")
+    if(!skip_alert)
+        swal({title: "",
+              text: i18next.t("app_page.common.layer_success"),
+              allowOutsideClick: true,
+              allowEscapeKey: true,
+              type: "success"
+            }).then(function(){ null; },
+                    function(dismiss){ null; });
     return lyr_name_to_add;
 };
 

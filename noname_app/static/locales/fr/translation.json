@@ -60,9 +60,9 @@
         },
         "section1": {
             "title": "Ajout de données",
-            "add_geom": "Ajout d'une couche géographique <i>(ou glisser-déposer)</i>",
+            "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
             "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
-            "add_sample_data": "Sélection d'un jeu de données d'exemple",
+            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple",
             "explore_table": "Afficher les données"
         },
         "section2_pre": {
@@ -115,9 +115,9 @@
             "section3": "Faites glissez un fichier d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton.<br> Types supportés: GeoJSON, TopoJSON, Shapefile et KML"
         },
         "func_description" : {
-            "smooth": "Réalisation d'une carte lissée avec un l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
+            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
             "prop": "Réalisation d'un carte en symboles proportionnels sur un champ numérique du jeu de données",
-            "choroprop": "Réalisation d'une carte en symbols proportionnels cholorés selon la méthode choroplèthe",
+            "choroprop": "Réalisation d'une carte en symboles proportionnels colorés selon la méthode choroplèthe",
             "choro": "Réalisation d'une carte choroplèthe",
             "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
             "grid": "Réalisation d'une grille de densité",
@@ -125,20 +125,20 @@
             "discont": "Réalisation d'une carte de discontinuités",
             "typo": "Réalisation d'une carte catégorielle utilisant une variable qualitative",
             "label": "Affichage et personnalisation du label des entités",
-            "typosymbol": "Affichage de symboles utilisant une variable qualitative"
+            "typosymbol": "Affichage de pictogrammes utilisant une variable qualitative"
         },
         "func_title" : {
             "smooth": "Carte lissée",
             "prop": "Symboles proportionnels",
             "choroprop": "Symboles proportionnels colorés",
             "choro": "Carte choroplèthe",
-            "cartogram": "Anamorphose",
-            "grid": "Représentation griddée",
-            "flow": "Carte de flux/liens",
+            "cartogram": "Cartogram",
+            "grid": "Carroyage",
+            "flow": "Carte des liens",
             "discont": "Carte des discontinuités",
             "typo": "Typologie par à-plat de couleurs",
             "label": "Représentation des labels",
-            "typosymbol": "Typologie avec utilisation de symboles"
+            "typosymbol": "Typologie avec utilisation de pictogrammes"
         },
         "layout_features_box": {
             "title": "Élements d'habillage",

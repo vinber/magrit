@@ -10,7 +10,7 @@
     <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/style-fonts.css" rel="stylesheet"  type="text/css">
-    <link href="/static/css/style.min.css" rel="stylesheet"  type="text/css">
+    <link href="/static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
@@ -68,10 +68,9 @@ function setUpInterface()
     let bg = document.createElement('div');
     bg.id = 'overlay';
     bg.style.display = "none";
-    //bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('app_page.common.loading_results') + ' ...</p>'
-    bg.innerHTML =   '<p style="color: white; z-index: 2;text-align:center;margin-top:185px;">' + i18next.t('app_page.common.loading_results') + ' ...</p><div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>'
+    bg.innerHTML = '<p style="color: white; z-index: 2;text-align:center;margin-top:185px;">' + i18next.t('app_page.common.loading_results') + ' ...</p><div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>'
     document.body.appendChild(bg);
-/*
+
     let bg_drop = document.createElement('div');
     bg_drop.className = "overlay_drop";
     bg_drop.id = 'overlay_drop';
@@ -87,7 +86,7 @@ function setUpInterface()
     inner_div.appendChild(inner_p);
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
-*/
+
     let menu = d3.select("#menu"),
         accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
         accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
@@ -630,7 +629,7 @@ function setUpInterface()
                       inputPlaceholder: i18next.t("app_page.help_box.list_placeholders")
                    }).then(inputValue => {
                           swal("Nice!", "You wrote: " + inputValue, "success");
-                    })
+                        }, dismissValue => { null; });
                 });
 
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
@@ -1656,7 +1655,13 @@ function handle_title(txt){
 function handle_title_properties(){
     var title = d3.select("#map_title");
     if(!title.node()){
-        swal("", i18next.t("app_page.common.error_no_title"), "error");
+        swal({title: "",
+              text: i18next.t("app_page.common.error_no_title"),
+              type: "error",
+              allowOutsideClick: true,
+              allowEscapeKey: true
+            }).then( () => { null; },
+                      () => { null; });
         return;
     }
     var title_props = {
@@ -1953,9 +1958,13 @@ function make_export_layer_box(){
                     error: function(error) { console.log(error); },
                     success: function(data, code, obj){
                         if(data.indexOf("Error:") == 0){
-                            swal("Oops...",
-                                 i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
-                                 "error");
+                            swal({title: "Oops...",
+                                 text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
+                                 type: "error",
+                                 allowOutsideClick: false,
+                                 allowEscapeKey: false
+                                }).then( () => { null; },
+                                          () => { null; });
                             return;
                         }
                         let ext = extensions.get(type),

@@ -60,9 +60,9 @@
         },
         "section1": {
             "title": "Add your data",
-            "add_geom": "Add geometry layer (or drop it)",
+            "add_geom": "Add a basemap <i>(or drop it)</i>",
             "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
-            "add_sample_data": "Select available sample dataset",
+            "add_sample_data": "Select available sample basemap / dataset",
             "explore_table": "Explore your table(s)"
         },
         "section2_pre": {
@@ -115,17 +115,17 @@
             "section3": "Drop new layout layer or click to browse locally and add one.<br>Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"
         },
         "func_description" : {
-            "smooth": "Render a smoothed map (stewart potentials)",
-            "prop": "Display proportional symbols with appropriate discretisation on a numerical field of your data",
+            "smooth": "Render a smoothed map (using stewart potentials algorythm)",
+            "prop": "Display proportional symbols on a numerical field of your data",
             "choroprop": "Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
-            "choro": "Render a choropleth map on a numerical field of your data",
-            "cartogram": "Render a map using an anamorphose algorythm on a numerical field of your data",
+            "choro": "Render a choropleth map on a numerical field of your data with an appropriate discretisation",
+            "cartogram": "Render a map using an area-deforming algorythm on a numerical field of your data",
             "grid": "Render a gridded density map on a numerical field of your data",
             "flow": "Render a map displaying links between features with graduated sizes",
             "discont": "Render a map displaying discontinuities between polygons features",
             "typo": "Render a categorical map with an attribute field of your dataset",
             "label": "Display and customize feature labels",
-            "typosymbol": "Display symbol on the features of the maps"
+            "typosymbol": "Display pictograms on the features of the map"
         },
         "func_title" : {
             "smooth": "Smoothed map (Stewart potentials)",
@@ -138,7 +138,7 @@
             "discont": "Discontinuities map",
             "typo": "Categorical map",
             "label": "Label map",
-            "typosymbol": "Symbol map"
+            "typosymbol": "Pictogram map"
         },
         "layout_features_box": {
             "title": "Layout features",
@@ -384,7 +384,7 @@
                 "block": "This kind of representation enables to establish a match between raw and relationship data on a single map. Thus, the user will view a given phenomenon expressed in both raw and relationship data on the same map.<br><br><b><i>Parameters</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
             },
             "flow": {
-                "title": "<b>Flows/links map</b>",
+                "title": "<b>Links map</b>",
                 "block": "This kind of representation enables to draw proportionnal lines (streams/links) according to the intensity of a phenomenon between pairs of places.<br><br><b><i>Parameters</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
             },
             "label": {
