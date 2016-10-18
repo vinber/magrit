@@ -30,8 +30,8 @@
     <script  src="/static/js/lib/jquery.qtip.min.js"></script>
     <script  src="/static/js/lib/sweetalert2.min.js"></script>
     <script  src="/static/js/lib/datatables.min.js"></script>
-    <script  src="/static/js/app.min.js"></script>
-<!--
+    <!-- <script  src="/static/js/app.min.js"></script> -->
+
     <script  src="/static/js/context-menu.js"></script>
     <script  src="/static/js/layout_features.js"></script>
     <script  src="/static/js/interface.js"></script>
@@ -43,7 +43,7 @@
     <script  src="/static/js/legend.js"></script>
     <script  src="/static/js/join_popup.js"></script>
     <script  src="/static/js/colors_helpers.js"></script>
--->
+
   </head>
   <body>
       <div id="header">
@@ -71,7 +71,23 @@ function setUpInterface()
     //bg.innerHTML = '<p style="position: absolute; top: 11px; left: ' + w/2 + 'px; text-align: center; color: black; z-index: 2;"><img src="/static/img/ajax-loader.gif" style="width:' + w/4 + 'px"><br>' + i18next.t('app_page.common.loading_results') + ' ...</p>'
     bg.innerHTML =   '<p style="color: white; z-index: 2;text-align:center;margin-top:185px;">' + i18next.t('app_page.common.loading_results') + ' ...</p><div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>'
     document.body.appendChild(bg);
-
+/*
+    let bg_drop = document.createElement('div');
+    bg_drop.className = "overlay_drop";
+    bg_drop.id = 'overlay_drop';
+    bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
+    let inner_div = document.createElement("div");
+    inner_div.style.border = "dashed 2px white";
+    inner_div.style.margin = "10px";
+    inner_div.style.borderRadius = "1%";
+    inner_div.className = "overlay_drop";
+    let inner_p = document.createElement("p");
+    inner_p.style = "position: fixed;top: 50%;left: 50%;transform: translateX(-50%)translateY(-50%);font-size: 14px;width: auto;bottom: 0px;opacity: 0.85;text-align: center;color: white;padding: 0.5em;"
+    inner_p.innerHTML = "Drop your file(s) in the window ...";
+    inner_div.appendChild(inner_p);
+    bg_drop.appendChild(inner_div);
+    document.body.appendChild(bg_drop);
+*/
     let menu = d3.select("#menu"),
         accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
         accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
@@ -233,7 +249,7 @@ function setUpInterface()
                 document.getElementById("input-width").value = w;
             });
 
-    let b = dv4.append("li").styles({margin: "1px"});
+    let b = dv4.append("li").styles({margin: "1px", padding: "4px 0"});
     b.append("p").attr("class", "list_elem_section4 i18n")
             .style("padding", "4px")
             .attr("data-i18n", "[html]app_page.section4.map_ratio");
@@ -1810,7 +1826,7 @@ function export_compo_png(){
         mime_type = "image/png",
         img = new Image();
 
-    img.src = "data:image/svg+xml;base64," + btoa(svg_xml);
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         var imgUrl = targetCanvas.toDataURL(mime_type),

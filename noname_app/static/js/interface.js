@@ -166,19 +166,81 @@ function prepare_drop_section(){
             });
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();
-                let files = e.dataTransfer.files,
-                    self_section = elem.id,
-                    target_layer_on_add;
-
                 e.stopPropagation();
-
-                if(self_section === "section1")
-                    target_layer_on_add = true;
-
+                let files = e.dataTransfer.files,
+                    target_layer_on_add = elem.id === "section1" ? true : false;
                 handle_upload_files(files, target_layer_on_add, elem);
             }, true);
     });
 }
+//function prepare_drop_section(){
+//    var timeout;
+//    Array.prototype.forEach.call(
+//        document.querySelectorAll("body,.overlay_drop"),
+//        function(elem){
+//
+//            elem.addEventListener("dragenter", e => {
+//                let overlay_drop = document.getElementById("overlay_drop");
+//                e.preventDefault(); e.stopPropagation();
+//                overlay_drop.style.display = "";
+//            });
+//
+//            elem.addEventListener("dragover", e => {
+//                e.preventDefault(); e.stopPropagation();
+//                if(timeout){
+//                    clearTimeout(timeout);
+//                    timeout = setTimeout(function(){
+//                        let overlay_drop = document.getElementById("overlay_drop");
+//                        e.preventDefault(); e.stopPropagation();
+//                        overlay_drop.style.display = "none";
+//                        timeout = null;
+//                    }, 2500);
+//                }
+//            });
+//
+//            elem.addEventListener("dragleave", e => {
+//                timeout = setTimeout(function(){
+//                    let overlay_drop = document.getElementById("overlay_drop");
+//                    e.preventDefault(); e.stopPropagation();
+//                    overlay_drop.style.display = "none";
+//                    timeout = null;
+//                }, 2500);
+//            });
+//
+//            elem.addEventListener("drop", e => {
+//                let overlay_drop = document.getElementById("overlay_drop");
+//                overlay_drop.style.display = "";
+//                e.preventDefault(); e.stopPropagation();
+//                let files = e.dataTransfer.files;
+//                swal.setDefaults({
+//                  confirmButtonText: 'Next &rarr;',
+//                  showCancelButton: true,
+//                  animation: false,
+//                  progressSteps: ['1', '2', '3']
+//                })
+//
+//                var steps = [
+//                  {
+//                    title: 'Target or layout ?!',
+//                    text: 'abcde'
+//                  },
+//                  'Step 2',
+//                  'Step 3'
+//                ]
+//
+//                swal.queue(steps).then(function() {
+//                  swal.resetDefaults()
+//                  swal({
+//                    title: 'All done!',
+//                    confirmButtonText: 'Done!',
+//                    showCancelButton: false
+//                  })
+//                }, function() {
+//                  swal.resetDefaults()
+//                })
+//            });
+//    });
+//}
 
 function convert_dataset(file){
     var ajaxData = new FormData();
@@ -190,7 +252,9 @@ function convert_dataset(file){
         url: '/convert_tabular',
         data: ajaxData,
         type: 'POST',
-        error: function(error) {console.log(error); },
+        error: function(error) {
+            display_error_during_computation();
+        },
         success: function(data) {
                 data = JSON.parse(data);
                 dataset_name = data.name;
@@ -215,8 +279,10 @@ function handle_shapefile(files, target_layer_on_add){
         success: function(data) {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
         },
-        error: function(error) {console.log(error); }
-        });
+        error: function(error) {
+            display_error_during_computation();
+        }
+    });
 }
 
 function handle_TopoJSON_files(files, target_layer_on_add) {
@@ -232,7 +298,9 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         url: '/cache_topojson/user',
         data: ajaxData,
         type: 'POST',
-        error: function(error) { console.log(error);},
+        error: function(error) {
+            display_error_during_computation();
+        },
         success: function(res){
             let key = JSON.parse(res).key;
             reader.onloadend = function(){
@@ -435,7 +503,9 @@ function add_csv_geom(file, name){
         url: '/convert_csv_geo',
         data: ajaxData,
         type: 'POST',
-        error: function(error) {  console.log(error);  },
+        error: function(error) {
+            display_error_during_computation();
+        },
         success: function(data) {
             dataset_name = undefined;
             add_layer_topojson(data, {target_layer_on_add: true});
@@ -461,7 +531,9 @@ function handle_single_file(file, target_layer_on_add) {
         success: function(data) {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
         },
-        error: function(error) {console.log(error);}
+        error: function(error) {
+            display_error_during_computation();
+        }
     });
 };
 
@@ -989,7 +1061,9 @@ function add_sample_geojson(name, options){
         data: formToSend,
         type: 'POST',
         success: function(data){ add_layer_topojson(data, options); },
-        error: function(error) { console.log(error); }
+        error: function(error) {
+            display_error_during_computation();
+        }
     });
 }
 

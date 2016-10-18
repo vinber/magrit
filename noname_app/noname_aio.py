@@ -107,7 +107,7 @@ async def ogr_to_geojson(filepath, to_latlong=True):
         process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
                          "/dev/stdout", filepath], stdout=PIPE)
     stdout, _ = process.communicate()
-    return stdout.decode()
+    return stdout
 
 
 async def geojson_to_topojson(
@@ -200,7 +200,7 @@ async def cache_input_topojson(request):
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
             f_path = '/tmp/' + fp_name + ".geojson"
-            with open(f_path, 'w', encoding='utf-8') as f:
+            with open(f_path, 'wb') as f:
                 f.write(res)
             result = await geojson_to_topojson(f_path, "-q 1e5")
             result = result.replace(''.join([user_id, '_']), '')
@@ -329,7 +329,7 @@ async def convert(request):
     if "shp" in datatype:
         res = await ogr_to_geojson(shp_path, to_latlong=True)
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
-        with open(filepath2, 'w') as f:
+        with open(filepath2, 'wb') as f:
             f.write(res)
         result = await geojson_to_topojson(filepath2, "-q 1e5")
         result = result.replace(''.join([user_id, '_']), '')
@@ -353,7 +353,7 @@ async def convert(request):
             filepath2 = shp_path.replace(
                 "{}{}/".format(user_id, hashed_input), "").replace(
                 '.shp', '.geojson')
-            with open(filepath2, 'w') as f:
+            with open(filepath2, 'wb') as f:
                 f.write(res)
             result = await geojson_to_topojson(filepath2, "-q 1e5")
             result = result.replace(''.join([user_id, '_']), '')
@@ -371,11 +371,11 @@ async def convert(request):
             crs = True
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(data)
-            res = await ogr_to_geojson(filepath, to_latlong=True)
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
             os.remove(filepath)
-            with open(filepath, 'w', encoding='utf-8') as f:
+            res = await ogr_to_geojson(filepath, to_latlong=True)
+            with open(filepath, 'wb') as f:
                 f.write(res)
         else:
             crs = False
@@ -401,7 +401,7 @@ async def convert(request):
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
         os.remove(filepath)
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, 'wb') as f:
             f.write(res)
         result = await geojson_to_topojson(filepath, "-q 1e5")
         if len(result) == 0:
