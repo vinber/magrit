@@ -150,7 +150,8 @@
             "text_annot": "Annotation de texte",
             "arrow": "Flèche",
             "symbol": "Insertion d'un symbole",
-            "ellipse": "Ellipse"
+            "ellipse": "Ellipse",
+            "free_draw": "Dessin libre"
         },
         "layout_layer_box": {
             "title": "Couches d'habillage",

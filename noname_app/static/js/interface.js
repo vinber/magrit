@@ -146,21 +146,18 @@ function handle_upload_files(files, target_layer_on_add, elem){
 *
 */
 function prepare_drop_section(){
-
-//}
-//function prepare_drop_section(){
     var timeout;
     Array.prototype.forEach.call(
-        document.querySelectorAll("body,.overlay_drop"),
+        document.querySelectorAll("#map,.overlay_drop"),
         function(elem){
 
-            elem.addEventListener("dragenter", e => {
+            elem.addEventListener("dragenter", function _dragenter_func(e){
                 let overlay_drop = document.getElementById("overlay_drop");
                 e.preventDefault(); e.stopPropagation();
                 overlay_drop.style.display = "";
             });
 
-            elem.addEventListener("dragover", e => {
+            elem.addEventListener("dragover", function _dragover_func(e){
                 e.preventDefault(); e.stopPropagation();
                 if(timeout){
                     clearTimeout(timeout);
@@ -173,7 +170,7 @@ function prepare_drop_section(){
                 }
             });
 
-            elem.addEventListener("dragleave", e => {
+            elem.addEventListener("dragleave", function _dragleave_func(e){
                 timeout = setTimeout(function(){
                     let overlay_drop = document.getElementById("overlay_drop");
                     e.preventDefault(); e.stopPropagation();
@@ -182,59 +179,159 @@ function prepare_drop_section(){
                 }, 2500);
             });
 
-            elem.addEventListener("drop", e => {
+            elem.addEventListener("drop", function _drop_func(e){
+
+                function populate_shp_slot(slots, file){
+                    if(file.name.indexOf(".shp") > -1){
+                        slots.set(".shp", file)
+                        document.getElementById("f_shp").className = "mini_button_ok";
+                    } else if (file.name.indexOf(".shx") > -1){
+                        slots.set(".shx", file)
+                        document.getElementById("f_shx").className = "mini_button_ok";
+                    } else if (file.name.indexOf(".prj") > -1){
+                        slots.set(".prj", file)
+                        document.getElementById("f_prj").className = "mini_button_ok";
+                    } else if (file.name.indexOf(".dbf") > -1){
+                        slots.set(".dbf", file)
+                        document.getElementById("f_dbf").className = "mini_button_ok";
+                    } else
+                        return false
+                }
+
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
                 e.preventDefault(); e.stopPropagation();
                 let files = e.dataTransfer.files;
-                let layer_kind;
-                swal.setDefaults({
-                  confirmButtonText: 'Next &rarr;',
-                  allowOutsideClick: false,
-                  showCancelButton: true,
-                  showCloseButton: false,
-                  allowEscapeKey: false,
-                  animation: false,
-                  progressSteps: ['1', '2']
-                })
-
-                var steps = [
-                  {
-                    allowOutsideClick: false,
-                    title: 'Target or layout ?!',
-                    input: 'select',
-                    inputPlaceholder: 'Select the type of layer',
-                    inputOptions: {
-                        'target': 'Target layer',
-                        'layout': 'Layout layer',
-                      },
-                    inputValidator: function(value) {
-                        return new Promise(function(resolve, reject){
-                            if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                reject("No value selected");
-                            } else {
-                                layer_kind = value;
-                                resolve();
-                                handle_upload_files(files, value === "target", elem);
-                            }
-                        })
-                    }
-                  },
-                  'Step 2'
-                ]
-
-                swal.queue(steps).then(function(result, foo, bar) {
-                  console.log(result, foo, bar, layer_kind)
-                  swal.resetDefaults()
-                  swal({
-                    title: 'All done!',
-                    text: '',
-                    confirmButtonText: 'Done!',
-                    showCancelButton: false
-                  })
-                }, function() {
-                  swal.resetDefaults()
-                })
+                console.log(files)
+                if(files.length == 1
+                        && (files[0].name.indexOf(".shp") > -1
+                           || files[0].name.indexOf(".shx") > -1
+                           || files[0].name.indexOf(".dbf") > -1
+                           || files[0].name.indexOf(".prj") > -1)){
+                    Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), _elem => {
+                        _elem.removeEventListener('drop', _drop_func);
+                    });
+                    swal({
+                        title: "",
+                        html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
+                              '<strong>Shapefile detected - Missing files to upload</strong><br>' +
+                              '<p><i>Drop missing files in this area</i></p><br>' +
+                              '<image id="img_drop" src="/static/img/Ic_file_download_48px.svg"><br>' +
+                              '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' +
+                              '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
+                        type: "info",
+                        showCancelButton: true,
+                        showCloseButton: false,
+                        allowEscapeKey: true,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: i18next.t("app_page.common.confirm"),
+                        preConfirm: function() {
+                            return new Promise(function(resolve, reject) {
+                                setTimeout(function() {
+                                    if (shp_slots.size < 4) {
+                                        reject('Missing files')
+                                    } else {
+                                        resolve()
+                                    }
+                                }, 50)
+                            })
+                        }
+                      }).then( value => {
+                            console.log(value);
+                            swal({
+                                title: "",
+                                text: "Select layer type",
+                                type: "info",
+                                showCancelButton: true,
+                                showCloseButton: false,
+                                allowEscapeKey: true,
+                                allowOutsideClick: false,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: i18next.t("app_page.common.confirm"),
+                                input: 'select',
+                                inputPlaceholder: 'Select the type of layer',
+                                inputOptions: {
+                                    'target': 'Target layer',
+                                    'layout': 'Layout layer',
+                                  },
+                                inputValidator: function(value) {
+                                    return new Promise(function(resolve, reject){
+                                        if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                                            reject("No value selected");
+                                        } else {
+                                            resolve();
+                                            let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".dbf")];
+                                            for(let f of shp_slots)
+                                                file_list.push(f)
+                                            console.log(file_list);
+                                            handle_shapefile(file_list, value === "target");
+                                        }
+                                    })
+                                }
+                              }).then( value => {
+                                    console.log(value);
+                                }, dismiss => {
+                                    console.log(dismiss);
+                                });
+                        }, dismiss => {
+                            console.log(dismiss);
+                        });
+                    let shp_slots = new Map();
+                    populate_shp_slot(shp_slots, files[0]);
+                    document.getElementById("dv_drop_shp").addEventListener("drop", function(event){
+                        console.log("file dropped")
+                        event.preventDefault(); event.stopPropagation();
+                        let next_files = event.dataTransfer.files;
+                        for(let f_ix=0; f_ix < next_files.length; f_ix++){
+                            let file = next_files[f_ix];
+                            populate_shp_slot(shp_slots, file);
+                        }
+                        if(shp_slots.size == 4){
+                            document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
+                        }
+                    })
+                    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
+                        this.style.border = "dashed 2.5px green";
+                        event.preventDefault(); event.stopPropagation();
+                    });
+                    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
+                        this.style.border = "dashed 1px green";
+                        event.preventDefault(); event.stopPropagation();
+                    });
+                } else {
+                    swal({
+                        title: "",
+                        text: "Select layer type",
+                        type: "info",
+                        showCancelButton: true,
+                        showCloseButton: false,
+                        allowEscapeKey: true,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: i18next.t("app_page.common.confirm"),
+                        input: 'select',
+                        inputPlaceholder: 'Select the type of layer',
+                        inputOptions: {
+                            'target': 'Target layer',
+                            'layout': 'Layout layer',
+                          },
+                        inputValidator: function(value) {
+                            return new Promise(function(resolve, reject){
+                                if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                                    reject("No value selected");
+                                } else {
+                                    resolve();
+                                    handle_upload_files(files, value === "target", elem);
+                                }
+                            })
+                        }
+                      }).then( value => {
+                            console.log(value);
+                        }, dismiss => {
+                            console.log(dismiss);
+                        });
+                }
             });
     });
 
@@ -809,7 +906,8 @@ function select_layout_features(){
          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
          ["arrow", i18next.t("app_page.layout_features_box.arrow")],
          ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
-         ["symbol", i18next.t("app_page.layout_features_box.symbol")]
+         ["symbol", i18next.t("app_page.layout_features_box.symbol")],
+         ["free_draw", i18next.t("app_page.layout_features_box.free_draw")]
         ];
     var selected_ft;
 
@@ -910,13 +1008,66 @@ function add_layout_feature(selected_feature){
         handleClickAddEllipse();
     } else if (selected_feature == "symbol"){
         let a = box_choice_symbol(window.default_symbols).then( result => {
-            if(result){
-                add_single_symbol(result);
-            }
-        })
+            if(result){ add_single_symbol(result); }
+        });
+//    } else if (selected_feature == "free_draw"){
+//        handleCreateFreeDraw();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
+}
+
+function handleCreateFreeDraw(){
+    let start_point,
+        tmp_start_point,
+        active_line,
+        drawing_data = { "lines": [] };
+
+    let render_line = d3.line().x(d => d[0]).y(d => d[1]);
+    let draw_calc = map.append("g")
+                        .append("rect")
+                        .attr("x",  0).attr("y",  0)
+                        .attr("width", w).attr("height", h)
+                        .attr("class", "draw_calc")
+                        .style("opacity", 0.1).style("fill", "grey");
+
+    function redraw() {
+      var lines;
+      lines = draw_calc.selectAll('.line').data(drawing_data.lines);
+      lines.enter().append('path').attrs({
+        "class": 'line',
+        stroke: function(d) {
+          return d.color;
+        }
+      });
+      lines.attr("d", function(d) { return render_line(d.points);});
+      return lines.exit();
+    };
+
+    let drag = d3.drag()
+           .on('start', function() {
+              active_line = {
+                points: [],
+                color: "black"
+              };
+              drawing_data.lines.push(active_line);
+              return redraw();
+            })
+            .on('drag', function() {
+              active_line.points.push([d3.event.x, d3.event.y]);
+              console.log(drawing_data);
+              return redraw();
+            })
+            .on('end', function() {
+              if (active_line.points.length === 0) {
+                drawing_data.lines.pop();
+              }
+              active_line = null;
+              console.log(drawing_data);
+              return;
+            });
+    zoom.on("zoom", null);
+    draw_calc.call(drag);
 }
 
 function add_single_symbol(symbol_dataurl){

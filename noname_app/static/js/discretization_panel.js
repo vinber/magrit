@@ -281,17 +281,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     }
 
     var redisplay = {
-        compute: function(old_nb_class){
+        compute: function(){
             serie = new geostats(values);
             breaks = [];
             values = serie.sorted();
 
             if(type === "Q6"){
                 var tmp = getBreaksQ6(values);
+                console.log(values); console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 breaks[0] = serie.min();
-                breaks[nb_class] = serie.max();
+                breaks[6] = serie.max();
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
@@ -491,7 +492,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                         txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
                                         document.getElementById("nb_class_range").value = 6;
                                     }
-                                    redisplay.compute(nb_class);
+                                    redisplay.compute();
                                     redisplay.draw();
                                     });
 
@@ -517,7 +518,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                 }
                                 nb_class = +this.value;
                                 txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
-                                var ret_val = redisplay.compute(old_nb_class);
+                                var ret_val = redisplay.compute();
                                 if(!ret_val){
                                     this.value = old_nb_class;
                                     txt_nb_class.html(i18next.t("disc_box.class", {count: +old_nb_class}));
@@ -661,7 +662,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             nb_class = user_break_list.split('-').length - 1;
             txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
             document.getElementById("nb_class_range").value = nb_class;
-            redisplay.compute(old_nb_class);
+            redisplay.compute();
             redisplay.draw();
          });
 
@@ -758,7 +759,7 @@ function getBreaksQ6(serie){
         q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
     for(let i=0; i < 7; ++i){
         j = Math.round(q6_class[i]) - 1
-        breaks[i] = serie[j];
+        breaks.push(+serie[j]);
         stock_class.push(j - tmp)
         tmp = j;
     }
