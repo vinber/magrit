@@ -824,6 +824,10 @@ function add_layer_topojson(text, options){
         fields_handler.fill();
     }
 
+    if(!result_layer_on_add && type === "Point"){
+        current_layers[lyr_name_to_add].pointRadius = path.pointRadius();
+    }
+
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
     up_legends();
     handleClipPath(current_proj_name);

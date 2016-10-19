@@ -342,6 +342,9 @@ function createStyleBox(layer_name){
                 // Update the object holding the properties of the layer if Yes is clicked
 //                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
 //                    current_layers[layer_name].fixed_stroke = true;
+                if(type === "Point" && !renderer) {
+                    current_layers[layer_name].pointRadius = +current_pt_size;
+                }
                 if(renderer != undefined
                      && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
@@ -397,7 +400,9 @@ function createStyleBox(layer_name){
                 map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-                if(type == "Line"){
+                if(type === "Point" && !renderer) {
+                    selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius))
+                } else if(type == "Line"){
                     if(fill_meth == "single")
                     selection.style("stroke", fill_prev.single)
                             .style("stroke-opacity", previous_stroke_opacity);
@@ -435,11 +440,27 @@ function createStyleBox(layer_name){
 
      var popup = d3.select(".styleBox");
 
+    if(type === "Point" && !renderer){
+        var current_pt_size = current_layers[layer_name].pointRadius;
+        let pt_size = popup.append("p");
+        pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));
+        pt_size.append("input")
+                .attrs({type: "range", min: 0, max: 40, value: current_pt_size})
+                .styles({"width": "70px", "vertical-align": "middle"})
+                .on("change", function(){
+                    current_pt_size = +this.value;
+                    document.getElementById("txt_pt_radius").innerHTML = current_pt_size;
+                    selection.attr("d", path.pointRadius(current_pt_size));
+                });
+        pt_size.append("span").attr("id", "txt_pt_radius")
+                .html(current_pt_size + "")
+    }
+
      if(type !== 'Line'){
         if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
             if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
                 let fields = type_col(layer_name, "string");
-                let fill_method = popup.append("p").html("Fill color").insert("select");
+                let fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
                 [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
                  [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
                  [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function(d,i){

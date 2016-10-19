@@ -338,7 +338,8 @@
             "break_value": "<br>Break value ",
             "field_symbol_size": "Field used for <strong>proportionals values</strong> : <i>{{ field }}</i><br><br>",
             "symbol_fixed_size": "Symbol fixed size ",
-            "on_value": "on value ..."
+            "on_value": "on value ...",
+            "point_radius": "Point radius<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

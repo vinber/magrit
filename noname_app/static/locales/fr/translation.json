@@ -335,7 +335,8 @@
             "break_value": "<br>Valeur limite ",
             "field_symbol_size": "Champ utilisé pour les <strong>valeurs proportionnelles</strong> : <i>{{ field }}</i><br><br>",
             "symbol_fixed_size": "Taille du symbole fixée ",
-            "on_value": "sur la valeur ..."
+            "on_value": "sur la valeur ...",
+            "point_radius": "Taille du point<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",
