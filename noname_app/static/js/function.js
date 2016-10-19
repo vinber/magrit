@@ -1447,7 +1447,7 @@ let drag_elem_geo = d3.drag()
 function make_style_box_indiv_label(label_node){
     let current_options = {size: label_node.style.fontSize,
                            content: label_node.textContent,
-                           font: "",
+                           font: label_node.style.fontFamily,
                            color: label_node.style.fill};
 
     if(current_options.color.startsWith("rgb"))
@@ -1461,11 +1461,14 @@ function make_style_box_indiv_label(label_node){
                 label_node.style.fontsize = current_options.size;
                 label_node.textContent = current_options.content;
                 label_node.style.fill = current_options.color;
+                label_node.style.fontFamily = current_options.font;
             }
         });
     let box_content = d3.select(".styleTextAnnotation").insert("div");
     box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
+            .append("input")
+            .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
+            .style("width", "70px")
             .on("change", function(){
                 label_node.style.fontSize = this.value + "px";
             });
@@ -1479,6 +1482,16 @@ function make_style_box_indiv_label(label_node){
             .on("change", function(){
                 label_node.style.fill = this.value;
             });
+    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
+    let selec_fonts = box_content.append("select")
+            .on("change", function(){
+                label_node.style.fontFamily = this.value;
+            });
+
+    available_fonts.forEach( name => {
+        selec_fonts.append("option").attr("value", name[1]).text(name[0]);
+    });
+    selec_fonts.node().value = label_node.style.fontFamily;
 };
 
 
@@ -1512,7 +1525,7 @@ var render_label = function(layer, rendering_params){
         .attr("x", d => d.coords[0])
         .attr("y", d => d.coords[1])
         .attrs({"alignment-baseline": "middle", "text-anchor": "middle"})
-        .styles({"font-size": font_size, fill: txt_color})
+        .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
@@ -1532,7 +1545,8 @@ var render_label = function(layer, rendering_params){
         "rendered_field": label_field,
         "is_result": true,
         "ref_layer_name": layer,
-        "default_size": font_size
+        "default_size": font_size,
+        "default_font": selected_font
         };
     up_legends();
     zoom_without_redraw();

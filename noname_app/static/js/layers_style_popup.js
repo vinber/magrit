@@ -221,12 +221,14 @@ function createStyleBoxLabel(layer_name){
                 "color": features[i].style.fill,
                 "size": features[i].style.fontSize,
                 "display": features[i].style.display ? features[i].style.display : null,
-                "position": [features[i].getAttribute("x"), features[i].getAttribute("y")]
+                "position": [features[i].getAttribute("x"), features[i].getAttribute("y")],
+                "font": features[i].style.fontFamily
                 });
         }
         prev_settings_defaults = {
             "color": current_layers[layer_name].fill_color,
-            "size": current_layers[layer_name].default_size
+            "size": current_layers[layer_name].default_size,
+            "font": current_layers[layer_name].default_font
         };
     };
 
@@ -238,10 +240,12 @@ function createStyleBoxLabel(layer_name){
             features[i].style.display = prev_settings[i]["display"];
             features[i].setAttribute("x", prev_settings[i]["position"][0]);
             features[i].setAttribute("y", prev_settings[i]["position"][1]);
+            features[i].style.fontFamily = prev_settings[i]["font"];
         }
 
         current_layers[layer_name].fill_color = prev_settings_defaults.color;
         current_layers[layer_name].default_size = prev_settings_defaults.size;
+        current_layers[layer_name].default_font = prev_settings_defaults.font;
     };
 
     var selection = map.select("#" + layer_name).selectAll("text"),
@@ -312,6 +316,19 @@ function createStyleBoxLabel(layer_name){
                 current_layers[layer_name].fill_color = this.value;
                 selection.style("fill", this.value);
             });
+
+    popup.insert("p")
+            .html(i18next.t("app_page.layer_style_popup.labels_default_font"))
+    let choice_font = popup.insert("select")
+            .on("change", function(){
+                current_layers[layer_name].default_font = this.value;
+                selection.style("font-family", this.value);
+            });
+
+    available_fonts.forEach( name => {
+        choice_font.append("option").attr("value", name[1]).text(name[0]);
+    });
+    choice_font.node().value = current_layers[layer_name].default_font;
 }
 
 function createStyleBox(layer_name){

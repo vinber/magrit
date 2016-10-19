@@ -309,6 +309,7 @@
             "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles appaortées! </i></b>",
             "labels_default_size": "Taille par défaut des labels",
             "labels_default_color": "Couleur par défaut des labels",
+            "labels_default_font": "Police utilisée par defaut",
             "single_color": "Couleur unique",
             "categorical_color": "Couleur selon un champ catégoriel",
             "random_color": "Couleur aléatoire pour chaque entité",
