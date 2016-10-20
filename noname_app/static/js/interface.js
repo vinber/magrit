@@ -151,13 +151,13 @@ function prepare_drop_section(){
         document.querySelectorAll("#map,.overlay_drop"),
         function(elem){
 
-            elem.addEventListener("dragenter", function _dragenter_func(e){
+            elem.addEventListener("dragenter", e => {
                 let overlay_drop = document.getElementById("overlay_drop");
                 e.preventDefault(); e.stopPropagation();
                 overlay_drop.style.display = "";
             });
 
-            elem.addEventListener("dragover", function _dragover_func(e){
+            elem.addEventListener("dragover", e => {
                 e.preventDefault(); e.stopPropagation();
                 if(timeout){
                     clearTimeout(timeout);
@@ -170,7 +170,7 @@ function prepare_drop_section(){
                 }
             });
 
-            elem.addEventListener("dragleave", function _dragleave_func(e){
+            elem.addEventListener("dragleave", e => {
                 timeout = setTimeout(function(){
                     let overlay_drop = document.getElementById("overlay_drop");
                     e.preventDefault(); e.stopPropagation();
@@ -197,7 +197,9 @@ function prepare_drop_section(){
                     } else
                         return false
                 }
-
+                if(timeout){
+                    clearTimeout(timeout);
+                }
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
                 e.preventDefault(); e.stopPropagation();
@@ -261,20 +263,20 @@ function prepare_drop_section(){
                                             reject("No value selected");
                                         } else {
                                             resolve();
-                                            let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".dbf")];
-                                            for(let f of shp_slots)
-                                                file_list.push(f)
-                                            console.log(file_list);
+                                            let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
                                             handle_shapefile(file_list, value === "target");
                                         }
                                     })
                                 }
                               }).then( value => {
+                                    overlay_drop.style.display = "none";
                                     console.log(value);
                                 }, dismiss => {
+                                    overlay_drop.style.display = "none";
                                     console.log(dismiss);
                                 });
                         }, dismiss => {
+                            overlay_drop.style.display = "none";
                             console.log(dismiss);
                         });
                     let shp_slots = new Map();
@@ -327,8 +329,10 @@ function prepare_drop_section(){
                             })
                         }
                       }).then( value => {
+                            overlay_drop.style.display = "none";
                             console.log(value);
                         }, dismiss => {
+                            overlay_drop.style.display = "none";
                             console.log(dismiss);
                         });
                 }

@@ -314,7 +314,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             bins = [];
             for(let i = 0, len = stock_class.length, offset=0; i < len; i++){
                 let bin = {};
-                bin.val = stock_class[i] + 1;
+                bin.val = stock_class[i];
                 bin.offset = i == 0 ? 0 : (bins[i-1].width + bins[i-1].offset);
                 bin.width = breaks[i+1] - breaks[i];
                 bin.height = bin.val / (breaks[i+1] - breaks[i]);
@@ -764,6 +764,12 @@ function getBreaksQ6(serie){
         tmp = j;
     }
     stock_class.shift();
+    if(breaks[0] == breaks[1]){
+        breaks[1] = (breaks[2] - breaks[1]) / 2
+    }
+    if(breaks[6] == breaks[5]){
+        breaks[5] = (breaks[5] - breaks[4]) / 2
+    }
     return {
         breaks: breaks,
         stock_class: stock_class

@@ -339,6 +339,8 @@ function createStyleBox(layer_name){
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
+    var lgd_to_change;
+
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
 
@@ -387,7 +389,7 @@ function createStyleBox(layer_name){
                 let lgd = document.querySelector(
                     [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
                     );
-                if(lgd){
+                if(lgd && (lgd_to_change || rendering_params)){
                     let transform_param = lgd.getAttribute("transform"),
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
@@ -639,6 +641,7 @@ function createStyleBox(layer_name){
                     .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
                     .styles({width: "70px", "vertical-align": "middle"})
                     .on("change", function(){
+                        lgd_to_change = true;
                         let val = +this.value;
                         popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
                         selection.style("display", d => (+d.properties.fij > val) ? null : "none");
@@ -655,6 +658,7 @@ function createStyleBox(layer_name){
                                                          "user_defined")
                         .then(function(result){
                             if(result){
+                                lgd_to_change = true;
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);
@@ -677,6 +681,7 @@ function createStyleBox(layer_name){
                 .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
                 .styles({width: "70px", "vertical-align": "middle"})
                 .on("change", function(){
+                    lgd_to_change = true;
                     let val = +this.value;
                     let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
                     popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
@@ -695,6 +700,7 @@ function createStyleBox(layer_name){
                         .then(function(result){
                             if(result){
                                 console.log(result)
+                                lgd_to_change = true;
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
                                 let sizes = result[1].map(ft => ft[1]);
@@ -709,6 +715,7 @@ function createStyleBox(layer_name){
      popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"))
                       .insert('input').attr('type', 'color').attr("value", stroke_prev)
                       .on('change', function(){
+                        lgd_to_change = true;
                         selection.style("stroke", this.value);
                         current_layers[layer_name].fill_color.single = this.value;
                         });

@@ -273,6 +273,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
+     [i18next.t("app_page.common.user_defined"), "user_defined"],
 //     [i18next.t("app_page.common.std_dev"), "std_dev"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
@@ -288,6 +289,11 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                             .insert("p").html("Type ")
                             .insert("select").attr("class", "params")
                             .on("change", function(){
+                                let old_type = type;
+                                if(this.value == "user_defined"){
+                                    this.value = old_type;
+                                    return;
+                                }
                                 type = this.value;
                                 if(type === "Q6"){
                                     nb_class = 6;
