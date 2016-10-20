@@ -366,7 +366,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("datatype_to_use")
             ).select_by_value("GeoJSON")
         Select(driver.find_element_by_id("projection_to_use")
-            ).select_by_value("epsg:3035")
+            ).select_by_value("epsg:4326")
 
         driver.find_element_by_id("dialogGeoExport"
             ).find_element_by_css_selector("button.button_st4").click()
@@ -502,7 +502,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_xpath(
             "//div[@id='field_div1']/select[2]")).select_by_visible_text("/")
         Select(driver.find_element_by_xpath(
-            "//div[@id='field_div1']/select[3]")).select_by_visible_text("Constant value...")
+            "//div[@id='field_div1']/select[3]")).select_by_value("constant_value")
         driver.find_element_by_id("val_opt").clear()
         driver.find_element_by_id("val_opt").send_keys("1000")
         Select(driver.find_element_by_xpath(
@@ -694,11 +694,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         return self.driver.find_element_by_id(
             "menu_pref").find_elements_by_css_selector('span')
 
-    def get_button_ok_displayed(self, selector="button.swal2-confirm.styled", delay=30):
-        if not self.try_element_present(By.CSS_SELECTOR, "button.swal2-confirm.styled", delay):
+    def get_button_ok_displayed(self, selector="button.swal2-confirm.swal2-styled", delay=30):
+        if not self.try_element_present(By.CSS_SELECTOR, selector, delay):
             self.fail("Time out")
         else:
-            button_ok = self.driver.find_element_by_css_selector("button.swal2-confirm.styled")
+            button_ok = self.driver.find_element_by_css_selector(selector)
             for i in range(delay):
                 if not button_ok.is_displayed():
                     time.sleep(1)

@@ -20,6 +20,12 @@ function get_menu_option(func){
             "menu_factory": "fillMenu_PropSymbolChoro",
             "fields_handler": "fields_PropSymbolChoro",
             },
+        "proptypo":{
+            "name": "proptypo",
+            "title": i18next.t("app_page.func_title.proptypo"),
+            "menu_factory": "fillMenu_PropSymbolTypo",
+            "fields_handler": "fields_PropSymbolTypo",
+            },
         "choro":{
             "name": "choro",
             "title": i18next.t("app_page.func_title.choro"),
@@ -69,7 +75,7 @@ function get_menu_option(func){
             "title": i18next.t("app_page.func_title.typosymbol"),
             "menu_factory": "fillMenu_TypoSymbol",
             "fields_handler": "fields_Symbol",
-            },
+            }
     };
     return menu_option[func.toLowerCase()] || {};
 }
@@ -1014,6 +1020,55 @@ function fillMenu_FlowMap(){
             });
     });
 }
+
+var fields_PropSymbolTypo = {
+    fill: function(layer){
+        if(!layer) return;
+        d3.selectAll(".params").attr("disabled", null);
+        let fields_num = type_col(layer, "number"),
+            fields_all = type_col(layer),
+            nb_features = user_data[layer].length,
+            field1_selec = d3.select("#PropSymbolTypo_field_1"),
+            field2_selec = d3.select("#PropSymbolTypo_field_2");
+
+        if(fields.length == 0){
+            display_error_num_field();
+            return;
+        }
+
+        fields_num.forEach(function(field){
+            field1_selec.append("option").text(field).attr("value", field);
+        });
+
+        fields_all.forEach(function(field){
+            field2_selec.append("option").text(field).attr("value", field);
+        });
+
+        field1_selec.on("change", function(){
+            let field_name = this.value,
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
+                ref_value_field = document.getElementById("PropSymbolTypo_ref_value");
+
+            ref_value_field.setAttribute("max", max_val_field);
+            ref_value_field.setAttribute("value", max_val_field);
+        });
+        setSelected(field1_selec.node(), fields[0]);
+    },
+
+    unfill: function(){
+        let field1_selec = document.getElementById("PropSymbolTypo_field_1"),
+            field2_selec = document.getElementById("PropSymbolTypo_field_2");
+        for(let i = field1_selec.childElementCount - 1; i >= 0; i--){
+            field1_selec.removeChild(field1_selec.children[i]);
+        }
+        for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
+            field2_selec.removeChild(field2_selec.children[i]);
+        }
+        d3.selectAll(".params").attr("disabled", true);
+    },
+    rendering_params: {}
+};
+
 
 var fields_Test = {
     fill: function(layer){
@@ -3532,4 +3587,123 @@ function make_content_summary(serie, precision=6){
         i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>",
         i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)
     ].join('')
+}
+
+
+function fillMenu_PropSymbolTypo(layer){
+    var rendering_params = fields_PropSymbolTypo.rendering_params,
+        dv2 = section2.append("p").attr("class", "form-rendering");
+
+    dv2.append("img")
+        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
+                class: "help_tooltip", "data-tooltip_help": " "})
+        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+
+    var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field1"))
+                          .insert('select')
+                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
+
+    var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.proptypo.fixed_size"))
+                     .insert('input')
+                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size'})
+                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
+                     .style("width", "50px");
+
+    dv2.append('label-item').html(' px');
+
+    var ref_value = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.on_value"))
+                     .insert('input')
+                     .styles({'width': '100px', "margin-left": "10px"})
+                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value'})
+                     .attrs({min: 0.1, step: 0.1});
+
+    // Other symbols could probably easily be proposed :
+    var symb_selec = dv2.append('p')
+                        .html(i18next.t("app_page.func_options.proptypo.symbol_type"))
+                        .insert('select')
+                        .attr('class', 'params');
+
+    [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
+     [i18next.t("app_page.func_options.common.symbol_square"), "rect"]].forEach( symb => {
+        symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
+    });
+
+    var field2_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field2"))
+                        .insert('select').attrs({class: 'params', id: 'PropSymbolTypo_field_2'})
+                        .on("change", function(){
+                            let field_name = this.value;
+                            if(rendering_params[field_name])
+                                d3.select("#propChoro_yes").attr("disabled", null);
+                            else
+                                d3.select("#propChoro_yes").attr("disabled", true);
+                        });
+
+    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
+                        .insert('input')
+                        .style("width", "200px")
+                        .attr('class', 'params')
+                        .attr("id", "PropSymbolTypo_output_name");
+
+    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
+                        .append('button')
+                        .attr('id', 'propTypo_yes')
+                        .attr('class', 'button_st3')
+                        .attr('disabled', true)
+                        .text(i18next.t("app_page.func_options.common.render"));
+
+    ok_button.on("click", function(){
+        if(!ref_value.node().value) return
+        if(rendering_params[field2_selec.node().value]){
+            let layer = Object.getOwnPropertyNames(user_data)[0],
+                nb_features = user_data[layer].length,
+                rd_params = {},
+                color_field = field2_selec.node().value,
+                new_layer_name = uo_layer_name.node().value;
+
+            new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                            ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsTypo");
+
+            rd_params.field = field1_selec.node().value;
+            rd_params.new_name = new_layer_name;
+            rd_params.nb_features = nb_features;
+            rd_params.ref_layer_name = layer;
+            rd_params.symbol = symb_selec.node().value;
+            rd_params.ref_value = +ref_value.node().value;
+            rd_params.ref_size = +ref_size.node().value;
+            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+
+            let id_map = make_prop_symbols(rd_params),
+                colors_breaks = [];
+
+            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
+                colors_breaks.push([
+                        [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
+                        rendering_params[color_field]['colors'][i-1]
+                    ]);
+            }
+
+            let options_disc = {schema: rendering_params[color_field].schema,
+                                colors: rendering_params[color_field].colors,
+                                no_data: rendering_params[color_field].no_data}
+
+            current_layers[new_layer_name] = {
+                renderer: "PropSymbolsTypo",
+                features_order: id_map,
+                symbol: rd_params.symbol,
+                ref_layer_name: layer,
+                options_disc: options_disc,
+                rendered_field: field1_selec.node().value,
+                rendered_field2: field2_selec.node().value,
+                size: [+ref_value.node().value, +ref_size.node().value],
+                "stroke-width-const": 1,
+                fill_color: { "class": id_map.map(obj => obj[3]) },
+                colors_breaks: colors_breaks,
+                is_result: true,
+                n_features: nb_features
+            };
+            zoom_without_redraw();
+            switch_accordion_section();
+        }
+    });
+    d3.selectAll(".params").attr("disabled", true);
 }

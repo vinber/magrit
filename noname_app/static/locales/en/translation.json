@@ -118,6 +118,7 @@
             "smooth": "Render a smoothed map (using stewart potentials algorythm)",
             "prop": "Display proportional symbols on a numerical field of your data",
             "choroprop": "Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
+            "proptypo": "Display proportional symbols colored according to their belonging to a categorie",
             "choro": "Render a choropleth map on a numerical field of your data with an appropriate discretisation",
             "cartogram": "Render a map using an area-deforming algorythm on a numerical field of your data",
             "grid": "Render a gridded density map on a numerical field of your data",
@@ -131,6 +132,7 @@
             "smooth": "Smoothed map (Stewart potentials)",
             "prop": "Proportionnal symbols",
             "choroprop": "Colored proportionnal symbols",
+            "proptypo": "Colored (by categorie) proportionnal symbols",
             "choro": "Choropleth map",
             "cartogram": "Cartogram map",
             "grid": "Gridded map",
@@ -257,7 +259,9 @@
             "title": "Scale bar options",
             "fixed_size": "Fixed size ",
             "precision": "Precision ",
-            "unit": "Displayed unit "
+            "unit": "Displayed unit ",
+            "intermediate_markers": "Intermediate markers ",
+            "start_end_bar": "Start/end markers "
         },
         "text_box_edit_box": {
             "constructor_default": "Enter your text...",
@@ -384,7 +388,11 @@
             },
             "choroprop": {
                 "title": "<b>Raw and ratio data map - Proportionnal colored symbols</b>",
-                "block": "This kind of representation enables to establish a match between raw and relationship data on a single map. Thus, the user will view a given phenomenon expressed in both raw and relationship data on the same map.<br><br><b><i>Parameters</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
+                "block": "This kind of representation enables to establish a match between raw and relationship data on a single map. Thus, the user will view a given phenomenon expressed in both raw and relationship data on the same map.<br><br><b><i>Parameters</i></b><br>Field 1 (symbol size):</b> Field containing values to use to compute symbols size.<br><b>Fixed size :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
+            },
+            "proptypo" :{
+                "title": "<b>Raw and categorical data map - Proportionnal colored symbols</b>",
+                "block": "This kind of representation enables to establish a match between raw and categorical data on a single map."
             },
             "flow": {
                 "title": "<b>Links map</b>",
@@ -489,6 +497,13 @@
                 "color": "Color ",
                 "content": "Content ",
                 "title_box_indiv": "Label options"
+            },
+            "proptypo": {
+                "field1": "Field 1 (symbol size)",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ...",
+                "symbol_type": "Symbol type",
+                "field2": "Field 2 (symbol color)"
             }
         }
     },

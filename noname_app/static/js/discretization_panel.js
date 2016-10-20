@@ -715,7 +715,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                     }
                     for(let j=0; j < db_data.length; ++j){
                         let value = +db_data[j][field_name];
-                        if(value){
+                        if(value != null){
                             let idx = serie.getClass(+value);
                             colors_map.push(color_array[idx]);
                         } else {

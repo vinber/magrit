@@ -117,7 +117,8 @@
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
             "prop": "Réalisation d'un carte en symboles proportionnels sur un champ numérique du jeu de données",
-            "choroprop": "Réalisation d'une carte en symboles proportionnels colorés selon la méthode choroplèthe",
+            "choroprop": "Réalisation d'une carte en symboles proportionnels colorés selon la méthode choroplèthe appliquée à des ratios",
+            "proptypo": "Réalisation d'une carte en symboles proportionnels colorés selon l'appartenance à un catégorie",
             "choro": "Réalisation d'une carte choroplèthe",
             "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
             "grid": "Réalisation d'une grille de densité",
@@ -130,7 +131,8 @@
         "func_title" : {
             "smooth": "Carte lissée",
             "prop": "Symboles proportionnels",
-            "choroprop": "Symboles proportionnels colorés",
+            "choroprop": "Symboles proportionnels colorés (par un ratio)",
+            "proptypo": "Symboles proportionnels colorés (par une typologie)",
             "choro": "Carte choroplèthe",
             "cartogram": "Cartogram",
             "grid": "Carroyage",
@@ -255,7 +257,9 @@
             "title": "Options de l'échelle",
             "fixed_size": "Taille fixée ",
             "precision": "Précision ",
-            "unit": "Unité de mesure "
+            "unit": "Unité de mesure ",
+            "intermediate_markers": "Nombre de marqueurs intermédiaires ",
+            "start_end_bar": "Délimiteurs de début/fin "
         },
         "text_box_edit_box": {
             "constructor_default": "Saisir du texte...",
@@ -386,6 +390,10 @@
                 "title": "<b>Stock et ratio</b>",
                 "block": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).<br><br><b><i>Paramètres</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
             },
+            "proptypo" :{
+                "title": "<b>Raw and categorical data map - Proportionnal colored symbols</b>",
+                "block": "This kind of representation enables to establish a match between raw and categorical data on a single map."
+            },
             "flow": {
                 "title": "<b>Carte de flux/liens</b>",
                 "block": "Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.<br><br><b><i>Paramètres</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
@@ -492,6 +500,13 @@
                 "color": "Couleur ",
                 "content": "Contenu ",
                 "title_box_indiv": "Option de l'intitulé"
+            },
+            "proptypo": {
+                "field1": "Champ à utiliser (taille du symbole)",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ... ",
+                "symbol_type": "Type de symbole ",
+                "field2": "Champ à utiliser (couleur du symbole)"
             }
         }
     },
