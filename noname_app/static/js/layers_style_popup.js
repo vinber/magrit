@@ -1,7 +1,9 @@
 "use strict";
 
 function handle_click_layer(layer_name){
-    if(current_layers[layer_name].renderer
+    if(layer_name == "Graticule")
+        createStyleBoxGraticule();
+    else if(current_layers[layer_name].renderer
         && (current_layers[layer_name].renderer.indexOf("PropSymbol") > -1
             || current_layers[layer_name].renderer.indexOf("Dorling") > -1))
         createStyleBox_ProbSymbol(layer_name);
@@ -331,6 +333,103 @@ function createStyleBoxLabel(layer_name){
     choice_font.node().value = current_layers[layer_name].default_font;
 }
 
+function createStyleBoxGraticule(layer_name){
+    let current_params = cloneObj(current_layers["Graticule"]);
+    let selection = map.select("#Graticule").selectAll("path");
+    let selection_strokeW = map.select("#Graticule");
+
+    make_confirm_dialog("graticuleStyleBox", layer_name, {top: true})
+        .then(function(confirmed){
+            if(confirmed){ null; } else { null; }
+        });
+
+    let popup = d3.select(".graticuleStyleBox");
+    let color_choice = popup.append("p");
+    color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
+    color_choice.append("input")
+            .attrs({type: "color", value: current_params.fill_color.single})
+            .on("change", function(){
+                selection.style("stroke", this.value);
+                current_layers["Graticule"].fill_color.single = this.value;
+            });
+
+    let opacity_choice = popup.append("p");
+    opacity_choice.append("span").html(i18next.t("app_page.layer_style_popup.opacity"));
+    opacity_choice.append("input")
+            .attrs({type: "range", value: current_params.opacity})
+            .styles({"width": "70px", "vertical-align": "middle"})
+            .on("change", function(){
+                selection.style("stoke-opacity", +this.value);
+                current_layers["Graticule"].opacity = +this.value;
+                popup.select("#graticule_opacity_txt").html(this.value)
+            });
+    opacity_choice.append("span")
+            .attr("id", "graticule_opacity_txt")
+            .html(current_params.opacity);
+
+    let stroke_width_choice = popup.append("p");
+    stroke_width_choice.append("span").html(i18next.t("app_page.layer_style_popup.width"));
+    stroke_width_choice.append("input")
+            .attrs({type: "number", value: current_params["stroke-width-const"]})
+            .style("width", "70px")
+            .on("change", function(){
+                selection_strokeW.style("stroke-width", this.value)
+                current_layers["Graticule"]["stroke-width-const"] = +this.value;
+            });
+
+    let steps_choice = popup.append("p");
+    steps_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_steps"));
+    steps_choice.append("input")
+            .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
+            .styles({"vertical-align": "middle", "width": "70px"})
+            .on("change", function(){
+                let step_val = +this.value,
+                    dasharray_val = +document.getElementById("graticule_dasharray_txt");
+                current_layers["Graticule"].step = step_val;
+                map.select("#Graticule").remove()
+                map.append("g").attrs({id: "Graticule", class: "layer"})
+                               .append("path")
+                               .attr("class", "graticule")
+                               .style("stroke-dasharray", dasharray_val)
+                               .datum(d3.geoGraticule().step([step_val, step_val]))
+                               .attr("clip-path", "url(#clip)")
+                               .attr("d", path)
+                               .style("fill", "none")
+                               .style("stroke", "grey");
+                zoom_without_redraw();
+                selection = map.select("#Graticule").selectAll("path");
+                selection_strokeW = map.select("#Graticule");
+                popup.select("#graticule_step_txt").attr("value", step_val);
+            });
+    steps_choice.append("input")
+            .attrs({type: "number", value: current_params.step, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_step_txt"})
+            .styles({width: "30px", "margin-left": "10px"})
+            .on("change", function(){
+                let grat_range = document.getElementById("graticule_range_steps");
+                grat_range.value = +this.value;
+                grat_range.dispatchEvent(new MouseEvent("change"));
+            });
+
+    let dasharray_choice = popup.append("p");
+    dasharray_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_dasharray"));
+    dasharray_choice.append("input")
+            .attrs({type: "range", value: current_params.step, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
+            .style("width", "70px")
+            .on("change", function(){
+                selection.style("stroke-dasharray", this.value);
+                current_layers["Graticule"].dasharray = +this.value;
+                popup.select("#graticule_dasharray_txt").attr("value", this.value);
+            });
+    dasharray_choice.append("input")
+            .attrs({type: "number", value: current_params.step, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_dasharray_txt"})
+            .styles({width: "30px", "margin-left": "10px"})
+            .on("change", function(){
+                let grat_range = document.getElementById("graticule_range_dasharray");
+                grat_range.value = +this.value;
+                grat_range.dispatchEvent(new MouseEvent("change"));
+            });
+}
+
 function createStyleBox(layer_name){
     var type = current_layers[layer_name].type,
         rendering_params = null,
@@ -457,7 +556,7 @@ function createStyleBox(layer_name){
             }
     });
 
-     var popup = d3.select(".styleBox");
+    var popup = d3.select(".styleBox");
 
     if(type === "Point" && !renderer){
         var current_pt_size = current_layers[layer_name].pointRadius;

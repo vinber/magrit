@@ -68,7 +68,15 @@ function setUpInterface()
     let bg = document.createElement('div');
     bg.id = 'overlay';
     bg.style.display = "none";
-    bg.innerHTML = '<p style="color: white; z-index: 2;text-align:center;margin-top:185px;">' + i18next.t('app_page.common.loading_results') + ' ...</p><div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>'
+    bg.style.textAlign = "center";
+    bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
+                   '<span style="color: white; z-index: 2;">...<br></span>' +
+                   '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
+                   '<div class="line"></div><div class="line"></div></div></div>';
+    let btn = document.createElement("button");
+    btn.className = "button_st3 i18n"
+    btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
+    bg.appendChild(btn)
     document.body.appendChild(bg);
 
     let bg_drop = document.createElement('div');
@@ -786,20 +794,24 @@ function make_eye_button(state){
     if(state == "open"){
         let eye_open = document.createElement("img");
         eye_open.setAttribute("src", "/static/img/b/eye_open.svg");
-        eye_open.setAttribute("class", "active_button")
+        eye_open.setAttribute("class", "active_button i18n")
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
         eye_open.setAttribute("height", 17);
         eye_open.setAttribute("alt", "Visible");
+        eye_open.setAttribute("data-i18n", "[title]app_page.common.eye_open");
+        eye_open.setAttribute("title", i18next.t("app_page.common.eye_open"));
         return eye_open;
     } else if (state == "closed"){
         let eye_closed = document.createElement("img");
         eye_closed.setAttribute("src", "/static/img/b/eye_closed.svg");
-        eye_closed.setAttribute("class", "active_button");
+        eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
         eye_closed.setAttribute("height", 17);
         eye_closed.setAttribute("alt", "Not visible");
+        eye_closed.setAttribute("data-i18n", "[title]app_page.common.eye_closed");
+        eye_closed.setAttribute("title", i18next.t("app_page.common.eye_closed"));
         return eye_closed;
     }
 }
@@ -942,10 +954,10 @@ var defs = map.append("defs");
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
-const button_style = ' <img src="/static/img/High-contrast-edit-clear.png" class="style_button" width="17" height="17" alt="submit"/>',
-    button_trash = ' <img src="/static/img/Trash_font_awesome.png" id="trash_button" width="17" height="17" alt="submit"/>',
-    button_legend = ' <img src="/static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="submit"/>',
-    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="17" height="17" alt="submit"/></button>',
+const button_style = ' <img src="/static/img/High-contrast-edit-clear.png" class="style_button i18n" width="17" height="17" data-i18n="[title]app_page.common.style_layer" alt="submit"/>',
+    button_trash = ' <img src="/static/img/Trash_font_awesome.png" id="trash_button" class="i18n" width="17" height="17" alt="submit" data-i18n="[title]app_page.common.trash"/>',
+    button_legend = ' <img src="/static/img/qgis_legend.png" id="legend_button" class="i18n" width="17" height="17" alt="submit" data-i18n="[title]app_page.common.legend"/>',
+    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png" class="i18n" id="zoom_fit_button" width="17" height="17" alt="submit" data-i18n="[title]app_page.common.zoom_fit"/></button>',
     button_type = new Map([
         ["Point", '<img src="/static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'],
         ["Line", '<img src="/static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'],

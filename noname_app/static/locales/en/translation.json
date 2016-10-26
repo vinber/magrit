@@ -56,7 +56,13 @@
             "down_element": "Down element",
             "hide": "Hide",
             "smaller": "smaller",
-            "larger": "larger"
+            "larger": "larger",
+            "style_layer": "Layer style",
+            "trash": "Delete layer",
+            "zoom_fit": "Zoom on layer",
+            "legend": "Legend",
+            "eye_open": "Toogle layer visibility",
+            "eye_closed": "Toogle layer visibility"
         },
         "section1": {
             "title": "Add your data",
@@ -344,7 +350,9 @@
             "field_symbol_size": "Field used for <strong>proportionals values</strong> : <i>{{ field }}</i><br><br>",
             "symbol_fixed_size": "Symbol fixed size ",
             "on_value": "on value ...",
-            "point_radius": "Point radius<br>"
+            "point_radius": "Point radius<br>",
+            "graticule_steps": "Step size between lines",
+            "graticule_dasharray": "Length of dashes"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

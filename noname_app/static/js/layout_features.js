@@ -454,13 +454,14 @@ var scaleBar = {
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");
-        scale_gp.insert("text")
-            .attrs({x: x_pos - 4, y: y_pos - 5})
-            .style("font", "11px 'Enriqueta', arial, serif")
-            .text("0");
+//        scale_gp.insert("text")
+//            .attrs({x: x_pos - 4, y: y_pos - 5})
+//            .style("font", "11px 'Enriqueta', arial, serif")
+//            .text("0");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
             .attrs({x: x_pos + bar_size, y: y_pos - 5})
-            .style("font", "11px 'Enriqueta', arial, serif")
+            .styles({"font": "11px 'Enriqueta', arial, serif",
+                     "text-anchor": "middle"})
             .text(this.dist_txt + " km");
 
         scale_gp.call(drag_lgd_features);
@@ -505,7 +506,7 @@ var scaleBar = {
         this.Scale.select("#rect_scale")
                   .attr("width", new_size);
         this.Scale.select("#text_limit_sup_scale")
-                  .attr("x", this.x + new_size);
+                  .attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
         this.changeText();
@@ -526,25 +527,25 @@ var scaleBar = {
         this.Scale = null;
         this.displayed = false;
     },
-    update_interm_markers: function(){
-        this.Scale.selectAll(".interm_marker").remove();
-        if(this.nb_intermediate_markers == 0)
-            return;
-        else {
-            let k = +this.nb_intermediate_markers + 1;
-            let dist_b = +this.bar_size / k;
-            let markers_pos = [];
-            for(let i =1; i < this.nb_intermediate_markers + 1; i++){
-                markers_pos.push(this.x + dist_b * i);
-                this.Scale.insert("rect")
-                            .attr("class", "interm_marker")
-                            .attr("x", this.x + dist_b * i - 0.5)
-                            .attr("y", this.y - 4)
-                            .attr("width", "1px")
-                            .attr("height", "4px")
-            }
-        }
-    },
+//    update_interm_markers: function(){
+//        this.Scale.selectAll(".interm_marker").remove();
+//        if(this.nb_intermediate_markers == 0)
+//            return;
+//        else {
+//            let k = +this.nb_intermediate_markers + 1;
+//            let dist_b = +this.bar_size / k;
+//            let markers_pos = [];
+//            for(let i =1; i < this.nb_intermediate_markers + 1; i++){
+//                markers_pos.push(this.x + dist_b * i);
+//                this.Scale.insert("rect")
+//                            .attr("class", "interm_marker")
+//                            .attr("x", this.x + dist_b * i - 0.5)
+//                            .attr("y", this.y - 4)
+//                            .attr("width", "1px")
+//                            .attr("height", "4px")
+//            }
+//        }
+//    },
     handle_start_end_bar: function(){
         this.Scale.selectAll(".se_bar").remove();
         if(this.start_end_bar){
@@ -626,16 +627,16 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        let d = box_body.append("p");
-        d.append("span")
-                .html(i18next.t("app_page.scale_bar_edit_box.intermediate_markers"));
-        d.append("input")
-                .attrs({type: "number", min: 0, max: 10, step: 1, value: self.nb_intermediate_markers})
-                .style("width", "60px")
-                .on("change", function(){
-                    self.nb_intermediate_markers = +this.value;
-                    self.update_interm_markers();
-        });
+//        let d = box_body.append("p");
+//        d.append("span")
+//                .html(i18next.t("app_page.scale_bar_edit_box.intermediate_markers"));
+//        d.append("input")
+//                .attrs({type: "number", min: 0, max: 10, step: 1, value: self.nb_intermediate_markers})
+//                .style("width", "60px")
+//                .on("change", function(){
+//                    self.nb_intermediate_markers = +this.value;
+//                    self.update_interm_markers();
+//        });
 
         let e = box_body.append("p");
         e.append("span")

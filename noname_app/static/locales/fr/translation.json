@@ -56,7 +56,13 @@
             "down_element": "Vers le bas",
             "hide": "Masquer",
             "smaller": "plus petit",
-            "larger": "plus grand"
+            "larger": "plus grand",
+            "style_layer": "Style de la couche",
+            "trash": "Supprimer la couche",
+            "zoom_fit": "Zoomer sur la couche",
+            "legend": "Légende",
+            "eye_open": "Déactiver la couche",
+            "eye_closed": "Activer la couche"
         },
         "section1": {
             "title": "Ajout de données",
@@ -341,7 +347,9 @@
             "field_symbol_size": "Champ utilisé pour les <strong>valeurs proportionnelles</strong> : <i>{{ field }}</i><br><br>",
             "symbol_fixed_size": "Taille du symbole fixée ",
             "on_value": "sur la valeur ...",
-            "point_radius": "Taille du point<br>"
+            "point_radius": "Taille du point<br>",
+            "graticule_steps": "Espacemment entre les lignes",
+            "graticule_dasharray": "Taille des tirets"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",
