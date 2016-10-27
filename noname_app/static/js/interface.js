@@ -141,6 +141,117 @@ function handle_upload_files(files, target_layer_on_add, elem){
     }
 }
 
+function handleOneByOneShp(files, target_layer_on_add){
+    function populate_shp_slot(slots, file){
+        if(file.name.indexOf(".shp") > -1){
+            slots.set(".shp", file)
+            document.getElementById("f_shp").className = "mini_button_ok";
+        } else if (file.name.indexOf(".shx") > -1){
+            slots.set(".shx", file)
+            document.getElementById("f_shx").className = "mini_button_ok";
+        } else if (file.name.indexOf(".prj") > -1){
+            slots.set(".prj", file)
+            document.getElementById("f_prj").className = "mini_button_ok";
+        } else if (file.name.indexOf(".dbf") > -1){
+            slots.set(".dbf", file)
+            document.getElementById("f_dbf").className = "mini_button_ok";
+        } else
+            return false
+    }
+
+    swal({
+        title: "",
+        html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
+              '<strong>Shapefile detected - Missing files to upload</strong><br>' +
+              '<p><i>Drop missing files in this area</i></p><br>' +
+              '<image id="img_drop" src="/static/img/Ic_file_download_48px.svg"><br>' +
+              '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' +
+              '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
+        type: "info",
+        showCancelButton: true,
+        showCloseButton: false,
+        allowEscapeKey: true,
+        allowOutsideClick: false,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: i18next.t("app_page.common.confirm"),
+        preConfirm: function() {
+            return new Promise(function(resolve, reject) {
+                setTimeout(function() {
+                    if (shp_slots.size < 4) {
+                        reject('Missing files')
+                    } else {
+                        resolve()
+                    }
+                }, 50)
+            })
+        }
+      }).then( value => {
+            if(target_layer_on_add){
+                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+                handle_shapefile(file_list, target_layer_on_add);
+            } else {
+                swal({
+                    title: "",
+                    text: "Select layer type",
+                    type: "info",
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    allowEscapeKey: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.confirm"),
+                    input: 'select',
+                    inputPlaceholder: 'Select the type of layer',
+                    inputOptions: {
+                        'target': 'Target layer',
+                        'layout': 'Layout layer',
+                      },
+                    inputValidator: function(value) {
+                        return new Promise(function(resolve, reject){
+                            if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                                reject("No value selected");
+                            } else {
+                                resolve();
+                                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+                                handle_shapefile(file_list, value === "target");
+                            }
+                        })
+                    }
+                  }).then( value => {
+                        overlay_drop.style.display = "none";
+                    }, dismiss => {
+                        overlay_drop.style.display = "none";
+                        console.log(dismiss);
+                    });
+            }
+        }, dismiss => {
+            overlay_drop.style.display = "none";
+            console.log(dismiss);
+        });
+    let shp_slots = new Map();
+    populate_shp_slot(shp_slots, files[0]);
+    document.getElementById("dv_drop_shp").addEventListener("drop", function(event){
+        console.log("file dropped")
+        event.preventDefault(); event.stopPropagation();
+        let next_files = event.dataTransfer.files;
+        for(let f_ix=0; f_ix < next_files.length; f_ix++){
+            let file = next_files[f_ix];
+            populate_shp_slot(shp_slots, file);
+        }
+        if(shp_slots.size == 4){
+            document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
+        }
+    })
+    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
+        this.style.border = "dashed 2.5px green";
+        event.preventDefault(); event.stopPropagation();
+    });
+    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
+        this.style.border = "dashed 1px green";
+        event.preventDefault(); event.stopPropagation();
+    });
+}
+
 /**
 * Function called to bind the "drop zone" on the 2 desired menu elements
 *
@@ -180,23 +291,6 @@ function prepare_drop_section(){
             });
 
             elem.addEventListener("drop", function _drop_func(e){
-
-                function populate_shp_slot(slots, file){
-                    if(file.name.indexOf(".shp") > -1){
-                        slots.set(".shp", file)
-                        document.getElementById("f_shp").className = "mini_button_ok";
-                    } else if (file.name.indexOf(".shx") > -1){
-                        slots.set(".shx", file)
-                        document.getElementById("f_shx").className = "mini_button_ok";
-                    } else if (file.name.indexOf(".prj") > -1){
-                        slots.set(".prj", file)
-                        document.getElementById("f_prj").className = "mini_button_ok";
-                    } else if (file.name.indexOf(".dbf") > -1){
-                        slots.set(".dbf", file)
-                        document.getElementById("f_dbf").className = "mini_button_ok";
-                    } else
-                        return false
-                }
                 if(timeout){
                     clearTimeout(timeout);
                 }
@@ -213,94 +307,7 @@ function prepare_drop_section(){
                     Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), _elem => {
                         _elem.removeEventListener('drop', _drop_func);
                     });
-                    swal({
-                        title: "",
-                        html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
-                              '<strong>Shapefile detected - Missing files to upload</strong><br>' +
-                              '<p><i>Drop missing files in this area</i></p><br>' +
-                              '<image id="img_drop" src="/static/img/Ic_file_download_48px.svg"><br>' +
-                              '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' +
-                              '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
-                        type: "info",
-                        showCancelButton: true,
-                        showCloseButton: false,
-                        allowEscapeKey: true,
-                        allowOutsideClick: false,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: i18next.t("app_page.common.confirm"),
-                        preConfirm: function() {
-                            return new Promise(function(resolve, reject) {
-                                setTimeout(function() {
-                                    if (shp_slots.size < 4) {
-                                        reject('Missing files')
-                                    } else {
-                                        resolve()
-                                    }
-                                }, 50)
-                            })
-                        }
-                      }).then( value => {
-                            console.log(value);
-                            swal({
-                                title: "",
-                                text: "Select layer type",
-                                type: "info",
-                                showCancelButton: true,
-                                showCloseButton: false,
-                                allowEscapeKey: true,
-                                allowOutsideClick: false,
-                                confirmButtonColor: "#DD6B55",
-                                confirmButtonText: i18next.t("app_page.common.confirm"),
-                                input: 'select',
-                                inputPlaceholder: 'Select the type of layer',
-                                inputOptions: {
-                                    'target': 'Target layer',
-                                    'layout': 'Layout layer',
-                                  },
-                                inputValidator: function(value) {
-                                    return new Promise(function(resolve, reject){
-                                        if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                            reject("No value selected");
-                                        } else {
-                                            resolve();
-                                            let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                                            handle_shapefile(file_list, value === "target");
-                                        }
-                                    })
-                                }
-                              }).then( value => {
-                                    overlay_drop.style.display = "none";
-                                    console.log(value);
-                                }, dismiss => {
-                                    overlay_drop.style.display = "none";
-                                    console.log(dismiss);
-                                });
-                        }, dismiss => {
-                            overlay_drop.style.display = "none";
-                            console.log(dismiss);
-                        });
-                    let shp_slots = new Map();
-                    populate_shp_slot(shp_slots, files[0]);
-                    document.getElementById("dv_drop_shp").addEventListener("drop", function(event){
-                        console.log("file dropped")
-                        event.preventDefault(); event.stopPropagation();
-                        let next_files = event.dataTransfer.files;
-                        for(let f_ix=0; f_ix < next_files.length; f_ix++){
-                            let file = next_files[f_ix];
-                            populate_shp_slot(shp_slots, file);
-                        }
-                        if(shp_slots.size == 4){
-                            document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
-                        }
-                    })
-                    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
-                        this.style.border = "dashed 2.5px green";
-                        event.preventDefault(); event.stopPropagation();
-                    });
-                    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
-                        this.style.border = "dashed 1px green";
-                        event.preventDefault(); event.stopPropagation();
-                    });
+                    handleOneByOneShp(files);
                 } else {
                     swal({
                         title: "",
@@ -362,7 +369,15 @@ function prepare_drop_section(){
                 e.stopPropagation();
                 let files = e.dataTransfer.files,
                     target_layer_on_add = elem.id === "section1" ? true : false;
-                handle_upload_files(files, target_layer_on_add, elem);
+                if(files.length == 1
+                        && (files[0].name.indexOf(".shp") > -1
+                           || files[0].name.indexOf(".shx") > -1
+                           || files[0].name.indexOf(".dbf") > -1
+                           || files[0].name.indexOf(".prj") > -1)){
+                    handleOneByOneShp(files, target_layer_on_add);
+                } else {
+                    handle_upload_files(files, target_layer_on_add, elem);
+                }
             }, true);
     });
 

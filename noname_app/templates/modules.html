@@ -6,43 +6,43 @@
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> {{ app_name }} </title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link href="/static/css/discretization.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
-    <link href="/static/css/style-fonts.css" rel="stylesheet"  type="text/css">
-    <link href="/static/css/style.css" rel="stylesheet"  type="text/css">
-    <link href="/static/css/datatables.min.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/context-menu.css" rel="stylesheet" type="text/css">
-    <link href="/static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <script  src="/static/js/lib/d3.v4.min.js"></script>
-    <script  src="/static/js/lib/d3-geo-projection.v1.min.js"></script>
-    <script  src="/static/js/lib/d3-selection-multi.v1.min.js"></script>
-    <script  src="/static/js/lib/topojson.v1.min.js"></script>
-    <script  src="/static/js/lib/jquery-2.2.1.min.js"></script>
-    <script  src="/static/js/lib/jquery-ui.min.js"></script>
-    <script  src="/static/js/lib/geostats.min.js"></script>
-    <script  src="/static/js/lib/colorbrewer.v1.min.js"></script>
+    <link href="static/css/discretization.css" rel="stylesheet" type="text/css">
+    <link href="static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
+    <link href="static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
+    <link href="static/css/style-fonts.css" rel="stylesheet"  type="text/css">
+    <link href="static/css/style.css" rel="stylesheet"  type="text/css">
+    <link href="static/css/datatables.min.css" rel="stylesheet" type="text/css">
+    <link href="static/css/context-menu.css" rel="stylesheet" type="text/css">
+    <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <script  src="static/js/lib/d3.v4.min.js"></script>
+    <script  src="static/js/lib/d3-geo-projection.v1.min.js"></script>
+    <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script>
+    <script  src="static/js/lib/topojson.v1.min.js"></script>
+    <script  src="static/js/lib/jquery-2.2.1.min.js"></script>
+    <script  src="static/js/lib/jquery-ui.min.js"></script>
+    <script  src="static/js/lib/geostats.min.js"></script>
+    <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
-    <script  src="/static/js/lib/q.min.js"></script>
-    <script  src="/static/js/lib/i18next.min.js"></script>
-    <script  src="/static/js/lib/loc-i18next.min.js"></script>
-    <script  src="/static/js/lib/i18nextXHRBackend.min.js"></script>
-    <script  src="/static/js/lib/jquery.qtip.min.js"></script>
-    <script  src="/static/js/lib/sweetalert2.min.js"></script>
-    <script  src="/static/js/lib/datatables.min.js"></script>
+    <script  src="static/js/lib/q.min.js"></script>
+    <script  src="static/js/lib/i18next.min.js"></script>
+    <script  src="static/js/lib/loc-i18next.min.js"></script>
+    <script  src="static/js/lib/i18nextXHRBackend.min.js"></script>
+    <script  src="static/js/lib/jquery.qtip.min.js"></script>
+    <script  src="static/js/lib/sweetalert2.min.js"></script>
+    <script  src="static/js/lib/datatables.min.js"></script>
     <!-- <script  src="/static/js/app.min.js"></script> -->
 
-    <script  src="/static/js/context-menu.js"></script>
-    <script  src="/static/js/layout_features.js"></script>
-    <script  src="/static/js/interface.js"></script>
-    <script  src="/static/js/map_project.js"></script>
-    <script  src="/static/js/discrtiz_links_discont.js"></script>
-    <script  src="/static/js/layers_style_popup.js"></script>
-    <script  src="/static/js/discretization_panel.js"></script>
-    <script  src="/static/js/function.js"></script>
-    <script  src="/static/js/legend.js"></script>
-    <script  src="/static/js/join_popup.js"></script>
-    <script  src="/static/js/colors_helpers.js"></script>
+    <script  src="static/js/context-menu.js"></script>
+    <script  src="static/js/layout_features.js"></script>
+    <script  src="static/js/interface.js"></script>
+    <script  src="static/js/map_project.js"></script>
+    <script  src="static/js/discrtiz_links_discont.js"></script>
+    <script  src="static/js/layers_style_popup.js"></script>
+    <script  src="static/js/discretization_panel.js"></script>
+    <script  src="static/js/function.js"></script>
+    <script  src="static/js/legend.js"></script>
+    <script  src="static/js/join_popup.js"></script>
+    <script  src="static/js/colors_helpers.js"></script>
 
   </head>
   <body>
@@ -1837,6 +1837,50 @@ function export_compo_svg(){
 }
 
 function export_compo_png(){
+    swal({
+      title: 'Export type',
+      text: "Select export target type :",
+      input: "select",
+      inputOptions: { 'web': 'web', 'papier': 'papier' },
+      type: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Next',
+      cancelButtonText: 'Cancel!',
+      allowOutsideClick: false,
+      allowEscapeKey: true
+    }).then( value => {
+        if(value === "web"){
+            _export_compo_png("web");
+        } else {
+            swal({
+              title: 'Resolution',
+              text: "Select export format",
+              input: "select",
+              inputOptions: { 'A2': 'A2', 'A3': 'A3', 'A4': 'A4', 'A5': 'A5', 'A6': 'A6' },
+              type: 'info',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Next',
+              cancelButtonText: 'Cancel!',
+              allowOutsideClick: false,
+              allowEscapeKey: true
+            }).then( value => {
+                let big_side = Math.max(h,w);
+                // "Hi-res" exports ...?
+                let wanted_pix = {   
+                    'A2': 59.4, 'A3': 42, 'A4': 29.7, 'A5': 210, 'A6': 148
+                    }[value] * 118.11 
+                _export_compo_png("paper", (wanted_pix / big_side));
+              }, dismiss => { null; });
+        }
+    }, dismiss => { null; });
+
+}
+
+function _export_compo_png(type="web", scalefactor){
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
@@ -1845,12 +1889,14 @@ function export_compo_png(){
         mime_type = "image/png",
         img = new Image();
 
+    if(type !== "web")
+        changeResolution(targetCanvas, scalefactor);
+
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         var imgUrl = targetCanvas.toDataURL(mime_type),
             dl_link = document.createElement("a");
-
         dl_link.download = "export.png";
         dl_link.href = imgUrl;
         dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
@@ -1998,6 +2044,23 @@ function make_export_layer_box(){
                 });
                 dialogBox.dialog("destroy").remove();
             });
+}
+
+/*
+* Straight from http://stackoverflow.com/a/26047748/5050917 
+*
+*/
+function changeResolution(canvas, scaleFactor) {
+    // Set up CSS size if it's not set up already
+    if (!canvas.style.width)
+        canvas.style.width = canvas.width + 'px';
+    if (!canvas.style.height)
+        canvas.style.height = canvas.height + 'px';
+
+    canvas.width = Math.ceil(canvas.width * scaleFactor);
+    canvas.height = Math.ceil(canvas.height * scaleFactor);
+    var ctx = canvas.getContext('2d');
+    ctx.scale(scaleFactor, scaleFactor);
 }
 
 // Only ask for confirmation before leaving page if things have been done

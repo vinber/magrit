@@ -314,7 +314,7 @@ function get_distance(pt1, pt2){
 */
 function make_underlying_rect(legend_root, under_rect, fill){
     under_rect.attrs({"width": 0, height: 0});
-    console.log(legend_root)
+//    console.log(legend_root)
     let bbox_legend = legend_root.node().getBoundingClientRect(),
         translate = legend_root.attr("transform"),
         map_xy0 = get_map_xy0();
