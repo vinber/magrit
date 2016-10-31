@@ -767,7 +767,7 @@ function createlegendEditBox(legend_id, layer_name){
             max_nb_decimals = max_fast(nb_dec);
             max_nb_left = min_fast(nb_left);
         }
-
+        max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
         if(max_nb_decimals > 0){
             if(legend_node.getAttribute("rounding_precision"))
                 current_nb_dec = legend_node.getAttribute("rounding_precision");

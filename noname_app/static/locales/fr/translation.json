@@ -2,6 +2,7 @@
     "app_page": {
         "common": {
             "loading_results": "Chargement en cours",
+            "long_computation": "(le calcul peut nécessiter quelques secondes/minutes)",
             "save_preferences": "Sauvegarder le projet",
             "load_preferences": "Charger un projet",
             "too_large_input": "Fichier d'entrée trop volumineux (8Mo maximum)",
@@ -10,7 +11,7 @@
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
-            "error_message": "Une erreur s'est produite : {{msg}}",
+            "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
             "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
             "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
@@ -20,6 +21,8 @@
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
             "error_numerical_fields": "La couche cible ne semble pas contenir de champs numériques (ou ces derniers contiennent trop de valeurs nulles)",
             "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
+            "error_too_low_resolution": "La résolution demandée est trop faible.",
+            "error_too_high_resolution": "La résolution demandée est trop importante.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent etre ajoutées une par une. Seule la 1ère va etre ajoutée",
             "target_layer": "Couche cible",
@@ -62,7 +65,9 @@
             "zoom_fit": "Zoomer sur la couche",
             "legend": "Légende",
             "eye_open": "Déactiver la couche",
-            "eye_closed": "Activer la couche"
+            "eye_closed": "Activer la couche",
+            "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
+            "details": "Détails"
         },
         "section1": {
             "title": "Ajout de données",
@@ -97,6 +102,23 @@
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte",
             "layout_features": "Ajout d'éléments d'habillage "
+        },
+        "section5b": {
+            "title": "Options de l'export",
+            "type": "Type",
+            "filename": "Nom du fichier",
+            "format": "Format de sortie",
+            "height": "Hauteur",
+            "width": "Largeur",
+            "user_defined": "Personnalisé",
+            "A4_landscape": "A4 paysage",
+            "A4_portrait": "A4 portrait",
+            "A3_landscape": "A3 paysage",
+            "A3_portrait": "A3 portrait",
+            "A5_landscape": "A5 paysage",
+            "A5_portrait": "A5 portrait",
+            "export_button": "Exporter",
+            "next": "Paramètres..."
         },
         "section5": {
             "title": "Options de projection",

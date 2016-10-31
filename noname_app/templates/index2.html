@@ -99,7 +99,7 @@
                 <div class="box-wrap clearfix"></div>
                 <p style="col-md-12">
                     <a class="btn btn-success enter_button i18n" style="margin: 5px;" data-i18n="[html]index.buttons.enter"></a>
-                    <a href="/modules?resume" id="resume_btn" class="btn btn-success i18n" disabled style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
+                    <a id="resume_btn" class="btn btn-success i18n" disabled style="margin: 5px;" data-i18n="[html]index.buttons.resume"></a>
                 </p>
             </div>
         </div>
@@ -387,14 +387,18 @@ function bind_enter_buttons(){
         if(!docCookies.getItem("cookie_law_validated")){
             docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
         }
-        window.location = "/modules";
+        window.location = "/modules?lang=" + i18next.language;
     };
     let elems = document.querySelectorAll(".enter_button");
     for(let i=0; i < elems.length; i++){
         elems[i].onclick = enter;
     }
     if(window.localStorage.getItem("noname_map_project")){
-        document.getElementById("resume_btn").removeAttribute("disabled");
+        let resume_btn = document.getElementById("resume_btn");
+        resume_btn.removeAttribute("disabled");
+        resume_btn.onclick = function(){
+                 window.location = "/modules?resume?lang=" + i18next.language;
+            }
     }
 }
 

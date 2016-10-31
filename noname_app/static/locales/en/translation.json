@@ -2,6 +2,7 @@
     "app_page": {
         "common": {
             "loading_results": "Loading results",
+            "long_computation": "(might require few seconds/minutes)",
             "save_preferences": "Save your preferences",
             "load_preferences": "Load a preference JSON",
             "too_large_input": "Too large input file (should currently be under 8Mb)",
@@ -10,7 +11,7 @@
             "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)",
             "layer_success": "Layer successfully added to the map",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
-            "error_message": "Something went wrong : {{msg}}",
+            "error_message": "Something wrong happened - Current operation has been aborted.",
             "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",
             "error_only_layout": "Only layout layers can be added here",
             "error_only_one": "Only one layer can be added by this functionnality",
@@ -20,6 +21,8 @@
             "error_no_visible": "Error : no visible layer found",
             "error_numerical_fields": "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
+            "error_too_low_resolution": "Too low resolution selected.",
+            "error_too_high_resolution": "Too high resolution selected.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
             "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
             "target_layer": "Target layer",
@@ -62,7 +65,9 @@
             "zoom_fit": "Zoom on layer",
             "legend": "Legend",
             "eye_open": "Toogle layer visibility",
-            "eye_closed": "Toogle layer visibility"
+            "eye_closed": "Toogle layer visibility",
+            "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
+            "details": "Details"
         },
         "section1": {
             "title": "Add your data",
@@ -97,6 +102,23 @@
             "background_color": "Background color ",
             "canvas_rotation": "Canvas rotation ",
             "layout_features": "Add layout features... "
+        },
+        "section5b": {
+            "title": "Export options",
+            "type": "Type",
+            "filename": "Filename",
+            "format": "Outut size",
+            "height": "Height",
+            "width": "Width",
+            "user_defined": "User defined",
+            "A4_landscape": "A4 landscape",
+            "A4_portrait": "A4 portrait",
+            "A3_landscape": "A3 landscape",
+            "A3_portrait": "A3 portrait",
+            "A5_landscape": "A5 landscape",
+            "A5_portrait": "A5 portrait",
+            "export_button": "Export",
+            "next": "Next..."
         },
         "section5": {
             "title": "Projection options",

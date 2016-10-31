@@ -63,7 +63,7 @@
 * as they are gonna be frequently used
 *
 */
-function setUpInterface()
+function setUpInterface(resume_project)
 {
     let bg = document.createElement('div');
     bg.id = 'overlay';
@@ -71,6 +71,7 @@ function setUpInterface()
     bg.style.textAlign = "center";
     bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
                    '<span style="color: white; z-index: 2;">...<br></span>' +
+                   '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
                    '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
                    '<div class="line"></div><div class="line"></div></div></div>';
     let btn = document.createElement("button");
@@ -102,7 +103,8 @@ function setUpInterface()
         accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
         accordion3 = menu.append("div").attr("id","accordion3").attr("class", "accordion"),
         accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
-        accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion");
+        accordion5 = menu.append("div").attr("id","accordion5").attr("class", "accordion"),
+        accordion5b = menu.append("div").attr("id","accordion5b").attr("class", "accordion");
 
     accordion1.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section1.title");
     accordion2_pre.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section2_pre.title");
@@ -110,6 +112,7 @@ function setUpInterface()
     accordion3.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section3.title");
     accordion4.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section4.title");
     accordion5.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section5.title");
+    accordion5b.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section5b.title");
 
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
@@ -122,6 +125,7 @@ function setUpInterface()
         .attrs({id: "section3", class: "i18n", "data-i18n": "[data-tooltip]app_page.tooltips.section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
+    accordion5b.append("div").attr("id","section5b");
 
     let dv1 = section1.append("div"),
         dv11 = dv1.append("div").style("width", "auto");
@@ -503,15 +507,7 @@ function setUpInterface()
             available_projections.set(d.name, d.projection);
             p.append("option").text(d.name).attr("value", d.projection);
            });
-        if(window.location.search && window.location.search.indexOf("resume") > -1){
-            let old_url = "modules?resume",
-                new_url = "modules";
-            // First avoid to let the "?resume" part in the url:
-            if (typeof (history.pushState) != "undefined") {
-                var obj = {Page: old_url, Url: new_url};
-                history.pushState(obj, obj.Page, obj.Url);
-            }
-
+        if(resume_project){
             // Fetch the last snapchot in localStorage :
             var json_params = window.localStorage.getItem("noname_map_project");
 
@@ -525,6 +521,243 @@ function setUpInterface()
             window.localStorage.removeItem("noname_app_project");
         }
     });
+
+    let section5b = d3.select("#section5b");
+    let dv5b = section5b.append("div")
+                .attr("class", "form-item");
+
+    let type_export = dv5b.append("p");
+    type_export.append("span").attr("class", "i18n")
+            .attr("data-i18n", "[html]app_page.section5b.type");
+    let select_type_export = type_export.append("select")
+            .attr("id", "select_export_type")
+            .styles({"margin": "0px 0px 0px 3px"})
+            .on("change", function(){
+                let type = this.value;
+                if(type === "svg"){
+                    document.getElementById("export_options_png").style.display = "none";
+                    //document.getElementById("export_options_geo").style.display = "none";
+                    let export_filename = document.getElementById("export_filename");
+                    export_filename.value = "export.svg";
+                    export_filename.style.display = "";
+                    export_filename.previousSibling.style.display = "";
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
+                } else if (type === "png"){
+                    document.getElementById("export_options_png").style.display = "";
+                    //document.getElementById("export_options_geo").style.display = "none";
+                    let export_filename = document.getElementById("export_filename");
+                    export_filename.value = "export.png";
+                    export_filename.style.display = "";
+                    export_filename.previousSibling.style.display = "";
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
+                } else if (type === "geo"){
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
+                    document.getElementById("export_options_png").style.display = "none";
+                    let export_filename = document.getElementById("export_filename");
+                    export_filename.style.display = "none";
+                    export_filename.previousSibling.style.display = "none";
+                    /*
+                    document.getElementById("export_options_geo").style.display = "";
+                    document.getElementById("export_options_png").style.display = "none";
+                    document.getElementById("export_filename").value = "export";
+                    unfillSelectInput(selec_layer.node());
+                    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+                        if(sample_no_values.has(name))
+                            return 0;
+                        else if(current_layers[name].renderer
+                                && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+                                    || current_layers[name].renderer.indexOf("Dorling") > -1))
+                            return 0;
+                        return 1;
+                    });
+
+                    layer_names.forEach( name => {
+                        selec_layer.append("option").attr("value", name).text(name);
+                    });
+                    */
+                }
+            });
+    select_type_export.append("option").text("Svg").attr("value", "svg");
+    select_type_export.append("option").text("Png").attr("value", "png");
+    select_type_export.append("option").text("Geo").attr("value", "geo");
+
+    let export_png_options = dv5b.append("p")
+                                .attr("id", "export_options_png")
+                                .style("display", "none");
+    export_png_options.append("span")
+            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.format"});
+
+    let select_size_png = export_png_options.append("select").attr("id", "select_png_format");
+    select_size_png.append("option").text("Web").attr("value", "web");
+    select_size_png.append("option").attrs({value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined"});
+    select_size_png.append("option").attrs({value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape"});
+    select_size_png.append("option").attrs({value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait"});
+    select_size_png.append("option").attrs({value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape"});
+    select_size_png.append("option").attrs({value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait"});
+    select_size_png.append("option").attrs({value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape"});
+    select_size_png.append("option").attrs({value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait"});
+
+
+    select_size_png.on("change", function(){
+        let value = this.value,
+            unit = value === "web" ? "px" : "cm",
+            in_h = document.getElementById("export_png_height"),
+            in_w = document.getElementById("export_png_width");
+        if(value === "web"){
+            in_h.value = h;
+            in_w.value = w;
+        } else if (value === "user_defined"){
+            in_h.value = Math.round(h / 118.11 * 10) / 10;
+            in_w.value = Math.round(w / 118.11 * 10) / 10
+        } else if (value === "A4_landscape"){
+            in_h.value = 21.0;
+            in_w.value = 29.7;
+        } else if (value === "A4_portrait"){
+            in_h.value = 29.7;
+            in_w.value = 21.0;
+        } else if (value === "A3_landscape"){
+            in_h.value = 42.0;
+            in_w.value = 29.7;
+        } else if (value === "A3_portrait"){
+            in_h.value = 29.7;
+            in_w.value = 42.0;
+        } else if (value === "A5_landscape"){
+            in_h.value = 14.8;
+            in_w.value = 21.0;
+        } else if (value === "A5_portrait"){
+            in_h.value = 21.0;
+            in_w.value = 14.8;
+        }
+        document.getElementById("export_png_width_txt").innerHTML = unit;
+        document.getElementById("export_png_height_txt").innerHTML = unit;
+        if(value.indexOf("portrait") > -1 || value.indexOf("landscape") > -1){
+            in_h.disabled = "disabled";
+            in_w.disabled = "disabled";
+        } else {
+            in_h.disabled = undefined;
+            in_w.disabled = undefined;
+        }
+        console.log(in_w)
+    })
+
+    let exp_a = export_png_options.append("p");
+    exp_a.append("span")
+            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.height"});
+
+    exp_a.append("input")
+            .style("width", "60px")
+            .attrs({"id": "export_png_height", "type": "number", step: 0.1, value: h})
+            .on("change", function(){
+                let ratio = h / w,
+                    export_png_width = document.getElementById("export_png_width");
+                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+            });
+
+    exp_a.append("span")
+            .attr("id", "export_png_height_txt")
+            .html("px");
+
+    let exp_b = export_png_options.append("p");
+    exp_b.append("span")
+            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.width"});
+
+    exp_b.append("input")
+            .style("width", "60px")
+            .attrs({"id": "export_png_width", "type": "number", step: 0.1, value: w})
+            .on("change", function(){
+                let ratio = h / w,
+                    export_png_height = document.getElementById("export_png_height");
+                export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
+            });
+
+    exp_b.append("span")
+            .attr("id", "export_png_width_txt")
+            .html("px");
+
+    let export_geo_options = dv5b.append("p")
+                                .attr("id", "export_options_geo")
+                                .style("display", "none");
+
+    let selec_layer = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_layer"))
+             .insert("select").attr("id", "layer_to_export");
+
+    let selec_type = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_datatype"))
+             .insert("select").attr("id", "datatype_to_use");
+
+    let selec_projection = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_projection"))
+             .insert("select").attr("id", "projection_to_use");
+
+    let proj4_input = export_geo_options.append("input")
+                                .attr("id", "proj4str")
+                                .style("display", "none")
+                                .style("width", "200px");
+
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+        selec_type.append("option").attr("value", name).text(name);
+    });
+
+    [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
+     ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
+     ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
+     ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
+     ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
+     ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
+     ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
+     ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
+        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
+    });
+
+    selec_type.on("change", function(){
+        if(this.value == "TopoJSON" || this.value == "KML"){
+            selec_projection.node().options.selectedIndex = 0;
+            selec_projection.attr("disabled", true);
+        } else {
+            selec_projection.attr("disabled", null);
+        }
+    });
+
+    selec_projection.on("change", function(){
+        if(this.value == "proj4string")
+            proj4_input.style("display", "initial");
+        else
+            proj4_input.style("display", "none");
+    });
+
+    let export_name = dv5b.append("p");
+    export_name.append("span")
+            .attrs({class: "i18n", "data-i18n": "[html]app_page.section5b.filename"});
+
+    export_name.append("input")
+            .attr("id", "export_filename");
+
+    dv5b.append("button")
+            .attrs({"id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button"})
+            .on("click", function(){
+                let type_export = document.getElementById("select_export_type").value,
+                    export_name = document.getElementById("export_filename").value;
+                if(type_export === "svg"){
+                    export_compo_svg(export_name);
+                } else if (type_export === "geo"){
+                    make_export_layer_box()
+                    /*
+                    let layer = document.getElementById("layer_to_export").value,
+                        type_format = document.getElementById("datatype_to_use").value,
+                        projection = document.getElementById("projection_to_use").value,
+                        proj4string = document.getElementById("proj4str").value;
+                    export_layer_geo(layer, type_format, projection, proj4string);
+                    */
+                } else if (type_export === "png"){
+                    let type_export = document.getElementById("select_png_format").value,
+                        ratio;
+                    if(type_export === "web"){
+                        ratio = +document.getElementById("export_png_height").value / +h;
+                    } else {
+                        type_export = "paper";
+                        ratio = (+document.getElementById("export_png_height").value * 118.11) / +h;
+                    }
+                    _export_compo_png(type_export, ratio, export_name);
+                }
+            });
 
     let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -589,11 +822,11 @@ function setUpInterface()
                             document.getElementById("menu_lang").remove();
 
                         let actions = [
-                            {"name": i18next.t("app_page.export_box.svg"), "callback": export_compo_svg},
-                            {"name": i18next.t("app_page.export_box.png"), "callback": export_compo_png},
+                            //{"name": i18next.t("app_page.export_box.svg"), "callback": export_compo_svg},
+                            //{"name": i18next.t("app_page.export_box.png"), "callback": export_compo_png},
                             {"name": i18next.t("app_page.common.save_project_json"), "callback": save_map_template},
-                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template},
-                            {"name": i18next.t("app_page.export_box.geo"), "callback": make_export_layer_box}
+                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
+                            //{"name": i18next.t("app_page.export_box.geo"), "callback": make_export_layer_box}
                             ];
                         let menu = document.createElement("div");
                         menu.style.top = "30px";
@@ -1028,7 +1261,28 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
 {% raw %}
 
 (function(){
-    let lang = window.navigator.language.split('-')[0];
+    let lang = window.navigator.language.split('-')[0],
+        resume_project = false;
+
+
+    if(window.location.search){
+        let old_url = window.location.search;
+        console.log(old_url)
+        if(old_url.indexOf("?lang=") > -1){
+            lang = old_url.split("?lang=");
+            lang = lang[lang.length - 1].trim();
+        }
+
+        if(old_url.indexOf("?resume") > -1){
+            resume_project = true;
+        }
+
+        if (typeof (history.pushState) != "undefined") {
+            var obj = {Page: window.location.search, Url: window.location.pathname};
+            history.pushState(obj, obj.Page, obj.Url);
+        }
+    }
+
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
       .init({
@@ -1043,11 +1297,9 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
             throw err;
         else {
             window.localize = locI18next.init(i18next);
-            //jqueryI18next.init(i18next, $);
-            setUpInterface();
+            setUpInterface(resume_project);
             localize(".i18n");
             bindTooltips();
-            //$(".i18n").localize();
         }
     });
 })();
@@ -1651,14 +1903,14 @@ function handle_active_layer(name){
 
 // Function to handle the title add and changes
 function handle_title(txt){
-    var title = d3.select("#map_title");
+    var title = d3.select("#map_title").select("text");
     if(title.node()){
         title.text(txt);
     } else {
         map.append("g")
-             .attr("class", "legend legend_feature title")
+             .attrs({"class": "legend legend_feature title", "id": "map_title"})
           .insert("text")
-             .attrs({id: "map_title", x: "50%", y: "8%",
+             .attrs({x: "50%", y: "8%",
                      "alignment-baseline": "middle", "text-anchor": "middle"})
              .styles({"font-family": "Arial, Helvetica, sans-serif",
                       "font-size": "20px", position: "absolute", color: "black"})
@@ -1667,7 +1919,7 @@ function handle_title(txt){
 }
 
 function handle_title_properties(){
-    var title = d3.select("#map_title");
+    var title = d3.select("#map_title").select("text");
     if(!title.node()){
         swal({title: "",
               text: i18next.t("app_page.common.error_no_title"),
@@ -1764,6 +2016,19 @@ function canvas_mod_size(shape){
         map_div.style("height", h + "px");
     }
     move_legends([w, h]);
+
+    // Lets update the corresponding fields in the export section :
+    let ratio,
+        format = document.getElementById("select_png_format").value;
+    if (format === "web"){
+        ratio = 1
+    } else if (format === "user_defined") {
+        ratio = 118.11;
+    } else {
+        return;
+    }
+    document.getElementById("export_png_width").value = Math.round(w * ratio * 10) / 10;
+    document.getElementById("export_png_height").value = Math.round(h * ratio * 10) / 10;
 }
 
 function patchSvgForFonts(){
@@ -1808,9 +2073,52 @@ function unpatchSvgForFonts(){
         defs_style.remove();
 }
 
-function export_compo_svg(){
-    patchSvgForFonts();
+function patchSvgForInkscape(){
+    svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
+    let elems = svg_map.querySelectorAll("g");
+    for(let i = elems.length - 1; i > -1; i--){
+        if(elems[i].id == ""){
+            continue;
+        } else if (Array.prototype.indexOf.call(elems[i].classList, "layer") > -1) {
+            elems[i].setAttribute("inkscape:label", elems[i].id);
+        } else if(elems[i].id.indexOf("legend") > -1){
+            let layer_name = elems[i].className.baseVal.split("lgdf_")[1];
+            elems[i].setAttribute("inkscape:label", "legend_" + layer_name);
+        } else {
+            elems[i].setAttribute("inkscape:label", elems[i].id);
+        }
+        elems[i].setAttribute("inkscape:groupmode", "layer");
+    }
+}
 
+function unpatchSvgForInkscape(){
+    svg_map.removeAttribute("xmlns:inkscape");
+    let elems = svg_map.querySelectorAll("g");
+    for(let i = elems.length - 1; i > -1; i--){
+        if(elems[i].id == ""){
+            continue;
+        } else {
+            elems[i].removeAttribute("inkscape:label");
+            elems[i].removeAttribute("inkscape:groupmode");
+        }
+    }
+
+}
+
+function check_output_name(name, extension){
+    let _part = name.split("."),
+        regexp_name = new RegExp(/^[a-z0-9_]+$/i);
+    if(regexp_name.test(_part[0]) && _part[0].length < 250){
+        return _part[0] + "." + extension;
+    } else {
+        return "export." + extension;
+    }
+}
+
+function export_compo_svg(output_name){
+    output_name = check_output_name(output_name, "svg");
+    patchSvgForInkscape();
+    patchSvgForFonts();
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
@@ -1827,15 +2135,17 @@ function export_compo_svg(){
     let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source),
         dl_link = document.createElement("a");
 
-    dl_link.download = "export.svg";
+    dl_link.download = output_name;
     dl_link.href = url;
     dl_link.dataset.downloadurl = ["image/svg", dl_link.download, dl_link.href].join(':');
     document.body.appendChild(dl_link);
     dl_link.click();
     dl_link.remove();
     unpatchSvgForFonts();
+    unpatchSvgForInkscape();
 }
 
+/*
 function export_compo_png(){
     swal({
       title: 'Export type',
@@ -1870,17 +2180,18 @@ function export_compo_png(){
             }).then( value => {
                 let big_side = Math.max(h,w);
                 // "Hi-res" exports ...?
-                let wanted_pix = {   
+                let wanted_pix = {
                     'A2': 59.4, 'A3': 42, 'A4': 29.7, 'A5': 210, 'A6': 148
-                    }[value] * 118.11 
+                    }[value] * 118.11
                 _export_compo_png("paper", (wanted_pix / big_side));
               }, dismiss => { null; });
         }
     }, dismiss => { null; });
-
 }
+*/
 
-function _export_compo_png(type="web", scalefactor){
+function _export_compo_png(type="web", scalefactor=1, output_name){
+    output_name = check_output_name(output_name, "png");
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
@@ -1889,15 +2200,26 @@ function _export_compo_png(type="web", scalefactor){
         mime_type = "image/png",
         img = new Image();
 
-    if(type !== "web")
-        changeResolution(targetCanvas, scalefactor);
-
+    if(scalefactor != 1){
+        try {
+            changeResolution(targetCanvas, scalefactor);
+        } catch (err) {
+            console.log(err);
+            display_error_during_computation("Too high resolution selected : " + String(err));
+            return;
+        }
+    }
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
-        var imgUrl = targetCanvas.toDataURL(mime_type),
-            dl_link = document.createElement("a");
-        dl_link.download = "export.png";
+        try {
+            var imgUrl = targetCanvas.toDataURL(mime_type),
+                dl_link = document.createElement("a");
+        } catch (err) {
+            display_error_during_computation(String(err));
+            return;
+        }
+        dl_link.download = output_name;
         dl_link.href = imgUrl;
         dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
         document.body.appendChild(dl_link);
@@ -1908,6 +2230,55 @@ function _export_compo_png(type="web", scalefactor){
     }
 }
 
+function export_layer_geo(layer, type, projec, proj4string){
+    let extensions = new Map([
+        ["GeoJSON", "geojson"],
+        ["TopoJSON", "topojson"],
+        ["ESRI Shapefile", "zip"],
+        ["GML", "zip"],
+        ["KML", "kml"]]);
+    let formToSend = new FormData();
+    formToSend.append("layer", layer);
+    formToSend.append("layer_name", current_layers[layer].key_name);
+    formToSend.append("format", type);
+    if(projec == "proj4string")
+        formToSend.append("projection", JSON.stringify({"proj4string" : proj4string}));
+    else
+        formToSend.append("projection", JSON.stringify({"name" : projec}));
+    $.ajax({
+        processData: false,
+        contentType: false,
+        url: '/get_layer2',
+        data: formToSend,
+        type: 'POST',
+        error: function(error) { console.log(error); },
+        success: function(data, code, obj){
+            if(data.indexOf("Error:") == 0){
+                swal({title: "Oops...",
+                     text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
+                     type: "error",
+                     allowOutsideClick: false,
+                     allowEscapeKey: false
+                    }).then( () => { null; },
+                              () => { null; });
+                return;
+            }
+            let ext = extensions.get(type),
+                dataStr;
+            if(ext.indexOf("json") > -1)
+                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+            else if (ext.indexOf("kml") > -1)
+                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            else
+                dataStr = "data:application/zip;base64," + data;
+
+            let dlAnchorElem = document.getElementById('downloadAnchorElem');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+            dlAnchorElem.click();
+        }
+    });
+}
 
 function make_export_layer_box(){
     d3.select("body").append("div")
@@ -1996,7 +2367,7 @@ function make_export_layer_box(){
 
     box_content.append("p").append("button")
             .attr("class", "button_st4")
-            .html("Export")
+            .html(i18next.t("app_page.section5b.export_button"))
             .on("click", function(){
                 let layer = selec_layer.node().value,
                     type = selec_type.node().value,
@@ -2046,8 +2417,9 @@ function make_export_layer_box(){
             });
 }
 
+
 /*
-* Straight from http://stackoverflow.com/a/26047748/5050917 
+* Straight from http://stackoverflow.com/a/26047748/5050917
 *
 */
 function changeResolution(canvas, scaleFactor) {

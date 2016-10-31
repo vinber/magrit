@@ -445,8 +445,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     $("#discretiz_charts").dialog({
         modal:true,
         resizable: true,
-        width: +w - 10,
-        height: +h + 60,
+        width: svg_w + margin.top + margin.bottom + 90,
+        height: window.innerHeight - 60,
         buttons:[{
             text: i18next.t("app_page.common.confirm"),
             click: function(){

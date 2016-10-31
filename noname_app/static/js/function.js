@@ -1774,6 +1774,22 @@ var get_first_guess_span = function(){
     return Math.round((width_km + height_km) / 2 * 0.02);
 }
 
+function test_maxmin_resolution(cell_value){
+    let bbox = _target_layer_file.bbox,
+        abs = Math.abs;
+    let width_km = haversine_dist(
+            [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+    let height_km = haversine_dist(
+            [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    let area = width_km * height_km,
+        bigger_side = Math.max(height_km, width_km);
+    if(area / (cell_value * cell_value) > 15000)
+        return "higher";
+    else if(cell_value > bigger_side / 1.66)
+        return "lower"
+    return;
+}
+
 var fields_Stewart = {
     fill: function(layer){
         let other_layers = get_other_layer_names(),
@@ -1881,8 +1897,11 @@ function fillMenu_Stewart(){
                                 .insert("input").style("width", "50px")
                                 .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
         breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
-                                .insert("textarea").attrs({class: 'params', id: "stewart_breaks"})
-                                .styles({"width": "260px", "height": "30px"}),
+                                .insert("textarea")
+                                .styles({"width": "260px", "height": "30px"})
+                                .attrs({class: 'params i18n', id: "stewart_breaks",
+                                        "data-i18n": "[placeholder]app_page.common.expected_class",
+                                        "placeholder": i18next.t("app_page.common.expected_class")}),
         mask_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.smooth.mask"))
                                 .insert('select').attrs({class: 'params', id: "stewart_mask"});
 
@@ -1910,9 +1929,20 @@ function fillMenu_Stewart(){
                 var2_to_send = {},
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 bval = breaks_val.node().value.trim(),
-                reso = +resolution.node().value * 1000,
+                reso = +resolution.node().value,
                 new_user_layer_name = document.getElementById("stewart_output_name").value;
 
+            if(reso && reso > 0){
+                let res_test = test_maxmin_resolution(reso);
+                if(res_test){
+                    let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+                    display_error_during_computation(message);
+                    return;
+                }
+                reso = reso * 1000;
+            } else {
+                reso = null;
+            }
             bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
             if(current_layers[layer].original_fields.has(field1_n))
@@ -1934,7 +1964,7 @@ function fillMenu_Stewart(){
                 "span": +span.node().value * 1000,
                 "beta": +beta.node().value,
                 "typefct": func_selec.node().value,
-                "resolution": reso > 0 ? reso : null,
+                "resolution": reso,
                 "nb_class": nb_class.node().value,
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
@@ -2846,7 +2876,16 @@ function fillMenu_griddedMap(layer){
                 layer = Object.getOwnPropertyNames(user_data)[0],
                 formToSend = new FormData(),
                 var_to_send = {},
-                new_user_layer_name = document.getElementById("Gridded_output_name").value;
+                new_user_layer_name = document.getElementById("Gridded_output_name").value,
+                reso = +cellsize.node().value;
+
+            let res_test = test_maxmin_resolution(reso);
+
+            if(res_test){
+                let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+                display_error_during_computation(message);
+                return;
+            }
 
             if(current_layers[layer].original_fields.has(field_n))
                 var_to_send[field_n] = [];
@@ -2856,7 +2895,7 @@ function fillMenu_griddedMap(layer){
             formToSend.append("json", JSON.stringify({
                 "topojson": current_layers[layer].key_name,
                 "var_name": var_to_send,
-                "cellsize": +cellsize.node().value * 1000,
+                "cellsize": reso * 1000,
                 "grid_shape": grid_shape.node().value
                 }));
             $.ajax({
@@ -3471,9 +3510,9 @@ function path_to_geojson(id_layer){
 }
 
 function display_error_during_computation(msg){
-    msg = msg ? "Details : " + msg : "",
-    swal({title: i18next.t("Error") + "!",
-          text: i18next.t("Something wrong happened - Current operation has been aborted") + msg,
+    msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
+    swal({title: i18next.t("app_page.common.error") + "!",
+          text: i18next.t("app_page.common.error_message") + msg,
           type: "error",
           allowOutsideClick: false});
 }

@@ -63,6 +63,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
                                                 .attr("class", "color_txt")
+                                                .style("margin-left", "10px")
                                                 .html(i18next.t("disc_box.color_palette"))
                                              .insert("select")
                                                 .attr("class", "color_params")
@@ -76,7 +77,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             sequential_color_select.append("option").text(name).attr("value", name);
         });
         var button_reverse = d3.select(".color_txt").insert("button")
-                                .styles({"display": "inline", "margin-left": "10px"})
+                                .styles({"display": "inherit", "margin-top": "10px"})
                                 .attrs({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html(i18next.t("disc_box.reverse_palette"))
                                 .on("click", function(){
@@ -650,6 +651,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
     user_defined_breaks.insert("textarea")
                         .attr("id","user_breaks_area")
+                        .attr("placeholder", i18next.t("app_page.common.expected_class"))
                         .style("width", "600px");
 
     user_defined_breaks
