@@ -43,6 +43,9 @@ var interp_n = function(colors, diff, k){
 function rgb2hex(rgb){
 // Originally from  http://jsfiddle.net/mushigh/myoskaos/
  if(typeof rgb === "string"){
+    if(rgb.indexOf("#") > -1 || rgb.indexOf("rgb") < 0){
+        return rgb;
+    }
      rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
      return (rgb && rgb.length === 4) ? "#" +
       ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
