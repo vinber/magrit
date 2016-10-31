@@ -8,21 +8,23 @@ services:
 cache:
   directories:
     - $GDALINST
-    - $PHANTOMJSDIR
     - ~/.cache/pip
 env:
   global:
+    - OTHER_PY_PACKAGES=$HOME/py_tmp
     - GDALINST=$HOME/gdalinstall
     - GDALBUILD=$HOME/gdalbuild
-    - PHANTOMJSDIR=$HOME/phantomjs
 before_install:
   - ./misc/install_gdal.sh
-  - ./misc/install_phantomjs.sh
-  - export PATH=$GDALINST/gdal-2.1.0/bin:$PHANTOMJSDIR/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+  - export PATH=$GDALINST/gdal-2.1.0/bin:$PATH
   - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.0/lib:$LD_LIBRARY_PATH
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
 install:
   - npm -g install topojson
   - pip install --upgrade "setuptools>=25.1" pip
+  - ./misc/install_deps.sh
   - pip install -r requirements-dev.txt
   - python setup.py install
 script:
@@ -36,16 +38,17 @@ addons:
       - python3.5
       - libpython3.5-dev
       - libopenblas-base
+      - libopenblas-dev
       - gdal-bin
+      - libuv1-dev
       - libgdal-dev
       - libproj-dev
+      - libspatialindex-dev
       - libv8-3.14-dev
       - libffi-dev
-      - r-base
       - redis-server
       - nodejs
       - nodejs-dev
       - node-gyp
       - npm
       - libfftw3-dev
-      - libzmq3-dev

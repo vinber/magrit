@@ -4,17 +4,20 @@ function handle_join(){
     var layer_name = Object.getOwnPropertyNames(user_data);
 
     if(!(layer_name.length === 1 && joined_dataset.length === 1)){
-        alert("Unable to join geometries and dataset")
+        swal("",
+             i18next.t("app_page.join_box.unable_join"),
+             "error");
         return;
     } else if(field_join_map.length != 0){
-        make_confirm_dialog("A successful join is already selected. Forget and select a new one ?", "Ok", "Cancel", "").then(function(confirmed){
-            if(confirmed){
-                field_join_map = [];
-                createJoinBox(layer_name[0]);
-                }
-            });
+        make_confirm_dialog(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_forget_join")})
+            .then(function(confirmed){
+                if(confirmed){
+                    field_join_map = [];
+                    createJoinBox(layer_name[0]);
+                    }
+                });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog(i18next.t("The geometrie layer and the joined dataset doesn't have the same number of features") + ". " + i18next.t("Continue anyway") +  "?", "Ok", i18next.t("Cancel"), "").then(function(confirmed){
+        make_confirm_dialog(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_diff_nb_features")}).then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {
@@ -33,13 +36,12 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.onclick = handle_join;
 
         let join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [prop, i18next.t('Data not joined')].join('');
+        join_sec.innerHTML = [prop, i18next.t('app_page.join_box.state_not_joined')].join('');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        //button.innerHTML = " -<b> Join now</b>";
-        button.innerHTML = " -<b> " + i18next.t("Join now") + "</b>";
+        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("app_page.join_box.button_join") + '</button>'
         button.onclick = handle_join;
         join_sec.appendChild(button);
     } else {
@@ -50,14 +52,15 @@ function valid_join_check_display(val, prop){
         ext_dataset_img.style.height = "28px";
         ext_dataset_img.onclick = null;
 
+        let [v1, v2] = prop.split("/").map(d => +d);
+
         let join_sec = document.getElementById("join_section");
-        //join_sec.innerHTML = [' <b>', prop, ' matches</b>'].join('');
-        join_sec.innerHTML = [' <b>', prop, ' ', i18next.t('matches'), '</b>'].join('');
+        join_sec.innerHTML = [' <b>', prop, i18next.t("app_page.join_box.match", {count: v1}), '</b>'].join(' ');
 
         let button = document.createElement("button");
         button.setAttribute("id", "join_button");
         button.style.display = "inline";
-        button.innerHTML = " - <i> Change join field </i>";
+        button.innerHTML = [" - <i> ", i18next.t("app_page.join_box.change_field"), " </i>"].join('');
         button.onclick = handle_join;
         join_sec.appendChild(button);
     }
@@ -82,7 +85,9 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set2 = new Set(join_values2);
     if(join_set2.size != join_values2.length){
-        alert(i18next.t("The values on which operate have to be uniques"));
+        swal("",
+             i18next.t("app_page.join_box.error_not_uniques"),
+             "warning");
         return;
     }
 
@@ -92,7 +97,9 @@ function valid_join_on(layer_name, field1, field2){
 
     var join_set1 = new Set(join_values1);
     if(join_set1.size != join_values1.length){
-        alert(i18next.t("The values on which operate have to be uniques"));
+        swal("",
+             i18next.t("app_page.join_box.error_not_uniques"),
+             "warning");
         return;
     }
 
@@ -133,7 +140,8 @@ function valid_join_on(layer_name, field1, field2){
         valid_join_check_display(true, prop);
         return true;
     } else if(hits > 0){
-        var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
+//        var rep = confirm(["Partial join : ", prop, " geometries found a match. Validate ?"].join(""));
+        var rep = confirm(i18next.t("app_page.join_box.partial_join", {ratio: prop}));
         if(rep){
             let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
                 i_id = fields_name_to_add.indexOf("id");
@@ -156,7 +164,9 @@ function valid_join_on(layer_name, field1, field2){
         }
 
     } else {
-        alert("No match found...");
+        swal("",
+             i18next.t("app_page.join_box.no_match", {field1: field1, field2: field2}),
+             "error");
         field_join_map = [];
         return false;
     }
@@ -182,15 +192,18 @@ function createJoinBox(layer){
     button2.push("</select>");
 
     let inner_box = [
-         '<p><b><i>Select fields on which operate the join</i></b></p>',
-         '<div style="padding:10px"><p>Geometrie layer field :</p>',
+         '<p><b><i>',
+         i18next.t("app_page.join_box.select_fields"), '</i></b></p>',
+         '<div style="padding:10px"><p>',
+         i18next.t("app_page.join_box.geom_layer_field"), '</p>',
          button1.join(''), '<em style="float:right;">(', layer, ')</em></div>',
-         '<div style="padding:15px 10px 10px"><p>External dataset field :<br></p>',
+         '<div style="padding:15px 10px 10px"><p>',
+         i18next.t("app_page.join_box.ext_dataset_field"), '<br></p>',
          button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>',
-         '<br><p><strong>Join datasets ?<strong></p></div>'
+         '<br><p><strong>', i18next.t("app_page.join_box.ask_join"), '<strong></p></div>'
         ].join('');
 
-    make_confirm_dialog(inner_box, "Valid", "Cancel", "Join options", "joinBox")
+    make_confirm_dialog("joinBox", i18next.t("app_page.join_box.title"), {html_content: inner_box})
         .then(function(confirmed){
             if(confirmed){
                 let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
@@ -200,7 +213,7 @@ function createJoinBox(layer){
                 }
             }
         });
-    d3.select(".joinBox").style({"text-align": "center", "line-height": "0.9em"});
+    d3.select(".joinBox").styles({"text-align": "center", "line-height": "0.9em"});
     d3.select("#button_field1").style("float", "left").on("change", function(){last_choice.field1 = this.value;});
     d3.select("#button_field2").style("float", "left").on("change", function(){last_choice.field2 = this.value;});
 }

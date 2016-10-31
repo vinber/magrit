@@ -1,0 +1,3 @@
+{
+  "presets": ["/home/mz/code/noname-stuff/misc/jsbuild/node_modules/babel-preset-es2015", "/home/mz/code/noname-stuff/misc/jsbuild/node_modules/babel-preset-stage-1"],
+}

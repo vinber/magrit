@@ -1,2 +1,623 @@
 {
+    "app_page": {
+        "common": {
+            "loading_results": "Loading results",
+            "long_computation": "(might require few seconds/minutes)",
+            "save_preferences": "Save your preferences",
+            "load_preferences": "Load a preference JSON",
+            "too_large_input": "Too large input file (should currently be under 8Mb)",
+            "alert_upload1": "Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile",
+            "alert_upload_shp": "All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload",
+            "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)",
+            "layer_success": "Layer successfully added to the map",
+            "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
+            "error_message": "Something wrong happened - Current operation has been aborted.",
+            "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",
+            "error_only_layout": "Only layout layers can be added here",
+            "error_only_one": "Only one layer can be added by this functionnality",
+            "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
+            "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
+            "error_no_title": "No title to style",
+            "error_no_visible": "Error : no visible layer found",
+            "error_numerical_fields": "The targeted layer doesn't seems to contain any numerical field or contains too many empty values",
+            "error_too_many_features": "Very many features. Navigation ease might be degraded.",
+            "error_too_low_resolution": "Too low resolution selected.",
+            "error_too_high_resolution": "Too high resolution selected.",
+            "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
+            "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
+            "target_layer": "Target layer",
+            "result_layer": "Result layer",
+            "ext_dataset": "Ext. dataset",
+            "success": "Success",
+            "confirm": "Confirm",
+            "remove_layer": "Remove layer {{layer}} ?",
+            "remove_tabular": "Remove tabular dataset ?",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "deleted": "Deleted",
+            "done": "Done!",
+            "valid": "Valid",
+            "close": "Close",
+            "edit_style": "Edit style...",
+            "options": "Options",
+            "error": "Error",
+            "feature": "feature",
+            "feature_plural": "features",
+            "field": "field",
+            "field_plural": "fields",
+            "save_project_json": "Save the current project (JSON format)",
+            "load_project_json": "Load a JSON project file",
+            "equal_interval": "Equal interval",
+            "quantiles": "Quantiles",
+            "std_dev": "Standard deviation",
+            "Q6": "Q6",
+            "arithmetic_prog": "Arithmetic progression",
+            "jenks": "Jenks",
+            "geometric_prog": "Geometric progression",
+            "user_defined": "User defined",
+            "up_element": "Up element",
+            "down_element": "Down element",
+            "hide": "Hide",
+            "smaller": "smaller",
+            "larger": "larger",
+            "style_layer": "Layer style",
+            "trash": "Delete layer",
+            "zoom_fit": "Zoom on layer",
+            "legend": "Legend",
+            "eye_open": "Toogle layer visibility",
+            "eye_closed": "Toogle layer visibility",
+            "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
+            "details": "Details"
+        },
+        "section1": {
+            "title": "Add your data",
+            "add_geom": "Add a basemap <i>(or drop it)</i>",
+            "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
+            "add_sample_data": "Select available sample basemap / dataset",
+            "explore_table": "Explore your table(s)"
+        },
+        "section2_pre": {
+            "title": "Choose a representation"
+        },
+        "section2": {
+            "title": "Functionnality options",
+            "no_func": "No choosen functiionnality"
+        },
+        "section3": {
+            "title": "Layers"
+        },
+        "section4": {
+            "title": "Basemap configuration",
+            "map_width": "<b>Map width (px) </b>",
+            "map_height": "<b>Map height (px) </b>",
+            "map_ratio": "Map ratio",
+            "ratio_user": "User defined",
+            "ratio_landscape": "Landscape",
+            "ratio_portait": "Portrait",
+            "map_center_menu": "Map centering ...",
+            "map_center_x": "Map center (x)",
+            "map_center_y": "Map center (y)",
+            "map_scale_k": "Zoom scale",
+            "map_title": "Map title ",
+            "background_color": "Background color ",
+            "canvas_rotation": "Canvas rotation ",
+            "layout_features": "Add layout features... "
+        },
+        "section5b": {
+            "title": "Export options",
+            "type": "Type",
+            "filename": "Filename",
+            "format": "Outut size",
+            "height": "Height",
+            "width": "Width",
+            "user_defined": "User defined",
+            "A4_landscape": "A4 landscape",
+            "A4_portrait": "A4 portrait",
+            "A3_landscape": "A3 landscape",
+            "A3_portrait": "A3 portrait",
+            "A5_landscape": "A5 landscape",
+            "A5_portrait": "A5 portrait",
+            "export_button": "Export",
+            "next": "Next..."
+        },
+        "section5": {
+            "title": "Projection options",
+            "projection": "Projection",
+            "projection_center_lambda": "Projection center (longitude)",
+            "projection_center_phi": "Projection center (φ-axis rotation)",
+            "projection_center_gamma": "Projection center (γ-axis rotation)",
+            "reset": "Reset center/zooming/rotation"
+        },
+        "stat_summary": {
+            "population": "Population",
+            "min": "Min",
+            "max": "Max",
+            "mean": "Mean",
+            "median": "Median",
+            "variance": "Variance",
+            "stddev": "Standard deviation",
+            "cov": "Coefficient of variation"
+        },
+        "tooltips": {
+            "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
+            "section3": "Drop new layout layer or click to browse locally and add one.<br>Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"
+        },
+        "func_description" : {
+            "smooth": "Render a smoothed map (using stewart potentials algorythm)",
+            "prop": "Display proportional symbols on a numerical field of your data",
+            "choroprop": "Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
+            "proptypo": "Display proportional symbols colored according to their belonging to a categorie",
+            "choro": "Render a choropleth map on a numerical field of your data with an appropriate discretisation",
+            "cartogram": "Render a map using an area-deforming algorythm on a numerical field of your data",
+            "grid": "Render a gridded density map on a numerical field of your data",
+            "flow": "Render a map displaying links between features with graduated sizes",
+            "discont": "Render a map displaying discontinuities between polygons features",
+            "typo": "Render a categorical map with an attribute field of your dataset",
+            "label": "Display and customize feature labels",
+            "typosymbol": "Display pictograms on the features of the map"
+        },
+        "func_title" : {
+            "smooth": "Smoothed map (Stewart potentials)",
+            "prop": "Proportionnal symbols",
+            "choroprop": "Colored proportionnal symbols",
+            "proptypo": "Colored (by categorie) proportionnal symbols",
+            "choro": "Choropleth map",
+            "cartogram": "Cartogram map",
+            "grid": "Gridded map",
+            "flow": "Link/Flow map",
+            "discont": "Discontinuities map",
+            "typo": "Categorical map",
+            "label": "Label map",
+            "typosymbol": "Pictogram map"
+        },
+        "layout_features_box": {
+            "title": "Layout features",
+            "subtitle": "Feature to add",
+            "north_arrow": "North arrow",
+            "scale": "Scale",
+            "sphere": "Sphere background",
+            "graticule": "Graticule",
+            "text_annot": "Text box",
+            "arrow": "Customizable arrow",
+            "symbol": "Single symbol",
+            "ellipse": "Ellipse",
+            "free_draw": "Free drawing"
+        },
+        "layout_layer_box": {
+            "title": "Layout layers",
+            "msg_select_layer": "Choose layer(s) to be used as layout : ",
+            "msg_select_multi": "<i>(multiple layers can be selected)</i>",
+            "nuts0": "Nuts 0* (2013) European Country <i>(Polygons)</i>",
+            "nuts1": "Nuts 1* (2013) European subdivisions <i>(Polygons)</i>",
+            "nuts2": "Nuts 2* (2013) European subdivisions <i>(Polygons)</i>",
+            "world_countries": "World countries simplified <i>(Polygons)</i>",
+            "world_capitals": "World country capitals <i>(Points)</i>",
+            "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"
+        },
+        "sample_layer_box": {
+            "title": "Jeux de données d'exemple",
+            "subtitle1": "Choose a layer to be rendered :",
+            "subtitle2": "Choose a dataset to link with geometries :",
+            "target_layer": "<i>Target layer</i>",
+            "paris_hospitals": "Paris hospital locations <i>(Points)</i>",
+            "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
+            "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
+            "nuts2_data": "Nuts 2 (2006) European subdivisions <i>(Polygons)</i>",
+            "nuts3_data": "Nuts 3 (2006) European subdivisions <i>(Polygons)</i>",
+            "world_countries": "World countries <i>(Polygons)</i>",
+            "us_county": "U.S.A counties <i>(Polygons)</i>",
+            "us_states": "U.S.A states <i>(Polygons)</i>",
+            "tabular_dataset": "<i>Tabular dataset</i>",
+            "twincities": "International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>",
+            "gpm_dataset": "\"Grand Paris\" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>",
+            "martinique_data": "Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>",
+            "bondcountries": "James Bond visited countries <i>(To link with World countries geometries)</i>"
+        },
+        "export_box": {
+            "title": "Choose a format...",
+            "png": "Export to PNG",
+            "svg": "Export to SVG",
+            "geo": "Export layers to a geographic format",
+            "geo_title_box": "Choose layer and datatype...",
+            "options": "Export options",
+            "option_layer": "Layer to export",
+            "option_datatype": "Datatype",
+            "option_projection": "Projection"
+        },
+        "join_box": {
+            "title": "Join options",
+            "ask_diff_nb_features": "The geometrie layer and the joined dataset doesn't have the same number of features.<br>Continue anyway ?",
+            "ask_forget_join": "A successful join is already selected. Forget and select a new one ?",
+            "unable_join": "Unable to join geometries and dataset.",
+            "error_not_uniques": "The values on which operate have to be uniques.",
+            "state_not_joined": "Data not joined",
+            "ext_dataset_field": "External dataset field :",
+            "geom_layer_field": "Geometrie layer field :",
+            "ask_join": "Join datasets ?",
+            "button_join": "Join now",
+            "select_fields": "Select fields on which operate the join",
+            "match": "match",
+            "match_plural": "matches",
+            "no_match": "No match found between fields <i>{{field1}}</i> and <i>{{field2}}</i>",
+            "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?",
+            "change_field": "Change joined fields",
+            "ref_layer_fields": "Reference layer fields",
+            "join_field": "Join field"
+        },
+        "explore_box": {
+            "title": "Explore dataset",
+            "button_add_field": "Add a new field...",
+            "available_table": "Availables tables ",
+            "add_field_box": {
+                "new_name": "New field name<br>",
+                "new_content": "New field content<br>",
+                "between_numerical": "Computation based on two existing numerical fields",
+                "between_string": "Modification on a character field",
+                "truncate": "Truncate",
+                "concatenate": "Concatenate",
+                "join_char": "Character to join the two fields (can stay blank) :<br>",
+                "keep_char": "Number of char to keep (from the left) :<br>",
+                "invalid_name": "Unauthorized column name !",
+                "constant_value": "Constant value..."
+            }
+        },
+        "legend_style_box": {
+            "title": "Layer style options - {{layer_name}}",
+            "subtitle": "Legend customization",
+            "lgd_title": "Legend title<br>",
+            "var_name": "Variable name<br>",
+            "float_rounding": "Floating number rounding precision<br> ",
+            "gap_boxes": "No gap between color boxes",
+            "nested_symbols": "Nested symbols",
+            "no_data": "No data category name",
+            "additionnal_notes": "Additionnal legend notes<br>",
+            "under_rectangle": "Display a rectangle under the legend"
+        },
+        "help_box": {
+            "title": "Emergency help!",
+            "message_invite": "Write something to be searched in the documentation :",
+            "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
+        },
+        "north_arrow_edit_box": {
+            "title": "North arrow options",
+            "size": "Arrow size ",
+            "rotation": "Arrow rotation "
+        },
+        "scale_bar_edit_box": {
+            "title": "Scale bar options",
+            "fixed_size": "Fixed size ",
+            "precision": "Precision ",
+            "unit": "Displayed unit ",
+            "intermediate_markers": "Intermediate markers ",
+            "start_end_bar": "Start/end markers "
+        },
+        "text_box_edit_box": {
+            "constructor_default": "Enter your text...",
+            "title": "Textbox options",
+            "font_size": "Font size ",
+            "default_font": "Default font family ",
+            "content": "Content ",
+            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed."
+        },
+        "arrow_edit_box": {
+            "title": "Arrow options",
+            "arrowWeight": "Arrow weight",
+            "arrowColor": "Arrow color",
+            "arrowAngle": "Slope",
+            "move_points": "Move arrow start or end point"
+        },
+        "ellipse_edit_box": {
+            "title": "Ellipse options",
+            "stroke_width": "Stroke width",
+            "stroke_color": "Stroke color",
+            "move_points": "Move ellipse control points"
+        },
+        "title_box": {
+            "title": "Title properties",
+            "font_size": "Font size :<br>",
+            "font_color": "Font color :<br>",
+            "font_family": "Font family :<br>",
+            "xpos": "x position (% from the left side) :<br>",
+            "ypos": "y position (% from the top) :<br>"
+        },
+        "symbol_typo_box": {
+            "title": "Choose symbols for fields categories - {{ layer }} - {{ nb_features }} features",
+            "field_categ": "<strong>Field</strong> : {{ field }}<br>{{ nb_class }} categories<br>{{ nb_features}} features",
+            "count_feature": " <i> ({{ nb_features }} feature)</i>",
+            "count_feature_plural": " <i> ({{ nb_features }} features)</i>"
+        },
+        "categorical_box": {
+            "title": "Color a categorical field - {{ layer }} - {{ nb_features }} features",
+            "new_random_colors": "New randoms colors"
+        },
+        "layer_style_popup": {
+            "fill_color": "Fill color<br>",
+            "toggle_colors": "<b><i>Click to toggle colors</b></i>",
+            "categorical_field": "Categorical field :",
+            "rendered_field": "<i>Rendered field : <b>{{field}}</b></i><br>",
+            "reference_layer": "<i>Reference layer : <b>{{ layer }}</b></i><br>",
+            "reset_symbols_location": "Reset symbols location",
+            "redraw_symbols": "Redraw deleted symbols",
+            "modify_symbols": "Modify your symbols",
+            "reset_labels_location": "Reset labels location",
+            "redraw_labels": "Redraw deleted labels",
+            "overrride_warning": "<b><i> Following options will override settings for labels modified manually </i></b>",
+            "labels_default_size": "Labels default size",
+            "labels_default_color": "Labels default color",
+            "labels_default_font": "Labels default font",
+            "single_color": "Single color",
+            "categorical_color": "Color according to a categorical field",
+            "random_color": "Random color on each feature",
+            "field_to_render": "Field to render ",
+            "choose_colors": "Choose colors",
+            "field": "Field :",
+            "choose_discretization": "Display and arrange classes",
+            "color_palette": "Color palette ",
+            "reverse_palette": "Reverse palette",
+            "fill_opacity": "Fill opacity<br>",
+            "display_flow_larger": "Only display flows larger than ...<br>",
+            "modify_size_class": "Modify size by class",
+            "discont_threshold": "Discontinuity threshold ",
+            "border_color": "Border color<br>",
+            "color": "Color<br>",
+            "fill_color": "Fill color<br>",
+            "opacity": "Opacity<br>",
+            "border_color": "Border color<br>",
+            "border_opacity": "Border opacity<br>",
+            "width": "Width (px)<br>",
+            "border_width": "Border width<br>",
+            "field_symbol_color": "Field used for <strong>symbol colors</strong> : <i>{{ field }}</i><br>",
+            "color_break": "Color according to a break value",
+            "break_value": "<br>Break value ",
+            "field_symbol_size": "Field used for <strong>proportionals values</strong> : <i>{{ field }}</i><br><br>",
+            "symbol_fixed_size": "Symbol fixed size ",
+            "on_value": "on value ...",
+            "point_radius": "Point radius<br>",
+            "graticule_steps": "Step size between lines",
+            "graticule_dasharray": "Length of dashes"
+        },
+        "lm_buttons":{
+            "zoom+": "Zoom in",
+            "zoom-": "Zoom out",
+            "i": "Feature information",
+            "hand_button": "Use the cursor to move on the map (default behavior)",
+            "zoom_rect": "Zoom on rectangular selection"
+        },
+        "func_help": {
+            "choro": {
+                "title": "<b>Choropleth map</b>",
+                "block": "Ratio data (rates or intensity) are quantitative data calculated from raw data from which relationships are derived or rates calculated. They represent the characteristics of observed variables but their sum does not have a particular meaning, e.g. population density is a relationship value but the sum of population densities is not a meaningful indicator.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
+            },
+            "typo": {
+                "title": "<b>Categorical map</b>",
+                "block": "This kind of map is user to represent polygon features according to the value taken by a field whose values are grouped into categories.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
+            },
+            "typosymbol": {
+                "title": "<b>Categorical symbols map</b>",
+                "block": "This type of representation enables to include symbols on the basis of values of a categorical field of the data layer.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use."
+            },
+            "smooth": {
+                "title": "<b>Smoothed map</b>",
+                "block": "Unlike choropleth maps, which represent the data set as discrete values only valid for specific areas, isoline maps are based on the assumption that the phenomenon to be represented has a continuous distribution. Many socio-economic phenomena are distributed spatially according to continuous logic, with no breaks at the borders, which appear as artificial cuts. If the observed phenomenon is a continuous underlying distribution, i.e. it takes values that are gradually different as one moves into the space around a given point, the purpose of the \"smoothed\" map is to visualize the phenomenon respecting its spatial organization. This method is called this \"potential calculating method\" or \"smoothing method\". It allows the spatial representation of the phenomenon, regardless of the heterogeneity of the mesh and affecting at any point of the map, the value of the density of the phenomenon in the vicinity of this point.<br><br><b><i>Parameters</i></b><br><b>Field:</b> Field name of value to use.<br><b>Divide field (optionnal):</b> Field name for value to use in order to make a ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution :</b><br><b>Function type :</b><br><b>Number of classes :</b><br><b>Clipping mask layer :</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
+            },
+            "prop": {
+                "title": "<b>Raw data map / Proportionnal symbols</b>",
+                "block": "Absolute value (stock) data maps enable representation of quantitative data which can be raw data or expressed in absolute terms. A data is quantitative if it can be expressed in units that can be aggregated and their averages are meaningful. This data express concrete quantity, i.e, the sum of individual elements is meaningful; e.g. population size is an absolute value because the sum of a number of different population sizes is meaningful.<br><br><b><i>Parameters</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
+            },
+            "discont": {
+                "title": "<b>Discontinuities map</b>",
+                "block": "When combined with a choropleth representation (see ratio maps), the visualization of discontinuity lines focus on spatial ruptures of the socio-economic phenomena being observed. This is in line with Brunet and Dolphus (1990) expression \"geographical space is fundamentally discontinuous\". In this atlas, discontinuities are expressed in relative terms: Maxima (ratio1, ratio2) / Minima (ratio1, ratio2). To express the scope of the discontinuity intensity, we choose to represent it by the \"size\" of a line, the change of thickness of it being proportional to the intensity of the discontinuity. This kind of representation focus, not on the homogenous zones, but rather on border lines indicating wide variations in the phenomenon represented on the map.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use.<br><b>ID field :</b> Le champ contenant des identifiants uniques permettant d'identifier des tronçons<br><b>Discontinuity kind :</b> Le rapport entre la valeur des deux entités (parmis 'relatif' ou 'absolu').<br><b>Number of classes :</b> How many classes to be created.<br><b>Discretization type :</b> La méthode utilisée pour discrétiser les valeurs.<br><b>Couleur :</b> Method used to arrange the serie of values into dicrete classes."
+            },
+            "grid": {
+                "title": "<b>Grid map</b>",
+                "block": "The cartographic representation mostly relies on an administrative meshing which is a spatial filter of the geographical information. This filter deforms all the more the message conveyed by the map as the meshing is heterogeneous.<br><br><b><i>Parameters</i></b><br><b>Field :</b> Field name for values to use.<br><b>Cellsize :</b> Side size of each cell (kilometers).<br><b>Shape :</b>The shape to be taken be the created cells.<br><b>Coloramp :</b> Coloramp to be used when the result is added."
+            },
+            "cartogram": {
+                "title": "<b>Cartogram</b>",
+                "block": "In a common way, an anamorphosis is a distorted projection or perspective requiring the viewer to use special devices or occupy a specific vantage point to reconstitute the image. The word is derived from the Greek prefix ana-, meaning back or again, and the word morphe, meaning shape or form. According to Webster dictionary \"An anamorphosis is a deformed image that appears in its true shape when viewed in some \"unconventional\" way\". In cartography we call them \"cartograms\" or \"anamorphic map\". A cartogram is a map in which some thematic mapping variable – such as population or Gross National Product- is substituted for land area or distance. The geometry or space of the map is distorted in order to convey the information of this alternate variable. We also can describe a cartogram as a type of graphic that depicts attributes of geographic objects as the object's area. Because a cartogram does not depict geographic space, but rather changes the size of objects depending on a certain attribute, a cartogram is not a true map.<br><br><b><i>Parameters</i></b><br><b>Field :</b>Field name for values to use<br><b>Symbol type :</b> The shape of the symbol to use.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>On value... :</b> Value on which fix the previously selected size.<br><b>Iterations :</b> How many iterations before getting the result.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
+            },
+            "choroprop": {
+                "title": "<b>Raw and ratio data map - Proportionnal colored symbols</b>",
+                "block": "This kind of representation enables to establish a match between raw and relationship data on a single map. Thus, the user will view a given phenomenon expressed in both raw and relationship data on the same map.<br><br><b><i>Parameters</i></b><br>Field 1 (symbol size):</b> Field containing values to use to compute symbols size.<br><b>Fixed size :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
+            },
+            "proptypo" :{
+                "title": "<b>Raw and categorical data map - Proportionnal colored symbols</b>",
+                "block": "This kind of representation enables to establish a match between raw and categorical data on a single map."
+            },
+            "flow": {
+                "title": "<b>Links map</b>",
+                "block": "This kind of representation enables to draw proportionnal lines (streams/links) according to the intensity of a phenomenon between pairs of places.<br><br><b><i>Parameters</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
+            },
+            "label": {
+                "title": "<b>Label map</b>",
+                "block": "Ce type de carte permet de représenter les intitulés correspondants aux entités d'une couche.<br><br><b><i>Parameters</i></b>"
+            }
+        },
+        "func_options": {
+            "common": {
+                "field": "Field ",
+                "color": "Color ",
+                "symbol_circle": "Circle",
+                "symbol_square": "Square",
+                "output": "Output name<br>",
+                "render": "Render",
+                "discretization_choice": "Choose a discretization ..."
+            },
+            "smooth": {
+                "field": "Field ",
+                "divide_field": "Divide field ",
+                "span": "Span ",
+                "beta": "Beta ",
+                "resolution": "Resolution (opt.) ",
+                "function": "Function type ",
+                "func_exponential": "Exponential ",
+                "func_pareto": "Pareto ",
+                "nb_class": "Number of class ",
+                "discretization": "Discretization type ",
+                "break_values": "Break values (opt.) ",
+                "mask": "Clipping mask layer (opt.) "
+            },
+            "prop": {
+                "field": "Field ",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ... ",
+                "symbol_type": "Symbol type ",
+                "symbol_color": "Symbol color ",
+                "options_one_color": "One color",
+                "options_two_colors": "Two colors",
+                "options_break_two_colors": "Break value "
+            },
+            "typo": {
+                "field": "Field",
+                "color_choice": "Choose colors..."
+            },
+            "choroprop": {
+                "field1": "Field 1 (symbol size) ",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ...",
+                "symbol_type": "Symbol type",
+                "symbol_circle": "Circle",
+                "symbol_square": "Square",
+                "field2": "Field 2 (symbol color)"
+            },
+            "flow": {
+                "subtitle1": "Links dataset fields :",
+                "discretization": "Discretization type ",
+                "nb_class": "Number of class "
+            },
+            "grid": {
+                "field": "Field",
+                "cellsize": "Cell size <i>km</i> ",
+                "shape": "Grid shape ",
+                "coloramp": "Coloramp "
+            },
+            "cartogram": {
+                "algo": "Algorythm to use ",
+                "field": "Field ",
+                "dorling_symbol": "Type de symbole ",
+                "dorling_symbol_circle": "Circle",
+                "dorling_symbol_square": "Square",
+                "dorling_fixed_size": "Fixed size ",
+                "dorling_on_value": "on value ...",
+                "dougenik_iterations": "N. iterations ",
+                "olson_scale_txt": "Scale reference size on :",
+                "olson_scale_max_scale": "Maximum size modification (%) ",
+                "olson_scale_max": "Max. value (prevent overlapping)",
+                "olson_scale_mean": "Mean value (may cause overlapping)"
+            },
+            "discont": {
+                "field": "Value field ",
+                "id_field": "Id field ",
+                "type_discontinuity": "Discontinuity kind",
+                "type_relative": "Relative",
+                "type_absolute": "Absolute",
+                "nb_class": "Number of class ",
+                "discretization": "Discretization type ",
+                "color": "Color "
+            },
+            "typosymbol": {
+                "field": "Field to use",
+                "symbols_choice": "Choose your symbols"
+            },
+            "label": {
+                "field": "Label field ",
+                "prop_labels": "Proportionnal labels",
+                "font_size": "Reference font size ",
+                "font_type": "Font ",
+                "color": "Color ",
+                "content": "Content ",
+                "title_box_indiv": "Label options"
+            },
+            "proptypo": {
+                "field1": "Field 1 (symbol size)",
+                "fixed_size": "Fixed size ",
+                "on_value": "on value ...",
+                "symbol_type": "Symbol type",
+                "field2": "Field 2 (symbol color)"
+            }
+        }
+    },
+    "disc_box":{
+        "title": "Discretization Panel",
+        "type_disc": "Type",
+        "class": "{{count}} class",
+        "disp_mean": "Display mean",
+        "disp_median": "Display median",
+        "disp_sd": "Display standard deviation",
+        "hist_ref_title": "Distribution reference histogram",
+        "summary": "Summary",
+        "title_color_scheme": "Color scheme",
+        "title_break_values": "Current break values",
+        "left_colramp": "Left-side coloramp",
+        "right_colramp": "Right-side coloramp",
+        "mean": "Mean",
+        "median": "Median",
+        "line_size": "<b>Line size :</b>",
+        "apply": "Apply changes",
+        "sequential": "Sequential",
+        "diverging": "Diverging",
+        "reverse_palette": "Reverse palette",
+        "with_no_data": "{{ nb_features }} feature without data",
+        "with_no_data_plural": "{{ nb_features }} features without data",
+        "colored_central_class": "colored central class",
+        "color_palette": "Color palette ",
+        "break_on": "Break on "
+    },
+    "style_box":{
+        "ref_layer": "Reference layer",
+        "rendered_field": "Rendered field",
+        "ok": "Confirm",
+        "cancel": "Close without saving"
+    },
+    "index":{
+        "buttons": {
+            "enter": "Enter!",
+            "resume": "Resume last project...",
+            "overview": "Overview",
+            "examples": "Examples",
+            "doc": "Documentation",
+            "sources": "Sources",
+            "start_now": "Start now"
+        },
+        "intro_section": {
+            "arg1": "<strong>Hassle-free thematic mapping</strong>",
+            "arg2": "<strong>Use your own data</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg3": "<strong>Custom your map as you wish</strong>",
+            "arg4": "<strong>Export or save your composition with ease!</strong> (SVG and PNG exports, project saving in human-readable fashion)"
+        },
+        "overview_section": {
+            "list_func1": "Conventional cartographic methods coupled with innovative techniques",
+            "list_func2": "(proportionnal symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)",
+            "import1": "Allow to use a wide range of file format",
+            "import2": "(Shapefile, GeoJSON, kml, tabular file with coordinates or tabular data to be joinded with the geographic layer, etc.)",
+            "customize1": "Customize your map as you wish",
+            "customize2": "(thanks to a large choice of projection, coloramps, fonts, and more...!)",
+            "export1": "Export your compositions with ease",
+            "export2": "(selecting between PNG and SVG exports)",
+            "export_geo1": "Download your newly created geographic layers",
+            "export_geo2":  "(file formats and projection available for export are too numerous to be listed)",
+            "conclusion": "You might not need your favorite vector editing software !"
+        },
+        "examples_section": {
+            "gallery": "More examples are visible on the gallery"
+        },
+        "documentation_section": {
+            "intro": "A full description of each of the methods is available on the website http://onapastrouvedenom.fr. The website also includes detailed information on the technologies employed and is used to announce the latest changes."
+        },
+        "source_section":{
+            "box1_title": "Free and Open-Source",
+            "box2_title": "Open to contributions",
+            "box3_title": "Translated/translatable content",
+            "box4_title": "Under active developpement",
+            "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
+            "box2_text": "Bug reports and contributions are welcome. Please use project page on GitHub.",
+            "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
+            "box4_text": "Project is still under developpement. More features to come, hang tight!"
+        },
+        "cookie_div": {
+            "message": "We do NOT use cookies to profile or track users.",
+            "accept": "I understand",
+            "more_info": "More information"
+        }
+    }
 }
