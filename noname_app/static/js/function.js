@@ -82,10 +82,13 @@ function get_menu_option(func){
 
 
 function clean_menu_function(){
+    section2_pre.select(".form-rendering").remove();
+    /*
     let s2 = section2.node();
     for(let i = s2.childElementCount - 1; i > -1 ; i--){
         s2.removeChild(s2.childNodes[i]);
     }
+    */
 }
 
 /** Function trying to avoid layer name collision by adding a suffix
@@ -265,7 +268,7 @@ var fields_Symbol = {
 }
 
 function fillMenu_TypoSymbol(){
-    let dv2 = section2.append("p").attr("class", "form-rendering");
+    let dv2 = section2_pre.append("p").attr("class", "form-rendering");
 
     dv2.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -419,7 +422,7 @@ function insert_legend_button(layer_name){
 }
 
 function fillMenu_Discont(){
-    let dv2 = section2.append("p").attr("class", "form-rendering");
+    let dv2 = section2_pre.append("p").attr("class", "form-rendering");
 
     dv2.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -851,7 +854,7 @@ function fetch_min_max_table_value(parent_id){
 }
 
 function fillMenu_FlowMap(){
-    var dv2 = section2.append("p").attr("class", "form-rendering");
+    var dv2 = section2_pre.append("p").attr("class", "form-rendering");
 
     dv2.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -1137,7 +1140,7 @@ var fields_PropSymbolChoro = {
 
 function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
-        dv2 = section2.append("p").attr("class", "form-rendering");
+        dv2 = section2_pre.append("p").attr("class", "form-rendering");
 
     dv2.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -1390,7 +1393,7 @@ var fields_Label = {
 };
 
 var fillMenu_Label = function(){
-    var dv2 = section2.append("p").attr("class", "form-rendering"),
+    var dv2 = section2_pre.append("p").attr("class", "form-rendering"),
         rendering_params = {};
 
     dv2.append("img")
@@ -1609,7 +1612,7 @@ var render_label = function(layer, rendering_params){
 }
 
 var fillMenu_Typo = function(){
-    var dv2 = section2.append("p").attr("class", "form-rendering"),
+    var dv2 = section2_pre.append("p").attr("class", "form-rendering"),
         rendering_params = {};
 
     dv2.append("img")
@@ -1673,7 +1676,7 @@ var fillMenu_Typo = function(){
 }
 
 function fillMenu_Choropleth(){
-    var dv2 = section2.append("p").attr("class", "form-rendering");
+    var dv2 = section2_pre.append("p").attr("class", "form-rendering");
     let rendering_params = fields_Choropleth.rendering_params;
 
     dv2.append("img")
@@ -1846,7 +1849,7 @@ var fields_Stewart = {
 };
 
 function fillMenu_Stewart(){
-    var dialog_content = section2.append("div").attr("class", "form-rendering");
+    var dialog_content = section2_pre.append("div").attr("class", "form-rendering");
 
     dialog_content.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -2105,7 +2108,7 @@ function fillMenu_Anamorphose(){
         option2_txt2.html("");
     };
 
-    var dialog_content = section2.append("div").attr("class", "form-rendering");
+    var dialog_content = section2_pre.append("div").attr("class", "form-rendering");
 
     dialog_content.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -2549,7 +2552,7 @@ var fields_PropSymbol = {
 
 function fillMenu_PropSymbol(layer){
     var max_allowed_size = Math.round(h/2 - h/20),
-        dialog_content = section2.append("p").attr("class", "form-rendering");
+        dialog_content = section2_pre.append("p").attr("class", "form-rendering");
 
     dialog_content.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -2821,7 +2824,7 @@ var fields_griddedMap = {
 }
 
 function fillMenu_griddedMap(layer){
-    var dialog_content = section2.append("p").attr("class", "form-rendering");
+    var dialog_content = section2_pre.append("p").attr("class", "form-rendering");
 
     dialog_content.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -2993,15 +2996,15 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
         li.setAttribute("class", ["ui-state-default sortable_result ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                        button_trash, button_zoom_fit, eye_open0, button_legend,
+        li.innerHTML = ['<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend,
                         button_result_type.get(type_geom[1]), "</div> ", _list_display_name].join('');
     } else if(type_layer == "sample"){
         li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">', button_style,
-                        button_trash, button_zoom_fit, eye_open0,
+        li.innerHTML = ['<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, eye_open0,
                         button_type.get(type_geom), "</div> ", _list_display_name].join('');
     }
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
@@ -3631,7 +3634,7 @@ function make_content_summary(serie, precision=6){
 
 function fillMenu_PropSymbolTypo(layer){
     var rendering_params = fields_PropSymbolTypo.rendering_params,
-        dv2 = section2.append("p").attr("class", "form-rendering");
+        dv2 = section2_pre.append("p").attr("class", "form-rendering");
 
     dv2.append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
@@ -3640,7 +3643,7 @@ function fillMenu_PropSymbolTypo(layer){
 
     var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field1"))
                           .insert('select')
-                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
+                          .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});
 
     var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.proptypo.fixed_size"))
                      .insert('input')

@@ -67,7 +67,8 @@
             "eye_open": "Toogle layer visibility",
             "eye_closed": "Toogle layer visibility",
             "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
-            "details": "Details"
+            "details": "Details",
+            "representation": "Representation"
         },
         "section1": {
             "title": "Add your data",
@@ -87,7 +88,7 @@
             "title": "Layers"
         },
         "section4": {
-            "title": "Basemap configuration",
+            "title": "Basemap configuration and page layout",
             "map_width": "<b>Map width (px) </b>",
             "map_height": "<b>Map height (px) </b>",
             "map_ratio": "Map ratio",

@@ -823,8 +823,14 @@ function createStyleBox(layer_name){
                       .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
                       .styles({"width": "70px", "vertical-align": "middle"})
                       .on('change', function(){
-                        opacity_section.select("#opacity_val_txt").html(" " + this.value)
-                        selection.style('stroke-opacity', this.value)
+                        opacity_section.select("#opacity_val_txt").html(" " + this.value);
+                        if(this.value !== "0" || type === 'Line'){
+                            selection.style('stroke-opacity', this.value);
+                        } else {
+                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
+                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
+                                     .style('stroke', function(){ return this.style.fill; });
+                        }
                       });
 
     opacity_section.append("span").attr("id", "opacity_val_txt")
@@ -838,9 +844,15 @@ function createStyleBox(layer_name){
                           .style("width", "70px")
                           .on('change', function(){
                                 let val = +this.value;
-                                let zoom_scale = +d3.zoomTransform(map.node()).k;
-                                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
-                                current_layers[layer_name]['stroke-width-const'] = val;
+                                if(val != 0 || type === 'Line'){
+                                    let zoom_scale = +d3.zoomTransform(map.node()).k;
+                                    map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+                                    current_layers[layer_name]['stroke-width-const'] = val;
+                                } else {
+                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
+                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
+                                             .style('stroke', function(){ return this.style.fill; });
+                                }
                           });
 }
 

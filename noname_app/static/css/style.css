@@ -149,8 +149,12 @@ a.menu {
     padding: 0.9em 0.8em 0.8em 0.8em;
 }
 
-#section2 {
-    padding-top: 0.5em;
+#section2_pre {
+    padding: 5px 10px;
+}
+
+.form-rendering {
+    clear: both;
 }
 
 #section3 {
@@ -203,7 +207,7 @@ a.menu {
 
 #trash_button,#zoom_fit_button,.style_button,
 .style_target_layer,#legend_button,.active_button {
-    margin-top: 4px;
+    margin-top: 5px;
     margin-left: 1.5px;
     float: right;
 }

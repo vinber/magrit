@@ -67,7 +67,8 @@
             "eye_open": "Déactiver la couche",
             "eye_closed": "Activer la couche",
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
-            "details": "Détails"
+            "details": "Détails",
+            "representation": "Représentation"
         },
         "section1": {
             "title": "Ajout de données",
@@ -87,7 +88,7 @@
             "title": "Gestionnaire de couches"
         },
         "section4": {
-            "title": "Configuration de la carte",
+            "title": "Habillage et mise en page",
             "map_width": "<b>Largeur de la carte (px) </b>",
             "map_height": "<b>Hauteur de la carte (px) </b>",
             "map_ratio": "Ratio d'affichage",
