@@ -17,7 +17,7 @@ function handle_join(){
                     }
                 });
     } else if(user_data[layer_name].length != joined_dataset[0].length){
-        make_confirm_dialog(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_diff_nb_features")}).then(function(confirmed){
+        make_confirm_dialog2(undefined, undefined, {html_content: i18next.t("app_page.join_box.ask_diff_nb_features")}).then(function(confirmed){
             if(confirmed){ createJoinBox(layer_name[0]); }
         });
     } else {

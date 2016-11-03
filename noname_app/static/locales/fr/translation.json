@@ -68,7 +68,8 @@
             "eye_closed": "Activer la couche",
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
             "details": "Détails",
-            "representation": "Représentation"
+            "representation": "Représentation",
+            "ask_confirm": "Confirmation ?"
         },
         "section1": {
             "title": "Ajout de données",
@@ -371,8 +372,8 @@
             "symbol_fixed_size": "Taille du symbole fixée ",
             "on_value": "sur la valeur ...",
             "point_radius": "Taille du point<br>",
-            "graticule_steps": "Espacemment entre les lignes",
-            "graticule_dasharray": "Taille des tirets"
+            "graticule_steps": "Espacemment entre les lignes<br>",
+            "graticule_dasharray": "Taille des tirets<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",

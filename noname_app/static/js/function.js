@@ -382,7 +382,7 @@ function render_TypoSymbols(rendering_params, new_name){
         };
     up_legends();
     zoom_without_redraw();
-    switch_accordion_section();
+    //switch_accordion_section();
 }
 
 var fields_Discont = {
@@ -691,21 +691,13 @@ function send_layer_server(layer_name, url){
     var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: url,
-        data: formToSend,
-        global: false,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation(); console.log(error);
-        },
-        success: function(data){
-                let key = JSON.parse(data).key;
-                current_layers[layer_name].key_name = key;
-            }
-        });
+    request_data("POST", url, formToSend).then(function(e){
+        let key = JSON.parse(e.target.responseText).key;
+        current_layers[layer_name].key_name = key;
+    }).catch(function(err){
+        display_error_during_computation();
+        console.log(err);
+    });
 }
 
 var fields_FlowMap = {
@@ -971,14 +963,8 @@ function fillMenu_FlowMap(){
                 "join_field": join_field_to_send
                 }));
 
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/links',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
+            xhrequest("POST", '/compute/links', formToSend, true)
+                .then(data => {
                     let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
                     if(!new_layer_name) return;
                     let layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
@@ -1017,10 +1003,10 @@ function fillMenu_FlowMap(){
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.75)
                                    .style("stroke-width", (d,i) => {return links_byId[i][2]});
-
-                    switch_accordion_section();
-                }
-            });
+                }, error => {
+                    display_error_during_computation();
+                    console.log(error);
+                });
     });
 }
 
@@ -1034,7 +1020,7 @@ var fields_PropSymbolTypo = {
             field1_selec = d3.select("#PropSymbolTypo_field_1"),
             field2_selec = d3.select("#PropSymbolTypo_field_2");
 
-        if(fields.length == 0){
+        if(fields_all.length == 0){
             display_error_num_field();
             return;
         }
@@ -1043,9 +1029,9 @@ var fields_PropSymbolTypo = {
             field1_selec.append("option").text(field).attr("value", field);
         });
 
-        fields_all.forEach(function(field){
+        for(let field in fields_all){
             field2_selec.append("option").text(field).attr("value", field);
-        });
+        }
 
         field1_selec.on("change", function(){
             let field_name = this.value,
@@ -1055,7 +1041,7 @@ var fields_PropSymbolTypo = {
             ref_value_field.setAttribute("max", max_val_field);
             ref_value_field.setAttribute("value", max_val_field);
         });
-        setSelected(field1_selec.node(), fields[0]);
+        setSelected(field1_selec.node(), fields_num[0]);
     },
 
     unfill: function(){
@@ -1286,7 +1272,7 @@ function fillMenu_PropSymbolChoro(layer){
                 n_features: nb_features
             };
             zoom_without_redraw();
-            switch_accordion_section();
+            //switch_accordion_section();
         }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -1476,7 +1462,7 @@ var fillMenu_Label = function(){
             let layer = Object.getOwnPropertyNames(user_data)[0];
             let new_layer_name = render_label(layer, rendering_params);
             binds_layers_buttons(new_layer_name);
-            switch_accordion_section();
+//            switch_accordion_section();
          });
     d3.selectAll(".params").attr("disabled", true);
 }
@@ -1669,7 +1655,7 @@ var fillMenu_Typo = function(){
                     rendering_params.new_name = check_layer_name([layer, "Typo", field_selec.node().value].join('_'));
                 }
                 render_categorical(layer, rendering_params);
-                switch_accordion_section();
+//                switch_accordion_section();
             }
          });
     d3.selectAll(".params").attr("disabled", true);
@@ -1761,7 +1747,7 @@ function fillMenu_Choropleth(){
                     ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
                     );
                 render_choro(layer, rendering_params[field_to_render]);
-                switch_accordion_section();
+//                switch_accordion_section();
             }
          });
     d3.selectAll(".params").attr("disabled", true);
@@ -1972,16 +1958,10 @@ function fillMenu_Stewart(){
                 "user_breaks": bval,
                 "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
 
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/stewart',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
+            xhrequest("POST", '/compute/stewart', formToSend, true)
+                .then(res => {
                     {
-                        let data_split = data.split('|||'),
+                        let data_split = res.split('|||'),
                             raw_topojson = data_split[0];
                         let options = {result_layer_on_add: true};
                         if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
@@ -2008,8 +1988,10 @@ function fillMenu_Stewart(){
                             .selectAll("path")
                             .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
                     // Todo : use the function render_choro to render the result from stewart too
-                }
-            });
+                }, error => {
+                    display_error_during_computation();
+                    console.log(error);
+                });
         });
     d3.selectAll(".params").attr("disabled", true);
 }
@@ -2231,14 +2213,8 @@ function fillMenu_Anamorphose(){
                         field_name: field_n,
                         scale_max: scale_max})
                     );
-                $.ajax({
-                    processData: false,
-                    contentType: false,
-                    url: '/compute/olson',
-                    data: formToSend,
-                    type: 'POST',
-                    error: function(error) { display_error_during_computation(); console.log(error); },
-                    success: function(result){
+                xhrequest("POST", '/compute/olson', formToSend, true)
+                    .then( result => {
                         let options = {result_layer_on_add: true};
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
@@ -2254,8 +2230,10 @@ function fillMenu_Anamorphose(){
                                 .style("fill-opacity", 0.8)
                                 .style("stroke", "black")
                                 .style("stroke-opacity", 0.8);
-                    }
-                });
+                    }, err => {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -2276,14 +2254,8 @@ function fillMenu_Anamorphose(){
                     "var_name": var_to_send,
                     "iterations": nb_iter }));
 
-                $.ajax({
-                    processData: false,
-                    contentType: false,
-                    url: '/compute/carto_doug',
-                    data: formToSend,
-                    type: 'POST',
-                    error: function(error) { display_error_during_computation(); console.log(error); },
-                    success: function(data){
+                xhrequest("POST", '/compute/carto_doug', formToSend, true)
+                    .then(data => {
                         let options = {result_layer_on_add: true};
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
@@ -2300,8 +2272,10 @@ function fillMenu_Anamorphose(){
                             .style("fill-opacity", 0.8)
                             .style("stroke", "black")
                             .style("stroke-opacity", 0.8);
-                    }
-                });
+                    }, error => {
+                        display_error_during_computation();
+                        console.log(error);
+                    });
             } else if (algo === "dorling"){
                 let fixed_value = +document.getElementById("Anamorph_opt3").value,
                     fixed_size = +document.getElementById("Anamorph_opt2").value,
@@ -2329,7 +2303,7 @@ function fillMenu_Anamorphose(){
                 create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
                 up_legends();
                 zoom_without_redraw();
-                switch_accordion_section();
+//                switch_accordion_section();
                 }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -2658,7 +2632,7 @@ function fillMenu_PropSymbol(layer){
             make_prop_symbols(rendering_params);
             binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
-            switch_accordion_section();
+//            switch_accordion_section();
 
         });
     d3.selectAll(".params").attr("disabled", true);
@@ -2901,14 +2875,8 @@ function fillMenu_griddedMap(layer){
                 "cellsize": reso * 1000,
                 "grid_shape": grid_shape.node().value
                 }));
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/gridded',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
+            xhrequest("POST", '/compute/gridded', formToSend, true)
+                .then(data => {
                     let options = {result_layer_on_add: true};
                     if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
                         options["choosed_name"] = new_user_layer_name;
@@ -2939,8 +2907,11 @@ function fillMenu_griddedMap(layer){
                             rendered_field: "densitykm",
                                 };
                     render_choro(n_layer_name, rendering_params);
-                }
-            });
+
+                }, error => {
+                    display_error_during_computation();
+                    console.log(error);
+                });
         });
     d3.selectAll(".params").attr("disabled", true);
 }
@@ -3434,7 +3405,7 @@ function add_table_field(table, layer_name, parent){
     return;
 }
 
-
+/*
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
 function switch_accordion_section(id_to_close="accordion2", id_to_open="accordion3"){
@@ -3445,6 +3416,7 @@ function switch_accordion_section(id_to_close="accordion2", id_to_open="accordio
     if(section3.getAttribute("aria-expanded") == "false")
         section3.dispatchEvent(new Event("click"));
 }
+*/
 
 /**
 * Return the haversine distance in kilometers between two points (lat/long coordinates)
@@ -3537,6 +3509,24 @@ function request_data(method, url, data){
         request.send(data);
     });
 }
+
+function xhrequest(method, url, data, waiting_message){
+    if(waiting_message){ document.getElementById("overlay").style.display = ""; }
+    return new Promise(function(resolve, reject){
+        var request = new XMLHttpRequest();
+        request.open(method, url, true);
+        request.onload = resp => {
+            resolve(resp.target.responseText);
+            if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
+        };
+        request.onerror = err => {
+            reject(err);
+            if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
+        };
+        request.send(data);
+    });
+}
+
 
 /**
 * Function computing the min of an array of values (tking care of empty/null/undefined slot)
@@ -3675,10 +3665,33 @@ function fillMenu_PropSymbolTypo(layer){
                         .on("change", function(){
                             let field_name = this.value;
                             if(rendering_params[field_name])
-                                d3.select("#propChoro_yes").attr("disabled", null);
+                                d3.select("#propTypo_yes").attr("disabled", null);
                             else
-                                d3.select("#propChoro_yes").attr("disabled", true);
+                                d3.select("#propTypo_yes").attr("disabled", true);
                         });
+
+    dv2.insert('p').style("margin", "auto").html("")
+        .append("button")
+        .attrs({id: "Typo_class", class: "button_disc params"})
+        .styles({"font-size": "0.8em", "text-align": "center"})
+        .html(i18next.t("app_page.func_options.typo.color_choice"))
+        .on("click", function(){
+            let layer = Object.getOwnPropertyNames(user_data)[0];
+            let selected_field = field_selec.node().value;
+            let new_layer_name = check_layer_name([layer, "Typo", selected_field].join('_'));
+            display_categorical_box(layer, selected_field)
+                .then(function(confirmed){
+                    if(confirmed){
+                        d3.select("#Typo_yes").attr("disabled", null)
+                        rendering_params = {
+                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                            }
+                    }
+                });
+        });
+
+
 
     var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
                         .insert('input')
@@ -3690,62 +3703,59 @@ function fillMenu_PropSymbolTypo(layer){
                         .append('button')
                         .attr('id', 'propTypo_yes')
                         .attr('class', 'button_st3')
-                        .attr('disabled', true)
                         .text(i18next.t("app_page.func_options.common.render"));
 
     ok_button.on("click", function(){
-        if(!ref_value.node().value) return
-        if(rendering_params[field2_selec.node().value]){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                nb_features = user_data[layer].length,
-                rd_params = {},
-                color_field = field2_selec.node().value,
-                new_layer_name = uo_layer_name.node().value;
+        if(!ref_value.node().value)
+            return;
+        let layer = Object.getOwnPropertyNames(user_data)[0],
+            nb_features = user_data[layer].length,
+            rd_params = {},
+            color_field = field2_selec.node().value,
+            new_layer_name = uo_layer_name.node().value;
 
-            new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                            ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsTypo");
+        new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                        ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsTypo");
 
-            rd_params.field = field1_selec.node().value;
-            rd_params.new_name = new_layer_name;
-            rd_params.nb_features = nb_features;
-            rd_params.ref_layer_name = layer;
-            rd_params.symbol = symb_selec.node().value;
-            rd_params.ref_value = +ref_value.node().value;
-            rd_params.ref_size = +ref_size.node().value;
-            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+        rd_params.field = field1_selec.node().value;
+        rd_params.new_name = new_layer_name;
+        rd_params.nb_features = nb_features;
+        rd_params.ref_layer_name = layer;
+        rd_params.symbol = symb_selec.node().value;
+        rd_params.ref_value = +ref_value.node().value;
+        rd_params.ref_size = +ref_size.node().value;
+        rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
 
-            let id_map = make_prop_symbols(rd_params),
-                colors_breaks = [];
+        let id_map = make_prop_symbols(rd_params),
+            colors_breaks = [];
 
-            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
-                colors_breaks.push([
-                        [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
-                        rendering_params[color_field]['colors'][i-1]
-                    ]);
-            }
-
-            let options_disc = {schema: rendering_params[color_field].schema,
-                                colors: rendering_params[color_field].colors,
-                                no_data: rendering_params[color_field].no_data}
-
-            current_layers[new_layer_name] = {
-                renderer: "PropSymbolsTypo",
-                features_order: id_map,
-                symbol: rd_params.symbol,
-                ref_layer_name: layer,
-                options_disc: options_disc,
-                rendered_field: field1_selec.node().value,
-                rendered_field2: field2_selec.node().value,
-                size: [+ref_value.node().value, +ref_size.node().value],
-                "stroke-width-const": 1,
-                fill_color: { "class": id_map.map(obj => obj[3]) },
-                colors_breaks: colors_breaks,
-                is_result: true,
-                n_features: nb_features
-            };
-            zoom_without_redraw();
-            switch_accordion_section();
+        for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
+            colors_breaks.push([
+                    [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
+                    rendering_params[color_field]['colors'][i-1]
+                ]);
         }
+
+        let options_disc = {schema: rendering_params[color_field].schema,
+                            colors: rendering_params[color_field].colors,
+                            no_data: rendering_params[color_field].no_data}
+
+        current_layers[new_layer_name] = {
+            renderer: "PropSymbolsTypo",
+            features_order: id_map,
+            symbol: rd_params.symbol,
+            ref_layer_name: layer,
+            options_disc: options_disc,
+            rendered_field: field1_selec.node().value,
+            rendered_field2: field2_selec.node().value,
+            size: [+ref_value.node().value, +ref_size.node().value],
+            "stroke-width-const": 1,
+            fill_color: { "class": id_map.map(obj => obj[3]) },
+            colors_breaks: colors_breaks,
+            is_result: true,
+            n_features: nb_features
+        };
+        zoom_without_redraw();
     });
     d3.selectAll(".params").attr("disabled", true);
 }

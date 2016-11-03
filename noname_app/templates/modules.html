@@ -14,12 +14,14 @@
     <link href="static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <link href="static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <script  src="static/js/lib/d3.v4.min.js"></script>
     <script  src="static/js/lib/d3-geo-projection.v1.min.js"></script>
     <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script>
     <script  src="static/js/lib/topojson.v1.min.js"></script>
     <script  src="static/js/lib/jquery-2.2.1.min.js"></script>
     <script  src="static/js/lib/jquery-ui.min.js"></script>
+    <script  src="static/js/lib/bootstrap-native.min.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
@@ -98,6 +100,18 @@ function setUpInterface(resume_project)
     document.body.appendChild(bg_drop);
 
     let menu = d3.select("#menu"),
+        b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "[html]app_page.section1.title"),
+        accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2_pre.title"),
+        accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
+        b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
+        accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
+        b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
+        accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
+        b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
+        accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
+/*
+    let menu = d3.select("#menu"),
         accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
         accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
         //accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
@@ -111,7 +125,7 @@ function setUpInterface(resume_project)
     accordion3.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section3.title");
     accordion4.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section4.title");
     accordion5.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section5b.title");
-
+*/
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
                         .attr("class", "i18n")
@@ -122,7 +136,7 @@ function setUpInterface(resume_project)
     accordion3.append("div")
         .attrs({id: "section3", class: "i18n", "data-i18n": "[data-tooltip]app_page.tooltips.section3"}),
     accordion4.append("div").attr("id","section4");
-    accordion5.append("div").attr("id","section5b");
+    accordion5.append("div").attr("id","section5");
 
     let dv1 = section1.append("div"),
         dv11 = dv1.append("div").style("width", "auto");
@@ -431,7 +445,7 @@ function setUpInterface(resume_project)
         zoom_without_redraw();
     });
 
-    let section5b = d3.select("#section5b");
+    let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")
                 .attr("class", "form-item");
 
@@ -913,60 +927,21 @@ function setUpInterface(resume_project)
     create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
     prepare_drop_section();
 
-    /////////////////////////////////////////////////////////////////////////////
-    // JQuery menu, tooltips and progress bar related functions :
-    //////////////////////////////////////////////////////////////////////////////
+    let acc = document.getElementsByClassName("accordion");
 
-    // Set-up all the accordions :
-    $(".accordion").accordion({ collapsible: true, active: false, heightStyle: "#map" });
-
-    // Start with the first always opened and open the two accordions
-    // on which we can drop files if they are closed when
-    // we are starting to drag a file in this direction:
-    $("#accordion1").accordion({active: 0, event: "click dragenter"});
-    $("#accordion3").accordion("option", "event", "click dragenter")
-
-/*
-    // Close the functionnality options accordion when the user intend to choose another function :
-    $("#accordion2_pre").on("accordionbeforeactivate", function(){
-    //$("#accordion2_pre").on("accordionbeforeactivate", function(event, ui){
-     //   if(ui.newHeader.length) $("#accordion2").accordion({active: false})
-        let section2_accordion = document.getElementById("accordion2").firstChild;
-        if(section2_accordion.getAttribute("aria-expanded") == "true")
-            section2_accordion.dispatchEvent(new Event("click"));
-        });
-*/
-
-    // Compute the total size occuped by the menu in order to close some section(s) to avoid go further than the page height :
-    $(".accordion").on("accordionactivate", function(event, ui){
-            if(!(ui.newPanel) || ui.newPanel.length == 0 )
-                return ;
-            let last_opened = ui.newPanel[0].parentElement.id;
-            let opened = [];
-            let accordions = document.querySelectorAll(".accordion");
-            let new_size = 33; // Use the real header size instead of 33
-            for(let i = 0; i < accordions.length ; i++){
-                new_size = new_size + accordions[i].getBoundingClientRect().height;
-                if(accordions[i].firstChild.getAttribute("aria-expanded") == "true")
-                    opened.push(accordions[i].id);
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].onclick = function(){
+            let opened = document.querySelector(".accordion.active");
+            if(opened){
+                opened.classList.toggle("active");
+                opened.nextElementSibling.classList.toggle("show");
             }
-            opened.splice(opened.indexOf(last_opened), 1);
-            if(new_size > window.innerHeight
-                    && opened.indexOf("accordion1") > -1
-                    && last_opened != "accordion1"){
-                new_size = new_size - accordions[0].getBoundingClientRect().height;
-                opened.splice(opened.indexOf("accordion1"), 1);
-                $("#accordion1").accordion("option", "active", 1);
+            if(!opened || opened.id != this.id){
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("show");
             }
-            for(let i = opened.length - 1; i > 0; --i){
-                if(new_size < window.innerHeight)
-                    break;
-                let acc = document.getElementById(opened[i]);
-                new_size = new_size - acc.getBoundingClientRect().height;
-                $("#" + opened[i]).accordion("option", "active", 1);
-                opened.pop();
-            }
-        });
+      }
+    }
 
     // Set up the widget allowing to sort layers :
     $( "#sortable" ).sortable({
@@ -997,14 +972,6 @@ function setUpInterface(resume_project)
          }
       });
     $( "#sortable" ).disableSelection();
-
-    // Display a progress bar during the ajaxRequest
-    // (can be unset locally by using the `"global": false` param when making an ajax request)
-    $(document).ajaxStart(function() {
-            document.getElementById("overlay").style.display = "";
-        }).ajaxComplete(function() {
-            document.getElementById("overlay").style.display = "none";
-    });
 }
 
 function bindTooltips(){
@@ -1098,6 +1065,7 @@ function make_ico_choice(){
             .attr("id", "button_" + func_name)
             .style("margin", "1px")
             .style("cursor", "pointer")
+            .style("width", "50px")
             .on("click", function(){
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
@@ -1118,9 +1086,9 @@ function make_ico_choice(){
                 window.fields_handler = eval(current_functionnality.fields_handler);
                 make_menu();
 
-                // Replace the title of the section without touching the triangle icon from the menu:
-                let selec_title = document.getElementById("accordion2_pre").querySelector("h3");
-                selec_title.innerHTML = '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span><span class="i18n" data-i18n="app_page.common.representation">' +
+                // Replace the title of the section:
+                let selec_title = document.getElementById("btn_s2");
+                selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
                                         i18next.t("app_page.common.representation") +
                                         '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
                                         current_functionnality.name +
@@ -1150,7 +1118,7 @@ function make_ico_choice(){
                     fields_handler.fill(target_layer);
                 }
 
-                // Specific case for flow/link functionnality as we are also 
+                // Specific case for flow/link functionnality as we are also
                 // filling the fields with data from the uploaded tabular file if any :
                 if(func_name == "flow" && joined_dataset){
                     fields_handler.fill();
@@ -1487,6 +1455,66 @@ function reproj_symbol_layer(){
   }
 }
 
+var make_confirm_dialog2 = (function(class_box, title, options){
+    let existing = new Set();
+    let get_available_id = () => {
+        for(let i = 0; i < 50; i++){
+            if(!existing.has(i)){
+                existing.add(i);
+                return i;
+            }
+        }
+    }
+    return function(class_box, title, options){
+        let container = document.createElement("div");
+        let new_id = get_available_id();
+
+        container.setAttribute("id", "myModal_" + new_id);
+        container.setAttribute("class", "modal fade " + class_box);
+        container.setAttribute("tabindex", "-1");
+        container.setAttribute("role", "dialog");
+        container.setAttribute("aria-labelledby", "myModalLabel");
+        container.setAttribute("aria-hidden", "true");
+        container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+        document.body.appendChild(container);
+
+        options = options || {};
+        container = document.getElementById("myModal_" + new_id);
+        title = title || i18next.t("app_page.common.ask_confirm");
+        class_box = class_box || "dialog";
+        let deferred = Q.defer();
+        let html_content = options.html_content || "";
+        let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
+        let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
+        let modal_box = new Modal(container, {
+            content: '<div class="modal-header">'
+                      +'<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
+                      +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
+                      +'</div>'
+                      +'<div class="modal-body">'
+                      +'<p>'
+                      + html_content
+                      +'</p>'
+                      +'</div>'
+                      +'<div class="modal-footer">'
+                      +'<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>'
+                      +'<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>'
+                      +'</div>'
+        });
+        modal_box.open();
+        container.querySelector(".btn_ok").onclick = function(){
+            deferred.resolve(true);
+        }
+        container.querySelector(".btn_cancel").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            existing.delete(new_id);
+            container.remove();
+        }
+        return deferred.promise;
+    };
+})();
+
 // Convenience function to make a confirm dialog returning a defered promise
 // which can be used like `myConfirmDialog(".classBox", "Title", {html_content: "..."}).then(function(confirmed){if(confirmed){ ... }})
 var make_confirm_dialog = function(class_box, title, options){
@@ -1501,7 +1529,7 @@ var make_confirm_dialog = function(class_box, title, options){
         .attr("id", "dialog").attr("class", class_box)
         .attr("title", title).html(html_content);
 
-    $( "#dialog" ).dialog({
+    $("#dialog").dialog({
         position: options.top ? { my: "center", at: "top" } : undefined,
         width: options.width, height: options.height, modal:true,
         buttons:[
@@ -2268,14 +2296,9 @@ function export_layer_geo(layer, type, projec, proj4string){
         formToSend.append("projection", JSON.stringify({"proj4string" : proj4string}));
     else
         formToSend.append("projection", JSON.stringify({"name" : projec}));
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/get_layer2',
-        data: formToSend,
-        type: 'POST',
-        error: function(error) { console.log(error); },
-        success: function(data, code, obj){
+
+    xhrequest("POST", '/get_layer2', formToSend, true)
+        .then(data => {
             if(data.indexOf("Error:") == 0){
                 swal({title: "Oops...",
                      text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
@@ -2299,8 +2322,9 @@ function export_layer_geo(layer, type, projec, proj4string){
             dlAnchorElem.setAttribute("href", dataStr);
             dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
             dlAnchorElem.click();
-        }
-    });
+        }, error => {
+            console.log(error);
+        });
 }
 
 function make_export_layer_box(){
@@ -2403,14 +2427,9 @@ function make_export_layer_box(){
                     formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
                 else
                     formToSend.append("projection", JSON.stringify({"name" : projec}));
-                $.ajax({
-                    processData: false,
-                    contentType: false,
-                    url: '/get_layer2',
-                    data: formToSend,
-                    type: 'POST',
-                    error: function(error) { console.log(error); },
-                    success: function(data, code, obj){
+
+                xhrequest("POST", '/get_layer2', formToSend, true)
+                    .then( data => {
                         if(data.indexOf("Error:") == 0){
                             swal({title: "Oops...",
                                  text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
@@ -2434,8 +2453,10 @@ function make_export_layer_box(){
                         dlAnchorElem.setAttribute("href", dataStr);
                         dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
                         dlAnchorElem.click();
-                    }
-                });
+
+                    }, error => {
+                        console.log(error);
+                    });
                 dialogBox.dialog("destroy").remove();
             });
 }

@@ -150,13 +150,14 @@ a.menu {
 }
 
 #section2_pre {
-    padding: 3px 18px;
+    padding: 2px 8px;
 }
 
 .form-rendering {
     //clear: both;
     position: relative;
     //top: 20px;
+    padding: 0px 2px;
 }
 
 #section3 {
@@ -172,8 +173,7 @@ a.menu {
 }
 
 #section5 {
-    padding-top: 0.3em;
-    padding-bottom: 0.3em;
+    padding: 0.8em 1.2em 0.8em 1.2em;
 }
 
 #overlay, .overlay_drop {
@@ -582,4 +582,57 @@ a.menu {
   background-image: -o-linear-gradient(top, #eb7373, #ad0707);
   background-image: linear-gradient(to bottom, #eb7373, #ad0707);
   text-decoration: none;
+}
+
+button.accordion {
+    background-color: #595959;
+    color: #fff;
+    cursor: pointer;
+    padding: 7px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1.2em;
+    transition: 0.4s;
+    font-family: Baloo Bhaina;
+    margin: 1px;
+}
+
+button.accordion:after {
+    content: '\02795';
+    font-size: 13px;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2796";
+}
+
+div.panel {
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 1.1em;
+    color: #222222;
+    background: #ffffff url("images/ui-bg_flat_75_ffffff_40x100.png") 50% 50% repeat-x;
+    overflow: hidden;
+    transition: visibility 0.3s, opacity 0.6s linear;
+    visibility: hidden;
+    max-height: 0;
+    opacity: 0;
+    border: 1px solid #aaaaaa;
+    border-top-color: rgb(170, 170, 170);
+    border-top-style: solid;
+    border-top-width: 1px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+div.panel.show {
+    opacity: 1;
+    max-height: 650px;
+    margin-bottom: 7px;
+    overflow: auto;
+    visibility: visible;
 }

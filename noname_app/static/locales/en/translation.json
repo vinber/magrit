@@ -68,7 +68,8 @@
             "eye_closed": "Toogle layer visibility",
             "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
             "details": "Details",
-            "representation": "Representation"
+            "representation": "Representation",
+            "ask_confirm": "Confirm ?"
         },
         "section1": {
             "title": "Add your data",
@@ -374,8 +375,8 @@
             "symbol_fixed_size": "Symbol fixed size ",
             "on_value": "on value ...",
             "point_radius": "Point radius<br>",
-            "graticule_steps": "Step size between lines",
-            "graticule_dasharray": "Length of dashes"
+            "graticule_steps": "Step size between lines<br>",
+            "graticule_dasharray": "Length of dashes<br>"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

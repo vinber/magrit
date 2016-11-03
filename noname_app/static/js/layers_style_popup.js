@@ -414,7 +414,7 @@ function createStyleBoxGraticule(layer_name){
     dasharray_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_dasharray"));
     dasharray_choice.append("input")
             .attrs({type: "range", value: current_params.step, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
-            .style("width", "70px")
+            .styles({"vertical-align": "middle", "width": "70px"})
             .on("change", function(){
                 selection.style("stroke-dasharray", this.value);
                 current_layers["Graticule"].dasharray = +this.value;
@@ -1171,7 +1171,7 @@ var getBlurFilter = (function(size){
             count = count + 1;
             blur_filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
             blur_filt_to_use.setAttribute("id","blurfilt" + count);
-            blur_filt_to_use.setAttribute("class", "blur"); 
+            blur_filt_to_use.setAttribute("class", "blur");
             var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
             gaussianFilter.setAttribute("in", "SourceGraphic");
             gaussianFilter.setAttribute("stdDeviation", size);

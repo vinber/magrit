@@ -387,20 +387,13 @@ function convert_dataset(file){
     var ajaxData = new FormData();
     ajaxData.append("action", "submit_form");
     ajaxData.append('file[]', file);
-     $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_tabular',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
+    xhrequest("POST", '/convert_tabular', ajaxData, true)
+        .then(data => {
+            data = JSON.parse(data);
+            dataset_name = data.name;
+            add_dataset(d3.csvParse(data.file));
+        }, error => {
             display_error_during_computation();
-        },
-        success: function(data) {
-                data = JSON.parse(data);
-                dataset_name = data.name;
-                add_dataset(d3.csvParse(data.file));
-            }
         });
 }
 
@@ -411,20 +404,14 @@ function handle_shapefile(files, target_layer_on_add){
     for(let j=0; j<files.length; j++){
         ajaxData.append('file['+j+']', files[j]);
     }
-     $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_to_topojson',
-        data: ajaxData,
-        type: 'POST',
-        success: function(data) {
+    xhrequest("POST", '/convert_to_topojson', ajaxData, true)
+        .then(data => {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
-        },
-        error: function(error) {
+        }, error => {
             display_error_during_computation();
-        }
-    });
+        });
 }
+
 
 function handle_TopoJSON_files(files, target_layer_on_add) {
     var f = files[0],
@@ -432,17 +419,8 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         reader = new FileReader(),
         ajaxData = new FormData();
     ajaxData.append('file[]', f);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/cache_topojson/user',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation();
-        },
-        success: function(res){
+    xhrequest("POST", '/cache_topojson/user', ajaxData, false)
+        .then(res => {
             let key = JSON.parse(res).key;
             reader.onloadend = function(){
                 let text = reader.result;
@@ -450,9 +428,11 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
                 add_layer_topojson(topoObjText, {target_layer_on_add: target_layer_on_add});
                 }
             reader.readAsText(f);
-        }
-    });
+        }, error => {
+            display_error_during_computation();
+        });
 };
+
 
 function handle_reload_TopoJSON(text, param_add_func){
     var ajaxData = new FormData();
@@ -632,26 +612,36 @@ function add_dataset(readed_dataset){
 //            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
 //        }
     });
+
+    if(targeted_layer_added){
+        swal({title: "",
+              text: i18next.t("A layer and an external dataset have been provided. Want to join them now ?"),
+              allowOutsideClick: false,
+              allowEscapeKey: true,
+              type: "question",
+              showConfirmButton: true,
+              showCancelButton: true,
+              confirmButtonText: i18next.t("app_page.common.yes"),
+              cancelButtonText: i18next.t("app_page.common.no"),
+            }).then(() => {
+                let layer_name = Object.getOwnPropertyNames(user_data)[0];
+                createJoinBox(layer_name);
+            }, dismiss => { null; });
+    }
+
 }
 
 function add_csv_geom(file, name){
     var ajaxData = new FormData();
     ajaxData.append('filename', name);
     ajaxData.append('csv_file', file);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_csv_geo',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation();
-        },
-        success: function(data) {
+    xhrequest("POST", '/convert_csv_geo', ajaxData, true)
+        .then( data => {
             dataset_name = undefined;
             add_layer_topojson(data, {target_layer_on_add: true});
-        }
-    });
+        }, error => {
+            display_error_during_computation();
+        });
 }
 
 /**
@@ -663,19 +653,12 @@ function handle_single_file(file, target_layer_on_add) {
     var ajaxData = new FormData();
     ajaxData.append("action", "single_file");
     ajaxData.append('file[]', file);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_to_topojson',
-        data: ajaxData,
-        type: 'POST',
-        success: function(data) {
+    xhrequest("POST", '/convert_to_topojson', ajaxData, true)
+        .then( data => {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
-        },
-        error: function(error) {
+        }, error => {
             display_error_during_computation();
-        }
-    });
+        });
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
@@ -834,7 +817,7 @@ function add_layer_topojson(text, options){
     } else if (result_layer_on_add) {
         li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('');
         center_map(lyr_name_to_add);
-        switch_accordion_section();
+        //switch_accordion_section();
     } else {
         li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
     }
@@ -859,8 +842,23 @@ function add_layer_topojson(text, options){
               allowOutsideClick: true,
               allowEscapeKey: true,
               type: "success"
-            }).then(function(){ null; },
-                    function(dismiss){ null; });
+            }).then(() => { null; },
+                    dismiss => { null; });
+
+    if(target_layer_on_add && joined_dataset.length > 0){
+        swal({title: "",
+              text: i18next.t("A layer and an external dataset have been provided. Want to join them now ?"),
+              allowOutsideClick: false,
+              allowEscapeKey: true,
+              type: "question",
+              showConfirmButton: true,
+              showCancelButton: true,
+              confirmButtonText: i18next.t("app_page.common.yes"),
+              cancelButtonText: i18next.t("app_page.common.no"),
+            }).then(() => {
+                createJoinBox(lyr_name_to_add);
+            }, dismiss => { null; });
+    }
     return lyr_name_to_add;
 };
 
@@ -1260,32 +1258,21 @@ function add_sample_layer(){
 function add_sample_geojson(name, options){
     var formToSend = new FormData();
     formToSend.append("layer_name", name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/cache_topojson/sample_data',
-        data: formToSend,
-        type: 'POST',
-        success: function(data){ add_layer_topojson(data, options); },
-        error: function(error) {
+    xhrequest("POST", '/cache_topojson/sample_data', formToSend, true)
+        .then( data => {
+            add_layer_topojson(data, options);
+        }).catch( err => {
             display_error_during_computation();
-        }
-    });
+            console.log(err);
+        });
 }
 
 function send_remove_server(layer_name){
     let formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/layers/delete',
-        data: formToSend,
-        type: 'POST',
-        success: function(data){ console.log(JSON.parse(data)) },
-        error: function(error) { console.log(error); }
-    });
+    xhrequest("POST", '/layers/delete', formToSend, true)
+        .then(data => { console.log(JSON.parse(data)) })
+        .catch(err => { console.log(err); });
 }
 
 function get_map_xy0(){
@@ -1418,13 +1405,13 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
+    let list_symbols = xhrequest('GET', '/static/json/list_symbols.json', null)
             .then( list_res => {
-               list_res = JSON.parse(list_res.target.responseText);
-               Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
+               list_res = JSON.parse(list_res);
+               Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
-                        default_symbols.push([list_res[i], symbols[i].target.responseText]);
+                        default_symbols.push([list_res[i], symbols[i]]);
                     }
                 });
             })
