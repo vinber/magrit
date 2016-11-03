@@ -798,7 +798,6 @@ function createStyleBox(layer_name){
                                                          "user_defined")
                         .then(function(result){
                             if(result){
-                                console.log(result)
                                 lgd_to_change = true;
                                 let serie = result[0];
                                 serie.setClassManually(result[2]);
@@ -824,13 +823,13 @@ function createStyleBox(layer_name){
                       .styles({"width": "70px", "vertical-align": "middle"})
                       .on('change', function(){
                         opacity_section.select("#opacity_val_txt").html(" " + this.value);
-                        if(this.value !== "0" || type === 'Line'){
-                            selection.style('stroke-opacity', this.value);
-                        } else {
-                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-                                     .style('stroke', function(){ return this.style.fill; });
-                        }
+//                        if(this.value !== "0" || type === 'Line'){
+                        selection.style('stroke-opacity', this.value);
+//                        } else {
+//                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
+//                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
+//                                     .style('stroke', function(){ return this.style.fill; });
+//                        }
                       });
 
     opacity_section.append("span").attr("id", "opacity_val_txt")
@@ -844,15 +843,15 @@ function createStyleBox(layer_name){
                           .style("width", "70px")
                           .on('change', function(){
                                 let val = +this.value;
-                                if(val != 0 || type === 'Line'){
-                                    let zoom_scale = +d3.zoomTransform(map.node()).k;
-                                    map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
-                                    current_layers[layer_name]['stroke-width-const'] = val;
-                                } else {
-                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-                                             .style('stroke', function(){ return this.style.fill; });
-                                }
+//                                if(val != 0 || type === 'Line'){
+                                let zoom_scale = +d3.zoomTransform(map.node()).k;
+                                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+                                current_layers[layer_name]['stroke-width-const'] = val;
+//                                } else {
+//                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
+//                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
+//                                             .style('stroke', function(){ return this.style.fill; });
+//                                }
                           });
 }
 
@@ -1147,3 +1146,38 @@ function createStyleBox_ProbSymbol(layer_name){
 //                  current_layers[layer_name].force.nodes(nodes).start()
 //              }
 //}
+
+/**
+* Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
+* if one with the same param already exists, its id is returned,
+* otherwise a new one is created, and its id is returned
+*/
+var getBlurFilter = (function(size){
+    var count = 0;
+    return function(size) {
+        let filters = svg_map.querySelector("filters");
+        if(!filters){
+            filters = document.createElement("filters");
+            svg_map.insertBefore(filters, svg_map.querySelector("defs"));
+        }
+        let blur_filts = filters.querySelectorAll(".blur");
+        let blur_filt_to_use;
+        for(let i=0; i < blur_filts.length; i++){
+            if(blur_filts[i].querySelector("feGaussianBlur").getAttribute("stdDeviation") == size){
+                blur_filt_to_use = blur_filts[i];
+            }
+        }
+        if(!blur_filt_to_use){
+            count = count + 1;
+            blur_filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+            blur_filt_to_use.setAttribute("id","blurfilt" + count);
+            blur_filt_to_use.setAttribute("class", "blur"); 
+            var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+            gaussianFilter.setAttribute("in", "SourceGraphic");
+            gaussianFilter.setAttribute("stdDeviation", size);
+            blur_filt_to_use.appendChild(gaussianFilter);
+            filters.appendChild(blur_filt_to_use);
+        }
+        return blur_filt_to_use.id;
+    };
+})();

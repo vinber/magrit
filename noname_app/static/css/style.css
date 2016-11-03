@@ -150,11 +150,13 @@ a.menu {
 }
 
 #section2_pre {
-    padding: 5px 10px;
+    padding: 3px 18px;
 }
 
 .form-rendering {
-    clear: both;
+    //clear: both;
+    position: relative;
+    //top: 20px;
 }
 
 #section3 {

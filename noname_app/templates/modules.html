@@ -1055,7 +1055,6 @@ function change_lang(){
         return;
     } else {
         let other_lang = new_lang == "fr" ? "en" : "fr";
-        //i18next.changeLanguage(new_lang, () => { $(".i18n").localize();});
         i18next.changeLanguage(new_lang, () => {
             localize(".i18n");
             $("#section1[data-tooltip!='']").qtip("destroy", true);
@@ -1100,18 +1099,36 @@ function make_ico_choice(){
             .style("margin", "1px")
             .style("cursor", "pointer")
             .on("click", function(){
+                // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
                     fields_handler.unfill();
+                    let previous_button = document.getElementById("button_" + current_functionnality.name);
+                    previous_button.style.filter = "invert(0%) saturate(100%)";
+                    previous_button.style.boxShadow = "";
+                    clean_menu_function();
                 }
+
+                // Highlight the icon of the selected functionnality :
+                this.style.filter = "invert(100%) saturate(200%)";
+                this.style.boxShadow = "-1px 1px 5px 2px #888888";
+
+                // Get the function to fill the menu with the appropriate options (and do it):
                 current_functionnality = get_menu_option(func_name);
                 let make_menu = eval(current_functionnality.menu_factory);
                 window.fields_handler = eval(current_functionnality.fields_handler);
-                // Replace the title of the section without touching the triangle icon from the menu:
-                let selec_title = document.getElementById("accordion2_pre").querySelector("h3");
-                selec_title.innerHTML = i18next.t("app_page.common.representation") + " : " + current_functionnality.title;
-                clean_menu_function();
                 make_menu();
 
+                // Replace the title of the section without touching the triangle icon from the menu:
+                let selec_title = document.getElementById("accordion2_pre").querySelector("h3");
+                selec_title.innerHTML = '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span><span class="i18n" data-i18n="app_page.common.representation">' +
+                                        i18next.t("app_page.common.representation") +
+                                        '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
+                                        current_functionnality.name +
+                                        '">' +
+                                        i18next.t("app_page.func_title."+ current_functionnality.name) +
+                                        '</span>';
+
+                // Bind the help tooltip (displayed when mouse over the 'i' icon) :
                 $("#btn_info[data-tooltip_help!='']").qtip({
                     content: {text: i18next.t("app_page.func_help." + func_name + ".block"),
                               title: i18next.t("app_page.func_help." + func_name + ".title"),
@@ -1126,17 +1143,22 @@ function make_ico_choice(){
                     hide: "unfocus"
                 });
 
+                // Fill the field of the functionnality with the field
+                // of the targeted layer if already uploaded by the user :
                 if(targeted_layer_added){
                     let target_layer = Object.getOwnPropertyNames(user_data)[0];
                     fields_handler.fill(target_layer);
                 }
+
+                // Specific case for flow/link functionnality as we are also 
+                // filling the fields with data from the uploaded tabular file if any :
                 if(func_name == "flow" && joined_dataset){
                     fields_handler.fill();
                 }
-                //switch_accordion_section("accordion2_pre", "accordion2");
             });
     }
-    //$("#list_ico_func").tabs()
+    section2_pre.append("hr")
+            .styles({"clear": "both", "position": "relative"});
 }
 
 var w = Math.round(window.innerWidth - 360),
