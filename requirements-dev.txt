@@ -1,11 +1,11 @@
-aiohttp >= 1.0.5
+aiohttp >= 1.1.1
 aiohttp_jinja2 >= 0.7.0
-aiohttp_session >= 0.5.0
-aioredis >= 0.2.6
-cchardet == 1.0.0
+aiohttp_session >= 0.7.1
+aioredis >= 0.2.9
+cchardet == 1.1.1
 Cython >= 0.24
 docopt >= 0.6.2
-Fiona >= 1.6
+Fiona >= 1.7
 gdal == 2.1.0
 geopandas >= 0.2.1
 gunicorn >= 19.6.0
@@ -15,7 +15,7 @@ jenkspy >= 0.1.2
 matplotlib >= 1.5.3
 murmurhash3 >= 2.3.5
 numpy >= 1.11.2
-pandas == 0.19.0
+pandas >= 0.19.0
 pyproj >= 1.9.5.1
 Rtree >= 0.8.2
 sauceclient >= 0.2.1
@@ -24,6 +24,6 @@ selenium == 2.53.6
 Shapely >= 1.5.15
 ujson >= 1.35
 uvloop >= 0.5.4
-psutil >= 4.3.0
+psutil >= 4.4.2
 pytest >= 2.9.2
 xlrd >= 1.0.0
