@@ -222,9 +222,9 @@
             "geo": "Export layers to a geographic format",
             "geo_title_box": "Choose layer and datatype...",
             "options": "Export options",
-            "option_layer": "Layer to export",
-            "option_datatype": "Datatype",
-            "option_projection": "Projection"
+            "option_layer": "Layer to export ",
+            "option_datatype": "Datatype ",
+            "option_projection": "Projection "
         },
         "join_box": {
             "title": "Join options",

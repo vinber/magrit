@@ -222,7 +222,7 @@ function make_style_box_indiv_symbol(label_node){
                       y: +label_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
     let new_params = {};
     let self = this;
-    make_confirm_dialog("styleTextAnnotation", "Label options")
+    make_confirm_dialog2("styleTextAnnotation", "Label options")
         .then(function(confirmed){
             if(!confirmed){
                 label_node.setAttribute("width", current_options.size);
@@ -231,7 +231,7 @@ function make_style_box_indiv_symbol(label_node){
                 label_node.setAttribute("y", ref_coords.y - (+current_options.size.slice(0, -2) / 2));
             }
         });
-    let box_content = d3.select(".styleTextAnnotation").insert("div");
+    let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
     box_content.append("p").html("Image size ")
             .append("input").attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
             .on("change", function(){
@@ -675,7 +675,7 @@ var render_discont = function(){
     send_layer_server(new_layer_name, "/layers/add");
     up_legends();
     zoom_without_redraw();
-    switch_accordion_section();
+//    switch_accordion_section();
 //    resolve(true);
 //});
 }
@@ -1499,7 +1499,7 @@ function make_style_box_indiv_label(label_node){
 
     let new_params = {};
     let self = this;
-    make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
         .then(function(confirmed){
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
@@ -1508,7 +1508,7 @@ function make_style_box_indiv_label(label_node){
                 label_node.style.fontFamily = current_options.font;
             }
         });
-    let box_content = d3.select(".styleTextAnnotation").insert("div");
+    let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
     box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
             .append("input")
             .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
@@ -3328,7 +3328,7 @@ function add_table_field(table, layer_name, parent){
         opt_val: undefined, new_name: 'NewFieldName'
         }
 
-    make_confirm_dialog("addFieldBox", i18next.t("app_page.explore_box.button_add_field"),
+    make_confirm_dialog2("addFieldBox", i18next.t("app_page.explore_box.button_add_field"),
                     {width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined}
         ).then(function(valid){
             if(valid){
@@ -3353,7 +3353,7 @@ function add_table_field(table, layer_name, parent){
     var current_fields = Object.getOwnPropertyNames(table),
         fields_type = type_col(layer_name),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i), // Only allow letters (lower & upper cases), number and underscore in the field name
-        box_content = d3.select(".addFieldBox").append("div"),
+        box_content = d3.select(".addFieldBox").select(".modal-body").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 

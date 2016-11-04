@@ -224,10 +224,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                         currency: ["", ""]
                         }).format('.2f');
 
-    var newBox = d3.select("body").append("div")
-                     .style("font-size", "12px")
-                     .attr("id", "discretiz_charts")
-                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
+    var modal_box = make_dialog_container("discretiz_charts", "discretiz_charts_dialog");
+
+    var newBox = d3.select("#discretiz_charts").select(".modal-body");
+//                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -345,6 +345,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
 
+    d3.select("#discretiz_charts").select(".modal-dialog")
+        .styles({width: svg_w + margin.top + margin.bottom + 90,
+                 height: window.innerHeight - 60});
+
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
@@ -441,33 +445,55 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     redisplay.compute();
     redisplay.draw();
 
-    var deferred = Q.defer();
-    $("#discretiz_charts").dialog({
-        modal:true,
-        resizable: true,
-        width: svg_w + margin.top + margin.bottom + 90,
-        height: window.innerHeight - 60,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    breaks[0] = serie.min();
-                    breaks[nb_class] = serie.max();
-                    deferred.resolve([serie, breaks_info, breaks]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-      });
+    let deferred = Q.defer();
+    let container = document.getElementById("discretiz_charts");
+    container.querySelector(".btn_ok").onclick = function(){
+        breaks[0] = serie.min();
+        breaks[nb_class] = serie.max();
+        deferred.resolve([serie, breaks_info, breaks]);
+        modal_box.close();
+        container.remove();
+    }
+    container.querySelector(".btn_cancel").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        existing.delete(new_id);
+        container.remove();
+    }
+    container.querySelector("#xclose").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        existing.delete(new_id);
+        container.remove();
+    }
     return deferred.promise;
-}
+};
+//    $("#discretiz_charts").dialog({
+//        modal:true,
+//        resizable: true,
+//        width: svg_w + margin.top + margin.bottom + 90,
+//        height: window.innerHeight - 60,
+//        buttons:[{
+//            text: i18next.t("app_page.common.confirm"),
+//            click: function(){
+//                    breaks[0] = serie.min();
+//                    breaks[nb_class] = serie.max();
+//                    deferred.resolve([serie, breaks_info, breaks]);
+//                    $(this).dialog("close");
+//                    }
+//                },
+//           {
+//            text: i18next.t("app_page.common.cancel"),
+//            click: function(){
+//                $(this).dialog("close");
+//                $(this).remove();}
+//           }],
+//        close: function(event, ui){
+//                $(this).dialog("destroy").remove();
+//                if(deferred.promise.isPending()){
+//                    deferred.resolve(false);
+//                }
+//            }
+//      });
+//    return deferred.promise;
+//}

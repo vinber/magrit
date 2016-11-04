@@ -222,9 +222,9 @@
             "geo": "Exporter vers un format compatible SIG",
             "geo_title_box": "Choix de la couche et du format...",
             "options": "Options d'export",
-            "option_layer": "Couche à exporter",
-            "option_datatype": "Format",
-            "option_projection": "Projection"
+            "option_layer": "Couche à exporter ",
+            "option_datatype": "Format ",
+            "option_projection": "Projection "
         },
         "join_box": {
             "title": "Option de jointure",

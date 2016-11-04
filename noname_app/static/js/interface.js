@@ -932,12 +932,12 @@ function select_layout_features(){
         ];
     var selected_ft;
 
-    make_confirm_dialog("sampleLayoutFtDialogBox", i18next.t("app_page.layout_features_box.title")).then(
+    make_confirm_dialog2("sampleLayoutFtDialogBox", i18next.t("app_page.layout_features_box.title")).then(
             confirmed => { if(confirmed) add_layout_feature(selected_ft);
         });
 
-    var box_body = d3.select(".sampleLayoutFtDialogBox");
-    box_body.node().parentElement.style.width = "auto";
+    var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
+//    box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
 
     var layout_ft_selec = box_body.append('p').html('')
@@ -1142,6 +1142,10 @@ var drag_lgd_features = d3.drag()
           });
 
 function add_layout_layers(){
+    var existing_box = document.selectByClassName("sampleLayoutDialogBox");
+    if(existing_box){
+        existing_box.remove();
+    }
     var selec = {layout: null};
     var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
                          [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
@@ -1150,7 +1154,7 @@ function add_layout_layers(){
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
                          ];
 
-    make_confirm_dialog("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
+    make_confirm_dialog2("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
                 if(selec.layout && selec.layout.length > 0){
@@ -1161,7 +1165,7 @@ function add_layout_layers(){
             }
         });
 
-    var box_body = d3.select(".sampleLayoutDialogBox").style("text-align", "center");
+    var box_body = d3.select(".sampleLayoutDialogBox").select(".modal-body").style("text-align", "center");
     box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html(i18next.t("app_page.layout_layer_box.msg_select_layer"));
     box_body.append("p").style("color", "grey").html(i18next.t("app_page.layout_layer_box.msg_select_multi"));
@@ -1181,6 +1185,9 @@ function add_layout_layers(){
 }
 
 function add_sample_layer(){
+    var existing_dialog = document.querySelector(".sampleDialogBox");
+    if(existing_dialog) existing_dialog.remove();
+
     var dialog_res = [],
         selec = {layout: null, target: null},
         sample_datasets = undefined;
@@ -1210,7 +1217,7 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
         ];
 
-    make_confirm_dialog("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
+    make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
                 let url = undefined;
@@ -1227,8 +1234,8 @@ function add_sample_layer(){
             }
         });
 
-    var box_body = d3.select(".sampleDialogBox");
-    box_body.node().parentElement.style.width = "auto";
+    var box_body = d3.select(".sampleDialogBox").select(".modal-body");
+//    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');

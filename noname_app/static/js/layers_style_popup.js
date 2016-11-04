@@ -156,14 +156,14 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("styleBox", layer_name, {top: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
             }
         });
 
-    var popup = d3.select(".styleBox");
+    var popup = d3.select(".styleBox").select(".modal-body");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: rendered_field}),
@@ -265,13 +265,13 @@ function createStyleBoxLabel(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog("styleBox", layer_name, {top: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
             }
         });
-    var popup = d3.select(".styleBox");
+    var popup = d3.select(".styleBox").select(".modal-body");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -334,16 +334,18 @@ function createStyleBoxLabel(layer_name){
 }
 
 function createStyleBoxGraticule(layer_name){
+//    let existing_box = document.querySelector(".graticuleStyleBox");
+//    if(existing_box) existing_box.remove();
     let current_params = cloneObj(current_layers["Graticule"]);
     let selection = map.select("#Graticule").selectAll("path");
     let selection_strokeW = map.select("#Graticule");
 
-    make_confirm_dialog("graticuleStyleBox", layer_name, {top: true})
+    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(confirmed){ null; } else { null; }
         });
 
-    let popup = d3.select(".graticuleStyleBox");
+    let popup = d3.select(".graticuleStyleBox").select(".modal-body");
     let color_choice = popup.append("p");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -454,7 +456,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog("styleBox", layer_name, {top: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
@@ -556,7 +558,7 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox");
+    var popup = d3.select(".styleBox").select(".modal-body");
 
     if(type === "Point" && !renderer){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -911,7 +913,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-    make_confirm_dialog("styleBox", layer_name, {top: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true})
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
@@ -985,7 +987,7 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox");
+    var popup = d3.select(".styleBox").select(".modal-body");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),

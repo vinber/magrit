@@ -4,7 +4,7 @@ body {
     margin:0px;
     padding:0px;
     font-family:"palatino linotype", palatino, serif;
-    color: #e5e5e5;
+    color: black;
     background: #e3e3da;
 }
 
@@ -635,4 +635,33 @@ div.panel.show {
     margin-bottom: 7px;
     overflow: auto;
     visibility: visible;
+}
+
+twbs h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.twbs .modal-title {
+    margin: 0;
+    line-height: 1.42857143;
+    color: #173a50;
+    font-weight: bold;
+    font-size: 1.3em;
+    background: #173a504d;
+    padding: 4px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.twbs .modal-dialog {
+    font-family: arimo,Arial,sans-serif;
+    font-size: 11px;
+}
+
+.twbs .modal-header, .twbs .modal-footer {
+    padding: 8px;
 }

@@ -5,22 +5,22 @@
     <meta  http-equiv="X-UA-Compatible"  content="IE=edge">
     <meta  name="viewport"  content="width=device-width, initial-scale=1, user-scalable=yes">
     <title> {{ app_name }} </title>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"> -->
     <link href="static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="static/css/jquery.qtip.min.css" rel="stylesheet" type="text/css">
+    <link href="static/css/scoped-bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style-fonts.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="static/css/datatables.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <link href="static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <script  src="static/js/lib/d3.v4.min.js"></script>
     <script  src="static/js/lib/d3-geo-projection.v1.min.js"></script>
     <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script>
     <script  src="static/js/lib/topojson.v1.min.js"></script>
     <script  src="static/js/lib/jquery-2.2.1.min.js"></script>
-    <script  src="static/js/lib/jquery-ui.min.js"></script>
+    <!-- <script  src="static/js/lib/jquery-ui.min.js"></script> -->
     <script  src="static/js/lib/bootstrap-native.min.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
@@ -54,6 +54,7 @@
         </p>
         <p id="rgt" class="header_options"></p></div>
       <div id="menu"></div>
+      <div id="twbs" class="twbs"></div>
   	 <div id="map"></div>
       <a id="downloadAnchorElem" style="display:none"></a>
 <script>
@@ -459,7 +460,6 @@ function setUpInterface(resume_project)
                 let type = this.value;
                 if(type === "svg"){
                     document.getElementById("export_options_png").style.display = "none";
-                    //document.getElementById("export_options_geo").style.display = "none";
                     let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.svg";
                     export_filename.style.display = "";
@@ -467,7 +467,6 @@ function setUpInterface(resume_project)
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "png"){
                     document.getElementById("export_options_png").style.display = "";
-                    //document.getElementById("export_options_geo").style.display = "none";
                     let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.png";
                     export_filename.style.display = "";
@@ -479,25 +478,6 @@ function setUpInterface(resume_project)
                     let export_filename = document.getElementById("export_filename");
                     export_filename.style.display = "none";
                     export_filename.previousSibling.style.display = "none";
-                    /*
-                    document.getElementById("export_options_geo").style.display = "";
-                    document.getElementById("export_options_png").style.display = "none";
-                    document.getElementById("export_filename").value = "export";
-                    unfillSelectInput(selec_layer.node());
-                    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-                        if(sample_no_values.has(name))
-                            return 0;
-                        else if(current_layers[name].renderer
-                                && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-                                    || current_layers[name].renderer.indexOf("Dorling") > -1))
-                            return 0;
-                        return 1;
-                    });
-
-                    layer_names.forEach( name => {
-                        selec_layer.append("option").attr("value", name).text(name);
-                    });
-                    */
                 }
             });
 
@@ -685,15 +665,7 @@ function setUpInterface(resume_project)
 
     let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline");
 
-    //dv5.insert('label-item').attr("class", "i18n")
-    //        .attr("data-i18n", "[html]app_page.section5.projection");
-
     let rotation_param = const_options.append("span");
-
-    //rotation_param.append("p")
-    //        .attrs({id: "rotation_params", class: "i18n",
-    //                "data-i18n": "[html]app_page.section5.projection_center_lambda"})
-    //        .style("margin", "auto");
 
     rotation_param.append("input")
             .attrs({type: "range", id: "form_projection_center", value: 0.0,
@@ -1455,6 +1427,35 @@ function reproj_symbol_layer(){
   }
 }
 
+function make_dialog_container(id_box, class_box){
+        let container = document.createElement("div");
+
+        container.setAttribute("id", id_box);
+        container.setAttribute("class", "twbs modal fade" + " " + class_box);
+        container.setAttribute("tabindex", "-1");
+        container.setAttribute("role", "dialog");
+        container.setAttribute("aria-labelledby", "myModalLabel");
+        container.setAttribute("aria-hidden", "true");
+        container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+        document.getElementById("twbs").appendChild(container);
+    
+        container = document.getElementById(id_box);
+        let modal_box = new Modal(container, {
+            content: '<div class="modal-header">'
+                      +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
+                      +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
+                      +'</div>'
+                      +'<div class="modal-body">'
+                      +'</div>'
+                      +'<div class="modal-footer">'
+                      +'<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + i18next.t("app_page.common.confirm") + '</button>'
+                      +'<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>'
+                      +'</div>'
+        });
+        modal_box.open();
+        return modal_box;
+}
+
 var make_confirm_dialog2 = (function(class_box, title, options){
     let existing = new Set();
     let get_available_id = () => {
@@ -1470,13 +1471,13 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         let new_id = get_available_id();
 
         container.setAttribute("id", "myModal_" + new_id);
-        container.setAttribute("class", "modal fade " + class_box);
+        container.setAttribute("class", "twbs modal fade " + class_box);
         container.setAttribute("tabindex", "-1");
         container.setAttribute("role", "dialog");
         container.setAttribute("aria-labelledby", "myModalLabel");
         container.setAttribute("aria-hidden", "true");
         container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
-        document.body.appendChild(container);
+        document.getElementById("twbs").appendChild(container);
 
         options = options || {};
         container = document.getElementById("myModal_" + new_id);
@@ -1488,7 +1489,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
         let modal_box = new Modal(container, {
             content: '<div class="modal-header">'
-                      +'<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
+                      +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
                       +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
                       +'</div>'
                       +'<div class="modal-body">'
@@ -1504,8 +1505,16 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         modal_box.open();
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
+            existing.delete(new_id);
+            container.remove();
         }
         container.querySelector(".btn_cancel").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            existing.delete(new_id);
+            container.remove();
+        }
+        container.querySelector("#xclose").onclick = function(){
             deferred.resolve(false);
             modal_box.close();
             existing.delete(new_id);
@@ -1990,7 +1999,7 @@ function handle_title_properties(){
         };
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {width: 280})
+    make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {width: 280})
         .then(function(confirmed){
             if(!confirmed)
                 title.style("font-size", title_props.size)
@@ -1998,7 +2007,7 @@ function handle_title_properties(){
                     .style("font-family", title_props.font_family)
                     .attrs({x: title_props.position_x, y: title_props.position_y});
             });
-    var box_content = d3.select(".mapTitleitleDialogBox").append("div");
+    var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div");
 
     box_content.append("p").html(i18next.t("app_page.title_box.font_size"))
         .insert("input").attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
@@ -2196,51 +2205,6 @@ function export_compo_svg(output_name){
     unpatchSvgForInkscape();
 }
 
-/*
-function export_compo_png(){
-    swal({
-      title: 'Export type',
-      text: "Select export target type :",
-      input: "select",
-      inputOptions: { 'web': 'web', 'papier': 'papier' },
-      type: 'info',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Next',
-      cancelButtonText: 'Cancel!',
-      allowOutsideClick: false,
-      allowEscapeKey: true
-    }).then( value => {
-        if(value === "web"){
-            _export_compo_png("web");
-        } else {
-            swal({
-              title: 'Resolution',
-              text: "Select export format",
-              input: "select",
-              inputOptions: { 'A2': 'A2', 'A3': 'A3', 'A4': 'A4', 'A5': 'A5', 'A6': 'A6' },
-              type: 'info',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Next',
-              cancelButtonText: 'Cancel!',
-              allowOutsideClick: false,
-              allowEscapeKey: true
-            }).then( value => {
-                let big_side = Math.max(h,w);
-                // "Hi-res" exports ...?
-                let wanted_pix = {
-                    'A2': 59.4, 'A3': 42, 'A4': 29.7, 'A5': 210, 'A6': 148
-                    }[value] * 118.11
-                _export_compo_png("paper", (wanted_pix / big_side));
-              }, dismiss => { null; });
-        }
-    }, dismiss => { null; });
-}
-*/
-
 function _export_compo_png(type="web", scalefactor=1, output_name){
     output_name = check_output_name(output_name, "png");
     patchSvgForFonts();
@@ -2328,21 +2292,10 @@ function export_layer_geo(layer, type, projec, proj4string){
 }
 
 function make_export_layer_box(){
-    d3.select("body").append("div")
-        .attrs({id: "dialogGeoExport", class: "exportGeoDialogBox",
-                title: i18next.t("app_page.export_box.geo_title_box")})
-        .style("font-size", "0.6em")
-        .html("");
-
-    let dialogBox = $("#dialogGeoExport"),
-        box_content = d3.select("#dialogGeoExport").append("div");
-
-    dialogBox.dialog({
-        position: { my: "center", at: "top" },
-        width: 400,
-        modal: false,
-        close: function(event, ui){ $(this).dialog("destroy").remove(); }
-      });
+    let dialogBox = make_confirm_dialog2("dialogGeoExport",
+                         i18next.t("app_page.export_box.geo_title_box"),
+                         {text_ok: i18next.t("app_page.section5b.export_button")}),
+        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div");
 
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
         if(sample_no_values.has(name))
@@ -2412,53 +2365,50 @@ function make_export_layer_box(){
         ["GML", "zip"],
         ["KML", "kml"]]);
 
-    box_content.append("p").append("button")
-            .attr("class", "button_st4")
-            .html(i18next.t("app_page.section5b.export_button"))
-            .on("click", function(){
-                let layer = selec_layer.node().value,
-                    type = selec_type.node().value,
-                    projec = selec_projection.node().value;
-                let formToSend = new FormData();
-                formToSend.append("layer", layer);
-                formToSend.append("layer_name", current_layers[layer].key_name);
-                formToSend.append("format", type);
-                if(projec == "proj4string")
-                    formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+    dialogBox.then( confirmed => { if(confirmed){
+        let layer = selec_layer.node().value,
+            type = selec_type.node().value,
+            projec = selec_projection.node().value;
+        let formToSend = new FormData();
+        formToSend.append("layer", layer);
+        formToSend.append("layer_name", current_layers[layer].key_name);
+        formToSend.append("format", type);
+        if(projec == "proj4string")
+            formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+        else
+            formToSend.append("projection", JSON.stringify({"name" : projec}));
+    
+        xhrequest("POST", '/get_layer2', formToSend, true)
+            .then( data => {
+                if(data.indexOf("Error:") == 0){
+                    swal({title: "Oops...",
+                         text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
+                         type: "error",
+                         allowOutsideClick: false,
+                         allowEscapeKey: false
+                        }).then( () => { null; },
+                                  () => { null; });
+                    return;
+                }
+                let ext = extensions.get(type),
+                    dataStr;
+                if(ext.indexOf("json") > -1)
+                    dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+                else if (ext.indexOf("kml") > -1)
+                    dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
                 else
-                    formToSend.append("projection", JSON.stringify({"name" : projec}));
-
-                xhrequest("POST", '/get_layer2', formToSend, true)
-                    .then( data => {
-                        if(data.indexOf("Error:") == 0){
-                            swal({title: "Oops...",
-                                 text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
-                                 type: "error",
-                                 allowOutsideClick: false,
-                                 allowEscapeKey: false
-                                }).then( () => { null; },
-                                          () => { null; });
-                            return;
-                        }
-                        let ext = extensions.get(type),
-                            dataStr;
-                        if(ext.indexOf("json") > -1)
-                            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-                        else if (ext.indexOf("kml") > -1)
-                            dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-                        else
-                            dataStr = "data:application/zip;base64," + data;
-
-                        let dlAnchorElem = document.getElementById('downloadAnchorElem');
-                        dlAnchorElem.setAttribute("href", dataStr);
-                        dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                        dlAnchorElem.click();
-
-                    }, error => {
-                        console.log(error);
-                    });
-                dialogBox.dialog("destroy").remove();
+                    dataStr = "data:application/zip;base64," + data;
+    
+                let dlAnchorElem = document.getElementById('downloadAnchorElem');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                dlAnchorElem.click();
+    
+            }, error => {
+                console.log(error);
             });
+        dialogBox.dialog("destroy").remove();
+    }});
 }
 
 
