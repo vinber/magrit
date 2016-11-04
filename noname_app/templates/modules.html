@@ -19,9 +19,10 @@
     <script  src="static/js/lib/d3-geo-projection.v1.min.js"></script>
     <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script>
     <script  src="static/js/lib/topojson.v1.min.js"></script>
-    <script  src="static/js/lib/jquery-2.2.1.min.js"></script>
+    <script> var jQuery = $ = {}; </script>
+    <!-- <script  src="static/js/lib/jquery-2.2.1.min.js"></script> -->
     <!-- <script  src="static/js/lib/jquery-ui.min.js"></script> -->
-    <script  src="static/js/lib/bootstrap-native.min.js"></script>
+    <script  src="static/js/lib/bootstrap-native-mod.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
@@ -32,6 +33,7 @@
     <script  src="static/js/lib/jquery.qtip.min.js"></script>
     <script  src="static/js/lib/sweetalert2.min.js"></script>
     <script  src="static/js/lib/datatables.min.js"></script>
+    <script  src="static/js/lib/Sortable.min.js"></script>
     <!-- <script  src="/static/js/app.min.js"></script> -->
 
     <script  src="static/js/context-menu.js"></script>
@@ -101,7 +103,7 @@ function setUpInterface(resume_project)
     document.body.appendChild(bg_drop);
 
     let menu = d3.select("#menu"),
-        b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "[html]app_page.section1.title"),
+        b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2 = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2_pre.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
@@ -111,31 +113,14 @@ function setUpInterface(resume_project)
         accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
         b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
         accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
-/*
-    let menu = d3.select("#menu"),
-        accordion1 = menu.append("div").attr("id","accordion1").attr("class", "accordion"),
-        accordion2_pre = menu.append("div").attr("id","accordion2_pre").attr("class", "accordion"),
-        //accordion2 = menu.append("div").attr("id","accordion2").attr("class", "accordion"),
-        accordion3 = menu.append("div").attr("id","accordion3").attr("class", "accordion"),
-        accordion4 = menu.append("div").attr("id","accordion4").attr("class", "accordion"),
-        accordion5 = menu.append("div").attr("id","accordion5b").attr("class", "accordion");
 
-    accordion1.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section1.title");
-    accordion2_pre.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section2_pre.title");
-    //accordion2.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section2.title");
-    accordion3.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section3.title");
-    accordion4.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section4.title");
-    accordion5.append("h3").insert("span").attr("class", "i18n").attr("data-i18n", "app_page.section5b.title");
-*/
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
                         .attr("class", "i18n")
-                        .attr("data-i18n", "[data-tooltip]app_page.tooltips.section1");
-                        //.attr("data-tooltip", i18next.t("app_page.tooltips.section1"));
+                        .attr("data-i18n", "[title]app_page.tooltips.section1");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
-    //window.section2 =  accordion2.append("div").attr("id","section2");
     accordion3.append("div")
-        .attrs({id: "section3", class: "i18n", "data-i18n": "[data-tooltip]app_page.tooltips.section3"}),
+        .attrs({id: "section3", class: "i18n", "data-i18n": "[title]app_page.tooltips.section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -203,12 +188,12 @@ function setUpInterface(resume_project)
 
     window.layer_list = section3.append("div")
                              .append("ul").attrs({id: "sortable", class: "layer_list"})
-                             .on("mouseover", function(){
-                                    $('.qtip.qtip-section3').qtip("hide")
-                                })
-                             .on("mouseout", function(){
-                                    $('.qtip.qtip-section3').qtip("show")
-                                });
+    //                         .on("mouseover", function(){
+    //                                $('.qtip.qtip-section3').qtip("hide")
+    //                            })
+    //                         .on("mouseout", function(){
+    //                                $('.qtip.qtip-section3').qtip("show")
+    //                            });
 
     let dv3 = section3.append("div")
                     .style("padding-top", "10px").html('');
@@ -915,10 +900,9 @@ function setUpInterface(resume_project)
       }
     }
 
-    // Set up the widget allowing to sort layers :
-    $( "#sortable" ).sortable({
-        placeholder: "ui-state-highlight",
-        update: function(a){
+    new Sortable(document.getElementById("sortable"), {
+        ghostClass: "ui-state-highlight",
+        onUpdate: function(a){
           // Set the layer order on the map in concordance with the user changes
           // in the layer manager with a pretty rusty 'sorting' algorythm :
           let at_end = null;
@@ -941,24 +925,25 @@ function setUpInterface(resume_project)
               svg_map.insertBefore(lyr2, lyr1);
           }
          if(at_end) displayInfoOnMove();
-         }
-      });
-    $( "#sortable" ).disableSelection();
+        }
+    })
 }
 
 function bindTooltips(){
     // bind the mains tooltips
-    $("#section1[data-tooltip!='']").qtip({
-        content: { attr: "data-tooltip" },
-        style: { classes: 'qtip-youtube qtip-section1' },
-        position: { my: 'center left', at: 'center right', target: this }
-    });
-
-    $("#section3[data-tooltip!='']").qtip({
-        content: { attr: "data-tooltip" },
-        style: { classes: 'qtip-youtube qtip-section3' },
-        position: { my: 'center left', at: 'center right', target: this }
-    });
+    let existing_tooltips = document.querySelectorAll(".bs_tooltip");
+    for(let i = existing_tooltips.length - 1; i > -1; i--){
+        existing_tooltips[i].remove();
+    }
+    let tooltips_elem = document.querySelectorAll("[title]");
+    for(let i = tooltips_elem.length - 1; i > -1; i--){
+        new Tooltip(tooltips_elem[i], {
+            animation: "slideNfade",
+            duration: 50,
+            delay: 100,
+            container: document.getElementById("twbs")
+        });
+    }
 }
 
 
@@ -996,8 +981,6 @@ function change_lang(){
         let other_lang = new_lang == "fr" ? "en" : "fr";
         i18next.changeLanguage(new_lang, () => {
             localize(".i18n");
-            $("#section1[data-tooltip!='']").qtip("destroy", true);
-            $("#section3[data-tooltip!='']").qtip("destroy", true);
             bindTooltips();
         });
         document.getElementById("current_app_lang").innerHTML = new_lang;
@@ -1069,19 +1052,13 @@ function make_ico_choice(){
                                         '</span>';
 
                 // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-                $("#btn_info[data-tooltip_help!='']").qtip({
-                    content: {text: i18next.t("app_page.func_help." + func_name + ".block"),
-                              title: i18next.t("app_page.func_help." + func_name + ".title"),
-                              button: true },
-                    button: "Close",
-                    style: { classes: 'qtip-tipped qtip_help' },
-                    position: { my: 'top left', at: 'center right', target: this },
-                    show: {
-                        solo: true,
-                        modal: {on: false, blur: false}
-                    },
-                    hide: "unfocus"
-                });
+                document.getElementById("btn_info").setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
+                document.getElementById("btn_info").setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
+                new Popover("#btn_info",{
+                    container: document.getElementById("twbs"),
+                    dismiss: "true",
+                    placement: "right"
+                })
 
                 // Fill the field of the functionnality with the field
                 // of the targeted layer if already uploaded by the user :
@@ -1301,10 +1278,10 @@ function binds_layers_buttons(layer_name){
         zoom_without_redraw();
     });
 
-    $("[layer-tooltip!='']").qtip({
-        content: { attr: "layer-tooltip" },
-        style: { classes: 'qtip-rounded qtip-light qtip_layer'}
-    });
+    //$("[layer-tooltip!='']").qtip({
+    //    content: { attr: "layer-tooltip" },
+    //    style: { classes: 'qtip-rounded qtip-light qtip_layer'}
+    //});
 }
 
 // Function to display information on the top layer (in the layer manager)
@@ -1488,6 +1465,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
         let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
         let modal_box = new Modal(container, {
+            backdrop: true,
             content: '<div class="modal-header">'
                       +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
                       +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
@@ -1524,40 +1502,6 @@ var make_confirm_dialog2 = (function(class_box, title, options){
     };
 })();
 
-// Convenience function to make a confirm dialog returning a defered promise
-// which can be used like `myConfirmDialog(".classBox", "Title", {html_content: "..."}).then(function(confirmed){if(confirmed){ ... }})
-var make_confirm_dialog = function(class_box, title, options){
-    title = title || i18next.t("app_page.common.confirm");
-    class_box = class_box || "dialogBox";
-    options = options || {};
-    let html_content = options.html_content || "";
-    let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
-    let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
-    var deferred = Q.defer();
-    d3.select("body").append("div")
-        .attr("id", "dialog").attr("class", class_box)
-        .attr("title", title).html(html_content);
-
-    $("#dialog").dialog({
-        position: options.top ? { my: "center", at: "top" } : undefined,
-        width: options.width, height: options.height, modal:true,
-        buttons:[
-           {
-            text: text_ok,
-            click: function(){ deferred.resolve(true); $(this).dialog("close"); }
-                },
-           {
-            text: text_cancel,
-            click: function(){ $(this).dialog("close"); $(this).remove(); }
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending())
-                    deferred.resolve(false);
-            }
-      });
-    return deferred.promise;
-};
 
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(name){
@@ -1610,7 +1554,7 @@ function remove_ext_dataset_cleanup(){
     if(Object.getOwnPropertyNames(user_data).length == 0){
         document.getElementById("browse_button").disabled = true;
     }
-    $("#data_ext").qtip("destroy");
+    //$("#data_ext").qtip("destroy");
 }
 
 // Do some clean-up when a layer is removed
@@ -1637,7 +1581,7 @@ function remove_layer_cleanup(name){
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :
-        $("#input_geom").qtip("destroy");
+        //$("#input_geom").qtip("destroy");
         d3.select("#img_in_geom")
             .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);

@@ -367,6 +367,8 @@ function prepare_drop_section(){
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                if(!e.dataTransfer.files.length)
+                    return;
                 let files = e.dataTransfer.files,
                     target_layer_on_add = elem.id === "section1" ? true : false;
                 if(files.length == 1
@@ -602,16 +604,16 @@ function add_dataset(readed_dataset){
         fields_handler.fill();
     if(document.getElementById("browse_button").disabled === true)
         document.getElementById("browse_button").disabled = false;
-    $("[layer-target-tooltip!='']").qtip("destoy");
-    $("[layer-target-tooltip!='']").qtip({
-        content: { attr: "layer-target-tooltip" },
-        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-        events: {show: {solo: true}}
-//        events: {
-//            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-//            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-//        }
-    });
+//    $("[layer-target-tooltip!='']").qtip("destoy");
+//    $("[layer-target-tooltip!='']").qtip({
+//        content: { attr: "layer-target-tooltip" },
+//        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+//        events: {show: {solo: true}}
+////        events: {
+////            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+////            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+////        }
+//    });
 
     if(targeted_layer_added){
         swal({title: "",
@@ -802,12 +804,12 @@ function add_layer_topojson(text, options){
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
         targeted_layer_added = true;
         li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
-        $("[layer-target-tooltip!='']").qtip("destoy");
-        $("[layer-target-tooltip!='']").qtip({
-            content: { attr: "layer-target-tooltip" },
-            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-            events: {show: {solo: true}}
-        });
+//        $("[layer-target-tooltip!='']").qtip("destoy");
+//        $("[layer-target-tooltip!='']").qtip({
+//            content: { attr: "layer-target-tooltip" },
+//            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+//            events: {show: {solo: true}}
+//        });
 
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
@@ -1142,7 +1144,7 @@ var drag_lgd_features = d3.drag()
           });
 
 function add_layout_layers(){
-    var existing_box = document.selectByClassName("sampleLayoutDialogBox");
+    var existing_box = document.getElementsByClassName("sampleLayoutDialogBox");
     if(existing_box){
         existing_box.remove();
     }
