@@ -74,7 +74,7 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
 
 RUN /etc/init.d/nginx start \
 	&& rm /etc/nginx/sites-enabled/default \
-	&& cp /home/app/noname-stuff/misc/nginx.conf /etc/nginx/site-available/magrit_app \
+	&& cp /home/app/noname-stuff/misc/nginx.conf2 /etc/nginx/sites-available/magrit_app \
 	&& ln -s /etc/nginx/sites-available/magrit_app /etc/nginx/sites-enabled/magrit_app \
 	&& /etc/init.d/nginx restart
 

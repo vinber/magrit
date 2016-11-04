@@ -819,7 +819,6 @@ function add_layer_topojson(text, options){
     } else if (result_layer_on_add) {
         li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('');
         center_map(lyr_name_to_add);
-        //switch_accordion_section();
     } else {
         li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
     }

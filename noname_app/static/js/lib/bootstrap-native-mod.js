@@ -1404,7 +1404,7 @@
 
     this.open = function(e) {
       clearTimeout(timer);
-      self.title = self.link.getAttribute('title') || self.link.getAttribute('data-original-title');
+      self.title = self.link.getAttribute('tooltip-title') || self.link.getAttribute('data-original-title');
       if ( !self.title ) return;
 
       timer = setTimeout( function() {
@@ -1500,7 +1500,7 @@
     this.link.addEventListener(mouseHover[1], this.close, false);
     //remove title from link
     this.link.setAttribute('data-original-title', this.title);
-//    this.link.removeAttribute('title');
+//    this.link.removeAttribute('tooltip-title');
   };
 
   // TOOLTIP DATA API

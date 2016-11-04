@@ -2418,10 +2418,11 @@ var boxExplore = {
         this.box_table.append("table")
                       .attrs({class: "display compact", id: "myTable"})
                       .style("width", "80%");
-        let myTable = $('#myTable').DataTable({
-            data: the_table,
-            columns: this.columns_headers,
-        });
+        let myTable = new DataTable(document.getElementById("myTable"));
+//        let myTable = $('#myTable').DataTable({
+//            data: the_table,
+//            columns: this.columns_headers,
+//        });
     },
     get_available_tables: function(){
         let target_layer = Object.getOwnPropertyNames(user_data),

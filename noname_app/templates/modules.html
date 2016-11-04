@@ -32,7 +32,7 @@
     <script  src="static/js/lib/i18nextXHRBackend.min.js"></script>
     <script  src="static/js/lib/jquery.qtip.min.js"></script>
     <script  src="static/js/lib/sweetalert2.min.js"></script>
-    <script  src="static/js/lib/datatables.min.js"></script>
+    <script  src="static/js/lib/vanilla-datatables.min.js"></script>
     <script  src="static/js/lib/Sortable.min.js"></script>
     <!-- <script  src="/static/js/app.min.js"></script> -->
 
@@ -117,10 +117,10 @@ function setUpInterface(resume_project)
     window.section1 =  accordion1.append("div")
                         .attr("id","section1")
                         .attr("class", "i18n")
-                        .attr("data-i18n", "[title]app_page.tooltips.section1");
+                        .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
     accordion3.append("div")
-        .attrs({id: "section3", class: "i18n", "data-i18n": "[title]app_page.tooltips.section3"}),
+        .attrs({id: "section3", class: "i18n", "data-i18n": "[tooltip-title]app_page.tooltips.section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -850,11 +850,11 @@ function setUpInterface(resume_project)
                 .styles({position:"absolute", right:"0px", bottom: "0px"});
 
     let lm_buttons = [
-        {id: "zoom_out", "i18n": "[title]app_page.lm_buttons.zoom-", class: "zoom_button i18n", html: "-"},
-        {id: "zoom_in", "i18n": "[title]app_page.lm_buttons.zoom+", class: "zoom_button i18n", html: "+"},
-        {id: "info_button", "i18n": "[title]app_page.lm_buttons.i", class: "info_button i18n", html: "i"},
-        {id: "hand_button", "i18n": "[title]app_page.lm_buttons.hand_button", class: "hand_button active i18n", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'}/*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[title]app_page.lm_buttons.zoom_rect", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
+        {id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", class: "zoom_button i18n", html: "-"},
+        {id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", class: "zoom_button i18n", html: "+"},
+        {id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", class: "info_button i18n", html: "i"},
+        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", class: "hand_button active i18n", html: '<img src="/static/img/Closed_Hand_thenounproject_blank.png" width="18" height="18" alt="Hand_closed"/>'}/*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
     ];
 
     let selec = lm.selectAll("input")
@@ -902,6 +902,7 @@ function setUpInterface(resume_project)
 
     new Sortable(document.getElementById("sortable"), {
         ghostClass: "ui-state-highlight",
+        animation: 100,
         onUpdate: function(a){
           // Set the layer order on the map in concordance with the user changes
           // in the layer manager with a pretty rusty 'sorting' algorythm :
@@ -935,7 +936,7 @@ function bindTooltips(){
     for(let i = existing_tooltips.length - 1; i > -1; i--){
         existing_tooltips[i].remove();
     }
-    let tooltips_elem = document.querySelectorAll("[title]");
+    let tooltips_elem = document.querySelectorAll("[tooltip-title]");
     for(let i = tooltips_elem.length - 1; i > -1; i--){
         new Tooltip(tooltips_elem[i], {
             animation: "slideNfade",
