@@ -637,7 +637,7 @@ div.panel.show {
     visibility: visible;
 }
 
-twbs h3 {
+.twbs h3 {
     font-size: 1.2em;
     font-weight: bold;
     margin-top: 4px;
@@ -664,4 +664,11 @@ twbs h3 {
 
 .twbs .modal-header, .twbs .modal-footer {
     padding: 8px;
+}
+
+.twbs #xclose {
+    padding: 1px 2px;
+    font-size: 15px;
+    margin-right: 5px;
+    margin-top: 2px;
 }

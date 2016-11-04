@@ -1438,7 +1438,7 @@ function make_dialog_container(id_box, class_box){
         container.setAttribute("aria-hidden", "true");
         container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
         document.getElementById("twbs").appendChild(container);
-    
+
         container = document.getElementById(id_box);
         let modal_box = new Modal(container, {
             content: '<div class="modal-header">'
@@ -2377,7 +2377,7 @@ function make_export_layer_box(){
             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
         else
             formToSend.append("projection", JSON.stringify({"name" : projec}));
-    
+
         xhrequest("POST", '/get_layer2', formToSend, true)
             .then( data => {
                 if(data.indexOf("Error:") == 0){
@@ -2398,12 +2398,12 @@ function make_export_layer_box(){
                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
                 else
                     dataStr = "data:application/zip;base64," + data;
-    
+
                 let dlAnchorElem = document.getElementById('downloadAnchorElem');
                 dlAnchorElem.setAttribute("href", dataStr);
                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
                 dlAnchorElem.click();
-    
+
             }, error => {
                 console.log(error);
             });

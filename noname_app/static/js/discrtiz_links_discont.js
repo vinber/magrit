@@ -346,8 +346,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         height = svg_h - margin.top - margin.bottom;
 
     d3.select("#discretiz_charts").select(".modal-dialog")
-        .styles({width: svg_w + margin.top + margin.bottom + 90,
-                 height: window.innerHeight - 60});
+        .styles({width: svg_w + margin.top + margin.bottom + 90 + "px",
+                 height: window.innerHeight - 60 + "px"});
 
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
@@ -445,55 +445,28 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     redisplay.compute();
     redisplay.draw();
 
-    let deferred = Q.defer();
-    let container = document.getElementById("discretiz_charts");
+    let deferred = Q.defer(),
+        container = document.getElementById("discretiz_charts");
+
     container.querySelector(".btn_ok").onclick = function(){
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
         modal_box.close();
         container.remove();
+        reOpenParent();
     }
     container.querySelector(".btn_cancel").onclick = function(){
         deferred.resolve(false);
         modal_box.close();
-        existing.delete(new_id);
         container.remove();
+        reOpenParent();
     }
     container.querySelector("#xclose").onclick = function(){
         deferred.resolve(false);
         modal_box.close();
-        existing.delete(new_id);
         container.remove();
+        reOpenParent();
     }
     return deferred.promise;
 };
-//    $("#discretiz_charts").dialog({
-//        modal:true,
-//        resizable: true,
-//        width: svg_w + margin.top + margin.bottom + 90,
-//        height: window.innerHeight - 60,
-//        buttons:[{
-//            text: i18next.t("app_page.common.confirm"),
-//            click: function(){
-//                    breaks[0] = serie.min();
-//                    breaks[nb_class] = serie.max();
-//                    deferred.resolve([serie, breaks_info, breaks]);
-//                    $(this).dialog("close");
-//                    }
-//                },
-//           {
-//            text: i18next.t("app_page.common.cancel"),
-//            click: function(){
-//                $(this).dialog("close");
-//                $(this).remove();}
-//           }],
-//        close: function(event, ui){
-//                $(this).dialog("destroy").remove();
-//                if(deferred.promise.isPending()){
-//                    deferred.resolve(false);
-//                }
-//            }
-//      });
-//    return deferred.promise;
-//}

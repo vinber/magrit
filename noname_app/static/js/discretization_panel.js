@@ -430,10 +430,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         currency: ["", ""]
                         }).format('.2f');
 
-    var newBox = d3.select("body").append("div")
-                     .style("font-size", "12px")
-                     .attr("id", "discretiz_charts")
-                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
+    var modal_box = make_dialog_container("discretiz_charts", "discretiz_charts_dialog");
+
+    var newBox = d3.select("#discretiz_charts").select(".modal-body");
+//    var newBox = d3.select("body").append("div")
+//                     .style("font-size", "12px")
+//                     .attr("id", "discretiz_charts")
+//                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -542,6 +545,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         svg_w = 760 < (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
         margin = {top: 7.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
+
+    d3.select("#discretiz_charts").select(".modal-dialog")
+        .styles({width: svg_w + margin.top + margin.bottom + 90 + "px",
+                 height: window.innerHeight - 60 + "px"});
+
 
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
@@ -701,57 +709,53 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     redisplay.compute();
     redisplay.draw(options.colors);
 
-    var deferred = Q.defer();
-    $("#discretiz_charts").dialog({
-        modal:true,
-        resizable: true,
-        width: svg_w + margin.top + margin.bottom + 90,
-        height: window.innerHeight - 40,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    var colors_map = [];
-                    let no_data_color = null;
-                    if(no_data > 0){
-                        no_data_color = document.getElementById("no_data_color").value;
-                    }
-                    for(let j=0; j < db_data.length; ++j){
-                        let value = +db_data[j][field_name];
-                        if(value != null){
-                            let idx = serie.getClass(+value);
-                            colors_map.push(color_array[idx]);
-                        } else {
-                            colors_map.push(no_data_color);
-                        }
-                    }
-                    let col_schema = [];
-                    if(!d3.select('.color_params_left').node()){
-                        col_schema.push(document.querySelector(".color_params").value);
-                    } else {
-                        col_schema.push(document.querySelector(".color_params_left").value);
-                        if(document.querySelector(".central_color").querySelector("input").checked){
-                            col_schema.push(document.getElementById("central_color_val").value);
-                        }
-                        col_schema.push(document.querySelector(".color_params_right").value);
-                    }
-                    deferred.resolve(
-                        [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
+    let deferred = Q.defer(),
+        container = document.getElementById("discretiz_charts");
+
+    container.querySelector(".btn_ok").onclick = function(){
+        var colors_map = [];
+        let no_data_color = null;
+        if(no_data > 0){
+            no_data_color = document.getElementById("no_data_color").value;
+        }
+        for(let j=0; j < db_data.length; ++j){
+            let value = +db_data[j][field_name];
+            if(value != null){
+                let idx = serie.getClass(+value);
+                colors_map.push(color_array[idx]);
+            } else {
+                colors_map.push(no_data_color);
             }
-      });
+        }
+        let col_schema = [];
+        if(!d3.select('.color_params_left').node()){
+            col_schema.push(document.querySelector(".color_params").value);
+        } else {
+            col_schema.push(document.querySelector(".color_params_left").value);
+            if(document.querySelector(".central_color").querySelector("input").checked){
+                col_schema.push(document.getElementById("central_color_val").value);
+            }
+            col_schema.push(document.querySelector(".color_params_right").value);
+        }
+        deferred.resolve(
+            [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
+
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
+    container.querySelector(".btn_cancel").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
+    container.querySelector("#xclose").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
     return deferred.promise;
 }
 
@@ -1065,3 +1069,12 @@ var display_box_symbol_typo = function(layer, field){
     };
 }
 
+function reOpenParent(css_selector){
+    css_selector = css_selector || ".styleBox";
+    let parent_style_box = document.querySelector(css_selector);
+    if(parent_style_box){
+        parent_style_box.className = parent_style_box.className.concat(" in");
+        parent_style_box.setAttribute("aria-hidden", false);
+        parent_style_box.style.display = "block";
+    }
+}

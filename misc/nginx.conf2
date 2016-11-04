@@ -1,11 +1,29 @@
-server {
-    location / {
-        proxy_pass http://localhost:9999;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
+user www-data;
+worker_processes 2;
+pid /run/nginx.pid;
+
+events {
+	worker_connections 768;
+	# multi_accept on;
+}
+
+http {
+	sendfile on;
+    upstream magritapp {
+		ip_hash;
+        server localhost:9999;
     }
-    location /static {
-        alias  /home/app/noname-stuff/noname_app/static/;
-    }
+	server {
+		client_max_body_size 20M;
+		listen 80;
+    	location / {
+        	proxy_pass http://magritapp;
+        	proxy_set_header Host $host;
+        	proxy_set_header X-Real-IP $remote_addr;
+    	}
+    	location /static {
+        	alias /home/app/noname-stuff/noname_app/static/;
+    	}
+	}
 }
 

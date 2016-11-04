@@ -382,7 +382,7 @@ function render_TypoSymbols(rendering_params, new_name){
         };
     up_legends();
     zoom_without_redraw();
-    //switch_accordion_section();
+    switch_accordion_section();
 }
 
 var fields_Discont = {
@@ -675,7 +675,7 @@ var render_discont = function(){
     send_layer_server(new_layer_name, "/layers/add");
     up_legends();
     zoom_without_redraw();
-//    switch_accordion_section();
+    switch_accordion_section();
 //    resolve(true);
 //});
 }
@@ -1272,7 +1272,7 @@ function fillMenu_PropSymbolChoro(layer){
                 n_features: nb_features
             };
             zoom_without_redraw();
-            //switch_accordion_section();
+            switch_accordion_section();
         }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -1462,7 +1462,7 @@ var fillMenu_Label = function(){
             let layer = Object.getOwnPropertyNames(user_data)[0];
             let new_layer_name = render_label(layer, rendering_params);
             binds_layers_buttons(new_layer_name);
-//            switch_accordion_section();
+            switch_accordion_section();
          });
     d3.selectAll(".params").attr("disabled", true);
 }
@@ -1655,7 +1655,7 @@ var fillMenu_Typo = function(){
                     rendering_params.new_name = check_layer_name([layer, "Typo", field_selec.node().value].join('_'));
                 }
                 render_categorical(layer, rendering_params);
-//                switch_accordion_section();
+                switch_accordion_section();
             }
          });
     d3.selectAll(".params").attr("disabled", true);
@@ -1747,7 +1747,7 @@ function fillMenu_Choropleth(){
                     ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
                     );
                 render_choro(layer, rendering_params[field_to_render]);
-//                switch_accordion_section();
+                switch_accordion_section();
             }
          });
     d3.selectAll(".params").attr("disabled", true);
@@ -2303,7 +2303,7 @@ function fillMenu_Anamorphose(){
                 create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
                 up_legends();
                 zoom_without_redraw();
-//                switch_accordion_section();
+                switch_accordion_section();
                 }
     });
     d3.selectAll(".params").attr("disabled", true);
@@ -2632,7 +2632,7 @@ function fillMenu_PropSymbol(layer){
             make_prop_symbols(rendering_params);
             binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
-//            switch_accordion_section();
+            switch_accordion_section();
 
         });
     d3.selectAll(".params").attr("disabled", true);
@@ -3405,18 +3405,13 @@ function add_table_field(table, layer_name, parent){
     return;
 }
 
-/*
+
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
-function switch_accordion_section(id_to_close="accordion2", id_to_open="accordion3"){
-    let section2 = document.getElementById(id_to_close).firstChild,
-        section3 = document.getElementById(id_to_open).firstChild;
-    if(section2.getAttribute("aria-expanded") == "true")
-        section2.dispatchEvent(new Event("click"));
-    if(section3.getAttribute("aria-expanded") == "false")
-        section3.dispatchEvent(new Event("click"));
+function switch_accordion_section(){
+    document.getElementById("btn_s3").dispatchEvent(new MouseEvent("click"));
 }
-*/
+
 
 /**
 * Return the haversine distance in kilometers between two points (lat/long coordinates)
