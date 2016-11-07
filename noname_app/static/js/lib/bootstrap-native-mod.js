@@ -1377,7 +1377,7 @@
   var Tooltip = function( element,options ) {
     options = options || {};
     var get_placement = function(){
-        let bbox = element.getBoundingClientRect(),
+        var bbox = element.getBoundingClientRect(),
             coords_x = {min: bbox.x, max: bbox.x + bbox.width},
             coords_y = {min: bbox.y, max: bbox.y + bbox.height};
         if(coords_x.min < 25)

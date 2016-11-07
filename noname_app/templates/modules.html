@@ -1426,8 +1426,6 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         class_box = class_box || "dialog";
         title = title || i18next.t("app_page.common.ask_confirm");
         options = options || {};
-        if(options.widthFitContent)
-            class_box = class_box + " fitContent";
 
         let container = document.createElement("div");
         let new_id = get_available_id();
@@ -1438,7 +1436,8 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         container.setAttribute("role", "dialog");
         container.setAttribute("aria-labelledby", "myModalLabel");
         container.setAttribute("aria-hidden", "true");
-        container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+        container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>'
+                            : '<div class="modal-dialog"><div class="modal-content"></div></div>';
         document.getElementById("twbs").appendChild(container);
 
         container = document.getElementById("myModal_" + new_id);
@@ -1463,6 +1462,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                       +'</div>'
         });
         modal_box.open();
+
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
             existing.delete(new_id);

@@ -122,7 +122,7 @@ class UserArrow {
 
         let angle = (-this.calcAngle()).toFixed(0);
 
-        make_confirm_dialog("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"))
+        make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed) {
                     // Store shorcut of useful values :
@@ -140,7 +140,7 @@ class UserArrow {
                     line.style.stroke = self.color;
                 }
             });
-        let box_content = d3.select(".styleBoxArrow").insert("div").attr("id", "styleBoxArrow");
+        let box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
         let s1 = box_content.append("p");
         s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.append("input")
@@ -360,7 +360,7 @@ class Textbox {
                                content: unescape(this.text_annot.select("p").html()),
                                font: ""};
         let self = this;
-        make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"))
+        make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 $("#btn_info_text_annotation[data-tooltip_info!='']").qtip("destroy");
                 if(!confirmed){
@@ -368,7 +368,7 @@ class Textbox {
                     self.fontsize = current_options.size;
                 }
             });
-        let box_content = d3.select(".styleTextAnnotation").insert("div").attr("id", "styleTextAnnotation");
+        let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
         box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
                 .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
                 .on("change", function(){
@@ -567,7 +567,7 @@ var scaleBar = {
     editStyle: function(){
         var new_val,
             self = this;
-        make_confirm_dialog("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"))
+        make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed){
                     if(new_val)
@@ -578,7 +578,7 @@ var scaleBar = {
                     }
                 }
             });
-        var box_body = d3.select(".scaleBarEditBox");
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
                 .html(i18next.t("app_page.scale_bar_edit_box.title"));
@@ -752,14 +752,14 @@ var northArrow = {
             x_pos = +self.x_center - old_dim / 2,
             y_pos = +self.y_center - old_dim /2;
 
-        make_confirm_dialog("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"))
+        make_confirm_dialog2("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"),  {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed){
                     null;
                 }
             });
 
-        var box_body = d3.select(".arrowEditBox");
+        var box_body = d3.select(".arrowEditBox").select(".modal-body");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
                 .html(i18next.t("app_page.north_arrow_edit_box.title"));
@@ -904,7 +904,7 @@ class UserEllipse {
             };
 //        let angle = (-this.calcAngle()).toFixed(0);
 
-        make_confirm_dialog("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"))
+        make_confirm_dialog2("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 map.selectAll(".ctrl_pt").remove();
                 if(confirmed) {
@@ -922,7 +922,7 @@ class UserEllipse {
                     ellipse_elem.style.stroke = self.stroke_color;
                 }
             });
-        let box_content = d3.select(".styleBoxEllipse").insert("div").attr("id", "styleBoxEllipse");
+        let box_content = d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "styleBoxEllipse");
         let s1 = box_content.append("p");
         s1.append("p")
             .style("margin", "auto")

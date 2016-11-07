@@ -597,7 +597,7 @@ div.panel.show {
 }
 
 .fitContent {
-  width: intrinsic;
-  width: -moz-max-content;
-  width: -webkit-max-content;
+  width: intrinsic !important;
+  width: -moz-max-content !important;
+  width: -webkit-max-content !important;
 }
