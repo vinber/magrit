@@ -430,7 +430,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         currency: ["", ""]
                         }).format('.2f');
 
-    var modal_box = make_dialog_container("discretiz_charts", "discretiz_charts_dialog");
+    var modal_box = make_dialog_container(
+         "discretiz_charts",
+         [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''),
+         "discretiz_charts_dialog"
+        );
 
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
 //    var newBox = d3.select("body").append("div")
@@ -628,8 +632,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .scale(x)
         .tickFormat(formatCount));
 
-    var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
-    accordion_colors.append("h3").html(i18next.t("disc_box.title_color_scheme"));
+    var b_accordion_colors = newBox.append("button")
+                        .attr("id", "btn_acc_colors").attr("class", "accordion")
+                        .style("padding", "0 6px")
+                        .html(i18next.t("disc_box.title_color_scheme")),
+        accordion_colors = newBox.append("div").attr("class", "panel").attr("id", "accordion_colors");
+
+//    var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
+//    accordion_colors.append("h3").html(i18next.t("disc_box.title_color_scheme"));
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
                             .append("form_action");
@@ -650,10 +660,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var to_reverse = false;
     document.getElementById("button_sequential").checked = true;
 
-    var accordion_breaks = newBox.append("div")
-                                .attrs({id: "accordion_breaks_vals",
-                                       class: "accordion_disc"});
-    accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
+    var b_accordion_breaks = newBox.append("button")
+                        .attr("id", "btn_acc_colors").attr("class", "accordion")
+                        .style("padding", "0 6px")
+                        .html(i18next.t("disc_box.title_break_values")),
+        accordion_breaks = newBox.append("div").attr("class", "panel").attr("id", "accordion_breaks_vals");
+//    var accordion_breaks = newBox.append("div")
+//                                .attrs({id: "accordion_breaks_vals",
+//                                       class: "accordion_disc"});
+//    accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
 
     var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
@@ -676,8 +691,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             redisplay.draw();
          });
 
-    $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
-    $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
+    accordionize(".accordion", d3.select("#discretiz_charts").node());
 
     if(no_data > 0){
         make_no_data_section();
@@ -836,10 +850,17 @@ function display_categorical_box(layer, field){
         cats.push({name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
     });
 
-    var newbox = d3.select("body")
-                        .append("div").style("font-size", "10px")
-                        .attrs({id: "categorical_box",
-                                title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
+    var modal_box = make_dialog_container(
+        "categorical_box",
+        i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features}),
+        "dialog");
+
+    var newbox = d3.select("#categorical_box").select(".modal-body");
+
+//    var newbox = d3.select("body")
+//                        .append("div").style("font-size", "10px")
+//                        .attrs({id: "categorical_box",
+//                                title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
     newbox.append("h3").html("")
     newbox.append("p")
                 .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));
@@ -893,41 +914,32 @@ function display_categorical_box(layer, field){
             }
         });
 
-      $( "#sortable_typo_name" ).sortable({
-        placeholder: "ui-state-highlight",
-        helper: 'clone'  // Avoid propagation of the click event to the color button (if clicked on it the move the feature)
-      });
+    new Sortable(document.getElementById("sortable_typo_name"));
 
+    let deferred = Q.defer(),
+        container = document.getElementById("categorical_box");
 
-    var deferred = Q.defer();
-    $("#categorical_box").dialog({
-        modal: true,
-        resizable: true,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    let color_map = fetch_categorical_colors();
-                    let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
-                    deferred.resolve([nb_class, color_map, colorByFeature]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                d3.selectAll(".color_input").remove();
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-    })
+    container.querySelector(".btn_ok").onclick = function(){
+        let color_map = fetch_categorical_colors();
+        let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
+        deferred.resolve([nb_class, color_map, colorByFeature]);
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
+    container.querySelector(".btn_cancel").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+    }
+    container.querySelector("#xclose").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+    }
     return deferred.promise;
-}
+};
+
 
 var display_box_symbol_typo = function(layer, field){
     var fetch_symbol_categories = function(){
@@ -977,10 +989,11 @@ var display_box_symbol_typo = function(layer, field){
     let nb_class = categories.size;
 
     return function(){
-        var newbox = d3.select("body")
-                            .append("div").style("font-size", "10px")
-                            .attrs({id: "symbol_box",
-                                    title: i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features})})
+        var modal_box = make_dialog_container(
+            "symbol_box",
+            i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features}),
+            "dialog");
+        var newbox = d3.select("#symbol_box").select(".modal-body");
 
         newbox.append("h3").html("")
         newbox.append("p")
@@ -1012,10 +1025,10 @@ var display_box_symbol_typo = function(layer, field){
                         display: "inline-block", "background-size": "32px 32px"
                       })
                 .on("click", function(){
-                    let self = this;
+//                    let self = this;
                     box_choice_symbol(res_symbols).then(confirmed => {
                         if(confirmed){
-                            self.style.backgroundImage = confirmed;
+                            this.style.backgroundImage = confirmed;
                         }
                     });
                 });
@@ -1033,41 +1046,31 @@ var display_box_symbol_typo = function(layer, field){
                 .insert("span")
                 .style("display", "inline-block")
                 .html(" px");
+        new Sortable(document.getElementById("typo_categories"));
 
-        $( "#typo_categories" ).sortable({
-            placeholder: "ui-state-highlight",
-            helper: 'clone'  // Avoid propagation of the click event to the enclosed button
-        });
-
-        var deferred = Q.defer();
-        $("#symbol_box").dialog({
-            modal: true,
-            resizable: true,
-            buttons:[{
-                text: i18next.t("app_page.common.confirm"),
-                click: function(){
-                        let symbol_map = fetch_symbol_categories();
-                        deferred.resolve([nb_class, symbol_map]);
-                        $(this).dialog("close");
-                        }
-                    },
-               {
-                text: i18next.t("app_page.common.cancel"),
-                click: function(){
-                    $(this).dialog("close");
-                    $(this).remove();}
-               }],
-            close: function(event, ui){
-                    d3.selectAll(".color_input").remove();
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()){
-                        deferred.resolve(false);
-                    }
-                }
-        })
+        let deferred = Q.defer(),
+            container = document.getElementById("symbol_box");
+    
+        container.querySelector(".btn_ok").onclick = function(){
+            let symbol_map = fetch_symbol_categories();
+            deferred.resolve([nb_class, symbol_map]);
+            modal_box.close();
+            container.remove();
+        }
+        container.querySelector(".btn_cancel").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        }
+        container.querySelector("#xclose").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        }
         return deferred.promise;
-    };
-}
+    }
+};
+
 
 function reOpenParent(css_selector){
     css_selector = css_selector || ".styleBox";

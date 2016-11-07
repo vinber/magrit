@@ -752,7 +752,6 @@ function add_layer_topojson(text, options){
           .attrs({"height": "100%", "width": "100%"});
 
     let class_name = [
-        "ui-state-default ",
         target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
         lyr_name_to_add
         ].join('');
@@ -933,9 +932,11 @@ function select_layout_features(){
         ];
     var selected_ft;
 
-    make_confirm_dialog2("sampleLayoutFtDialogBox", i18next.t("app_page.layout_features_box.title")).then(
-            confirmed => { if(confirmed) add_layout_feature(selected_ft);
-        });
+    make_confirm_dialog2(
+            "sampleLayoutFtDialogBox",
+            i18next.t("app_page.layout_features_box.title"),
+            {widthFitContent: true}
+        ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
 
     var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
 //    box_body.node().parentElement.style.width = "auto";
@@ -1423,4 +1424,25 @@ function prepare_available_symbols(){
                     }
                 });
             })
+}
+
+function accordionize(css_selector=".accordion", parent){
+    parent = parent && typeof parent === "object" ? parent
+            : parent && typeof parent === "string" ? document.querySelector(parent)
+            : document;
+    let acc = parent.querySelectorAll(css_selector),
+        opened_css_selector = css_selector + ".active";
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].onclick = function(){
+            let opened = parent.querySelector(opened_css_selector);
+            if(opened){
+                opened.classList.toggle("active");
+                opened.nextElementSibling.classList.toggle("show");
+            }
+            if(!opened || opened.id != this.id){
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("show");
+            }
+      }
+    }
 }

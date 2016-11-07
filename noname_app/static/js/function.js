@@ -118,12 +118,19 @@ function check_layer_name(name){
 }
 
 function box_choice_symbol(sample_symbols){
-    var newbox = d3.select("body")
-                        .append("div").style("font-size", "10px")
-                        .attrs({id: "box_choice_symbol", title: "Symbol selection"});
+//    var newbox = d3.select("body")
+//                        .append("div").style("font-size", "10px")
+//                        .attrs({id: "box_choice_symbol", title: "Symbol selection"});
 
-    newbox.append("h3").html(i18next.t("Symbol selection"));
-    newbox.append("p").html(i18next.t("Select a symbol..."));
+    var modal_box = make_dialog_container(
+        "box_choice_symbol",
+        i18next.t("app_page.box_choice_symbol.title"),
+        "dialog");
+    var newbox = d3.select("#symbol_box").select(".modal-body");
+
+
+    newbox.append("h3").html(i18next.t("app_page.box_choice_symbol.title"));
+    newbox.append("p").html(i18next.t("app_page.box_choice_symbol.select_symbol"));
 
     var box_select = newbox.append("div")
                         .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
@@ -158,9 +165,9 @@ function box_choice_symbol(sample_symbols){
 
     newbox.append("p")
         .attr("display", "inline")
-        .html(i18next.t("Or upload your symbol "));
+        .html(i18next.t("app_page.box_choice_symbol.upload_symbol"));
     newbox.append("button")
-        .html("Browse")
+        .html(i18next.t("app_page.box_choice_symbol.browse"))
         .on("click", function(){
             let input = document.createElement('input');
             input.setAttribute("type", "file");
@@ -178,7 +185,7 @@ function box_choice_symbol(sample_symbols){
             input.dispatchEvent(new MouseEvent("click"));
         });
 
-    newbox.insert("p").html("Selected symbol :")
+    newbox.insert("p").html(i18next.t("app_page.box_choice_symbol.selected_symbol"))
     newbox.insert("p").attr("id", "current_symb")
             .attr("class", "symbol_section")
             .style("margin", "auto")
@@ -188,33 +195,59 @@ function box_choice_symbol(sample_symbols){
                     "border-radius": "10%",
                     display: "inline-block", "background-size": "32px 32px"
                   });
-    var deferred = Q.defer();
-    $("#box_choice_symbol").dialog({
-        modal: true,
-        resizable: true,
-        buttons:[{
-            text: "Confirm",
-            click: function(){
-                    let res_url = newbox.select("#current_symb").style("background-image");
-                    deferred.resolve(res_url);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: "Cancel",
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-    })
+
+    let deferred = Q.defer(),
+        container = document.getElementById("box_choice_symbol");
+
+    container.querySelector(".btn_ok").onclick = function(){
+        let res_url = newbox.select("#current_symb").style("background-image");
+        deferred.resolve(res_url);
+        modal_box.close();
+        container.remove();
+        reOpenParent("#symbol_box");
+    }
+    container.querySelector(".btn_cancel").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent("#symbol_box");
+    }
+    container.querySelector("#xclose").onclick = function(){
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent("#symbol_box");
+    }
     return deferred.promise;
-}
+};
+
+//    var deferred = Q.defer();
+//    $("#box_choice_symbol").dialog({
+//        modal: true,
+//        resizable: true,
+//        buttons:[{
+//            text: "Confirm",
+//            click: function(){
+//                    let res_url = newbox.select("#current_symb").style("background-image");
+//                    deferred.resolve(res_url);
+//                    $(this).dialog("close");
+//                    }
+//                },
+//           {
+//            text: "Cancel",
+//            click: function(){
+//                $(this).dialog("close");
+//                $(this).remove();}
+//           }],
+//        close: function(event, ui){
+//                $(this).dialog("destroy").remove();
+//                if(deferred.promise.isPending()){
+//                    deferred.resolve(false);
+//                }
+//            }
+//    })
+//    return deferred.promise;
+//}
 
 function make_style_box_indiv_symbol(label_node){
     let current_options = {size: label_node.getAttribute("width")};
@@ -295,7 +328,6 @@ function fillMenu_TypoSymbol(){
                     confirmButtonColor: "#DD6B55",
                     confirmButtonText: i18next.t("app_page.common.valid") + "!",
                     cancelButtonText: i18next.t("app_page.common.cancel"),
-                    closeOnConfirm: true
                 }).then(() => {
                     fields_Symbol.box_typo().then(function(confirmed){
                         if(confirmed){
@@ -2384,6 +2416,35 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     return [d_values, animation];
 }
 
+function createTableDOM(data, options){
+    options = options || {};
+    options.id = options.id || "myTable";
+    let nb_features = data.length,
+        column_names = Object.getOwnPropertyNames(data[0]),
+        nb_columns = column_names.length;
+    let myTable = document.createElement("table"),
+        headers = document.createElement("thead"),
+        body = document.createElement("tbody"),
+        headers_row = document.createElement("tr");
+    for(let i=0; i < nb_columns; i++){
+        let cell = document.createElement("th");
+        cell.innerHTML = column_names[i];
+        headers_row.appendChild(cell)
+    }
+    myTable.appendChild(headers_row);
+    for(let i=0; i < nb_features; i++){
+        let row = document.createElement("tr");
+        for(let j=0; j < nb_columns; j++){
+            let cell = document.createElement("td");
+            cell.innerHTML = data[i][column_names[j]]
+            row.appendChild(cell);
+        }
+        body.appendChild(row);
+    }
+    myTable.appendChild(body);
+    myTable.setAttribute("id", options.id);
+    return myTable;
+}
 
 var boxExplore = {
     display_table: function(table_name){
@@ -2398,7 +2459,7 @@ var boxExplore = {
         if(this.top_buttons.select("#add_field_button").node()){
             this.top_buttons.select("#add_field_button").remove()
             document.getElementById("table_intro").remove();
-            document.getElementById("myTable").remove();
+            document.gcolumn_names[j];etElementById("myTable").remove();
             document.getElementById("myTable_wrapper").remove();
         }
         let self = this;
@@ -2415,10 +2476,15 @@ var boxExplore = {
              this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
             ].join('');
         this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        this.box_table.append("table")
-                      .attrs({class: "display compact", id: "myTable"})
-                      .style("width", "80%");
-        let myTable = new DataTable(document.getElementById("myTable"));
+        let DOM_table = createTableDOM(the_table, {id: "myTable"});
+        this.box_table.node().appendChild(DOM_table);
+
+//        this.box_table.append("table")
+//                      .attrs({class: "display compact", id: "myTable"})
+//                      .style("width", "80%");
+        let myTable = new DataTable(document.getElementById("myTable"),{
+            sortable: true
+        });
 //        let myTable = $('#myTable').DataTable({
 //            data: the_table,
 //            columns: this.columns_headers,
@@ -2443,11 +2509,12 @@ var boxExplore = {
         this.columns_headers = [];
         this.nb_features = undefined;
         this.columns_names = undefined;
-        this.current_table = undefined,
-        this.box_table = d3.select("body").append("div")
-                            .style("font-size", "0.75em")
-                            .attrs({id: "browse_data_box", title: i18next.t("app_page.explore_box.title")});
-
+        this.current_table = undefined;
+        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.box_table = d3.select("#browse_data_box").select(".modal-body");
+//        this.box_table = d3.select("body").append("div")
+//                            .style("font-size", "0.75em")
+//                            .attrs({id: "browse_data_box", title: i18next.t("app_page.explore_box.title")});
         let self = this;
 
         this.top_buttons = this.box_table.append('p')
@@ -2465,23 +2532,42 @@ var boxExplore = {
             select_a_table.append("option").attr("value", key).text(txt);
         });
         setSelected(select_a_table.node(), select_a_table.node().options[0].value);
-        var deferred = Q.defer();
-        $("#browse_data_box").dialog({
-            modal:false,
-            resizable: true,
-            width: Math.round(window.innerWidth * 0.8),
-            buttons:[{
-                    text: i18next.t("app_page.common.close"),
-                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-                        }],
-            close: function(event, ui){
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()) deferred.resolve(false);
-                }
-        });
+        var deferred = Q.defer(),
+            container = document.getElementById("browse_data_box");
+        container.querySelector(".btn_ok").onclick = function(){
+            deferred.resolve([true, true]);
+            modal_box.close();
+            container.remove();
+        };
+        container.querySelector(".btn_cancel").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
+        container.querySelector("#xclose").onclick = function(){
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
         return deferred.promise;
     }
 };
+//        $("#browse_data_box").dialog({
+//            modal:false,
+//            resizable: true,
+//            width: Math.round(window.innerWidth * 0.8),
+//            buttons:[{
+//                    text: i18next.t("app_page.common.close"),
+//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
+//                        }],
+//            close: function(event, ui){
+//                    $(this).dialog("destroy").remove();
+//                    if(deferred.promise.isPending()) deferred.resolve(false);
+//                }
+//        });
+//        return deferred.promise;
+//    }
+//};
 
 
 var fields_PropSymbol = {
@@ -2965,14 +3051,14 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
 
     li.setAttribute("layer_name", layer_name);
     if(type_layer == "result"){
-        li.setAttribute("class", ["ui-state-default sortable_result ", layer_name].join(''));
+        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = ['<div class="layer_buttons">',
                         button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend,
                         button_result_type.get(type_geom[1]), "</div> ", _list_display_name].join('');
     } else if(type_layer == "sample"){
-        li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
+        li.setAttribute("class", ["sortable ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = ['<div class="layer_buttons">',

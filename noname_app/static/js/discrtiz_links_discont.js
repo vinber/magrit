@@ -224,7 +224,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                         currency: ["", ""]
                         }).format('.2f');
 
-    var modal_box = make_dialog_container("discretiz_charts", "discretiz_charts_dialog");
+    var title_box = [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join('');
+    var modal_box = make_dialog_container("discretiz_charts", title_box, "discretiz_charts_dialog");
 
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
 //                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));

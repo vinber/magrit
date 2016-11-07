@@ -975,9 +975,10 @@
     this.options.animation = options.animation && options.animation !== 'fade' ? options.animation : 'fade';
     this.options.placement = options.placement ? options.placement : 'top';
     this.options.delay = parseInt(options.delay) || 100;
-    this.options.dismiss = options.dismiss && options.dismiss === 'true' ? true : false;
+    this.options.dismiss = options.dismiss && options.dismiss == 'true' ? true : false;
     this.duration = 150;
     this.options.duration = (isIE && isIE < 10) ? 0 : (options.duration || this.duration);
+    this.options.dismissOutsideClick = options.dismissOutsideClick || true;
     this.options.container = options.container || document.body;
     if ( !this.content && !this.options.template ) return;
 
@@ -990,7 +991,8 @@
       }
     };
     this.dismiss = function(e) {
-      if (self.popover && e.target === self.popover.querySelector('.close')) {
+      if (self.popover && (e.target === self.popover.querySelector('.close')
+            || (self.options.dismissOutsideClick && e.target.className.indexOf("popover") < 0))) {
         self.close();
       }
     };
@@ -1392,6 +1394,7 @@
     this.title = undefined;
     this.tooltip = null;
     this.options = {};
+    this.options.dataAttr = options.dataAttr || "title";
     this.options.animation = options.animation && options.animation !== 'fade' ? options.animation : 'fade';
     this.options.placement = options.placement ? options.placement : get_placement();
     this.options.delay = parseInt(options.delay) || 100;
@@ -1404,7 +1407,7 @@
 
     this.open = function(e) {
       clearTimeout(timer);
-      self.title = self.link.getAttribute('tooltip-title') || self.link.getAttribute('data-original-title');
+      self.title = self.link.getAttribute(self.options.dataAttr) || self.link.getAttribute('data-original-title');
       if ( !self.title ) return;
 
       timer = setTimeout( function() {

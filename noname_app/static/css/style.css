@@ -21,31 +21,11 @@ body {
     letter-spacing: 3px;
 }
 
-#header a{
-    text-decoration:none;
-    color: white;
-}
-
-#header :hover{
-    color: red;
-}
-
 #page {
     width: 100%;
     height : auto;
     float: left;
     text-align:center;
-}
-
-#menu_block {
-    height: calc(100% - 30px);
-    background: rgb(170, 170, 170);
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    left: 349px;
-    width: 1px;
-    position: fixed;
 }
 
 #menu {
@@ -71,8 +51,8 @@ body {
 }
 
 h1.menu {
-	color:#2e91ce;
-	font-size:15px;
+    color:#2e91ce;
+    font-size:15px;
 }
 
 a.logo {
@@ -99,13 +79,13 @@ a.logo {
 
 
 #footer {
-	font-family: 'Enriqueta', arial, serif;
-	line-height: 1.25;
-	margin: 10px;
-	font-size: 11px;
-	font-weight: bold;
-	color : #96a0a8;
-     margin: 0;
+    font-family: 'Enriqueta', arial, serif;
+    line-height: 1.25;
+    margin: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    color : #96a0a8;
+    margin: 0;
 }
 
 .item-menu {
@@ -118,25 +98,25 @@ a.logo {
 }
 
 h1 {
-	font-family: 'Enriqueta', arial, serif;
-	line-height: 1.25;
-	margin: 0 0 10px;
-	font-size: 40px;
-	font-weight: bold;
+    font-family: 'Enriqueta', arial, serif;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    font-size: 40px;element
+    font-weight: bold;
 }
 
 h2{
-	font-family: 'Enriqueta', arial, serif;
-	font-size: 16px;
-	color : #2e91ce;
-	font-weight: bold;
+    font-family: 'Enriqueta', arial, serif;
+    font-size: 16px;
+    color : #2e91ce;
+    font-weight: bold;
 }
 
 h3{
-	font-family: 'Enriqueta', arial, serif;
-	font-size: 13px;
-	color : #2e91ce;
-	font-weight: bold;
+    font-family: 'Enriqueta', arial, serif;
+    font-size: 13px;
+    color : #2e91ce;
+    font-weight: bold;
 }
 
 
@@ -256,28 +236,6 @@ a.menu {
     color:black;
 }
 
-.ui-dialog .ui-dialog-titlebar {
-    padding: .3em .4em;
-    background: rgb(153, 168, 196) none repeat scroll 0% 0%;
-}
-
-#dialog,.ui-button-text {
-    font-size: 0.65em;
-}
-
-.ui-dialog-title {
-    font-size: 0.75em;
-}
-
-.ui-dialog .ui-dialog-buttonpane{
-    padding: 0 0 0 0;
-}
-
-.ui-state-highlight {
-    line-height:12px;
-    background:red
-}
-
 #sortable {
     list-style-type:none;
     margin:auto;
@@ -333,11 +291,6 @@ a.menu {
     fill: transparent;
     stroke: black;
     stroke-width: 0.7px;
-}
-
-.qtip_layer {
-    font-size: 11.5px;
-    font-family: Comic Sans MS,cursive,sans-serif;
 }
 
 .button_disc {
@@ -443,50 +396,6 @@ a.menu {
     background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
     background-color:#dfdfdf;
     border: 1px solid #dfdfdf;
-}
-
-.ui-accordion .ui-accordion-header {
-    margin: 0;
-    padding: 1em 1em 1em 2em;
-    font-size: 1.1em;
-    font-family: Baloo Bhaina;
-    color: #fff;
-}
-
-.ui-accordion .ui-state-active, .ui-accordion .ui-state-default{
-    background: #595959;
-    border: 0.4px solid #d3d3d3;
-}
-
-.ui-accordion .ui-accordion-content {
-    border-top-color: rgb(170, 170, 170);
-    border-top-style: solid;
-    border-top-width: 1px;
-    margin-bottom: 10px;
-}
-
-.ui-accordion-header .ui-corner-all, .ui-accordion .ui-corner-all  {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
-.ui-corner-bottom {
-    border-bottom-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-}
-
-.ui-corner-top {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-}
-
-.qtip_help {
-    font-size: 0.9em;
-    line-height: 18px;
-    max-width: 600px;
-    font-family: Verdana,Arial,sans-serif;
 }
 
 .without_spinner {
@@ -637,10 +546,24 @@ div.panel.show {
     visibility: visible;
 }
 
+.twbs .panel {
+    border: 1px solid #aaaaaa;
+    border-top-color: rgb(170, 170, 170);
+    border-top-style: solid;
+    border-top-width: 1px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
 .twbs h3 {
     font-size: 1.2em;
     font-weight: bold;
     margin-top: 4px;
+}
+
+.twbs .modal {
+    position: absolute;
+    overflow: visible;
 }
 
 .twbs .modal-title {
@@ -671,4 +594,10 @@ div.panel.show {
     font-size: 15px;
     margin-right: 5px;
     margin-top: 2px;
+}
+
+.fitContent {
+  width: intrinsic;
+  width: -moz-max-content;
+  width: -webkit-max-content;
 }

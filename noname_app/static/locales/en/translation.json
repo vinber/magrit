@@ -263,6 +263,13 @@
                 "constant_value": "Constant value..."
             }
         },
+        "box_choice_symbol": {
+            "title": "Symbol selection",
+            "select_symbol": "Select a symbol ...",
+            "upload_symbol": "Or upload your symbol ",
+            "browse": "Browse",
+            "selected_symbol": "Selected symbol :"
+        },
         "legend_style_box": {
             "title": "Layer style options - {{layer_name}}",
             "subtitle": "Legend customization",
