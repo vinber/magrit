@@ -457,17 +457,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         container.remove();
         reOpenParent();
     }
-    container.querySelector(".btn_cancel").onclick = function(){
+    let _onclose = () => {
         deferred.resolve(false);
         modal_box.close();
         container.remove();
         reOpenParent();
-    }
-    container.querySelector("#xclose").onclick = function(){
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-        reOpenParent();
-    }
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 };

@@ -638,8 +638,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .html(i18next.t("disc_box.title_color_scheme")),
         accordion_colors = newBox.append("div").attr("class", "panel").attr("id", "accordion_colors");
 
-//    var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
-//    accordion_colors.append("h3").html(i18next.t("disc_box.title_color_scheme"));
     var color_scheme =  d3.select("#accordion_colors")
                             .append("div").attr("id", "color_div")
                             .append("form_action");
@@ -665,10 +663,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .style("padding", "0 6px")
                         .html(i18next.t("disc_box.title_break_values")),
         accordion_breaks = newBox.append("div").attr("class", "panel").attr("id", "accordion_breaks_vals");
-//    var accordion_breaks = newBox.append("div")
-//                                .attrs({id: "accordion_breaks_vals",
-//                                       class: "accordion_disc"});
-//    accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
 
     var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
@@ -758,18 +752,15 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         container.remove();
         reOpenParent();
     }
-    container.querySelector(".btn_cancel").onclick = function(){
+
+    let _onclose = () => {
         deferred.resolve(false);
         modal_box.close();
         container.remove();
         reOpenParent();
-    }
-    container.querySelector("#xclose").onclick = function(){
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-        reOpenParent();
-    }
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 }
 
@@ -917,7 +908,12 @@ function display_categorical_box(layer, field){
     new Sortable(document.getElementById("sortable_typo_name"));
 
     let deferred = Q.defer(),
-        container = document.getElementById("categorical_box");
+        container = document.getElementById("categorical_box"),
+        _onclose = () => {
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
 
     container.querySelector(".btn_ok").onclick = function(){
         let color_map = fetch_categorical_colors();
@@ -927,16 +923,9 @@ function display_categorical_box(layer, field){
         container.remove();
         reOpenParent();
     }
-    container.querySelector(".btn_cancel").onclick = function(){
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-    }
-    container.querySelector("#xclose").onclick = function(){
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-    }
+
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 };
 

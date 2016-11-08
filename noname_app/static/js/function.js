@@ -126,8 +126,7 @@ function box_choice_symbol(sample_symbols){
         "box_choice_symbol",
         i18next.t("app_page.box_choice_symbol.title"),
         "dialog");
-    var newbox = d3.select("#symbol_box").select(".modal-body");
-
+    var newbox = d3.select("#box_choice_symbol").select(".modal-body");
 
     newbox.append("h3").html(i18next.t("app_page.box_choice_symbol.title"));
     newbox.append("p").html(i18next.t("app_page.box_choice_symbol.select_symbol"));
@@ -204,20 +203,17 @@ function box_choice_symbol(sample_symbols){
         deferred.resolve(res_url);
         modal_box.close();
         container.remove();
-        reOpenParent("#symbol_box");
+        reOpenParent("#box_choice_symbol");
     }
-    container.querySelector(".btn_cancel").onclick = function(){
+
+    let _onclose = () => {
         deferred.resolve(false);
         modal_box.close();
         container.remove();
-        reOpenParent("#symbol_box");
-    }
-    container.querySelector("#xclose").onclick = function(){
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-        reOpenParent("#symbol_box");
-    }
+        reOpenParent("#box_choice_symbol");
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 };
 
@@ -2459,16 +2455,14 @@ var boxExplore = {
         if(this.top_buttons.select("#add_field_button").node()){
             this.top_buttons.select("#add_field_button").remove()
             document.getElementById("table_intro").remove();
-            document.gcolumn_names[j];etElementById("myTable").remove();
-            document.getElementById("myTable_wrapper").remove();
+            document.querySelector(".dataTable-wrapper").remove();
         }
-        let self = this;
         this.top_buttons
              .insert("button")
              .attrs({id: "add_field_button", class: "button_st3"})
              .html(i18next.t("app_page.explore_box.button_add_field"))
-             .on('click', function(){
-                add_table_field(the_table, table_name, self);
+             .on('click', () => {
+                add_field_table(the_table, table_name, this);
              });
         let txt_intro = [
              "<b>", table_name, "</b><br>",
@@ -2476,19 +2470,26 @@ var boxExplore = {
              this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
             ].join('');
         this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        let DOM_table = createTableDOM(the_table, {id: "myTable"});
-        this.box_table.node().appendChild(DOM_table);
+        this.box_table.node().appendChild(
+            createTableDOM(the_table, {id: "myTable"})
+            );
 
-//        this.box_table.append("table")
-//                      .attrs({class: "display compact", id: "myTable"})
-//                      .style("width", "80%");
-        let myTable = new DataTable(document.getElementById("myTable"),{
-            sortable: true
-        });
-//        let myTable = $('#myTable').DataTable({
-//            data: the_table,
-//            columns: this.columns_headers,
-//        });
+        let box = document.getElementById("browse_data_box");
+        // TOFIX (error on DataTable creation)
+        try {
+            new DataTable(box.querySelector("#myTable"));
+        } catch(e) {
+            console.log(e);
+        }
+        // Adjust the size of the box (on opening and after adding a new field)
+        // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+        let new_width = box.querySelector("#myTable").getBoundingClientRect().width;
+        if(new_width > window.innerWidth * 0.85){
+            box.querySelector(".modal-content").style.overflow = "auto";
+            box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+        } else if (new_width > 600) {
+            box.querySelector(".modal-dialog").style.width = (new_width + 40) + "px";
+        }
     },
     get_available_tables: function(){
         let target_layer = Object.getOwnPropertyNames(user_data),
@@ -2512,9 +2513,6 @@ var boxExplore = {
         this.current_table = undefined;
         let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
         this.box_table = d3.select("#browse_data_box").select(".modal-body");
-//        this.box_table = d3.select("body").append("div")
-//                            .style("font-size", "0.75em")
-//                            .attrs({id: "browse_data_box", title: i18next.t("app_page.explore_box.title")});
         let self = this;
 
         this.top_buttons = this.box_table.append('p')
@@ -2532,43 +2530,24 @@ var boxExplore = {
             select_a_table.append("option").attr("value", key).text(txt);
         });
         setSelected(select_a_table.node(), select_a_table.node().options[0].value);
-        var deferred = Q.defer(),
-            container = document.getElementById("browse_data_box");
+        let deferred = Q.defer(),
+            container = document.getElementById("browse_data_box"),
+            _onclose = () => {
+                deferred.resolve(false);
+                modal_box.close();
+                container.remove();
+            };
+        container.querySelector(".btn_cancel").onclick = _onclose;
+        container.querySelector("#xclose").onclick = _onclose;
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve([true, true]);
             modal_box.close();
             container.remove();
         };
-        container.querySelector(".btn_cancel").onclick = function(){
-            deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-        };
-        container.querySelector("#xclose").onclick = function(){
-            deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-        };
+
         return deferred.promise;
     }
 };
-//        $("#browse_data_box").dialog({
-//            modal:false,
-//            resizable: true,
-//            width: Math.round(window.innerWidth * 0.8),
-//            buttons:[{
-//                    text: i18next.t("app_page.common.close"),
-//                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-//                        }],
-//            close: function(event, ui){
-//                    $(this).dialog("destroy").remove();
-//                    if(deferred.promise.isPending()) deferred.resolve(false);
-//                }
-//        });
-//        return deferred.promise;
-//    }
-//};
-
 
 var fields_PropSymbol = {
     fill: function(layer){
@@ -3256,7 +3235,7 @@ function get_fun_operator(operator){
 * @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
 *
 */
-function add_table_field(table, layer_name, parent){
+function add_field_table(table, layer_name, parent){
     function check_name(){
         if(regexp_name.test(this.value) || this.value == "")
             chooses_handler.new_name = this.value;
@@ -3418,6 +3397,7 @@ function add_table_field(table, layer_name, parent){
     make_confirm_dialog2("addFieldBox", i18next.t("app_page.explore_box.button_add_field"),
                     {width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined}
         ).then(function(valid){
+            reOpenParent("#browse_data_box");
             if(valid){
                 document.querySelector("body").style.cursor = "wait";
                 compute_and_add(chooses_handler).then(
@@ -3426,8 +3406,9 @@ function add_table_field(table, layer_name, parent){
                             fields_handler.unfill();
                             fields_handler.fill(layer_name);
                         }
-                        if(parent)
+                        if(parent){
                             parent.display_table(layer_name);
+                        }
                     }, function(error){
                         if(error != "Invalid name")
                             display_error_during_computation();
@@ -3759,13 +3740,13 @@ function fillMenu_PropSymbolTypo(layer){
         .html(i18next.t("app_page.func_options.typo.color_choice"))
         .on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0];
-            let selected_field = field_selec.node().value;
+            let selected_field = field2_selec.node().value;
             let new_layer_name = check_layer_name([layer, "Typo", selected_field].join('_'));
             display_categorical_box(layer, selected_field)
                 .then(function(confirmed){
                     if(confirmed){
-                        d3.select("#Typo_yes").attr("disabled", null)
-                        rendering_params = {
+                        d3.select("#propTypo_yes").attr("disabled", null)
+                        rendering_params[selected_field] = {
                                 nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
                                 renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
                             }
@@ -3783,6 +3764,7 @@ function fillMenu_PropSymbolTypo(layer){
                         .append('button')
                         .attr('id', 'propTypo_yes')
                         .attr('class', 'button_st3')
+                        .attr('disabled', true)
                         .text(i18next.t("app_page.func_options.common.render"));
 
     ok_button.on("click", function(){
@@ -3804,38 +3786,26 @@ function fillMenu_PropSymbolTypo(layer){
         rd_params.symbol = symb_selec.node().value;
         rd_params.ref_value = +ref_value.node().value;
         rd_params.ref_size = +ref_size.node().value;
-        rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+        rd_params.fill_color = rendering_params[color_field]['colorByFeature'];
 
-        let id_map = make_prop_symbols(rd_params),
-            colors_breaks = [];
-
-        for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
-            colors_breaks.push([
-                    [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
-                    rendering_params[color_field]['colors'][i-1]
-                ]);
-        }
-
-        let options_disc = {schema: rendering_params[color_field].schema,
-                            colors: rendering_params[color_field].colors,
-                            no_data: rendering_params[color_field].no_data}
+        let id_map = make_prop_symbols(rd_params);
 
         current_layers[new_layer_name] = {
             renderer: "PropSymbolsTypo",
             features_order: id_map,
             symbol: rd_params.symbol,
             ref_layer_name: layer,
-            options_disc: options_disc,
             rendered_field: field1_selec.node().value,
             rendered_field2: field2_selec.node().value,
             size: [+ref_value.node().value, +ref_size.node().value],
             "stroke-width-const": 1,
             fill_color: { "class": id_map.map(obj => obj[3]) },
-            colors_breaks: colors_breaks,
             is_result: true,
-            n_features: nb_features
+            n_features: nb_features,
+            color_map: rendering_params[color_field]["color_map"]
         };
         zoom_without_redraw();
+        switch_accordion_section();
     });
     d3.selectAll(".params").attr("disabled", true);
 }

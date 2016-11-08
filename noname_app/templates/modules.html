@@ -1465,18 +1465,14 @@ var make_confirm_dialog2 = (function(class_box, title, options){
             existing.delete(new_id);
             container.remove();
         }
-        container.querySelector(".btn_cancel").onclick = function(){
+        let _onclose = () => {
             deferred.resolve(false);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
-        }
-        container.querySelector("#xclose").onclick = function(){
-            deferred.resolve(false);
-            modal_box.close();
-            existing.delete(new_id);
-            container.remove();
-        }
+        };
+        container.querySelector(".btn_cancel").onclick = _onclose;
+        container.querySelector("#xclose").onclick = _onclose;
         return deferred.promise;
     };
 })();

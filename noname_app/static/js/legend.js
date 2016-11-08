@@ -49,28 +49,31 @@ function handle_legend(layer){
 *
 */
 function createLegend(layer, title){
-    var field = current_layers[layer].rendered_field;
+    var renderer = current_layers[layer].renderer
+        field = current_layers[layer].rendered_field,
+        field2 = current_layers[layer].rendered_field2;
 
-    if(current_layers[layer].renderer.indexOf("PropSymbolsChoro") != -1){
-        let field2 = current_layers[layer].rendered_field2;
+    if(renderer.indexOf("PropSymbolsChoro") != -1
+        || renderer.indexOf("PropSymbolsTypo") != -1){
         createLegend_choro(layer, field2, title, field2, 0);
         createLegend_symbol(layer, field, title, field);
     }
-    else if(current_layers[layer].renderer.indexOf("PropSymbols") != -1
-            || current_layers[layer].renderer.indexOf("DorlingCarto") != -1)
+    else if(renderer.indexOf("PropSymbols") != -1
+            || renderer.indexOf("DorlingCarto") != -1)
         createLegend_symbol(layer, field, title, field);
 
-    else if (current_layers[layer].renderer.indexOf("Links") != -1
-            || current_layers[layer].renderer.indexOf("DiscLayer") != -1)
+    else if (renderer.indexOf("Links") != -1
+            || renderer.indexOf("DiscLayer") != -1)
         createLegend_discont_links(layer, field, title, field);
 
-    else if (current_layers[layer].renderer.indexOf("Choropleth") > -1)
+    else if (renderer.indexOf("Choropleth") > -1)
         createLegend_choro(layer, field, title, field, 0);
 
-    else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map)
+    else if (current_layers[layer].colors_breaks
+            || current_layers[layer].color_map || current_layers[layer].symbols_map)
         createLegend_choro(layer, field, title, field, 0);
 
-    else if (current_layers[layer].renderer.indexOf("Carto_doug") != -1)
+    else if (renderer.indexOf("Carto_doug") != -1)
         createLegend_nothing(layer, field, "Dougenik Cartogram", field);
 
     else

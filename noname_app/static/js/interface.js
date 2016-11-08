@@ -243,12 +243,10 @@ function handleOneByOneShp(files, target_layer_on_add){
         }
     })
     document.getElementById("dv_drop_shp").addEventListener("dragover", event => {
-        console.log(event)
         this.style.border = "dashed 2.5px green";
         event.preventDefault(); event.stopPropagation();
     });
     document.getElementById("dv_drop_shp").addEventListener("dragleave", event => {
-        console.log(event);
         this.style.border = "dashed 1px green";
         event.preventDefault(); event.stopPropagation();
     });
@@ -263,10 +261,9 @@ function prepare_drop_section(){
     Array.prototype.forEach.call(
         document.querySelectorAll("#map,.overlay_drop"),
         function(elem){
-
             elem.addEventListener("dragenter", e => {
-                let overlay_drop = document.getElementById("overlay_drop");
                 e.preventDefault(); e.stopPropagation();
+                let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
             });
 
@@ -293,14 +290,13 @@ function prepare_drop_section(){
             });
 
             elem.addEventListener("drop", function _drop_func(e){
+                e.preventDefault(); e.stopPropagation();
                 if(timeout){
                     clearTimeout(timeout);
                 }
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
-                e.preventDefault(); e.stopPropagation();
                 let files = e.dataTransfer.files;
-                console.log(files)
                 if(files.length == 1
                         && (files[0].name.indexOf(".shp") > -1
                            || files[0].name.indexOf(".shx") > -1
@@ -688,10 +684,6 @@ function add_layer_topojson(text, options){
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects);
 
-//    // Loop over the layers to add them all ?
-//    // Probably better open an alert asking to the user which one to load ?
-//    for(let i=0; i < layers_names.length; i++){
-
     if(layers_names.length > 1){
         swal("", i18next.t("app_page.common.warning_multiple_layers"), "warning");
     }
@@ -898,7 +890,6 @@ function scale_to_lyr(name){
 */
 function center_map(name){
     var bbox_layer_path = undefined;
-//    name = current_layers[name].ref_layer_name || name;
     name = current_layers[name].symbol && current_layers[name].ref_layer_name
             ? current_layers[name].ref_layer_name : name;
     map.select("#"+name).selectAll('path').each(function(d, i){
@@ -941,7 +932,6 @@ function select_layout_features(){
         ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
 
     var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
-//    box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
 
     var layout_ft_selec = box_body.append('p').html('')
