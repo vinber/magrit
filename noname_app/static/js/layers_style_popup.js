@@ -140,6 +140,9 @@ function createStyleBoxTypoSymbols(layer_name){
         current_layers[layer_name].default_size = prev_settings_defaults.size;
     }
 
+    let existing_box = document.querySelector(".styleBox");
+    if(existing_box) existing_box.remove();
+
     var selection = map.select("#" + layer_name).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
@@ -250,6 +253,9 @@ function createStyleBoxLabel(layer_name){
         current_layers[layer_name].default_font = prev_settings_defaults.font;
     };
 
+    let existing_box = document.querySelector(".styleBox");
+    if(existing_box) existing_box.remove();
+
     var selection = map.select("#" + layer_name).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
@@ -334,8 +340,8 @@ function createStyleBoxLabel(layer_name){
 }
 
 function createStyleBoxGraticule(layer_name){
-//    let existing_box = document.querySelector(".graticuleStyleBox");
-//    if(existing_box) existing_box.remove();
+    let existing_box = document.querySelector(".graticuleStyleBox");
+    if(existing_box) existing_box.remove();
     let current_params = cloneObj(current_layers["Graticule"]);
     let selection = map.select("#Graticule").selectAll("path");
     let selection_strokeW = map.select("#Graticule");
@@ -433,6 +439,8 @@ function createStyleBoxGraticule(layer_name){
 }
 
 function createStyleBox(layer_name){
+    let existing_box = document.querySelector(".styleBox");
+    if(existing_box) existing_box.remove();
     var type = current_layers[layer_name].type,
         rendering_params = null,
         renderer = current_layers[layer_name].renderer,
