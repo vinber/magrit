@@ -3773,8 +3773,6 @@ function fillMenu_PropSymbolTypo(layer){
                 });
         });
 
-
-
     var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
                         .insert('input')
                         .style("width", "200px")

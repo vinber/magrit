@@ -712,7 +712,7 @@ function createlegendEditBox(legend_id, layer_name){
         }
     }
 
-    make_confirm_dialog(box_class, "Layer style options - " + layer_name, {top: true})
+    make_confirm_dialog2(box_class, "Layer style options - " + layer_name)
         .then(function(confirmed){
             if(!confirmed){
                 title_content.textContent = original_params.title_content;
@@ -728,7 +728,7 @@ function createlegendEditBox(legend_id, layer_name){
                                  rect_fill_value);
         });
 
-    var box_body = d3.select([".", box_class].join('')),
+    var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
         current_nb_dec;
 
     box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"))

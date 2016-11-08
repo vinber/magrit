@@ -973,6 +973,7 @@
     this.options.template = options.template ? options.template : null;
     this.options.trigger = options.trigger ? options.trigger : 'hover';
     this.options.animation = options.animation && options.animation !== 'fade' ? options.animation : 'fade';
+    this.options.customClass = options.customClass || null;
     this.options.placement = options.placement ? options.placement : 'top';
     this.options.delay = parseInt(options.delay) || 100;
     this.options.dismiss = options.dismiss && options.dismiss == 'true' ? true : false;
@@ -1065,11 +1066,10 @@
         template.innerHTML = this.options.template;
         this.popover.innerHTML = template.firstChild.innerHTML;
       }
-
       //append to the container
       this.options.container.appendChild(this.popover);
       this.popover.style.display = 'block';
-      this.popover.setAttribute('class', 'popover ' + placement + ' ' + this.options.animation);
+      this.popover.setAttribute('class', 'popover ' + placement + ' ' + this.options.animation + " " + this.options.customClass);
     };
     this.showPopover = function () {
       !/\bin/.test(this.popover.className) && ( addClass(this.popover,'in') );

@@ -242,11 +242,13 @@ function handleOneByOneShp(files, target_layer_on_add){
             document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
         }
     })
-    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
+    document.getElementById("dv_drop_shp").addEventListener("dragover", event => {
+        console.log(event)
         this.style.border = "dashed 2.5px green";
         event.preventDefault(); event.stopPropagation();
     });
-    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
+    document.getElementById("dv_drop_shp").addEventListener("dragleave", event => {
+        console.log(event);
         this.style.border = "dashed 1px green";
         event.preventDefault(); event.stopPropagation();
     });

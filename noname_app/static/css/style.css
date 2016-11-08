@@ -189,7 +189,7 @@ a.menu {
 
 #trash_button,#zoom_fit_button,.style_button,
 .style_target_layer,#legend_button,.active_button {
-    margin-top: 5px;
+    //margin-top: 5px;
     margin-left: 1.5px;
     float: right;
 }
@@ -524,7 +524,7 @@ div.panel {
     font-family: Verdana,Arial,sans-serif;
     font-size: 1.1em;
     color: #222222;
-    background: #ffffff url("images/ui-bg_flat_75_ffffff_40x100.png") 50% 50% repeat-x;
+    background: #ffffff;
     overflow: hidden;
     transition: visibility 0.3s, opacity 0.6s linear;
     visibility: hidden;
@@ -594,6 +594,11 @@ div.panel.show {
     font-size: 15px;
     margin-right: 5px;
     margin-top: 2px;
+}
+
+.twbs .help-popover {
+    max-width: 500px;
+    width: 500px;
 }
 
 .fitContent {
