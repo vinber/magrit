@@ -896,7 +896,13 @@ function setUpInterface(resume_project)
               svg_map.insertBefore(lyr2, lyr1);
           }
          if(at_end) displayInfoOnMove();
-        }
+        },
+        onStart: event => {
+            document.body.className = document.body.className + " no-drop";
+        },
+        onEnd: event => {
+            document.body.className = document.body.className.replace("no-drop", "");
+        },
     })
 }
 
@@ -1540,7 +1546,7 @@ function remove_layer_cleanup(name){
 
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
-        d3.selectAll([".lgdf_", name].join('')).remove();
+        map.selectAll([".lgdf_", name].join('')).remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
         if(current_layers[name].hasOwnProperty("key_name")

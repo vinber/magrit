@@ -263,12 +263,18 @@ function prepare_drop_section(){
         function(elem){
             elem.addEventListener("dragenter", e => {
                 e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
             });
 
             elem.addEventListener("dragover", e => {
                 e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 if(timeout){
                     clearTimeout(timeout);
                     timeout = setTimeout(function(){
@@ -281,9 +287,12 @@ function prepare_drop_section(){
             });
 
             elem.addEventListener("dragleave", e => {
+                e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 timeout = setTimeout(function(){
                     let overlay_drop = document.getElementById("overlay_drop");
-                    e.preventDefault(); e.stopPropagation();
                     overlay_drop.style.display = "none";
                     timeout = null;
                 }, 2500);
@@ -291,6 +300,9 @@ function prepare_drop_section(){
 
             elem.addEventListener("drop", function _drop_func(e){
                 e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 if(timeout){
                     clearTimeout(timeout);
                 }
@@ -350,11 +362,17 @@ function prepare_drop_section(){
             elem.addEventListener("dragenter", function(e){
                 e.preventDefault();
                 e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragover", function(e){
                 e.preventDefault();
                 e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragleave", function(e){

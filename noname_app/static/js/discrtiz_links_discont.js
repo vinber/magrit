@@ -449,7 +449,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     let deferred = Q.defer(),
         container = document.getElementById("discretiz_charts");
 
-    container.querySelector(".btn_ok").onclick = function(){
+    container.querySelector(".btn_ok").onclick = () => {
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);

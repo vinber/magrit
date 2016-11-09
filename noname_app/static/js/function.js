@@ -358,7 +358,7 @@ function fillMenu_TypoSymbol(){
                           render_TypoSymbols(rendering_params, new_name);
                       });
 
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 }
 
 function render_TypoSymbols(rendering_params, new_name){
@@ -517,7 +517,7 @@ function fillMenu_Discont(){
                       .attr('class', 'params button_st3')
                       .text(i18next.t('app_page.func_options.common.render'));
 
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 
     ok_button.on("click", function(){
 //            let p1 = new Promise(function(resolve, reject){
@@ -1303,7 +1303,7 @@ function fillMenu_PropSymbolChoro(layer){
             switch_accordion_section();
         }
     });
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 }
 
 function display_error_num_field(){
@@ -1492,7 +1492,7 @@ var fillMenu_Label = function(){
             binds_layers_buttons(new_layer_name);
             switch_accordion_section();
          });
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 }
 
 let drag_elem_geo = d3.drag()
@@ -1526,9 +1526,9 @@ function make_style_box_indiv_label(label_node){
         current_options.color = rgb2hex(current_options.color);
 
     let new_params = {};
-    let self = this;
+
     make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
-        .then(function(confirmed){
+        .then( confirmed => {
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
                 label_node.textContent = current_options.content;
@@ -1686,7 +1686,7 @@ var fillMenu_Typo = function(){
                 switch_accordion_section();
             }
          });
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 }
 
 function fillMenu_Choropleth(){
@@ -1778,7 +1778,7 @@ function fillMenu_Choropleth(){
                 switch_accordion_section();
             }
          });
-    d3.selectAll(".params").attr("disabled", true);
+    dv2.selectAll(".params").attr("disabled", true);
 }
 
 var get_first_guess_span = function(){
@@ -2021,7 +2021,7 @@ function fillMenu_Stewart(){
                     console.log(error);
                 });
         });
-    d3.selectAll(".params").attr("disabled", true);
+    dialog_content.selectAll(".params").attr("disabled", true);
 }
 
 var fields_Anamorphose = {
@@ -2334,7 +2334,7 @@ function fillMenu_Anamorphose(){
                 switch_accordion_section();
                 }
     });
-    d3.selectAll(".params").attr("disabled", true);
+    dialog_content.selectAll(".params").attr("disabled", true);
 }
 
 
@@ -2415,23 +2415,24 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
 function createTableDOM(data, options){
     options = options || {};
     options.id = options.id || "myTable";
-    let nb_features = data.length,
+    let doc = document,
+        nb_features = data.length,
         column_names = Object.getOwnPropertyNames(data[0]),
         nb_columns = column_names.length;
-    let myTable = document.createElement("table"),
-        headers = document.createElement("thead"),
-        body = document.createElement("tbody"),
-        headers_row = document.createElement("tr");
+    let myTable = doc.createElement("table"),
+        headers = doc.createElement("thead"),
+        body = doc.createElement("tbody"),
+        headers_row = doc.createElement("tr");
     for(let i=0; i < nb_columns; i++){
-        let cell = document.createElement("th");
+        let cell = doc.createElement("th");
         cell.innerHTML = column_names[i];
         headers_row.appendChild(cell)
     }
     myTable.appendChild(headers_row);
     for(let i=0; i < nb_features; i++){
-        let row = document.createElement("tr");
+        let row = doc.createElement("tr");
         for(let j=0; j < nb_columns; j++){
-            let cell = document.createElement("td");
+            let cell = doc.createElement("td");
             cell.innerHTML = data[i][column_names[j]]
             row.appendChild(cell);
         }
@@ -2701,7 +2702,7 @@ function fillMenu_PropSymbol(layer){
             switch_accordion_section();
 
         });
-    d3.selectAll(".params").attr("disabled", true);
+    dialog_content.selectAll(".params").attr("disabled", true);
 }
 
 
