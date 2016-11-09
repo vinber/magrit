@@ -69,7 +69,9 @@
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
             "details": "Détails",
             "representation": "Représentation",
-            "ask_confirm": "Confirmation ?"
+            "ask_confirm": "Confirmation ?",
+            "yes": "Oui",
+            "no": "Non"
         },
         "section1": {
             "title": "Ajout de données",
@@ -264,14 +266,15 @@
         "legend_style_box": {
             "title": "Style de la couche - {{layer_name}}",
             "subtitle": "Personnalisation de la légende",
-            "lgd_title": "Titre de la légende<br>",
+            "lgd_title": "Titre de la légende",
             "var_name": "Nom de la variable<br>",
             "float_rounding": "Arrondi des nombres flottants<br> ",
             "gap_boxes": "Pas d'espaces entre les boites",
             "nested_symbols": "Symboles encastrés",
             "no_data": "Affichage de la catégorie \"absence de données\"",
             "additionnal_notes": "Notes additionnelles de la légende<br>",
-            "under_rectangle": "Afficher un rectangle sous la légende"
+            "under_rectangle": "Afficher un rectangle sous la légende",
+            "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
         "help_box": {
             "title": "Aide d'urgence!",

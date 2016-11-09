@@ -10,6 +10,14 @@ class UserArrow {
         this.lineWeight = 4;
         this.color = "rgb(0, 0, 0)";
 
+        let zoom_param = svg_map.__zoom,
+            _tx = zoom_param.k * zoom_param.x,
+            _ty = zoom_param.k * zoom_param.y;
+        this.pt1[0] = this.pt1[0] - _tx;
+        this.pt1[1] = this.pt1[1] - _ty;
+        this.pt2[0] = this.pt2[0] - _tx;
+        this.pt2[1] = this.pt2[1] - _ty;
+
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
@@ -17,23 +25,24 @@ class UserArrow {
                     return { x: +t.attr("x2") - +t.attr("x1"),
                              y: +t.attr("y2") - +t.attr("y1"),
                              x1: t.attr("x1"), x2: t.attr("x2"),
-                             y1: t.attr("y1"), y2: t.attr("y2") };
+                             y1: t.attr("y1"), y2: t.attr("y2"),
+                             map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("line"),
                     subject = d3.event.subject,
-                    tx = +d3.event.x - +subject.x,
-                    ty = +d3.event.y - +subject.y;
+                    tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
+                    ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
                 self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
                 _t.x1.baseVal.value = self.pt1[0];
@@ -75,7 +84,8 @@ class UserArrow {
             ];
 
         this.arrow = this.svg_elem.append('g')
-                .attrs({"class": "arrow legend_features legend", "id": this.id});
+                .style("cursor", "all-scroll")
+                .attrs({"class": "arrow legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.arrow.insert("line")
         		.attrs({"class":"legend_features",
@@ -271,17 +281,17 @@ class Textbox {
                     prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
                     return {
                         x: t.attr("x") - prev_translate[0],
-                        y: t.attr("y") - prev_translate[1]
+                        y: t.attr("y") - prev_translate[1],
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -362,7 +372,6 @@ class Textbox {
         let self = this;
         make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
-                $("#btn_info_text_annotation[data-tooltip_info!='']").qtip("destroy");
                 if(!confirmed){
                     self.text_annot.select("p").text(current_options.content);
                     self.fontsize = current_options.size;
@@ -402,12 +411,12 @@ class Textbox {
                     self.text_annot.select("p").html(this.value)
                 });
         document.getElementById("annotation_content").value = current_options.content;
-        $("#btn_info_text_annotation[data-tooltip_info!='']").qtip({
-            content: {text: i18next.t("app_page.text_box_edit_box.info_tooltip")},
-            style: { classes: 'qtip-bootstrap qtip_help' },
-            position: { my: 'bottom left', at: 'center right', target: this },
-            show: { solo: true }
-        });
+//        $("#btn_info_text_annotation[data-tooltip_info!='']").qtip({
+//            content: {text: i18next.t("app_page.text_box_edit_box.info_tooltip")},
+//            style: { classes: 'qtip-bootstrap qtip_help' },
+//            position: { my: 'bottom left', at: 'center right', target: this },
+//            show: { solo: true }
+//        });
 
     }
 
@@ -665,7 +674,7 @@ var northArrow = {
                         .attr("class", "legend")
                         .attr("scale", 1)
                         .attr("rotate", null)
-                        .style("cursor", "pointer");
+                        .style("cursor", "all-scroll");
 
         this.svg_node = arrow_gp;
         this.displayed = true;
@@ -680,14 +689,19 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    return { x: +t.attr("x"), y: +t.attr("y") };
+                    return {
+                        x: +t.attr("x"),
+                        y: +t.attr("y"),
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                    };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                handle_click_hand("lock"); // zoom.on("zoom", null);
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -828,26 +842,35 @@ class UserEllipse {
         this.strokeWeight = 4;
         this.stroke_color = "rgb(0, 0, 0)";
 
+        let zoom_param = svg_map.__zoom,
+            _tx = zoom_param.k * zoom_param.x,
+            _ty = zoom_param.k * zoom_param.y;
+        this.pt1[0] = this.pt1[0] - _tx;
+        this.pt1[1] = this.pt1[1] - _ty;
+
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("ellipse"));
-                    return { x: +t.attr("cx"), y: +t.attr("cy") };
+                    return {
+                        x: +t.attr("cx"),
+                        y: +t.attr("cy"),
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                    };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("ellipse"),
-                    tx = +d3.event.x,
-                    ty = +d3.event.y;
+                    tx = +d3.event.x * svg_map.__zoom.k,
+                    ty = +d3.event.y * svg_map.__zoom.k;
                 _t.cx.baseVal.value = tx;
                 _t.cy.baseVal.value = ty;
                 self.pt1[0] = tx;
@@ -867,7 +890,7 @@ class UserEllipse {
             ];
 
         this.ellipse = this.svg_elem.append('g')
-                .attrs({"class": "user_ellipse legend_features legend", "id": this.id});
+                .attrs({"class": "user_ellipse legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.ellipse.insert("ellipse")
         		.attrs({"class":"legend_features",

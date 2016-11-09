@@ -69,7 +69,9 @@
             "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
             "details": "Details",
             "representation": "Representation",
-            "ask_confirm": "Confirm ?"
+            "ask_confirm": "Confirm ?",
+            "yes": "Yes",
+            "no": "No"
         },
         "section1": {
             "title": "Add your data",
@@ -273,14 +275,15 @@
         "legend_style_box": {
             "title": "Layer style options - {{layer_name}}",
             "subtitle": "Legend customization",
-            "lgd_title": "Legend title<br>",
+            "lgd_title": "Legend title",
             "var_name": "Variable name<br>",
             "float_rounding": "Floating number rounding precision<br> ",
             "gap_boxes": "No gap between color boxes",
             "nested_symbols": "Nested symbols",
             "no_data": "No data category name",
             "additionnal_notes": "Additionnal legend notes<br>",
-            "under_rectangle": "Display a rectangle under the legend"
+            "under_rectangle": "Display a rectangle under the legend",
+            "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
         },
         "help_box": {
             "title": "Emergency help!",

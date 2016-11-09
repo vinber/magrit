@@ -1029,7 +1029,7 @@ function fillMenu_FlowMap(){
                         current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]], sizes[i]]);
 
                     layer_to_render.style('fill-opacity', 0)
-                                   .style('stroke-opacity', 0.75)
+                                   .style('stroke-opacity', 0.8)
                                    .style("stroke-width", (d,i) => {return links_byId[i][2]});
                 }, error => {
                     display_error_during_computation();
@@ -1168,7 +1168,7 @@ function fillMenu_PropSymbolChoro(layer){
     var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.choroprop.fixed_size"))
                      .insert('input')
                      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
+                     .attrs({min: 0.1, max: 66.0, value: 30.0, step: "any"})
                      .style("width", "50px");
 
     dv2.append('label-item').html(' px');
@@ -1489,7 +1489,7 @@ var fillMenu_Label = function(){
             rendering_params["uo_layer_name"] = output_name;
             let layer = Object.getOwnPropertyNames(user_data)[0];
             let new_layer_name = render_label(layer, rendering_params);
-            binds_layers_buttons(new_layer_name);
+//            binds_layers_buttons(new_layer_name);
             switch_accordion_section();
          });
     dv2.selectAll(".params").attr("disabled", true);
@@ -2428,7 +2428,8 @@ function createTableDOM(data, options){
         cell.innerHTML = column_names[i];
         headers_row.appendChild(cell)
     }
-    myTable.appendChild(headers_row);
+    headers.appendChild(headers_row);
+    myTable.appendChild(headers);
     for(let i=0; i < nb_features; i++){
         let row = doc.createElement("tr");
         for(let j=0; j < nb_columns; j++){
@@ -2442,6 +2443,108 @@ function createTableDOM(data, options){
     myTable.setAttribute("id", options.id);
     return myTable;
 }
+
+var boxExplore2 = {
+    display_table: function(table_name){
+        document.querySelector("body").style.cursor = "";
+        let the_table = this.tables.get(table_name)[1];
+        this.nb_features = the_table.length;
+        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
+        this.columns_headers = [];
+        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
+            this.columns_headers.push({data: col[i], title: col[i]});
+        if(this.top_buttons.select("#add_field_button").node()){
+            this.top_buttons.select("#add_field_button").remove()
+            document.getElementById("table_intro").remove();
+            document.querySelector(".dataTable-wrapper").remove();
+        }
+        this.top_buttons
+             .insert("button")
+             .attrs({id: "add_field_button", class: "button_st3"})
+             .html(i18next.t("app_page.explore_box.button_add_field"))
+             .on('click', () => {
+                add_field_table(the_table, table_name, this);
+             });
+        let txt_intro = [
+             "<b>", table_name, "</b><br>",
+             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
+             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
+            ].join('');
+        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
+        this.box_table.node().appendChild(
+            createTableDOM(the_table, {id: "myTable"})
+            );
+
+        let myTable = document.getElementById("myTable");
+        // TOFIX (error on DataTable creation)
+        try {
+            this.datatable = new DataTable(myTable,{
+            	sortable: true,
+            	searchable: true,
+            	fixedHeight: true,
+            });
+        } catch(e) {
+            console.log(e);
+        } finally {
+            // Adjust the size of the box (on opening and after adding a new field)
+            // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+            this.datatable.on("datatable.init", function(){
+                let box = document.getElementById("browse_data_box"),
+                    new_width = box.querySelector("#myTable").getBoundingClientRect().width;
+
+                if(new_width > window.innerWidth * 0.85){
+                    box.querySelector(".modal-content").style.overflow = "auto";
+                    box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+                } else if (new_width > 560) {
+                    box.querySelector(".modal-dialog").style.width = (new_width + 80) + "px";
+                }
+            });
+        }
+    },
+    get_available_tables: function(){
+        let target_layer = Object.getOwnPropertyNames(user_data),
+            ext_dataset = dataset_name,
+            result_layers = Object.getOwnPropertyNames(result_data),
+            available = new Map();
+        for(let lyr_name of target_layer)
+            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
+        if(ext_dataset)
+            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
+        for(let lyr_name of result_layers)
+            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
+        return available;
+    },
+    create: function(layer_name){
+        this.columns_headers = [];
+        this.nb_features = undefined;
+        this.columns_names = undefined;
+        this.tables = this.get_available_tables()
+        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.box_table = d3.select("#browse_data_box").select(".modal-body");
+        let self = this;
+
+        this.top_buttons = this.box_table.append('p')
+                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+
+        let deferred = Q.defer(),
+            container = document.getElementById("browse_data_box"),
+            _onclose = () => {
+                deferred.resolve(false);
+                modal_box.close();
+                container.remove();
+            };
+        container.querySelector(".btn_cancel").onclick = _onclose;
+        container.querySelector("#xclose").onclick = _onclose;
+        container.querySelector(".btn_ok").onclick = function(){
+            deferred.resolve([true, true]);
+            modal_box.close();
+            container.remove();
+        };
+        this.display_table(layer_name);
+        return deferred.promise;
+    }
+};
+
 
 var boxExplore = {
     display_table: function(table_name){
@@ -2488,7 +2591,7 @@ var boxExplore = {
         if(new_width > window.innerWidth * 0.85){
             box.querySelector(".modal-content").style.overflow = "auto";
             box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
-        } else if (new_width > 600) {
+        } else if (new_width > 560) {
             box.querySelector(".modal-dialog").style.width = (new_width + 40) + "px";
         }
     },
@@ -2695,9 +2798,8 @@ function fillMenu_PropSymbol(layer){
                 rendering_params["break_val"] = +fill_color_opt.node().value;
                 rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
             }
-            console.log(rendering_params)
             make_prop_symbols(rendering_params);
-            binds_layers_buttons(new_layer_name);
+//            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
 
@@ -3034,16 +3136,16 @@ function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
         li.setAttribute("class", ["sortable_result ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">',
-                        button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend,
-                        button_result_type.get(type_geom[1]), "</div> ", _list_display_name].join('');
+        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
+                        button_result_type.get(type_geom[1]), "</div> "].join('');
     } else if(type_layer == "sample"){
         li.setAttribute("class", ["sortable ", layer_name].join(''));
         li.setAttribute("layer-tooltip",
                 ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">',
-                        button_trash, sys_run_button_t2, button_zoom_fit, eye_open0,
-                        button_type.get(type_geom), "</div> ", _list_display_name].join('');
+        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
+                        button_type.get(type_geom), "</div> "].join('');
     }
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
     binds_layers_buttons(layer_name);
@@ -3702,7 +3804,7 @@ function fillMenu_PropSymbolTypo(layer){
     var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.proptypo.fixed_size"))
                      .insert('input')
                      .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
+                     .attrs({min: 0.1, max: 66.0, value: 30.0, step: "any"})
                      .style("width", "50px");
 
     dv2.append('label-item').html(' px');

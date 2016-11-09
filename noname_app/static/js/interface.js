@@ -618,8 +618,10 @@ function add_dataset(readed_dataset){
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
-    if(document.getElementById("browse_button").disabled === true)
-        document.getElementById("browse_button").disabled = false;
+
+//    if(document.getElementById("browse_button").disabled === true)
+//        document.getElementById("browse_button").disabled = false;
+
 //    $("[layer-target-tooltip!='']").qtip("destoy");
 //    $("[layer-target-tooltip!='']").qtip({
 //        content: { attr: "layer-target-tooltip" },
@@ -760,7 +762,7 @@ function add_layer_topojson(text, options){
           .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
                    "stroke-opacity": .4,
                    "fill": type != 'Line' ? random_color1 : null,
-                   "fill-opacity": type != 'Line' ? 0.95 : 0})
+                   "fill-opacity": type != 'Line' ? 0.90 : 0})
           .attrs({"height": "100%", "width": "100%"});
 
     let class_name = [
@@ -782,8 +784,8 @@ function add_layer_topojson(text, options){
     li.setAttribute("layer-tooltip", layer_tooltip_content)
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-        if(document.getElementById("browse_button").disabled === true)
-            document.getElementById("browse_button").disabled = false;
+//        if(document.getElementById("browse_button").disabled === true)
+//            document.getElementById("browse_button").disabled = false;
 
         if(joined_dataset.length != 0){
             valid_join_check_display(false);
@@ -814,7 +816,7 @@ function add_layer_topojson(text, options){
         remove_target.onmouseover = function(){ this.style.opacity = 1; };
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
         targeted_layer_added = true;
-        li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
 //        $("[layer-target-tooltip!='']").qtip("destoy");
 //        $("[layer-target-tooltip!='']").qtip({
 //            content: { attr: "layer-target-tooltip" },
@@ -825,13 +827,15 @@ function add_layer_topojson(text, options){
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
+        handle_click_hand("lock");
         if(current_functionnality)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('');
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
         center_map(lyr_name_to_add);
+        handle_click_hand("lock");
     } else {
-        li.innerHTML = ['<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
     }
 
     if (!target_layer_on_add && current_functionnality && current_functionnality.name == "smooth"){

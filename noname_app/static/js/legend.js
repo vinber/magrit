@@ -49,7 +49,7 @@ function handle_legend(layer){
 *
 */
 function createLegend(layer, title){
-    var renderer = current_layers[layer].renderer
+    var renderer = current_layers[layer].renderer,
         field = current_layers[layer].rendered_field,
         field2 = current_layers[layer].rendered_field2;
 
@@ -715,7 +715,7 @@ function createlegendEditBox(legend_id, layer_name){
         }
     }
 
-    make_confirm_dialog2(box_class, "Layer style options - " + layer_name)
+    make_confirm_dialog2(box_class, "Layer style options - " + layer_name, {widthFitContent: true})
         .then(function(confirmed){
             if(!confirmed){
                 title_content.textContent = original_params.title_content;
@@ -734,21 +734,35 @@ function createlegendEditBox(legend_id, layer_name){
     var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
         current_nb_dec;
 
-    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"))
-            .append('p').html(i18next.t("app_page.legend_style_box.lgd_title"))
-            .insert('input')
+    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+
+    box_body.append('p').html(i18next.t("app_page.legend_style_box.lgd_title"))
+            .append("img")
+            .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
+                    class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.legend_style_box.info_tooltip_line_break")})
+            .styles({"cursor": "pointer", "vertical-align": "bottom"});
+
+    box_body.insert('input')
             .attr("value", title_content.textContent)
             .on("keyup", function(){
-                title_content.textContent = this.value
+                title_content.textContent = this.value;
             });
+
     box_body.append('p').html(i18next.t("app_page.legend_style_box.var_name"))
             .insert('input')
             .attr("value", subtitle_content.textContent)
             .on("keyup", function(){
-                subtitle_content.textContent = this.value
+                subtitle_content.textContent = this.value;
             });
 
-    console.log(legend_boxes);
+    let tooltip_elem = document.querySelector("[data-tooltip_info]");
+    new Tooltip(tooltip_elem, {
+        dataAttr: "data-tooltip_info",
+        animation: "slideNfade",
+        duration: 50,
+        delay: 100,
+        container: document.getElementById("twbs")
+    });
 
     if(legend_boxes._groups[0].length > 0 && current_layers[layer_name].renderer != "Categorical"
         && current_layers[layer_name].renderer != "TypoSymbols"){

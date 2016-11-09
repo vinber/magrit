@@ -188,7 +188,7 @@ a.menu {
 }
 
 #trash_button,#zoom_fit_button,.style_button,
-.style_target_layer,#legend_button,.active_button {
+.style_target_layer,#legend_button,.active_button, #browse_data_button {
     //margin-top: 5px;
     margin-left: 1.5px;
     float: right;
@@ -248,18 +248,18 @@ a.menu {
     margin: 5px 0 5px 0;
     padding: 5px;
     font-size: 10.5px;
-    line-height: 2em;
+    line-height: 1.75em;
     font-weight: bold;
     background: #ffffff;
-    //border-radius: 4%;
+    border-radius: 4%;
     border: unset;
     color: black;
     cursor: pointer;
+    overflow-y: auto;
 }
 
 #sortable li:hover{
     background: #e8e8e8;
-    border-radius: 4%;
 }
 
 #table_intro{
@@ -606,3 +606,12 @@ div.panel.show {
   width: -moz-max-content !important;
   width: -webkit-max-content !important;
 }
+
+th {
+    border: 1px solid #d3d3d3;
+    text-align: center !important;
+    font-size: 12px;
+}
+
+tr:nth-child(even) {background: #DBDADA}
+tr:nth-child(odd) {background: ##EFECEC;}
