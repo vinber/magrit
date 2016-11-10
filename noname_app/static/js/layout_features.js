@@ -186,63 +186,63 @@ class UserArrow {
             });
 
         s2.insert("span").html("°");
-        let s3 = box_content.append("p");
-        s3.append("button")
-            .attr("class", "button_st4")
-            .html(i18next.t("app_page.arrow_edit_box.move_points"))
-            .on("click", function(){
-                let tmp_start_point = map.append("rect")
-                    .attr("x", self.pt1[0] - 3)
-                    .attr("y", self.pt1[1] - 3)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx).attr("y", ny);
-                        line.x1.baseVal.value = nx;
-                        line.y1.baseVal.value = ny;
-                    }));
-
-                let tmp_end_point = map.append("rect")
-                    .attr("x", self.pt2[0] - 3)
-                    .attr("y", self.pt2[1] - 3)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx).attr("y", ny);
-                        line.x2.baseVal.value = nx;
-                        line.y2.baseVal.value = ny;
-                    }));
-                let arrowDialog = $(".styleBoxArrow"),
-                    original_position = arrowDialog.dialog("option", "position");
-                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-                arrowDialog.dialog("option", "draggable", false);
-                arrowDialog.hide()
-                document.querySelector(".ui-widget-overlay").style.display = "none";
-                let el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:22px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function(){
-                    document.querySelector(".ui-widget-overlay").style.display = "";
-                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                    tmp_end_point.remove();
-                    tmp_start_point.remove();
-                    el.remove();
-                    arrowDialog.show();
-                    arrowDialog.dialog("option", "draggable", true);
-                    arrowDialog.dialog("option", "position", original_position);
-                }
-                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
-            });
+//        let s3 = box_content.append("p");
+//        s3.append("button")
+//            .attr("class", "button_st4")
+//            .html(i18next.t("app_page.arrow_edit_box.move_points"))
+//            .on("click", function(){
+//                let tmp_start_point = map.append("rect")
+//                    .attr("x", self.pt1[0] - 3)
+//                    .attr("y", self.pt1[1] - 3)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx).attr("y", ny);
+//                        line.x1.baseVal.value = nx;
+//                        line.y1.baseVal.value = ny;
+//                    }));
+//
+//                let tmp_end_point = map.append("rect")
+//                    .attr("x", self.pt2[0] - 3)
+//                    .attr("y", self.pt2[1] - 3)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx).attr("y", ny);
+//                        line.x2.baseVal.value = nx;
+//                        line.y2.baseVal.value = ny;
+//                    }));
+//                let arrowDialog = $(".styleBoxArrow"),
+//                    original_position = arrowDialog.dialog("option", "position");
+//                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+//                arrowDialog.dialog("option", "draggable", false);
+//                arrowDialog.hide()
+//                document.querySelector(".ui-widget-overlay").style.display = "none";
+//                let el = document.createElement("button");
+//                el.className = "button_st3";
+//                el.style = "float:right;background:forestgreen;font-size:22px;";
+//                el.innerHTML = i18next.t("app_page.common.done");
+//                el.onclick = function(){
+//                    document.querySelector(".ui-widget-overlay").style.display = "";
+//                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+//                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+//                    tmp_end_point.remove();
+//                    tmp_start_point.remove();
+//                    el.remove();
+//                    arrowDialog.show();
+//                    arrowDialog.dialog("option", "draggable", true);
+//                    arrowDialog.dialog("option", "position", original_position);
+//                }
+//                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
+//            });
     }
 }
 
@@ -994,63 +994,63 @@ class UserEllipse {
 //
 //        s2.insert("span").html("°");
 
-        let s3 = box_content.append("p");
-
-        s3.append("button")
-            .attr("class", "button_st4")
-            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-            .on("click", function(){
-                let tmp_start_point = map.append("rect")
-                    .attr("class", "ctrl_pt")
-                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
-                    .attr("y", self.pt1[1])
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx);
-                        let dist = self.pt1[0] - +t.attr("x");
-                        ellipse_elem.rx.baseVal.value = dist;
-                    }));
-
-                let tmp_end_point = map.append("rect")
-                    .attr("class", "ctrl_pt")
-                    .attr("x", self.pt1[0])
-                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("y", ny);
-                        let dist = self.pt1[1] - +t.attr("y");
-                        ellipse_elem.ry.baseVal.value = dist;
-                    }));
-                let ellipseDialog = $(".styleBoxEllipse"),
-                    original_position = ellipseDialog.dialog("option", "position");
-                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-                ellipseDialog.dialog("option", "draggable", false);
-                ellipseDialog.hide();
-                document.querySelector(".ui-widget-overlay").style.display = "none";
-                let el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:22px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function(){
-                    document.querySelector(".ui-widget-overlay").style.display = "";
-                    tmp_end_point.remove();
-                    tmp_start_point.remove();
-                    el.remove();
-                    ellipseDialog.show();
-                    ellipseDialog.dialog("option", "draggable", true);
-                    ellipseDialog.dialog("option", "position", original_position);
-                }
-                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
-            });
+//        let s3 = box_content.append("p");
+//
+//        s3.append("button")
+//            .attr("class", "button_st4")
+//            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
+//            .on("click", function(){
+//                let tmp_start_point = map.append("rect")
+//                    .attr("class", "ctrl_pt")
+//                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
+//                    .attr("y", self.pt1[1])
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx);
+//                        let dist = self.pt1[0] - +t.attr("x");
+//                        ellipse_elem.rx.baseVal.value = dist;
+//                    }));
+//
+//                let tmp_end_point = map.append("rect")
+//                    .attr("class", "ctrl_pt")
+//                    .attr("x", self.pt1[0])
+//                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("y", ny);
+//                        let dist = self.pt1[1] - +t.attr("y");
+//                        ellipse_elem.ry.baseVal.value = dist;
+//                    }));
+//                let ellipseDialog = $(".styleBoxEllipse"),
+//                    original_position = ellipseDialog.dialog("option", "position");
+//                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+//                ellipseDialog.dialog("option", "draggable", false);
+//                ellipseDialog.hide();
+//                document.querySelector(".ui-widget-overlay").style.display = "none";
+//                let el = document.createElement("button");
+//                el.className = "button_st3";
+//                el.style = "float:right;background:forestgreen;font-size:22px;";
+//                el.innerHTML = i18next.t("app_page.common.done");
+//                el.onclick = function(){
+//                    document.querySelector(".ui-widget-overlay").style.display = "";
+//                    tmp_end_point.remove();
+//                    tmp_start_point.remove();
+//                    el.remove();
+//                    ellipseDialog.show();
+//                    ellipseDialog.dialog("option", "draggable", true);
+//                    ellipseDialog.dialog("option", "position", original_position);
+//                }
+//                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
+//            });
     }
 }

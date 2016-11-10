@@ -159,7 +159,7 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -346,7 +346,7 @@ function createStyleBoxGraticule(layer_name){
     let selection = map.select("#Graticule").selectAll("path");
     let selection_strokeW = map.select("#Graticule");
 
-    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
+    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true, widthFitContent: true)
         .then(function(confirmed){
             if(confirmed){ null; } else { null; }
         });
@@ -464,7 +464,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked

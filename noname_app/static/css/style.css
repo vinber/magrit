@@ -385,7 +385,7 @@ a.menu {
     border: 1px solid #1d5966;
     display: inline-block;
     cursor: pointer;
-    color: #FFF;
+    color: #FFF !important;
     padding: 4px 9px;
     text-decoration: none;
 }
