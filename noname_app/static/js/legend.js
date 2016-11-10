@@ -700,6 +700,7 @@ function createlegendEditBox(legend_id, layer_name){
     var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {};
 
     bind_selections();
+    if(document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
     let original_params = {
         title_content: title_content.textContent,
         subtitle_content: subtitle_content.textContent,

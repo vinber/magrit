@@ -156,6 +156,10 @@ a.menu {
     padding: 0.8em 1.2em 0.8em 1.2em;
 }
 
+#section5 input[type="text"], #section5 input[type="number"], #section5 select {
+    margin-left: 5px;
+}
+
 #overlay, .overlay_drop {
     width: 100%;
     height: 100%;
@@ -189,7 +193,6 @@ a.menu {
 
 #trash_button,#zoom_fit_button,.style_button,
 .style_target_layer,#legend_button,.active_button, #browse_data_button {
-    //margin-top: 5px;
     margin-left: 1.5px;
     float: right;
 }

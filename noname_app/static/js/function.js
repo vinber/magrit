@@ -2444,10 +2444,28 @@ function createTableDOM(data, options){
     return myTable;
 }
 
+function make_table(layer_name){
+    let features = svg_map.getElementById(layer_name).childNodes,
+        table = [];
+    if(!features[0].__data__.properties
+            || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0){
+        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
+                table.push({id: features[i].__data__.id || i});
+            }
+    } else {
+        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
+            table.push(features[i].__data__.properties);
+        }
+    }
+    return table;
+}
+
 var boxExplore2 = {
     display_table: function(table_name){
         document.querySelector("body").style.cursor = "";
-        let the_table = this.tables.get(table_name)[1];
+        let the_table = this.tables.get(table_name);
+        the_table = the_table ? the_table[1] : make_table(table_name);
+
         this.nb_features = the_table.length;
         this.columns_names = Object.getOwnPropertyNames(the_table[0]);
         this.columns_headers = [];
@@ -2476,30 +2494,35 @@ var boxExplore2 = {
             );
 
         let myTable = document.getElementById("myTable");
-        // TOFIX (error on DataTable creation)
-        try {
-            this.datatable = new DataTable(myTable,{
-            	sortable: true,
-            	searchable: true,
-            	fixedHeight: true,
-            });
-        } catch(e) {
-            console.log(e);
-        } finally {
+        this.datatable = new DataTable(myTable,{
+        	sortable: true,
+        	searchable: true,
+        	fixedHeight: true,
+        });
             // Adjust the size of the box (on opening and after adding a new field)
             // and/or display scrollbar if its overflowing the size of the window minus a little margin :
-            this.datatable.on("datatable.init", function(){
-                let box = document.getElementById("browse_data_box"),
-                    new_width = box.querySelector("#myTable").getBoundingClientRect().width;
+        setTimeout(function(){
+            let box = document.getElementById("browse_data_box"),
+                bbox = box.querySelector("#myTable").getBoundingClientRect(),
+                new_width = bbox.width,
+                new_height = bbox.height;
 
-                if(new_width > window.innerWidth * 0.85){
-                    box.querySelector(".modal-content").style.overflow = "auto";
-                    box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
-                } else if (new_width > 560) {
-                    box.querySelector(".modal-dialog").style.width = (new_width + 80) + "px";
-                }
-            });
-        }
+            if(new_width > window.innerWidth * 0.85){
+                box.querySelector(".modal-content").style.overflow = "auto";
+                box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+            } else if (new_width > 560) {
+                box.querySelector(".modal-dialog").style.width = (new_width + 80) + "px";
+            }
+
+            if (new_height > 350 || new_height > window.innerHeight * 0.80 ) {
+                box.querySelector(".modal-body").style.height = (new_height + 150) + "px";
+                box.querySelector(".modal-body").style.overflow = "auto";
+            }
+
+            let datatable_info = box.querySelector(".dataTable-bottom");
+            box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
+            box.querySelector(".dataTable-pagination").style.width = "100%"
+        }, 175);
     },
     get_available_tables: function(){
         let target_layer = Object.getOwnPropertyNames(user_data),

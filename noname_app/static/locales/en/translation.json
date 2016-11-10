@@ -114,6 +114,7 @@
             "format": "Outut size",
             "height": "Height",
             "width": "Width",
+            "web": "Web",
             "user_defined": "User defined",
             "A4_landscape": "A4 landscape",
             "A4_portrait": "A4 portrait",

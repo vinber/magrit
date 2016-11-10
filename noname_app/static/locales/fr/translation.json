@@ -114,6 +114,7 @@
             "format": "Format de sortie",
             "height": "Hauteur",
             "width": "Largeur",
+            "web": "Web",
             "user_defined": "Personnalisé",
             "A4_landscape": "A4 paysage",
             "A4_portrait": "A4 portrait",

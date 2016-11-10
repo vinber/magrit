@@ -1158,10 +1158,9 @@ var drag_lgd_features = d3.drag()
           });
 
 function add_layout_layers(){
-    var existing_box = document.getElementsByClassName("sampleLayoutDialogBox");
-    if(existing_box){
-        existing_box.remove();
-    }
+    var existing_box = document.querySelector(".sampleLayoutDialogBox");
+    if(existing_box){ existing_box.remove(); }
+
     var selec = {layout: null};
     var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
                          [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
@@ -1460,3 +1459,61 @@ function accordionize(css_selector=".accordion", parent){
       }
     }
 }
+
+//function makeDraggable(element){
+//    if(!element)
+//        element = !element ? document.querySelectorAll(".draggable-box")
+//                : typeof element == "string" ? document.querySelectorAll(element)
+//                : typeof element == "object" && element.length == 1 ? [element]
+//                : typeof element == "object" ? element : [];
+//    let nb_draggable = element.length;
+//
+//    function startDrag(event) {
+//        event.preventDefault();
+//        event.stopPropagation();
+//        let alreadyDragged = this.childNodes[0].getAttribute("dragged");
+//        if(!alreadyDragged){
+//            let child_modal_dialog = this.childNodes[0],
+//                bbox_modal = this.getBoundingClientRect();
+//            child_modal_dialog.setAttribute("dragged", true);
+//            child_modal_dialog.style.margin = "0";
+//            this.style.left = bbox_modal.x + "px";
+//            this.style.top = bbox_modal.y + "px";
+//            
+//        }
+//        let diffX = event.clientX - this.offsetLeft,
+//            diffY = event.clientY - this.offsetTop;
+//
+//        let self = this;
+//
+//        function move(event) {
+//            event.preventDefault();
+//            event.stopPropagation();
+//            let left = parseInt(event.clientX - diffX),
+//                top = parseInt(event.clientY - diffY);
+//
+//            // check for screen boundaries
+//            if (top < 0) { top = 0; }
+//            if (left < 0) { left = 0; }
+//            if (top > window.innerHeight-1) 
+//                { top = window.innerHeight-1; }
+//            if (left > window.innerWidth-1) 
+//                { left = window.innerWidth-1; }
+//
+//            self.style.left = left + 'px';
+//            self.style.top = top + 'px';
+//        }
+//
+//        function stopDrag() {
+//            document.removeEventListener('mousemove', move);
+//            document.removeEventListener('mouseup', stopDrag);
+//        }
+//        document.addEventListener('mouseup', stopDrag);
+//        document.addEventListener('mousemove', move);
+//        return false;
+//    }
+//
+//    for(let i = 0; i < nb_draggable; i++){
+//        element[i].addEventListener("mousedown", startDrag);
+//    }
+//}

@@ -319,9 +319,10 @@ function setUpInterface(resume_project)
                 h = round_value(w * 0.70707, 0);
                 canvas_mod_size([w, h]);
             }
+        }
         document.getElementById("input-width").value = w;
         document.getElementById("input-height").value = h;
-        }
+        fill_export_png_options(this.value);
     });
     let zoom_prop = svg_map.__zoom;
 
@@ -485,15 +486,7 @@ function setUpInterface(resume_project)
             .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.format"});
 
     let select_size_png = export_png_options.append("select").attr("id", "select_png_format");
-    select_size_png.append("option").text("Web").attr("value", "web");
-    select_size_png.append("option").attrs({value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined"});
-    select_size_png.append("option").attrs({value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape"});
-    select_size_png.append("option").attrs({value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait"});
-    select_size_png.append("option").attrs({value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape"});
-    select_size_png.append("option").attrs({value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait"});
-    select_size_png.append("option").attrs({value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape"});
-    select_size_png.append("option").attrs({value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait"});
-
+    fill_export_png_options("user_defined");
 
     select_size_png.on("change", function(){
         let value = this.value,
@@ -571,61 +564,12 @@ function setUpInterface(resume_project)
             .attr("id", "export_png_width_txt")
             .html("px");
 
-    let export_geo_options = dv5b.append("p")
-                                .attr("id", "export_options_geo")
-                                .style("display", "none");
-
-    let selec_layer = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_layer"))
-             .insert("select").attr("id", "layer_to_export");
-
-    let selec_type = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-             .insert("select").attr("id", "datatype_to_use");
-
-    let selec_projection = export_geo_options.append("p").html(i18next.t("app_page.export_box.option_projection"))
-             .insert("select").attr("id", "projection_to_use");
-
-    let proj4_input = export_geo_options.append("input")
-                                .attr("id", "proj4str")
-                                .style("display", "none")
-                                .style("width", "200px");
-
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-        selec_type.append("option").attr("value", name).text(name);
-    });
-
-    [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-     ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-     ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-     ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-     ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-     ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-     ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-     ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-    });
-
-    selec_type.on("change", function(){
-        if(this.value == "TopoJSON" || this.value == "KML"){
-            selec_projection.node().options.selectedIndex = 0;
-            selec_projection.attr("disabled", true);
-        } else {
-            selec_projection.attr("disabled", null);
-        }
-    });
-
-    selec_projection.on("change", function(){
-        if(this.value == "proj4string")
-            proj4_input.style("display", "initial");
-        else
-            proj4_input.style("display", "none");
-    });
-
     let export_name = dv5b.append("p");
     export_name.append("span")
             .attrs({class: "i18n", "data-i18n": "[html]app_page.section5b.filename"});
 
     export_name.append("input")
-            .attr("id", "export_filename");
+            .attrs({"id": "export_filename", "type": "text"});
 
     dv5b.append("button")
             .attrs({"id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button"})
@@ -636,13 +580,6 @@ function setUpInterface(resume_project)
                     export_compo_svg(export_name);
                 } else if (type_export === "geo"){
                     make_export_layer_box()
-                    /*
-                    let layer = document.getElementById("layer_to_export").value,
-                        type_format = document.getElementById("datatype_to_use").value,
-                        projection = document.getElementById("projection_to_use").value,
-                        proj4string = document.getElementById("proj4str").value;
-                    export_layer_geo(layer, type_format, projection, proj4string);
-                    */
                 } else if (type_export === "png"){
                     let type_export = document.getElementById("select_png_format").value,
                         ratio;
@@ -682,36 +619,6 @@ function setUpInterface(resume_project)
             .style("vertical-align", "calc(20%)")
             .html("°");
 
-/*
-    projection_menu.append("div")
-            .style("text-align", "center")
-            .insert("button")
-            .attr("id","reset_center_rotation")
-            .attr("class", "button_st4 i18n")
-            .attr("data-i18n", "[html]app_page.section5.reset")
-            .on("click", function(){
-                // Todo : improve the behavior of this button
-                // Reset the rotation :
-                proj.scale(0).translate(0,0);
-                document.getElementById('form_projection_center').value = 0;
-                document.getElementById('form_rotate').value = 0;
-                document.getElementById('proj_center_value_txt').value = 0;
-                proj.rotate([0,,]);
-                reproj_symbol_layer();
-                rotate_global(0);
-
-                // Reset the projection :
-                setSelected(document.getElementById("form_projection"), document.getElementById("form_projection").options[0].value);
-                let layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
-                if(layer_name){
-                    center_map(layer_name);
-                    zoom_without_redraw();
-                } else {
-                    svg_map.__zoom = d3.zoomIdentity.scale(0.5).translate(400, 250);
-                    zoom_without_redraw();
-                }
-            });
-*/
     let proj_select = const_options.append("select")
                 .attr("id","form_projection")
                 .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
@@ -955,8 +862,6 @@ function make_eye_button(state){
         eye_open.setAttribute("width", 17);
         eye_open.setAttribute("height", 17);
         eye_open.setAttribute("alt", "Visible");
-        //eye_open.setAttribute("data-i18n", "[title]app_page.common.eye_open");
-        //eye_open.setAttribute("title", i18next.t("app_page.common.eye_open"));
         return eye_open;
     } else if (state == "closed"){
         let eye_closed = document.createElement("img");
@@ -966,8 +871,6 @@ function make_eye_button(state){
         eye_closed.setAttribute("width", 17);
         eye_closed.setAttribute("height", 17);
         eye_closed.setAttribute("alt", "Not visible");
-        //eye_closed.setAttribute("data-i18n", "[title]app_page.common.eye_closed");
-        //eye_closed.setAttribute("title", i18next.t("app_page.common.eye_closed"));
         return eye_closed;
     }
 }
@@ -2408,6 +2311,27 @@ function changeResolution(canvas, scaleFactor) {
     var ctx = canvas.getContext('2d');
     ctx.scale(scaleFactor, scaleFactor);
 }
+
+function fill_export_png_options(displayed_ratio){
+    let select_size_png = d3.select("#select_png_format");
+    select_size_png.selectAll("option").remove();
+
+    select_size_png.append("option").attrs({value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web"});
+    select_size_png.append("option").attrs({value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined"});
+
+    if(displayed_ratio == "portrait"){
+        select_size_png.append("option").attrs({value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait"});
+        select_size_png.append("option").attrs({value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait"});
+        select_size_png.append("option").attrs({value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait"});
+
+    } else if (displayed_ratio == "landscape") {
+        select_size_png.append("option").attrs({value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape"});
+        select_size_png.append("option").attrs({value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape"});
+        select_size_png.append("option").attrs({value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape"});
+    }
+    localize("#select_png_format > .i18n");
+}
+
 
 // Only ask for confirmation before leaving page if things have been done
 // (layer added, etc..)
