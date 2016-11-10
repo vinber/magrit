@@ -346,7 +346,7 @@ function createStyleBoxGraticule(layer_name){
     let selection = map.select("#Graticule").selectAll("path");
     let selection_strokeW = map.select("#Graticule");
 
-    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true, widthFitContent: true)
+    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true, widthFitContent: true})
         .then(function(confirmed){
             if(confirmed){ null; } else { null; }
         });
