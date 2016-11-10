@@ -145,7 +145,8 @@
         },
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
-            "section3": "Drop new layout layer or click to browse locally and add one.<br>Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"
+            "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
+            "export_load_pref": "Export / Load your map preferences"
         },
         "func_description" : {
             "smooth": "Render a smoothed map (using stewart potentials algorythm)",
@@ -288,6 +289,7 @@
         },
         "help_box": {
             "title": "Emergency help!",
+            "tooltip_btn": "Help",
             "message_invite": "Write something to be searched in the documentation :",
             "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
         },
@@ -588,8 +590,10 @@
             "resume": "Resume last project...",
             "overview": "Overview",
             "examples": "Examples",
+            "projections": "Projections",
             "doc": "Documentation",
             "sources": "Sources",
+            "dev": "Developement",
             "start_now": "Start now"
         },
         "intro_section": {

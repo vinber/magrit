@@ -161,18 +161,6 @@ function setUpInterface(resume_project)
         .styles({"text-align": "center", "margin-top": "2px"})
         .html("");
 
-/*
-    dv1.append("p")
-        .attr("id", "browse_section")
-        .attr("align", "center")
-        .html("")
-        .append("button")
-        .attrs({id: "browse_button", class: "button_st3 i18n", disabled: true})
-        .style("font-size", "12px")
-        .attr("data-i18n", "[html]app_page.section1.explore_table")
-        .on("click", () => {  boxExplore.create(); });
-*/
-
     make_ico_choice();
 
     //section2.append("p")
@@ -234,10 +222,14 @@ function setUpInterface(resume_project)
     let _h = dv4.append("li").styles({margin: "1px", padding: "0px 4px"});
     _h.append("p")
             .attr("id", "btn_add_layout_ft")
+            .attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.layout_features")
             .style("cursor", "pointer")
-            .html(i18next.t("app_page.section4.layout_features") + sys_run_button)
             .on("click", select_layout_features);
-    _h.select("img").style("vertical-align", "sub");
+    _h.append("span").html(sys_run_button)
+    _h.select("img").style("vertical-align", "sub")
+            .style("cursor", "pointer")
+            .on("click", select_layout_features);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -338,6 +330,7 @@ function setUpInterface(resume_project)
             arg;
         if(sections[0].style.display == "none"){
             arg = "";
+            // TODO : replace the icon 
             document.getElementById("map_center_menu_ico").classList = "ui-accordion-header-icon ui-icon ui-icon-triangle-1-s";
         } else {
             arg = "none";
@@ -467,7 +460,7 @@ function setUpInterface(resume_project)
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "geo"){
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
+                    document.getElementById("utton_section5b").innerHTML = i18next.t("app_page.section5b.next");
                     document.getElementById("export_options_png").style.display = "none";
                     let export_filename = document.getElementById("export_filename");
                     export_filename.style.display = "none";
@@ -647,8 +640,8 @@ function setUpInterface(resume_project)
     });
 
     const_options.append("button")
-              .attrs({class: "const_buttons", id: "export_btn",
-                      title: "Export / Load your map preferences"})
+              .attrs({class: "const_buttons i18n", id: "export_btn",
+                      "data_i18n": "[title]app_page.tooltips.export_load_pref"})
               .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
               .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif_blank.png" width="20" height="20" alt="export_load_preferences"/>')
               .on("click", function(){
@@ -690,7 +683,7 @@ function setUpInterface(resume_project)
                 });
 
     const_options.append("button")
-              .attrs({id: "help_btn", class: "const_buttons", title: "help"})
+              .attrs({id: "help_btn", class: "const_buttons i18n", "data-i18n": "[title]app_page.help_box.tooltip_btn"})
               .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
               .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="18" height="18" alt="export_load_preferences"/>')
               .on("click", function(){
@@ -898,13 +891,13 @@ function make_ico_choice(){
                         'icon_choro.png',
                         'icon_typo.png',
                         'icon_choroprop.png',
-                        'icon_flow.png',
+                        'icon_proptypo.png',
                         'icon_grid.png',
                         'icon_cartogram.png',
                         'icon_smooth.png',
                         'icon_discont.png',
                         'icon_typosymbol.png',
-                        'icon_proptypo.png',
+                        'icon_flow.png',
                         'icon_label.png'];
     let function_panel = section2_pre.append("div")
                             .attr("id", "list_ico_func");
@@ -2060,7 +2053,7 @@ function check_output_name(name, extension){
 
 function export_compo_svg(output_name){
     output_name = check_output_name(output_name, "svg");
-    patchSvgForInkscape();
+    //patchSvgForInkscape();
     patchSvgForFonts();
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
@@ -2084,7 +2077,7 @@ function export_compo_svg(output_name){
     document.body.appendChild(dl_link);
     dl_link.click();
     dl_link.remove();
-    unpatchSvgForFonts();
+    //unpatchSvgForFonts();
     unpatchSvgForInkscape();
 }
 
@@ -2126,52 +2119,6 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         targetCanvas.remove();
         unpatchSvgForFonts();
     }
-}
-
-function export_layer_geo(layer, type, projec, proj4string){
-    let extensions = new Map([
-        ["GeoJSON", "geojson"],
-        ["TopoJSON", "topojson"],
-        ["ESRI Shapefile", "zip"],
-        ["GML", "zip"],
-        ["KML", "kml"]]);
-    let formToSend = new FormData();
-    formToSend.append("layer", layer);
-    formToSend.append("layer_name", current_layers[layer].key_name);
-    formToSend.append("format", type);
-    if(projec == "proj4string")
-        formToSend.append("projection", JSON.stringify({"proj4string" : proj4string}));
-    else
-        formToSend.append("projection", JSON.stringify({"name" : projec}));
-
-    xhrequest("POST", '/get_layer2', formToSend, true)
-        .then(data => {
-            if(data.indexOf("Error:") == 0){
-                swal({title: "Oops...",
-                     text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
-                     type: "error",
-                     allowOutsideClick: false,
-                     allowEscapeKey: false
-                    }).then( () => { null; },
-                              () => { null; });
-                return;
-            }
-            let ext = extensions.get(type),
-                dataStr;
-            if(ext.indexOf("json") > -1)
-                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-            else if (ext.indexOf("kml") > -1)
-                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-            else
-                dataStr = "data:application/zip;base64," + data;
-
-            let dlAnchorElem = document.getElementById('downloadAnchorElem');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-            dlAnchorElem.click();
-        }, error => {
-            console.log(error);
-        });
 }
 
 function make_export_layer_box(){

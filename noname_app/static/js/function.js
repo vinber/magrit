@@ -1301,6 +1301,7 @@ function fillMenu_PropSymbolChoro(layer){
             };
             zoom_without_redraw();
             switch_accordion_section();
+            handle_legend(new_layer_name);
         }
     });
     dv2.selectAll(".params").attr("disabled", true);
@@ -2015,6 +2016,7 @@ function fillMenu_Stewart(){
                     d3.select("#"+n_layer_name)
                             .selectAll("path")
                             .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
+                    handle_legend(n_layer_name);
                     // Todo : use the function render_choro to render the result from stewart too
                 }, error => {
                     display_error_during_computation();
@@ -2569,112 +2571,112 @@ var boxExplore2 = {
 };
 
 
-var boxExplore = {
-    display_table: function(table_name){
-        document.querySelector("body").style.cursor = "";
-        let the_table = this.layer_names.get(table_name)[1];
-        this.current_table = table_name;
-        this.nb_features = the_table.length;
-        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
-        this.columns_headers = [];
-        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
-            this.columns_headers.push({data: col[i], title: col[i]});
-        if(this.top_buttons.select("#add_field_button").node()){
-            this.top_buttons.select("#add_field_button").remove()
-            document.getElementById("table_intro").remove();
-            document.querySelector(".dataTable-wrapper").remove();
-        }
-        this.top_buttons
-             .insert("button")
-             .attrs({id: "add_field_button", class: "button_st3"})
-             .html(i18next.t("app_page.explore_box.button_add_field"))
-             .on('click', () => {
-                add_field_table(the_table, table_name, this);
-             });
-        let txt_intro = [
-             "<b>", table_name, "</b><br>",
-             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
-             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
-            ].join('');
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        this.box_table.node().appendChild(
-            createTableDOM(the_table, {id: "myTable"})
-            );
-
-        let box = document.getElementById("browse_data_box");
-        // TOFIX (error on DataTable creation)
-        try {
-            new DataTable(box.querySelector("#myTable"));
-        } catch(e) {
-            console.log(e);
-        }
-        // Adjust the size of the box (on opening and after adding a new field)
-        // and/or display scrollbar if its overflowing the size of the window minus a little margin :
-        let new_width = box.querySelector("#myTable").getBoundingClientRect().width;
-        if(new_width > window.innerWidth * 0.85){
-            box.querySelector(".modal-content").style.overflow = "auto";
-            box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
-        } else if (new_width > 560) {
-            box.querySelector(".modal-dialog").style.width = (new_width + 40) + "px";
-        }
-    },
-    get_available_tables: function(){
-        let target_layer = Object.getOwnPropertyNames(user_data),
-            ext_dataset = dataset_name,
-            result_layers = Object.getOwnPropertyNames(result_data),
-            available = new Map();
-        for(let lyr_name of target_layer)
-            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
-        if(ext_dataset)
-            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
-        for(let lyr_name of result_layers)
-            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
-        return available;
-    },
-    create: function(){
-        this.layer_names = this.get_available_tables()
-        if(this.layer_names.size == 0) return;
-        this.columns_headers = [];
-        this.nb_features = undefined;
-        this.columns_names = undefined;
-        this.current_table = undefined;
-        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
-        this.box_table = d3.select("#browse_data_box").select(".modal-body");
-        let self = this;
-
-        this.top_buttons = this.box_table.append('p')
-                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
-
-        let select_a_table = this.box_table
-                                .append('p').html(i18next.t("app_page.explore_box.available_table"))
-                                .insert("select").attr("id", "select_table")
-                                .on("change", function(){
-                                    self.display_table(this.value);
-                                });
-
-        this.layer_names.forEach( (value, key) => {
-            let txt = [key, " (", value[0], ")"].join('');
-            select_a_table.append("option").attr("value", key).text(txt);
-        });
-        setSelected(select_a_table.node(), select_a_table.node().options[0].value);
-        let deferred = Q.defer(),
-            container = document.getElementById("browse_data_box"),
-            _onclose = () => {
-                deferred.resolve(false);
-                modal_box.close();
-                container.remove();
-            };
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = function(){
-            deferred.resolve([true, true]);
-            modal_box.close();
-            container.remove();
-        };
-
-        return deferred.promise;
-    }
-};
+//var boxExplore = {
+//    display_table: function(table_name){
+//        document.querySelector("body").style.cursor = "";
+//        let the_table = this.layer_names.get(table_name)[1];
+//        this.current_table = table_name;
+//        this.nb_features = the_table.length;
+//        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
+//        this.columns_headers = [];
+//        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
+//            this.columns_headers.push({data: col[i], title: col[i]});
+//        if(this.top_buttons.select("#add_field_button").node()){
+//            this.top_buttons.select("#add_field_button").remove()
+//            document.getElementById("table_intro").remove();
+//            document.querySelector(".dataTable-wrapper").remove();
+//        }
+//        this.top_buttons
+//             .insert("button")
+//             .attrs({id: "add_field_button", class: "button_st3"})
+//             .html(i18next.t("app_page.explore_box.button_add_field"))
+//             .on('click', () => {
+//                add_field_table(the_table, table_name, this);
+//             });
+//        let txt_intro = [
+//             "<b>", table_name, "</b><br>",
+//             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
+//             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
+//            ].join('');
+//        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
+//        this.box_table.node().appendChild(
+//            createTableDOM(the_table, {id: "myTable"})
+//            );
+//
+//        let box = document.getElementById("browse_data_box");
+//        // TOFIX (error on DataTable creation)
+//        try {
+//            new DataTable(box.querySelector("#myTable"));
+//        } catch(e) {
+//            console.log(e);
+//        }
+//        // Adjust the size of the box (on opening and after adding a new field)
+//        // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+//        let new_width = box.querySelector("#myTable").getBoundingClientRect().width;
+//        if(new_width > window.innerWidth * 0.85){
+//            box.querySelector(".modal-content").style.overflow = "auto";
+//            box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+//        } else if (new_width > 560) {
+//            box.querySelector(".modal-dialog").style.width = (new_width + 40) + "px";
+//        }
+//    },
+//    get_available_tables: function(){
+//        let target_layer = Object.getOwnPropertyNames(user_data),
+//            ext_dataset = dataset_name,
+//            result_layers = Object.getOwnPropertyNames(result_data),
+//            available = new Map();
+//        for(let lyr_name of target_layer)
+//            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
+//        if(ext_dataset)
+//            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
+//        for(let lyr_name of result_layers)
+//            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
+//        return available;
+//    },
+//    create: function(){
+//        this.layer_names = this.get_available_tables()
+//        if(this.layer_names.size == 0) return;
+//        this.columns_headers = [];
+//        this.nb_features = undefined;
+//        this.columns_names = undefined;
+//        this.current_table = undefined;
+//        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+//        this.box_table = d3.select("#browse_data_box").select(".modal-body");
+//        let self = this;
+//
+//        this.top_buttons = this.box_table.append('p')
+//                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+//
+//        let select_a_table = this.box_table
+//                                .append('p').html(i18next.t("app_page.explore_box.available_table"))
+//                                .insert("select").attr("id", "select_table")
+//                                .on("change", function(){
+//                                    self.display_table(this.value);
+//                                });
+//
+//        this.layer_names.forEach( (value, key) => {
+//            let txt = [key, " (", value[0], ")"].join('');
+//            select_a_table.append("option").attr("value", key).text(txt);
+//        });
+//        setSelected(select_a_table.node(), select_a_table.node().options[0].value);
+//        let deferred = Q.defer(),
+//            container = document.getElementById("browse_data_box"),
+//            _onclose = () => {
+//                deferred.resolve(false);
+//                modal_box.close();
+//                container.remove();
+//            };
+//        container.querySelector(".btn_cancel").onclick = _onclose;
+//        container.querySelector("#xclose").onclick = _onclose;
+//        container.querySelector(".btn_ok").onclick = function(){
+//            deferred.resolve([true, true]);
+//            modal_box.close();
+//            container.remove();
+//        };
+//
+//        return deferred.promise;
+//    }
+//};
 
 var fields_PropSymbol = {
     fill: function(layer){
@@ -2825,7 +2827,7 @@ function fillMenu_PropSymbol(layer){
 //            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
-
+            handle_legend(n_layer_name);
         });
     dialog_content.selectAll(".params").attr("disabled", true);
 }
@@ -3099,7 +3101,7 @@ function fillMenu_griddedMap(layer){
                             rendered_field: "densitykm",
                                 };
                     render_choro(n_layer_name, rendering_params);
-
+                    handle_legend(n_layer_name);
                 }, error => {
                     display_error_during_computation();
                     console.log(error);
@@ -3932,6 +3934,7 @@ function fillMenu_PropSymbolTypo(layer){
         };
         zoom_without_redraw();
         switch_accordion_section();
+        handle_legend(new_layer_name);
     });
     d3.selectAll(".params").attr("disabled", true);
 }

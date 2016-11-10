@@ -60,7 +60,6 @@ body, html {
 .navbar-default {
     background: #173a50;
     background-color: #173a50;
-    font-family: 'Inconsolata';
 }
 
 .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover {

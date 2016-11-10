@@ -74,7 +74,7 @@
             "no": "Non"
         },
         "section1": {
-            "title": "Ajout de données",
+            "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
             "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
             "add_sample_data": "Sélection fond de carte / jeu de données d'exemple",
@@ -88,7 +88,7 @@
             "no_func": "Aucune fonctionnalitée choisie"
         },
         "section3": {
-            "title": "Gestionnaire de couches"
+            "title": "Gestion des couches"
         },
         "section4": {
             "title": "Habillage et mise en page",
@@ -108,7 +108,7 @@
             "layout_features": "Ajout d'éléments d'habillage "
         },
         "section5b": {
-            "title": "Options de l'export",
+            "title": "Export de la carte",
             "type": "Type",
             "filename": "Nom du fichier",
             "format": "Format de sortie",
@@ -145,7 +145,8 @@
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "section3": "Faites glissez un fichier d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton.<br> Types supportés: GeoJSON, TopoJSON, Shapefile et KML"
+            "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "export_load_pref": "Exporter / Charger un fichier de préférence"
         },
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
@@ -279,6 +280,7 @@
         },
         "help_box": {
             "title": "Aide d'urgence!",
+            "tooltip_btn": "Aide",
             "message_invite": "Saisir un terme à rechercher dans la documentation :",
             "list_placeholders": "Carte choroplète, Discrétisation, Anamorphose, Export, Projection"
         },
@@ -325,7 +327,7 @@
             "ypos": "Position en Y (% depuis le haut) :<br>"
         },
         "symbol_typo_box": {
-            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} features",
+            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
             "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
             "count_feature": " <i> ({{ nb_features }} entité)</i>",
             "count_feature_plural": " <i> ({{ nb_features }} entités)</i>"
@@ -585,7 +587,9 @@
             "resume": "Continuer le projet en cours...",
             "overview": "Fonctionnalitées",
             "examples": "Exemples",
+            "projections": "Projections",
             "doc": "Documentation",
+            "dev": "Développement",
             "sources": "Sources",
             "start_now": "Démarrer"
         },
