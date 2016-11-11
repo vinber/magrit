@@ -80,12 +80,8 @@
             "add_sample_data": "Select available sample basemap / dataset",
             "explore_table": "Explore your table(s)"
         },
-        "section2_pre": {
-            "title": "Choose a representation"
-        },
         "section2": {
-            "title": "Functionnality options",
-            "no_func": "No choosen functiionnality"
+            "title": "Choose a representation"
         },
         "section3": {
             "title": "Layers"
@@ -248,7 +244,8 @@
             "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?",
             "change_field": "Change joined fields",
             "ref_layer_fields": "Reference layer fields",
-            "join_field": "Join field"
+            "join_field": "Join field",
+            "before_join_ask": "A layer and an external dataset have been provided. Want to join them now ?"
         },
         "explore_box": {
             "title": "Explore dataset",

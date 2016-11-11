@@ -82,7 +82,7 @@ function get_menu_option(func){
 
 
 function clean_menu_function(){
-    section2_pre.select(".form-rendering").remove();
+    section2.select(".form-rendering").remove();
     /*
     let s2 = section2.node();
     for(let i = s2.childElementCount - 1; i > -1 ; i--){
@@ -297,12 +297,7 @@ var fields_Symbol = {
 }
 
 function fillMenu_TypoSymbol(){
-    let dv2 = section2_pre.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dv2 = make_template_functionnality(section2)
 
     let field_selec = dv2.append("p").html(i18next.t("app_page.func_options.typosymbol.field"))
                     .insert('select')
@@ -450,12 +445,7 @@ function insert_legend_button(layer_name){
 }
 
 function fillMenu_Discont(){
-    let dv2 = section2_pre.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dv2 = make_template_functionnality(section2);
 
     dv2.append('p').html(i18next.t("app_page.func_options.discont.field"))
                 .insert('select')
@@ -874,12 +864,7 @@ function fetch_min_max_table_value(parent_id){
 }
 
 function fillMenu_FlowMap(){
-    var dv2 = section2_pre.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dv2 = make_template_functionnality(section2);
 
     dv2.append('p').html('<b>' + i18next.t("app_page.func_options.flow.subtitle1") + '</b>');
 
@@ -1154,13 +1139,8 @@ var fields_PropSymbolChoro = {
 
 function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
-        dv2 = section2_pre.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
+        dv2 = make_template_functionnality(section2);
+    
     var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field1"))
                           .insert('select')
                           .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
@@ -1408,13 +1388,8 @@ var fields_Label = {
 };
 
 var fillMenu_Label = function(){
-    var dv2 = section2_pre.append("p").attr("class", "form-rendering"),
-        rendering_params = {};
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var rendering_params = {},
+        dv2 = make_template_functionnality(section2);
 
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.label.field"))
@@ -1627,13 +1602,9 @@ var render_label = function(layer, rendering_params){
 }
 
 var fillMenu_Typo = function(){
-    var dv2 = section2_pre.append("p").attr("class", "form-rendering"),
-        rendering_params = {};
+    var rendering_params = {};
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dv2 = make_template_functionnality(section2);
 
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.typo.color_choice"))
@@ -1691,13 +1662,9 @@ var fillMenu_Typo = function(){
 }
 
 function fillMenu_Choropleth(){
-    var dv2 = section2_pre.append("p").attr("class", "form-rendering");
-    let rendering_params = fields_Choropleth.rendering_params;
+    let rendering_params = fields_Choropleth.rendering_params,
+        dv2 = make_template_functionnality(section2);
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
 
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.common.field"))
@@ -1863,14 +1830,18 @@ var fields_Stewart = {
     }
 };
 
-function fillMenu_Stewart(){
-    var dialog_content = section2_pre.append("div").attr("class", "form-rendering");
-
-    dialog_content.append("img")
+function make_template_functionnality(parent_node){
+    let dialog_content = parent_node.append("div").attr("class", "form-rendering");
+    dialog_content.append("p").attr("class", "container_img_help")
+        .append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
                 class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+        .styles({"cursor": "pointer"});
+    return dialog_content;
+}
 
+function fillMenu_Stewart(){
+    var dialog_content = make_template_functionnality(section2);
 
     var field_selec = dialog_content.append('p')
                         .style("margin", "10px 0px 0px")
@@ -1887,7 +1858,6 @@ function fillMenu_Stewart(){
     {
         let p_span = dialog_content
                         .append("p")
-                            .style("float", "left")
                             .text(i18next.t("app_page.func_options.smooth.span"));
         var span = p_span.append('input')
                         .style("width", "60px")
@@ -1896,7 +1866,7 @@ function fillMenu_Stewart(){
 
         var beta = dialog_content
                         .append('p')
-                            .styles({"float": "right", "margin-right": "35px"})
+                            .styles({"margin-right": "35px"})
                             .html(i18next.t("app_page.func_options.smooth.beta"))
                         .insert('input')
                             .style("width", "60px")
@@ -1916,7 +1886,7 @@ function fillMenu_Stewart(){
                                 .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
         breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
                                 .insert("textarea")
-                                .styles({"width": "260px", "height": "30px"})
+                                .styles({width: "100%", height: "2.2em", "font-size": "0.9em"})
                                 .attrs({class: 'params i18n', id: "stewart_breaks",
                                         "data-i18n": "[placeholder]app_page.common.expected_class",
                                         "placeholder": i18next.t("app_page.common.expected_class")}),
@@ -2120,12 +2090,7 @@ function fillMenu_Anamorphose(){
         option2_txt2.html("");
     };
 
-    var dialog_content = section2_pre.append("div").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dialog_content = make_template_functionnality(section2);
 
     var algo_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.algo")).insert('select').attr('class', 'params'),
         field_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.field")).insert('select').attrs({class: 'params', id: 'Anamorph_field'}),
@@ -2720,14 +2685,8 @@ var fields_PropSymbol = {
 };
 
 function fillMenu_PropSymbol(layer){
-    var max_allowed_size = Math.round(h/2 - h/20),
-        dialog_content = section2_pre.append("p").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
+    var dialog_content = make_template_functionnality(section2),
+        max_allowed_size = Math.round(h/2 - h/20);
 
     var field_selec = dialog_content.append('p')
                           .html(i18next.t("app_page.func_options.common.field"))
@@ -2992,12 +2951,7 @@ var fields_griddedMap = {
 }
 
 function fillMenu_griddedMap(layer){
-    var dialog_content = section2_pre.append("p").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var dialog_content = make_template_functionnality(section2)
 
     var field_selec = dialog_content.append('p')
                         .html(i18next.t("app_page.func_options.common.field"))
@@ -3814,14 +3768,8 @@ function make_content_summary(serie, precision=6){
 
 
 function fillMenu_PropSymbolTypo(layer){
-    var rendering_params = fields_PropSymbolTypo.rendering_params,
-        dv2 = section2_pre.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
+    var rendering_params = fields_PropSymbolTypo.rendering_params;
+    var dv2 = make_template_functionnality(section2);
     var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field1"))
                           .insert('select')
                           .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});

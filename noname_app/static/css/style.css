@@ -10,7 +10,7 @@ body {
 
 #header {
     width: 100%;
-    height: 30px;
+    height: 40px;
     font-weight: bold;
     color: rgb(0, 0, 0);
     box-sizing: border-box;
@@ -30,8 +30,8 @@ body {
 
 #menu {
     position: absolute;
-    padding: 5px 10px 5px 10px;
-    width: 330px;
+    padding: 5px 2.5px 5px 2.5px;
+    width: 345px;
     font-size: 11px;
 }
 
@@ -129,8 +129,21 @@ a.menu {
     padding: 0.9em 0.8em 0.8em 0.8em;
 }
 
-#section2_pre {
+#section2 {
     padding: 2px 8px;
+}
+
+#section2 p.container_img_help {
+    text-align: right;
+    margin: auto;
+}
+
+#section2 input[type="text"], #section2 input[type="number"], #section2 select {
+    position: absolute;
+    right: 20px;
+    margin: auto;
+    min-width: 40px;
+    //margin-left: 15px;
 }
 
 .form-rendering {
@@ -523,30 +536,51 @@ button.accordion.active:after {
     content: "\2796";
 }
 
+#map_center_menu_ico:after {
+    content: '\02795';
+    font-size: 14px;
+    color: #777;
+    margin-left: 4px;
+}
+
+li.to_hide {
+    padding: 4px;
+    margin-left: 8px;
+}
+
+#map_center_menu_ico.active:after {
+    content: "\2796";
+}
+
 div.panel {
     font-family: Verdana,Arial,sans-serif;
     font-size: 1.1em;
     color: #222222;
     background: #ffffff;
     overflow: hidden;
-    transition: visibility 0.3s, opacity 0.6s linear;
     visibility: hidden;
+    width: 335px;
     max-height: 0;
-    opacity: 0;
+    //opacity: 0;
     border: 1px solid #aaaaaa;
     border-top-color: rgb(170, 170, 170);
     border-top-style: solid;
     border-top-width: 1px;
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
+    transition: all 400ms ease-in-out;
+    transform: scaleY(0);
 }
 
 div.panel.show {
-    opacity: 1;
+    //opacity: 1;
     max-height: 650px;
+    width: 335px;
+    margin: auto;
     margin-bottom: 7px;
     overflow: auto;
     visibility: visible;
+    transform: scaleY(1);
 }
 
 .twbs .panel {

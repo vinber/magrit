@@ -80,12 +80,8 @@
             "add_sample_data": "Sélection fond de carte / jeu de données d'exemple",
             "explore_table": "Afficher les données"
         },
-        "section2_pre": {
-            "title": "Choix de la représentation"
-        },
         "section2": {
-            "title": "Option de la fonctionnalité",
-            "no_func": "Aucune fonctionnalitée choisie"
+            "title": "Choix de la représentation"
         },
         "section3": {
             "title": "Gestion des couches"
@@ -246,7 +242,9 @@
             "match_plural": "correspondances",
             "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
             "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?",
-            "change_field": "Changer les champs joints"
+            "change_field": "Changer les champs joints",
+            "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
+
         },
         "explore_box": {
             "title": "Table de données",
