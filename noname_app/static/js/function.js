@@ -106,9 +106,9 @@ function check_layer_name(name){
     else {
         let i = 1;
         if(name.match(/_\d+$/)){
-            i = name.match(/\d+$/);
+            i = name.match(/_\d+$/);
             name = name.substring(name, name.indexOf(i));
-            return check_layer_name([name, parseInt(i) + 1].join(''));
+            return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
         }
         else {
             name = [name, i].join('_');
@@ -118,10 +118,6 @@ function check_layer_name(name){
 }
 
 function box_choice_symbol(sample_symbols){
-//    var newbox = d3.select("body")
-//                        .append("div").style("font-size", "10px")
-//                        .attrs({id: "box_choice_symbol", title: "Symbol selection"});
-
     var modal_box = make_dialog_container(
         "box_choice_symbol",
         i18next.t("app_page.box_choice_symbol.title"),
@@ -139,11 +135,13 @@ function box_choice_symbol(sample_symbols){
             .data(sample_symbols)
             .enter()
             .append("p")
-            .attr("id", d => "p_" + d[0].replace(".svg", ""))
-            .attr("title", d => d[0])
+            .attrs( d => ({
+              "id": "p_" + d[0].replace(".svg", ""),
+              "title": d[0]
+            }))
             .html(d => d[1])
             .styles({width: "32px", height: "32px",
-                    "margin": "auto", display: "inline-block"});
+                     margin: "auto", display: "inline-block"});
 
     box_select.selectAll("svg")
             .attr("id", function(){ return this.parentElement.id.slice(2) })
@@ -185,14 +183,11 @@ function box_choice_symbol(sample_symbols){
         });
 
     newbox.insert("p").html(i18next.t("app_page.box_choice_symbol.selected_symbol"))
-    newbox.insert("p").attr("id", "current_symb")
-            .attr("class", "symbol_section")
-            .style("margin", "auto")
-            .style("background-image", "url('')")
-            .style("vertical-align", "middle")
-            .styles({width: "32px", height: "32px",
-                    "border-radius": "10%",
-                    display: "inline-block", "background-size": "32px 32px"
+    newbox.insert("p")
+            .attrs({"class": "symbol_section", "id": "current_symb"})
+            .styles({width: "32px", height: "32px", display: "inline-block",
+                    "border-radius": "10%", "background-size": "32px 32px",
+                    "vertical-align": "middle", "margin": "auto", "background-image": "url('')"
                   });
 
     let deferred = Q.defer(),
@@ -217,33 +212,6 @@ function box_choice_symbol(sample_symbols){
     return deferred.promise;
 };
 
-//    var deferred = Q.defer();
-//    $("#box_choice_symbol").dialog({
-//        modal: true,
-//        resizable: true,
-//        buttons:[{
-//            text: "Confirm",
-//            click: function(){
-//                    let res_url = newbox.select("#current_symb").style("background-image");
-//                    deferred.resolve(res_url);
-//                    $(this).dialog("close");
-//                    }
-//                },
-//           {
-//            text: "Cancel",
-//            click: function(){
-//                $(this).dialog("close");
-//                $(this).remove();}
-//           }],
-//        close: function(event, ui){
-//                $(this).dialog("destroy").remove();
-//                if(deferred.promise.isPending()){
-//                    deferred.resolve(false);
-//                }
-//            }
-//    })
-//    return deferred.promise;
-//}
 
 function make_style_box_indiv_symbol(label_node){
     let current_options = {size: label_node.getAttribute("width")};
@@ -380,11 +348,21 @@ function render_TypoSymbols(rendering_params, new_name){
         .selectAll("image")
         .data(new_layer_data).enter()
         .insert("image")
-        .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
+        .attrs( d => {
+          let symb = rendering_params.symbols_map.get(d.Symbol_field);
+          return {
+            "x": d.coords[0] - symb[1] / 2,
+            "y": d.coords[1] - symb[1] / 2,
+            "width": symb[1] + "px",
+            "height": symb[1] + "px",
+            "xlink:href": symb[0]
+          };
+        })
+        // .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+        // .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+        // .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+        // .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+        // .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("contextmenu dblclick", function(){
@@ -1140,7 +1118,7 @@ var fields_PropSymbolChoro = {
 function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
         dv2 = make_template_functionnality(section2);
-    
+
     var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field1"))
                           .insert('select')
                           .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
@@ -1569,10 +1547,17 @@ var render_label = function(layer, rendering_params){
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
-        .attr("id", (d,i) => "Feature_" + i)
-        .attr("x", d => d.coords[0])
-        .attr("y", d => d.coords[1])
-        .attrs({"alignment-baseline": "middle", "text-anchor": "middle"})
+        .attrs( (d,i) => ({
+          "id": "Feature_" + i,
+          "x": d.coords[0],
+          "y": d.coords[1],
+          "alignment-baseline": "middle",
+          "text-anchor": "middle"
+        }))
+        // .attr("id", (d,i) => "Feature_" + i)
+        // .attr("x", d => d.coords[0])
+        // .attr("y", d => d.coords[1])
+        // .attrs({"alignment-baseline": "middle", "text-anchor": "middle"})
         .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
@@ -2097,7 +2082,7 @@ function fillMenu_Anamorphose(){
         option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html(i18next.t("app_page.func_options.cartogram.dorling_symbol")),
         option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"}),
         option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size")),
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
+        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 45, step: 0.1, value: 20, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
         option2_txt2 = dialog_content.append("p").attr("id", "Anamorph_opt_txt3").html(i18next.t("app_page.func_options.cartogram.dorling_on_value")),
         option2_val2 = option2_txt2.insert("input").attrs({type: "number", min: 0, step: 0.1}).attrs({class: "params", id: "Anamorph_opt3"}),
         symbols = [
@@ -2349,8 +2334,10 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .selectAll("circle")
                           .data(nodes).enter()
                           .append("circle")
-                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("r", d => d.r )
+                            .attrs( (d,i) => ({
+                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
+                              "r": d.r
+                            }))
                             .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     } else {
@@ -2359,22 +2346,24 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .selectAll("rect")
                           .data(nodes).enter()
                           .append("rect")
-                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("height", d => d.r * 2 )
-                            .attr("width", d => d.r * 2 )
+                            .attrs( (d,i) => ({
+                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
+                              "height": d.r * 2,
+                              "width": d.r * 2
+                            }))
                             .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     }
 
     function tick(e){
         if(shape_symbol == "circle")
-            symbol_layer
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y);
+            symbol_layer.attrs(d => ({"cx": d.x, "cy": d.y}));
+                // .attr("cx", d => d.x)
+                // .attr("cy", d => d.y);
         else
-            symbol_layer
-                .attr("x", d => d.x - d.r)
-                .attr("y", d => d.y - d.r)
+            symbol_layer.attrs(d => ({"x": d.x - d.r, "y": d.y - d.r}));
+                // .attr("x", d => d.x - d.r)
+                // .attr("y", d => d.y - d.r)
     }
     return [d_values, animation];
 }
@@ -2686,7 +2675,7 @@ var fields_PropSymbol = {
 
 function fillMenu_PropSymbol(layer){
     var dialog_content = make_template_functionnality(section2),
-        max_allowed_size = Math.round(h/2 - h/20);
+        max_allowed_size = Math.round(h/2 - h/10);
 
     var field_selec = dialog_content.append('p')
                           .html(i18next.t("app_page.func_options.common.field"))
@@ -2697,7 +2686,7 @@ function fillMenu_PropSymbol(layer){
                          .html(i18next.t("app_page.func_options.prop.fixed_size"))
                          .insert('input')
                          .attrs({type: 'number', class: 'params'})
-                         .attrs({min: 0.2, max: max_allowed_size, value: 15.0, step: 0.1})
+                         .attrs({min: 0.2, max: max_allowed_size, value: 30.0, step: 0.1})
                          .style("width", "50px");
 
     dialog_content.append('span').html(" px");

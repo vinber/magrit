@@ -607,8 +607,11 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
                 })
               .attr('width', boxwidth)
               .attr('height', boxheight)
-              .style('fill', d => d.color)
-              .style('stroke', d => d.color);
+              .styles( d => ({
+                "fill": d.color, "stroke": d.color
+              }));
+              // .style('fill', d => d.color)
+              // .style('stroke', d => d.color);
 
     else
         legend_elems

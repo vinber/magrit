@@ -635,7 +635,7 @@ function add_dataset(readed_dataset){
 
     if(targeted_layer_added){
         swal({title: "",
-              text: i18next.t("A layer and an external dataset have been provided. Want to join them now ?"),
+              text: i18next.t("app_page.join_box.before_join_ask"),
               allowOutsideClick: false,
               allowEscapeKey: true,
               type: "question",

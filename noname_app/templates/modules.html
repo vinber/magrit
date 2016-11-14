@@ -13,9 +13,10 @@
     <link href="static/css/vanilla-dataTables.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
-    <script  src="static/js/lib/d3.v4.min.js"></script>
-    <script  src="static/js/lib/d3-geo-projection.v1.min.js"></script>
-    <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script>
+    <!-- <script  src="static/js/lib/d3.v4.3.0.min.js"></script>
+    <script  src="static/js/lib/d3-geo-projection.v1.2.0.min.js"></script>
+    <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script> -->
+    <script  src="static/js/lib/d3.custom.min.js"></script>
     <script  src="static/js/lib/topojson.v1.min.js"></script>
     <script  src="static/js/lib/bootstrap-native-mod.min.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
@@ -221,7 +222,7 @@ function setUpInterface(resume_project)
             .attr("data-i18n", "[html]app_page.section4.background_color");
     f.append("p").attr("class", "list_elem_section4")
             .insert("input")
-            .styles({"margin-left": "15px", "margin-top": "-5px"})
+            .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff"})
             .on("change", function(){
                 handle_bg_color(this.value);
@@ -302,9 +303,13 @@ function setUpInterface(resume_project)
     ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
     ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
     ratio_select.on("change", function(){
-        let current_ratio = w /h;
+        let map_xy = get_map_xy0();
+        let dispo_w = document.innerWidth - map_xy.x - 1;
+        let dispo_h = document.innerHeight - map_xy.y - 1;
+        let diff_w = dispo_w - w;
+        let diff_h = dispo_h - h;
         if(this.value == "portrait"){
-            if(current_ratio < 0.707){
+            if(diff_h <= diff_w){
                 w = round_value(h * 0.70707, 0);
                 canvas_mod_size([w, h]);
             } else {
@@ -312,7 +317,7 @@ function setUpInterface(resume_project)
                 canvas_mod_size([w, h]);
             }
         } else if (this.value == "landscape"){
-            if(current_ratio > 0.707){
+            if(diff_h <= diff_w){
                 w = round_value(h / 0.70707, 0);
                 canvas_mod_size([w, h]);
             } else {
@@ -778,11 +783,18 @@ function setUpInterface(resume_project)
         .data(lm_buttons).enter()
         .append('p').style("margin", "auto")
             .insert("button")
-            .attr("data-tooltip-position", d => d.tooltip_position)
-            .attr("class", d => d.class)
-            .attr("data-i18n", d => d.i18n)
-            .attr("id", d => d.id)
+            .attrs((d,i) => ({
+              "data-tooltip-position": d.tooltip_position,
+              "class": d.class,
+              "data-i18n": d.i18n,
+              "id": d.id})
+              )
             .html(d => d.html);
+            // .attr("data-tooltip-position", d => d.tooltip_position)
+            // .attr("class", d => d.class)
+            // .attr("data-i18n", d => d.i18n)
+            // .attr("id", d => d.id)
+
 
     // Trigger actions when buttons are clicked and set-up the initial view :
     d3.selectAll(".zoom_button").on("click", zoomClick);

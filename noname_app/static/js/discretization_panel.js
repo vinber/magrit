@@ -241,13 +241,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .data(data)
           .enter()
             .append("rect")
-            .attr("class", "bar")
-            .attr("x", 1)
-            .attr("width", 1)
-//            .attr("width", x(data[1].x1) - x(data[1].x0))
-            .attr("height",  d => height - y(d.length))
-            .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
+            .attrs( d => ({
+              "class": "bar", "width": 1, "height": height - y(d.length),
+              "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+            }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+//             .attr("class", "bar")
+//             .attr("x", 1)
+//             .attr("width", 1)
+// //            .attr("width", x(data[1].x1) - x(data[1].x0))
+//             .attr("height",  d => height - y(d.length))
+//             .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
+
 
         svg_ref_histo.append("g")
             .attr("class", "x_axis")
@@ -379,35 +384,50 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
               .enter().append("rect")
-                .attr("class", "bar")
-                .attr("id", (d,i) => "bar_" + i)
-                .attr("transform", "translate(0, -7.5)")
-                .style("fill", d => d.color)
-                .styles({"opacity": 0.95, "stroke-opacity":1})
-                .attr("x", d => x(d.offset))
-                .attr("width", d => x(d.width))
-                .attr("y", d => y(d.height) - margin.bottom)
-                .attr("height", d => svg_h - y(d.height))
+                .attrs( (d,i) => ({
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "x": x(d.offset), "y": y(d.height) - margin.bottom,
+                  "width": x(d.width), "height": svg_h - y(d.height)
+                }))
+                .styles(d => ({
+                  "opacity": 0.95,
+                  "stroke-opacity": 1,
+                  "fill": d.color
+                }))
                 .on("mouseover", function(){
                     this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null;
-                    })
+                })
                 .on("mouseout", function(){
                     this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none";
-                    });
+                });
+                // .attr("class", "bar")
+                // .attr("id", (d,i) => "bar_" + i)
+                // .attr("transform", "translate(0, -7.5)")
+                // .style("fill", d => d.color)
+                // .attr("x", d => x(d.offset))
+                // .attr("width", d => x(d.width))
+                // .attr("y", d => y(d.height) - margin.bottom)
+                // .attr("height", d => svg_h - y(d.height))
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
-                .attr("dy", ".75em")
-                .attr("y", d => (y(d.height) - margin.top * 2 - margin.bottom - 1.5))
-                .attr("x", d => x(d.offset + d.width /2))
-                .attr("text-anchor", "middle")
-                .attr("class", "text_bar")
-                .attr("id", (d,i) => "text_bar_" + i)
-                .style("color", "black")
-                .style("cursor", "default")
-                .style("display", "none")
-                .text(d => formatCount(d.val))
+                .attrs( (d,i) => ({
+                  "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
+                  "dy": ".75em", "x": x(d.offset) + d.width / 2, "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
+                }))
+                .styles({"color": "black", "cursor": "default", "display": "none"})
+                .text(d => formatCount(d.val));
+                // .attr("dy", ".75em")
+                // .attr("y", d => (y(d.height) - margin.top * 2 - margin.bottom - 1.5))
+                // .attr("x", d => x(d.offset + d.width /2))
+                // .attr("text-anchor", "middle")
+                // .attr("class", "text_bar")
+                // .attr("id", (d,i) => "text_bar_" + i)
+                // .style("color", "black")
+                // .style("cursor", "default")
+                // .style("display", "none")
+                // .text(d => formatCount(d.val))
 
             svg_histo.append("g")
                 .attr("class", "y_axis")
@@ -1039,7 +1059,7 @@ var display_box_symbol_typo = function(layer, field){
 
         let deferred = Q.defer(),
             container = document.getElementById("symbol_box");
-    
+
         container.querySelector(".btn_ok").onclick = function(){
             let symbol_map = fetch_symbol_categories();
             deferred.resolve([nb_class, symbol_map]);

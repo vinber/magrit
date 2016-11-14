@@ -138,7 +138,8 @@ a.menu {
     margin: auto;
 }
 
-#section2 input[type="text"], #section2 input[type="number"], #section2 select {
+#section2 input[type="text"], #section2 input[type="number"],
+#section2 input[type="color"], #section2 select {
     position: absolute;
     right: 20px;
     margin: auto;
@@ -620,6 +621,15 @@ div.panel.show {
 .twbs .modal-dialog {
     font-family: arimo,Arial,sans-serif;
     font-size: 11px;
+}
+
+.twbs .modal-body > p > span {
+    display: inline-block;
+}
+
+.twbs .modal-body > p > input {
+    display: inline-block;
+    margin: 0px 15px;
 }
 
 .twbs .modal-header, .twbs .modal-footer {

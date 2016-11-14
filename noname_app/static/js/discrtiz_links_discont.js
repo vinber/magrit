@@ -102,12 +102,16 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .data(data)
           .enter()
             .append("rect")
-            .attr("class", "bar")
-            .attr("x", 1)
-            .attr("width", x(data[1].x1) - x(data[1].x0))
-            .attr("height",  d => height - y(d.length))
-            .attr("transform", d => "translate(" + x(d.x0) + "," + y(d.length) + ")" )
+            .attrs(d => ({
+              "class": "bar", "x": 1, "width": x(data[1].x1) - x(data[1].x0),
+              "height": height - y(d.length), "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+            }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+            // .attr("class", "bar")
+            // .attr("x", 1)
+            // .attr("width", x(data[1].x1) - x(data[1].x0))
+            // .attr("height",  d => height - y(d.length))
+            // .attr("transform", d => "translate(" + x(d.x0) + "," + y(d.length) + ")" )
 
         svg_ref_histo.append("g")
             .attr("class", "x axis")
@@ -195,14 +199,24 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
               .enter().append("rect")
-                .attr("class", "bar")
-                .attr("transform", "translate(0, -17.5)")
-                .style("fill", d => d.color )
-                .styles({"opacity": 0.5, "stroke-opacity":1})
-                .attr("x", d => x(d.offset) )
-                .attr("width", d => x(d.width) )
-                .attr("y", d => y(d.height) - margin.bottom )
-                .attr("height", d => svg_h - y(d.height) );
+                .attrs( (d,i) => ({
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "x": x(d.offset), "y": y(d.height) - margin.bottom,
+                  "width": x(d.width), "height": svg_h - y(d.height)
+                }))
+                .styles(d => ({
+                  "opacity": 0.95,
+                  "stroke-opacity": 1,
+                  "fill": d.color
+                }));
+                // .attr("class", "bar")
+                // .attr("transform", "translate(0, -17.5)")
+                // .style("fill", d => d.color )
+                // .styles({"opacity": 0.5, "stroke-opacity":1})
+                // .attr("x", d => x(d.offset) )
+                // .attr("width", d => x(d.width) )
+                // .attr("y", d => y(d.height) - margin.bottom )
+                // .attr("height", d => svg_h - y(d.height) );
 
             svg_histo.append("g")
                 .attr("class", "y axis")

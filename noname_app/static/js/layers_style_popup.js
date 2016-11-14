@@ -159,7 +159,7 @@ function createStyleBoxTypoSymbols(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -271,7 +271,7 @@ function createStyleBoxLabel(layer_name){
         ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
     }
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(!confirmed){
                 restore_prev_settings();
@@ -340,18 +340,18 @@ function createStyleBoxLabel(layer_name){
 }
 
 function createStyleBoxGraticule(layer_name){
-    let existing_box = document.querySelector(".graticuleStyleBox");
+    let existing_box = document.querySelector(".styleBox");
     if(existing_box) existing_box.remove();
     let current_params = cloneObj(current_layers["Graticule"]);
-    let selection = map.select("#Graticule").selectAll("path");
+    let selection = map.select("#Graticule > path");
     let selection_strokeW = map.select("#Graticule");
 
-    make_confirm_dialog2("graticuleStyleBox", layer_name, {top: true, widthFitContent: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){ null; } else { null; }
         });
 
-    let popup = d3.select(".graticuleStyleBox").select(".modal-body");
+    let popup = d3.select(".styleBox").select(".modal-body");
     let color_choice = popup.append("p");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -365,7 +365,7 @@ function createStyleBoxGraticule(layer_name){
     opacity_choice.append("span").html(i18next.t("app_page.layer_style_popup.opacity"));
     opacity_choice.append("input")
             .attrs({type: "range", value: current_params.opacity})
-            .styles({"width": "70px", "vertical-align": "middle"})
+            .styles({"width": "70px", "vertical-align": "middle", "display": "inline"})
             .on("change", function(){
                 selection.style("stoke-opacity", +this.value);
                 current_layers["Graticule"].opacity = +this.value;
@@ -389,7 +389,7 @@ function createStyleBoxGraticule(layer_name){
     steps_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_steps"));
     steps_choice.append("input")
             .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
-            .styles({"vertical-align": "middle", "width": "70px"})
+            .styles({"vertical-align": "middle", "width": "70px", "display": "inline"})
             .on("change", function(){
                 let step_val = +this.value,
                     dasharray_val = +document.getElementById("graticule_dasharray_txt");
@@ -422,7 +422,7 @@ function createStyleBoxGraticule(layer_name){
     dasharray_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_dasharray"));
     dasharray_choice.append("input")
             .attrs({type: "range", value: current_params.step, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
-            .styles({"vertical-align": "middle", "width": "70px"})
+            .styles({"vertical-align": "middle", "width": "70px", "display": "inline"})
             .on("change", function(){
                 selection.style("stroke-dasharray", this.value);
                 current_layers["Graticule"].dasharray = +this.value;
@@ -464,7 +464,7 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
@@ -574,7 +574,7 @@ function createStyleBox(layer_name){
         pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));
         pt_size.append("input")
                 .attrs({type: "range", min: 0, max: 40, value: current_pt_size})
-                .styles({"width": "70px", "vertical-align": "middle"})
+                .styles({"width": "70px", "vertical-align": "middle", "display": "inline"})
                 .on("change", function(){
                     current_pt_size = +this.value;
                     document.getElementById("txt_pt_radius").innerHTML = current_pt_size;
@@ -729,10 +729,11 @@ function createStyleBox(layer_name){
                                      });
          }
          let fill_opacity_section = popup.append('p');
-         fill_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"))
+         fill_opacity_section.append("span")
+                        .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
          fill_opacity_section.insert('input').attr('type', 'range')
                           .attr("min", 0).attr("max", 1).attr("step", 0.1).attr("value", opacity)
-                          .styles({"width": "70px", "vertical-align": "middle"})
+                          .styles({"width": "70px", "vertical-align": "middle", "display": "inline"})
                           .on('change', function(){
                             selection.style('fill-opacity', this.value)
                             fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
@@ -748,7 +749,7 @@ function createStyleBox(layer_name){
         //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_part.insert('input')
                     .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-                    .styles({width: "70px", "vertical-align": "middle"})
+                    .styles({width: "70px", "vertical-align": "middle", "display": "inline"})
                     .on("change", function(){
                         lgd_to_change = true;
                         let val = +this.value;
@@ -788,7 +789,7 @@ function createStyleBox(layer_name){
         let disc_part = popup.append("p").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
         disc_part.insert("input")
                 .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
-                .styles({width: "70px", "vertical-align": "middle"})
+                .styles({width: "70px", "vertical-align": "middle", "display": "inline"})
                 .on("change", function(){
                     lgd_to_change = true;
                     let val = +this.value;
@@ -820,49 +821,58 @@ function createStyleBox(layer_name){
                         });
                 });
     }
-     popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"))
-                      .insert('input').attr('type', 'color').attr("value", stroke_prev)
-                      .on('change', function(){
-                        lgd_to_change = true;
-                        selection.style("stroke", this.value);
-                        current_layers[layer_name].fill_color.single = this.value;
-                        });
-     let opacity_section = popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"))
-     opacity_section.insert('input')
-                      .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-                      .styles({"width": "70px", "vertical-align": "middle"})
-                      .on('change', function(){
-                        opacity_section.select("#opacity_val_txt").html(" " + this.value);
+    let c_section = popup.append('p');
+    c_section.insert("span")
+                .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"));
+    c_section.insert('input').attr('type', 'color').attr("value", stroke_prev)
+                .on('change', function(){
+                    lgd_to_change = true;
+                    selection.style("stroke", this.value);
+                    current_layers[layer_name].fill_color.single = this.value;
+                    });
+
+    let opacity_section = popup.append('p');
+    opacity_section.insert("span")
+            .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
+    opacity_section.insert('input')
+            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+            .styles({"width": "70px", "vertical-align": "middle", "display": "inline"})
+            .on('change', function(){
+                opacity_section.select("#opacity_val_txt").html(" " + this.value);
 //                        if(this.value !== "0" || type === 'Line'){
-                        selection.style('stroke-opacity', this.value);
+                selection.style('stroke-opacity', this.value);
 //                        } else {
 //                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
 //                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
 //                                     .style('stroke', function(){ return this.style.fill; });
 //                        }
-                      });
+            });
 
     opacity_section.append("span").attr("id", "opacity_val_txt")
-                     .style("display", "inline")
-                     .html(" " + border_opacity);
+         .style("display", "inline")
+         .html(" " + border_opacity);
 
-    if(renderer != "DiscLayer" && renderer != "Links")
-         popup.append('p').html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"))
-                          .insert('input').attr('type', 'number')
-                          .attrs({min: 0, step: 0.1, value: stroke_width})
-                          .style("width", "70px")
-                          .on('change', function(){
-                                let val = +this.value;
+    if(renderer != "DiscLayer" && renderer != "Links"){
+        let width_section = popup.append('p');
+         width_section.append("span")
+                .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
+         width_section
+              .insert('input').attr('type', 'number')
+              .attrs({min: 0, step: 0.1, value: stroke_width})
+              .style("width", "70px")
+              .on('change', function(){
+                    let val = +this.value;
 //                                if(val != 0 || type === 'Line'){
-                                let zoom_scale = +d3.zoomTransform(map.node()).k;
-                                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
-                                current_layers[layer_name]['stroke-width-const'] = val;
+                    let zoom_scale = +d3.zoomTransform(map.node()).k;
+                    map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+                    current_layers[layer_name]['stroke-width-const'] = val;
 //                                } else {
 //                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
 //                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
 //                                             .style('stroke', function(){ return this.style.fill; });
 //                                }
-                          });
+                  });
+    }
 }
 
 
@@ -921,7 +931,7 @@ function createStyleBox_ProbSymbol(layer_name){
     if(stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev)
     if(stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length-2);
 
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true})
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
@@ -1085,7 +1095,7 @@ function createStyleBox_ProbSymbol(layer_name){
     fill_opct_section
           .insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-          .styles({width: "70px", "vertical-align": "middle"})
+          .styles({width: "70px", "vertical-align": "middle", "display": "inline"})
           .on('change', function(){
             selection.style('fill-opacity', this.value);
             fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
@@ -1101,7 +1111,7 @@ function createStyleBox_ProbSymbol(layer_name){
     border_opacity_section
           .insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-          .styles({width: "70px", "vertical-align": "middle"})
+          .styles({width: "70px", "vertical-align": "middle", "display": "inline"})
           .on('change', function(){
             selection.style('stroke-opacity', this.value);
             border_opacity_section.select("#border_opacity_txt").html((+this.value * 100) + "%");
