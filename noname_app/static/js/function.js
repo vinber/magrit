@@ -1972,6 +1972,7 @@ function fillMenu_Stewart(){
                             .selectAll("path")
                             .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
                     handle_legend(n_layer_name);
+                    switch_accordion_section();
                     // Todo : use the function render_choro to render the result from stewart too
                 }, error => {
                     display_error_during_computation();

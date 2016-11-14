@@ -1479,7 +1479,7 @@ function accordionize(css_selector=".accordion", parent){
 //            child_modal_dialog.style.margin = "0";
 //            this.style.left = bbox_modal.x + "px";
 //            this.style.top = bbox_modal.y + "px";
-//            
+//
 //        }
 //        let diffX = event.clientX - this.offsetLeft,
 //            diffY = event.clientY - this.offsetTop;
@@ -1495,9 +1495,9 @@ function accordionize(css_selector=".accordion", parent){
 //            // check for screen boundaries
 //            if (top < 0) { top = 0; }
 //            if (left < 0) { left = 0; }
-//            if (top > window.innerHeight-1) 
+//            if (top > window.innerHeight-1)
 //                { top = window.innerHeight-1; }
-//            if (left > window.innerWidth-1) 
+//            if (left > window.innerWidth-1)
 //                { left = window.innerWidth-1; }
 //
 //            self.style.left = left + 'px';

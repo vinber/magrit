@@ -57,8 +57,7 @@
         <p id="rgt" class="header_options"></p></div>
       <div id="menu"></div>
       <div id="twbs" class="twbs"></div>
-  	 <div id="map"></div>
-      <a id="downloadAnchorElem" style="display:none"></a>
+  	  <div id="map"></div>
 <script>
 "use strict";
 /**
@@ -790,17 +789,11 @@ function setUpInterface(resume_project)
               "id": d.id})
               )
             .html(d => d.html);
-            // .attr("data-tooltip-position", d => d.tooltip_position)
-            // .attr("class", d => d.class)
-            // .attr("data-i18n", d => d.i18n)
-            // .attr("id", d => d.id)
-
 
     // Trigger actions when buttons are clicked and set-up the initial view :
     d3.selectAll(".zoom_button").on("click", zoomClick);
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
-    //document.getElementById("hand_button").style = "box-shadow: 2px 2px 1px black inset;";
     //document.getElementById("brush_zoom_button").onclick = brush_rect;
 
     // Already append the div for displaying information on features,
@@ -814,6 +807,7 @@ function setUpInterface(resume_project)
     create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
     prepare_drop_section();
     accordionize(".accordion");
+    document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
     new Sortable(document.getElementById("sortable"), {
         animation: 100,
         onUpdate: function(a){
@@ -1494,7 +1488,6 @@ function remove_ext_dataset_cleanup(){
     if(Object.getOwnPropertyNames(user_data).length == 0){
         document.getElementById("browse_button").disabled = true;
     }
-    //$("#data_ext").qtip("destroy");
 }
 
 // Do some clean-up when a layer is removed

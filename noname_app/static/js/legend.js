@@ -610,25 +610,23 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
               .styles( d => ({
                 "fill": d.color, "stroke": d.color
               }));
-              // .style('fill', d => d.color)
-              // .style('stroke', d => d.color);
 
     else
         legend_elems
               .append('image')
-              .attr("x", xpos + boxwidth)
-              .attr("y", (d, i) => {
-                last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
-                return last_pos;
+              .attrs( (d, i) => ({
+                  "x": xpos + boxwidth,
+                  "y": y_pos2 + (i * boxgap) + (i * boxheight),
+                  "width": boxwidth,
+                  "height": boxheight,
+                  "xlink:href": d.image[0]
                 })
-              .attr('width', boxwidth)
-              .attr('height', boxheight)
-              .attr("xlink:href", d => d.image[0]);
+              );
 
     if(current_layers[layer].renderer.indexOf('Choropleth') > -1
-        || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
-        || current_layers[layer].renderer.indexOf('Gridded') > -1
-        || current_layers[layer].renderer.indexOf('Stewart') > -1){
+          || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
+          || current_layers[layer].renderer.indexOf('Gridded') > -1
+          || current_layers[layer].renderer.indexOf('Stewart') > -1){
         let tmp_pos;
         legend_elems
           .append('text')

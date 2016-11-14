@@ -142,11 +142,13 @@ function get_map_template(){
 function save_map_template(){
     get_map_template().then(
         function(json_params){
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_params),
-                dlAnchorElem = document.getElementById('downloadAnchorElem');
-            dlAnchorElem.setAttribute("href", dataStr);
+            let dlAnchorElem = document.createElement('a');
+            dlAnchorElem.style.display = "none";
+            dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
             dlAnchorElem.setAttribute("download", "noname_properties.json");
+            document.body.appendChild(dlAnchorElem);
             dlAnchorElem.click();
+            dlAnchorElem.remove();
     });
 }
 
@@ -338,22 +340,32 @@ function apply_user_preferences(json_pref){
             layer_to_append.selectAll('image')
                 .data(result_data[layer_name]).enter()
                 .insert("image")
-                .attr("x", (d,i) => current_state[i].pos[0])
-                .attr("y", (d,i) => current_state[i].pos[1])
-                .attr("width", (d,i) => current_state[i].size)
-                .attr("height", (d,i) => current_state[i].size)
-                .attr("xlink:href", (d,i) => symbols_map.get(d.Symbol_field)[0])
+                .attrs(d => {
+                  let _attr = current_state[i];
+                  return {
+                    "x": _attr.pos[0], "y": _attr.pos[1],
+                    "width": _attr.size, "height": _attr.size,
+                    "xlink:href": symbols_map.get(d.Symbol_field)[0]
+                    };
+                })
                 .style("display", (d,i) => current_state[i].display)
                 .on("mouseover", function(){ this.style.cursor = "pointer";})
                 .on("mouseout", function(){ this.style.cursor = "initial";})
-                /* .on("dblclick", function(){
-                    context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-                    })
-                .on("contextmenu", function(){
-                    context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-                    }) */
                 .call(drag_elem_geo);
+                // .attr("x", (d,i) => current_state[i].pos[0])
+                // .attr("y", (d,i) => current_state[i].pos[1])
+                // .attr("width", (d,i) => current_state[i].size)
+                // .attr("height", (d,i) => current_state[i].size)
+                // .attr("xlink:href", (d,i) => symbols_map.get(d.Symbol_field)[0])
+                // .on("dblclick", function(){
+                //     context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                //     })
+                // .on("contextmenu", function(){
+                //     context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                //     })
+
             create_li_layer_elem(layer_name, nb_ft, ["Point", "symbol"], "result");
+
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
             let rendering_params = {
                     "nb_class": "",

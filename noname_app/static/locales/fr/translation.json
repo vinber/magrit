@@ -145,32 +145,32 @@
             "export_load_pref": "Exporter / Charger un fichier de préférence"
         },
         "func_description" : {
-            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
-            "prop": "Réalisation d'un carte en symboles proportionnels sur un champ numérique du jeu de données",
-            "choroprop": "Réalisation d'une carte en symboles proportionnels colorés selon la méthode choroplèthe appliquée à des ratios",
-            "proptypo": "Réalisation d'une carte en symboles proportionnels colorés selon l'appartenance à un catégorie",
-            "choro": "Réalisation d'une carte choroplèthe",
+            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
+            "prop": "Réalisation d'un carte de stocks",
+            "choroprop": "Réalisation d'une carte de stocks et ratios",
+            "proptypo": "Réalisation d'une carte de stocks et qualitative",
+            "choro": "Réalisation d'une carte de ratios",
             "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
             "grid": "Réalisation d'une grille de densité",
-            "flow": "Réalisation d'une carte de flux (taille des liens proportionnelle au volume du flux)",
+            "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
-            "typo": "Réalisation d'une carte catégorielle utilisant une variable qualitative",
+            "typo": "Réalisation d'une carte qualitative",
             "label": "Affichage et personnalisation du label des entités",
-            "typosymbol": "Affichage de pictogrammes utilisant une variable qualitative"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "func_title" : {
             "smooth": "Carte lissée",
-            "prop": "Symboles proportionnels",
-            "choroprop": "Symboles proportionnels colorés (par un ratio)",
-            "proptypo": "Symboles proportionnels colorés (par une typologie)",
-            "choro": "Carte choroplèthe",
+            "prop": "Carte de stocks",
+            "choroprop": "Carte de stocks et ratios",
+            "proptypo": "Carte de stocks et qualitative",
+            "choro": "Carte de ratios",
             "cartogram": "Cartogram",
             "grid": "Carroyage",
             "flow": "Carte des liens",
             "discont": "Carte des discontinuités",
-            "typo": "Typologie par à-plat de couleurs",
+            "typo": "Carte qualitative",
             "label": "Représentation des labels",
-            "typosymbol": "Typologie avec utilisation de pictogrammes"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "layout_features_box": {
             "title": "Élements d'habillage",
@@ -280,7 +280,7 @@
             "title": "Aide d'urgence!",
             "tooltip_btn": "Aide",
             "message_invite": "Saisir un terme à rechercher dans la documentation :",
-            "list_placeholders": "Carte choroplète, Discrétisation, Anamorphose, Export, Projection"
+            "list_placeholders": "Carte de ratios, Discrétisation, Anamorphose, Export, Projection"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -391,15 +391,15 @@
                 "params": "Paramètres :"
             },
             "choro": {
-                "title": "<b>Carte de ratio / carte choroplèthe</b>",
+                "title": "<b>Carte de ratios</b>",
                 "block": "Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total. Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "typo": {
-                "title": "<b>Carte catégorielle par à-plats de couleurs</b>",
+                "title": "<b>Carte qualitative</b>",
                 "block": "Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "typosymbol": {
-                "title": "<b>Représentation catégorielle par des symboles</b>",
+                "title": "<b>Carte qualiative avec utilisation de symboles</b>",
                 "block": "Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "smooth": {
@@ -423,12 +423,12 @@
                 "block": "De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique. Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser<br><Type de symbole :</b> Le type de symbole à utiliser (parmis 'cercle' et 'carré')<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Sur la valeur :</b> Valeur sur laquelle fixer la taille.<br><b>Itérations :</b> Le nombre d'itérations à effectuer avant d'obtenir le résultat.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
             },
             "choroprop": {
-                "title": "<b>Stock et ratio</b>",
+                "title": "<b>Carte de stocks et ratios</b>",
                 "block": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).<br><br><b><i>Paramètres</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
             },
             "proptypo" :{
-                "title": "<b>Raw and categorical data map - Proportionnal colored symbols</b>",
-                "block": "This kind of representation enables to establish a match between raw and categorical data on a single map."
+                "title": "<b>Carte de stocks et qualitative/b>",
+                "block": "Ce type de représentation permet d'établir une corrspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle)."
             },
             "flow": {
                 "title": "<b>Carte de flux/liens</b>",
