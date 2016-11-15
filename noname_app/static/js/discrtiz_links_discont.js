@@ -107,11 +107,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
               "height": height - y(d.length), "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
             }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
-            // .attr("class", "bar")
-            // .attr("x", 1)
-            // .attr("width", x(data[1].x1) - x(data[1].x0))
-            // .attr("height",  d => height - y(d.length))
-            // .attr("transform", d => "translate(" + x(d.x0) + "," + y(d.length) + ")" )
 
         svg_ref_histo.append("g")
             .attr("class", "x axis")
@@ -433,7 +428,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("y2", svg_h - margin.bottom)
         .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
-
 
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")

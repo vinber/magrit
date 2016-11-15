@@ -49,7 +49,7 @@ RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
 RUN_LOCAL = not RUN_TRAVIS_SAUCELABS and not RUN_DOCKER
 
 if RUN_LOCAL:
-    browsers = ['Firefox']
+    browsers = ['Chrome']
 elif RUN_DOCKER:
     browsers = [DesiredCapabilities.CHROME,
                 DesiredCapabilities.FIREFOX]
@@ -177,11 +177,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     def setUpLocal(self):
         self.tmp_folder = "/tmp/export_selenium_test_{}/".format(str(uuid4()).split('-')[4])
         os.mkdir(self.tmp_folder)
-        # chromeOptions = webdriver.ChromeOptions()
-        # chromeOptions.add_experimental_option(
-        #     "prefs", {"download.default_directory" : self.tmp_folder})
-        # self.driver = webdriver.Chrome(executable_path='/home/mz/code/chromedriver', chrome_options=chromeOptions)
-        self.driver = webdriver.Firefox(executable_path='/home/mz/code/geckodriver')
+        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions.add_experimental_option(
+            "prefs", {"download.default_directory" : self.tmp_folder})
+        self.driver = webdriver.Chrome(executable_path='/home/mz/code/chromedriver', chrome_options=chromeOptions)
+        # self.driver = webdriver.Firefox(executable_path='/home/mz/code/geckodriver')
         self.driver.set_window_size(1600, 900)
         self.driver.implicitly_wait(5)
         self.base_url = "http://localhost:{}/modules".format(port)
@@ -227,41 +227,41 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual(menu1.text, menu_desc[new_lang][0])
         self.assertEqual(menu2.text, menu_desc[new_lang][1])
 
-    # def test_layout_features(self):
-    #     driver = self.driver
-    #     driver.get("http://localhost:9999/modules")
-    #
-    #     driver.find_element_by_id("btn_s5").click()
-    #     time.sleep(0.5)
-    #
-    #     driver.find_element_by_id("btn_add_layout_ft").click()
-    #     list_elem = driver.find_element_by_class_name("sample_layout")
-    #     Select(list_elem).select_by_value("text_annot")
-    #     driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
-    #     elem = driver.find_element_by_id("in_text_annotation_0")
-    #     self.assertEqual(elem.is_displayed(), True)
-    #     action = webdriver.ActionChains(driver)
-    #     action.context_click(on_element=elem)
-    #     action.perform()
-    #     time.sleep(0.2)
-    #
-    #     driver.find_element_by_id("btn_add_layout_ft").click()
-    #     list_elem = driver.find_element_by_class_name("sample_layout")
-    #     Select(list_elem).select_by_value("scale")
-    #     driver.find_element_by_css_selector(".btn_ok").click()
-    #     time.sleep(0.2)
-    #
-    #     driver.find_element_by_id("btn_add_layout_ft").click()
-    #     list_elem = driver.find_element_by_class_name("sample_layout")
-    #     Select(list_elem).select_by_value("graticule")
-    #     driver.find_element_by_css_selector(".btn_ok").click()
-    #     time.sleep(0.2)
-    #
-    #     driver.find_element_by_id("btn_add_layout_ft").click()
-    #     list_elem = driver.find_element_by_class_name("sample_layout")
-    #     Select(list_elem).select_by_value("sphere")
-    #     driver.find_element_by_css_selector(".btn_ok").click()
-    #
+    def test_layout_features(self):
+        driver = self.driver
+        driver.get("http://localhost:9999/modules")
+
+        driver.find_element_by_id("btn_s5").click()
+        time.sleep(0.5)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("text_annot")
+        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+        elem = driver.find_element_by_id("in_text_annotation_0")
+        self.assertEqual(elem.is_displayed(), True)
+        action = webdriver.ActionChains(driver)
+        action.context_click(on_element=elem)
+        action.perform()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("scale")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("graticule")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        time.sleep(0.2)
+
+        driver.find_element_by_id("btn_add_layout_ft").click()
+        list_elem = driver.find_element_by_class_name("sample_layout")
+        Select(list_elem).select_by_value("sphere")
+        driver.find_element_by_css_selector(".btn_ok").click()
+    
     # def test_flow(self):
     #     driver = self.driver
     #     driver.get(self.base_url)
@@ -321,111 +321,112 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root", 5):
             self.fail("Legend won't display")
 
-#
-#     @unittest.skipIf(RUN_LOCAL is not True, 'Skip download test')
-#     def test_downloads(self):
-#         driver = self.driver
-#         driver.get(self.base_url)
-#         driver.find_element_by_css_selector("#sample_link").click()
-#         Select(driver.find_element_by_css_selector("select.sample_target")
-#             ).select_by_value("nuts2_data")
-#         driver.find_element_by_css_selector(".btn_ok").click()
-#         button_ok = self.get_button_ok_displayed()
-#         button_ok.click()
-#         time.sleep(0.5)
-#         # Open the appropriate menu:
-#         menu_options = self.get_menu_options()
-#
-#         # Test export to svg:
-#         menu_options[0].click()
-#         time.sleep(0.2)
-#         with open(self.tmp_folder + "export.svg", "r") as f:
-#             svg_data = f.read()
-#         self.assertIn('<svg', svg_data)
-#         self.assertIn('nuts2_data', svg_data)
-#         os.remove(self.tmp_folder + "export.svg")
-#
-#         # Open the appropriate menu:
-#         driver.find_element_by_id("export_btn").click()
-#         menu_options = driver.find_element_by_id("menu_pref").find_elements_by_css_selector('span')
-#
-#         # Test export to png:
-#         menu_options[1].click()
-#         time.sleep(0.2)
-#         with open(self.tmp_folder + "export.png", "rb") as f:
-#             png_data = f.read()
-#         self.assertGreater(len(png_data), 0)
-#         time.sleep(0.1)
-#         os.remove(self.tmp_folder + "export.png")
-#
-#         # Open the appropriate menu:
-#         menu_options = self.get_menu_options()
-#
-#         # Test export to geographic layer (from the source layer):
-#         menu_options[4].click()
-#         time.sleep(0.2)
-#         Select(driver.find_element_by_id("layer_to_export")
-#             ).select_by_visible_text("nuts2_data")
-#         Select(driver.find_element_by_id("datatype_to_use")
-#             ).select_by_value("GeoJSON")
-#         Select(driver.find_element_by_id("projection_to_use")
-#             ).select_by_value("epsg:4326")
-#
-#         driver.find_element_by_id("dialogGeoExport"
-#             ).find_element_by_css_selector("button.button_st4").click()
-#         time.sleep(0.5)
-#         with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
-#             raw_geojson = f.read()
-#         parsed_geojson = json.loads(raw_geojson)
-#         self.assertIn("features", parsed_geojson)
-#         self.assertIn("type", parsed_geojson)
-# #        self.assertIn("crs", parsed_geojson)
-#         self.assertEqual(len(parsed_geojson["features"]), 310)
-#         os.remove(self.tmp_folder + "nuts2_data.geojson")
-#
-#         # Test export on result layer this time
-#         # First coompute a result from smoothed map functionnality :
-#         driver.find_element_by_id("btn_s2").click()
-#         time.sleep(0.5)
-#         driver.find_element_by_css_selector("#button_smooth").click()
-#         time.sleep(0.2)
-#         driver.find_element_by_id("stewart_nb_class").clear()
-#         driver.find_element_by_id("stewart_nb_class").send_keys("7")
-#         driver.find_element_by_id("stewart_span").clear()
-#         driver.find_element_by_id("stewart_span").send_keys("60")
-#         Select(driver.find_element_by_id("stewart_mask")
-#             ).select_by_visible_text("nuts2_data")
-#         # Set a custom name for this result layer :
-#         driver.find_element_by_id("stewart_output_name").clear()
-#         driver.find_element_by_id("stewart_output_name").send_keys("NewLayerName")
-#         driver.find_element_by_id("stewart_yes").click()
-#         button_ok = self.get_button_ok_displayed()
-#         button_ok.click()
-#         time.sleep(1)  # Delay for the sweet alert to close
-#
-#         # Open the appropriate menu:
-#         menu_options = self.get_menu_options()
-#
-#         # Test export to geographic layer (from a result layer):
-#         menu_options[4].click()
-#         time.sleep(0.2)
-#         Select(driver.find_element_by_id("layer_to_export")
-#             ).select_by_visible_text("NewLayerName")
-#         Select(driver.find_element_by_id("datatype_to_use")
-#             ).select_by_value("GeoJSON")
-#         Select(driver.find_element_by_id("projection_to_use")
-#             ).select_by_value("epsg:4326")
-#
-#         driver.find_element_by_id("dialogGeoExport"
-#             ).find_element_by_css_selector("button.button_st4").click()
-#         time.sleep(0.5)
-#         with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
-#             raw_geojson = f.read()
-#         parsed_geojson = json.loads(raw_geojson)
-#         self.assertIn("features", parsed_geojson)
-#         self.assertIn("type", parsed_geojson)
-#         self.assertIn("crs", parsed_geojson)
-#         os.remove(self.tmp_folder + "NewLayerName.geojson")
+
+    @unittest.skipIf(RUN_LOCAL is not True, 'Skip download test')
+    def test_downloads(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        driver.find_element_by_css_selector("#sample_link").click()
+        time.sleep(0.4)
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2_data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(0.5)
+        # Open the appropriate menu:
+        menu_options = self.get_menu_options()
+
+        # Test export to svg:
+        menu_options[0].click()
+        time.sleep(0.2)
+        with open(self.tmp_folder + "export.svg", "r") as f:
+            svg_data = f.read()
+        self.assertIn('<svg', svg_data)
+        self.assertIn('nuts2_data', svg_data)
+        os.remove(self.tmp_folder + "export.svg")
+
+        # Open the appropriate menu:
+        driver.find_element_by_id("export_btn").click()
+        menu_options = driver.find_element_by_id("menu_pref").find_elements_by_css_selector('span')
+
+        # Test export to png:
+        menu_options[1].click()
+        time.sleep(0.2)
+        with open(self.tmp_folder + "export.png", "rb") as f:
+            png_data = f.read()
+        self.assertGreater(len(png_data), 0)
+        time.sleep(0.1)
+        os.remove(self.tmp_folder + "export.png")
+
+        # Open the appropriate menu:
+        menu_options = self.get_menu_options()
+
+        # Test export to geographic layer (from the source layer):
+        menu_options[4].click()
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text("nuts2_data")
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value("GeoJSON")
+        Select(driver.find_element_by_id("projection_to_use")
+            ).select_by_value("epsg:4326")
+
+        driver.find_element_by_id("dialogGeoExport"
+            ).find_element_by_css_selector("button.button_st4").click()
+        time.sleep(0.5)
+        with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+#        self.assertIn("crs", parsed_geojson)
+        self.assertEqual(len(parsed_geojson["features"]), 310)
+        os.remove(self.tmp_folder + "nuts2_data.geojson")
+
+        # Test export on result layer this time
+        # First coompute a result from smoothed map functionnality :
+        driver.find_element_by_id("btn_s2").click()
+        time.sleep(0.5)
+        driver.find_element_by_css_selector("#button_smooth").click()
+        time.sleep(0.2)
+        driver.find_element_by_id("stewart_nb_class").clear()
+        driver.find_element_by_id("stewart_nb_class").send_keys("7")
+        driver.find_element_by_id("stewart_span").clear()
+        driver.find_element_by_id("stewart_span").send_keys("60")
+        Select(driver.find_element_by_id("stewart_mask")
+            ).select_by_visible_text("nuts2_data")
+        # Set a custom name for this result layer :
+        driver.find_element_by_id("stewart_output_name").clear()
+        driver.find_element_by_id("stewart_output_name").send_keys("NewLayerName")
+        driver.find_element_by_id("stewart_yes").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(1)  # Delay for the sweet alert to close
+
+        # Open the appropriate menu:
+        menu_options = self.get_menu_options()
+
+        # Test export to geographic layer (from a result layer):
+        menu_options[4].click()
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text("NewLayerName")
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value("GeoJSON")
+        Select(driver.find_element_by_id("projection_to_use")
+            ).select_by_value("epsg:4326")
+
+        driver.find_element_by_id("dialogGeoExport"
+            ).find_element_by_css_selector("button.button_st4").click()
+        time.sleep(0.5)
+        with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+        self.assertIn("crs", parsed_geojson)
+        os.remove(self.tmp_folder + "NewLayerName.geojson")
 
 
     def test_stewart(self):
@@ -472,7 +473,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.4)  # Delay for the sweet alert to close
         driver.find_element_by_id("btn_s3").click()
         time.sleep(0.4)
-        driver.find_element_by_css_selector("li.nuts3_data,#browse_data_button").click()
+        driver.find_element_by_css_selector("li.nuts3_data"
+            ).find_elements_by_css_selector("#browse_data_button")[0].click()
         time.sleep(0.2)
 
         # Test adding fields to the existing table :
@@ -562,6 +564,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector("li.us_county,#browse_data_button")
         time.sleep(0.5)
         driver.find_element_by_id("add_field_button").click()
+        time.sleep(0.4)
         #  Computing a new field on a layer with more than 3100 features
         #  ... will delegate the operation to the server :
         Select(driver.find_element_by_css_selector("#field_div1 > select")
@@ -602,7 +605,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
-        time.sleep(0.2)
+        time.sleep(0.4)
         Select(driver.find_element_by_css_selector("select.sample_target")
                 ).select_by_value("martinique")
         Select(driver.find_element_by_css_selector("select.sample_dataset")
@@ -610,7 +613,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
-        time.sleep(0.5)  # Delay for the sweet alert to close
 
         # Now the alert about the possible jointure :
         button_ok = self.get_button_ok_displayed()
@@ -649,6 +651,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         driver.find_element_by_css_selector("#sample_link").click()
+        time.sleep(0.4)
         Select(driver.find_element_by_css_selector("select.sample_target")
                 ).select_by_value("GrandParisMunicipalities")
         Select(driver.find_element_by_css_selector("select.sample_dataset")

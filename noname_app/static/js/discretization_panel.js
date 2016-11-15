@@ -242,7 +242,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
           .enter()
             .append("rect")
             .attrs( d => ({
-              "class": "bar", "width": 1, "height": height - y(d.length),
+              "class": "bar", "width": 1, "height": height - y(d.length), "x": 1,
               "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
             }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
@@ -868,10 +868,6 @@ function display_categorical_box(layer, field){
 
     var newbox = d3.select("#categorical_box").select(".modal-body");
 
-//    var newbox = d3.select("body")
-//                        .append("div").style("font-size", "10px")
-//                        .attrs({id: "categorical_box",
-//                                title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
     newbox.append("h3").html("")
     newbox.append("p")
                 .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));

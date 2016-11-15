@@ -8,6 +8,7 @@
     <link href="static/css/discretization.css" rel="stylesheet" type="text/css">
     <link href="static/css/scoped-bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
+    <link href="static/css/style-zone-edit-text.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style-fonts.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style.css" rel="stylesheet"  type="text/css">
     <link href="static/css/vanilla-dataTables.min.css" rel="stylesheet" type="text/css">
@@ -35,6 +36,7 @@
     <script  src="static/js/layout_features.js"></script>
     <script  src="static/js/interface.js"></script>
     <script  src="static/js/map_project.js"></script>
+    <script  src="static/js/zoneTextEdit.js"></script>
     <script  src="static/js/discrtiz_links_discont.js"></script>
     <script  src="static/js/layers_style_popup.js"></script>
     <script  src="static/js/discretization_panel.js"></script>
@@ -1869,11 +1871,12 @@ function handle_title(txt){
         map.append("g")
              .attrs({"class": "legend legend_feature title", "id": "map_title"})
           .insert("text")
-             .attrs({x: "50%", y: "8%",
+             .attrs({x: w/2, y: h/12,
                      "alignment-baseline": "middle", "text-anchor": "middle"})
              .styles({"font-family": "Arial, Helvetica, sans-serif",
                       "font-size": "20px", position: "absolute", color: "black"})
-             .text(txt);
+             .text(txt)
+             .call(drag_elem_geo);
     }
 }
 
@@ -1893,7 +1896,9 @@ function handle_title_properties(){
         size: title.style("font-size"),
         color: title.style("fill"),
         position_x: title.attr("x"),
+        position_x_pct: round_value(+title.attr("x") / w * 100, 1),
         position_y: title.attr("y"),
+        position_y_pct: round_value(+title.attr("y") / h * 100, 1),
         font_family: title.style("font-family")
         };
 
@@ -1908,15 +1913,21 @@ function handle_title_properties(){
             });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div");
 
-    box_content.append("p").html(i18next.t("app_page.title_box.font_size"))
-        .insert("input").attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
+    box_content.append("p")
+        .html(i18next.t("app_page.title_box.font_size"))
+        .insert("input")
+        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
         .on("change", function(){  title.style("font-size", this.value + "px");  });
-    box_content.append("p").html(i18next.t("app_page.title_box.xpos"))
-        .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_x.split("%")[0]}).style("width", "50px")
-        .on("change", function(){  title.attr("x", this.value + "%");  });
-    box_content.append("p").html(i18next.t("app_page.title_box.ypos"))
-        .insert("input").attrs({type: "number", min: 0, max:100, step:1, value: +title_props.position_y.split("%")[0]}).style("width", "50px")
-        .on("change", function(){  title.attr("y", this.value + "%");  });
+    box_content.append("p")
+        .html(i18next.t("app_page.title_box.xpos"))
+        .insert("input")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "50px")
+        .on("change", function(){  title.attr("x", w * +this.value / 100);  });
+    box_content.append("p")
+        .html(i18next.t("app_page.title_box.ypos"))
+        .insert("input")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "50px")
+        .on("change", function(){  title.attr("y", h * +this.value / 100);  });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
         .insert("input").attrs({type: "color", value: title_props.color})
         .on("change", function(){  title.style("fill", this.value);  });
