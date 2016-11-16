@@ -403,14 +403,22 @@ class Textbox {
             .styles({"cursor": "pointer", "vertical-align": "bottom"});
         content_modif_zone.append("span")
                 .html("<br>");
-        content_modif_zone.append("textarea")
-                .attr("id", "annotation_content")
-                .style("margin", "5px 0px 0px")
-                .on("keyup", function(){
-                    self._text = this.value;
-                    self.text_annot.select("p").html(this.value)
-                });
-        document.getElementById("annotation_content").value = current_options.content;
+        make_zoneTextEdit(content_modif_zone.node(), {
+          "textContent": current_options.content,
+          "id": "textEditZone"
+        });
+        document.querySelector("#textEditZone").querySelector("#textBox").onchange = function(){
+          self._text = this.innerHTML;
+          self.text_annot.select("p").html(this.innerHTML)
+        }
+        // content_modif_zone.append("textarea")
+        //         .attr("id", "annotation_content")
+        //         .style("margin", "5px 0px 0px")
+        //         .on("keyup", function(){
+        //             self._text = this.value;
+        //             self.text_annot.select("p").html(this.value)
+        //         });
+        // document.getElementById("annotation_content").value = current_options.content;
 //        $("#btn_info_text_annotation[data-tooltip_info!='']").qtip({
 //            content: {text: i18next.t("app_page.text_box_edit_box.info_tooltip")},
 //            style: { classes: 'qtip-bootstrap qtip_help' },

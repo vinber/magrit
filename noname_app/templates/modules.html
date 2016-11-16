@@ -1135,10 +1135,13 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
         if(old_url.indexOf("?resume") > -1){
             resume_project = true;
         }
-
-        if (typeof (history.pushState) != "undefined") {
+        // TODO : Better use cookie to store the lang preference
+        // (for use at the user's next sessions if (s)he didnt flush its browser cookies)
+        // instead of just passing the value between the two pages
+        if (typeof (history.replaceState) != "undefined") {
+            // replaceState should avoid creating a new entry on the history
             var obj = {Page: window.location.search, Url: window.location.pathname};
-            history.pushState(obj, obj.Page, obj.Url);
+            history.replaceState(obj, obj.Page, obj.Url);
         }
     }
 
@@ -1876,6 +1879,7 @@ function handle_title(txt){
              .styles({"font-family": "Arial, Helvetica, sans-serif",
                       "font-size": "20px", position: "absolute", color: "black"})
              .text(txt)
+             .on("contextmenu dblclick", () => { d3.event.preventDefault(); })
              .call(drag_elem_geo);
     }
 }
@@ -1985,7 +1989,7 @@ function canvas_mod_size(shape){
             .call(zoom_without_redraw);
         map_div.style("height", h + "px");
     }
-    move_legends([w, h]);
+    move_legends();
 
     // Lets update the corresponding fields in the export section :
     let ratio,
