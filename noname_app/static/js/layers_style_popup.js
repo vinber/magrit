@@ -685,8 +685,10 @@ function createStyleBox(layer_name){
                                     renderer:"Choropleth",
                                     field: field_to_discretize
                                 };
-                                selection.style('fill-opacity', 0.9)
-                                         .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                                let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                                selection.transition()
+                                        .style('fill-opacity', 0.9)
+                                        .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                             }
                         });
                 });
@@ -701,7 +703,7 @@ function createStyleBox(layer_name){
                 if(reversed) new_coloramp.reverse();
                 for(let i=0; i < nb_ft; ++i)
                     rendering_params.breaks[i][1] = new_coloramp[i];
-                selection.style("fill", (d,i) => new_coloramp[i] );
+                selection.transition().style("fill", (d,i) => new_coloramp[i] );
                 current_layers[layer_name].color_palette = {name: coloramp_name, reversed: reversed};
             }
 

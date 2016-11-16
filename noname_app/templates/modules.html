@@ -1873,6 +1873,7 @@ function handle_title(txt){
     } else {
         map.append("g")
              .attrs({"class": "legend legend_feature title", "id": "map_title"})
+             .style("cursor", "pointer")
           .insert("text")
              .attrs({x: w/2, y: h/12,
                      "alignment-baseline": "middle", "text-anchor": "middle"})
@@ -1907,7 +1908,7 @@ function handle_title_properties(){
         };
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {width: 280})
+    make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
         .then(function(confirmed){
             if(!confirmed)
                 title.style("font-size", title_props.size)
@@ -1915,7 +1916,7 @@ function handle_title_properties(){
                     .style("font-family", title_props.font_family)
                     .attrs({x: title_props.position_x, y: title_props.position_y});
             });
-    var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div");
+    var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
     box_content.append("p")
         .html(i18next.t("app_page.title_box.font_size"))

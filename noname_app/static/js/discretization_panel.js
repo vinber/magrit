@@ -101,22 +101,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                    }).style("width", "40px")
                .on("change", function(){redisplay.draw();});
 
-        let central_color = col_div.insert('p').attr("class", "central_color");
-        central_color.insert("input")
-                    .attr("type", "checkbox")
-                    .on("change", function(){
-                        redisplay.draw();
-                    });
-        central_color.select("input").node().checked = true;
-        central_color.insert("label").html(i18next.t("disc_box.colored_central_class"));
-        central_color
-            .insert("input")
-            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
-            .style("margin", "0px 10px")
-            .on("change", function(){
-                        redisplay.draw();
-                    });
-
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
                          'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
@@ -125,18 +109,35 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .style("display", "inline")
                         .html(i18next.t("disc_box.left_colramp"))
                         .insert("select").attr("class", "color_params_left")
-                        .on("change", function(){ redisplay.draw() });
+                        .on("change", redisplay.draw);
         var right_color_select = col_div.insert("p")
                         .styles({display: "inline", "margin-left": "70px"})
                         .attr("class", "color_txt2")
                         .html(i18next.t("disc_box.right_colramp"))
                         .insert("select").attr("class", "color_params_right")
-                        .on("change", function(){ redisplay.draw() });
+                        .on("change", redisplay.draw);
         pal_names.forEach(function(name){
             left_color_select.append("option").text(name).attr("value", name);
             right_color_select.append("option").text(name).attr("value", name)
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
+
+        let central_color = col_div.insert('p').attr("class", "central_color");
+        central_color.insert("input")
+                    .attrs({"type": "checkbox", "id": "central_color_chkbx"})
+                    .on("change", function(){
+                      redisplay.draw();
+                      if(this.checked)
+                        col_div.select("#central_color_val").style("display", "");
+                    });
+        central_color.select("input").node().checked = true;
+        central_color.insert("label")
+            .attr("for", "central_color_chkbx")
+            .html(i18next.t("disc_box.colored_central_class"));
+        central_color.insert("input")
+            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
+            .styles({"margin": "0px 10px", "display": "none"})
+            .on("change", redisplay.draw);
     };
 
     var make_box_histo_option = function(){
@@ -246,13 +247,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
               "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
             }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
-//             .attr("class", "bar")
-//             .attr("x", 1)
-//             .attr("width", 1)
-// //            .attr("width", x(data[1].x1) - x(data[1].x0))
-//             .attr("height",  d => height - y(d.length))
-//             .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
-
 
         svg_ref_histo.append("g")
             .attr("class", "x_axis")
@@ -383,7 +377,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
-              .enter().append("rect")
+              .enter()
+                .append("rect")
                 .attrs( (d,i) => ({
                   "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
                   "x": x(d.offset), "y": y(d.height) - margin.bottom,
@@ -400,34 +395,16 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 .on("mouseout", function(){
                     this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none";
                 });
-                // .attr("class", "bar")
-                // .attr("id", (d,i) => "bar_" + i)
-                // .attr("transform", "translate(0, -7.5)")
-                // .style("fill", d => d.color)
-                // .attr("x", d => x(d.offset))
-                // .attr("width", d => x(d.width))
-                // .attr("y", d => y(d.height) - margin.bottom)
-                // .attr("height", d => svg_h - y(d.height))
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
                 .attrs( (d,i) => ({
                   "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
-                  "dy": ".75em", "x": x(d.offset) + d.width / 2, "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
+                  "dy": ".75em", "x": x(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
                 }))
                 .styles({"color": "black", "cursor": "default", "display": "none"})
                 .text(d => formatCount(d.val));
-                // .attr("dy", ".75em")
-                // .attr("y", d => (y(d.height) - margin.top * 2 - margin.bottom - 1.5))
-                // .attr("x", d => x(d.offset + d.width /2))
-                // .attr("text-anchor", "middle")
-                // .attr("class", "text_bar")
-                // .attr("id", (d,i) => "text_bar_" + i)
-                // .style("color", "black")
-                // .style("cursor", "default")
-                // .style("display", "none")
-                // .text(d => formatCount(d.val))
 
             svg_histo.append("g")
                 .attr("class", "y_axis")
@@ -443,12 +420,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     };
 
     //////////////////////////////////////////////////////////////////////////
-    var formatCount = d3.formatLocale({
-                        decimal: getDecimalSeparator(),
-                        thousands: "",
-                        grouping: 3,
-                        currency: ["", ""]
-                        }).format('.2f');
 
     var modal_box = make_dialog_container(
          "discretiz_charts",
@@ -457,10 +428,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         );
 
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
-//    var newBox = d3.select("body").append("div")
-//                     .style("font-size", "12px")
-//                     .attr("id", "discretiz_charts")
-//                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -508,6 +475,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
+
+    var formatCount = d3.formatLocale({
+                        decimal: getDecimalSeparator(),
+                        thousands: "",
+                        grouping: 3,
+                        currency: ["", ""]
+                      }).format('.' + serie.precision + 'f');
 
     var discretization = newBox.append('div')
                                 .attr("id", "discretization_panel")
@@ -653,22 +627,22 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .tickFormat(formatCount));
 
     var b_accordion_colors = newBox.append("button")
-                        .attr("id", "btn_acc_colors").attr("class", "accordion")
+                        .attrs({"class": "accordion_disc active", "id": "btn_acc_disc_color"})
                         .style("padding", "0 6px")
                         .html(i18next.t("disc_box.title_color_scheme")),
-        accordion_colors = newBox.append("div").attr("class", "panel").attr("id", "accordion_colors");
+        accordion_colors = newBox.append("div")
+                        .attrs({"class": "panel show", "id": "accordion_colors"})
+                        .style("width", "98%"),
+        color_scheme =  d3.select("#accordion_colors")
+                        .append("div")
+                        .attr("id", "color_div")
+                        .style("text-align", "center");
 
-    var color_scheme =  d3.select("#accordion_colors")
-                            .append("div").attr("id", "color_div")
-                            .append("form_action");
-
-    [
-     [i18next.t("disc_box.sequential"), "sequential"],
-     [i18next.t("disc_box.diverging"), "diverging"]
-    ].forEach( el => {
+    [[i18next.t("disc_box.sequential"), "sequential"],
+     [i18next.t("disc_box.diverging"), "diverging"]].forEach( el => {
         color_scheme.insert("label").style("margin", "20px").html(el[0])
-                    .insert('input').attrs({
-                        type: "radio", name: "color_scheme", value: el[1], id: "button_"+el[1]})
+                    .insert('input')
+                    .attrs({type: "radio", name: "color_scheme", value: el[1], id: "button_"+el[1]})
                      .on("change", function(){
                         this.value === "sequential" ? make_sequ_button()
                                                     : make_diverg_button();
@@ -679,10 +653,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     document.getElementById("button_sequential").checked = true;
 
     var b_accordion_breaks = newBox.append("button")
-                        .attr("id", "btn_acc_colors").attr("class", "accordion")
+                        .attrs({"class": "accordion_disc", "id": "btn_acc_disc_break"})
                         .style("padding", "0 6px")
                         .html(i18next.t("disc_box.title_break_values")),
-        accordion_breaks = newBox.append("div").attr("class", "panel").attr("id", "accordion_breaks_vals");
+        accordion_breaks = newBox.append("div")
+                        .attrs({"class": "panel", "id": "accordion_breaks_vals"})
+                        .style("width", "98%");
 
     var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
@@ -705,7 +681,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             redisplay.draw();
          });
 
-    accordionize(".accordion", d3.select("#discretiz_charts").node());
+    accordionize(".accordion_disc", d3.select("#discretiz_charts").node());
 
     if(no_data > 0){
         make_no_data_section();

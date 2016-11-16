@@ -376,56 +376,44 @@ class Textbox {
                     self.text_annot.select("p").text(current_options.content);
                     self.fontsize = current_options.size;
                 }
+                zoneEditBox.remove();
             });
         let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
-        box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
-                .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
-                .on("change", function(){
-                    self.fontsize = +this.value;
-                    self.text_annot.select("p").style("font-size", self.fontsize + "px")
-                });
-        let font_select = box_content.append("p").html(i18next.t("app_page.text_box_edit_box.default_font"))
-                .insert("select")
-                .on("change", function(){
-                    self.text_annot.select("p").style("font-family", this.value);
-                });
-        available_fonts.forEach(function(font){
-            font_select.append("option").text(font[0]).attr("value", font[1])
-        });
-        font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
+        // box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
+        //         .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+        //         .on("change", function(){
+        //             self.fontsize = +this.value;
+        //             self.text_annot.select("p").style("font-size", self.fontsize + "px")
+        //         });
+        // let font_select = box_content.append("p").html(i18next.t("app_page.text_box_edit_box.default_font"))
+        //         .insert("select")
+        //         .on("change", function(){
+        //             self.text_annot.select("p").style("font-family", this.value);
+        //         });
+        // available_fonts.forEach(function(font){
+        //     font_select.append("option").text(font[0]).attr("value", font[1])
+        // });
+        // font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
 
         let content_modif_zone = box_content.append("p");
         content_modif_zone.append("span")
                 .html(i18next.t("app_page.text_box_edit_box.content"));
-        content_modif_zone.append("img")
-            .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
-                    class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
-            .styles({"cursor": "pointer", "vertical-align": "bottom"});
-        content_modif_zone.append("span")
-                .html("<br>");
-        make_zoneTextEdit(content_modif_zone.node(), {
-          "textContent": current_options.content,
-          "id": "textEditZone"
-        });
-        document.querySelector("#textEditZone").querySelector("#textBox").onchange = function(){
-          self._text = this.innerHTML;
-          self.text_annot.select("p").html(this.innerHTML)
-        }
-        // content_modif_zone.append("textarea")
-        //         .attr("id", "annotation_content")
-        //         .style("margin", "5px 0px 0px")
-        //         .on("keyup", function(){
-        //             self._text = this.value;
-        //             self.text_annot.select("p").html(this.value)
-        //         });
-        // document.getElementById("annotation_content").value = current_options.content;
-//        $("#btn_info_text_annotation[data-tooltip_info!='']").qtip({
-//            content: {text: i18next.t("app_page.text_box_edit_box.info_tooltip")},
-//            style: { classes: 'qtip-bootstrap qtip_help' },
-//            position: { my: 'bottom left', at: 'center right', target: this },
-//            show: { solo: true }
-//        });
+        // content_modif_zone.append("img")
+        //     .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
+        //             class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
+        //     .styles({"cursor": "pointer", "vertical-align": "bottom"});
+        // content_modif_zone.append("span")
+        //         .html("<br>");
 
+        zoneEditBox.create(content_modif_zone.node(), {
+          "content": current_options.content,
+          "id": "textEditZone",
+          "callback": updateContent
+        })
+        function updateContent(newContent){
+          self._text = newContent;
+          self.text_annot.select("p").html(newContent)
+        }
     }
 
     up_element(){

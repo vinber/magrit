@@ -226,13 +226,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     //////////////////////////////////////////////////////////////////////////
 
-    var formatCount = d3.formatLocale({
-                        decimal: getDecimalSeparator(),
-                        thousands: "",
-                        grouping: 3,
-                        currency: ["", ""]
-                        }).format('.2f');
-
     var title_box = [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join('');
     var modal_box = make_dialog_container("discretiz_charts", title_box, "discretiz_charts_dialog");
 
@@ -293,6 +286,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
+
+    var formatCount = d3.formatLocale({
+                        decimal: getDecimalSeparator(),
+                        thousands: "",
+                        grouping: 3,
+                        currency: ["", ""]
+                      }).format('.' + serie.precision + 'f');
 
     var discretization = newBox.append('div')
                             .attr("id", "discretization_panel")
