@@ -60,12 +60,6 @@
             "hide": "Hide",
             "smaller": "smaller",
             "larger": "larger",
-            "style_layer": "Layer style",
-            "trash": "Delete layer",
-            "zoom_fit": "Zoom on layer",
-            "legend": "Legend",
-            "eye_open": "Toogle layer visibility",
-            "eye_closed": "Toogle layer visibility",
             "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
             "details": "Details",
             "representation": "Representation",
@@ -77,8 +71,7 @@
             "title": "Add your data",
             "add_geom": "Add a basemap <i>(or drop it)</i>",
             "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
-            "add_sample_data": "Select available sample basemap / dataset",
-            "explore_table": "Explore your table(s)"
+            "add_sample_data": "Select available sample basemap / dataset"
         },
         "section2": {
             "title": "Choose a representation"
@@ -216,9 +209,6 @@
             "bondcountries": "James Bond visited countries <i>(To link with World countries geometries)</i>"
         },
         "export_box": {
-            "title": "Choose a format...",
-            "png": "Export to PNG",
-            "svg": "Export to SVG",
             "geo": "Export layers to a geographic format",
             "geo_title_box": "Choose layer and datatype...",
             "options": "Export options",
@@ -551,7 +541,6 @@
     },
     "disc_box":{
         "title": "Discretization Panel",
-        "type_disc": "Type",
         "class": "{{count}} class",
         "disp_mean": "Display mean",
         "disp_median": "Display median",
@@ -575,12 +564,6 @@
         "color_palette": "Color palette ",
         "break_on": "Break on "
     },
-    "style_box":{
-        "ref_layer": "Reference layer",
-        "rendered_field": "Rendered field",
-        "ok": "Confirm",
-        "cancel": "Close without saving"
-    },
     "index":{
         "buttons": {
             "enter": "Enter!",
@@ -589,7 +572,6 @@
             "examples": "Examples",
             "projections": "Projections",
             "doc": "Documentation",
-            "sources": "Sources",
             "dev": "Developement",
             "start_now": "Start now"
         },

@@ -662,3 +662,10 @@ th {
 
 tr:nth-child(even) {background: #DBDADA}
 tr:nth-child(odd) {background: ##EFECEC;}
+
+.m_elem_right {
+    position: absolute;
+    right: 20px;
+    width: 60px;
+    margin-left: 15px;
+}

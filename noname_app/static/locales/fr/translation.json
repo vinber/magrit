@@ -60,12 +60,6 @@
             "hide": "Masquer",
             "smaller": "plus petit",
             "larger": "plus grand",
-            "style_layer": "Style de la couche",
-            "trash": "Supprimer la couche",
-            "zoom_fit": "Zoomer sur la couche",
-            "legend": "Légende",
-            "eye_open": "Déactiver la couche",
-            "eye_closed": "Activer la couche",
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
             "details": "Détails",
             "representation": "Représentation",
@@ -77,8 +71,7 @@
             "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
             "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
-            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple",
-            "explore_table": "Afficher les données"
+            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
         },
         "section2": {
             "title": "Choix de la représentation"
@@ -216,9 +209,6 @@
             "bondcountries": "Pays visités par James Bond <i>(À joindre avec les pays du monde)</i>"
         },
         "export_box": {
-            "title": "Choix d'un format...",
-            "png": "Export au format PNG",
-            "svg": "Export au format SVG",
             "geo": "Exporter vers un format compatible SIG",
             "geo_title_box": "Choix de la couche et du format...",
             "options": "Options d'export",
@@ -548,7 +538,6 @@
     },
     "disc_box":{
         "title": "Options de discrétisation",
-        "type_disc": "Type",
         "class": "{{count}} classe",
         "class_plural": "{{count}} classes",
         "disp_mean": "Afficher la moyenne",
@@ -573,12 +562,6 @@
         "color_palette": "Palette de couleur ",
         "break_on": "Rupture de couleur à la classe "
     },
-    "style_box":{
-        "ref_layer": "Couche de référence",
-        "rendered_field": "Valeur représentée",
-        "ok": "Valider",
-        "cancel": "Annuler"
-    },
     "index":{
         "buttons": {
             "enter": "Démarrer",
@@ -588,7 +571,6 @@
             "projections": "Projections",
             "doc": "Documentation",
             "dev": "Développement",
-            "sources": "Sources",
             "start_now": "Démarrer"
         },
         "intro_section": {
