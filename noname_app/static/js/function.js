@@ -83,12 +83,6 @@ function get_menu_option(func){
 
 function clean_menu_function(){
     section2.select(".form-rendering").remove();
-    /*
-    let s2 = section2.node();
-    for(let i = s2.childElementCount - 1; i > -1 ; i--){
-        s2.removeChild(s2.childNodes[i]);
-    }
-    */
 }
 
 /** Function trying to avoid layer name collision by adding a suffix
@@ -359,11 +353,6 @@ function render_TypoSymbols(rendering_params, new_name){
             "xlink:href": symb[0]
           };
         })
-        // .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        // .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        // .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        // .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        // .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("contextmenu dblclick", function(){
@@ -1320,7 +1309,8 @@ var fields_Choropleth = {
 var fields_Typo = {
     fill: function(layer){
         if(!layer) return;
-        let g_lyr_name = "#" + layer,
+        let self = this,
+            g_lyr_name = "#" + layer,
             fields = type_col(layer),
             fields_name = Object.getOwnPropertyNames(fields),
             field_selec = d3.select("#Typo_field_1");
@@ -1336,7 +1326,7 @@ var fields_Typo = {
           if(self.rendering_params[selected_field])
             d3.select("#Typo_yes").attr("disabled", null);
           else
-              d3.select("#Typo_yes").attr("disabled", null);
+              d3.select("#Typo_yes").attr("disabled", true);
         });
         document.getElementById("Typo_output_name").value = "Typo_" + layer;
         d3.selectAll(".params").attr("disabled", null);
@@ -1642,7 +1632,6 @@ var fillMenu_Typo = function(){
         .on("click", function(){
             let selected_field = document.getElementById("Typo_field_1").value;
             if(rendering_params[selected_field]){
-
                 let layer = Object.getOwnPropertyNames(user_data)[0],
                     output_name = uo_layer_name.node().value;
                 if(output_name.length > 0 && /^\w+$/.test(output_name)){
@@ -1652,6 +1641,7 @@ var fillMenu_Typo = function(){
                 }
                 render_categorical(layer, rendering_params[selected_field]);
                 switch_accordion_section();
+                handle_legend(rendering_params[selected_field].new_name)
             }
          });
     dv2.selectAll(".params").attr("disabled", true);
@@ -2717,8 +2707,10 @@ function fillMenu_PropSymbol(layer){
     ].forEach(function(symb){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
 
-    dialog_content.append('p').html(i18next.t("app_page.func_options.prop.symbol_color"));
-    let color_par = dialog_content.append('select')
+    let color_section = dialog_content.append('p');
+    color_section.append("span")
+              .html(i18next.t("app_page.func_options.prop.symbol_color"));
+    let color_par = color_section.append('select')
                             .attr("class", "params")
                             .attr("id", "PropSymbol_nb_colors")
                             .style("margin-right", "15px");
@@ -2736,22 +2728,19 @@ function fillMenu_PropSymbol(layer){
             fill_color_text.style("display", "inline");
         }
     });
-    var col_p = dialog_content.append("p").style("display", "inline");
+    var col_p = dialog_content.append("p").style("text-align", "center");
     var fill_color = col_p.insert('input')
-                                .attr('type', 'color')
-                                .attrs({class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
+                                .styles({"position": "unset"})
+                                .attrs({type: "color", class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
     var fill_color2 = col_p.insert('input')
-                                .attr('type', 'color')
-                                .style("display", "none")
-                                .attrs({class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
+                                .styles({"display": "none", "position": "unset"})
+                                .attrs({type: "color", class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
     var col_b = dialog_content.insert("p");
     var fill_color_text = col_b.insert("span").style("display", "none")
                                 .html(i18next.t("app_page.func_options.prop.options_break_two_colors"));
     var fill_color_opt = col_b.insert('input')
-                                .attr('type', 'number')
-                                .attrs({class: "params", "id": "PropSymbol_break_val"})
-                                .style("display", "none")
-                                .style("width", "75px");
+                                .attrs({'type': 'number', class: "params", "id": "PropSymbol_break_val"})
+                                .styles({"display": "none", "width": "75px"});
 
     var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
         .insert('input')
@@ -2786,7 +2775,7 @@ function fillMenu_PropSymbol(layer){
 //            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
-            handle_legend(n_layer_name);
+            handle_legend(new_layer_name);
         });
     dialog_content.selectAll(".params").attr("disabled", true);
 }

@@ -367,7 +367,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro")
+    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo")
                         ? "#FFF" : (current_layers[layer].fill_color.two !== undefined)
                         ? "#FFF" : current_layers[layer].fill_color.single;
 
@@ -425,37 +425,60 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         if(symbol_type === "circle"){
             legend_elems
                   .append("circle")
-                  .attr("cx", xpos + space_elem + boxgap + max_size / 2)
-                  .attr("cy", (d,i) => {
-                        last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos;
-                        })
-                  .attr('r', d => d.size)
-                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
+                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+                  .attrs( (d, i) => {
+                      last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                      last_size = d.size;
+                      return {
+                        "cx": xpos + space_elem + boxgap + max_size / 2,
+                        "cy": last_pos,
+                        "r": d.size
+                      };
+                    });
+
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
-                .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
-                .attr("y", (d,i) => {
-                        last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos + (i * 2/3);
-                        })
+                .attrs( (d, i) => {
+                  last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                  last_size = d.size;
+                  return {
+                    "x": xpos + space_elem + boxgap + max_size * 1.5 + 5,
+                    "y": last_pos + (i * 2/3)
+                  };
+                })
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
                 .text(d => d.value);
+                // .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
+                // .attr("y", (d,i) => {
+                //         last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                //         last_size = d.size;
+                //         return last_pos + (i * 2/3);
+                //         })
+
 
         } else if(symbol_type === "rect"){
             legend_elems
                   .append("rect")
-                  .attr("x", d => xpos + space_elem + boxgap + max_size / 2 - d.size / 2)
-                  .attr("y", (d,i) => {
-                        last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos;
-                        })
-                  .attr('width', d => d.size)
-                  .attr('height', d => d.size)
                   .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+                  .attrs( (d,i) => {
+                    last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+                    last_size = d.size;
+                    return {
+                      "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
+                      "y": last_pos,
+                      "width": last_size,
+                      "height": last_size
+                    };
+                  });
+                  // .attr("x", d => xpos + space_elem + boxgap + max_size / 2 - d.size / 2)
+                  // .attr("y", (d,i) => {
+                  //       last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+                  //       last_size = d.size;
+                  //       return last_pos;
+                  //       })
+                  // .attr('width', d => d.size)
+                  // .attr('height', d => d.size)
+
             last_pos = y_pos2; last_size = 0;
             let x_text_pos = xpos + space_elem + boxgap + max_size * 1.5 + 5;
             legend_elems.append("text")
@@ -501,7 +524,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         }
     }
 
-    if(current_layers[layer].break_val){
+    if(current_layers[layer].break_val != undefined){
         let bottom_colors  = legend_root.append("g").attr("class", "legend_feature");
         bottom_colors.insert("text").attr("id", "col1_txt")
                 .attr("x", xpos + space_elem)
@@ -575,7 +598,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             .attr("x", xpos + boxheight)
             .attr("y", ypos + 15);
 
-    if(current_layers[layer].renderer.indexOf('Categorical') > -1){
+    if(current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1){
         data_colors_label = [];
         current_layers[layer].color_map.forEach( (v,k) => {
             data_colors_label.push({value: v[1], color: v[0]}); } );

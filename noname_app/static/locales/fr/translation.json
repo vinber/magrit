@@ -507,7 +507,7 @@
                 "dougenik_iterations": "Nombre d'itérations",
                 "olson_scale_txt": "Dimensionner la taille de référence sur :",
                 "olson_scale_max_scale": "Modification maximum de la taille des entités ",
-                "olson_scale_max": "Valeur maximum (évite le chevauchement des entités)",
+                "olson_scale_max": "Valeur maximum (pas de chevauchement)",
                 "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
             },
             "discont": {
@@ -534,11 +534,11 @@
                 "title_box_indiv": "Option de l'intitulé"
             },
             "proptypo": {
-                "field1": "Champ à utiliser (taille du symbole)",
+                "field1": "Champ à utiliser<br>(taille du symbole)",
                 "fixed_size": "Taille fixée ",
                 "on_value": "sur la valeur ... ",
                 "symbol_type": "Type de symbole ",
-                "field2": "Champ à utiliser (couleur du symbole)"
+                "field2": "Champ à utiliser<br>(couleur du symbole)"
             }
         }
     },
