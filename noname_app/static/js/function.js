@@ -1276,21 +1276,26 @@ var fields_Choropleth = {
             display_error_num_field();
             return;
         }
-
+        d3.selectAll(".params").attr("disabled", null);
         fields.forEach(field => {
             field_selec.append("option").text(field).attr("value", field);
         });
 
         field_selec.on("change", function(){
-            let field_name = this.value;
+            let field_name = this.value,
+                a = document.getElementById("container_sparkline").querySelector("canvas");
+            if(a) a.remove();
             document.getElementById("Choro_output_name").value = ["Choro", field_name, layer].join('_');
-            if(self.rendering_params[field_name] !== undefined)
+            if(self.rendering_params[field_name] !== undefined){
                 d3.select("#choro_yes").attr("disabled", null);
-            else
+            } else {
                 d3.select("#choro_yes").attr("disabled", true);
-        })
-        document.getElementById("Choro_output_name").value = ["Choro", layer].join('_');
-        d3.selectAll(".params").attr("disabled", null);
+            }
+            let vals = user_data[layer].map(a => +a[field_name]);
+            render_mini_chart_serie(vals, document.getElementById("container_sparkline"))
+        });
+        setSelected(field_selec.node(), fields[0]);
+        // document.getElementById("Choro_output_name").value = ["Choro", layer].join('_');
     },
 
     unfill: function(){
@@ -1651,12 +1656,15 @@ function fillMenu_Choropleth(){
     let dv2 = make_template_functionnality(section2),
         rendering_params = fields_Choropleth.rendering_params;
 
-
     var field_selec = dv2.append('p')
                             .html(i18next.t("app_page.func_options.common.field"))
                          .insert('select')
                             .attr('class', 'params')
                             .attr('id', 'choro_field_1');
+
+    dv2.insert("p")
+        .attr("id", "container_sparkline")
+        .style("float", "right");
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
@@ -2022,7 +2030,7 @@ function fillMenu_Anamorphose(){
         option1_txt.html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
         option2_txt.html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
         option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
+        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 55, step: 0.1, value: 30, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
         option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
         option2_txt2.html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
         option2_val2 = option2_txt2.insert("input").attr("type", "number").attrs({class: "params", id: "Anamorph_opt3"}).style("width", "100px");
@@ -2459,10 +2467,11 @@ var boxExplore2 = {
             // Adjust the size of the box (on opening and after adding a new field)
             // and/or display scrollbar if its overflowing the size of the window minus a little margin :
         setTimeout(function(){
-            let box = document.getElementById("browse_data_box"),
-                bbox = box.querySelector("#myTable").getBoundingClientRect(),
+            let box = document.getElementById("browse_data_box");
+            box.querySelector(".dataTable-pagination").style.width = "80%";
+            let bbox = box.querySelector("#myTable").getBoundingClientRect(),
                 new_width = bbox.width,
-                new_height = bbox.height;
+                new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
 
             if(new_width > window.innerWidth * 0.85){
                 box.querySelector(".modal-content").style.overflow = "auto";
@@ -2475,10 +2484,8 @@ var boxExplore2 = {
                 box.querySelector(".modal-body").style.height = (new_height + 150) + "px";
                 box.querySelector(".modal-body").style.overflow = "auto";
             }
-
-            let datatable_info = box.querySelector(".dataTable-bottom");
-            box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
-            box.querySelector(".dataTable-pagination").style.width = "100%"
+            // let datatable_info = box.querySelector(".dataTable-bottom");
+            // box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
         }, 175);
     },
     get_available_tables: function(){
@@ -2772,14 +2779,12 @@ function fillMenu_PropSymbol(layer){
                 rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
             }
             make_prop_symbols(rendering_params);
-//            binds_layers_buttons(new_layer_name);
             zoom_without_redraw();
             switch_accordion_section();
             handle_legend(new_layer_name);
         });
     dialog_content.selectAll(".params").attr("disabled", true);
 }
-
 
 function make_prop_symbols(rendering_params){
     let layer = rendering_params.ref_layer_name,
@@ -3183,59 +3188,6 @@ function unfillSelectInput(select_node){
         select_node.removeChild(select_node.children[i]);
 }
 
-function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
-
-    if(!fixed_value || fixed_value == 0)
-        fixed_value = max_fast(arr);
-
-    if(type_symbol == "circle"){
-        let smax = fixed_size * fixed_size * pi;
-        for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value) / pi);
-
-    } else {
-        let smax = fixed_size * fixed_size;
-        for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value));
-    }
-    return res;
-}
-
-function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
-
-    if(!fixed_value || fixed_value == 0)
-        fixed_value = max_fast(arr);
-
-    if(type_symbol == "circle") {
-        let smax = fixed_size * fixed_size * pi;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
-                );
-        }
-    } else {
-        let smax = fixed_size * fixed_size;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
-                );
-        }
-    }
-    return res
-}
-
 var type_col = function(layer_name, target, skip_if_empty_values=false){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},
 //  for the fields of the selected layer.
@@ -3298,6 +3250,37 @@ function get_fun_operator(operator){
         ["^", function(a, b){ return Math.pow(a, b); }],
     ]);
     return operators.get(operator);
+}
+
+function render_mini_chart_serie(values, parent, cap, bins){
+  bins = bins || values.length > 20 ? 16 : values.length > 15 ? 10 : 5;
+  var class_count = getBinsCount(values, bins),
+      background = '#f1f1f1',
+      color = '#6633ff',
+      width = 3 * bins - 3,
+      height = 25,
+      canvas = document.createElement('canvas');
+  cap = cap || max_fast(class_count.counts);
+  canvas.width = width;
+  canvas.height = height;
+  parent.append(canvas);
+
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  let x = 0,
+      y = 0,
+      barwidth = 2,
+      barspace = 1;
+
+  ctx.fillStyle = color;
+  for (let i = 0; i < bins; i++) {
+    var barheight = Math.floor(Math.min(class_count.counts[i] / cap, 1) * (height - 1));
+    x += barspace;
+    ctx.fillRect(x, height, barwidth, - barheight);
+    x += barwidth;
+  }
 }
 
 /**
@@ -3661,87 +3644,6 @@ function xhrequest(method, url, data, waiting_message){
         };
         request.send(data);
     });
-}
-
-
-/**
-* Function computing the min of an array of values (tking care of empty/null/undefined slot)
-*  - no fancy functionnalities here (it doesn't add anything comparing to Math.min.apply()
-*    or d3.min() except a little speed-up)
-*
-* @param {Array} arr
-* @return {Number} min
-*/
-function min_fast(arr){
-  let min = arr[0];
-  for(let i = 1; i < arr.length; ++i){
-    let val = +arr[i];
-    if(val && val < min)
-       min = val;
-  }
-  return min;
-}
-
-/**
-* Return the maximum value of an array of numbers
-*
-* @param {Array} arr - the array of numbers
-* @return {Number} max
-*/
-function max_fast(arr){
-  let max = arr[0];
-  for(let i = 1; i < arr.length; ++i){
-    let val = +arr[i];
-    if(val > max)
-       max = arr[i];
-  }
-  return max;
-}
-
-/**
-* Test an array of numbers for negative values
-*
-* @param {Array} arr - the array of numbers
-* @return {Bool} result - True or False, whether it contains negatives values or not
-*/
-function has_negative(arr){
-  for(let i = 0; i < arr.length; ++i)
-    if(+arr[i] < 0)
-       return true;
-  return false;
-}
-
-/**
-* @param {Array} arr - The array to test
-* @return {Boolean} result - True or False, according to whether it contains empty values or not
-*/
-var contains_empty_val = function(arr){
-    for(let i = arr.length - 1; i > -1; --i)
-        if(arr[i] == null) return true;
-    return false;
-}
-
-var round_value = function(val, nb){
-    if(nb == undefined)
-        return val;
-    let dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
-    return nb >= 0
-        ? Math.round(+val * dec_mult) / dec_mult
-        : Math.round(+val / dec_mult) * dec_mult;
-}
-
-function get_nb_decimals(nb){
-    let tmp = nb.toString().split('.');
-    return tmp.length < 2 ? 0 : tmp[1].length;
-}
-
-function get_nb_left_separator(nb){
-    let tmp = nb.toString().split('.');
-    return tmp[0].length;
-}
-
-function getDecimalSeparator(){
-    return 1.1.toLocaleString().substr(1,1)
 }
 
 function make_content_summary(serie, precision=6){

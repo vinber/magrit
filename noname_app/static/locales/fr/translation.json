@@ -395,7 +395,7 @@
                 "block": "Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "typosymbol": {
-                "title": "<b>Carte qualiative avec utilisation de symboles</b>",
+                "title": "<b>Carte qualitative avec utilisation de symboles</b>",
                 "block": "Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "smooth": {
@@ -403,7 +403,7 @@
                 "block": "Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit \"de Stewart\") et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.<br><br><b><i>Paramètres</i></b><br><b>Valeur:</b> Le nom du champ contenant les valeurs à utiliser.<br><b>Diviseur (optionnel):</b> Le nom du champ à utiliser pour calculer un ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution:</b><br><b>Type de fonction:</b><br><b>Nombre de classe:</b><br><b>Couche de masquage:</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
             },
             "prop": {
-                "title": "<b>Carte de stock</b>",
+                "title": "<b>Carte de stocks</b>",
                 "block": "Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).<br><br><b><i>Paramètres</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
             },
             "discont": {

@@ -761,50 +761,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     return deferred.promise;
 }
 
-function getBreaksQ6(serie){
-    var breaks = [], tmp = 0, j = undefined,
-        len_serie = serie.length, stock_class = [],
-        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
-    for(let i=0; i < 7; ++i){
-        j = Math.round(q6_class[i]) - 1
-        breaks.push(+serie[j]);
-        stock_class.push(j - tmp)
-        tmp = j;
-    }
-    stock_class.shift();
-    if(breaks[0] == breaks[1]){
-        breaks[1] = (breaks[2] - breaks[1]) / 2
-    }
-    if(breaks[6] == breaks[5]){
-        breaks[5] = (breaks[5] - breaks[4]) / 2
-    }
-    return {
-        breaks: breaks,
-        stock_class: stock_class
-        };
-}
-
-function getBreaks_userDefined(serie, breaks_list){
-    var separator = has_negative(serie) ? '- ' : '-',
-        break_values = breaks_list.split(separator).map(el => +el.trim()),
-        len_serie = serie.length,
-        j = 0,
-        len_break_val = break_values.length,
-        stock_class = new Array(len_break_val-1);
-
-    for(let i=1; i<len_break_val; ++i){
-        let class_max = break_values[i];
-        stock_class[i-1] = 0;
-        while(serie[j] <= class_max){
-            stock_class[i-1] += 1;
-            j++;
-        }
-    }
-    return {
-        breaks: break_values,
-        stock_class: stock_class
-        };
-}
 
 function fetch_categorical_colors(){
     let categ = document.querySelectorAll(".typo_class"),

@@ -1454,7 +1454,6 @@ function accordionize(css_selector=".accordion", parent){
                 opened.classList.toggle("active");
                 opened.nextElementSibling.classList.toggle("show");
             }
-            console.log(opened)
             if(!opened || opened.id != this.id){
                 this.classList.toggle("active");
                 this.nextElementSibling.classList.toggle("show");

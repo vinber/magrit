@@ -922,7 +922,7 @@ function createStyleBox(layer_name){
                           } else {
                             let options_labels = {
                               label_field: value,
-                              color: "#00ff00",
+                              color: "#000",
                               font: "Arial,Helvetica,sans-serif",
                               ref_font_size: 12,
                               uo_layer_name: ["Labels", value, layer_name].join('_')

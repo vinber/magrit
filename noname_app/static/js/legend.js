@@ -150,22 +150,24 @@ var drag_legend_func = function(legend_group){
                         prev_translate = t.attr("transform");
                     prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
                     return {
-                        x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
+                        x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
                 d3.event.sourceEvent.preventDefault();
-                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", null);
-                })
+                handle_click_hand("lock");
+              })
             .on("end", () => {
-                if(d3.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                  handle_click_hand("unlock");
                 legend_group.style("cursor", "grab");
-                })
+              })
             .on("drag", () => {
                 legend_group.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')')
                         .style("cursor", "grabbing");
-                });
+              });
 }
 
 function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
