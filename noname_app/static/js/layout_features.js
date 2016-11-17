@@ -459,10 +459,6 @@ var scaleBar = {
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");
-//        scale_gp.insert("text")
-//            .attrs({x: x_pos - 4, y: y_pos - 5})
-//            .style("font", "11px 'Enriqueta', arial, serif")
-//            .text("0");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
             .attrs({x: x_pos + bar_size, y: y_pos - 5})
             .styles({"font": "11px 'Enriqueta', arial, serif",

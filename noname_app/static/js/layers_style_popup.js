@@ -1,5 +1,5 @@
 "use strict";
-
+// TODO : refactor some functions in this file (they are really too messy)
 function handle_click_layer(layer_name){
     if(layer_name == "Graticule")
         createStyleBoxGraticule();
@@ -33,7 +33,10 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
           .html(i18next.t("app_page.layer_style_popup.fill_color"))
           .insert('input').attrs({type: 'color', "value": last_color})
           .on('change', function(){
-                map.select(g_lyr_name).selectAll(symbol).style("fill", this.value);
+                map.select(g_lyr_name)
+                    .selectAll(symbol)
+                    .transition()
+                    .style("fill", this.value);
                 current_layers[layer].fill_color = {"single": this.value};
           });
 }
@@ -45,6 +48,7 @@ function make_random_color(layer, symbol = "path"){
         .on("click", function(d,i){
             map.select("#" + layer)
                 .selectAll(symbol)
+                .transition()
                 .style("fill", () => Colors.names[Colors.random()]);
             current_layers[layer].fill_color = {"random": true};
             make_random_color(layer, symbol);
@@ -58,6 +62,7 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
         let features_order = current_layers[layer].features_order;
         map.select("#"+layer)
             .selectAll(symbol)
+            .transition()
             .style("fill", function(d, i){
                 let idx = features_order[i][0];
                 return color_cat_map.get(data_layer[idx][field_name]);
@@ -65,10 +70,12 @@ function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
     } else if (ref_layer)
         map.select("#"+layer)
             .selectAll(symbol)
+            .transition()
             .style("fill", (d,i) => color_cat_map.get(data_layer[i][field_name]));
     else
         map.select("#"+layer)
             .selectAll(symbol)
+            .transition()
             .style("fill", d => color_cat_map.get(d.properties[field_name]));
 }
 
@@ -178,7 +185,8 @@ function createStyleBoxTypoSymbols(layer_name){
             .attr("class", "button_st4")
             .text(i18next.t("app_page.layer_style_popup.reset_symbols_location"))
             .on("click", function(){
-                selection.attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
+                selection.transition()
+                        .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
                         .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
             });
 
@@ -288,7 +296,8 @@ function createStyleBoxLabel(layer_name){
             .attr("class", "button_st4")
             .text(i18next.t("app_page.layer_style_popup.reset_labels_location"))
             .on("click", function(){
-                selection.attr("x", (d,i) => ref_coords[i][0])
+                selection.transition()
+                        .attr("x", (d,i) => ref_coords[i][0])
                         .attr("y", (d,i) => ref_coords[i][1]);
             });
 
@@ -322,7 +331,7 @@ function createStyleBoxLabel(layer_name){
             .attr("value", current_layers[layer_name].fill_color)
             .on("change", function(){
                 current_layers[layer_name].fill_color = this.value;
-                selection.style("fill", this.value);
+                selection.transition().style("fill", this.value);
             });
 
     popup.insert("p")
@@ -330,7 +339,7 @@ function createStyleBoxLabel(layer_name){
     let choice_font = popup.insert("select")
             .on("change", function(){
                 current_layers[layer_name].default_font = this.value;
-                selection.style("font-family", this.value);
+                selection.transition().style("font-family", this.value);
             });
 
     available_fonts.forEach( name => {
@@ -397,13 +406,16 @@ function createStyleBoxGraticule(layer_name){
                 map.select("#Graticule").remove()
                 map.append("g").attrs({id: "Graticule", class: "layer"})
                                .append("path")
-                               .attr("class", "graticule")
-                               .style("stroke-dasharray", dasharray_val)
-                               .datum(d3.geoGraticule().step([step_val, step_val]))
-                               .attr("clip-path", "url(#clip)")
-                               .attr("d", path)
-                               .style("fill", "none")
-                               .style("stroke", "grey");
+                               .transition()
+                               .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
+                               .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val})
+                               .datum(d3.geoGraticule().step([step_val, step_val]));
+                              //  .attr("class", "graticule")
+                              //  .style("stroke-dasharray", dasharray_val)
+                              //  .attr("clip-path", "url(#clip)")
+                              //  .attr("d", path)
+                              //  .style("fill", "none")
+                              //  .style("stroke", "grey");
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
@@ -875,8 +887,68 @@ function createStyleBox(layer_name){
 //                                }
                   });
     }
+
+    let _fields = get_fields_name(layer_name);
+    if(_fields && _fields.length > 0){
+      let labels_section = popup.append("p");
+      let input_fields = {};
+      for(let i = 0; i < _fields.length; i++){
+        input_fields[_fields[i]] = _fields[i];
+      }
+      labels_section.append("span")
+            .attr("id", "generate_labels")
+            .style("cursor", "pointer")
+            .html(i18next.t("app_page.layer_style_popup.generate_labels"))
+            .on("click", function(){
+              let fields =
+              swal({
+                  title: "",
+                  text: i18next.t("app_page.layer_style_popup.field_label"),
+                  type: "question",
+                  showCancelButton: true,
+                  showCloseButton: false,
+                  allowEscapeKey: false,
+                  allowOutsideClick: false,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: i18next.t("app_page.common.confirm"),
+                  input: 'select',
+                  inputPlaceholder: i18next.t("app_page.common.field"),
+                  inputOptions: input_fields,
+                  inputValidator: function(value) {
+                      return new Promise(function(resolve, reject){
+                          console.log(value)
+                          if(_fields.indexOf(value) < 0){
+                              reject(i18next.t("app_page.common.no_value"));
+                          } else {
+                            let options_labels = {
+                              label_field: value,
+                              color: "#00ff00",
+                              font: "Arial,Helvetica,sans-serif",
+                              ref_font_size: 12,
+                              uo_layer_name: ["Labels", value, layer_name].join('_')
+                            };
+                            resolve();
+                            render_label(layer_name, options_labels);
+                          }
+                      });
+                  }
+                }).then( value => {
+                      console.log(value);
+                  }, dismiss => {
+                      console.log(dismiss);
+                  });
+            });
+    }
 }
 
+function get_fields_name(layer_name){
+  let elem = document.getElementById(layer_name).childNodes[0];
+  if(!elem.__data__ || !elem.__data__.properties){
+    return null;
+  } else {
+    return Object.getOwnPropertyNames(elem.__data__.properties);
+  }
+}
 
 function createStyleBox_ProbSymbol(layer_name){
     var g_lyr_name = "#" + layer_name,
@@ -1050,7 +1122,7 @@ function createStyleBox_ProbSymbol(layer_name){
                             .on("change", function(){
                                 let new_break_val = +b_val.node().value;
                                 current_layers[layer_name].fill_color.two[0] = this.value;
-                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : this.value);
+                                selection.transition().style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : this.value);
                             });
         var col2 = p2.insert("input").attr("type", "color")
                             .attr("id", "col2")
@@ -1058,7 +1130,7 @@ function createStyleBox_ProbSymbol(layer_name){
                             .on("change", function(){
                                 let new_break_val = +b_val.node().value;
                                 current_layers[layer_name].fill_color.two[1] = this.value;
-                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? this.value : col1.node().value);
+                                selection.transition().style("fill", (d,i) => (d_values[i] > new_break_val) ? this.value : col1.node().value);
 
                             });
         fill_color_section.insert("span").html(i18next.t("app_page.layer_style_popup.break_value"));
@@ -1068,7 +1140,7 @@ function createStyleBox_ProbSymbol(layer_name){
                             .on("change", function(){
                                 let new_break_val = +this.value;
                                 current_layers[layer_name].break_val = new_break_val;
-                                selection.style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : col1.node().value);
+                                selection.transition().style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : col1.node().value);
                             });
     } else {
         let fields = type_col(ref_layer_name, "string"),
@@ -1103,10 +1175,11 @@ function createStyleBox_ProbSymbol(layer_name){
             fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
           });
     fill_opct_section.append("span").attr("id", "fill_opacity_txt").html((+opacity * 100) + "%");
+
     popup.append('p').html(i18next.t("app_page.layer_style_popup.border_color"))
           .insert('input').attr('type', 'color').attr("value", stroke_prev)
           .on('change', function(){
-            selection.style("stroke", this.value);
+            selection.transition().style("stroke", this.value);
           });
 
     let border_opacity_section = popup.append('p').html(i18next.t("app_page.layer_style_popup.border_opacity"));

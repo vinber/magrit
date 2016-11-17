@@ -64,12 +64,12 @@ function get_menu_option(func){
             "menu_factory": "fillMenu_Typo",
             "fields_handler": "fields_Typo",
             },
-        "label":{
-            "name": "label",
-            "title": i18next.t("app_page.func_title.label"),
-            "menu_factory": "fillMenu_Label",
-            "fields_handler": "fields_Label",
-            },
+        // "label":{
+        //     "name": "label",
+        //     "title": i18next.t("app_page.func_title.label"),
+        //     "menu_factory": "fillMenu_Label",
+        //     "fields_handler": "fields_Label",
+        //     },
         "typosymbol":{
             "name": "typosymbol",
             "title": i18next.t("app_page.func_title.typosymbol"),
@@ -654,8 +654,7 @@ var render_discont = function(){
         result_layer.append("path")
             .datum(d_res[i][2])
             .attrs({d: path, id: ["feature", i].join('_')})
-            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent"})
-            .style("stroke-opacity", val >= threshold ? 1 : 0);
+            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
         data_result.push(d_res[i][1])
         result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
     }
@@ -674,10 +673,11 @@ var render_discont = function(){
         "n_features": nb_ft
         };
     create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
-    send_layer_server(new_layer_name, "/layers/add");
     up_legends();
     zoom_without_redraw();
     switch_accordion_section();
+    handle_legend(new_layer_name);
+    send_layer_server(new_layer_name, "/layers/add");
 //    resolve(true);
 //});
 }
@@ -750,7 +750,7 @@ var fields_FlowMap = {
     }
 };
 
-function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks){
+function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks, callback){
     document.getElementById(id_parent).innerHTML = "";
     if(values && breaks == undefined){
         let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size);
@@ -813,12 +813,24 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
     for(let i = 0; i < mins.length; i++){
         if(i > 0){
             let prev_ix = i-1;
-            mins[i].onchange = function(){ maxs[prev_ix].value = this.value };
+            mins[i].onchange = function(){
+              maxs[prev_ix].value = this.value;
+              if(callback) callback();
+            };
         }
         if(i < mins.length - 1){
             let next_ix = i+1;
-            maxs[i].onchange = function(){ mins[next_ix].value = this.value };
+            maxs[i].onchange = function(){
+              mins[next_ix].value = this.value;
+              if(callback) callback();
+            };
         }
+    }
+    if(callback){
+      let sizes = document.getElementById(id_parent).querySelectorAll("#size_class")
+      for(let i = 0; i < sizes.length; i++){
+        sizes[i].onchange = callback;
+      }
     }
 }
 
@@ -1340,134 +1352,134 @@ var fields_Typo = {
     },
     rendering_params: {}
 };
+//
+// var fields_Label = {
+//     fill: function(layer){
+//         if(!layer) return;
+//         let g_lyr_name = "#" + layer,
+//             fields = type_col(layer),
+//             fields_name = Object.getOwnPropertyNames(fields),
+//             field_selec = d3.select("#Label_field_1"),
+//             field_prop_selec = d3.select("#Label_field_prop");
+//
+//         fields_name.forEach(f_name => {
+//             field_selec.append("option").text(f_name).attr("value", f_name);
+//             if(fields[f_name] == "number")
+//                 field_prop_selec.append("option").text(f_name).attr("value", f_name);
+//         });
+//         document.getElementById("Label_output_name").value = "Labels_" + layer;
+//         d3.selectAll(".params").attr("disabled", null);
+//     },
+//     unfill: function(){
+//         let field_selec = document.getElementById("Label_field_1"),
+//             nb_fields = field_selec.childElementCount;
+//
+//         for(let i = nb_fields - 1; i > -1 ; --i)
+//             field_selec.removeChild(field_selec.children[i]);
+//
+//         d3.selectAll(".params").attr("disabled", true);
+//     }
+// };
 
-var fields_Label = {
-    fill: function(layer){
-        if(!layer) return;
-        let g_lyr_name = "#" + layer,
-            fields = type_col(layer),
-            fields_name = Object.getOwnPropertyNames(fields),
-            field_selec = d3.select("#Label_field_1"),
-            field_prop_selec = d3.select("#Label_field_prop");
-
-        fields_name.forEach(f_name => {
-            field_selec.append("option").text(f_name).attr("value", f_name);
-            if(fields[f_name] == "number")
-                field_prop_selec.append("option").text(f_name).attr("value", f_name);
-        });
-        document.getElementById("Label_output_name").value = "Labels_" + layer;
-        d3.selectAll(".params").attr("disabled", null);
-    },
-    unfill: function(){
-        let field_selec = document.getElementById("Label_field_1"),
-            nb_fields = field_selec.childElementCount;
-
-        for(let i = nb_fields - 1; i > -1 ; --i)
-            field_selec.removeChild(field_selec.children[i]);
-
-        d3.selectAll(".params").attr("disabled", true);
-    }
-};
-
-var fillMenu_Label = function(){
-    var rendering_params = {},
-        dv2 = make_template_functionnality(section2);
-
-    var field_selec = dv2.append('p')
-                            .html(i18next.t("app_page.func_options.label.field"))
-                         .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'Label_field_1');
-
-    var prop_selec = dv2.append('p').html(i18next.t("app_page.func_options.label.prop_labels"))
-                        .insert("input").attr("type", "checkbox")
-                        .on("change", function(){
-                            let display_style = this.checked ? "initial" : "none";
-                            prop_menu.style("display", display_style);
-                        });
-
-    var prop_menu = dv2.append("div");
-
-    var field_prop_selec = prop_menu.append("p").html("Proportional values field ")
-                            .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'Label_field_prop');
-
-    var max_font_size = prop_menu.append("p").html("Maximum font size ")
-                            .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 70, value: 11, step: "any"});
-
-    var ref_font_size = dv2.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-                            .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 35, value: 9, step: "any"});
-
-
-    var choice_font = dv2.append("p").html(i18next.t("app_page.func_options.label.font_type"))
-                            .insert("select")
-                            .attr("class", "params")
-                            .attr("id", "Label_font_name");
-
-    available_fonts.forEach( name => {
-        choice_font.append("option").attr("value", name[1]).text(name[0]);
-    });
-
-    var choice_color = dv2.append("p").html(i18next.t("app_page.func_options.label.color"))
-                            .insert("input").attr("type", "color")
-                            .attr("class", "params")
-                            .attr("id", "Label_color")
-                            .attr("value", "#000");
-
-    prop_menu.style("display", "none");
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "Label_output_name");
-
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'Label_yes')
-        .attr('class', 'button_st3')
-        .html(i18next.t("app_page.func_options.common.render"))
-        .on("click", function(){
-            rendering_params["label_field"] = field_selec.node().value;
-            if(prop_selec.node().checked){
-                rendering_params["prop_field"] = field_prop_selec.node().value;
-                rendering_params["max_size"] = max_font_size.node().value;
-            }
-
-            let output_name = uo_layer_name.node().value;
-            if(!(/^\w+$/.test(output_name))){
-                output_name = "";
-            }
-            rendering_params["font"] = choice_font.node().value;
-            rendering_params["ref_font_size"] = ref_font_size.node().value;
-            rendering_params["color"] = choice_color.node().value;
-            rendering_params["uo_layer_name"] = output_name;
-            let layer = Object.getOwnPropertyNames(user_data)[0];
-            let new_layer_name = render_label(layer, rendering_params);
-            switch_accordion_section();
-         });
-    dv2.selectAll(".params").attr("disabled", true);
-}
+// var fillMenu_Label = function(){
+//     var rendering_params = {},
+//         dv2 = make_template_functionnality(section2);
+//
+//     var field_selec = dv2.append('p')
+//                             .html(i18next.t("app_page.func_options.label.field"))
+//                          .insert('select')
+//                             .attr('class', 'params')
+//                             .attr('id', 'Label_field_1');
+//
+//     var prop_selec = dv2.append('p').html(i18next.t("app_page.func_options.label.prop_labels"))
+//                         .insert("input").attr("type", "checkbox")
+//                         .on("change", function(){
+//                             let display_style = this.checked ? "initial" : "none";
+//                             prop_menu.style("display", display_style);
+//                         });
+//
+//     var prop_menu = dv2.append("div");
+//
+//     var field_prop_selec = prop_menu.append("p").html("Proportional values field ")
+//                             .insert('select')
+//                             .attr('class', 'params')
+//                             .attr('id', 'Label_field_prop');
+//
+//     var max_font_size = prop_menu.append("p").html("Maximum font size ")
+//                             .insert("input").attr("type", "number")
+//                             .attrs({min: 0, max: 70, value: 11, step: "any"});
+//
+//     var ref_font_size = dv2.append("p").html(i18next.t("app_page.func_options.label.font_size"))
+//                             .insert("input").attr("type", "number")
+//                             .attrs({min: 0, max: 35, value: 9, step: "any"});
+//
+//
+//     var choice_font = dv2.append("p").html(i18next.t("app_page.func_options.label.font_type"))
+//                             .insert("select")
+//                             .attr("class", "params")
+//                             .attr("id", "Label_font_name");
+//
+//     available_fonts.forEach( name => {
+//         choice_font.append("option").attr("value", name[1]).text(name[0]);
+//     });
+//
+//     var choice_color = dv2.append("p").html(i18next.t("app_page.func_options.label.color"))
+//                             .insert("input").attr("type", "color")
+//                             .attr("class", "params")
+//                             .attr("id", "Label_color")
+//                             .attr("value", "#000");
+//
+//     prop_menu.style("display", "none");
+//
+//     var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
+//                         .insert('input')
+//                         .style("width", "240px")
+//                         .attr('class', 'params')
+//                         .attr("id", "Label_output_name");
+//
+//     dv2.insert("p").styles({"text-align": "right", margin: "auto"})
+//         .append("button")
+//         .attr('id', 'Label_yes')
+//         .attr('class', 'button_st3')
+//         .html(i18next.t("app_page.func_options.common.render"))
+//         .on("click", function(){
+//             rendering_params["label_field"] = field_selec.node().value;
+//             if(prop_selec.node().checked){
+//                 rendering_params["prop_field"] = field_prop_selec.node().value;
+//                 rendering_params["max_size"] = max_font_size.node().value;
+//             }
+//
+//             let output_name = uo_layer_name.node().value;
+//             if(!(/^\w+$/.test(output_name))){
+//                 output_name = "";
+//             }
+//             rendering_params["font"] = choice_font.node().value;
+//             rendering_params["ref_font_size"] = ref_font_size.node().value;
+//             rendering_params["color"] = choice_color.node().value;
+//             rendering_params["uo_layer_name"] = output_name;
+//             let layer = Object.getOwnPropertyNames(user_data)[0];
+//             let new_layer_name = render_label(layer, rendering_params);
+//             switch_accordion_section();
+//          });
+//     dv2.selectAll(".params").attr("disabled", true);
+// }
 
 let drag_elem_geo = d3.drag()
          .subject(function() {
                 var t = d3.select(this);
                 return {
-                    x: t.attr("x"), y: t.attr("y")
+                    x: t.attr("x"), y: t.attr("y"),
+                    map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                 };
             })
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
-
+            handle_click_hand("lock");
           })
         .on("end", () => {
-            if(map_div.select("#hand_button").classed("active"))
-                zoom.on("zoom", zoom_without_redraw);
+          if(d3.event.subject && !d3.event.subject.map_locked)
+            handle_click_hand("unlock");
           })
         .on("drag", function(){
             d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
@@ -2422,11 +2434,11 @@ var boxExplore2 = {
         this.columns_headers = [];
         for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
             this.columns_headers.push({data: col[i], title: col[i]});
-        // if(this.top_buttons.select("#add_field_button").node()){
-        //     this.top_buttons.select("#add_field_button").remove()
-        //     document.getElementById("table_intro").remove();
-        //     document.querySelector(".dataTable-wrapper").remove();
-        // }
+        if(this.top_buttons.select("#add_field_button").node()){
+            this.top_buttons.select("#add_field_button").remove()
+            document.getElementById("table_intro").remove();
+            document.querySelector(".dataTable-wrapper").remove();
+        }
 
         // TODO : allow to add_field on all the layer instead of just targeted / result layers :
         if(this.tables.get(table_name)){

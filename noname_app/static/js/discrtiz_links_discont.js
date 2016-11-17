@@ -139,7 +139,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var update_breaks = function(user_defined){
         if(!user_defined){
-            make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div");
+            make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div", undefined, callback);
         }
         let tmp_breaks = fetch_min_max_table_value("sizes_div");
         let len_breaks = tmp_breaks.sizes.length;
@@ -154,10 +154,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
         for(let i = 0; i<len_breaks; i++)
             breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
-        console.log(breaks_info)
         breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
         if(user_defined){
-            make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info);
+            make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info, callback);
         }
     }
 
@@ -179,7 +178,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
             for(let i=0, len = bins.length; i<len; ++i)
-                bins[i].color = ColorsSelected.random();
+                bins[i].color = array_color[i];
 
             var x = d3.scaleLinear()
                 .domain([serie.min(), serie.max()])
@@ -204,14 +203,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                   "stroke-opacity": 1,
                   "fill": d.color
                 }));
-                // .attr("class", "bar")
-                // .attr("transform", "translate(0, -17.5)")
-                // .style("fill", d => d.color )
-                // .styles({"opacity": 0.5, "stroke-opacity":1})
-                // .attr("x", d => x(d.offset) )
-                // .attr("width", d => x(d.width) )
-                // .attr("y", d => y(d.height) - margin.bottom )
-                // .attr("height", d => svg_h - y(d.height) );
 
             svg_histo.append("g")
                 .attr("class", "y axis")
@@ -230,7 +221,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     var modal_box = make_dialog_container("discretiz_charts", title_box, "discretiz_charts_dialog");
 
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
-//                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -260,10 +250,11 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         breaks = [+breaks_info[0][0][0]],
         stock_class = [],
         bins = [],
-        max_nb_class = 22 < nb_values ? 22 : nb_values,
+        max_nb_class = 20 < nb_values ? 20 : nb_values,
         sizes = current_layers[layer_name].breaks.map(el => el[1]),
         last_min = min_fast(sizes),
-        last_max = max_fast(sizes);
+        last_max = max_fast(sizes),
+        array_color = d3.schemeCategory20.slice();
 
     breaks_info.forEach(elem => { breaks.push(elem[0][1]) });
 
@@ -440,17 +431,23 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     box_content.append("h3").style("margin", "0").html(i18next.t("disc_box.line_size"));
     var sizes_div =  d3.select("#box_content")
                             .append("div").attr("id", "sizes_div");
-    make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info);
-    box_content.append("p")
-            .insert("button")
-            .attr("class", "button_st3")
-            .html(i18next.t("disc_box.apply"))
-            .on("click", function(){
-                discretization.node().value = type;
-                update_breaks(true);
-                redisplay.compute();
-                redisplay.draw();
-            });
+    var callback = function(){
+      discretization.node().value = type;
+      update_breaks(true);
+      redisplay.compute();
+      redisplay.draw();
+    };
+    make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info, callback);
+    // box_content.append("p")
+    //         .insert("button")
+    //         .attr("class", "button_st3")
+    //         .html(i18next.t("disc_box.apply"))
+    //         .on("click", function(){
+    //             discretization.node().value = type;
+    //             update_breaks(true);
+    //             redisplay.compute();
+    //             redisplay.draw();
+    //         });
     redisplay.compute();
     redisplay.draw();
 

@@ -192,7 +192,7 @@ function handleOneByOneShp(files, target_layer_on_add){
             } else {
                 swal({
                     title: "",
-                    text: "Select layer type",
+                    text: i18next.t("app_page.common.layer_type_selection"),
                     type: "info",
                     showCancelButton: true,
                     showCloseButton: false,
@@ -201,15 +201,15 @@ function handleOneByOneShp(files, target_layer_on_add){
                     confirmButtonColor: "#DD6B55",
                     confirmButtonText: i18next.t("app_page.common.confirm"),
                     input: 'select',
-                    inputPlaceholder: 'Select the type of layer',
+                    inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
                     inputOptions: {
-                        'target': 'Target layer',
-                        'layout': 'Layout layer',
+                        'target': i18next.t("app_page.common.target_l"),
+                        'layout': i18next.t("app_page.common.layout_l"),
                       },
                     inputValidator: function(value) {
                         return new Promise(function(resolve, reject){
                             if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                reject("No value selected");
+                                reject(i18next.t("app_page.common.no_value"));
                             } else {
                                 resolve();
                                 let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
@@ -321,7 +321,7 @@ function prepare_drop_section(){
                 } else {
                     swal({
                         title: "",
-                        text: "Select layer type",
+                        text: i18next.t("app_page.common.layer_type_selection"),
                         type: "info",
                         showCancelButton: true,
                         showCloseButton: false,
@@ -330,15 +330,15 @@ function prepare_drop_section(){
                         confirmButtonColor: "#DD6B55",
                         confirmButtonText: i18next.t("app_page.common.confirm"),
                         input: 'select',
-                        inputPlaceholder: 'Select the type of layer',
+                        inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
                         inputOptions: {
-                            'target': 'Target layer',
-                            'layout': 'Layout layer',
+                          'target': i18next.t("app_page.common.target_l"),
+                          'layout': i18next.t("app_page.common.layout_l"),
                           },
                         inputValidator: function(value) {
                             return new Promise(function(resolve, reject){
                                 if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                    reject("No value selected");
+                                    reject(i18next.t("app_page.common.no_value"));
                                 } else {
                                     resolve();
                                     handle_upload_files(files, value === "target", elem);
@@ -1137,16 +1137,18 @@ var drag_lgd_features = d3.drag()
                     prev_translate = t.attr("transform");
                 prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
                 return {
-                    x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
+                    x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
+                    map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                 };
             })
         .on("start", () => {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
+            handle_click_hand("lock");
           })
         .on("end", () => {
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+            if(d3.event.subject && !d3.event.subject.map_locked)
+              handle_click_hand("unlock");
           })
         .on("drag", function(){
             let t = d3.select(this),

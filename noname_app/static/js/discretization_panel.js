@@ -455,7 +455,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
-        max_nb_class = 22 < nb_values ? 22 : nb_values;
+        max_nb_class = 20 < nb_values ? 20 : nb_values;
 
     if(serie.variance() == 0 && serie.stddev() == 0){
         var serie = new geostats(values);
@@ -723,11 +723,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             no_data_color = document.getElementById("no_data_color").value;
         }
         for(let j=0; j < db_data.length; ++j){
-            let value = +db_data[j][field_name];
-            if(value != null){
+            let value = db_data[j][field_name];
+            if(value !== null){
                 let idx = serie.getClass(+value);
                 colors_map.push(color_array[idx]);
             } else {
+
                 colors_map.push(no_data_color);
             }
         }

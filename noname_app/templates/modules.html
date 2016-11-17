@@ -378,7 +378,7 @@ function setUpInterface(resume_project)
             .attr("data-i18n", "[html]app_page.section4.map_scale_k");
     d.append("input")
             .attrs({id: "input-scale-k",
-                    class, "list_elem_section4 m_elem_right",
+                    class: "list_elem_section4 m_elem_right",
                     type: "number",
                     value: round_value(zoom_prop.k * proj.scale(), 2),
                     step: "any"})
@@ -917,8 +917,7 @@ function make_ico_choice(){
                         'icon_smooth.png',
                         'icon_discont.png',
                         'icon_typosymbol.png',
-                        'icon_flow.png',
-                        'icon_label.png'];
+                        'icon_flow.png'];
     let function_panel = section2.append("div")
                             .attr("id", "list_ico_func");
 
