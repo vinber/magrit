@@ -438,16 +438,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
       redisplay.draw();
     };
     make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info, callback);
-    // box_content.append("p")
-    //         .insert("button")
-    //         .attr("class", "button_st3")
-    //         .html(i18next.t("disc_box.apply"))
-    //         .on("click", function(){
-    //             discretization.node().value = type;
-    //             update_breaks(true);
-    //             redisplay.compute();
-    //             redisplay.draw();
-    //         });
+
     redisplay.compute();
     redisplay.draw();
 

@@ -178,28 +178,37 @@ function getBreaksQ6(serie){
 }
 
 function getBinsCount(_values, bins=16){
-    _values.sort((a,b) => a-b);
-    let min = _values[0],
-        max = _values[_values.length - 1],
+    _values = _values.filter(a => a).sort((a,b) => a-b);
+    let nb_ft = _values.length,
+        min = _values[0],
+        max = _values[nb_ft - 1],
         extend = max - min,
         bin_size = extend / bins,
         counts = new Array(bins),
-        break_values = [min];
+        break_values = [min],
+        sum = 0,
+        ix_med = (nb_ft + 1) / 2;
 
     for(let i = 0; i < bins; i++){
         break_values.push(break_values[i] + bin_size);
     }
-    for(let i = 1, j = 0; i<break_values.length; i++){
+    for(let i = 1, j = 0; i<nb_ft; i++){
         let class_max = break_values[i-1];
         counts[i-1] = 0;
         while(_values[j] <= class_max){
+            sum += _values[j];
             counts[i-1] += 1;
             j++;
         }
     }
+
     return {
         breaks: break_values,
-        counts: counts
+        counts: counts,
+        min: min,
+        max: max,
+        mean: sum / nb_ft,
+        median: (ix_med | 0) == ix_med ? _values[ix_med] : (_values[Math.floor(ix_med)] + _values[Math.ceil(ix_med)]) / 2
         };
 }
 

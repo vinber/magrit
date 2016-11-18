@@ -1128,47 +1128,7 @@ function add_single_symbol(symbol_dataurl){
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
             })
         .call(drag_elem_geo);
-
 }
-
-var drag_lgd_features = d3.drag()
-         .subject(function() {
-                var t = d3.select(this),
-                    prev_translate = t.attr("transform");
-                prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
-                return {
-                    x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
-                    map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                    map_offset: get_map_xy0()
-                };
-            })
-        .on("start", () => {
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.preventDefault();
-            handle_click_hand("lock");
-          })
-        .on("end", () => {
-            if(d3.event.subject && !d3.event.subject.map_locked)
-              handle_click_hand("unlock");
-          })
-        .on("drag", function(){
-            let t = d3.select(this),
-                prev_value = t.attr("transform");
-            prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(f => +f) : [0, 0];
-            t.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')');
-            let bbox_elem = this.getBoundingClientRect(),
-                map_offset = d3.event.subject.map_offset,
-                val_x = d3.event.x, val_y = d3.event.y, change;
-            if(bbox_elem.x < map_offset.x || bbox_elem.x + bbox_elem.width > map_offset.x + w){
-                val_x = prev_value[0];
-                change = true;
-            }
-            if(bbox_elem.y < map_offset.y || bbox_elem.y + bbox_elem.height > map_offset.y + h){
-                val_y = prev_value[1];
-                change = true;
-            }
-            if(change) t.attr('transform', 'translate(' + [val_x, val_y] + ')');
-          });
 
 function add_layout_layers(){
     var existing_box = document.querySelector(".sampleLayoutDialogBox");

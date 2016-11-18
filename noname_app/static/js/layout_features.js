@@ -465,7 +465,7 @@ var scaleBar = {
                      "text-anchor": "middle"})
             .text(this.dist_txt + " km");
 
-        scale_gp.call(drag_lgd_features);
+        scale_gp.call(drag_legend_func(scale_gp));
         scale_gp.on("mouseover", function(){
                   this.style.cursor = "pointer";
                   self.under_rect.style("fill-opacity", 0.1)

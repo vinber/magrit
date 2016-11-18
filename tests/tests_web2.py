@@ -231,10 +231,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get("http://localhost:9999/modules")
 
-        driver.find_element_by_id("btn_s5").click()
+        driver.find_element_by_id("btn_s4").click()
         time.sleep(0.5)
 
         driver.find_element_by_id("btn_add_layout_ft").click()
+        time.sleep(0.4)
         list_elem = driver.find_element_by_class_name("sample_layout")
         Select(list_elem).select_by_value("text_annot")
         driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
@@ -246,22 +247,25 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.2)
 
         driver.find_element_by_id("btn_add_layout_ft").click()
+        time.sleep(0.4)
         list_elem = driver.find_element_by_class_name("sample_layout")
         Select(list_elem).select_by_value("scale")
         driver.find_element_by_css_selector(".btn_ok").click()
         time.sleep(0.2)
 
         driver.find_element_by_id("btn_add_layout_ft").click()
+        time.sleep(0.4)
         list_elem = driver.find_element_by_class_name("sample_layout")
         Select(list_elem).select_by_value("graticule")
         driver.find_element_by_css_selector(".btn_ok").click()
         time.sleep(0.2)
 
         driver.find_element_by_id("btn_add_layout_ft").click()
+        time.sleep(0.4)
         list_elem = driver.find_element_by_class_name("sample_layout")
         Select(list_elem).select_by_value("sphere")
         driver.find_element_by_css_selector(".btn_ok").click()
-    
+
     # def test_flow(self):
     #     driver = self.driver
     #     driver.get(self.base_url)
@@ -335,11 +339,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok.click()
         time.sleep(0.5)
         # Open the appropriate menu:
-        menu_options = self.get_menu_options()
+        driver.find_element_by_id("btn_s5").click()
 
         # Test export to svg:
-        menu_options[0].click()
-        time.sleep(0.2)
+        Select(driver.find_element_by_id("select_export_type")
+            ).select_by_value("svg")
+        driver.find_element_by_id("export_button_section5b").click()
+        time.sleep(1)
         with open(self.tmp_folder + "export.svg", "r") as f:
             svg_data = f.read()
         self.assertIn('<svg', svg_data)
@@ -347,24 +353,21 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         os.remove(self.tmp_folder + "export.svg")
 
         # Open the appropriate menu:
-        driver.find_element_by_id("export_btn").click()
-        menu_options = driver.find_element_by_id("menu_pref").find_elements_by_css_selector('span')
-
-        # Test export to png:
-        menu_options[1].click()
-        time.sleep(0.2)
+        Select(driver.find_element_by_id("select_export_type")
+            ).select_by_value("png")
+        driver.find_element_by_id("export_button_section5b").click()
+        time.sleep(1)
         with open(self.tmp_folder + "export.png", "rb") as f:
             png_data = f.read()
         self.assertGreater(len(png_data), 0)
         time.sleep(0.1)
         os.remove(self.tmp_folder + "export.png")
 
-        # Open the appropriate menu:
-        menu_options = self.get_menu_options()
-
         # Test export to geographic layer (from the source layer):
-        menu_options[4].click()
-        time.sleep(0.2)
+        Select(driver.find_element_by_id("select_export_type")
+            ).select_by_value("geo")
+        driver.find_element_by_id("export_button_section5b").click()
+        time.sleep(0.5)
         Select(driver.find_element_by_id("layer_to_export")
             ).select_by_visible_text("nuts2_data")
         Select(driver.find_element_by_id("datatype_to_use")
@@ -475,10 +478,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.4)
         driver.find_element_by_css_selector("li.nuts3_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
-        time.sleep(0.2)
+        time.sleep(0.4)
 
         # Test adding fields to the existing table :
         driver.find_element_by_id("add_field_button").click()
+        time.sleep(0.4)
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector(
             "input[value=\"NewFieldName\"]").send_keys("NewFieldName3")
@@ -493,8 +497,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(
             ".addFieldBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
-
+        time.sleep(0.4)
         driver.find_element_by_id("add_field_button").click()
+        time.sleep(0.4)
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName2")
 
@@ -516,7 +521,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(
             ".addFieldBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
+        time.sleep(0.4)
         driver.find_element_by_id("add_field_button").click()
+        time.sleep(0.4)
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").send_keys("NewFieldName1")
 
@@ -530,10 +537,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(
             ".addFieldBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
+        time.sleep(0.4)
         driver.find_element_by_id(
             "browse_data_box").find_elements_by_css_selector(
             ".btn_ok")[0].click()
-
+        time.sleep(0.4)
         driver.find_element_by_id("btn_s2").click()
         time.sleep(0.4)
         #  Test the dougenik cartogram functionnality...
@@ -561,7 +569,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok.click()
         time.sleep(0.5)  # Delay for the sweet alert to close
         driver.find_element_by_id("btn_s3").click()
-        driver.find_element_by_css_selector("li.us_county,#browse_data_button")
+        driver.find_element_by_css_selector("li.us_county"
+            ).find_element_by_css_selector("#browse_data_button")
         time.sleep(0.5)
         driver.find_element_by_id("add_field_button").click()
         time.sleep(0.4)
@@ -614,19 +623,18 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
 
-        # Now the alert about the possible jointure :
-        button_ok = self.get_button_ok_displayed()
-        button_ok.click()
-        time.sleep(0.5)  # Delay for the sweet alert to close
-        driver.find_element_by_css_selector(".btn_ok").click()
+        # # Now the alert about the possible jointure :
+        # button_ok = self.get_button_ok_displayed()
+        # button_ok.click()
+        # time.sleep(0.5)  # Delay for the sweet alert to close
 
-        # Now the alert about how it was successful :
-        button_ok = self.get_button_ok_displayed()
-        button_ok.click()
-        time.sleep(0.5)
         driver.find_element_by_css_selector(
             ".joinBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
+        # Now the alert about how it was successful :
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+
         driver.find_element_by_id("btn_s2").click()
         time.sleep(0.3)
         driver.find_element_by_css_selector("#button_discont").click()
@@ -661,11 +669,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok.click()
         time.sleep(0.5)  # Delay for the sweet alert to close
 
-        # Now the alert about the possible jointure :
-        button_ok = self.get_button_ok_displayed()
-        button_ok.click()
-        time.sleep(0.5)  # Delay for the sweet alert to close
-
         # Choosing fields :
         Select(driver.find_element_by_id("button_field2")
                 ).select_by_visible_text("DEPCOM")
@@ -680,8 +683,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.5)
 
         driver.find_element_by_id("btn_s2").click()
+        time.sleep(0.4)
         driver.find_element_by_css_selector("#button_prop").click()
-        time.sleep(0.5)
+        time.sleep(0.4)
         Select(driver.find_element_by_id(
             "PropSymbol_field_1")).select_by_visible_text("TH")
         Select(driver.find_element_by_xpath(
@@ -716,9 +720,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legend won't display")
 
-#        driver.find_element_by_css_selector("span.context-menu-item-name").click()
-#        driver.find_element_by_id("style_lgd").click()
-#        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
 
     @retry(Exception, 3, 1)
     def click_element_with_retry(self, selector):

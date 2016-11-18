@@ -1299,15 +1299,10 @@ function createStyleBox_ProbSymbol(layer_name){
 var getBlurFilter = (function(size){
     var count = 0;
     return function(size) {
-        let filters = svg_map.querySelector("filters");
-        if(!filters){
-            filters = document.createElement("filters");
-            svg_map.insertBefore(filters, svg_map.querySelector("defs"));
-        }
-        let blur_filts = filters.querySelectorAll(".blur");
+        let blur_filts = defs.node().querySelectorAll(".blur");
         let blur_filt_to_use;
         for(let i=0; i < blur_filts.length; i++){
-            if(blur_filts[i].querySelector("feGaussianBlur").getAttribute("stdDeviation") == size){
+            if(blur_filts[i].querySelector("feGaussianBlur").getAttributeNS(null, "stdDeviation") == size){
                 blur_filt_to_use = blur_filts[i];
             }
         }
@@ -1317,10 +1312,10 @@ var getBlurFilter = (function(size){
             blur_filt_to_use.setAttribute("id","blurfilt" + count);
             blur_filt_to_use.setAttribute("class", "blur");
             var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
-            gaussianFilter.setAttribute("in", "SourceGraphic");
-            gaussianFilter.setAttribute("stdDeviation", size);
+            gaussianFilter.setAttributeNS(null, "in", "SourceGraphic");
+            gaussianFilter.setAttributeNS(null, "stdDeviation", size);
             blur_filt_to_use.appendChild(gaussianFilter);
-            filters.appendChild(blur_filt_to_use);
+            defs.node().appendChild(blur_filt_to_use);
         }
         return blur_filt_to_use.id;
     };

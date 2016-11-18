@@ -1004,28 +1004,31 @@ function move_legends(){
     let legends = [
         svg_map.querySelectorAll("#legend_root"),
         svg_map.querySelectorAll("#legend_root2"),
-        svg_map.querySelectorAll("#legend_root_links")
+        svg_map.querySelectorAll("#legend_root_links"),
+        svg_map.querySelectorAll('#scale_bar.legend')
         ];
 
-    let xy0_map = get_map_xy0();
+    let xy0_map = get_map_xy0(),
+        dim_width = w + xy0_map.x,
+        dim_heght = h + xy0_map.y;
 
-    for(let j=0; j < 3; ++j){
+    for(let j=0; j < 4; ++j){
         let legends_type = legends[j];
         for(let i=0, i_len = legends_type.length; i < i_len; ++i){
             let legend_bbox = legends_type[i].getBoundingClientRect();
-            if((legend_bbox.x + legend_bbox.width / 2) > (w + xy0_map.x)){
+            if((legend_bbox.x + legend_bbox.width) > dim_width){
                 let current_transform = legends_type[i].getAttribute("transform");
                 let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_x = legend_bbox.x + legend_bbox.width - (w + xy0_map.x);
+                let trans_x = legend_bbox.x + legend_bbox.width - dim_width;
                 legends_type[i].setAttribute("transform",
-                    ["translate(", +val_x - trans_x, val_y, ")"].join(''));
+                    ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
             }
-            if((legend_bbox.y + legend_bbox.height / 2) > (h + xy0_map.y)){
+            if((legend_bbox.y + legend_bbox.height) > dim_heght){
                 let current_transform = legends_type[i].getAttribute("transform");
                 let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_y = legend_bbox.y +legend_bbox.height - (h + xy0_map.y);
+                let trans_y = legend_bbox.y +legend_bbox.height - dim_heght;
                 legends_type[i].setAttribute("transform",
-                    ["translate(", val_x, +val_y - trans_y, ")"].join(''));
+                    ["translate(", [val_x, +val_y - trans_y], ")"].join(''));
             }
         }
     }

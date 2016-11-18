@@ -474,7 +474,7 @@ function setUpInterface(resume_project)
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "geo"){
-                    document.getElementById("button_section5b").innerHTML = i18next.t("app_page.section5b.next");
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                     document.getElementById("export_options_png").style.display = "none";
                     let export_filename = document.getElementById("export_filename");
                     export_filename.style.display = "none";
@@ -848,16 +848,16 @@ function setUpInterface(resume_project)
     })
 }
 
-function bindTooltips(){
+function bindTooltips(dataAttr="tooltip-title"){
     // bind the mains tooltips
-    let existing_tooltips = document.querySelectorAll(".bs_tooltip");
-    for(let i = existing_tooltips.length - 1; i > -1; i--){
-        existing_tooltips[i].remove();
-    }
-    let tooltips_elem = document.querySelectorAll("[tooltip-title]");
+    // let existing_tooltips = document.querySelectorAll(".bs_tooltip");
+    // for(let i = existing_tooltips.length - 1; i > -1; i--){
+    //     existing_tooltips[i].remove();
+    // }
+    let tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
     for(let i = tooltips_elem.length - 1; i > -1; i--){
         new Tooltip(tooltips_elem[i], {
-            dataAttr: "tooltip-title",
+            dataAttr: dataAttr,
             animation: "slideNfade",
             duration: 50,
             delay: 100,
