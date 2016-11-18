@@ -208,7 +208,7 @@ function setUpInterface(resume_project)
     e.append("input")
             .attrs({"id": "title", "class": "list_elem_section4 i18n",
                     "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
-            .styles({"margin": "0px 0px 0px 3px", "width": "120px"})
+            .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
             .on("keyup", function(){
                 handle_title(this.value);
             });
@@ -305,22 +305,27 @@ function setUpInterface(resume_project)
         let diff_w = dispo_w - w;
         let diff_h = dispo_h - h;
         if(this.value == "portrait"){
-            if(diff_h <= diff_w){
+            if(round_value(w / h, 1) == 1.4){
+              let t = h;
+              h = w;
+              w = t;
+            } else if(diff_h >= diff_w){
                 w = round_value(h * 0.70707, 0);
-                canvas_mod_size([w, h]);
             } else {
                 h = round_value(w / 0.70707, 0);
-                canvas_mod_size([w, h]);
             }
         } else if (this.value == "landscape"){
-            if(diff_h <= diff_w){
+            if(round_value(h / w, 1) == 1.4){
+              let t = h;
+              h = w;
+              w = t;
+            } else if(diff_h <= diff_w){
                 w = round_value(h / 0.70707, 0);
-                canvas_mod_size([w, h]);
             } else {
                 h = round_value(w * 0.70707, 0);
-                canvas_mod_size([w, h]);
             }
         }
+        canvas_mod_size([w, h]);
         document.getElementById("input-width").value = w;
         document.getElementById("input-height").value = h;
         fill_export_png_options(this.value);

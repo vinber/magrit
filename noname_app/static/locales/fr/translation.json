@@ -348,7 +348,7 @@
             "random_color": "Couleur aléatoire pour chaque entité",
             "field_to_render": "Champ à utiliser ",
             "choose_colors": "Choix des couleurs",
-            "field": "Champ :",
+            "field": "Champ",
             "choose_discretization": "Choix de la discrétisation",
             "color_palette": "Palette de couleur",
             "reverse_palette": "Inverser la palette",

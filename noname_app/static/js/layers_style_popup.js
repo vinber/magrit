@@ -177,7 +177,7 @@ function createStyleBoxTypoSymbols(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "245px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: rendered_field}),
@@ -289,7 +289,7 @@ function createStyleBoxLabel(layer_name){
                 restore_prev_settings();
             }
         });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "245px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -369,7 +369,7 @@ function createStyleBoxGraticule(layer_name){
             if(confirmed){ null; } else { null; }
         });
 
-    let popup = d3.select(".styleBox").select(".modal-body").style("width", "245px");
+    let popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     let color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -589,7 +589,7 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "245px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
 
     if(type === "Point" && !renderer){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -922,8 +922,14 @@ function createStyleBox(layer_name){
       }
       labels_section.append("span")
             .attr("id", "generate_labels")
-            .style("cursor", "pointer")
+            .styles({"cursor": "pointer", "margin-top": "15px"})
             .html(i18next.t("app_page.layer_style_popup.generate_labels"))
+            .on("mouseover", function(){
+              this.style.fontWeight = "bold"
+            })
+            .on("mouseout", function(){
+              this.style.fontWeight = "";
+            })
             .on("click", function(){
               let fields =
               swal({
@@ -1104,7 +1110,7 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "245px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),

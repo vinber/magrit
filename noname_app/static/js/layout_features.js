@@ -453,9 +453,9 @@ var scaleBar = {
         ];
 
         let scale_context_menu = new ContextMenu();
-        scale_gp.insert("rect")
-            .attrs({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
-            .style("fill", "none");
+        this.under_rect = scale_gp.insert("rect")
+            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: bar_size + 5})
+            .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");
@@ -466,8 +466,14 @@ var scaleBar = {
             .text(this.dist_txt + " km");
 
         scale_gp.call(drag_lgd_features);
-        scale_gp.on("mouseover", function(){ this.style.cursor = "pointer";})
-                .on("mouseout", function(){ this.style.cursor = "initial";})
+        scale_gp.on("mouseover", function(){
+                  this.style.cursor = "pointer";
+                  self.under_rect.style("fill-opacity", 0.1)
+                })
+                .on("mouseout", function(){
+                  this.style.cursor = "pointer";
+                  self.under_rect.style("fill-opacity", 0)
+                })
                 .on("contextmenu", (d,i) => {
                     d3.event.preventDefault();
                     return scale_context_menu
@@ -510,6 +516,7 @@ var scaleBar = {
                   .attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
+        this.under_rect.attr("width", new_size + 5);
         this.changeText();
         this.handle_start_end_bar();
 
@@ -567,16 +574,25 @@ var scaleBar = {
     },
     editStyle: function(){
         var new_val,
-            self = this;
+            self = this,
+            redraw_now = () => {
+              if(new_val)
+                  self.resize(new_val);
+              else {
+                  self.fixed_size = false;
+                  self.changeText();
+              }
+            };
         make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed){
-                    if(new_val)
-                        self.resize(new_val);
-                    else {
-                        self.fixed_size = false;
-                        self.changeText();
-                    }
+                    redraw_now();
+                    // if(new_val)
+                    //     self.resize(new_val);
+                    // else {
+                    //     self.fixed_size = false;
+                    //     self.changeText();
+                    // }
                 }
             });
         var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
@@ -596,13 +612,17 @@ var scaleBar = {
                         box_body.select("#scale_fixed_field").attr("disabled", true);
                         new_val = false;
                     }
-        });
+                    redraw_now();
+                  });
         box_body.append("input")
                 .attr('id', "scale_fixed_field")
                 .attr("type", "number")
                 .attr("disabled", self.fixed_size ? null : true)
                 .attr("value", +this.dist_txt)
-                .on("change", function(){ new_val = +this.value });
+                .on("change", function(){
+                  new_val = +this.value;
+                  redraw_now();
+                });
 
         let b = box_body.append("p");
         b.insert("span")
@@ -612,7 +632,8 @@ var scaleBar = {
                 .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.precision})
                 .style("width", "60px")
                 .on("change", function(){
-                    self.precision = +this.value;
+                  self.precision = +this.value;
+                  redraw_now();
                 });
 
         let c = box_body.append("p");
@@ -621,7 +642,8 @@ var scaleBar = {
         let unit_select = c.insert("select")
                 .attr('id', "scale_unit")
                 .on("change", function(){
-                    self.unit = this.value;
+                  self.unit = this.value;
+                  redraw_now();
                 });
         unit_select.append("option").text("km").attr("value", "km");
         unit_select.append("option").text("m").attr("value", "m");

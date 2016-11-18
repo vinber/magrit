@@ -354,7 +354,7 @@
             "random_color": "Random color on each feature",
             "field_to_render": "Field to render ",
             "choose_colors": "Choose colors",
-            "field": "Field :",
+            "field": "Field",
             "choose_discretization": "Display and arrange classes",
             "color_palette": "Color palette ",
             "reverse_palette": "Reverse palette",

@@ -945,6 +945,11 @@ var display_box_symbol_typo = function(layer, field){
                     .attr("id", (d,i) => ["line", i].join('_'));
 
         newbox.selectAll(".typo_class")
+                .append("span")
+                .attrs({"class": "three_dots"})
+                .style("cursor", "grab");
+
+        newbox.selectAll(".typo_class")
                 .append("input")
                 .styles({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
                 .attr("class", "typo_name")

@@ -629,7 +629,7 @@ div.panel.show {
 
 .twbs .modal-body > p > input {
     display: inline-block;
-    margin: 0px 15px;
+    margin: 0px 0px 0px 15px;
 }
 
 .twbs .modal-header, .twbs .modal-footer {
@@ -646,6 +646,10 @@ div.panel.show {
 .twbs .help-popover {
     max-width: 500px;
     width: 500px;
+}
+
+.twbs .modal-body > p {
+  margin: 8px 0 !important;
 }
 
 .fitContent {
@@ -681,4 +685,11 @@ p.line_elem {
 
 .styleBox > p > input {
   float: right;
+}
+
+.three_dots {
+  background: url(/static/img/3_dots_ico.png) no-repeat;
+  height: 20px;
+  float: left;
+  width: 10px;
 }

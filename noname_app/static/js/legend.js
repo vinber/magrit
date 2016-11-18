@@ -151,7 +151,8 @@ var drag_legend_func = function(legend_group){
                     prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
                     return {
                         x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                        map_offset: get_map_xy0()
                     };
                 })
             .on("start", () => {
@@ -165,8 +166,24 @@ var drag_legend_func = function(legend_group){
                 legend_group.style("cursor", "grab");
               })
             .on("drag", () => {
+                let prev_value = legend_group.attr("transform");
+                prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(f => +f) : [0, 0];
                 legend_group.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')')
                         .style("cursor", "grabbing");
+
+                let bbox_elem = legend_group.node().getBoundingClientRect(),
+                    map_offset = d3.event.subject.map_offset,
+                    val_x = d3.event.x, val_y = d3.event.y, change;
+
+                if(bbox_elem.x < map_offset.x || bbox_elem.x + bbox_elem.width > map_offset.x + w){
+                    val_x = prev_value[0];
+                    change = true;
+                }
+                if(bbox_elem.y < map_offset.y || bbox_elem.y + bbox_elem.height > map_offset.y + h){
+                    val_y = prev_value[1];
+                    change = true;
+                }
+                if(change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
               });
 }
 
