@@ -2602,7 +2602,7 @@ function fillMenu_PropSymbol(layer){
 
     var symb_selec = dialog_content
                         .append('p').html(i18next.t("app_page.func_options.prop.symbol_type"))
-                        .insert('select').attr('class', 'params');
+                        .insert('select').attrs({'class': 'params', "id": "PropSymbol_symbol"});
 
     [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
      [i18next.t("app_page.func_options.common.symbol_square"), "rect"]

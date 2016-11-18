@@ -344,6 +344,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Test export to svg:
         Select(driver.find_element_by_id("select_export_type")
             ).select_by_value("svg")
+        time.sleep(0.2)
         driver.find_element_by_id("export_button_section5b").click()
         time.sleep(1)
         with open(self.tmp_folder + "export.svg", "r") as f:
@@ -355,6 +356,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Open the appropriate menu:
         Select(driver.find_element_by_id("select_export_type")
             ).select_by_value("png")
+        time.sleep(0.2)
         driver.find_element_by_id("export_button_section5b").click()
         time.sleep(1)
         with open(self.tmp_folder + "export.png", "rb") as f:
@@ -366,6 +368,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Test export to geographic layer (from the source layer):
         Select(driver.find_element_by_id("select_export_type")
             ).select_by_value("geo")
+        time.sleep(0.2)
         driver.find_element_by_id("export_button_section5b").click()
         time.sleep(0.5)
         Select(driver.find_element_by_id("layer_to_export")
@@ -375,8 +378,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("projection_to_use")
             ).select_by_value("epsg:4326")
 
-        driver.find_element_by_id("dialogGeoExport"
-            ).find_element_by_css_selector("button.button_st4").click()
+        driver.find_element_by_css_selector(".dialogGeoExport"
+            ).find_element_by_css_selector("button.btn_ok").click()
         time.sleep(0.5)
         with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
             raw_geojson = f.read()
@@ -387,49 +390,49 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual(len(parsed_geojson["features"]), 310)
         os.remove(self.tmp_folder + "nuts2_data.geojson")
 
-        # Test export on result layer this time
-        # First coompute a result from smoothed map functionnality :
-        driver.find_element_by_id("btn_s2").click()
-        time.sleep(0.5)
-        driver.find_element_by_css_selector("#button_smooth").click()
-        time.sleep(0.2)
-        driver.find_element_by_id("stewart_nb_class").clear()
-        driver.find_element_by_id("stewart_nb_class").send_keys("7")
-        driver.find_element_by_id("stewart_span").clear()
-        driver.find_element_by_id("stewart_span").send_keys("60")
-        Select(driver.find_element_by_id("stewart_mask")
-            ).select_by_visible_text("nuts2_data")
-        # Set a custom name for this result layer :
-        driver.find_element_by_id("stewart_output_name").clear()
-        driver.find_element_by_id("stewart_output_name").send_keys("NewLayerName")
-        driver.find_element_by_id("stewart_yes").click()
-        button_ok = self.get_button_ok_displayed()
-        button_ok.click()
-        time.sleep(1)  # Delay for the sweet alert to close
-
-        # Open the appropriate menu:
-        menu_options = self.get_menu_options()
-
-        # Test export to geographic layer (from a result layer):
-        menu_options[4].click()
-        time.sleep(0.2)
-        Select(driver.find_element_by_id("layer_to_export")
-            ).select_by_visible_text("NewLayerName")
-        Select(driver.find_element_by_id("datatype_to_use")
-            ).select_by_value("GeoJSON")
-        Select(driver.find_element_by_id("projection_to_use")
-            ).select_by_value("epsg:4326")
-
-        driver.find_element_by_id("dialogGeoExport"
-            ).find_element_by_css_selector("button.button_st4").click()
-        time.sleep(0.5)
-        with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
-            raw_geojson = f.read()
-        parsed_geojson = json.loads(raw_geojson)
-        self.assertIn("features", parsed_geojson)
-        self.assertIn("type", parsed_geojson)
-        self.assertIn("crs", parsed_geojson)
-        os.remove(self.tmp_folder + "NewLayerName.geojson")
+        # # Test export on result layer this time
+        # # First coompute a result from smoothed map functionnality :
+        # driver.find_element_by_id("btn_s2").click()
+        # time.sleep(0.5)
+        # driver.find_element_by_css_selector("#button_smooth").click()
+        # time.sleep(0.2)
+        # driver.find_element_by_id("stewart_nb_class").clear()
+        # driver.find_element_by_id("stewart_nb_class").send_keys("7")
+        # driver.find_element_by_id("stewart_span").clear()
+        # driver.find_element_by_id("stewart_span").send_keys("60")
+        # Select(driver.find_element_by_id("stewart_mask")
+        #     ).select_by_visible_text("nuts2_data")
+        # # Set a custom name for this result layer :
+        # driver.find_element_by_id("stewart_output_name").clear()
+        # driver.find_element_by_id("stewart_output_name").send_keys("NewLayerName")
+        # driver.find_element_by_id("stewart_yes").click()
+        # button_ok = self.get_button_ok_displayed()
+        # button_ok.click()
+        # time.sleep(1)  # Delay for the sweet alert to close
+        #
+        # # Open the appropriate menu:
+        # menu_options = self.get_menu_options()
+        #
+        # # Test export to geographic layer (from a result layer):
+        # menu_options[4].click()
+        # time.sleep(0.2)
+        # Select(driver.find_element_by_id("layer_to_export")
+        #     ).select_by_visible_text("NewLayerName")
+        # Select(driver.find_element_by_id("datatype_to_use")
+        #     ).select_by_value("GeoJSON")
+        # Select(driver.find_element_by_id("projection_to_use")
+        #     ).select_by_value("epsg:4326")
+        #
+        # driver.find_element_by_id("dialogGeoExport"
+        #     ).find_element_by_css_selector("button.button_st4").click()
+        # time.sleep(0.5)
+        # with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
+        #     raw_geojson = f.read()
+        # parsed_geojson = json.loads(raw_geojson)
+        # self.assertIn("features", parsed_geojson)
+        # self.assertIn("type", parsed_geojson)
+        # self.assertIn("crs", parsed_geojson)
+        # os.remove(self.tmp_folder + "NewLayerName.geojson")
 
 
     def test_stewart(self):
@@ -513,7 +516,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_xpath(
             "//div[@id='field_div1']/select[2]")).select_by_visible_text("/")
         Select(driver.find_element_by_xpath(
-            "//div[@id='field_div1']/select[3]")).select_by_value("constant_value")
+            "//div[@id='field_div1']/select[3]")).select_by_value("user_const_value")
         driver.find_element_by_id("val_opt").clear()
         driver.find_element_by_id("val_opt").send_keys("1000")
         Select(driver.find_element_by_xpath(
@@ -569,8 +572,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         button_ok.click()
         time.sleep(0.5)  # Delay for the sweet alert to close
         driver.find_element_by_id("btn_s3").click()
+        time.sleep(0.5)  # Delay for the menu to be opened
         driver.find_element_by_css_selector("li.us_county"
-            ).find_element_by_css_selector("#browse_data_button")
+            ).find_element_by_css_selector("#browse_data_button").click()
         time.sleep(0.5)
         driver.find_element_by_id("add_field_button").click()
         time.sleep(0.4)
@@ -626,7 +630,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # # Now the alert about the possible jointure :
         # button_ok = self.get_button_ok_displayed()
         # button_ok.click()
-        # time.sleep(0.5)  # Delay for the sweet alert to close
+        time.sleep(0.5)  # Delay for the sweet alert to close
 
         driver.find_element_by_css_selector(
             ".joinBox").find_elements_by_css_selector(
@@ -634,9 +638,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Now the alert about how it was successful :
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
-
+        time.sleep(0.4)
         driver.find_element_by_id("btn_s2").click()
-        time.sleep(0.3)
+        time.sleep(0.4)
         driver.find_element_by_css_selector("#button_discont").click()
         time.sleep(0.5)
         Select(driver.find_element_by_id("field_Discont")
@@ -688,8 +692,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.4)
         Select(driver.find_element_by_id(
             "PropSymbol_field_1")).select_by_visible_text("TH")
-        Select(driver.find_element_by_xpath(
-            "//div[@id='section2']/p/p[4]/select")).select_by_value("rect")
+        Select(driver.find_element_by_id(
+            "PropSymbol_symbol")).select_by_value("rect")
         Select(driver.find_element_by_id("PropSymbol_nb_colors")
                 ).select_by_value("2")
         driver.find_element_by_id("PropSymbol_break_val").clear()
@@ -705,20 +709,27 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "document.getElementById('PropSymbol_color1').value = '#ffff00';")
         driver.find_element_by_id("yes").click()
         time.sleep(1.5)
-        driver.find_element_by_css_selector(
-            "img.style_target_layer").click()
-        driver.find_element_by_css_selector(
-            "#fill_color_section > input[type=\"number\"]").clear()
-        driver.find_element_by_css_selector(
-            "#fill_color_section > input[type=\"number\"]").send_keys("100000")
-        driver.find_element_by_xpath("(//input[@value='145535'])[2]").clear()
-        driver.find_element_by_xpath("(//input[@value='145535'])[2]").send_keys("15535")
-        driver.find_element_by_css_selector(
-            ".styleBox").find_elements_by_css_selector(
-            ".btn_ok")[0].click()
-        driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legend won't display")
+        time.sleep(0.1)
+        driver.find_element_by_id("legend_button").click()
+
+        time.sleep(0.4)
+        if not self.try_element_present(By.ID, "legend_root2", 5):
+            self.fail("Legend won't hide")
+
+        # driver.find_element_by_css_selector(
+        #     "img.style_target_layer").click()
+        # driver.find_element_by_css_selector(
+        #     "#fill_color_section > input[type=\"number\"]").clear()
+        # driver.find_element_by_css_selector(
+        #     "#fill_color_section > input[type=\"number\"]").send_keys("100000")
+        # driver.find_element_by_xpath("(//input[@value='145535'])[2]").clear()
+        # driver.find_element_by_xpath("(//input[@value='145535'])[2]").send_keys("15535")
+        # driver.find_element_by_css_selector(
+        #     ".styleBox").find_elements_by_css_selector(
+        #     ".btn_ok")[0].click()
+        # driver.find_element_by_id("legend_button").click()
 
 
     @retry(Exception, 3, 1)
