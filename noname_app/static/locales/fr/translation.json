@@ -329,6 +329,7 @@
             "new_random_colors": "Nouvelles couleurs aléatoires"
         },
         "layer_style_popup": {
+            "fill_color": "Couleur de remplissage",
             "toggle_colors": "<b><i>Cliquer pour modifier les couleurs</b></i>",
             "categorical_field": "Champ catégoriel :",
             "rendered_field": "<i>Champ utilisé : <b>{{field}}</b></i><br>",
@@ -357,7 +358,6 @@
             "discont_threshold": "Seuil de discontinuités ",
             "border_color": "Couleur du contour<br>",
             "color": "Couleur<br>",
-            "fill_color": "Couleur de remplissage<br>",
             "opacity": "Opacité<br>",
             "border_color": "Couleur de la bordure<br>",
             "border_opacity": "Opacité de la bordure<br>",

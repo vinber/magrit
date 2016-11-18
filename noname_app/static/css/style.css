@@ -162,7 +162,8 @@ a.menu {
 }
 
 .list_elem_section4 {
-    display: inline;
+    display: inline-flex;
+    margin: 2px;
 }
 
 #section5 {
@@ -667,4 +668,17 @@ tr:nth-child(odd) {background: ##EFECEC;}
     right: 20px;
     width: 60px;
     margin-left: 15px;
+}
+
+select.m_elem_right {
+  width: auto !important;
+}
+
+p.line_elem {
+  display: inline-table;
+  width: 100%;
+}
+
+.styleBox > p > input {
+  float: right;
 }

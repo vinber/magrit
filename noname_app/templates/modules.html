@@ -204,16 +204,15 @@ function setUpInterface(resume_project)
                              width: "100%",
                              "margin-top": "0px"});
 
-    let e = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    e.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_title");
-    e.append("input").attr("class", "list_elem_section4")
-            .attr("id", "title")
-            .styles({"margin": "0px 0px 0px 3px"})
+    let e = dv4.append("li").styles({margin: "1px", padding: "4px", "text-align": "center"});
+    e.append("input")
+            .attrs({"id": "title", "class": "list_elem_section4 i18n",
+                    "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
+            .styles({"margin": "0px 0px 0px 3px", "width": "120px"})
             .on("keyup", function(){
                 handle_title(this.value);
             });
-    e.insert("span")
+    e.append("span")
             .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
             .on("click", handle_title_properties);
@@ -221,8 +220,7 @@ function setUpInterface(resume_project)
     let f = dv4.append("li").styles({margin: "1px", padding: "4px"});
     f.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.background_color");
-    f.append("p")
-            .insert("input")
+    f.append("input")
             .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
             .on("change", function(){
@@ -295,9 +293,7 @@ function setUpInterface(resume_project)
             .style("padding", "4px")
             .attr("data-i18n", "[html]app_page.section4.map_ratio");
     let ratio_select = b.append("select")
-            .attrs({"class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select"})
-            .style("width", "auto !important");
-            //.styles({position: "absolute", right: "20px", "margin-left": "15px"});
+            .attrs({"class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select"});
 
     ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
     ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
@@ -392,22 +388,15 @@ function setUpInterface(resume_project)
     let g = dv4.append("li").styles({margin: "1px", padding: "4px"});
     g.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
-    g.append("input")
-            .attr("type", "range")
-            .attr("id","form_rotate")
-            .attr("value", 0).attr("min", 0)
-            .attr("max", 360).attr("step", 1)
-            .styles({width: "80px", "margin": "9px 10px 9px 15px", "vertical-align": "middle"})
-            .on("input", function(){
-                rotate_global(this.value);
-                document.getElementById("canvas_rotation_value_txt").value = this.value;
-            });
+
+    g.append("span")
+        .style("float", "right")
+        .html("°");
 
     g.append("input")
-        .attr("class", "without_spinner")
-        .attr("id", "canvas_rotation_value_txt")
-        .attrs({value: 0, min: 0, max: 360, step: "any"})
-        .styles({width: "30px", "margin-left": "10px"})
+        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner",
+                value: 0, min: 0, max: 360, step: "any"})
+        .styles({width: "30px", "margin-left": "10px", "float": "right"})
         .on("change", function(){
             let val = +this.value,
                 old_value = document.getElementById("form_rotate").value;
@@ -423,8 +412,15 @@ function setUpInterface(resume_project)
             document.getElementById("form_rotate").value = this.value;
         });
 
-    g.append("span")
-        .html("°");
+      g.append("input")
+              .attrs({type: "range", id: "form_rotate", value: 0,
+                      min: 0, max: 360, step: 1})
+              .styles({width: "80px", margin: "0px 10px 9px 15px",
+                       float: "right", "vertical-align": "middle"})
+              .on("input", function(){
+                  rotate_global(this.value);
+                  document.getElementById("canvas_rotation_value_txt").value = this.value;
+              });
 
     let background = map.append("g")
                         .attrs({id: "Simplified_land_polygons", class: "layer"})

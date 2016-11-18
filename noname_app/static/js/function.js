@@ -1282,9 +1282,7 @@ var fields_Choropleth = {
         });
 
         field_selec.on("change", function(){
-            let field_name = this.value,
-                a = document.getElementById("container_sparkline").querySelector("canvas");
-            if(a) a.remove();
+            let field_name = this.value;
             document.getElementById("Choro_output_name").value = ["Choro", field_name, layer].join('_');
             if(self.rendering_params[field_name] !== undefined){
                 d3.select("#choro_yes").attr("disabled", null);
@@ -3263,6 +3261,9 @@ function render_mini_chart_serie(values, parent, cap, bins){
   cap = cap || max_fast(class_count.counts);
   canvas.width = width;
   canvas.height = height;
+
+  let old = parent.querySelector("canvas");
+  if(old) old.remove();
   parent.append(canvas);
 
   var ctx = canvas.getContext('2d');
@@ -3534,52 +3535,6 @@ function add_field_table(table, layer_name, parent){
 // and to have the section 3 opened
 function switch_accordion_section(){
     document.getElementById("btn_s3").dispatchEvent(new MouseEvent("click"));
-}
-
-
-/**
-* Return the haversine distance in kilometers between two points (lat/long coordinates)
-*
-* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
-* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
-* @return {Number} distance - The distance in km between A and B
-*/
-function haversine_dist(A, B){
-    let pi_dr = Math.PI / 180;
-
-    let lat1 = +A[0], lon1 = +A[1],
-        lat2 = +B[0], lon2 = +B[1];
-
-    let x1 = lat2 - lat1,
-        dLat = x1 * pi_dr,
-        x2 = lon2 - lon1,
-        dLon = x2 * pi_dr;
-
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-/**
-* Return the distance in kilometers between two points (lat/long coordinates)
-* according to the spherical law of cosines
-*
-* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
-* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
-* @return {Number} distance - The distance in km between A and B
-*/
-function coslaw_dist(A, B){
-    let pi_dr = Math.PI / 180;
-
-    let lat1 = +A[0], lon1 = +A[1],
-        lat2 = +B[0], lon2 = +B[1];
-    let phi1 = lat1 * pi_dr,
-        phi2 = lat2 * pi_dr,
-        d_lambda = (lon2-lon1) * pi_dr;
-    return Math.acos(Math.sin(phi1) * Math.sin(phi2) +
-                Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)
-                ) * 6371;
 }
 
 function path_to_geojson(id_layer){

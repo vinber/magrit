@@ -57,6 +57,13 @@ var contains_empty_val = function(arr){
     return false;
 }
 
+/**
+* Round a given value with the given precision
+*
+* @param {Number} val - The value to be rounded.
+* @param {Number} precision - The wanted precision.
+* @return {Number} value - The rounded value.
+*/
 var round_value = function(val, nb){
     if(nb == undefined)
         return val;
@@ -76,6 +83,12 @@ function get_nb_left_separator(nb){
     return tmp[0].length;
 }
 
+/**
+* Get the decimal separator in user's locale.
+* and compute the number of item in each bin.
+*
+* @return {String} separator - The decimal separator (dot or comma)
+*/
 function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
 }
@@ -134,6 +147,13 @@ function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
 }
 
 
+/**
+* Compute breaks according to "Q6" methods
+* and compute the number of item in each bin.
+*
+* @param {Array} serie - An array of ordered values.
+* @return {Object} summary - Object containing the breaks and the stock in each class.
+*/
 function getBreaksQ6(serie){
     var breaks = [], tmp = 0, j = undefined,
         len_serie = serie.length, stock_class = [],
@@ -203,4 +223,49 @@ function getBreaks_userDefined(serie, breaks_list){
         breaks: break_values,
         stock_class: stock_class
         };
+}
+
+/**
+* Return the haversine distance in kilometers between two points (lat/long coordinates)
+*
+* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
+* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
+* @return {Number} distance - The distance in km between A and B
+*/
+function haversine_dist(A, B){
+    let pi_dr = Math.PI / 180;
+
+    let lat1 = +A[0], lon1 = +A[1],
+        lat2 = +B[0], lon2 = +B[1];
+
+    let x1 = lat2 - lat1,
+        dLat = x1 * pi_dr,
+        x2 = lon2 - lon1,
+        dLon = x2 * pi_dr;
+
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/**
+* Return the distance in kilometers between two points (lat/long coordinates)
+* according to the spherical law of cosines
+*
+* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
+* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
+* @return {Number} distance - The distance in km between A and B
+*/
+function coslaw_dist(A, B){
+    let pi_dr = Math.PI / 180;
+
+    let lat1 = +A[0], lon1 = +A[1],
+        lat2 = +B[0], lon2 = +B[1];
+    let phi1 = lat1 * pi_dr,
+        phi2 = lat2 * pi_dr,
+        d_lambda = (lon2-lon1) * pi_dr;
+    return Math.acos(Math.sin(phi1) * Math.sin(phi2) +
+                Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)
+                ) * 6371;
 }

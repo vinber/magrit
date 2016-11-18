@@ -335,7 +335,7 @@
             "new_random_colors": "New randoms colors"
         },
         "layer_style_popup": {
-            "fill_color": "Fill color<br>",
+            "fill_color": "Fill color",
             "toggle_colors": "<b><i>Click to toggle colors</b></i>",
             "categorical_field": "Categorical field :",
             "rendered_field": "<i>Rendered field : <b>{{field}}</b></i><br>",
@@ -364,7 +364,6 @@
             "discont_threshold": "Discontinuity threshold ",
             "border_color": "Border color<br>",
             "color": "Color<br>",
-            "fill_color": "Fill color<br>",
             "opacity": "Opacity<br>",
             "border_color": "Border color<br>",
             "border_opacity": "Border opacity<br>",
