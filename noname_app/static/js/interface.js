@@ -1033,12 +1033,41 @@ function add_layout_feature(selected_feature){
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
-        if(!(scaleBar.displayed))
+        if(!(scaleBar.displayed)){
             scaleBar.create();
-        else
-            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_existing_scalebar"), "error");
+        } else {
+            swal({title: "",
+                  text: i18next.t("app_page.common.error_existing_scalebar"),
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                  type: "question",
+                  showConfirmButton: true,
+                  showCancelButton: true,
+                  confirmButtonText: i18next.t("app_page.common.yes"),
+                  cancelButtonText: i18next.t("app_page.common.no"),
+                }).then(() => {
+                    scaleBar.remove();
+                    scaleBar.create();
+                }, dismiss => { null; });
+        }
     } else if (selected_feature == "north_arrow"){
-        northArrow.display();
+      if(!(northArrow.displayed)){
+          northArrow.display();
+      } else {
+          swal({title: "",
+                text: i18next.t("app_page.common.error_existing_north_arrow"),
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                type: "question",
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: i18next.t("app_page.common.yes"),
+                cancelButtonText: i18next.t("app_page.common.no"),
+              }).then(() => {
+                  northArrow.remove();
+                  northArrow.display();
+              }, dismiss => { null; });
+      }
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
     } else if (selected_feature == "ellipse"){
@@ -1063,9 +1092,7 @@ function handleCreateFreeDraw(){
     let render_line = d3.line().x(d => d[0]).y(d => d[1]);
     let draw_calc = map.append("g")
                         .append("rect")
-                        .attr("x",  0).attr("y",  0)
-                        .attr("width", w).attr("height", h)
-                        .attr("class", "draw_calc")
+                        .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
                         .style("opacity", 0.1).style("fill", "grey");
 
     function redraw() {
@@ -1117,11 +1144,8 @@ function add_single_symbol(symbol_dataurl){
     map.append("g")
         .attrs({class: "legend_features legend single_symbol"})
         .insert("image")
-        .attr("x", w/2)
-        .attr("y", h/2)
-        .attr("width", "30px")
-        .attr("height", "30px")
-        .attr("xlink:href", symbol_dataurl.split("url(")[1].substring(1).slice(0,-2))
+        .attrs({"x": w/2, "y": h/2, "width": "30px", "height": "30px",
+                "xlink:href": symbol_dataurl.split("url(")[1].substring(1).slice(0,-2)})
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){

@@ -48,19 +48,20 @@
 
   </head>
   <body>
-    <noscript>
-      <div style="border: 1px solid orange; padding: 10px">
-        <span style="color:red">To be done : Put here a relevant message for users without js enabled..</span>
-      </div>
-    </noscript>
       <div id="header">
         <p style="display:inline;margin-left:15px;">
         <a href="/"><img src="/static/img/magrit.png" alt="Export" height="20" style="position: absolute; top: 6px;"></a>
         </p>
-        <p id="rgt" class="header_options"></p></div>
+        <p id="rgt" class="header_options"></p>
+      </div>
       <div id="menu"></div>
       <div id="twbs" class="twbs"></div>
   	  <div id="map"></div>
+      <noscript>
+        <div style="padding: 20px; text-align: center;">
+          <span style="color:red">To use Magrit, you need to have JavaScript enabled in your browser.</span>
+        </div>
+      </noscript>
 <script>
 "use strict";
 /**
@@ -172,11 +173,6 @@ function setUpInterface(resume_project)
         .html("");
 
     make_ico_choice();
-
-    //section2.append("p")
-    //        .style("font-size", "18px")
-    //        .attr("class", "i18n")
-    //        .attr("data-i18n", "[html]app_page.section2.no_func");
 
     let section3 = d3.select("#section3");
 
@@ -498,7 +494,7 @@ function setUpInterface(resume_project)
 
     select_size_png.on("change", function(){
         let value = this.value,
-            unit = value === "web" ? "px" : "cm",
+            unit = value === "web" ? " (px)" : " (cm)",
             in_h = document.getElementById("export_png_height"),
             in_w = document.getElementById("export_png_width");
         if(value === "web"){
@@ -553,7 +549,7 @@ function setUpInterface(resume_project)
 
     exp_a.append("span")
             .attr("id", "export_png_height_txt")
-            .html("px");
+            .html(" (px)");
 
     let exp_b = export_png_options.append("p");
     exp_b.append("span")
@@ -570,7 +566,7 @@ function setUpInterface(resume_project)
 
     exp_b.append("span")
             .attr("id", "export_png_width_txt")
-            .html("px");
+            .html(" (px)");
 
     let export_name = dv5b.append("p");
     export_name.append("span")

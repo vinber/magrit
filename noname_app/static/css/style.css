@@ -678,6 +678,10 @@ select.m_elem_right {
   width: auto !important;
 }
 
+#export_filename.m_elem_right {
+  width: auto !important;
+}
+
 p.line_elem {
   display: inline-table;
   width: 100%;

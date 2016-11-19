@@ -116,9 +116,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .scale(x)
                 .ticks(4))
             .selectAll("text")
-                .attr("y", 4).attr("x", -4)
-                .attr("dy", ".45em")
-                .attr("transform", "rotate(-40)")
+                .attrs({x: -4, y: 4, dy: ".45em", "transform": "rotate(-40)"})
                 .style("text-anchor", "end");
 
         svg_ref_histo.append("g")
@@ -131,10 +129,12 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
-        newBox.append("div").attr("id","summary")
-                        .style("font-size", "10px").style("float", "right")
-                        .styles({"margin-left": "25px", "margin-right": "50px"})
-                        .insert("p").html(["<b>", i18next.t("disc_box.summary"),"</b><br>", content_summary].join(""));
+        newBox.append("div")
+            .attr("id","summary")
+            .styles({"margin-left": "25px", "margin-right": "50px",
+                     "font-size": "10px", "float": "right"})
+            .insert("p")
+            .html(["<b>", i18next.t("disc_box.summary"),"</b><br>", content_summary].join(""));
     }
 
     var update_breaks = function(user_defined){
@@ -321,8 +321,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
-                            .attrs({id: "nb_class_range", type: "range"})
-                            .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
+                            .attrs({id: "nb_class_range", type: "range",
+                                    min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
                                 if(type == "user_defined"){

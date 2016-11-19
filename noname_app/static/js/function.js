@@ -1005,6 +1005,8 @@ function fillMenu_FlowMap(){
                     layer_to_render.style('fill-opacity', 0)
                                    .style('stroke-opacity', 0.8)
                                    .style("stroke-width", (d,i) => {return links_byId[i][2]});
+                    switch_accordion_section();
+                    handle_legend(new_layer_name);
                 }, error => {
                     display_error_during_computation();
                     console.log(error);
