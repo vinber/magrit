@@ -325,7 +325,7 @@ function fillMenu_PropSymbolChoro(layer){
                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
                             min: 0.1, max: 66.0, value: 30.0, step: "any"})
                     .style("width", "50px");
-    dv2.append('label-item').html(' px');
+    b.append('label-item').html(' (px)');
 
     var c = dv2.append('p');
     c.append("span")
@@ -607,57 +607,21 @@ function fillMenu_Choropleth(){
 
     var field_selec_section = dv2.append('p');
     field_selec_section.insert("span")
-        .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
-        .html(i18next.t("app_page.func_options.common.field"));
+      .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
+      .html(i18next.t("app_page.func_options.common.field"));
     field_selec_section.insert("span")
-        .attr("id", "container_sparkline")
-        .style("margin", "4px");
+      .attr("id", "container_sparkline")
+      .style("margin", "4px");
 
-    var field_selec = field_selec_section.insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'choro_field_1');
+   field_selec_section.insert('select')
+    .attrs({id: 'choro_field1', class: 'params'});
 
     dv2.insert('p').style("margin", "auto").html("")
-        .append("button")
-        .attrs({id: "choro_class", class: "button_disc params i18n",
-                'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-        .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("app_page.func_options.common.discretization_choice"))
-        .on("click", function(){
-            let layer_name = Object.getOwnPropertyNames(user_data)[0],
-                selected_field = field_selec.node().value,
-                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer_name].length)),
-                conf_disc_box;
-
-            if(rendering_params[selected_field])
-                conf_disc_box = display_discretization(layer_name, selected_field,
-                                                       rendering_params[selected_field].nb_class,
-                                                       rendering_params[selected_field].type,
-                                                       {schema: rendering_params[selected_field].schema,
-                                                        colors: rendering_params[selected_field].colors,
-                                                        no_data: rendering_params[selected_field].no_data});
-
-            else
-                conf_disc_box = display_discretization(layer_name,
-                                                       selected_field,
-                                                       opt_nb_class,
-                                                       "quantiles",
-                                                       {});
-
-            conf_disc_box.then(function(confirmed){
-                if(confirmed){
-                    d3.select("#choro_yes").attr("disabled", null);
-                    rendering_params[selected_field] = {
-                            nb_class: confirmed[0], type: confirmed[1],
-                            breaks: confirmed[2], colors: confirmed[3],
-                            schema: confirmed[5], no_data: confirmed[6],
-                            colorsByFeature: confirmed[4], renderer:"Choropleth",
-                            rendered_field: selected_field,
-                            new_name: ""
-                        };
-                }
-            });
-        });
+      .append("button")
+      .attrs({id: "choro_class", class: "button_disc params i18n",
+              'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+      .styles({"font-size": "0.8em", "text-align": "center"})
+      .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name');
     make_ok_button(dv2, 'choro_yes');
@@ -670,8 +634,9 @@ var fields_Choropleth = {
         let self = this,
             g_lyr_name = "#"+layer,
             fields = type_col(layer, "number"),
-            field_selec = section2.select("#choro_field_1"),
+            field_selec = section2.select("#choro_field1"),
             uo_layer_name = section2.select('#Choro_output_name'),
+            btn_class = section2.select('#choro_class'),
             ok_button = section2.select('#choro_yes');
 
         if(fields.length === 0){
@@ -691,6 +656,41 @@ var fields_Choropleth = {
             ok_button.attr('disabled', self.rendering_params[field_name] !== undefined ? null : true);
         });
 
+        btn_class.on("click", function(){
+            let selected_field = field_selec.node().value,
+                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
+                conf_disc_box;
+
+            if(self.rendering_params[selected_field]) {
+                conf_disc_box = display_discretization(layer, selected_field,
+                                                       self.rendering_params[selected_field].nb_class,
+                                                       self.rendering_params[selected_field].type,
+                                                       {schema: self.rendering_params[selected_field].schema,
+                                                        colors: self.rendering_params[selected_field].colors,
+                                                        no_data: self.rendering_params[selected_field].no_data});
+
+            } else {
+                conf_disc_box = display_discretization(layer,
+                                                       selected_field,
+                                                       opt_nb_class,
+                                                       "quantiles",
+                                                       {});
+            }
+            conf_disc_box.then(function(confirmed){
+                if(confirmed){
+                    ok_button.attr("disabled", null);
+                    self.rendering_params[selected_field] = {
+                            nb_class: confirmed[0], type: confirmed[1],
+                            breaks: confirmed[2], colors: confirmed[3],
+                            schema: confirmed[5], no_data: confirmed[6],
+                            colorsByFeature: confirmed[4], renderer:"Choropleth",
+                            rendered_field: selected_field,
+                            new_name: ""
+                        };
+                }
+            });
+        });
+
         ok_button.on("click", function(){
           let field_to_render = field_selec.node().value;
           if(self.rendering_params[field_to_render]){
@@ -708,7 +708,7 @@ var fields_Choropleth = {
     },
 
     unfill: function(){
-        let field_selec = document.getElementById("choro_field_1"),
+        let field_selec = document.getElementById("choro_field1"),
             nb_fields = field_selec.childElementCount;
 
         for(let i = nb_fields - 1; i > -1 ; --i){
@@ -775,68 +775,6 @@ var fields_Stewart = {
         d3.selectAll(".params").attr("disabled", true);
     }
 };
-
-// function fillMenu_Stewart(){
-//     let inner_div = `
-//         <p class="container_img_help">
-//           <img id="btn_info" class="help_tooltip" src="/static/img/Information.png" width="17" height="17" alt="Informations" style="cursor:pointer;" />
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.field" />
-//           <select id="stewart_field" class="params marg_auto" />
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.divide_field" />
-//           <select id="stewart_field2" class="params marg_auto" />
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.span" />
-//           <input style="width: 60px;" class="params" id="stewart_span" value="5" min="0.001" max="100000" step="any" type="number">
-//           <span> km</span>
-//         </p>
-//         <p style="margin-right: 35px;">
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.beta" />
-//           <input style="width: 60px;" class="params" id="stewart_beta" value="2" min="0" max="11" step="any" type="number">
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.resolution" />
-//           <input style="width: 60px;" class="params" id="stewart_resolution" min="1" max="1000000" step="any" type="number">
-//           <span> km</span>
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.func_options" />
-//           <select class="params i18n" id="stewart_func" disabled="true">
-//             <option value="exponential" data-i18n="app_page.func_options.smooth.exponential"></option>
-//             <option value="pareto"  data-i18n="app_page.func_options.smooth.pareto"></option>
-//           </select>
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.nb_class" />
-//           <input style="width: 50px;" class="params" id="stewart_nb_class" value="8" min="1" max="22" step="1" type="number">
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.break_values" />
-//           <textarea style="width: 100%; height: 2.2em; font-size: 0.9em;" class="params i18n" id="stewart_breaks" data-i18n="[placeholder]app_page.common.expected_class"></textarea>
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.mask" />
-//           <select class="params" id="stewart_mask"></select>
-//         </p>
-//         <p>
-//           <span class="i18n" data-i18n="[html]app_page.func_options.common.output" />
-//           <input style="width: 240px;" class="params" id="stewart_output_name" >
-//         </p>
-//
-//         <p style="text-align: right; margin: auto;">
-//           <button id="stewart_yes" class="params button_st3 i18n" data-i18n="[html]app_page.func_options.common.render" />
-//         </p>`
-//     let dv = section2.append('div')
-//       .attr('class', 'form-rendering')
-//       .html(inner_div);
-//     dv.selectAll('.params')
-//       .attr('disabled', true);
-// }
-
 
 function render_stewart(){
   let formToSend = new FormData(),
@@ -1405,165 +1343,6 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     return [d_values, animation];
 }
 
-function createTableDOM(data, options){
-    options = options || {};
-    options.id = options.id || "myTable";
-    let doc = document,
-        nb_features = data.length,
-        column_names = Object.getOwnPropertyNames(data[0]),
-        nb_columns = column_names.length;
-    let myTable = doc.createElement("table"),
-        headers = doc.createElement("thead"),
-        body = doc.createElement("tbody"),
-        headers_row = doc.createElement("tr");
-    for(let i=0; i < nb_columns; i++){
-        let cell = doc.createElement("th");
-        cell.innerHTML = column_names[i];
-        headers_row.appendChild(cell)
-    }
-    headers.appendChild(headers_row);
-    myTable.appendChild(headers);
-    for(let i=0; i < nb_features; i++){
-        let row = doc.createElement("tr");
-        for(let j=0; j < nb_columns; j++){
-            let cell = doc.createElement("td");
-            cell.innerHTML = data[i][column_names[j]]
-            row.appendChild(cell);
-        }
-        body.appendChild(row);
-    }
-    myTable.appendChild(body);
-    myTable.setAttribute("id", options.id);
-    return myTable;
-}
-
-function make_table(layer_name){
-    let features = svg_map.getElementById(layer_name).childNodes,
-        table = [];
-    if(!features[0].__data__.properties
-            || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0){
-        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
-                table.push({id: features[i].__data__.id || i});
-            }
-    } else {
-        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
-            table.push(features[i].__data__.properties);
-        }
-    }
-    return table;
-}
-
-var boxExplore2 = {
-    display_table: function(table_name){
-        document.querySelector("body").style.cursor = "";
-        let the_table = this.tables.get(table_name);
-        the_table = the_table ? the_table[1] : make_table(table_name);
-
-        this.nb_features = the_table.length;
-        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
-        this.columns_headers = [];
-        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
-            this.columns_headers.push({data: col[i], title: col[i]});
-        if(this.top_buttons.select("#add_field_button").node()){
-            this.top_buttons.select("#add_field_button").remove()
-            document.getElementById("table_intro").remove();
-            document.querySelector(".dataTable-wrapper").remove();
-        }
-
-        // TODO : allow to add_field on all the layer instead of just targeted / result layers :
-        if(this.tables.get(table_name)){
-          this.top_buttons
-               .insert("button")
-               .attrs({id: "add_field_button", class: "button_st3"})
-               .html(i18next.t("app_page.explore_box.button_add_field"))
-               .on('click', () => {
-                  add_field_table(the_table, table_name, this);
-               });
-        }
-        let txt_intro = [
-             "<b>", table_name, "</b><br>",
-             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
-             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
-            ].join('');
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        this.box_table.node().appendChild(
-            createTableDOM(the_table, {id: "myTable"})
-            );
-
-        let myTable = document.getElementById("myTable");
-        this.datatable = new DataTable(myTable,{
-        	sortable: true,
-        	searchable: true,
-        	fixedHeight: true,
-        });
-            // Adjust the size of the box (on opening and after adding a new field)
-            // and/or display scrollbar if its overflowing the size of the window minus a little margin :
-        setTimeout(function(){
-            let box = document.getElementById("browse_data_box");
-            box.querySelector(".dataTable-pagination").style.width = "80%";
-            let bbox = box.querySelector("#myTable").getBoundingClientRect(),
-                new_width = bbox.width,
-                new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
-
-            if(new_width > window.innerWidth * 0.85){
-                box.querySelector(".modal-content").style.overflow = "auto";
-                box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
-            } else if (new_width > 560) {
-                box.querySelector(".modal-dialog").style.width = (new_width + 80) + "px";
-            }
-
-            if (new_height > 350 || new_height > window.innerHeight * 0.80 ) {
-                box.querySelector(".modal-body").style.height = (new_height + 150) + "px";
-                box.querySelector(".modal-body").style.overflow = "auto";
-            }
-            setSelected(document.querySelector(".dataTable-selector"), "10");
-            // let datatable_info = box.querySelector(".dataTable-bottom");
-            // box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
-        }, 225);
-    },
-    get_available_tables: function(){
-        let target_layer = Object.getOwnPropertyNames(user_data),
-            ext_dataset = dataset_name,
-            result_layers = Object.getOwnPropertyNames(result_data),
-            available = new Map();
-        for(let lyr_name of target_layer)
-            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
-        if(ext_dataset)
-            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
-        for(let lyr_name of result_layers)
-            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
-        return available;
-    },
-    create: function(layer_name){
-        this.columns_headers = [];
-        this.nb_features = undefined;
-        this.columns_names = undefined;
-        this.tables = this.get_available_tables()
-        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
-        this.box_table = d3.select("#browse_data_box").select(".modal-body");
-        let self = this;
-
-        this.top_buttons = this.box_table.append('p')
-                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
-
-        let deferred = Q.defer(),
-            container = document.getElementById("browse_data_box"),
-            _onclose = () => {
-                deferred.resolve(false);
-                modal_box.close();
-                container.remove();
-            };
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = function(){
-            deferred.resolve([true, true]);
-            modal_box.close();
-            container.remove();
-        };
-        this.display_table(layer_name);
-        return deferred.promise;
-    }
-};
 
 function make_prop_symbols(rendering_params){
     let layer = rendering_params.ref_layer_name,
@@ -1727,30 +1506,6 @@ function render_categorical(layer, rendering_params){
     zoom_without_redraw();
 }
 
-function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
-    let _list_display_name = get_display_name_on_layer_list(layer_name),
-        layers_listed = layer_list.node(),
-        li = document.createElement("li");
-
-    li.setAttribute("layer_name", layer_name);
-    if(type_layer == "result"){
-        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
-        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
-                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
-                        button_result_type.get(type_geom[1]), "</div> "].join('');
-    } else if(type_layer == "sample"){
-        li.setAttribute("class", ["sortable ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
-        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
-                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
-                        button_type.get(type_geom), "</div> "].join('');
-    }
-    layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-    binds_layers_buttons(layer_name);
-}
 // Function to render the `layer` according to the `rendering_params`
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
@@ -1789,70 +1544,6 @@ function render_choro(layer, rendering_params){
         }
     current_layers[layer].colors_breaks = colors_breaks;
     zoom_without_redraw();
-}
-
-// Function returning the name of all current layers (excepted the sample layers used as layout)
-function get_other_layer_names(){
-    let other_layers = Object.getOwnPropertyNames(current_layers),
-        tmp_idx = null;
-
-    tmp_idx = other_layers.indexOf("Graticule");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
-
-    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
-
-    tmp_idx = other_layers.indexOf("Sphere");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
-
-    return other_layers;
-}
-
-var type_col = function(layer_name, target, skip_if_empty_values=false){
-// Function returning an object like {"field1": "field_type", "field2": "field_type"},
-//  for the fields of the selected layer.
-// If target is set to "number" it should return an array containing only the name of the numerical fields
-// ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name]
-                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name]
-                    : joined_dataset[0],
-        fields = Object.getOwnPropertyNames(table[0]),
-        nb_features = table.length,
-        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-        result = {},
-        field = undefined,
-        tmp_type = undefined;
-    for(let j = 0, len = fields.length; j < len; ++j){
-        field = fields[j];
-        result[field] = [];
-        for(let i=0; i < deepth_test; ++i){
-            tmp_type = typeof table[i][field];
-            if(tmp_type == "string" && table[i][field].length == 0)
-                tmp_type = "empty";
-            else if(tmp_type === "string" && !isNaN(Number(table[i][field])))
-                tmp_type = "number";
-            else if(tmp_type === "object" && isFinite(table[i][field]))
-                tmp_type = "empty"
-            result[fields[j]].push(tmp_type);
-        }
-    }
-
-    for(let j = 0, len = fields.length; j < len; ++j){
-        field = fields[j];
-        if(result[field].every(function(ft){return ft === "number" || ft === "empty";})
-            && result[field].indexOf("number") > -1)
-            result[field] = "number";
-        else
-            result[field] = "string";
-    }
-    if(target){
-        let res = [];
-        for(let k in result)
-            if(result[k] === target && k != "_uid")
-                res.push(k);
-        return res;
-    } else
-        return result;
 }
 
 function render_mini_chart_serie(values, parent, cap, bins){
@@ -1926,7 +1617,7 @@ function fillMenu_PropSymbolTypo(layer){
         .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size',
                 min: 0.1, max: 66.0, value: 30.0, step: "any"})
         .style("width", "50px");
-    b.append('label-item').html(' px');
+    b.append('label-item').html(' (px)');
 
     let c = dv2.append('p');
     c.append('span')
@@ -2186,13 +1877,13 @@ var fields_Discont = {
           document.getElementById("Discont_output_name").value = ["Disc", this.value, disc_kind, layer].join('_');
         });
         ok_button.on('click', render_discont);
-        d3.selectAll(".params").attr("disabled", null);
+        section2.selectAll(".params").attr("disabled", null);
         document.getElementById("Discont_output_name").value = ["Disc", layer].join('_');
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Discont"));
         unfillSelectInput(document.getElementById("field_id_Discont"));
-        d3.selectAll(".params").attr("disabled", true);
+        section2.selectAll(".params").attr("disabled", true);
     }
 }
 
@@ -2520,7 +2211,7 @@ var fields_PropSymbol = {
     unfill: function(){
         let field_selec = document.getElementById("PropSymbol_field_1");
         unfillSelectInput(field_selec);
-        d3.selectAll(".params").attr("disabled", true);
+        section2.selectAll(".params").attr("disabled", true);
     }
 };
 
@@ -2606,7 +2297,7 @@ var fields_TypoSymbol = {
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Symbol"));
-        d3.selectAll(".params").attr("disabled", true);
+        section2.selectAll(".params").attr("disabled", true);
     },
     box_typo: undefined,
     rendering_params: {},
@@ -2665,6 +2356,7 @@ function render_TypoSymbols(rendering_params, new_name){
         "symbol": "image",
         "ref_layer_name": layer_name,
         };
+    handle_legend(layer_to_add);
     up_legends();
     zoom_without_redraw();
     switch_accordion_section();

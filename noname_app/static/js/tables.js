@@ -263,3 +263,163 @@ function add_field_table(table, layer_name, parent){
     }
     return;
 }
+
+function createTableDOM(data, options){
+    options = options || {};
+    options.id = options.id || "myTable";
+    let doc = document,
+        nb_features = data.length,
+        column_names = Object.getOwnPropertyNames(data[0]),
+        nb_columns = column_names.length;
+    let myTable = doc.createElement("table"),
+        headers = doc.createElement("thead"),
+        body = doc.createElement("tbody"),
+        headers_row = doc.createElement("tr");
+    for(let i=0; i < nb_columns; i++){
+        let cell = doc.createElement("th");
+        cell.innerHTML = column_names[i];
+        headers_row.appendChild(cell)
+    }
+    headers.appendChild(headers_row);
+    myTable.appendChild(headers);
+    for(let i=0; i < nb_features; i++){
+        let row = doc.createElement("tr");
+        for(let j=0; j < nb_columns; j++){
+            let cell = doc.createElement("td");
+            cell.innerHTML = data[i][column_names[j]]
+            row.appendChild(cell);
+        }
+        body.appendChild(row);
+    }
+    myTable.appendChild(body);
+    myTable.setAttribute("id", options.id);
+    return myTable;
+}
+
+function make_table(layer_name){
+    let features = svg_map.getElementById(layer_name).childNodes,
+        table = [];
+    if(!features[0].__data__.properties
+            || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0){
+        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
+                table.push({id: features[i].__data__.id || i});
+            }
+    } else {
+        for(let i=0, nb_ft = features.length; i < nb_ft; i++){
+            table.push(features[i].__data__.properties);
+        }
+    }
+    return table;
+}
+
+var boxExplore2 = {
+    display_table: function(table_name){
+        document.querySelector("body").style.cursor = "";
+        let the_table = this.tables.get(table_name);
+        the_table = the_table ? the_table[1] : make_table(table_name);
+
+        this.nb_features = the_table.length;
+        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
+        this.columns_headers = [];
+        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
+            this.columns_headers.push({data: col[i], title: col[i]});
+        if(this.top_buttons.select("#add_field_button").node()){
+            this.top_buttons.select("#add_field_button").remove()
+            document.getElementById("table_intro").remove();
+            document.querySelector(".dataTable-wrapper").remove();
+        }
+
+        // TODO : allow to add_field on all the layer instead of just targeted / result layers :
+        if(this.tables.get(table_name)){
+          this.top_buttons
+               .insert("button")
+               .attrs({id: "add_field_button", class: "button_st3"})
+               .html(i18next.t("app_page.explore_box.button_add_field"))
+               .on('click', () => {
+                  add_field_table(the_table, table_name, this);
+               });
+        }
+        let txt_intro = [
+             "<b>", table_name, "</b><br>",
+             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
+             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
+            ].join('');
+        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
+        this.box_table.node().appendChild(
+            createTableDOM(the_table, {id: "myTable"})
+            );
+
+        let myTable = document.getElementById("myTable");
+        this.datatable = new DataTable(myTable,{
+        	sortable: true,
+        	searchable: true,
+        	fixedHeight: true,
+        });
+            // Adjust the size of the box (on opening and after adding a new field)
+            // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+        setTimeout(function(){
+            let box = document.getElementById("browse_data_box");
+            box.querySelector(".dataTable-pagination").style.width = "80%";
+            let bbox = box.querySelector("#myTable").getBoundingClientRect(),
+                new_width = bbox.width,
+                new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
+
+            if(new_width > window.innerWidth * 0.85){
+                box.querySelector(".modal-content").style.overflow = "auto";
+                box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+            } else if (new_width > 560) {
+                box.querySelector(".modal-dialog").style.width = (new_width + 80) + "px";
+            }
+
+            if (new_height > 350 || new_height > window.innerHeight * 0.80 ) {
+                box.querySelector(".modal-body").style.height = (new_height + 150) + "px";
+                box.querySelector(".modal-body").style.overflow = "auto";
+            }
+            setSelected(document.querySelector(".dataTable-selector"), "10");
+            // let datatable_info = box.querySelector(".dataTable-bottom");
+            // box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
+        }, 225);
+    },
+    get_available_tables: function(){
+        let target_layer = Object.getOwnPropertyNames(user_data),
+            ext_dataset = dataset_name,
+            result_layers = Object.getOwnPropertyNames(result_data),
+            available = new Map();
+        for(let lyr_name of target_layer)
+            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
+        if(ext_dataset)
+            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
+        for(let lyr_name of result_layers)
+            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
+        return available;
+    },
+    create: function(layer_name){
+        this.columns_headers = [];
+        this.nb_features = undefined;
+        this.columns_names = undefined;
+        this.tables = this.get_available_tables()
+        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.box_table = d3.select("#browse_data_box").select(".modal-body");
+        let self = this;
+
+        this.top_buttons = this.box_table.append('p')
+                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+
+        let deferred = Q.defer(),
+            container = document.getElementById("browse_data_box"),
+            _onclose = () => {
+                deferred.resolve(false);
+                modal_box.close();
+                container.remove();
+            };
+        container.querySelector(".btn_cancel").onclick = _onclose;
+        container.querySelector("#xclose").onclick = _onclose;
+        container.querySelector(".btn_ok").onclick = function(){
+            deferred.resolve([true, true]);
+            modal_box.close();
+            container.remove();
+        };
+        this.display_table(layer_name);
+        return deferred.promise;
+    }
+};

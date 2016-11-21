@@ -81,7 +81,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         deferred.resolve(res_url);
         modal_box.close();
         container.remove();
-        if(parent_css_selector) { reOpenParent(parent_css_selector); console.log(parent_css_selector)}
+        if(parent_css_selector) reOpenParent(parent_css_selector);
     }
 
     let _onclose = () => {

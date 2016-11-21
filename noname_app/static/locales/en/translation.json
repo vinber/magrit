@@ -54,7 +54,7 @@
             "Q6": "Q6",
             "arithmetic_progression": "Arithmetic progression",
             "jenks": "Jenks",
-            "arithmetic_progression": "Geometric progression",
+            "geometric_progression": "Geometric progression",
             "user_defined": "User defined",
             "up_element": "Up element",
             "down_element": "Down element",
@@ -489,7 +489,12 @@
             "flow": {
                 "subtitle1": "Links dataset fields :",
                 "discretization": "Discretization type ",
-                "nb_class": "Number of class "
+                "nb_class": "Number of class ",
+                "origin_field": "Origin field",
+                "destination_field": "Destination field",
+                "intensity_field": "Intensity field",
+                "ref_layer_field": "Reference layer fields",
+                "join_field": "Join field"
             },
             "grid": {
                 "field": "Field",

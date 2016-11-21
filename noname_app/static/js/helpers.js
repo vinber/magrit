@@ -139,3 +139,96 @@ function send_layer_server(layer_name, url){
         console.log(err);
     });
 }
+
+// Function returning the name of all current layers (excepted the sample layers used as layout)
+function get_other_layer_names(){
+    let other_layers = Object.getOwnPropertyNames(current_layers),
+        tmp_idx = null;
+
+    tmp_idx = other_layers.indexOf("Graticule");
+    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+
+    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
+    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+
+    tmp_idx = other_layers.indexOf("Sphere");
+    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+
+    return other_layers;
+}
+/**
+* function triggered in order to add a new layer
+* in the "layer manager" (with appropriates icons regarding to its type, etc.)
+*
+*/
+function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
+    let _list_display_name = get_display_name_on_layer_list(layer_name),
+        layers_listed = layer_list.node(),
+        li = document.createElement("li");
+
+    li.setAttribute("layer_name", layer_name);
+    if(type_layer == "result"){
+        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
+        li.setAttribute("layer-tooltip",
+                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
+        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
+                        button_result_type.get(type_geom[1]), "</div> "].join('');
+    } else if(type_layer == "sample"){
+        li.setAttribute("class", ["sortable ", layer_name].join(''));
+        li.setAttribute("layer-tooltip",
+                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
+                        button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
+                        button_type.get(type_geom), "</div> "].join('');
+    }
+    layers_listed.insertBefore(li, layers_listed.childNodes[0]);
+    binds_layers_buttons(layer_name);
+}
+
+var type_col = function(layer_name, target, skip_if_empty_values=false){
+// Function returning an object like {"field1": "field_type", "field2": "field_type"},
+//  for the fields of the selected layer.
+// If target is set to "number" it should return an array containing only the name of the numerical fields
+// ------------------- "string" ---------------------------------------------------------non-numerial ----
+    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name]
+                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name]
+                    : joined_dataset[0],
+        fields = Object.getOwnPropertyNames(table[0]),
+        nb_features = table.length,
+        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
+        result = {},
+        field = undefined,
+        tmp_type = undefined;
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        result[field] = [];
+        for(let i=0; i < deepth_test; ++i){
+            tmp_type = typeof table[i][field];
+            if(tmp_type == "string" && table[i][field].length == 0)
+                tmp_type = "empty";
+            else if(tmp_type === "string" && !isNaN(Number(table[i][field])))
+                tmp_type = "number";
+            else if(tmp_type === "object" && isFinite(table[i][field]))
+                tmp_type = "empty"
+            result[fields[j]].push(tmp_type);
+        }
+    }
+
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        if(result[field].every(function(ft){return ft === "number" || ft === "empty";})
+            && result[field].indexOf("number") > -1)
+            result[field] = "number";
+        else
+            result[field] = "string";
+    }
+    if(target){
+        let res = [];
+        for(let k in result)
+            if(result[k] === target && k != "_uid")
+                res.push(k);
+        return res;
+    } else
+        return result;
+}

@@ -488,7 +488,11 @@
                 "subtitle1": "Choix des champs à utiliser",
                 "discretization": "Type de discrétisation ",
                 "nb_class": "Nombre de classes ",
-                "ref_layer_fields": "Couche géographique de référence",
+                "nb_class": "Number of class ",
+                "origin_field": "Origin field",
+                "destination_field": "Destination field",
+                "intensity_field": "Intensity field",
+                "ref_layer_field": "Couche géographique de référence",
                 "join_field": "Champ de jointure"
             },
             "grid": {
