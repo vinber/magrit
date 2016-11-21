@@ -495,7 +495,10 @@
                 "field": "Champ",
                 "cellsize": "Taille des carreaux <i>km</i> ",
                 "shape": "Forme des carreaux ",
-                "coloramp": "Palette de couleurs "
+                "coloramp": "Palette de couleurs ",
+                "square": "Carré",
+                "diamond": "Diamant",
+                "hexagon": "Hexagone"
             },
             "cartogram": {
                 "algo": " Algorithme à utiliser ",

@@ -42,6 +42,9 @@
     <script  src="static/js/discretization_panel.js"></script>
     <script  src="static/js/function.js"></script>
     <script  src="static/js/legend.js"></script>
+    <script  src="static/js/symbols_picto.js"></script>
+    <script  src="static/js/tables.js"></script>
+    <script  src="static/js/helpers.js"></script>
     <script  src="static/js/join_popup.js"></script>
     <script  src="static/js/colors_helpers.js"></script>
     <script  src="static/js/helpers_calc.js"></script>
@@ -836,10 +839,10 @@ function setUpInterface(resume_project)
          if(at_end) displayInfoOnMove();
         },
         onStart: event => {
-            document.body.className = document.body.className + " no-drop";
+            document.body.classList.add("no-drop")
         },
         onEnd: event => {
-            document.body.className = document.body.className.replace("no-drop", "");
+            document.body.classList.remove("no-drop");
         },
     })
 }
@@ -902,7 +905,6 @@ function change_lang(){
             menu.remove();
     }
 }
-
 
 function make_ico_choice(){
     let list_fun_ico = ['icon_prop.png',

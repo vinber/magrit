@@ -1278,6 +1278,57 @@ function createStyleBox_ProbSymbol(layer_name){
         });
 }
 
+function make_style_box_indiv_label(label_node){
+    let current_options = {size: label_node.style.fontSize,
+                           content: label_node.textContent,
+                           font: label_node.style.fontFamily,
+                           color: label_node.style.fill};
+
+    if(current_options.color.startsWith("rgb"))
+        current_options.color = rgb2hex(current_options.color);
+
+    let new_params = {};
+
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
+        .then( confirmed => {
+            if(!confirmed){
+                label_node.style.fontsize = current_options.size;
+                label_node.textContent = current_options.content;
+                label_node.style.fill = current_options.color;
+                label_node.style.fontFamily = current_options.font;
+            }
+        });
+    let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
+    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
+            .append("input")
+            .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
+            .style("width", "70px")
+            .on("change", function(){
+                label_node.style.fontSize = this.value + "px";
+            });
+    box_content.append("p").html(i18next.t("app_page.func_options.label.content"))
+            .append("input").attrs({"value": label_node.textContent, id: "label_content"})
+            .on("keyup", function(){
+                label_node.textContent = this.value;
+            });
+    box_content.append("p").html(i18next.t("app_page.func_options.common.color"))
+            .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+            .on("change", function(){
+                label_node.style.fill = this.value;
+            });
+    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
+    let selec_fonts = box_content.append("select")
+            .on("change", function(){
+                label_node.style.fontFamily = this.value;
+            });
+
+    available_fonts.forEach( name => {
+        selec_fonts.append("option").attr("value", name[1]).text(name[0]);
+    });
+    selec_fonts.node().value = label_node.style.fontFamily;
+};
+
+
 // Todo : find a "light" way to recompute the "force" on the node after changing their size
 //              if(type_method.indexOf('Dorling') > -1){
 //                let nodes = selection[0].map((d, i) => {

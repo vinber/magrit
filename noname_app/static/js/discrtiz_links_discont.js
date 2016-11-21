@@ -451,13 +451,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         deferred.resolve([serie, breaks_info, breaks]);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        reOpenParent('.styleBox');
     }
     let _onclose = () => {
         deferred.resolve(false);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        reOpenParent('.styleBox');
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;

@@ -330,7 +330,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
             if(!provided_colors){
                 var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
-                console.log(color_array)
                 if(col_scheme === "sequential"){
                     if(to_reverse){
                         color_array = color_array.reverse();
@@ -862,6 +861,7 @@ function display_categorical_box(layer, field){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            reOpenParent();
         };
 
     container.querySelector(".btn_ok").onclick = function(){
@@ -967,7 +967,8 @@ var display_box_symbol_typo = function(layer, field){
                       })
                 .on("click", function(){
 //                    let self = this;
-                    box_choice_symbol(res_symbols).then(confirmed => {
+                    box_choice_symbol(res_symbols, ".dialog")
+                      .then(confirmed => {
                         if(confirmed){
                             this.style.backgroundImage = confirmed;
                         }
@@ -1011,8 +1012,7 @@ var display_box_symbol_typo = function(layer, field){
 
 
 function reOpenParent(css_selector){
-    css_selector = css_selector || ".dialog";
-    let parent_style_box = document.querySelector(css_selector);
+    let parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox' );
     if(parent_style_box){
         parent_style_box.className = parent_style_box.className.concat(" in");
         parent_style_box.setAttribute("aria-hidden", false);

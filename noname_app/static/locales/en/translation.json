@@ -495,7 +495,10 @@
                 "field": "Field",
                 "cellsize": "Cell size <i>km</i> ",
                 "shape": "Grid shape ",
-                "coloramp": "Coloramp "
+                "coloramp": "Coloramp ",
+                "square": "Square",
+                "diamond": "Diamond",
+                "hexagon": "Hexagon"
             },
             "cartogram": {
                 "algo": "Algorythm to use ",

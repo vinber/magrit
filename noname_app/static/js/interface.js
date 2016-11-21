@@ -289,8 +289,10 @@ function prepare_drop_section(){
             elem.addEventListener("dragleave", e => {
                 e.preventDefault(); e.stopPropagation();
                 if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                        document.body.classList, "no-drop") > -1){
+                    document.body.classList.remove("no-drop");
                     return;
+                }
                 timeout = setTimeout(function(){
                     let overlay_drop = document.getElementById("overlay_drop");
                     overlay_drop.style.display = "none";
@@ -379,6 +381,9 @@ function prepare_drop_section(){
                 e.preventDefault();
                 e.stopPropagation();
                 elem.style.border = '';
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    document.body.classList.remove("no-drop");
             });
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();

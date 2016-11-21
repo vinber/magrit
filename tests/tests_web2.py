@@ -45,7 +45,7 @@ def retry(ExceptionToCheck, tries=4, delay=2):
 
 # RUN_TRAVIS_SAUCELABS = os.environ.get('TRAVIS_BUILD_DIR') is not None
 RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
-RUN_LOCAL = not RUN_TRAVIS_SAUCELABS and not RUN_DOCKER
+RUN_LOCAL = not RUN_DOCKER
 
 if RUN_LOCAL:
     browsers = ['Chrome']
@@ -112,7 +112,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
     def setUp(self):
         if RUN_LOCAL:
-            self.setUpLocal():
+            self.setUpLocal()
         elif RUN_DOCKER:
             self.setUpDocker()
 
@@ -235,7 +235,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("FlowMap_field_fij")
             ).select_by_visible_text("fij")
 
-        driver.find_element_by_id("yes").click()
+        driver.find_element_by_id("FlowMap_yes").click()
         self.waitClickButtonSwal()
         if not self.try_element_present(By.ID, "legend_root_links", 5):
             self.fail("Legend not displayed on links map")
@@ -432,8 +432,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "#field_div1 > select")).select_by_visible_text("id")
         Select(driver.find_element_by_xpath(
             "//div[@id='field_div1']/select[2]")).select_by_value("truncate")
-        driver.find_element_by_id("opt_val").clear()
-        driver.find_element_by_id("opt_val").send_keys("2")
+        driver.find_element_by_id("val_opt").clear()
+        driver.find_element_by_id("val_opt").send_keys("2")
         driver.find_element_by_css_selector(
             ".addFieldBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
@@ -655,7 +655,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             self.fail("Missing features in the interface")
         driver.execute_script(
             "document.getElementById('color_Discont').value = '#da2929';")
-        driver.find_element_by_id("yes").click()
+        driver.find_element_by_id("yes_Discont").click()
         time.sleep(1)  # Delay for the discontinuities to be computed
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root_links", 5):
@@ -704,7 +704,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "document.getElementById('PropSymbol_color1').value = '#e3a5f3';")
         driver.execute_script(
             "document.getElementById('PropSymbol_color1').value = '#ffff00';")
-        driver.find_element_by_id("yes").click()
+        driver.find_element_by_id("PropSymbol_yes").click()
         time.sleep(1.5)
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legend won't display")
