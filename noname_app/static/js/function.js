@@ -4,7 +4,7 @@ function get_menu_option(func){
     var menu_option = {
         "smooth":{
             "name": "smooth",
-            "title":i18next.t("app_page.func_title.smooth"),
+            "title": i18next.t("app_page.func_title.smooth"),
             "menu_factory": "fillMenu_Stewart",
             "fields_handler": "fields_Stewart",
             },
@@ -111,6 +111,28 @@ function check_layer_name(name){
     }
 }
 
+function make_layer_name_button(parent, id){
+    let a = parent.append('p');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
+      .html(i18next.t('app_page.func_options.common.output'));
+    let input_field = a.insert('input')
+                        .style('width', '240px')
+                        .attrs({class: 'params', id: id});
+    return input_field;
+}
+
+function make_ok_button(parent, id, disabled=true){
+  let a = parent.append('p')
+            .styles({"text-align": "right", margin: "auto"});
+  let button = a.append('button')
+                .attrs({'id': id, 'class': 'params button_st3 i18n',
+                        'data-i18n': '[html]app_page.func_options.common.render',
+                        'disabled': disabled ? true : null})
+                .html(i18next.t('app_page.func_options.common.render'));
+  return button;
+}
+
 function box_choice_symbol(sample_symbols){
     var modal_box = make_dialog_container(
         "box_choice_symbol",
@@ -192,14 +214,14 @@ function box_choice_symbol(sample_symbols){
         deferred.resolve(res_url);
         modal_box.close();
         container.remove();
-        reOpenParent("#box_choice_symbol");
+        reOpenParent();
     }
 
     let _onclose = () => {
         deferred.resolve(false);
         modal_box.close();
         container.remove();
-        reOpenParent("#box_choice_symbol");
+        reOpenParent();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
@@ -240,39 +262,23 @@ var fields_TypoSymbol = {
         if(!layer) return;
         let fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
             field_to_use = d3.select("#field_Symbol"),
+            selec_symbol = d3.select("#selec_Symbol"),
             self = this;
         fields_all.forEach(function(field){
             field_to_use.append("option").text(field).attr("value", field);
         });
         d3.selectAll(".params").attr("disabled", null);
         field_to_use.on("change", function(){
-            document.getElementById("yesTypoSymbols").disabled = true;
-            self.box_typo = display_box_symbol_typo(layer, this.value);
+            let field = this.value;
+            if(self.rendering_params[field]){
+              document.getElementById("yesTypoSymbols").disabled = null;
+              self.box_typo = display_box_symbol_typo(layer, this.value, self.rendering_params[field].symbols_map);
+            } else {
+              document.getElementById("yesTypoSymbols").disabled = true;
+              self.box_typo = display_box_symbol_typo(layer, this.value);
+            }
         });
-        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
-        document.getElementById("TypoSymbols_output_name").value = ["Symbols", layer].join('_');
-    },
-    unfill: function(){
-        unfillSelectInput(document.getElementById("field_Symbol"));
-        d3.selectAll(".params").attr("disabled", true);
-    },
-    box_typo: undefined
-}
-
-function fillMenu_TypoSymbol(){
-    var dv2 = make_template_functionnality(section2)
-
-    let field_selec = dv2.append("p").html(i18next.t("app_page.func_options.typosymbol.field"))
-                    .insert('select')
-                    .attrs({class: "params", id: "field_Symbol"});
-
-    let rendering_params;
-    dv2.insert('p').style("margin", "auto").html("")
-        .append("button")
-        .attrs({id: "selec_Symbol", class: "button_disc params"})
-        .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("app_page.func_options.typosymbol.symbols_choice"))
-        .on("click", function(){
+        selec_symbol.on("click", function(){
             swal({
                     title: "",
                     text: i18next.t("app_page.common.error_too_many_features"),
@@ -285,36 +291,61 @@ function fillMenu_TypoSymbol(){
                 }).then(() => {
                     fields_TypoSymbol.box_typo().then(function(confirmed){
                         if(confirmed){
-                            ok_button.attr("disabled", null);
-                            rendering_params = {
-                                nb_cat: confirmed[0],
-                                symbols_map: confirmed[1],
-                                field: field_selec.node().value
-                            };
+                          let field = document.getElementById("field_Symbol").value;
+                          document.getElementById("yesTypoSymbols").disabled = null;
+                          self.rendering_params[field] = {
+                              nb_cat: confirmed[0],
+                              symbols_map: confirmed[1],
+                              field: field
+                          };
                         }
                     });
                 }, () => {
                     return;
                 });
         });
+        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
+        document.getElementById("TypoSymbols_output_name").value = ["Symbols", layer].join('_');
+    },
+    unfill: function(){
+        unfillSelectInput(document.getElementById("field_Symbol"));
+        d3.selectAll(".params").attr("disabled", true);
+    },
+    box_typo: undefined,
+    rendering_params: {},
+    cats: {}
+}
 
-    dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
+function fillMenu_TypoSymbol(){
+    var dv2 = make_template_functionnality(section2)
+
+    let field_selec = dv2.append("p")
+                    .attrs({"class": "i18n", "data-i18n": "[html]app_page.func_options.typosymbol.field"})
+                    .html(i18next.t("app_page.func_options.typosymbol.field"))
+                    .insert('select')
+                    .attrs({class: "params", id: "field_Symbol"});
+
+    dv2.insert('p').style("margin", "auto").html("")
+        .append("button")
+        .attrs({id: "selec_Symbol", class: "button_disc params i18n",
+                "data-i18n": "[html]app_page.func_options.typosymbol.symbols_choice"})
+        .styles({"font-size": "0.8em", "text-align": "center"})
+        .html(i18next.t("app_page.func_options.typosymbol.symbols_choice"));
+
+    dv2.append('p')
+        .attrs({"class": "i18n", "data-i18n": "[html]app_page.func_options.common.output"})
+        .html(i18next.t("app_page.func_options.common.output"))
         .insert('input')
         .style("width", "240px")
         .attr('class', 'params')
         .attr("id", "TypoSymbols_output_name");
 
-    let ok_button = dv2.append("p")
-                      .styles({"text-align": "right", margin: "auto"})
-                      .append('button')
-                      .attr("disabled", true)
-                      .attr('id', 'yesTypoSymbols')
-                      .attr('class', 'button_st3')
-                      .text(i18next.t('app_page.func_options.common.render'))
-                      .on("click", function(){
-                          let new_name = document.getElementById("TypoSymbols_output_name").value;
-                          render_TypoSymbols(rendering_params, new_name);
-                      });
+    let ok_button = make_ok_button(dv2, 'yesTypoSymbols');
+    ok_button.on('click', function(){
+      let new_name = document.getElementById("TypoSymbols_output_name").value,
+          field = document.getElementById('field_Symbol').value;
+      render_TypoSymbols(fields_TypoSymbol.rendering_params[field], new_name);
+    });
 
     dv2.selectAll(".params").attr("disabled", true);
 }
@@ -420,19 +451,24 @@ function insert_legend_button(layer_name){
 function fillMenu_Discont(){
     var dv2 = make_template_functionnality(section2);
 
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.field"))
-                .insert('select')
-                .attrs({class: 'params', id: "field_Discont"});
+    dv2.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field'})
+        .html(i18next.t("app_page.func_options.discont.field"))
+        .insert('select')
+        .attrs({class: 'params', id: "field_Discont"});
 
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.id_field"))
-                .insert('select')
-                .attrs({class: 'params', id: "field_id_Discont"});
+    dv2.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+        .html(i18next.t("app_page.func_options.discont.id_field"))
+        .insert('select')
+        .attrs({class: 'params', id: "field_id_Discont"});
 
     {
         let disc_kind = dv2.append('p')
-                    .html(i18next.t("app_page.func_options.discont.type_discontinuity"))
-                    .insert('select')
-                    .attrs({class: 'params', id: "kind_Discont"});
+            .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity'})
+            .html(i18next.t("app_page.func_options.discont.type_discontinuity"))
+            .insert('select')
+            .attrs({class: 'params', id: "kind_Discont"});
 
         [[i18next.t("app_page.func_options.discont.type_relative"), "rel"],
           [i18next.t("app_page.func_options.discont.type_absolute"), "abs"]
@@ -440,12 +476,15 @@ function fillMenu_Discont(){
             disc_kind.append("option").text(k[0]).attr("value", k[1]);
         });
 
-        dv2.append('p').html(i18next.t("app_page.func_options.discont.nb_class"))
-                .insert('input')
-                .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 4})
-                .style("width", "50px");
+        dv2.append('p')
+            .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+            .html(i18next.t("app_page.func_options.discont.nb_class"))
+            .insert('input')
+            .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 4})
+            .style("width", "50px");
 
         let disc_type = dv2.append('p')
+                            .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization'})
                             .html(i18next.t("app_page.func_options.discont.discretization"))
                             .insert('select')
                             .attrs({'class': 'params', "id": "Discont_discKind"});
@@ -462,23 +501,15 @@ function fillMenu_Discont(){
         });
     }
 
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.color"))
-                .insert('input')
-                .attrs({class: 'params', id: "color_Discont",
-                       type: "color", value: ColorsSelected.random()});
+    dv2.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color'})
+        .html(i18next.t("app_page.func_options.discont.color"))
+        .insert('input')
+        .attrs({class: 'params', id: "color_Discont",
+               type: "color", value: ColorsSelected.random()});
 
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "Discont_output_name");
-
-    let ok_button = dv2.append("p")
-                      .styles({"text-align": "right", margin: "auto"})
-                      .append('button')
-                      .attr('id', 'yes')
-                      .attr('class', 'params button_st3')
-                      .text(i18next.t('app_page.func_options.common.render'));
+    let uo_layer_name = make_layer_name_button(dv2, "Discont_output_name");
+    let ok_button = make_ok_button(dv2, 'yes', false);
 
     dv2.selectAll(".params").attr("disabled", true);
 
@@ -854,7 +885,9 @@ function fetch_min_max_table_value(parent_id){
 function fillMenu_FlowMap(){
     var dv2 = make_template_functionnality(section2);
 
-    dv2.append('p').html('<b>' + i18next.t("app_page.func_options.flow.subtitle1") + '</b>');
+    dv2.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1'})
+        .html('<b>' + i18next.t("app_page.func_options.flow.subtitle1") + '</b>');
 
     var field_i = dv2.append('p').html('<b><i> i </i></b> field ')
                         .insert('select').attr('class', 'params').attr("id", "FlowMap_field_i"),
@@ -863,7 +896,9 @@ function fillMenu_FlowMap(){
         field_fij = dv2.append('p').html('<b><i> fij </i></b> field ')
                         .insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
 
-    var disc_type = dv2.append('p').html(i18next.t("app_page.func_options.flow.discretization"))
+    var disc_type = dv2.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization'})
+                        .html(i18next.t("app_page.func_options.flow.discretization"))
                         .insert('select')
                         .attrs({class: 'params', id: "FlowMap_discKind"});
     [
@@ -877,7 +912,9 @@ function fillMenu_FlowMap(){
             disc_type.append("option").text(field[0]).attr("value", field[1])
         });
 
-    var nb_class_input = dv2.append('p').html(i18next.t("app_page.func_options.flow.nb_class"))
+    var nb_class_input = dv2.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class'})
+                        .html(i18next.t("app_page.func_options.flow.nb_class"))
                         .insert('input')
                         .attrs({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
                         .style("width", "50px");
@@ -917,24 +954,19 @@ function fillMenu_FlowMap(){
     });
 
     dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('');
-    dv2.append('p').html('<b>Reference layer fields :</b>');
+    dv2.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field'})
+        .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-    var join_field = dv2.append('p').html('join field :')
+    var join_field = dv2.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field'})
+                        .html(i18next.t('app_page.func_options.flow.join_field'))
                         .insert('select')
                         .attr('class', 'params')
                         .attr("id", "FlowMap_field_join");
 
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "FlowMap_output_name");
-
-    let ok_button = dv2.append('button')
-                        .attr('id', 'yes')
-                        .attr('class', 'params button_st3')
-                        .styles({"text-align": "right", margin: "auto"})
-                        .text(i18next.t('app_page.func_options.common.render'));
+    let uo_layer_name = make_layer_name_button(dv2, "FlowMap_output_name");
+    let ok_button = make_ok_button(dv2, 'yes', false);
 
     d3.selectAll(".params").attr("disabled", true);
 
@@ -1121,28 +1153,38 @@ function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
         dv2 = make_template_functionnality(section2);
 
-    var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field1"))
-                          .insert('select')
-                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
+    var a = dv2.append('p');
+    a.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1'})
+      .html(i18next.t("app_page.func_options.choroprop.field1"));
+    var field1_selec = a.insert('select')
+                        .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
 
-    var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.choroprop.fixed_size"))
-                     .insert('input')
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 30.0, step: "any"})
-                     .style("width", "50px");
+    var b = dv2.append('p');
+    b.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size'})
+      .html(i18next.t("app_page.func_options.choroprop.fixed_size"));
+    var ref_size = b.insert('input')
+                    .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
+                            min: 0.1, max: 66.0, value: 30.0, step: "any"})
+                    .style("width", "50px");
 
     dv2.append('label-item').html(' px');
 
-    var ref_value = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.on_value"))
-                     .insert('input')
-                     .styles({'width': '100px', "margin-left": "10px"})
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
-                     .attrs({min: 0.1, step: 0.1});
+    var c = dv2.append('p');
+    c.append("span").attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value'})
+                      .html(i18next.t("app_page.func_options.choroprop.on_value"));
+    var ref_value = c.insert('input')
+                      .styles({'width': '100px', "margin-left": "10px"})
+                      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
+                      .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
-    var symb_selec = dv2.append('p')
-                        .html(i18next.t("app_page.func_options.choroprop.symbol_type"))
-                        .insert('select')
+    var d = dv2.append('p');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type'})
+      .html(i18next.t("app_page.func_options.choroprop.symbol_type"));
+    var symb_selec = d.insert('select')
                         .attr('class', 'params');
 
     [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
@@ -1150,58 +1192,53 @@ function fillMenu_PropSymbolChoro(layer){
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
     });
 
-    var field2_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field2"))
-                        .insert('select').attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
+    var e = dv2.append('p');
+    e.append('span')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
+        .html(i18next.t("app_page.func_options.choroprop.field2"));
+    var field2_selec = e.insert('select')
+                        .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
-    dv2.insert('p').style("margin", "auto").html("")
-                .append("button").attr('class', 'params button_disc')
-                .styles({"font-size": "0.8em", "text-align": "center"})
-                .html(i18next.t("app_page.func_options.common.discretization_choice"))
-                .on("click", function(){
-                    let layer = Object.getOwnPropertyNames(user_data)[0],
-                        selected_field = field2_selec.node().value,
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
-                        conf_disc_box;
+    dv2.insert('p')
+        .style("margin", "auto")
+        .html("")
+        .append("button")
+        .attrs({class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+        .styles({"font-size": "0.8em", "text-align": "center"})
+        .html(i18next.t("app_page.func_options.common.discretization_choice"))
+        .on("click", function(){
+            let layer = Object.getOwnPropertyNames(user_data)[0],
+                selected_field = field2_selec.node().value,
+                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
+                conf_disc_box;
 
-                    if(rendering_params[selected_field])
-                        conf_disc_box = display_discretization(layer,
-                                                               selected_field,
-                                                               rendering_params[selected_field].nb_class,
-                                                               rendering_params[selected_field].type,
-                                                               {schema: rendering_params[selected_field].schema,
-                                                                colors: rendering_params[selected_field].colors,
-                                                                no_data: rendering_params[selected_field].no_data});
-                    else
-                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+            if(rendering_params[selected_field])
+                conf_disc_box = display_discretization(layer,
+                                                       selected_field,
+                                                       rendering_params[selected_field].nb_class,
+                                                       rendering_params[selected_field].type,
+                                                       {schema: rendering_params[selected_field].schema,
+                                                        colors: rendering_params[selected_field].colors,
+                                                        no_data: rendering_params[selected_field].no_data});
+            else
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
 
-                    conf_disc_box.then(function(confirmed){
-                        if(confirmed){
-                            dv2.select('#propChoro_yes').attr("disabled", null);
-                            rendering_params[selected_field] = {
-                                nb_class: confirmed[0], type: confirmed[1],
-                                schema: confirmed[5], no_data: confirmed[6],
-                                breaks: confirmed[2], colors: confirmed[3],
-                                colorsByFeature: confirmed[4],
-                                renderer: "PropSymbolsChoro"
-                                };
-                        } else
-                            return;
-                    });
-                });
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "PropSymbolChoro_output_name");
-
-    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-                        .append('button')
-                        .attr('id', 'propChoro_yes')
-                        .attr('class', 'button_st3')
-                        .attr('disabled', true)
-                        .text(i18next.t("app_page.func_options.common.render"));
-
+            conf_disc_box.then(function(confirmed){
+                if(confirmed){
+                    dv2.select('#propChoro_yes').attr("disabled", null);
+                    rendering_params[selected_field] = {
+                        nb_class: confirmed[0], type: confirmed[1],
+                        schema: confirmed[5], no_data: confirmed[6],
+                        breaks: confirmed[2], colors: confirmed[3],
+                        colorsByFeature: confirmed[4],
+                        renderer: "PropSymbolsChoro"
+                        };
+                } else
+                    return;
+            });
+        });
+    let uo_layer_name = make_layer_name_button(dv2, "PropSymbolChoro_output_name");
+    let ok_button = make_ok_button(dv2, 'propChoro_yes');
     ok_button.on("click", function(){
         if(!ref_value.node().value) return
         if(rendering_params[field2_selec.node().value]){
@@ -1597,6 +1634,7 @@ var fillMenu_Typo = function(){
         dv2 = make_template_functionnality(section2);
 
     var field_selec = dv2.append('p')
+                            .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice'})
                             .html(i18next.t("app_page.func_options.typo.color_choice"))
                          .insert('select')
                             .attr('class', 'params')
@@ -1604,7 +1642,8 @@ var fillMenu_Typo = function(){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attrs({id: "Typo_class", class: "button_disc params"})
+        .attrs({id: "Typo_class", class: "button_disc params i18n",
+                'data-i18n': '[html]app_page.func_options.typo.color_choice'})
         .styles({"font-size": "0.8em", "text-align": "center"})
         .html(i18next.t("app_page.func_options.typo.color_choice"))
         .on("click", function(){
@@ -1621,35 +1660,24 @@ var fillMenu_Typo = function(){
                     }
                 });
         });
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "Typo_output_name");
-
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'Typo_yes')
-        .attr("disabled", true)
-        .attr('class', 'button_st3')
-        .html(i18next.t("app_page.func_options.common.render"))
-        .on("click", function(){
-            let selected_field = document.getElementById("Typo_field_1").value;
-            if(rendering_params[selected_field]){
-                let layer = Object.getOwnPropertyNames(user_data)[0],
-                    output_name = uo_layer_name.node().value;
-                if(output_name.length > 0 && /^\w+$/.test(output_name)){
-                    rendering_params[selected_field].new_name = check_layer_name(output_name);
-                } else {
-                    rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
-                }
-                render_categorical(layer, rendering_params[selected_field]);
-                switch_accordion_section();
-                handle_legend(rendering_params[selected_field].new_name)
-            }
-         });
+    let uo_layer_name = make_layer_name_button(dv2, "Typo_output_name");
+    let ok_button = make_ok_button(dv2, 'Typo_yes');
     dv2.selectAll(".params").attr("disabled", true);
+    ok_button.on('click', function(){
+      let selected_field = document.getElementById("Typo_field_1").value;
+      if(rendering_params[selected_field]){
+          let layer = Object.getOwnPropertyNames(user_data)[0],
+              output_name = uo_layer_name.node().value;
+          if(output_name.length > 0 && /^\w+$/.test(output_name)){
+              rendering_params[selected_field].new_name = check_layer_name(output_name);
+          } else {
+              rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+          }
+          render_categorical(layer, rendering_params[selected_field]);
+          switch_accordion_section();
+          handle_legend(rendering_params[selected_field].new_name)
+      }
+    });
 }
 
 function fillMenu_Choropleth(){
@@ -1658,8 +1686,8 @@ function fillMenu_Choropleth(){
 
     var field_selec_section = dv2.append('p');
     field_selec_section.insert("span")
-                            .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
-                            .html(i18next.t("app_page.func_options.common.field"));
+        .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
+        .html(i18next.t("app_page.func_options.common.field"));
 
     field_selec_section.insert("span")
         .attr("id", "container_sparkline")
@@ -1671,7 +1699,8 @@ function fillMenu_Choropleth(){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attrs({id: "choro_class", class: "button_disc params"})
+        .attrs({id: "choro_class", class: "button_disc params i18n",
+                'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
         .styles({"font-size": "0.8em", "text-align": "center"})
         .html(i18next.t("app_page.func_options.common.discretization_choice"))
         .on("click", function(){
@@ -1710,32 +1739,22 @@ function fillMenu_Choropleth(){
             });
         });
 
-    dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-        .insert('input')
-        .style("width", "240px")
-        .attr('class', 'params')
-        .attr("id", "Choro_output_name");
-
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'choro_yes')
-        .attr("disabled", true)
-        .attr('class', 'button_st3')
-        .html('Render')
-        .on("click", function(){
-            if(rendering_params){
-                let layer = Object.getOwnPropertyNames(user_data)[0],
-                    user_new_layer_name = document.getElementById("Choro_output_name").value,
-                    field_to_render = field_selec.node().value;
-                rendering_params[field_to_render].new_name = check_layer_name(
-                    user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
-                    ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
-                    );
-                render_choro(layer, rendering_params[field_to_render]);
-                handle_legend(rendering_params[field_to_render].new_name)
-                switch_accordion_section();
+    make_layer_name_button(dv2, 'Choro_output_name');
+    let ok_button = make_ok_button(dv2, 'choro_yes');
+    ok_button.on("click", function(){
+      if(rendering_params){
+          let layer = Object.getOwnPropertyNames(user_data)[0],
+              user_new_layer_name = document.getElementById("Choro_output_name").value,
+              field_to_render = field_selec.node().value;
+          rendering_params[field_to_render].new_name = check_layer_name(
+              user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
+              ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
+              );
+          render_choro(layer, rendering_params[field_to_render]);
+          handle_legend(rendering_params[field_to_render].new_name)
+          switch_accordion_section();
             }
-         });
+    });
     dv2.selectAll(".params").attr("disabled", true);
 }
 
@@ -1786,8 +1805,8 @@ var fields_Stewart = {
 
         if(layer){
             let fields = type_col(layer, "number"),
-                field_selec = d3.select("#stewart_field"),
-                field_selec2 = d3.select("#stewart_field2");
+                field_selec = section2.select("#stewart_field"),
+                field_selec2 = section2.select("#stewart_field2");
 
             if(fields.length == 0){
                 display_error_num_field();
@@ -1804,7 +1823,8 @@ var fields_Stewart = {
             field_selec.on("change", function(){
                 document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
             });
-
+            section2.select('stewart_yes')
+                .on('click', render_stewart);
         }
         d3.selectAll(".params").attr("disabled", null);
     },
@@ -1830,57 +1850,223 @@ function make_template_functionnality(parent_node){
     return dialog_content;
 }
 
+// function fillMenu_Stewart(){
+//     let inner_div = `
+//         <p class="container_img_help">
+//           <img id="btn_info" class="help_tooltip" src="/static/img/Information.png" width="17" height="17" alt="Informations" style="cursor:pointer;" />
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.field" />
+//           <select id="stewart_field" class="params marg_auto" />
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.divide_field" />
+//           <select id="stewart_field2" class="params marg_auto" />
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.span" />
+//           <input style="width: 60px;" class="params" id="stewart_span" value="5" min="0.001" max="100000" step="any" type="number">
+//           <span> km</span>
+//         </p>
+//         <p style="margin-right: 35px;">
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.beta" />
+//           <input style="width: 60px;" class="params" id="stewart_beta" value="2" min="0" max="11" step="any" type="number">
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.resolution" />
+//           <input style="width: 60px;" class="params" id="stewart_resolution" min="1" max="1000000" step="any" type="number">
+//           <span> km</span>
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.func_options" />
+//           <select class="params i18n" id="stewart_func" disabled="true">
+//             <option value="exponential" data-i18n="app_page.func_options.smooth.exponential"></option>
+//             <option value="pareto"  data-i18n="app_page.func_options.smooth.pareto"></option>
+//           </select>
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.nb_class" />
+//           <input style="width: 50px;" class="params" id="stewart_nb_class" value="8" min="1" max="22" step="1" type="number">
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.break_values" />
+//           <textarea style="width: 100%; height: 2.2em; font-size: 0.9em;" class="params i18n" id="stewart_breaks" data-i18n="[placeholder]app_page.common.expected_class"></textarea>
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.smooth.mask" />
+//           <select class="params" id="stewart_mask"></select>
+//         </p>
+//         <p>
+//           <span class="i18n" data-i18n="[html]app_page.func_options.common.output" />
+//           <input style="width: 240px;" class="params" id="stewart_output_name" >
+//         </p>
+//
+//         <p style="text-align: right; margin: auto;">
+//           <button id="stewart_yes" class="params button_st3 i18n" data-i18n="[html]app_page.func_options.common.render" />
+//         </p>`
+//     let dv = section2.append('div')
+//       .attr('class', 'form-rendering')
+//       .html(inner_div);
+//     dv.selectAll('.params')
+//       .attr('disabled', true);
+// }
+
+
+function render_stewart(){
+  let formToSend = new FormData(),
+      doc = document,
+      field1_n = doc.getElementById('stewart_field').value,
+      field2_n = doc.getElementById('stewart_field2').value,
+      var1_to_send = {},
+      var2_to_send = {},
+      layer = Object.getOwnPropertyNames(user_data)[0],
+      bval = doc.getElementById('stewart_breaks').value.trim(),
+      reso = +doc.getElementById('stewart_resolution').value,
+      span = +doc.getElementById('stewart_span').value,
+      beta = +doc.getElementById('stewart_beta').value,
+      nb_class = doc.getElementById('stewart_nb_class').value,
+      func_selec = doc.getElementById('stewart_func').value,
+      mask_name = doc.getElementById('stewart_mask').value,
+      new_user_layer_name = document.getElementById("stewart_output_name").value;
+
+  if(reso && reso > 0){
+      let res_test = test_maxmin_resolution(reso);
+      if(res_test){
+          let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+          display_error_during_computation(message);
+          return;
+      }
+      reso = reso * 1000;
+  } else {
+      reso = null;
+  }
+  bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
+
+  if(current_layers[layer].original_fields.has(field1_n))
+      var1_to_send[field1_n] = [];
+  else
+      var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
+
+  if(field2_n != "None"){
+      if(current_layers[layer].original_fields.has(field2_n))
+          var2_to_send[field2_n] = [];
+      else
+          var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
+  }
+
+  formToSend.append("json", JSON.stringify({
+      "topojson": current_layers[layer].key_name,
+      "variable1": var1_to_send,
+      "variable2": var2_to_send,
+      "span": span * 1000,
+      "beta": beta,
+      "typefct": func_selec,
+      "resolution": reso,
+      "nb_class": nb_class,
+      "user_breaks": bval,
+      "mask_layer": mask_name !== "None" ? current_layers[mask_name].key_name : ""}));
+
+  xhrequest("POST", '/compute/stewart', formToSend, true)
+      .then(res => {
+          {
+              let data_split = res.split('|||'),
+                  raw_topojson = data_split[0];
+              let options = {result_layer_on_add: true};
+              if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+                  options["choosed_name"] = new_user_layer_name;
+              }
+              var n_layer_name = add_layer_topojson(raw_topojson, options);
+              if(!n_layer_name)
+                  return;
+              var class_lim = JSON.parse(data_split[1]);
+          }
+          var col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
+              nb_class = class_lim['min'].length,
+              colors_breaks = [];
+          for(let i = 0; i < nb_class; i++){
+               colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[nb_class - 1 - i]]);
+          }
+
+          current_layers[n_layer_name].fill_color = {"class": []};
+          current_layers[n_layer_name].renderer = "Stewart";
+          current_layers[n_layer_name].colors_breaks = colors_breaks;
+          current_layers[n_layer_name].rendered_field = field1_n;
+          current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
+          d3.select("#"+n_layer_name)
+                  .selectAll("path")
+                  .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
+          handle_legend(n_layer_name);
+          switch_accordion_section();
+          // Todo : use the function render_choro to render the result from stewart too
+      }, error => {
+          display_error_during_computation();
+          console.log(error);
+      });
+}
+
+
 function fillMenu_Stewart(){
     var dialog_content = make_template_functionnality(section2);
 
-    var field_selec = dialog_content.append('p')
+    dialog_content.append('p')
                         .style("margin", "10px 0px 0px")
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field'})
                         .html(i18next.t("app_page.func_options.smooth.field"))
                         .insert('select')
                         .attrs({class: 'params marg_auto', id: "stewart_field"});
 
-    var field_selec2 = dialog_content.append('p')
+    dialog_content.append('p')
                         .style("margin", "10px 0px 0px")
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field'})
                         .html(i18next.t("app_page.func_options.smooth.divide_field"))
                         .insert('select')
                         .attrs({class: 'params marg_auto', id: "stewart_field2"});
 
-    {
-        let p_span = dialog_content
-                        .append("p")
-                            .text(i18next.t("app_page.func_options.smooth.span"));
-        var span = p_span.append('input')
-                        .style("width", "60px")
-                        .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
-        p_span.insert("span").html(" km");
+    let p_span = dialog_content
+                    .append("p")
+                    .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.span'})
+                        .text(i18next.t("app_page.func_options.smooth.span"));
+    p_span.append('input')
+                    .style("width", "60px")
+                    .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
+    p_span.insert("span").html(" km");
 
-        var beta = dialog_content
-                        .append('p')
-                            .styles({"margin-right": "35px"})
-                            .html(i18next.t("app_page.func_options.smooth.beta"))
-                        .insert('input')
-                            .style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
+    dialog_content
+        .append('p')
+            .styles({"margin-right": "35px"})
+            .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta'})
+            .html(i18next.t("app_page.func_options.smooth.beta"))
+        .insert('input')
+            .style("width", "60px")
+            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
-        let p_reso = dialog_content
-                        .append('p').text(i18next.t("app_page.func_options.smooth.resolution"));
-        var resolution = p_reso.insert('input').style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
-        p_reso.insert("span").html(" km");
-    }
+    let p_reso = dialog_content.append('p')
+                  .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution'})
+                  .text(i18next.t("app_page.func_options.smooth.resolution"));
+    p_reso.insert('input').style("width", "60px")
+                        .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
+    p_reso.insert("span").html(" km");
 
-    var func_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.smooth.function"))
-                                .insert('select').attrs({class: 'params', id: "stewart_func"}),
-        nb_class = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.nb_class"))
-                                .insert("input").style("width", "50px")
-                                .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
-        breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
-                                .insert("textarea")
-                                .styles({width: "100%", height: "2.2em", "font-size": "0.9em"})
-                                .attrs({class: 'params i18n', id: "stewart_breaks",
-                                        "data-i18n": "[placeholder]app_page.common.expected_class",
-                                        "placeholder": i18next.t("app_page.common.expected_class")}),
-        mask_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.smooth.mask"))
+    let func_selec = dialog_content.append('p')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.func_options'})
+      .html(i18next.t("app_page.func_options.smooth.function"))
+      .insert('select').attrs({class: 'params', id: "stewart_func"});
+    dialog_content.append("p")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.nb_class'})
+      .html(i18next.t("app_page.func_options.smooth.nb_class"))
+      .insert("input").style("width", "50px")
+      .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1});
+   dialog_content.append("p")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.break_values'})
+      .html(i18next.t("app_page.func_options.smooth.break_values"))
+      .insert("textarea")
+      .styles({width: "100%", height: "2.2em", "font-size": "0.9em"})
+      .attrs({class: 'params i18n', id: "stewart_breaks",
+              "data-i18n": "[placeholder]app_page.common.expected_class",
+              "placeholder": i18next.t("app_page.common.expected_class")});
+    dialog_content.append('p')
+        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask'})
+        .html(i18next.t("app_page.func_options.smooth.mask"))
                                 .insert('select').attrs({class: 'params', id: "stewart_mask"});
 
     [['exponential', i18next.t("app_page.func_options.smooth.func_exponential")],
@@ -1888,102 +2074,9 @@ function fillMenu_Stewart(){
         func_selec.append("option").text(fun_name[1]).attr("value", fun_name[0]);
     });
 
-    dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "stewart_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr('id', 'stewart_yes')
-        .attr('class', "params button_st3")
-        .text(i18next.t('app_page.func_options.common.render'))
-        .on('click', function(){
-            let formToSend = new FormData(),
-                field1_n = field_selec.node().value,
-                field2_n = field_selec2.node().value,
-                var1_to_send = {},
-                var2_to_send = {},
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                bval = breaks_val.node().value.trim(),
-                reso = +resolution.node().value,
-                new_user_layer_name = document.getElementById("stewart_output_name").value;
-
-            if(reso && reso > 0){
-                let res_test = test_maxmin_resolution(reso);
-                if(res_test){
-                    let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
-                    display_error_during_computation(message);
-                    return;
-                }
-                reso = reso * 1000;
-            } else {
-                reso = null;
-            }
-            bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
-
-            if(current_layers[layer].original_fields.has(field1_n))
-                var1_to_send[field1_n] = [];
-            else
-                var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
-
-            if(field2_n != "None"){
-                if(current_layers[layer].original_fields.has(field2_n))
-                    var2_to_send[field2_n] = [];
-                else
-                    var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
-            }
-
-            formToSend.append("json", JSON.stringify({
-                "topojson": current_layers[layer].key_name,
-                "variable1": var1_to_send,
-                "variable2": var2_to_send,
-                "span": +span.node().value * 1000,
-                "beta": +beta.node().value,
-                "typefct": func_selec.node().value,
-                "resolution": reso,
-                "nb_class": nb_class.node().value,
-                "user_breaks": bval,
-                "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
-
-            xhrequest("POST", '/compute/stewart', formToSend, true)
-                .then(res => {
-                    {
-                        let data_split = res.split('|||'),
-                            raw_topojson = data_split[0];
-                        let options = {result_layer_on_add: true};
-                        if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-                            options["choosed_name"] = new_user_layer_name;
-                        }
-                        var n_layer_name = add_layer_topojson(raw_topojson, options);
-                        if(!n_layer_name)
-                            return;
-                        var class_lim = JSON.parse(data_split[1]);
-                    }
-                    var col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
-                        nb_class = class_lim['min'].length,
-                        colors_breaks = [];
-                    for(let i = 0; i < nb_class; i++){
-                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[nb_class - 1 - i]]);
-                    }
-
-                    current_layers[n_layer_name].fill_color = {"class": []};
-                    current_layers[n_layer_name].renderer = "Stewart";
-                    current_layers[n_layer_name].colors_breaks = colors_breaks;
-                    current_layers[n_layer_name].rendered_field = field_selec.node().value;
-                    current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
-                    d3.select("#"+n_layer_name)
-                            .selectAll("path")
-                            .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
-                    handle_legend(n_layer_name);
-                    switch_accordion_section();
-                    // Todo : use the function render_choro to render the result from stewart too
-                }, error => {
-                    display_error_during_computation();
-                    console.log(error);
-                });
-        });
+    make_layer_name_button(dialog_content, 'stewart_output_name');
+    let ok_button = make_ok_button(dialog_content, 'stewart_yes', false);
+    ok_button.on('click', render_stewart);
     dialog_content.selectAll(".params").attr("disabled", true);
 }
 
@@ -2120,17 +2213,9 @@ function fillMenu_Anamorphose(){
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
 
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "Anamorph_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attrs({id: 'Anamorph_yes', class: "params button_st3"})
-        .html('Compute')
-        .on("click", function(){
+    let uo_layer_name = make_layer_name_button(dialog_content, "Anamorph_output_name");
+    let ok_button = make_ok_button(dialog_content, 'Anamorph_yes', false);
+    ok_button.on("click", function(){
             let layer = Object.getOwnPropertyNames(user_data)[0],
                 algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
@@ -2583,10 +2668,12 @@ function fillMenu_PropSymbol(layer){
         max_allowed_size = Math.round(h/2 - h/10);
 
     var field_selec = dialog_content.append('p')
+                          .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
                           .html(i18next.t("app_page.func_options.common.field"))
                           .insert('select')
                           .attrs({class: 'params', 'id': "PropSymbol_field_1"}),
         ref_size = dialog_content.append('p')
+                          .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size'})
                          .style("display", "inline")
                          .html(i18next.t("app_page.func_options.prop.fixed_size"))
                          .insert('input')
@@ -2596,14 +2683,17 @@ function fillMenu_PropSymbol(layer){
 
     dialog_content.append('span').html(" px");
 
-    var ref_value = dialog_content.append('p').attr("id", "PropSymbol_ref_value")
+    var ref_value = dialog_content.append('p')
+                            .attrs({id: 'PropSymbol_ref_value', class: 'i18n',
+                                    'data-i18n': '[html]app_page.func_options.prop.on_value'})
                             .html(i18next.t("app_page.func_options.prop.on_value"))
                             .insert('input')
                             .styles({'width': '100px', "margin-left": "10px"})
                             .attrs({type: 'number', class: "params", min: 0.1, step: 0.1});
 
     var symb_selec = dialog_content
-                        .append('p').html(i18next.t("app_page.func_options.prop.symbol_type"))
+                        .append('p').attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_type'})
+                        .html(i18next.t("app_page.func_options.prop.symbol_type"))
                         .insert('select').attrs({'class': 'params', "id": "PropSymbol_symbol"});
 
     [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
@@ -2613,13 +2703,17 @@ function fillMenu_PropSymbol(layer){
 
     let color_section = dialog_content.append('p');
     color_section.append("span")
+              .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_color'})
               .html(i18next.t("app_page.func_options.prop.symbol_color"));
     let color_par = color_section.append('select')
-                            .attr("class", "params")
-                            .attr("id", "PropSymbol_nb_colors")
+                            .attrs({id: 'PropSymbol_nb_colors', class: 'params'})
                             .style("margin-right", "15px");
-    color_par.append("option").attr("value", 1).text(i18next.t("app_page.func_options.prop.options_one_color"));
-    color_par.append("option").attr("value", 2).text(i18next.t("app_page.func_options.prop.options_two_colors"));
+    color_par.append("option")
+        .attrs({value: 1, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_one_color'})
+        .text(i18next.t("app_page.func_options.prop.options_one_color"));
+    color_par.append("option")
+        .attrs({value: 2, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_two_colors'})
+        .text(i18next.t("app_page.func_options.prop.options_two_colors"));
 
     color_par.on("change", function(){
         if(this.value == 1){
@@ -2634,52 +2728,45 @@ function fillMenu_PropSymbol(layer){
     });
     var col_p = dialog_content.append("p").style("text-align", "center");
     var fill_color = col_p.insert('input')
-                                .styles({"position": "unset"})
-                                .attrs({type: "color", class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
+                          .styles({"position": "unset"})
+                          .attrs({type: "color", class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
     var fill_color2 = col_p.insert('input')
-                                .styles({"display": "none", "position": "unset"})
-                                .attrs({type: "color", class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
+                          .styles({"display": "none", "position": "unset"})
+                          .attrs({type: "color", class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
     var col_b = dialog_content.insert("p");
-    var fill_color_text = col_b.insert("span").style("display", "none")
-                                .html(i18next.t("app_page.func_options.prop.options_break_two_colors"));
+    var fill_color_text = col_b.insert("span")
+                          .style("display", "none")
+                          .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.options_break_two_colors'})
+                          .html(i18next.t("app_page.func_options.prop.options_break_two_colors"));
     var fill_color_opt = col_b.insert('input')
-                                .attrs({'type': 'number', class: "params", "id": "PropSymbol_break_val"})
-                                .styles({"display": "none", "width": "75px"});
+                          .attrs({'type': 'number', class: "params", "id": "PropSymbol_break_val"})
+                          .styles({"display": "none", "width": "75px"});
 
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-        .insert('input')
-        .style("width", "240px")
-        .attr('class', 'params')
-        .attr("id", "PropSymbol_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr('id', 'yes')
-        .attr("class", "params button_st3")
-        .html(i18next.t('app_page.func_options.common.render'))
-        .on("click", function(){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                nb_features = user_data[layer].length,
-                field_to_render = field_selec.node().value,
-                user_new_layer_name = uo_layer_name.node().value,
-                new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
-                rendering_params = { "field": field_to_render,
-                                     "nb_features": nb_features,
-                                     "new_name": new_layer_name,
-                                     "ref_layer_name": layer,
-                                     "symbol": symb_selec.node().value,
-                                     "ref_size": +ref_size.node().value,
-                                     "ref_value": +ref_value.node().value,
-                                     "fill_color": fill_color.node().value };
-            if(+color_par.node().value == 2){
-                rendering_params["break_val"] = +fill_color_opt.node().value;
-                rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
-            }
-            make_prop_symbols(rendering_params);
-            zoom_without_redraw();
-            switch_accordion_section();
-            handle_legend(new_layer_name);
-        });
+    let uo_layer_name = make_layer_name_button(dialog_content, 'PropSymbol_output_name');
+    let ok_button = make_ok_button(dialog_content, 'yes', false);
+    ok_button.on("click", function(){
+        let layer = Object.getOwnPropertyNames(user_data)[0],
+            nb_features = user_data[layer].length,
+            field_to_render = field_selec.node().value,
+            user_new_layer_name = uo_layer_name.node().value,
+            new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
+            rendering_params = { "field": field_to_render,
+                                 "nb_features": nb_features,
+                                 "new_name": new_layer_name,
+                                 "ref_layer_name": layer,
+                                 "symbol": symb_selec.node().value,
+                                 "ref_size": +ref_size.node().value,
+                                 "ref_value": +ref_value.node().value,
+                                 "fill_color": fill_color.node().value };
+        if(+color_par.node().value == 2){
+            rendering_params["break_val"] = +fill_color_opt.node().value;
+            rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
+        }
+        make_prop_symbols(rendering_params);
+        zoom_without_redraw();
+        switch_accordion_section();
+        handle_legend(new_layer_name);
+    });
     dialog_content.selectAll(".params").attr("disabled", true);
 }
 
@@ -2846,11 +2933,13 @@ function fillMenu_griddedMap(layer){
     var dialog_content = make_template_functionnality(section2)
 
     var field_selec = dialog_content.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
                         .html(i18next.t("app_page.func_options.common.field"))
                         .insert('select')
                         .attrs({class: 'params', id: "Gridded_field"});
 
     var cellsize = dialog_content.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize'})
                         .html(i18next.t("app_page.func_options.grid.cellsize"))
                         .insert('input')
                         .style("width", "100px")
@@ -2859,11 +2948,13 @@ function fillMenu_griddedMap(layer){
                             value: 10.0, min: 1.000, max: 7000, step: "any"});
 
     var grid_shape = dialog_content.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape'})
                         .html(i18next.t("app_page.func_options.grid.shape"))
                         .insert('select')
                         .attrs({class: 'params', id: "Gridded_shape"});
 
     var col_pal = dialog_content.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp'})
                         .html(i18next.t("app_page.func_options.grid.coloramp"))
                         .insert('select')
                         .attr('class', 'params');
@@ -2876,83 +2967,73 @@ function fillMenu_griddedMap(layer){
         grid_shape.append("option").text(d).attr("value",d);
     });
 
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "Gridded_output_name");
+    let uo_layer_name = make_layer_name_button(dialog_content, 'Gridded_output_name');
+    let ok_button = make_ok_button(dialog_content, 'Gridded_yes', false);
+    ok_button.on("click", function(){
+        let field_n = field_selec.node().value,
+            layer = Object.getOwnPropertyNames(user_data)[0],
+            formToSend = new FormData(),
+            var_to_send = {},
+            new_user_layer_name = document.getElementById("Gridded_output_name").value,
+            reso = +cellsize.node().value;
 
-    dialog_content.insert("p")
-        .styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr("class", "params button_st3")
-        .attr('id', 'Gridded_yes')
-        .html(i18next.t('app_page.func_options.common.render'))
-        .on("click", function(){
-            let field_n = field_selec.node().value,
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                formToSend = new FormData(),
-                var_to_send = {},
-                new_user_layer_name = document.getElementById("Gridded_output_name").value,
-                reso = +cellsize.node().value;
+        let res_test = test_maxmin_resolution(reso);
 
-            let res_test = test_maxmin_resolution(reso);
+        if(res_test){
+            let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+            display_error_during_computation(message);
+            return;
+        }
 
-            if(res_test){
-                let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
-                display_error_during_computation(message);
-                return;
-            }
+        if(current_layers[layer].original_fields.has(field_n))
+            var_to_send[field_n] = [];
+        else
+            var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
 
-            if(current_layers[layer].original_fields.has(field_n))
-                var_to_send[field_n] = [];
-            else
-                var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+        formToSend.append("json", JSON.stringify({
+            "topojson": current_layers[layer].key_name,
+            "var_name": var_to_send,
+            "cellsize": reso * 1000,
+            "grid_shape": grid_shape.node().value
+            }));
+        xhrequest("POST", '/compute/gridded', formToSend, true)
+            .then(data => {
+                let options = {result_layer_on_add: true};
+                if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+                    options["choosed_name"] = new_user_layer_name;
+                }
 
-            formToSend.append("json", JSON.stringify({
-                "topojson": current_layers[layer].key_name,
-                "var_name": var_to_send,
-                "cellsize": reso * 1000,
-                "grid_shape": grid_shape.node().value
-                }));
-            xhrequest("POST", '/compute/gridded', formToSend, true)
-                .then(data => {
-                    let options = {result_layer_on_add: true};
-                    if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-                        options["choosed_name"] = new_user_layer_name;
-                    }
+                let n_layer_name = add_layer_topojson(data, options);
+                if(!n_layer_name)
+                    return;
+                let res_data = result_data[n_layer_name],
+                    nb_ft = res_data.length,
+                    opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
+                    d_values = [];
 
-                    let n_layer_name = add_layer_topojson(data, options);
-                    if(!n_layer_name)
-                        return;
-                    let res_data = result_data[n_layer_name],
-                        nb_ft = res_data.length,
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
-                        d_values = [];
+                for(let i=0; i < nb_ft; i++){
+                    d_values.push(+res_data[i]["densitykm"])
+                }
 
-                    for(let i=0; i < nb_ft; i++){
-                        d_values.push(+res_data[i]["densitykm"])
-                    }
-
-                    current_layers[n_layer_name].renderer = "Gridded";
-                    let disc_result = discretize_to_colors(d_values, "quantiles", opt_nb_class, col_pal.node().value),
-                        rendering_params = {
-                            nb_class: opt_nb_class,
-                            type: "quantiles",
-                            schema: [col_pal.node().value],
-                            breaks: disc_result[2],
-                            colors: disc_result[3],
-                            colorsByFeature: disc_result[4],
-                            renderer: "Gridded",
-                            rendered_field: "densitykm",
-                                };
-                    render_choro(n_layer_name, rendering_params);
-                    handle_legend(n_layer_name);
-                    switch_accordion_section();
-                }, error => {
-                    display_error_during_computation();
-                    console.log(error);
-                });
+                current_layers[n_layer_name].renderer = "Gridded";
+                let disc_result = discretize_to_colors(d_values, "quantiles", opt_nb_class, col_pal.node().value),
+                    rendering_params = {
+                        nb_class: opt_nb_class,
+                        type: "quantiles",
+                        schema: [col_pal.node().value],
+                        breaks: disc_result[2],
+                        colors: disc_result[3],
+                        colorsByFeature: disc_result[4],
+                        renderer: "Gridded",
+                        rendered_field: "densitykm",
+                            };
+                render_choro(n_layer_name, rendering_params);
+                handle_legend(n_layer_name);
+                switch_accordion_section();
+            }, error => {
+                display_error_during_computation();
+                console.log(error);
+            });
         });
     d3.selectAll(".params").attr("disabled", true);
 }
@@ -3538,36 +3619,46 @@ function make_content_summary(serie, precision=6){
 function fillMenu_PropSymbolTypo(layer){
     var rendering_params = fields_PropSymbolTypo.rendering_params;
     var dv2 = make_template_functionnality(section2);
-    var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field1"))
-                          .insert('select')
-                          .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});
+    var field1_selec = dv2.append('p')
+                      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1'})
+                      .html(i18next.t("app_page.func_options.proptypo.field1"))
+                      .insert('select')
+                      .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});
 
-    var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.proptypo.fixed_size"))
-                     .insert('input')
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 30.0, step: "any"})
-                     .style("width", "50px");
+    var ref_size = dv2.append('p')
+                      .style("display", "inline")
+                      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size'})
+                      .html(i18next.t("app_page.func_options.proptypo.fixed_size"))
+                      .insert('input')
+                      .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size',
+                              min: 0.1, max: 66.0, value: 30.0, step: "any"})
+                      .style("width", "50px");
 
     dv2.append('label-item').html(' px');
 
-    var ref_value = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.on_value"))
-                     .insert('input')
-                     .styles({'width': '100px', "margin-left": "10px"})
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value'})
-                     .attrs({min: 0.1, step: 0.1});
+    var ref_value = dv2.append('p')
+                      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.on_value'})
+                      .html(i18next.t("app_page.func_options.proptypo.on_value"))
+                      .insert('input')
+                      .styles({'width': '100px', "margin-left": "10px"})
+                      .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value'})
+                      .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
     var symb_selec = dv2.append('p')
-                        .html(i18next.t("app_page.func_options.proptypo.symbol_type"))
-                        .insert('select')
-                        .attr('class', 'params');
+                      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.symbol_type'})
+                      .html(i18next.t("app_page.func_options.proptypo.symbol_type"))
+                      .insert('select')
+                      .attr('class', 'params');
 
     [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
      [i18next.t("app_page.func_options.common.symbol_square"), "rect"]].forEach( symb => {
         symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
     });
 
-    var field2_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field2"))
+    var field2_selec = dv2.append('p')
+                        .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2'})
+                        .html(i18next.t("app_page.func_options.proptypo.field2"))
                         .insert('select').attrs({class: 'params', id: 'PropSymbolTypo_field_2'})
                         .on("change", function(){
                             let field_name = this.value;
@@ -3579,7 +3670,8 @@ function fillMenu_PropSymbolTypo(layer){
 
     dv2.insert('p').style("margin", "auto").html("")
         .append("button")
-        .attrs({id: "Typo_class", class: "button_disc params"})
+        .attrs({id: "Typo_class", class: "button_disc params i18n",
+                'data-i18n': '[html]app_page.func_options.typo.color_choice'})
         .styles({"font-size": "0.8em", "text-align": "center"})
         .html(i18next.t("app_page.func_options.typo.color_choice"))
         .on("click", function(){
@@ -3597,18 +3689,12 @@ function fillMenu_PropSymbolTypo(layer){
                     }
                 });
         });
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "240px")
-                        .attr('class', 'params')
-                        .attr("id", "PropSymbolTypo_output_name");
+    let uo_layer_name = make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
 
     var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
                         .append('button')
-                        .attr('id', 'propTypo_yes')
-                        .attr('class', 'button_st3')
-                        .attr('disabled', true)
+                        .attrs({id: 'propTypo_yes', class: 'button_st3 i18n', disabled: true,
+                                'data-i18n': '[text]app_page.func_options.common.render'})
                         .text(i18next.t("app_page.func_options.common.render"));
 
     ok_button.on("click", function(){

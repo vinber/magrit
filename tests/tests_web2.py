@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-#from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
@@ -44,7 +43,7 @@ def retry(ExceptionToCheck, tries=4, delay=2):
         return f_retry  # true decorator
     return deco_retry
 
-RUN_TRAVIS_SAUCELABS = os.environ.get('TRAVIS_BUILD_DIR') is not None
+# RUN_TRAVIS_SAUCELABS = os.environ.get('TRAVIS_BUILD_DIR') is not None
 RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
 RUN_LOCAL = not RUN_TRAVIS_SAUCELABS and not RUN_DOCKER
 
@@ -53,23 +52,6 @@ if RUN_LOCAL:
 elif RUN_DOCKER:
     browsers = [DesiredCapabilities.CHROME,
                 DesiredCapabilities.FIREFOX]
-else:
-    from sauceclient import SauceClient
-
-    USERNAME = os.environ.get('SAUCE_USERNAME')
-    ACCESS_KEY = os.environ.get('SAUCE_ACCESS_KEY')
-    sauce = SauceClient(USERNAME, ACCESS_KEY)
-
-    browsers = [
-        {"platform": "Linux",
-         "browserName": "chrome",
-         "version": "47"},
-#        {"platform": "Windows 8.1",
-#         "browserName": "internet explorer",
-#         "version": "11"},
-        {"platform": "Linux",
-         "browserName": "firefox",
-         "version": "40"}]
 
 
 def on_platforms(platforms, local):
@@ -102,7 +84,7 @@ def get_port_available(port_nb):
             else:
                 return str(available_port)
 
-#
+
 #def setUpModule():
 #    global p  # Could very likely be changed to avoid global variable
 #    global port
@@ -119,12 +101,8 @@ def get_port_available(port_nb):
 #        p.kill()
 #    except:
 #        pass
-
 port = 9999
 
-## TODO :
-# - test outputs (image / geo layer)
-# - test typosymbol / typo / label functionnalities
 
 @on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
@@ -134,36 +112,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
     def setUp(self):
         if RUN_LOCAL:
-            self.setUpLocal()
+            self.setUpLocal():
         elif RUN_DOCKER:
             self.setUpDocker()
-        else:
-            self.setUpSauce()
 
     def tearDown(self):
         if RUN_LOCAL:
             self.tearDownLocal()
-        else:
-            self.tearDownSauce()
-
-    def setUpSauce(self):
-        self.desired_capabilities['name'] = self.id()
-        self.desired_capabilities['tunnel-identifier'] = \
-            os.environ['TRAVIS_JOB_NUMBER']
-        self.desired_capabilities['build'] = os.environ['TRAVIS_BUILD_NUMBER']
-        self.desired_capabilities['tags'] = \
-            [os.environ['TRAVIS_PYTHON_VERSION'], 'CI']
-
-        print(self.desired_capabilities)
-        self.driver = webdriver.Remote(
-            desired_capabilities=self.desired_capabilities,
-            command_executor="http://%s:%s@ondemand.saucelabs.com:80/wd/hub" %
-            (USERNAME, ACCESS_KEY)
-        )
-        self.driver.implicitly_wait(10)
-        self.base_url = "http://localhost:{}/modules".format(port)
-        self.verificationErrors = []
-        self.accept_next_alert = True
 
     def setUpDocker(self):
         self.driver = webdriver.Remote(
@@ -188,22 +143,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.verificationErrors = []
         self.accept_next_alert = True
 
-
     def tearDownLocal(self):
         self.assertEqual([], self.verificationErrors)
         self.driver.quit()
-
-    def tearDownSauce(self):
-        self.assertEqual([], self.verificationErrors)
-        print("\nLink to your job: \n "
-              "https://saucelabs.com/jobs/%s \n" % self.driver.session_id)
-        try:
-            if sys.exc_info() == (None, None, None):
-                sauce.jobs.update_job(self.driver.session_id, passed=True)
-            else:
-                sauce.jobs.update_job(self.driver.session_id, passed=False)
-        finally:
-            self.driver.quit()
 
     def test_languages(self):
         menu_desc = {"fr": ["Import des données", "Choix de la représentation"],

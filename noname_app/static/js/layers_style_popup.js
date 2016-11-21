@@ -289,7 +289,7 @@ function createStyleBoxLabel(layer_name){
                 restore_prev_settings();
             }
         });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "305px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
