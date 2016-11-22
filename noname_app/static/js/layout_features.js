@@ -907,20 +907,17 @@ class UserEllipse {
                 .attrs({"class": "user_ellipse legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.ellipse.insert("ellipse")
-        		.attrs({"class":"legend_features",
-        			  "cx": this.pt1[0], "cy": this.pt1[1],
-        			  "rx": 30, "ry": 40})
-                .styles({"stroke-width": this.strokeWeight,
-                         stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
-                         "fill-opacity": 0});
+            .attrs({"class": "legend_features", "rx": 30, "ry": 40,
+        			      "cx": this.pt1[0], "cy": this.pt1[1]})
+            .styles({"stroke-width": this.strokeWeight,
+                      stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                      "fill-opacity": 0});
 
         this.ellipse.call(this.drag_behavior);
 
         this.ellipse.on("contextmenu dblclick", () => {
-            context_menu.showMenu(d3.event,
-                                  document.querySelector("body"),
-                                  getItems());
-            });
+            context_menu.showMenu(d3.event, document.body, getItems());
+        });
     }
 
     up_element(){

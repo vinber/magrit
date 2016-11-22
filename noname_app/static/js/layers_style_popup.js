@@ -156,7 +156,7 @@ function createStyleBoxTypoSymbols(layer_name){
 
     var selection = map.select("#" + layer_name).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
-        ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
+        ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field,
         ref_coords = [];
@@ -270,7 +270,7 @@ function createStyleBoxLabel(layer_name){
 
     var selection = map.select("#" + layer_name).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
-        ref_layer_selection = document.getElementById(ref_layer_name).querySelectorAll("path"),
+        ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
         ref_coords = [];
 
     var prev_settings = [],
@@ -421,12 +421,6 @@ function createStyleBoxGraticule(layer_name){
                                .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
                                .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val})
                                .datum(d3.geoGraticule().step([step_val, step_val]));
-                              //  .attr("class", "graticule")
-                              //  .style("stroke-dasharray", dasharray_val)
-                              //  .attr("clip-path", "url(#clip)")
-                              //  .attr("d", path)
-                              //  .style("fill", "none")
-                              //  .style("stroke", "grey");
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
@@ -1350,7 +1344,7 @@ function make_style_box_indiv_label(label_node){
 var getBlurFilter = (function(size){
     var count = 0;
     return function(size) {
-        let blur_filts = defs.node().querySelectorAll(".blur");
+        let blur_filts = defs.node().getElementsByClassName("blur");
         let blur_filt_to_use;
         for(let i=0; i < blur_filts.length; i++){
             if(blur_filts[i].querySelector("feGaussianBlur").getAttributeNS(null, "stdDeviation") == size){

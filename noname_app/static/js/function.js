@@ -235,24 +235,24 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
         selection
             .insert('input')
             .style("width", "60px")
-            .attrs({type: 'number', id: 'min_class', step: 0.1, value: (+breaks[i][0][0]).toFixed(2)});
+            .attrs({type: 'number', class: 'min_class', step: 0.1, value: (+breaks[i][0][0]).toFixed(2)});
 
         selection
             .insert('input')
             .style("width", "60px")
-            .attrs({type: 'number', id: 'max_class', step: 0.1, value: (+breaks[i][0][1]).toFixed(2)});
+            .attrs({type: 'number', class: 'max_class', step: 0.1, value: (+breaks[i][0][1]).toFixed(2)});
 
         selection
             .insert('input')
-            .attrs({type: 'number', id: 'size_class', step: 0.11, value: (+breaks[i][1]).toFixed(2)})
+            .attrs({type: 'number', class: 'size_class', step: 0.11, value: (+breaks[i][1]).toFixed(2)})
             .styles({"margin-left": "20px", width: '55px'});
 
         selection
             .insert('span')
             .html(" px");
     }
-    let mins = document.getElementById(id_parent).querySelectorAll("#min_class"),
-        maxs = document.getElementById(id_parent).querySelectorAll("#max_class");
+    let mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
+        maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
 
     for(let i = 0; i < mins.length; i++){
         if(i > 0){
@@ -271,7 +271,7 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
         }
     }
     if(callback){
-      let sizes = document.getElementById(id_parent).querySelectorAll("#size_class")
+      let sizes = document.getElementById(id_parent).getElementsByClassName("size_class")
       for(let i = 0; i < sizes.length; i++){
         sizes[i].onchange = callback;
       }
@@ -286,9 +286,9 @@ function fetch_min_max_table_value(parent_id){
 
     if(!parent_node) return;
 
-    let mins = Array.prototype.map.call(parent_node.querySelectorAll("#min_class"), el => +el.value),
-        maxs = Array.prototype.map.call(parent_node.querySelectorAll("#max_class"), el => +el.value),
-        sizes = Array.prototype.map.call(parent_node.querySelectorAll("#size_class"), el => +el.value),
+    let mins = Array.prototype.map.call(parent_node.getElementsByClassName("min_class"), el => +el.value),
+        maxs = Array.prototype.map.call(parent_node.getElementsByClassName("max_class"), el => +el.value),
+        sizes = Array.prototype.map.call(parent_node.getElementsByClassName("size_class"), el => +el.value),
         nb_class = mins.length,
         comp_fun = (a,b) => a - b;
 
@@ -1005,7 +1005,7 @@ var fields_Anamorphose = {
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
-                let layer_select = document.getElementById(layer).querySelectorAll("path"),
+                let layer_select = document.getElementById(layer).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
@@ -1266,7 +1266,7 @@ function fillMenu_Anamorphose(){
 
 
 function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add){
-    let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
+    let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
         symbol_layer = undefined,
@@ -1352,7 +1352,7 @@ function make_prop_symbols(rendering_params){
         _values = [],
         abs = Math.abs,
         comp = function(a,b){ return abs(b[1])-abs(a[1]); },
-        ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
+        ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
@@ -2310,7 +2310,7 @@ function render_TypoSymbols(rendering_params, new_name){
     let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
     let new_layer_data = [];
 
-    let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
+    let ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 
     for(let i=0; i<nb_ft; i++){
@@ -2768,7 +2768,7 @@ var render_label = function(layer, rendering_params){
     let selected_font = rendering_params.font;
     let font_size = rendering_params.ref_font_size + "px"
     let new_layer_data = [];
-    let ref_selection = document.getElementById(layer).querySelectorAll("path");
+    let ref_selection = document.getElementById(layer).getElementsByTagName("path");
     let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);

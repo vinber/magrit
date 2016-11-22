@@ -1545,6 +1545,15 @@ function remove_layer_cleanup(name){
         // If after this removal there isn't nor a targeted layer neither an external dataset :
         if(joined_dataset.length == 0)
             document.getElementById("browse_button").disabled = true;
+
+        // Also reset the user choosen values, remembered for its ease :
+        fields_TypoSymbol.box_typo = undefined;
+        fields_TypoSymbol.rendering_params = {};
+        fields_TypoSymbol.cats = {};
+        fields_PropSymbolChoro.rendering_params = {};
+        fields_Typo.rendering_params = {};
+        fields_Choropleth.rendering_params = {};
+        fields_PropSymbolTypo.rendering_params = {};
     }
 
     // There is probably better ways in JS to delete the object,

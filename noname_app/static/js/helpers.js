@@ -112,8 +112,8 @@ function copy_layer(ref_layer, new_name, type_result){
     current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
                              type: current_layers[ref_layer].type,
                              ref_layer_name: ref_layer};
-    let selec_src = document.getElementById(ref_layer).querySelectorAll("path");
-    let selec_dest = document.getElementById(new_name).querySelectorAll("path");
+    let selec_src = document.getElementById(ref_layer).getElementsByTagName("path");
+    let selec_dest = document.getElementById(new_name).getElementsByTagName("path");
     for(let i = 0; i < selec_src.length; i++)
         selec_dest[i].__data__ = selec_src[i].__data__;
     up_legends();

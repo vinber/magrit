@@ -639,21 +639,9 @@ function add_dataset(readed_dataset){
 //    });
 
     if(targeted_layer_added){
-        swal({title: "",
-              text: i18next.t("app_page.join_box.before_join_ask"),
-              allowOutsideClick: false,
-              allowEscapeKey: true,
-              type: "question",
-              showConfirmButton: true,
-              showCancelButton: true,
-              confirmButtonText: i18next.t("app_page.common.yes"),
-              cancelButtonText: i18next.t("app_page.common.no"),
-            }).then(() => {
-                let layer_name = Object.getOwnPropertyNames(user_data)[0];
-                createJoinBox(layer_name);
-            }, dismiss => { null; });
+        let layer_name = Object.getOwnPropertyNames(user_data)[0];
+        ask_join_now(layer_name);
     }
-
 }
 
 function add_csv_geom(file, name){
@@ -687,9 +675,38 @@ function handle_single_file(file, target_layer_on_add) {
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
-    return +layer_name_to_add.length > 28
-        ? [layer_name_to_add.substring(0, 23), '(...)'].join('')
+    return +layer_name_to_add.length > 38
+        ? [layer_name_to_add.substring(0, 35), '(...)'].join('')
         : layer_name_to_add;
+}
+
+function ask_join_now(layer_name){
+  swal({title: "",
+        text: i18next.t("app_page.join_box.before_join_ask"),
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        type: "question",
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: i18next.t("app_page.common.yes"),
+        cancelButtonText: i18next.t("app_page.common.no"),
+      }).then(() => {
+          createJoinBox(layer_name);
+      }, dismiss => { null; });
+}
+
+function ask_existing_feature(feature_name){
+  return swal({
+    title: "",
+    text: i18next.t('app_page.common.error_existing_' + feature_name),
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    type: "question",
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: i18next.t("app_page.common.yes"),
+    cancelButtonText: i18next.t("app_page.common.no"),
+  });
 }
 
 // Add the TopoJSON to the 'svg' element :
@@ -867,18 +884,7 @@ function add_layer_topojson(text, options){
                     dismiss => { null; });
 
     if(target_layer_on_add && joined_dataset.length > 0){
-        swal({title: "",
-              text: i18next.t("app_page.join_box.before_join_ask"),
-              allowOutsideClick: false,
-              allowEscapeKey: true,
-              type: "question",
-              showConfirmButton: true,
-              showCancelButton: true,
-              confirmButtonText: i18next.t("app_page.common.yes"),
-              cancelButtonText: i18next.t("app_page.common.no"),
-            }).then(() => {
-                createJoinBox(lyr_name_to_add);
-            }, dismiss => { null; });
+        ask_join_now(lyr_name_to_add);
     }
     return lyr_name_to_add;
 };
@@ -978,7 +984,7 @@ function select_layout_features(){
 }
 
 function setSphereBottom(){
-    let layers = document.querySelectorAll(".layer"),
+    let layers = document.getElementsByClassName("layer"),
         layers_list = document.querySelector(".layer_list");
 
     svg_map.insertBefore(layers[layers.length - 1], layers[0]);
@@ -988,7 +994,7 @@ function setSphereBottom(){
 
 function add_layout_feature(selected_feature){
     if(selected_feature == "text_annot"){
-        let existing_annotation = document.querySelectorAll(".txt_annot"),
+        let existing_annotation = document.getElementsByClassName("txt_annot"),
             existing_id = [],
             new_id;
         if(existing_annotation)
@@ -1016,9 +1022,7 @@ function add_layout_feature(selected_feature){
             .append("path")
             .datum({type: "Sphere"})
             .styles({fill: "lightblue", "fill-opacity": 0.2})
-            .attr("id", "sphere")
-            .attr("clip-path", "url(#clip)")
-            .attr("d", path);
+            .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
         setSphereBottom();
@@ -1027,13 +1031,9 @@ function add_layout_feature(selected_feature){
             return;
         map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
-               .attr("class", "graticule")
-               .style("stroke-dasharray",  5)
-               .datum(d3.geoGraticule())
-               .attr("clip-path", "url(#clip)")
-               .attr("d", path)
-               .style("fill", "none")
-               .style("stroke", "grey");
+               .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
+               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'})
+               .datum(d3.geoGraticule());
         current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}, opacity: 1, step: 10, dasharray: 5};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
@@ -1041,37 +1041,21 @@ function add_layout_feature(selected_feature){
         if(!(scaleBar.displayed)){
             scaleBar.create();
         } else {
-            swal({title: "",
-                  text: i18next.t("app_page.common.error_existing_scalebar"),
-                  allowOutsideClick: false,
-                  allowEscapeKey: false,
-                  type: "question",
-                  showConfirmButton: true,
-                  showCancelButton: true,
-                  confirmButtonText: i18next.t("app_page.common.yes"),
-                  cancelButtonText: i18next.t("app_page.common.no"),
-                }).then(() => {
-                    scaleBar.remove();
-                    scaleBar.create();
+            ask_existing_feature('scalebar')
+              .then(() => {
+                  scaleBar.remove();
+                  scaleBar.create();
                 }, dismiss => { null; });
         }
     } else if (selected_feature == "north_arrow"){
       if(!(northArrow.displayed)){
           northArrow.display();
       } else {
-          swal({title: "",
-                text: i18next.t("app_page.common.error_existing_north_arrow"),
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                type: "question",
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: i18next.t("app_page.common.yes"),
-                cancelButtonText: i18next.t("app_page.common.no"),
-              }).then(() => {
-                  northArrow.remove();
-                  northArrow.display();
-              }, dismiss => { null; });
+          ask_existing_feature('north_arrow')
+            .then( _ => {
+              northArrow.remove();
+              northArrow.display();
+            }, dismiss => { null; });
       }
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
@@ -1230,7 +1214,6 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
          [i18next.t("app_page.sample_layer_box.gpm_dataset"), 'gpm_dataset'],
          [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
-//                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
          [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
         ];
 
@@ -1306,7 +1289,7 @@ function get_map_xy0(){
 
 function handleClickAddEllipse(){
     let getId = () => {
-        let ellipses = document.querySelectorAll(".user_ellipse");
+        let ellipses = document.getElementsByClassName("user_ellipse");
         if(!ellipses){
             return 0;
         } else if (ellipses.length > 30){
@@ -1361,7 +1344,7 @@ function handleClickAddEllipse(){
 
 function handleClickAddArrow(){
     let getId = () => {
-        let arrows = document.querySelectorAll(".arrow");
+        let arrows = document.getElementsByClassName("arrow");
         if(!arrows){
             return 0;
         } else if (arrows.length > 30){
