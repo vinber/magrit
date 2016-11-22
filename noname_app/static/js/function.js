@@ -310,14 +310,14 @@ function fillMenu_PropSymbolChoro(layer){
     var rendering_params = fields_PropSymbolChoro.rendering_params,
         dv2 = make_template_functionnality(section2);
 
-    var a = dv2.append('p');
+    var a = dv2.append('p').attr('class', 'params_section2');
     a.append("span")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1'})
       .html(i18next.t("app_page.func_options.choroprop.field1"));
     var field1_selec = a.insert('select')
       .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
 
-    var b = dv2.append('p');
+    var b = dv2.append('p').attr('class', 'params_section2');
     b.append("span")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size'})
       .html(i18next.t("app_page.func_options.choroprop.fixed_size"));
@@ -327,7 +327,7 @@ function fillMenu_PropSymbolChoro(layer){
                     .style("width", "50px");
     b.append('label-item').html(' (px)');
 
-    var c = dv2.append('p');
+    var c = dv2.append('p').attr('class', 'params_section2');
     c.append("span")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value'})
       .html(i18next.t("app_page.func_options.choroprop.on_value"));
@@ -337,12 +337,12 @@ function fillMenu_PropSymbolChoro(layer){
       .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
-    var d = dv2.append('p');
+    var d = dv2.append('p').attr('class', 'params_section2');
     d.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type'})
       .html(i18next.t("app_page.func_options.choroprop.symbol_type"));
     var symb_selec = d.insert('select')
-      .attrs({class: 'params', id: 'PropSymbolChoro_symbol_type'});
+      .attrs({class: 'params i18n', id: 'PropSymbolChoro_symbol_type'});
 
     [['app_page.func_options.common.symbol_circle', 'circle'],
      ['app_page.func_options.common.symbol_square', 'rect']
@@ -350,16 +350,14 @@ function fillMenu_PropSymbolChoro(layer){
         symb_selec.append("option").text(i18next.t(symb[0])).attrs({value: symb[1], 'data-i18n': '[text]' + symb[0]});
     });
 
-    var e = dv2.append('p');
+    var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
       .html(i18next.t("app_page.func_options.choroprop.field2"));
     var field2_selec = e.insert('select')
       .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
-    let f = dv2.insert('p')
-      .style("margin", "auto")
-      .html("");
+    let f = dv2.insert('p').attr('class', 'params_section2');
     f.append("button")
         .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
         .styles({"font-size": "0.8em", "text-align": "center"})
@@ -496,6 +494,7 @@ var fields_PropSymbolChoro = {
             }
         });
         setSelected(field1_selec.node(), fields[0]);
+        setSelected(field2_selec.node(), fields[0]);
     },
 
     unfill: function(){
@@ -514,7 +513,7 @@ var fields_PropSymbolChoro = {
 var fillMenu_Typo = function(){
     var dv2 = make_template_functionnality(section2);
 
-    let a = dv2.append('p');
+    let a = dv2.append('p').attr('class', 'params_section2');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice'})
       .html(i18next.t("app_page.func_options.typo.color_choice"))
@@ -605,7 +604,7 @@ function fillMenu_Choropleth(){
     let dv2 = make_template_functionnality(section2),
         rendering_params = fields_Choropleth.rendering_params;
 
-    var field_selec_section = dv2.append('p');
+    var field_selec_section = dv2.append('p').attr('class', 'params_section2');
     field_selec_section.insert("span")
       .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
       .html(i18next.t("app_page.func_options.common.field"));
@@ -616,7 +615,7 @@ function fillMenu_Choropleth(){
    field_selec_section.insert('select')
     .attrs({id: 'choro_field1', class: 'params'});
 
-    dv2.insert('p').style("margin", "auto").html("")
+    dv2.insert('p').style("margin", "auto")
       .append("button")
       .attrs({id: "choro_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
@@ -832,19 +831,17 @@ function render_stewart(){
 
   xhrequest("POST", '/compute/stewart', formToSend, true)
       .then(res => {
-          {
-              let data_split = res.split('|||'),
-                  raw_topojson = data_split[0];
-              let options = {result_layer_on_add: true};
-              if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-                  options["choosed_name"] = new_user_layer_name;
-              }
-              var n_layer_name = add_layer_topojson(raw_topojson, options);
-              if(!n_layer_name)
-                  return;
-              var class_lim = JSON.parse(data_split[1]);
+          let data_split = res.split('|||'),
+              raw_topojson = data_split[0],
+              options = {result_layer_on_add: true};
+          if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+              options["choosed_name"] = new_user_layer_name;
           }
-          var col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
+          var n_layer_name = add_layer_topojson(raw_topojson, options);
+          if(!n_layer_name)
+              return;
+          var class_lim = JSON.parse(data_split[1]),
+              col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
               nb_class = class_lim['min'].length,
               colors_breaks = [];
           for(let i = 0; i < nb_class; i++){
@@ -856,7 +853,7 @@ function render_stewart(){
           current_layers[n_layer_name].colors_breaks = colors_breaks;
           current_layers[n_layer_name].rendered_field = field1_n;
           current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
-          d3.select("#"+n_layer_name)
+          map.select("#"+n_layer_name)
                   .selectAll("path")
                   .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
           handle_legend(n_layer_name);
@@ -872,7 +869,7 @@ function render_stewart(){
 function fillMenu_Stewart(){
     var dialog_content = make_template_functionnality(section2);
 
-    let a = dialog_content.append('p');
+    let a = dialog_content.append('p').attr('class', 'params_section2');
     a.append('span')
       .style("margin", "10px 0px 0px")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field'})
@@ -881,7 +878,7 @@ function fillMenu_Stewart(){
       .insert('select')
       .attrs({class: 'params marg_auto', id: "stewart_field"});
 
-    let b = dialog_content.append('p');
+    let b = dialog_content.append('p').attr('class', 'params_section2');
     b.append('span')
       .style("margin", "10px 0px 0px")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field'})
@@ -889,7 +886,7 @@ function fillMenu_Stewart(){
     b.insert('select')
       .attrs({class: 'params marg_auto', id: "stewart_field2"});
 
-    let p_span = dialog_content.append("p");
+    let p_span = dialog_content.append("p").attr('class', 'params_section2');
     p_span.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.span'})
       .text(i18next.t("app_page.func_options.smooth.span"));
@@ -899,7 +896,7 @@ function fillMenu_Stewart(){
     p_span.append("span")
       .html(" (km)");
 
-    let d = dialog_content.append('p');
+    let d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span')
       .styles({"margin-right": "35px"})
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta'})
@@ -908,7 +905,7 @@ function fillMenu_Stewart(){
       .style("width", "60px")
       .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
-    let p_reso = dialog_content.append('p');
+    let p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution'})
       .text(i18next.t("app_page.func_options.smooth.resolution"));
@@ -918,14 +915,14 @@ function fillMenu_Stewart(){
     p_reso.insert("label")
       .html(" (km)");
 
-    let f = dialog_content.append('p');
+    let f = dialog_content.append('p').attr('class', 'params_section2');
     f.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.func_options'})
       .html(i18next.t("app_page.func_options.smooth.function"));
     let func_selec = f.insert('select')
-      .attrs({class: 'params', id: "stewart_func"});
+      .attrs({class: 'params i18n', id: "stewart_func"});
 
-    let g = dialog_content.append("p");
+    let g = dialog_content.append("p").attr('class', 'params_section2');
     g.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.nb_class'})
       .html(i18next.t("app_page.func_options.smooth.nb_class"));
@@ -933,7 +930,7 @@ function fillMenu_Stewart(){
       .style("width", "50px")
       .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1});
 
-    let bvs = dialog_content.append("p");
+    let bvs = dialog_content.append("p").attr('class', 'params_section2');
     bvs.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.break_values'})
       .html(i18next.t("app_page.func_options.smooth.break_values"));
@@ -942,7 +939,7 @@ function fillMenu_Stewart(){
       .attrs({class: 'params i18n', id: "stewart_breaks",
               "data-i18n": "[placeholder]app_page.common.expected_class",
               "placeholder": i18next.t("app_page.common.expected_class")});
-    let m  = dialog_content.append('p');
+    let m  = dialog_content.append('p').attr('class', 'params_section2');
     m.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask'})
       .html(i18next.t("app_page.func_options.smooth.mask"));
@@ -966,13 +963,25 @@ var fields_Anamorphose = {
         let fields = type_col(layer, "number"),
             field_selec = section2.select("#Anamorph_field"),
             algo_selec = section2.select('#Anamorph_algo'),
-            ok_button = section2.select("#Anamorph_yes");
+            ok_button = section2.select("#Anamorph_yes"),
+            fixed_size_dorling = section2.select('#Anamorph_dorling_fixed_size');
 
         if(fields.length == 0){
             display_error_num_field();
             return;
         }
-
+        algo_selec.on('change', function(){
+          if(this.value === "dorling"){
+            section2.selectAll('.opt_dougenik, .opt_olson').style('display', 'none');
+            section2.selectAll('.opt_dorling').style('display', undefined);
+          } else if (this.value === "olson") {
+            section2.selectAll('.opt_dougenik, .opt_dorling').style('display', 'none');
+            section2.selectAll('.opt_olson').style('display', undefined);
+          } else if (this.value === "dougenik") {
+            section2.selectAll('.opt_dorling, .opt_olson').style('display', 'none');
+            section2.selectAll('.opt_dougenik').style('display', undefined);
+          }
+        })
         section2.selectAll(".params").attr("disabled", null);
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field);
@@ -989,6 +998,10 @@ var fields_Anamorphose = {
                 ref_value_field.setAttribute("max", max_val_field);
                 ref_value_field.value = max_val_field;
             }
+        });
+
+        fixed_size_dorling.on("change", function(){
+            document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
         });
 
         ok_button.on("click", function(){
@@ -1156,7 +1169,6 @@ var fields_Anamorphose = {
         });
         setSelected(field_selec.node(), field_selec.node().options[0].value);
 
-
     },
     unfill: function(){
         let field_selec = document.getElementById("Anamorph_field");
@@ -1167,101 +1179,95 @@ var fields_Anamorphose = {
 
 
 function fillMenu_Anamorphose(){
-    var make_opt_dorling = function(){
-
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
-        option2_txt.html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 55, step: 0.1, value: 30, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
-        option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
-        option2_txt2.html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
-        option2_val2 = option2_txt2.insert("input").attr("type", "number").attrs({class: "params", id: "Anamorph_opt3"}).style("width", "100px");
-
-        symbols.forEach(function(symb){
-            option1_val.append("option").text(symb[0]).attr("value", symb[1]);
-        });
-
-        field_selec.on("change", function(){
-            let field_name = this.value,
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-                ref_value_field = document.getElementById("Anamorph_opt3");
-
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.value = max_val_field;
-        });
-        setSelected(field_selec.node(), field_selec.node().options[0].value);
-
-        option2_val.on("change", function(){
-            document.getElementById("Anamorph_ref_size_txt").innerHTML = this.value + " px";
-        });
-
-    };
-
-    var make_opt_iter = function(){
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
-        option2_txt.html("");
-        option2_txt2.html("");
-        option1_val = option1_txt.insert('input')
-                        .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
-    };
-
-    var make_opt_olson = function(){
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
-        option2_txt.html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
-        [[i18next.t("app_page.func_options.cartogram.olson_scale_max"), "max"],
-         [i18next.t("app_page.func_options.cartogram.olson_scale_mean"), "mean"]].forEach(function(opt_field){
-            option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
-        });
-        option2_val = option2_txt.insert('input')
-                        .style("width", "60px")
-                        .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
-        option2_txt2.html("");
-    };
-
     var dialog_content = make_template_functionnality(section2);
 
-    var algo_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.algo")).insert('select').attr('class', 'params').attr('id', 'Anamorph_algo'),
-        field_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.field")).insert('select').attrs({class: 'params', id: 'Anamorph_field'}),
-        option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html(i18next.t("app_page.func_options.cartogram.dorling_symbol")),
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"}),
-        option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size")),
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 45, step: 0.1, value: 20, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
-        option2_txt2 = dialog_content.append("p").attr("id", "Anamorph_opt_txt3").html(i18next.t("app_page.func_options.cartogram.dorling_on_value")),
-        option2_val2 = option2_txt2.insert("input").attrs({type: "number", min: 0, step: 0.1}).attrs({class: "params", id: "Anamorph_opt3"}),
-        symbols = [
-            [i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
-            [i18next.t("app_page.func_options.common.symbol_square"), "rect"]
-        ];
+    let algo_choice = dialog_content.append('p').attr('class', 'params_section2');
+    algo_choice.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.algo'})
+      .html(i18next.t("app_page.func_options.cartogram.algo"));
+    let algo_selec = algo_choice.insert('select')
+      .attrs({id: 'Anamorph_algo', class: 'params i18n'});
 
-    option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
+    let field_choice = dialog_content.append('p').attr('class', 'params_section2');
+    field_choice.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.field'})
+      .html(i18next.t("app_page.func_options.cartogram.field"));
+    let field_selec = field_choice.insert('select')
+      .attrs({class: 'params', id: 'Anamorph_field'});
 
-    option2_val.on("change", function(){
-        document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
-    });
+    // Options for Dorling mode :
+    let option1_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling');
+      // .attr('class', 'params_section2').attr("id", "Anamorph_opt_txt");
+    option1_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_symbol'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
+    let option1_val = option1_section.append("select")
+      .attrs({class: "params i18n", id: "Anamorph_dorling_symbol"});
 
-    symbols.forEach(function(symb){
-        option1_val.append("option").text(symb[0]).attr("value", symb[1]);
-    });
+    let option2_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt2");
+    option2_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_fixed_size'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
+    let option2_val = option2_section.insert("input")
+      .style("width", "50px")
+      .attrs({type: "range", min: 0, max: 45, step: 0.1, value: 20, id: "Anamorph_dorling_fixed_size", class: "params"});
+    option2_section.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
 
-    algo_selec.on("change", function(){
-        if(this.value == "dorling")
-            make_opt_dorling();
-        else if(this.value == "olson")
-            make_opt_olson();
-        else
-            make_opt_iter();
-    });
+    let option3_section = dialog_content.append("p").attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt3");
+    option3_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_on_value'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
+    let option2_val2 = option3_section.insert("input")
+      .attrs({class: "params", id: "Anamorph_dorling_onvalue", type: "number", min: 0, step: 0.1});
+
+    // Options for Dougenik mode :
+    let doug1 = dialog_content.append('p')
+      .attr('class', 'params_section2 opt_dougenik');
+    doug1.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations'})
+      .html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
+    doug1.insert('input')
+      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"})
+
+    // Options for Olson mode :
+    let o1 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');;
+    o1.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_txt'})
+      .html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
+    let type_scale_olson = o1.append("select")
+      .attrs({class: "params", id: "Anamorph_olson_scale_kind"});
+
+    let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
+    o2.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
+      .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
+    o2.insert('input')
+      .style("width", "60px")
+      .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
 
     [['Pseudo-Dorling', 'dorling'],
      ['Dougenik & al. (1985)', 'dougenik'],
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
-        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
+        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
+    });
+
+    [["app_page.func_options.common.symbol_circle", "circle"],
+     ["app_page.func_options.common.symbol_square", "rect"]
+    ].forEach(function(symb){
+        option1_val.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+    });
+
+    [["app_page.func_options.cartogram.olson_scale_max", "max"],
+     ["app_page.func_options.cartogram.olson_scale_mean", "mean"]
+    ].forEach(opt_field => {
+        type_scale_olson.append("option").attrs({"value": opt_field[1], 'data-i18n': '[text]' + opt_field[0]}).text(i18next.t(opt_field[0]));
+    });
 
     make_layer_name_button(dialog_content, "Anamorph_output_name");
     make_ok_button(dialog_content, 'Anamorph_yes', false);
+
     dialog_content.selectAll(".params").attr("disabled", true);
+    dialog_content.selectAll(".opt_olson, .opt_dougenik").style('display', 'none');
 }
 
 
@@ -1602,14 +1608,14 @@ function make_mini_summary(summary){
 function fillMenu_PropSymbolTypo(layer){
     var dv2 = make_template_functionnality(section2);
 
-    let a = dv2.append('p');
+    let a = dv2.append('p').attr('class', 'params_section2');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1'})
       .html(i18next.t("app_page.func_options.proptypo.field1"))
     let field1_selec = a.insert('select')
       .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});
 
-    let b = dv2.append('p');
+    let b = dv2.append('p').attr('class', 'params_section2');
     b.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size'})
       .html(i18next.t("app_page.func_options.proptypo.fixed_size"));
@@ -1619,7 +1625,7 @@ function fillMenu_PropSymbolTypo(layer){
         .style("width", "50px");
     b.append('label-item').html(' (px)');
 
-    let c = dv2.append('p');
+    let c = dv2.append('p').attr('class', 'params_section2');
     c.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.on_value'})
       .html(i18next.t("app_page.func_options.proptypo.on_value"))
@@ -1629,7 +1635,7 @@ function fillMenu_PropSymbolTypo(layer){
       .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
-    let d = dv2.append('p');
+    let d = dv2.append('p').attr('class', 'params_section2');
     d.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.symbol_type'})
       .html(i18next.t("app_page.func_options.proptypo.symbol_type"));
@@ -1641,14 +1647,14 @@ function fillMenu_PropSymbolTypo(layer){
         symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
     });
 
-    let e = dv2.append('p');
+    let e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2'})
       .html(i18next.t("app_page.func_options.proptypo.field2"));
     var field2_selec = e.insert('select')
         .attrs({class: 'params', id: 'PropSymbolTypo_field_2'});
 
-    let f = dv2.insert('p').style("margin", "auto").html("");
+    let f = dv2.insert('p').style("margin", "auto");
     f.append("button")
       .attrs({id: "Typo_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.typo.color_choice'})
@@ -1657,7 +1663,7 @@ function fillMenu_PropSymbolTypo(layer){
 
     make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
     make_ok_button(dv2, 'propTypo_yes');
-    d3.selectAll(".params").attr("disabled", true);
+    section2.selectAll(".params").attr("disabled", true);
 }
 
 var fields_PropSymbolTypo = {
@@ -1670,6 +1676,8 @@ var fields_PropSymbolTypo = {
             nb_features = user_data[layer].length,
             field1_selec = section2.select("#PropSymbolTypo_field_1"),
             field2_selec = section2.select("#PropSymbolTypo_field_2"),
+            ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
+            uo_layer_name = section2.select('#PropSymbolTypo_output_name'),
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
 
@@ -1688,21 +1696,18 @@ var fields_PropSymbolTypo = {
 
         field1_selec.on("change", function(){
             let field_name = this.value,
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-                ref_value_field = document.getElementById("PropSymbolTypo_ref_value");
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field);
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+            ref_value_field.attrs({max: max_val_field, value: max_val_field});
+            uo_layer_name.attr('value', ['Typo', field_name, field2_selec.node().value, layer].join('_'));
         });
         field2_selec.on("change", function(){
             let field_name = this.value;
-            if(self.rendering_params[field_name])
-                ok_button.attr("disabled", null);
-            else
-                ok_button.attr("disabled", true);
+            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+            uo_layer_name.attr('value', ['Typo', field1_selec.node().value, field_name, layer].join('_'));
         });
         btn_typo_class.on("click", function(){
-            let selected_field = field2_selec.node().value;
-            let new_layer_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+            let selected_field = field2_selec.node().value,
+                new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
             display_categorical_box(layer, selected_field)
                 .then(function(confirmed){
                     if(confirmed){
@@ -1718,13 +1723,13 @@ var fields_PropSymbolTypo = {
           render_PropSymbolTypo(
             field1_selec.node().value,
             field2_selec.node().value,
-            section2.select('#PropSymbolTypo_output_name').node().value,
-            section2.select('#PropSymbolTypo_ref_value').node().value,
+            uo_layer_name.node().value,
+            ref_value_field.node().value,
             section2.select('#PropSymbolTypo_ref_size').node().value,
             section2.select('#PropSymbolTypo_symbol_type').node().value
           )
         });
-        setSelected(field1_selec.node(), fields_num[0]);
+        setSelected(field2_selec.node(), Object.getOwnPropertyNames(fields_all)[0]);
     },
 
     unfill: function(){
@@ -1736,7 +1741,7 @@ var fields_PropSymbolTypo = {
         for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
             field2_selec.removeChild(field2_selec.children[i]);
         }
-        d3.selectAll(".params").attr("disabled", true);
+        section2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
 };
@@ -1786,26 +1791,26 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
 function fillMenu_Discont(){
     var dv2 = make_template_functionnality(section2);
 
-    let a = dv2.append('p');
+    let a = dv2.append('p').attr('class', 'params_section2');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field'})
       .html(i18next.t('app_page.func_options.discont.field'));
     a.insert('select')
       .attrs({class: 'params', id: 'field_Discont'});
 
-    let b = dv2.append('p');
+    let b = dv2.append('p').attr('class', 'params_section2');
     b.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
       .html(i18next.t('app_page.func_options.discont.id_field'));
     b.insert('select')
       .attrs({class: 'params', id: 'field_id_Discont'});
 
-    let c = dv2.append('p');
+    let c = dv2.append('p').attr('class', 'params_section2');
     c.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity'})
       .html(i18next.t('app_page.func_options.discont.type_discontinuity'));
     let disc_kind = c.insert('select')
-      .attrs({class: 'params', id: 'kind_Discont'});
+      .attrs({class: 'params i18n', id: 'kind_Discont'});
 
     [['app_page.func_options.discont.type_relative', 'rel'],
       ['app_page.func_options.discont.type_absolute', 'abs']
@@ -1813,7 +1818,7 @@ function fillMenu_Discont(){
         disc_kind.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
     });
 
-    let d = dv2.append('p')
+    let d = dv2.append('p').attr('class', 'params_section2');
     d.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
       .html(i18next.t('app_page.func_options.discont.nb_class'));
@@ -1821,25 +1826,24 @@ function fillMenu_Discont(){
       .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
       .style('width', '50px');
 
-    let e = dv2.append('p');
+    let e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization'})
       .html(i18next.t('app_page.func_options.discont.discretization'))
     let disc_type = e.insert('select')
-      .attrs({'class': 'params', 'id': 'Discont_discKind'});
+      .attrs({'class': 'params i18n', 'id': 'Discont_discKind'});
 
     [
-     [i18next.t('app_page.common.equal_interval'), 'equal_interval'],
-     [i18next.t('app_page.common.quantiles'), 'quantiles'],
-     // [i18next.t('app_page.common.std_dev'), 'std_dev'],
-     [i18next.t('app_page.common.Q6'), 'Q6'],
-     [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'],
-     [i18next.t('app_page.common.jenks'), 'jenks']
+     ['app_page.common.equal_interval', 'equal_interval'],
+     ['app_page.common.quantiles', 'quantiles'],
+     ['app_page.common.Q6', 'Q6'],
+     ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
+     ['app_page.common.jenks', 'jenks']
     ].forEach(field => {
-         disc_type.append('option').text(field[0]).attr('value', field[1]);
+         disc_type.append('option').text(i18next.t(field[0])).attrs({'value': field[1], 'data-i18n': '[text]' + field[0]});
     });
 
-    let f = dv2.append('p');
+    let f = dv2.append('p').attr('class', 'params_section2');
     f.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color'})
       .html(i18next.t('app_page.func_options.discont.color'));
@@ -2062,14 +2066,14 @@ function fillMenu_PropSymbol(layer){
     var dialog_content = make_template_functionnality(section2),
         max_allowed_size = Math.round(h/2 - h/10);
 
-    let a = dialog_content.append('p');
+    let a = dialog_content.append('p').attr('class', 'params_section2');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
       .html(i18next.t("app_page.func_options.common.field"));
     let field_selec = a.insert('select')
       .attrs({class: 'params', 'id': "PropSymbol_field_1"});
 
-    let b = dialog_content.append('p');
+    let b = dialog_content.append('p').attr('class', 'params_section2');
     b.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size'})
       .html(i18next.t("app_page.func_options.prop.fixed_size"));
@@ -2078,7 +2082,7 @@ function fillMenu_PropSymbol(layer){
       .style("width", "50px");
     b.append('span').html(" px");
 
-    let c = dialog_content.append('p');
+    let c = dialog_content.append('p').attr('class', 'params_section2');
     c.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.on_value'})
       .html(i18next.t("app_page.func_options.prop.on_value"));
@@ -2086,25 +2090,24 @@ function fillMenu_PropSymbol(layer){
       .styles({'width': '100px', "margin-left": "10px"})
       .attrs({id: 'PropSymbol_ref_value', type: 'number', class: "params", min: 0.1, step: 0.1});
 
-    let d = dialog_content.append('p');
+    let d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_type'})
       .html(i18next.t("app_page.func_options.prop.symbol_type"));
     let symb_selec = d.insert('select')
-      .attrs({'class': 'params', "id": "PropSymbol_symbol"});
+      .attrs({'class': 'params i18n', "id": "PropSymbol_symbol"});
 
     [['app_page.func_options.common.symbol_circle', 'circle'],
      ['app_page.func_options.common.symbol_square', 'rect']
     ].forEach(function(symb){
         symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});});
 
-    let color_section = dialog_content.append('p');
+    let color_section = dialog_content.append('p').attr('class', 'params_section2');
     color_section.append("span")
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_color'})
       .html(i18next.t("app_page.func_options.prop.symbol_color"));
     let color_par = color_section.append('select')
-      .attrs({id: 'PropSymbol_nb_colors', class: 'params'})
-      .style("margin-right", "15px");
+      .attrs({id: 'PropSymbol_nb_colors', class: 'params'});
     color_par.append("option")
         .attrs({value: 1, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_one_color'})
         .text(i18next.t("app_page.func_options.prop.options_one_color"));
@@ -2112,7 +2115,9 @@ function fillMenu_PropSymbol(layer){
         .attrs({value: 2, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_two_colors'})
         .text(i18next.t("app_page.func_options.prop.options_two_colors"));
 
-    let col_p = dialog_content.append("p").style("text-align", "center");
+    let col_p = dialog_content.append("p")
+      .attr('class', 'params_section2')
+      .styles({'padding-top': '5px', 'margin-bottom': '-5px', 'text-align': 'center'});
     col_p.insert('input')
       .styles({"position": "unset"})
       .attrs({type: "color", class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
@@ -2120,7 +2125,7 @@ function fillMenu_PropSymbol(layer){
       .styles({"display": "none", "position": "unset"})
       .attrs({type: "color", class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
 
-    let col_b = dialog_content.insert("p");
+    let col_b = dialog_content.insert("p").attr('class', 'params_section2');
     col_b.insert("span")
       .style("display", "none")
       .attrs({id: 'PropSymbol_color_txt', class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.options_break_two_colors'})
@@ -2217,14 +2222,14 @@ var fields_PropSymbol = {
 
 function fillMenu_TypoSymbol(){
     var dv2 = make_template_functionnality(section2);
-    let a = dv2.append("p");
+    let a = dv2.append("p").attr('class', 'params_section2');
     a.append('span')
       .attrs({"class": "i18n", "data-i18n": "[html]app_page.func_options.typosymbol.field"})
       .html(i18next.t("app_page.func_options.typosymbol.field"));
     let field_selec = a.insert('select')
       .attrs({class: "params", id: "field_Symbol"});
 
-    let b = dv2.insert('p').style("margin", "auto").html("");
+    let b = dv2.insert('p').style("margin", "auto").attr('class', 'params_section2');
     b.append("button")
       .attrs({id: "selec_Symbol", class: "button_disc params i18n",
               "data-i18n": "[html]app_page.func_options.typosymbol.symbols_choice"})
@@ -2365,14 +2370,14 @@ function render_TypoSymbols(rendering_params, new_name){
 function fillMenu_griddedMap(layer){
     var dialog_content = make_template_functionnality(section2)
 
-    let a = dialog_content.append('p');
+    let a = dialog_content.append('p').attr('class', 'params_section2');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
       .html(i18next.t("app_page.func_options.common.field"));
     a.insert('select')
       .attrs({class: 'params', id: "Gridded_field"});
 
-    let b = dialog_content.append('p');
+    let b = dialog_content.append('p').attr('class', 'params_section2');
     b.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize'})
       .html(i18next.t("app_page.func_options.grid.cellsize"));
@@ -2381,15 +2386,15 @@ function fillMenu_griddedMap(layer){
       .attrs({type: 'number', class: 'params', id: "Gridded_cellsize",
               value: 10.0, min: 1.000, max: 7000, step: "any"});
 
-    let c = dialog_content.append('p');
+    let c = dialog_content.append('p').attr('class', 'params_section2');
     c.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape'})
       .html(i18next.t("app_page.func_options.grid.shape"));
 
     var grid_shape = c.insert('select')
-        .attrs({class: 'params', id: "Gridded_shape"});
+        .attrs({class: 'params i18n', id: "Gridded_shape"});
 
-    let d = dialog_content.append('p');
+    let d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp'})
       .html(i18next.t("app_page.func_options.grid.coloramp"));
@@ -2515,38 +2520,38 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
 function fillMenu_FlowMap(){
     var dv2 = make_template_functionnality(section2);
 
-    let subtitle = dv2.append('p');
+    let subtitle = dv2.append('p').attr('class', 'params_section2');
     subtitle.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1'})
       .html(i18next.t("app_page.func_options.flow.subtitle1"));
 
-    let origin_section = dv2.append('p');
+    let origin_section = dv2.append('p').attr('class', 'params_section2');
     origin_section.append('span')
       .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.func_options.flow.origin_field'})
       .html(i18next.t('app_page.func_options.flow.origin_field'));
     origin_section.insert('select')
       .attrs({id: 'FlowMap_field_i', class: 'params'});
 
-    let destination_section = dv2.append('p');
+    let destination_section = dv2.append('p').attr('class', 'params_section2');
     destination_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field'})
       .html(i18next.t('app_page.func_options.flow.origin_field'));
     destination_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_j'});
 
-    let intensity_section = dv2.append('p');
+    let intensity_section = dv2.append('p').attr('class', 'params_section2');
     intensity_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field'})
       .html(i18next.t('app_page.func_options.flow.destination_field'));
     intensity_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_fij'});
 
-    let discretization_section = dv2.append('p');
+    let discretization_section = dv2.append('p').attr('class', 'params_section2');
     discretization_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization'})
       .html(i18next.t("app_page.func_options.flow.discretization"));
     let disc_type = discretization_section.insert('select')
-      .attrs({class: 'params', id: "FlowMap_discKind"});
+      .attrs({class: 'params i18n', id: "FlowMap_discKind"});
 
     [
      ["app_page.common.equal_interval", "equal_interval"],
@@ -2558,7 +2563,7 @@ function fillMenu_FlowMap(){
             disc_type.append("option").text(i18next.t(field[0])).attrs({"value": field[1], 'data-i18n': '[text]' + field[0]});
         });
 
-    let nb_class_section = dv2.append('p');
+    let nb_class_section = dv2.append('p').attr('class', 'params_section2');
     nb_class_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class'})
       .html(i18next.t("app_page.func_options.flow.nb_class"));
@@ -2568,12 +2573,12 @@ function fillMenu_FlowMap(){
 
     dv2.append('p')
       .attrs({class: 'params', id: 'FlowMap_discTable'});
-    dv2.append('p')
+    dv2.append('p').attr('class', 'params_section2')
       .insert('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field'})
       .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-    let join_field_section = dv2.append('p');
+    let join_field_section = dv2.append('p').attr('class', 'params_section2');
     join_field_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field'})
       .html(i18next.t('app_page.func_options.flow.join_field'));

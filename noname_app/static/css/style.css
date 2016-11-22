@@ -153,6 +153,18 @@ a.menu {
     padding: 0px 2px 10px;
 }
 
+.params_section2.inactive {
+  display: none;
+}
+
+p.params_section2 {
+  margin: 15px 0;
+}
+
+p.params_section2 > span {
+  vertical-align: -moz-middle-with-baseline;
+}
+
 #section3 {
     padding: 0.8em 0.5em 0.8em 0.5em;
 }
