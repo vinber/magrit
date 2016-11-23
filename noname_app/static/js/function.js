@@ -182,7 +182,7 @@ function make_layer_name_button(parent, id){
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
       .html(i18next.t('app_page.func_options.common.output'));
     a.insert('input')
-      .style('width', '240px')
+      .styles({'width': '240px', 'font-size': '11.5px'})
       .attrs({class: 'params', id: id});
 }
 
@@ -354,6 +354,9 @@ function fillMenu_PropSymbolChoro(layer){
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
       .html(i18next.t("app_page.func_options.choroprop.field2"));
+    e.insert("span")
+      .attr("id", "container_sparkline_propsymbolchoro")
+      .style("margin", "4px");
     var field2_selec = e.insert('select')
       .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
@@ -402,7 +405,9 @@ var fields_PropSymbolChoro = {
         });
 
         field2_selec.on("change", function(){
-            let field_name = this.value;
+            let field_name = this.value,
+                vals = user_data[layer].map(a => +a[field_name]);
+            render_mini_chart_serie(vals, document.getElementById("container_sparkline_propsymbolchoro"));
             uo_layer_name.attr('value', ["PropSymbols", field1_selec.node().value, field_name, layer].join('_'));
             ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
         });
@@ -609,7 +614,7 @@ function fillMenu_Choropleth(){
       .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
       .html(i18next.t("app_page.func_options.common.field"));
     field_selec_section.insert("span")
-      .attr("id", "container_sparkline")
+      .attr("id", "container_sparkline_choro")
       .style("margin", "4px");
 
    field_selec_section.insert('select')
@@ -650,7 +655,7 @@ var fields_Choropleth = {
         field_selec.on("change", function(){
             let field_name = this.value,
                 vals = user_data[layer].map(a => +a[field_name]);
-            render_mini_chart_serie(vals, document.getElementById("container_sparkline"));
+            render_mini_chart_serie(vals, document.getElementById("container_sparkline_choro"));
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
             ok_button.attr('disabled', self.rendering_params[field_name] !== undefined ? null : true);
         });
@@ -1349,6 +1354,54 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
     return [d_values, animation];
 }
 
+function getCentroids(ref_layer_selection){
+  let centroids = [];
+  for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
+    let geom = ref_layer_selection[i].__data__.geometry;
+    if(geom.type.indexOf('Multi') < 0){
+      centroids.push(path.centroid(geom));
+    } else {
+      let areas = [];
+      for(let j = 0; j < geom.coordinates.length; j++){
+        areas.push(path.area({
+          type: geom.type,
+          coordinates: [geom.coordinates[j]]
+        }));
+      }
+      let ix_max = areas.indexOf(max_fast(areas));
+      centroids.push(path.centroid({
+        type: geom.type,
+        coordinates: [geom.coordinates[ix_max]]
+      }));
+    }
+  }
+  return centroids;
+}
+
+function getCentroidsValues(ref_layer_selection, field){
+  let result = [];
+  for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
+    let ft = ref_layer_selection[i].__data__;
+    if(ft.geometry.type.indexOf('Multi') < 0){
+      result.push([i, +ft.properties[field], path.centroid(ft.geometry)]);
+    } else {
+      let areas = [];
+      for(let j = 0; j < ft.geometry.coordinates.length; j++){
+        areas.push(path.area({
+          type: ft.geometry.type,
+          coordinates: [ft.geometry.coordinates[j]]
+        }));
+      }
+      let ix_max = areas.indexOf(max_fast(areas));
+      result.push([
+        i,
+        +ft.properties[field],
+        path.centroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] })
+      ]);
+    }
+  }
+  return result;
+}
 
 function make_prop_symbols(rendering_params){
     let layer = rendering_params.ref_layer_name,
@@ -1366,19 +1419,13 @@ function make_prop_symbols(rendering_params){
         zs = d3.zoomTransform(svg_map).k;
 
     let res_data = [];
-    if(values_to_use)
+    if(values_to_use){
+        let centroids = getCentroids(ref_layer_selection)
         for(let i = 0; i < nb_features; ++i){
-//            let centr = path.centroid(ref_layer_selection[i].__data__);
-            _values.push([i, +values_to_use[i],
-                           path.centroid(ref_layer_selection[i].__data__)]);
+            _values.push([i, +values_to_use[i], centroids[i]]);
         }
-    else {
-        let data_table = user_data[layer];
-        for(let i = 0; i < nb_features; ++i){
-//            let centr = path.centroid(ref_layer_selection[i].__data__);
-            _values.push([i, +data_table[i][field],
-                           path.centroid(ref_layer_selection[i].__data__)]);
-        }
+    } else {
+        _values = getCentroidsValues(ref_layer_selection, field);
     }
 
     if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
@@ -1448,7 +1495,7 @@ function make_prop_symbols(rendering_params){
                 .attr("y", params[2][1] - size/2)
                 .attr("height", size)
                 .attr("width", size)
-                .attr("id", ["PropSymbol_", i , " feature_", params[0]].join(''))
+                .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
                 .style("fill", params[3])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);

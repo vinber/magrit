@@ -86,8 +86,8 @@
         },
         "section4": {
             "title": "Habillage et mise en page",
-            "map_width": "<b>Largeur de la carte (px) </b>",
-            "map_height": "<b>Hauteur de la carte (px) </b>",
+            "map_width": "Largeur de la carte (px)",
+            "map_height": "Hauteur de la carte (px)",
             "map_ratio": "Ratio d'affichage",
             "ratio_user": "Personnalisé",
             "ratio_landscape": "Paysage",
@@ -96,7 +96,7 @@
             "map_center_x": "Centre de la carte (x)",
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
-            "map_title": "Titre de la carte ",
+            "map_title": "Titre de la carte",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte",
             "layout_features": "Ajout d'éléments d'habillage "
@@ -477,11 +477,11 @@
                 "color_choice": "Choix des couleurs "
             },
             "choroprop": {
-                "field1": "Valeur 1 (taille du symbole) ",
+                "field1": "Valeur 1<br>(taille du symbole) ",
                 "fixed_size": "Taille fixée ",
                 "on_value": "sur la valeur ...",
                 "symbol_type": "Type de symbole ",
-                "field2": "Valeur 2 (couleur du symbole) ",
+                "field2": "Valeur 2<br>(couleur du symbole) ",
                 "discretization_choice": "Choix de la discrétisation ..."
             },
             "flow": {

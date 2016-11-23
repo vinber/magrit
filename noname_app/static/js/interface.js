@@ -1031,9 +1031,9 @@ function add_layout_feature(selected_feature){
             return;
         map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
+               .datum(d3.geoGraticule())
                .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'})
-               .datum(d3.geoGraticule());
+               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'});
         current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}, opacity: 1, step: 10, dasharray: 5};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();

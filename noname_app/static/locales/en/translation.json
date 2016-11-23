@@ -84,8 +84,8 @@
         },
         "section4": {
             "title": "Basemap configuration and page layout",
-            "map_width": "<b>Map width (px) </b>",
-            "map_height": "<b>Map height (px) </b>",
+            "map_width": "Map width (px)",
+            "map_height": "Map height (px)",
             "map_ratio": "Map ratio",
             "ratio_user": "User defined",
             "ratio_landscape": "Landscape",
@@ -94,7 +94,7 @@
             "map_center_x": "Map center (x)",
             "map_center_y": "Map center (y)",
             "map_scale_k": "Zoom scale",
-            "map_title": "Map title ",
+            "map_title": "Map title",
             "background_color": "Background color ",
             "canvas_rotation": "Canvas rotation ",
             "layout_features": "Add layout features... "
@@ -478,13 +478,13 @@
                 "color_choice": "Choose colors..."
             },
             "choroprop": {
-                "field1": "Field 1 (symbol size) ",
+                "field1": "Field 1<br>(symbol size) ",
                 "fixed_size": "Fixed size ",
                 "on_value": "on value ...",
                 "symbol_type": "Symbol type",
                 "symbol_circle": "Circle",
                 "symbol_square": "Square",
-                "field2": "Field 2 (symbol color)"
+                "field2": "Field 2<br>(symbol color)"
             },
             "flow": {
                 "subtitle1": "Links dataset fields :",

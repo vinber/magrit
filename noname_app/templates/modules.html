@@ -400,7 +400,7 @@ function setUpInterface(resume_project)
     g.append("input")
         .attrs({id: "canvas_rotation_value_txt", class: "without_spinner",
                 value: 0, min: 0, max: 360, step: "any"})
-        .styles({width: "30px", "margin-left": "10px", "float": "right"})
+        .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
         .on("change", function(){
             let val = +this.value,
                 old_value = document.getElementById("form_rotate").value;
@@ -1689,6 +1689,8 @@ function interpolateZoom(translate, scale) {
 }
 
 function zoomClick() {
+    if(map_div.select("#hand_button").classed("locked"))
+        return;
     var direction = (this.id === 'zoom_in') ? 1 : -1,
         factor = 0.1,
         target_zoom = 1,
@@ -2277,10 +2279,12 @@ function make_export_layer_box(){
                 else
                     dataStr = "data:application/zip;base64," + data;
 
-                let dlAnchorElem = document.getElementById('downloadAnchorElem');
+                let dlAnchorElem = document.createElement('a');
                 dlAnchorElem.setAttribute("href", dataStr);
                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                document.body.appendChild(dlAnchorElem);
                 dlAnchorElem.click();
+                dlAnchorElem.remove();
 
             }, error => {
                 console.log(error);

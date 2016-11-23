@@ -14,9 +14,9 @@ Export au format svg
 Grace à cette méthode il est possible d'exporter le rendu actuel selon les spécifications SVG 1.2.
 
 > **Note:**
-> Les spécifications svg ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.
-> Les exports svg fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme [Inkscape], Adobe Illustrator ou [SVGEdit].
-> Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.
+> * Les spécifications svg ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.
+> * Les exports svg fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme [Inkscape], Adobe Illustrator ou [SVGEdit].
+> * Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.
 
 
 
@@ -51,5 +51,3 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
   [Inkscape]: https://inkscape.org
   [SVGEdit]: https://github.com/SVG-Edit/svgedit
   [Proj.4]: https://github.com/OSGeo/proj.4/wiki
-
-
