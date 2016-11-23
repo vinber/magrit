@@ -15,7 +15,8 @@
             "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
             "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
-            "error_existing_scalebar": "Seule une échelle peut être ajoutée - Utilisez le clic droit pour changer ses propriétés",
+            "error_existing_scalebar": "Seule une échelle peut être ajoutée - Remplacer l'échelle existante par une nouvelle ?",
+            "error_existing_north_arrow": "Seule une flêche nord peut être ajoutée - Remplacer celle existante par une nouvelle ?",
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
@@ -60,34 +61,31 @@
             "hide": "Masquer",
             "smaller": "plus petit",
             "larger": "plus grand",
-            "style_layer": "Style de la couche",
-            "trash": "Supprimer la couche",
-            "zoom_fit": "Zoomer sur la couche",
-            "legend": "Légende",
-            "eye_open": "Déactiver la couche",
-            "eye_closed": "Activer la couche",
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
-            "details": "Détails"
+            "details": "Détails",
+            "representation": "Représentation",
+            "ask_confirm": "Confirmation ?",
+            "layer_type_selection": "Sélection du type d'élément",
+            "target_l": "Fond de carte principal",
+            "layout_l": "Fond de carte d'habillage",
+            "no_value": "Pas de valeur selectionnée",
+            "yes": "Oui",
+            "no": "Non"
         },
         "section1": {
-            "title": "Ajout de données",
+            "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
             "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
-            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple",
-            "explore_table": "Afficher les données"
-        },
-        "section2_pre": {
-            "title": "Choix de la représentation"
+            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
         },
         "section2": {
-            "title": "Option de la fonctionnalité",
-            "no_func": "Aucune fonctionnalitée choisie"
+            "title": "Choix de la représentation"
         },
         "section3": {
-            "title": "Gestionnaire de couches"
+            "title": "Gestion des couches"
         },
         "section4": {
-            "title": "Configuration de la carte",
+            "title": "Habillage et mise en page",
             "map_width": "<b>Largeur de la carte (px) </b>",
             "map_height": "<b>Hauteur de la carte (px) </b>",
             "map_ratio": "Ratio d'affichage",
@@ -104,12 +102,13 @@
             "layout_features": "Ajout d'éléments d'habillage "
         },
         "section5b": {
-            "title": "Options de l'export",
+            "title": "Export de la carte",
             "type": "Type",
             "filename": "Nom du fichier",
             "format": "Format de sortie",
             "height": "Hauteur",
             "width": "Largeur",
+            "web": "Web",
             "user_defined": "Personnalisé",
             "A4_landscape": "A4 paysage",
             "A4_portrait": "A4 portrait",
@@ -140,35 +139,36 @@
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "section3": "Faites glissez un fichier d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton.<br> Types supportés: GeoJSON, TopoJSON, Shapefile et KML"
+            "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "export_load_pref": "Exporter / Charger un fichier de préférence"
         },
         "func_description" : {
-            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire (potentiels de Stewart)",
-            "prop": "Réalisation d'un carte en symboles proportionnels sur un champ numérique du jeu de données",
-            "choroprop": "Réalisation d'une carte en symboles proportionnels colorés selon la méthode choroplèthe appliquée à des ratios",
-            "proptypo": "Réalisation d'une carte en symboles proportionnels colorés selon l'appartenance à un catégorie",
-            "choro": "Réalisation d'une carte choroplèthe",
+            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
+            "prop": "Réalisation d'un carte de stocks",
+            "choroprop": "Réalisation d'une carte de stocks et ratios",
+            "proptypo": "Réalisation d'une carte de stocks et qualitative",
+            "choro": "Réalisation d'une carte de ratios",
             "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
             "grid": "Réalisation d'une grille de densité",
-            "flow": "Réalisation d'une carte de flux (taille des liens proportionnelle au volume du flux)",
+            "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
-            "typo": "Réalisation d'une carte catégorielle utilisant une variable qualitative",
+            "typo": "Réalisation d'une carte qualitative",
             "label": "Affichage et personnalisation du label des entités",
-            "typosymbol": "Affichage de pictogrammes utilisant une variable qualitative"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "func_title" : {
             "smooth": "Carte lissée",
-            "prop": "Symboles proportionnels",
-            "choroprop": "Symboles proportionnels colorés (par un ratio)",
-            "proptypo": "Symboles proportionnels colorés (par une typologie)",
-            "choro": "Carte choroplèthe",
+            "prop": "Carte de stocks",
+            "choroprop": "Carte de stocks et ratios",
+            "proptypo": "Carte de stocks et qualitative",
+            "choro": "Carte de ratios",
             "cartogram": "Cartogram",
             "grid": "Carroyage",
             "flow": "Carte des liens",
             "discont": "Carte des discontinuités",
-            "typo": "Typologie par à-plat de couleurs",
+            "typo": "Carte qualitative",
             "label": "Représentation des labels",
-            "typosymbol": "Typologie avec utilisation de pictogrammes"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "layout_features_box": {
             "title": "Élements d'habillage",
@@ -214,15 +214,12 @@
             "bondcountries": "Pays visités par James Bond <i>(À joindre avec les pays du monde)</i>"
         },
         "export_box": {
-            "title": "Choix d'un format...",
-            "png": "Export au format PNG",
-            "svg": "Export au format SVG",
             "geo": "Exporter vers un format compatible SIG",
             "geo_title_box": "Choix de la couche et du format...",
             "options": "Options d'export",
-            "option_layer": "Couche à exporter",
-            "option_datatype": "Format",
-            "option_projection": "Projection"
+            "option_layer": "Couche à exporter ",
+            "option_datatype": "Format ",
+            "option_projection": "Projection "
         },
         "join_box": {
             "title": "Option de jointure",
@@ -240,7 +237,9 @@
             "match_plural": "correspondances",
             "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
             "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?",
-            "change_field": "Changer les champs joints"
+            "change_field": "Changer les champs joints",
+            "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
+
         },
         "explore_box": {
             "title": "Table de données",
@@ -262,19 +261,21 @@
         "legend_style_box": {
             "title": "Style de la couche - {{layer_name}}",
             "subtitle": "Personnalisation de la légende",
-            "lgd_title": "Titre de la légende<br>",
+            "lgd_title": "Titre de la légende",
             "var_name": "Nom de la variable<br>",
             "float_rounding": "Arrondi des nombres flottants<br> ",
             "gap_boxes": "Pas d'espaces entre les boites",
             "nested_symbols": "Symboles encastrés",
             "no_data": "Affichage de la catégorie \"absence de données\"",
             "additionnal_notes": "Notes additionnelles de la légende<br>",
-            "under_rectangle": "Afficher un rectangle sous la légende"
+            "under_rectangle": "Afficher un rectangle sous la légende",
+            "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
         "help_box": {
             "title": "Aide d'urgence!",
+            "tooltip_btn": "Aide",
             "message_invite": "Saisir un terme à rechercher dans la documentation :",
-            "list_placeholders": "Carte choroplète, Discrétisation, Anamorphose, Export, Projection"
+            "list_placeholders": "Carte de ratios, Discrétisation, Anamorphose, Export, Projection"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -319,7 +320,7 @@
             "ypos": "Position en Y (% depuis le haut) :<br>"
         },
         "symbol_typo_box": {
-            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} features",
+            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
             "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
             "count_feature": " <i> ({{ nb_features }} entité)</i>",
             "count_feature_plural": " <i> ({{ nb_features }} entités)</i>"
@@ -329,6 +330,7 @@
             "new_random_colors": "Nouvelles couleurs aléatoires"
         },
         "layer_style_popup": {
+            "fill_color": "Couleur de remplissage",
             "toggle_colors": "<b><i>Cliquer pour modifier les couleurs</b></i>",
             "categorical_field": "Champ catégoriel :",
             "rendered_field": "<i>Champ utilisé : <b>{{field}}</b></i><br>",
@@ -347,7 +349,7 @@
             "random_color": "Couleur aléatoire pour chaque entité",
             "field_to_render": "Champ à utiliser ",
             "choose_colors": "Choix des couleurs",
-            "field": "Champ :",
+            "field": "Champ",
             "choose_discretization": "Choix de la discrétisation",
             "color_palette": "Palette de couleur",
             "reverse_palette": "Inverser la palette",
@@ -357,7 +359,6 @@
             "discont_threshold": "Seuil de discontinuités ",
             "border_color": "Couleur du contour<br>",
             "color": "Couleur<br>",
-            "fill_color": "Couleur de remplissage<br>",
             "opacity": "Opacité<br>",
             "border_color": "Couleur de la bordure<br>",
             "border_opacity": "Opacité de la bordure<br>",
@@ -370,8 +371,10 @@
             "symbol_fixed_size": "Taille du symbole fixée ",
             "on_value": "sur la valeur ...",
             "point_radius": "Taille du point<br>",
-            "graticule_steps": "Espacemment entre les lignes",
-            "graticule_dasharray": "Taille des tirets"
+            "graticule_steps": "Espacemment entre les lignes<br>",
+            "graticule_dasharray": "Taille des tirets<br>",
+            "generate_labels": "Génération de labels pour cette couche...",
+            "field_label": "Sélection du champ à utiliser"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",
@@ -385,15 +388,15 @@
                 "params": "Paramètres :"
             },
             "choro": {
-                "title": "<b>Carte de ratio / carte choroplèthe</b>",
+                "title": "<b>Carte de ratios</b>",
                 "block": "Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total. Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "typo": {
-                "title": "<b>Carte catégorielle par à-plats de couleurs</b>",
+                "title": "<b>Carte qualitative</b>",
                 "block": "Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "typosymbol": {
-                "title": "<b>Représentation catégorielle par des symboles</b>",
+                "title": "<b>Carte qualitative avec utilisation de symboles</b>",
                 "block": "Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
             },
             "smooth": {
@@ -401,7 +404,7 @@
                 "block": "Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit \"de Stewart\") et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.<br><br><b><i>Paramètres</i></b><br><b>Valeur:</b> Le nom du champ contenant les valeurs à utiliser.<br><b>Diviseur (optionnel):</b> Le nom du champ à utiliser pour calculer un ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution:</b><br><b>Type de fonction:</b><br><b>Nombre de classe:</b><br><b>Couche de masquage:</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
             },
             "prop": {
-                "title": "<b>Carte de stock</b>",
+                "title": "<b>Carte de stocks</b>",
                 "block": "Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).<br><br><b><i>Paramètres</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
             },
             "discont": {
@@ -417,12 +420,12 @@
                 "block": "De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique. Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser<br><Type de symbole :</b> Le type de symbole à utiliser (parmis 'cercle' et 'carré')<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Sur la valeur :</b> Valeur sur laquelle fixer la taille.<br><b>Itérations :</b> Le nombre d'itérations à effectuer avant d'obtenir le résultat.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
             },
             "choroprop": {
-                "title": "<b>Stock et ratio</b>",
+                "title": "<b>Carte de stocks et ratios</b>",
                 "block": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).<br><br><b><i>Paramètres</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
             },
             "proptypo" :{
-                "title": "<b>Raw and categorical data map - Proportionnal colored symbols</b>",
-                "block": "This kind of representation enables to establish a match between raw and categorical data on a single map."
+                "title": "<b>Carte de stocks et qualitative/b>",
+                "block": "Ce type de représentation permet d'établir une corrspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle)."
             },
             "flow": {
                 "title": "<b>Carte de flux/liens</b>",
@@ -485,14 +488,21 @@
                 "subtitle1": "Choix des champs à utiliser",
                 "discretization": "Type de discrétisation ",
                 "nb_class": "Nombre de classes ",
-                "ref_layer_fields": "Couche géographique de référence",
+                "nb_class": "Number of class ",
+                "origin_field": "Origin field",
+                "destination_field": "Destination field",
+                "intensity_field": "Intensity field",
+                "ref_layer_field": "Couche géographique de référence",
                 "join_field": "Champ de jointure"
             },
             "grid": {
                 "field": "Champ",
                 "cellsize": "Taille des carreaux <i>km</i> ",
                 "shape": "Forme des carreaux ",
-                "coloramp": "Palette de couleurs "
+                "coloramp": "Palette de couleurs ",
+                "square": "Carré",
+                "diamond": "Diamant",
+                "hexagon": "Hexagone"
             },
             "cartogram": {
                 "algo": " Algorithme à utiliser ",
@@ -505,7 +515,7 @@
                 "dougenik_iterations": "Nombre d'itérations",
                 "olson_scale_txt": "Dimensionner la taille de référence sur :",
                 "olson_scale_max_scale": "Modification maximum de la taille des entités ",
-                "olson_scale_max": "Valeur maximum (évite le chevauchement des entités)",
+                "olson_scale_max": "Valeur maximum (pas de chevauchement)",
                 "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
             },
             "discont": {
@@ -532,17 +542,16 @@
                 "title_box_indiv": "Option de l'intitulé"
             },
             "proptypo": {
-                "field1": "Champ à utiliser (taille du symbole)",
+                "field1": "Champ à utiliser<br>(taille du symbole)",
                 "fixed_size": "Taille fixée ",
                 "on_value": "sur la valeur ... ",
                 "symbol_type": "Type de symbole ",
-                "field2": "Champ à utiliser (couleur du symbole)"
+                "field2": "Champ à utiliser<br>(couleur du symbole)"
             }
         }
     },
     "disc_box":{
         "title": "Options de discrétisation",
-        "type_disc": "Type",
         "class": "{{count}} classe",
         "class_plural": "{{count}} classes",
         "disp_mean": "Afficher la moyenne",
@@ -567,20 +576,15 @@
         "color_palette": "Palette de couleur ",
         "break_on": "Rupture de couleur à la classe "
     },
-    "style_box":{
-        "ref_layer": "Couche de référence",
-        "rendered_field": "Valeur représentée",
-        "ok": "Valider",
-        "cancel": "Annuler"
-    },
     "index":{
         "buttons": {
             "enter": "Démarrer",
             "resume": "Continuer le projet en cours...",
             "overview": "Fonctionnalitées",
             "examples": "Exemples",
+            "projections": "Projections",
             "doc": "Documentation",
-            "sources": "Sources",
+            "dev": "Développement",
             "start_now": "Démarrer"
         },
         "intro_section": {

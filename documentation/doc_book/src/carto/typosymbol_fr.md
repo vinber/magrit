@@ -1,0 +1,1 @@
+# Carte qualitative (pictogrammes)

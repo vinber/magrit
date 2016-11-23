@@ -10,6 +10,14 @@ class UserArrow {
         this.lineWeight = 4;
         this.color = "rgb(0, 0, 0)";
 
+        let zoom_param = svg_map.__zoom,
+            _tx = zoom_param.k * zoom_param.x,
+            _ty = zoom_param.k * zoom_param.y;
+        this.pt1[0] = this.pt1[0] - _tx;
+        this.pt1[1] = this.pt1[1] - _ty;
+        this.pt2[0] = this.pt2[0] - _tx;
+        this.pt2[1] = this.pt2[1] - _ty;
+
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
@@ -17,23 +25,24 @@ class UserArrow {
                     return { x: +t.attr("x2") - +t.attr("x1"),
                              y: +t.attr("y2") - +t.attr("y1"),
                              x1: t.attr("x1"), x2: t.attr("x2"),
-                             y1: t.attr("y1"), y2: t.attr("y2") };
+                             y1: t.attr("y1"), y2: t.attr("y2"),
+                             map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("line"),
                     subject = d3.event.subject,
-                    tx = +d3.event.x - +subject.x,
-                    ty = +d3.event.y - +subject.y;
+                    tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
+                    ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
                 self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
                 _t.x1.baseVal.value = self.pt1[0];
@@ -75,7 +84,8 @@ class UserArrow {
             ];
 
         this.arrow = this.svg_elem.append('g')
-                .attrs({"class": "arrow legend_features legend", "id": this.id});
+                .style("cursor", "all-scroll")
+                .attrs({"class": "arrow legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.arrow.insert("line")
         		.attrs({"class":"legend_features",
@@ -122,7 +132,7 @@ class UserArrow {
 
         let angle = (-this.calcAngle()).toFixed(0);
 
-        make_confirm_dialog("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"))
+        make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed) {
                     // Store shorcut of useful values :
@@ -140,7 +150,7 @@ class UserArrow {
                     line.style.stroke = self.color;
                 }
             });
-        let box_content = d3.select(".styleBoxArrow").insert("div").attr("id", "styleBoxArrow");
+        let box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
         let s1 = box_content.append("p");
         s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.append("input")
@@ -176,63 +186,63 @@ class UserArrow {
             });
 
         s2.insert("span").html("°");
-        let s3 = box_content.append("p");
-        s3.append("button")
-            .attr("class", "button_st4")
-            .html(i18next.t("app_page.arrow_edit_box.move_points"))
-            .on("click", function(){
-                let tmp_start_point = map.append("rect")
-                    .attr("x", self.pt1[0] - 3)
-                    .attr("y", self.pt1[1] - 3)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx).attr("y", ny);
-                        line.x1.baseVal.value = nx;
-                        line.y1.baseVal.value = ny;
-                    }));
-
-                let tmp_end_point = map.append("rect")
-                    .attr("x", self.pt2[0] - 3)
-                    .attr("y", self.pt2[1] - 3)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx).attr("y", ny);
-                        line.x2.baseVal.value = nx;
-                        line.y2.baseVal.value = ny;
-                    }));
-                let arrowDialog = $(".styleBoxArrow"),
-                    original_position = arrowDialog.dialog("option", "position");
-                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-                arrowDialog.dialog("option", "draggable", false);
-                arrowDialog.hide()
-                document.querySelector(".ui-widget-overlay").style.display = "none";
-                let el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:22px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function(){
-                    document.querySelector(".ui-widget-overlay").style.display = "";
-                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                    tmp_end_point.remove();
-                    tmp_start_point.remove();
-                    el.remove();
-                    arrowDialog.show();
-                    arrowDialog.dialog("option", "draggable", true);
-                    arrowDialog.dialog("option", "position", original_position);
-                }
-                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
-            });
+//        let s3 = box_content.append("p");
+//        s3.append("button")
+//            .attr("class", "button_st4")
+//            .html(i18next.t("app_page.arrow_edit_box.move_points"))
+//            .on("click", function(){
+//                let tmp_start_point = map.append("rect")
+//                    .attr("x", self.pt1[0] - 3)
+//                    .attr("y", self.pt1[1] - 3)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx).attr("y", ny);
+//                        line.x1.baseVal.value = nx;
+//                        line.y1.baseVal.value = ny;
+//                    }));
+//
+//                let tmp_end_point = map.append("rect")
+//                    .attr("x", self.pt2[0] - 3)
+//                    .attr("y", self.pt2[1] - 3)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx).attr("y", ny);
+//                        line.x2.baseVal.value = nx;
+//                        line.y2.baseVal.value = ny;
+//                    }));
+//                let arrowDialog = $(".styleBoxArrow"),
+//                    original_position = arrowDialog.dialog("option", "position");
+//                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+//                arrowDialog.dialog("option", "draggable", false);
+//                arrowDialog.hide()
+//                document.querySelector(".ui-widget-overlay").style.display = "none";
+//                let el = document.createElement("button");
+//                el.className = "button_st3";
+//                el.style = "float:right;background:forestgreen;font-size:22px;";
+//                el.innerHTML = i18next.t("app_page.common.done");
+//                el.onclick = function(){
+//                    document.querySelector(".ui-widget-overlay").style.display = "";
+//                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+//                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+//                    tmp_end_point.remove();
+//                    tmp_start_point.remove();
+//                    el.remove();
+//                    arrowDialog.show();
+//                    arrowDialog.dialog("option", "draggable", true);
+//                    arrowDialog.dialog("option", "position", original_position);
+//                }
+//                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
+//            });
     }
 }
 
@@ -271,17 +281,17 @@ class Textbox {
                     prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
                     return {
                         x: t.attr("x") - prev_translate[0],
-                        y: t.attr("y") - prev_translate[1]
+                        y: t.attr("y") - prev_translate[1],
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -360,55 +370,50 @@ class Textbox {
                                content: unescape(this.text_annot.select("p").html()),
                                font: ""};
         let self = this;
-        make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"))
+        make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
-                $("#btn_info_text_annotation[data-tooltip_info!='']").qtip("destroy");
                 if(!confirmed){
                     self.text_annot.select("p").text(current_options.content);
                     self.fontsize = current_options.size;
                 }
+                zoneEditBox.remove();
             });
-        let box_content = d3.select(".styleTextAnnotation").insert("div").attr("id", "styleTextAnnotation");
-        box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
-                .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
-                .on("change", function(){
-                    self.fontsize = +this.value;
-                    self.text_annot.select("p").style("font-size", self.fontsize + "px")
-                });
-        let font_select = box_content.append("p").html(i18next.t("app_page.text_box_edit_box.default_font"))
-                .insert("select")
-                .on("change", function(){
-                    self.text_annot.select("p").style("font-family", this.value);
-                });
-        available_fonts.forEach(function(font){
-            font_select.append("option").text(font[0]).attr("value", font[1])
-        });
-        font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
+        let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
+        // box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
+        //         .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+        //         .on("change", function(){
+        //             self.fontsize = +this.value;
+        //             self.text_annot.select("p").style("font-size", self.fontsize + "px")
+        //         });
+        // let font_select = box_content.append("p").html(i18next.t("app_page.text_box_edit_box.default_font"))
+        //         .insert("select")
+        //         .on("change", function(){
+        //             self.text_annot.select("p").style("font-family", this.value);
+        //         });
+        // available_fonts.forEach(function(font){
+        //     font_select.append("option").text(font[0]).attr("value", font[1])
+        // });
+        // font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
 
         let content_modif_zone = box_content.append("p");
         content_modif_zone.append("span")
                 .html(i18next.t("app_page.text_box_edit_box.content"));
-        content_modif_zone.append("img")
-            .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
-                    class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
-            .styles({"cursor": "pointer", "vertical-align": "bottom"});
-        content_modif_zone.append("span")
-                .html("<br>");
-        content_modif_zone.append("textarea")
-                .attr("id", "annotation_content")
-                .style("margin", "5px 0px 0px")
-                .on("keyup", function(){
-                    self._text = this.value;
-                    self.text_annot.select("p").html(this.value)
-                });
-        document.getElementById("annotation_content").value = current_options.content;
-        $("#btn_info_text_annotation[data-tooltip_info!='']").qtip({
-            content: {text: i18next.t("app_page.text_box_edit_box.info_tooltip")},
-            style: { classes: 'qtip-bootstrap qtip_help' },
-            position: { my: 'bottom left', at: 'center right', target: this },
-            show: { solo: true }
-        });
+        // content_modif_zone.append("img")
+        //     .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
+        //             class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
+        //     .styles({"cursor": "pointer", "vertical-align": "bottom"});
+        // content_modif_zone.append("span")
+        //         .html("<br>");
 
+        zoneEditBox.create(content_modif_zone.node(), {
+          "content": current_options.content,
+          "id": "textEditZone",
+          "callback": updateContent
+        })
+        function updateContent(newContent){
+          self._text = newContent;
+          self.text_annot.select("p").html(newContent)
+        }
     }
 
     up_element(){
@@ -448,25 +453,27 @@ var scaleBar = {
         ];
 
         let scale_context_menu = new ContextMenu();
-        scale_gp.insert("rect")
-            .attrs({x: x_pos - 5, y: y_pos-30, height: 30, width: bar_size + 5})
-            .style("fill", "none");
+        this.under_rect = scale_gp.insert("rect")
+            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: bar_size + 5})
+            .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
             .style("fill", "black");
-//        scale_gp.insert("text")
-//            .attrs({x: x_pos - 4, y: y_pos - 5})
-//            .style("font", "11px 'Enriqueta', arial, serif")
-//            .text("0");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
             .attrs({x: x_pos + bar_size, y: y_pos - 5})
             .styles({"font": "11px 'Enriqueta', arial, serif",
                      "text-anchor": "middle"})
             .text(this.dist_txt + " km");
 
-        scale_gp.call(drag_lgd_features);
-        scale_gp.on("mouseover", function(){ this.style.cursor = "pointer";})
-                .on("mouseout", function(){ this.style.cursor = "initial";})
+        scale_gp.call(drag_legend_func(scale_gp));
+        scale_gp.on("mouseover", function(){
+                  this.style.cursor = "pointer";
+                  self.under_rect.style("fill-opacity", 0.1)
+                })
+                .on("mouseout", function(){
+                  this.style.cursor = "pointer";
+                  self.under_rect.style("fill-opacity", 0)
+                })
                 .on("contextmenu", (d,i) => {
                     d3.event.preventDefault();
                     return scale_context_menu
@@ -509,6 +516,7 @@ var scaleBar = {
                   .attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
+        this.under_rect.attr("width", new_size + 5);
         this.changeText();
         this.handle_start_end_bar();
 
@@ -566,19 +574,28 @@ var scaleBar = {
     },
     editStyle: function(){
         var new_val,
-            self = this;
-        make_confirm_dialog("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"))
+            self = this,
+            redraw_now = () => {
+              if(new_val)
+                  self.resize(new_val);
+              else {
+                  self.fixed_size = false;
+                  self.changeText();
+              }
+            };
+        make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed){
-                    if(new_val)
-                        self.resize(new_val);
-                    else {
-                        self.fixed_size = false;
-                        self.changeText();
-                    }
+                    redraw_now();
+                    // if(new_val)
+                    //     self.resize(new_val);
+                    // else {
+                    //     self.fixed_size = false;
+                    //     self.changeText();
+                    // }
                 }
             });
-        var box_body = d3.select(".scaleBarEditBox");
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
                 .html(i18next.t("app_page.scale_bar_edit_box.title"));
@@ -595,13 +612,17 @@ var scaleBar = {
                         box_body.select("#scale_fixed_field").attr("disabled", true);
                         new_val = false;
                     }
-        });
+                    redraw_now();
+                  });
         box_body.append("input")
                 .attr('id', "scale_fixed_field")
                 .attr("type", "number")
                 .attr("disabled", self.fixed_size ? null : true)
                 .attr("value", +this.dist_txt)
-                .on("change", function(){ new_val = +this.value });
+                .on("change", function(){
+                  new_val = +this.value;
+                  redraw_now();
+                });
 
         let b = box_body.append("p");
         b.insert("span")
@@ -611,7 +632,8 @@ var scaleBar = {
                 .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.precision})
                 .style("width", "60px")
                 .on("change", function(){
-                    self.precision = +this.value;
+                  self.precision = +this.value;
+                  redraw_now();
                 });
 
         let c = box_body.append("p");
@@ -620,7 +642,8 @@ var scaleBar = {
         let unit_select = c.insert("select")
                 .attr('id', "scale_unit")
                 .on("change", function(){
-                    self.unit = this.value;
+                  self.unit = this.value;
+                  redraw_now();
                 });
         unit_select.append("option").text("km").attr("value", "km");
         unit_select.append("option").text("m").attr("value", "m");
@@ -665,7 +688,7 @@ var northArrow = {
                         .attr("class", "legend")
                         .attr("scale", 1)
                         .attr("rotate", null)
-                        .style("cursor", "pointer");
+                        .style("cursor", "all-scroll");
 
         this.svg_node = arrow_gp;
         this.displayed = true;
@@ -680,14 +703,19 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    return { x: +t.attr("x"), y: +t.attr("y") };
+                    return {
+                        x: +t.attr("x"),
+                        y: +t.attr("y"),
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                    };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
+                handle_click_hand("lock"); // zoom.on("zoom", null);
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -752,14 +780,14 @@ var northArrow = {
             x_pos = +self.x_center - old_dim / 2,
             y_pos = +self.y_center - old_dim /2;
 
-        make_confirm_dialog("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"))
+        make_confirm_dialog2("arrowEditBox", i18next.t("app_page.north_arrow_edit_box.title"),  {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed){
                     null;
                 }
             });
 
-        var box_body = d3.select(".arrowEditBox");
+        var box_body = d3.select(".arrowEditBox").select(".modal-body");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
                 .html(i18next.t("app_page.north_arrow_edit_box.title"));
@@ -828,26 +856,35 @@ class UserEllipse {
         this.strokeWeight = 4;
         this.stroke_color = "rgb(0, 0, 0)";
 
+        let zoom_param = svg_map.__zoom,
+            _tx = zoom_param.k * zoom_param.x,
+            _ty = zoom_param.k * zoom_param.y;
+        this.pt1[0] = this.pt1[0] - _tx;
+        this.pt1[1] = this.pt1[1] - _ty;
+
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("ellipse"));
-                    return { x: +t.attr("cx"), y: +t.attr("cy") };
+                    return {
+                        x: +t.attr("cx"),
+                        y: +t.attr("cy"),
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                    };
               })
             .on("start", () => {
                 d3.event.sourceEvent.stopPropagation();
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", null);
+                handle_click_hand("lock");
               })
             .on("end", () => {
-                if(map_div.select("#hand_button").classed("active"))
-                    zoom.on("zoom", zoom_without_redraw);
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("ellipse"),
-                    tx = +d3.event.x,
-                    ty = +d3.event.y;
+                    tx = +d3.event.x * svg_map.__zoom.k,
+                    ty = +d3.event.y * svg_map.__zoom.k;
                 _t.cx.baseVal.value = tx;
                 _t.cy.baseVal.value = ty;
                 self.pt1[0] = tx;
@@ -867,23 +904,20 @@ class UserEllipse {
             ];
 
         this.ellipse = this.svg_elem.append('g')
-                .attrs({"class": "user_ellipse legend_features legend", "id": this.id});
+                .attrs({"class": "user_ellipse legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.ellipse.insert("ellipse")
-        		.attrs({"class":"legend_features",
-        			  "cx": this.pt1[0], "cy": this.pt1[1],
-        			  "rx": 30, "ry": 40})
-                .styles({"stroke-width": this.strokeWeight,
-                         stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
-                         "fill-opacity": 0});
+            .attrs({"class": "legend_features", "rx": 30, "ry": 40,
+        			      "cx": this.pt1[0], "cy": this.pt1[1]})
+            .styles({"stroke-width": this.strokeWeight,
+                      stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                      "fill-opacity": 0});
 
         this.ellipse.call(this.drag_behavior);
 
         this.ellipse.on("contextmenu dblclick", () => {
-            context_menu.showMenu(d3.event,
-                                  document.querySelector("body"),
-                                  getItems());
-            });
+            context_menu.showMenu(d3.event, document.body, getItems());
+        });
     }
 
     up_element(){
@@ -904,7 +938,7 @@ class UserEllipse {
             };
 //        let angle = (-this.calcAngle()).toFixed(0);
 
-        make_confirm_dialog("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"))
+        make_confirm_dialog2("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 map.selectAll(".ctrl_pt").remove();
                 if(confirmed) {
@@ -922,7 +956,7 @@ class UserEllipse {
                     ellipse_elem.style.stroke = self.stroke_color;
                 }
             });
-        let box_content = d3.select(".styleBoxEllipse").insert("div").attr("id", "styleBoxEllipse");
+        let box_content = d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "styleBoxEllipse");
         let s1 = box_content.append("p");
         s1.append("p")
             .style("margin", "auto")
@@ -971,63 +1005,63 @@ class UserEllipse {
 //
 //        s2.insert("span").html("°");
 
-        let s3 = box_content.append("p");
-
-        s3.append("button")
-            .attr("class", "button_st4")
-            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-            .on("click", function(){
-                let tmp_start_point = map.append("rect")
-                    .attr("class", "ctrl_pt")
-                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
-                    .attr("y", self.pt1[1])
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("x", nx);
-                        let dist = self.pt1[0] - +t.attr("x");
-                        ellipse_elem.rx.baseVal.value = dist;
-                    }));
-
-                let tmp_end_point = map.append("rect")
-                    .attr("class", "ctrl_pt")
-                    .attr("x", self.pt1[0])
-                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
-                    .attr("height", 6).attr("width", 6)
-                    .style("fill", "red")
-                    .style("cursor", "grab")
-                    .call(d3.drag().on("drag", function(){
-                        let t = d3.select(this);
-                        let nx = d3.event.x,
-                            ny = d3.event.y;
-                        t.attr("y", ny);
-                        let dist = self.pt1[1] - +t.attr("y");
-                        ellipse_elem.ry.baseVal.value = dist;
-                    }));
-                let ellipseDialog = $(".styleBoxEllipse"),
-                    original_position = ellipseDialog.dialog("option", "position");
-                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-                ellipseDialog.dialog("option", "draggable", false);
-                ellipseDialog.hide();
-                document.querySelector(".ui-widget-overlay").style.display = "none";
-                let el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:22px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function(){
-                    document.querySelector(".ui-widget-overlay").style.display = "";
-                    tmp_end_point.remove();
-                    tmp_start_point.remove();
-                    el.remove();
-                    ellipseDialog.show();
-                    ellipseDialog.dialog("option", "draggable", true);
-                    ellipseDialog.dialog("option", "position", original_position);
-                }
-                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
-            });
+//        let s3 = box_content.append("p");
+//
+//        s3.append("button")
+//            .attr("class", "button_st4")
+//            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
+//            .on("click", function(){
+//                let tmp_start_point = map.append("rect")
+//                    .attr("class", "ctrl_pt")
+//                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
+//                    .attr("y", self.pt1[1])
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("x", nx);
+//                        let dist = self.pt1[0] - +t.attr("x");
+//                        ellipse_elem.rx.baseVal.value = dist;
+//                    }));
+//
+//                let tmp_end_point = map.append("rect")
+//                    .attr("class", "ctrl_pt")
+//                    .attr("x", self.pt1[0])
+//                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
+//                    .attr("height", 6).attr("width", 6)
+//                    .style("fill", "red")
+//                    .style("cursor", "grab")
+//                    .call(d3.drag().on("drag", function(){
+//                        let t = d3.select(this);
+//                        let nx = d3.event.x,
+//                            ny = d3.event.y;
+//                        t.attr("y", ny);
+//                        let dist = self.pt1[1] - +t.attr("y");
+//                        ellipse_elem.ry.baseVal.value = dist;
+//                    }));
+//                let ellipseDialog = $(".styleBoxEllipse"),
+//                    original_position = ellipseDialog.dialog("option", "position");
+//                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
+//                ellipseDialog.dialog("option", "draggable", false);
+//                ellipseDialog.hide();
+//                document.querySelector(".ui-widget-overlay").style.display = "none";
+//                let el = document.createElement("button");
+//                el.className = "button_st3";
+//                el.style = "float:right;background:forestgreen;font-size:22px;";
+//                el.innerHTML = i18next.t("app_page.common.done");
+//                el.onclick = function(){
+//                    document.querySelector(".ui-widget-overlay").style.display = "";
+//                    tmp_end_point.remove();
+//                    tmp_start_point.remove();
+//                    el.remove();
+//                    ellipseDialog.show();
+//                    ellipseDialog.dialog("option", "draggable", true);
+//                    ellipseDialog.dialog("option", "position", original_position);
+//                }
+//                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
+//            });
     }
 }

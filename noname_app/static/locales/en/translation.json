@@ -15,7 +15,8 @@
             "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",
             "error_only_layout": "Only layout layers can be added here",
             "error_only_one": "Only one layer can be added by this functionnality",
-            "error_existing_scalebar": "Only one scale bar can be added - Use right click to change its properties",
+            "error_existing_scalebar": "Only one scale bar can be added - Replace the existing by a new one ?",
+            "error_existing_north_arrow": "Only one north arrow can be added - Replace the existing by a new one ?",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
@@ -51,43 +52,38 @@
             "quantiles": "Quantiles",
             "std_dev": "Standard deviation",
             "Q6": "Q6",
-            "arithmetic_prog": "Arithmetic progression",
+            "arithmetic_progression": "Arithmetic progression",
             "jenks": "Jenks",
-            "geometric_prog": "Geometric progression",
+            "geometric_progression": "Geometric progression",
             "user_defined": "User defined",
             "up_element": "Up element",
             "down_element": "Down element",
             "hide": "Hide",
             "smaller": "smaller",
             "larger": "larger",
-            "style_layer": "Layer style",
-            "trash": "Delete layer",
-            "zoom_fit": "Zoom on layer",
-            "legend": "Legend",
-            "eye_open": "Toogle layer visibility",
-            "eye_closed": "Toogle layer visibility",
             "expected_class": "Expected format : 0 - 10 - 50 - 1500 - 10000",
-            "details": "Details"
+            "details": "Details",
+            "representation": "Representation",
+            "ask_confirm": "Confirm ?",
+            "layer_type_selection": "Select layer type",
+            "no_value": "No value selected",
+            "yes": "Yes",
+            "no": "No"
         },
         "section1": {
             "title": "Add your data",
             "add_geom": "Add a basemap <i>(or drop it)</i>",
             "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
-            "add_sample_data": "Select available sample basemap / dataset",
-            "explore_table": "Explore your table(s)"
-        },
-        "section2_pre": {
-            "title": "Choose a representation"
+            "add_sample_data": "Select available sample basemap / dataset"
         },
         "section2": {
-            "title": "Functionnality options",
-            "no_func": "No choosen functiionnality"
+            "title": "Choose a representation"
         },
         "section3": {
             "title": "Layers"
         },
         "section4": {
-            "title": "Basemap configuration",
+            "title": "Basemap configuration and page layout",
             "map_width": "<b>Map width (px) </b>",
             "map_height": "<b>Map height (px) </b>",
             "map_ratio": "Map ratio",
@@ -110,6 +106,7 @@
             "format": "Outut size",
             "height": "Height",
             "width": "Width",
+            "web": "Web",
             "user_defined": "User defined",
             "A4_landscape": "A4 landscape",
             "A4_portrait": "A4 portrait",
@@ -140,7 +137,8 @@
         },
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
-            "section3": "Drop new layout layer or click to browse locally and add one.<br>Supported formats = shapefile (must be provided with .dbf and .prj files) GeoJSON, TopoJSON and KML"
+            "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
+            "export_load_pref": "Export / Load your map preferences"
         },
         "func_description" : {
             "smooth": "Render a smoothed map (using stewart potentials algorythm)",
@@ -214,15 +212,12 @@
             "bondcountries": "James Bond visited countries <i>(To link with World countries geometries)</i>"
         },
         "export_box": {
-            "title": "Choose a format...",
-            "png": "Export to PNG",
-            "svg": "Export to SVG",
             "geo": "Export layers to a geographic format",
             "geo_title_box": "Choose layer and datatype...",
             "options": "Export options",
-            "option_layer": "Layer to export",
-            "option_datatype": "Datatype",
-            "option_projection": "Projection"
+            "option_layer": "Layer to export ",
+            "option_datatype": "Datatype ",
+            "option_projection": "Projection "
         },
         "join_box": {
             "title": "Join options",
@@ -242,7 +237,8 @@
             "partial_join": "Partial join: {{ratio}} geometries found a match. Validate ?",
             "change_field": "Change joined fields",
             "ref_layer_fields": "Reference layer fields",
-            "join_field": "Join field"
+            "join_field": "Join field",
+            "before_join_ask": "A layer and an external dataset have been provided. Want to join them now ?"
         },
         "explore_box": {
             "title": "Explore dataset",
@@ -261,20 +257,29 @@
                 "constant_value": "Constant value..."
             }
         },
+        "box_choice_symbol": {
+            "title": "Symbol selection",
+            "select_symbol": "Select a symbol ...",
+            "upload_symbol": "Or upload your symbol ",
+            "browse": "Browse",
+            "selected_symbol": "Selected symbol :"
+        },
         "legend_style_box": {
             "title": "Layer style options - {{layer_name}}",
             "subtitle": "Legend customization",
-            "lgd_title": "Legend title<br>",
+            "lgd_title": "Legend title",
             "var_name": "Variable name<br>",
             "float_rounding": "Floating number rounding precision<br> ",
             "gap_boxes": "No gap between color boxes",
             "nested_symbols": "Nested symbols",
             "no_data": "No data category name",
             "additionnal_notes": "Additionnal legend notes<br>",
-            "under_rectangle": "Display a rectangle under the legend"
+            "under_rectangle": "Display a rectangle under the legend",
+            "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
         },
         "help_box": {
             "title": "Emergency help!",
+            "tooltip_btn": "Help",
             "message_invite": "Write something to be searched in the documentation :",
             "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
         },
@@ -331,7 +336,7 @@
             "new_random_colors": "New randoms colors"
         },
         "layer_style_popup": {
-            "fill_color": "Fill color<br>",
+            "fill_color": "Fill color",
             "toggle_colors": "<b><i>Click to toggle colors</b></i>",
             "categorical_field": "Categorical field :",
             "rendered_field": "<i>Rendered field : <b>{{field}}</b></i><br>",
@@ -350,7 +355,7 @@
             "random_color": "Random color on each feature",
             "field_to_render": "Field to render ",
             "choose_colors": "Choose colors",
-            "field": "Field :",
+            "field": "Field",
             "choose_discretization": "Display and arrange classes",
             "color_palette": "Color palette ",
             "reverse_palette": "Reverse palette",
@@ -360,7 +365,6 @@
             "discont_threshold": "Discontinuity threshold ",
             "border_color": "Border color<br>",
             "color": "Color<br>",
-            "fill_color": "Fill color<br>",
             "opacity": "Opacity<br>",
             "border_color": "Border color<br>",
             "border_opacity": "Border opacity<br>",
@@ -373,8 +377,10 @@
             "symbol_fixed_size": "Symbol fixed size ",
             "on_value": "on value ...",
             "point_radius": "Point radius<br>",
-            "graticule_steps": "Step size between lines",
-            "graticule_dasharray": "Length of dashes"
+            "graticule_steps": "Step size between lines<br>",
+            "graticule_dasharray": "Length of dashes<br>",
+            "generate_labels": "Generate labels for this layer ...",
+            "field_label": "Select a field to use"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",
@@ -483,13 +489,21 @@
             "flow": {
                 "subtitle1": "Links dataset fields :",
                 "discretization": "Discretization type ",
-                "nb_class": "Number of class "
+                "nb_class": "Number of class ",
+                "origin_field": "Origin field",
+                "destination_field": "Destination field",
+                "intensity_field": "Intensity field",
+                "ref_layer_field": "Reference layer fields",
+                "join_field": "Join field"
             },
             "grid": {
                 "field": "Field",
                 "cellsize": "Cell size <i>km</i> ",
                 "shape": "Grid shape ",
-                "coloramp": "Coloramp "
+                "coloramp": "Coloramp ",
+                "square": "Square",
+                "diamond": "Diamond",
+                "hexagon": "Hexagon"
             },
             "cartogram": {
                 "algo": "Algorythm to use ",
@@ -539,7 +553,6 @@
     },
     "disc_box":{
         "title": "Discretization Panel",
-        "type_disc": "Type",
         "class": "{{count}} class",
         "disp_mean": "Display mean",
         "disp_median": "Display median",
@@ -563,20 +576,15 @@
         "color_palette": "Color palette ",
         "break_on": "Break on "
     },
-    "style_box":{
-        "ref_layer": "Reference layer",
-        "rendered_field": "Rendered field",
-        "ok": "Confirm",
-        "cancel": "Close without saving"
-    },
     "index":{
         "buttons": {
             "enter": "Enter!",
             "resume": "Resume last project...",
             "overview": "Overview",
             "examples": "Examples",
+            "projections": "Projections",
             "doc": "Documentation",
-            "sources": "Sources",
+            "dev": "Developement",
             "start_now": "Start now"
         },
         "intro_section": {

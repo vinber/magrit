@@ -114,7 +114,7 @@ async def geojson_to_topojson(
         filepath, quantization="--no-quantization", remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["topojson", "--no-stitch-poles", quantization, "--bbox",
+    process = Popen(["geo2topo", "--no-stitch-poles", quantization, "--bbox",
                      "-p", "--", filepath],
                     stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
@@ -124,7 +124,7 @@ async def geojson_to_topojson(
 
 
 async def store_non_quantized(filepath, f_name, redis_conn):
-    process = Popen(["topojson", "--spherical", "--no-quantization", "--bbox",
+    process = Popen(["geo2topo", "--spherical", "--no-quantization", "--bbox",
                      "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     result = stdout.decode()

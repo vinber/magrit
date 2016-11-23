@@ -101,22 +101,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                    }).style("width", "40px")
                .on("change", function(){redisplay.draw();});
 
-        let central_color = col_div.insert('p').attr("class", "central_color");
-        central_color.insert("input")
-                    .attr("type", "checkbox")
-                    .on("change", function(){
-                        redisplay.draw();
-                    });
-        central_color.select("input").node().checked = true;
-        central_color.insert("label").html(i18next.t("disc_box.colored_central_class"));
-        central_color
-            .insert("input")
-            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
-            .style("margin", "0px 10px")
-            .on("change", function(){
-                        redisplay.draw();
-                    });
-
         var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
                          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
                          'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
@@ -125,18 +109,35 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .style("display", "inline")
                         .html(i18next.t("disc_box.left_colramp"))
                         .insert("select").attr("class", "color_params_left")
-                        .on("change", function(){ redisplay.draw() });
+                        .on("change", redisplay.draw);
         var right_color_select = col_div.insert("p")
                         .styles({display: "inline", "margin-left": "70px"})
                         .attr("class", "color_txt2")
                         .html(i18next.t("disc_box.right_colramp"))
                         .insert("select").attr("class", "color_params_right")
-                        .on("change", function(){ redisplay.draw() });
+                        .on("change", redisplay.draw);
         pal_names.forEach(function(name){
             left_color_select.append("option").text(name).attr("value", name);
             right_color_select.append("option").text(name).attr("value", name)
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
+
+        let central_color = col_div.insert('p').attr("class", "central_color");
+        central_color.insert("input")
+                    .attrs({"type": "checkbox", "id": "central_color_chkbx"})
+                    .on("change", function(){
+                      redisplay.draw();
+                      if(this.checked)
+                        col_div.select("#central_color_val").style("display", "");
+                    });
+        central_color.select("input").node().checked = true;
+        central_color.insert("label")
+            .attr("for", "central_color_chkbx")
+            .html(i18next.t("disc_box.colored_central_class"));
+        central_color.insert("input")
+            .attrs({type: "color", id: "central_color_val", value: "#e5e5e5"})
+            .styles({"margin": "0px 10px", "display": "none"})
+            .on("change", redisplay.draw);
     };
 
     var make_box_histo_option = function(){
@@ -241,12 +242,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .data(data)
           .enter()
             .append("rect")
-            .attr("class", "bar")
-            .attr("x", 1)
-            .attr("width", 1)
-//            .attr("width", x(data[1].x1) - x(data[1].x0))
-            .attr("height",  d => height - y(d.length))
-            .attr("transform", function(d){return "translate(" + x(d.x0) + "," + y(d.length) + ")";})
+            .attrs( d => ({
+              "class": "bar", "width": 1, "height": height - y(d.length), "x": 1,
+              "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+            }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
@@ -331,7 +330,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
             if(!provided_colors){
                 var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
-                console.log(color_array)
                 if(col_scheme === "sequential"){
                     if(to_reverse){
                         color_array = color_array.reverse();
@@ -378,36 +376,34 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
-              .enter().append("rect")
-                .attr("class", "bar")
-                .attr("id", (d,i) => "bar_" + i)
-                .attr("transform", "translate(0, -7.5)")
-                .style("fill", d => d.color)
-                .styles({"opacity": 0.95, "stroke-opacity":1})
-                .attr("x", d => x(d.offset))
-                .attr("width", d => x(d.width))
-                .attr("y", d => y(d.height) - margin.bottom)
-                .attr("height", d => svg_h - y(d.height))
+              .enter()
+                .append("rect")
+                .attrs( (d,i) => ({
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "x": x(d.offset), "y": y(d.height) - margin.bottom,
+                  "width": x(d.width), "height": svg_h - y(d.height)
+                }))
+                .styles(d => ({
+                  "opacity": 0.95,
+                  "stroke-opacity": 1,
+                  "fill": d.color
+                }))
                 .on("mouseover", function(){
                     this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null;
-                    })
+                })
                 .on("mouseout", function(){
                     this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none";
-                    });
+                });
 
             svg_histo.selectAll(".txt_bar")
                 .data(bins)
               .enter().append("text")
-                .attr("dy", ".75em")
-                .attr("y", d => (y(d.height) - margin.top * 2 - margin.bottom - 1.5))
-                .attr("x", d => x(d.offset + d.width /2))
-                .attr("text-anchor", "middle")
-                .attr("class", "text_bar")
-                .attr("id", (d,i) => "text_bar_" + i)
-                .style("color", "black")
-                .style("cursor", "default")
-                .style("display", "none")
-                .text(d => formatCount(d.val))
+                .attrs( (d,i) => ({
+                  "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
+                  "dy": ".75em", "x": x(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
+                }))
+                .styles({"color": "black", "cursor": "default", "display": "none"})
+                .text(d => formatCount(d.val));
 
             svg_histo.append("g")
                 .attr("class", "y_axis")
@@ -423,17 +419,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     };
 
     //////////////////////////////////////////////////////////////////////////
-    var formatCount = d3.formatLocale({
-                        decimal: getDecimalSeparator(),
-                        thousands: "",
-                        grouping: 3,
-                        currency: ["", ""]
-                        }).format('.2f');
 
-    var newBox = d3.select("body").append("div")
-                     .style("font-size", "12px")
-                     .attr("id", "discretiz_charts")
-                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
+    var modal_box = make_dialog_container(
+         "discretiz_charts",
+         [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''),
+         "discretiz_charts_dialog"
+        );
+
+    var newBox = d3.select("#discretiz_charts").select(".modal-body");
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -461,7 +454,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
-        max_nb_class = 22 < nb_values ? 22 : nb_values;
+        max_nb_class = 20 < nb_values ? 20 : nb_values;
 
     if(serie.variance() == 0 && serie.stddev() == 0){
         var serie = new geostats(values);
@@ -481,6 +474,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
+
+    var formatCount = d3.formatLocale({
+                        decimal: getDecimalSeparator(),
+                        thousands: "",
+                        grouping: 3,
+                        currency: ["", ""]
+                      }).format('.' + serie.precision + 'f');
 
     var discretization = newBox.append('div')
                                 .attr("id", "discretization_panel")
@@ -542,6 +542,11 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         svg_w = 760 < (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
         margin = {top: 7.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
+
+    d3.select("#discretiz_charts").select(".modal-dialog")
+        .styles({width: svg_w + margin.top + margin.bottom + 90 + "px",
+                 height: window.innerHeight - 60 + "px"});
+
 
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
@@ -620,19 +625,23 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .scale(x)
         .tickFormat(formatCount));
 
-    var accordion_colors = newBox.append("div").attrs({id: "accordion_colors", class: "accordion_disc"});
-    accordion_colors.append("h3").html(i18next.t("disc_box.title_color_scheme"));
-    var color_scheme =  d3.select("#accordion_colors")
-                            .append("div").attr("id", "color_div")
-                            .append("form_action");
+    var b_accordion_colors = newBox.append("button")
+                        .attrs({"class": "accordion_disc active", "id": "btn_acc_disc_color"})
+                        .style("padding", "0 6px")
+                        .html(i18next.t("disc_box.title_color_scheme")),
+        accordion_colors = newBox.append("div")
+                        .attrs({"class": "panel show", "id": "accordion_colors"})
+                        .style("width", "98%"),
+        color_scheme =  d3.select("#accordion_colors")
+                        .append("div")
+                        .attr("id", "color_div")
+                        .style("text-align", "center");
 
-    [
-     [i18next.t("disc_box.sequential"), "sequential"],
-     [i18next.t("disc_box.diverging"), "diverging"]
-    ].forEach( el => {
+    [[i18next.t("disc_box.sequential"), "sequential"],
+     [i18next.t("disc_box.diverging"), "diverging"]].forEach( el => {
         color_scheme.insert("label").style("margin", "20px").html(el[0])
-                    .insert('input').attrs({
-                        type: "radio", name: "color_scheme", value: el[1], id: "button_"+el[1]})
+                    .insert('input')
+                    .attrs({type: "radio", name: "color_scheme", value: el[1], id: "button_"+el[1]})
                      .on("change", function(){
                         this.value === "sequential" ? make_sequ_button()
                                                     : make_diverg_button();
@@ -642,10 +651,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var to_reverse = false;
     document.getElementById("button_sequential").checked = true;
 
-    var accordion_breaks = newBox.append("div")
-                                .attrs({id: "accordion_breaks_vals",
-                                       class: "accordion_disc"});
-    accordion_breaks.append("h3").html(i18next.t("disc_box.title_break_values"));
+    var b_accordion_breaks = newBox.append("button")
+                        .attrs({"class": "accordion_disc", "id": "btn_acc_disc_break"})
+                        .style("padding", "0 6px")
+                        .html(i18next.t("disc_box.title_break_values")),
+        accordion_breaks = newBox.append("div")
+                        .attrs({"class": "panel", "id": "accordion_breaks_vals"})
+                        .style("width", "98%");
 
     var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
@@ -668,8 +680,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             redisplay.draw();
          });
 
-    $(".accordion_disc").accordion({collapsible: true, active: false, heightStyle: "content" });
-    $("#accordion_colors").accordion({collapsible: true, active: 0, heightStyle: "content" });
+    accordionize(".accordion_disc", d3.select("#discretiz_charts").node());
 
     if(no_data > 0){
         make_no_data_section();
@@ -701,104 +712,54 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     redisplay.compute();
     redisplay.draw(options.colors);
 
-    var deferred = Q.defer();
-    $("#discretiz_charts").dialog({
-        modal:true,
-        resizable: true,
-        width: svg_w + margin.top + margin.bottom + 90,
-        height: window.innerHeight - 40,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    var colors_map = [];
-                    let no_data_color = null;
-                    if(no_data > 0){
-                        no_data_color = document.getElementById("no_data_color").value;
-                    }
-                    for(let j=0; j < db_data.length; ++j){
-                        let value = +db_data[j][field_name];
-                        if(value != null){
-                            let idx = serie.getClass(+value);
-                            colors_map.push(color_array[idx]);
-                        } else {
-                            colors_map.push(no_data_color);
-                        }
-                    }
-                    let col_schema = [];
-                    if(!d3.select('.color_params_left').node()){
-                        col_schema.push(document.querySelector(".color_params").value);
-                    } else {
-                        col_schema.push(document.querySelector(".color_params_left").value);
-                        if(document.querySelector(".central_color").querySelector("input").checked){
-                            col_schema.push(document.getElementById("central_color_val").value);
-                        }
-                        col_schema.push(document.querySelector(".color_params_right").value);
-                    }
-                    deferred.resolve(
-                        [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
+    let deferred = Q.defer(),
+        container = document.getElementById("discretiz_charts");
+
+    container.querySelector(".btn_ok").onclick = function(){
+        var colors_map = [];
+        let no_data_color = null;
+        if(no_data > 0){
+            no_data_color = document.getElementById("no_data_color").value;
+        }
+        for(let j=0; j < db_data.length; ++j){
+            let value = db_data[j][field_name];
+            if(value !== null){
+                let idx = serie.getClass(+value);
+                colors_map.push(color_array[idx]);
+            } else {
+
+                colors_map.push(no_data_color);
             }
-      });
+        }
+        let col_schema = [];
+        if(!d3.select('.color_params_left').node()){
+            col_schema.push(document.querySelector(".color_params").value);
+        } else {
+            col_schema.push(document.querySelector(".color_params_left").value);
+            if(document.querySelector(".central_color").querySelector("input").checked){
+                col_schema.push(document.getElementById("central_color_val").value);
+            }
+            col_schema.push(document.querySelector(".color_params_right").value);
+        }
+        deferred.resolve(
+            [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
+
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
+
+    let _onclose = () => {
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 }
 
-function getBreaksQ6(serie){
-    var breaks = [], tmp = 0, j = undefined,
-        len_serie = serie.length, stock_class = [],
-        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
-    for(let i=0; i < 7; ++i){
-        j = Math.round(q6_class[i]) - 1
-        breaks.push(+serie[j]);
-        stock_class.push(j - tmp)
-        tmp = j;
-    }
-    stock_class.shift();
-    if(breaks[0] == breaks[1]){
-        breaks[1] = (breaks[2] - breaks[1]) / 2
-    }
-    if(breaks[6] == breaks[5]){
-        breaks[5] = (breaks[5] - breaks[4]) / 2
-    }
-    return {
-        breaks: breaks,
-        stock_class: stock_class
-        };
-}
-
-function getBreaks_userDefined(serie, breaks_list){
-    var separator = has_negative(serie) ? '- ' : '-',
-        break_values = breaks_list.split(separator).map(el => +el.trim()),
-        len_serie = serie.length,
-        j = 0,
-        len_break_val = break_values.length,
-        stock_class = new Array(len_break_val-1);
-
-    for(let i=1; i<len_break_val; ++i){
-        let class_max = break_values[i];
-        stock_class[i-1] = 0;
-        while(serie[j] <= class_max){
-            stock_class[i-1] += 1;
-            j++;
-        }
-    }
-    return {
-        breaks: break_values,
-        stock_class: stock_class
-        };
-}
 
 function fetch_categorical_colors(){
     let categ = document.querySelectorAll(".typo_class"),
@@ -832,10 +793,13 @@ function display_categorical_box(layer, field){
         cats.push({name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
     });
 
-    var newbox = d3.select("body")
-                        .append("div").style("font-size", "10px")
-                        .attrs({id: "categorical_box",
-                                title: i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features})})
+    var modal_box = make_dialog_container(
+        "categorical_box",
+        i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features}),
+        "dialog");
+
+    var newbox = d3.select("#categorical_box").select(".modal-body");
+
     newbox.append("h3").html("")
     newbox.append("p")
                 .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));
@@ -889,179 +853,36 @@ function display_categorical_box(layer, field){
             }
         });
 
-      $( "#sortable_typo_name" ).sortable({
-        placeholder: "ui-state-highlight",
-        helper: 'clone'  // Avoid propagation of the click event to the color button (if clicked on it the move the feature)
-      });
+    new Sortable(document.getElementById("sortable_typo_name"));
 
+    let deferred = Q.defer(),
+        container = document.getElementById("categorical_box"),
+        _onclose = () => {
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+            reOpenParent();
+        };
 
-    var deferred = Q.defer();
-    $("#categorical_box").dialog({
-        modal: true,
-        resizable: true,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    let color_map = fetch_categorical_colors();
-                    let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
-                    deferred.resolve([nb_class, color_map, colorByFeature]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                d3.selectAll(".color_input").remove();
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-    })
+    container.querySelector(".btn_ok").onclick = function(){
+        let color_map = fetch_categorical_colors();
+        let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
+        deferred.resolve([nb_class, color_map, colorByFeature]);
+        modal_box.close();
+        container.remove();
+        reOpenParent();
+    }
+
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
+};
+
+function reOpenParent(css_selector){
+    let parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox' );
+    if(parent_style_box){
+        parent_style_box.className = parent_style_box.className.concat(" in");
+        parent_style_box.setAttribute("aria-hidden", false);
+        parent_style_box.style.display = "block";
+    }
 }
-
-var display_box_symbol_typo = function(layer, field){
-    var fetch_symbol_categories = function(){
-        let categ = document.querySelectorAll(".typo_class"),
-            symbol_map = new Map();
-        for(let i = 0; i < categ.length; i++){
-            let selec =  categ[i].querySelector(".symbol_section"),
-                new_name = categ[i].querySelector(".typo_name").value;
-                cats[i].new_name = new_name;
-            if(selec.style.backgroundImage.length > 7){
-                let img = selec.style.backgroundImage.split("url(")[1].substring(1).slice(0,-2);
-                let size = +categ[i].querySelector("#symbol_size").value
-                symbol_map.set(categ[i].__data__.name, [img, size, new_name]);
-                cats[i].img = selec.style.backgroundImage;
-            } else {
-                symbol_map.set(categ[i].__data__.name, [null, 0, new_name]);
-                cats[i].img = default_d_url;
-            }
-        }
-        return symbol_map;
-    }
-
-    if(!window.default_symbols){
-        window.default_symbols = [];
-        prepare_available_symbols();
-    }
-    var nb_features = current_layers[layer].n_features,
-        categories = new Map(),
-        data_layer = user_data[layer],
-        cats = [];
-
-    var res_symbols = window.default_symbols;
-
-    var default_d_url = 'url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJmbGFnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDU3OS45OTcgNTc5Ljk5NyIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgNTc5Ljk5NyA1NzkuOTk3IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIGQ9Ik0yMzEuODQ2LDQ3Mi41NzJWMzEuODA2aC0yMi4xOHY0NDAuNTU3JiMxMDsmIzk7Yy0zNC4wMTYsMi42NDktNTkuNDE5LDE4Ljc2Ny01OS40MTksMzguODcxYzAsMjIuMDIxLDMwLjQ1NiwzOS4yNzEsNjkuMzM3LDM5LjI3MWMzOC44NzcsMCw2OS4zMzItMTcuMjUsNjkuMzMyLTM5LjI3MSYjMTA7JiM5O0MyODguOTE3LDQ5MS41OTUsMjY0LjY3NCw0NzUuNzY0LDIzMS44NDYsNDcyLjU3MnoiLz4KPHBvbHlnb24gZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIHBvaW50cz0iMjM1LjI0MywyOS40OTIgMjMzLjcyMywyMDcuNjI4IDQyOS43NDksMjEwLjMyOSAiLz4KPC9zdmc+")';
-
-    if(categories.size == 0){
-        for(let i = 0; i < nb_features; ++i){
-            let value = data_layer[i][field];
-            let ret_val = categories.get(value);
-            if(ret_val)
-                categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
-            else
-                categories.set(value, [1, [i]]);
-        }
-        categories.forEach( (v,k) => { cats.push({name: k, new_name: k, nb_elem: v[0], img: default_d_url}) });
-    }
-    let nb_class = categories.size;
-
-    return function(){
-        var newbox = d3.select("body")
-                            .append("div").style("font-size", "10px")
-                            .attrs({id: "symbol_box",
-                                    title: i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features})})
-
-        newbox.append("h3").html("")
-        newbox.append("p")
-                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
-        newbox.append("ul").style("padding", "unset").attr("id", "typo_categories")
-                .selectAll("li")
-                .data(cats).enter()
-                .append("li")
-                    .styles({margin: "auto", "list-style": "none"})
-                    .attr("class", "typo_class")
-                    .attr("id", (d,i) => ["line", i].join('_'));
-
-        newbox.selectAll(".typo_class")
-                .append("input")
-                .styles({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
-                .attr("class", "typo_name")
-                .attr("value", d => d.new_name)
-                .attr("id", d => d.name);
-
-        newbox.selectAll(".typo_class")
-                .insert("p")
-                .attr("title", "Click me to choose a symbol!")
-                .attr("class", "symbol_section")
-                .style("margin", "auto")
-                .style("background-image", d => d.img)
-                .style("vertical-align", "middle")
-                .styles({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
-                        "border-radius": "10%", border: "1px dashed blue",
-                        display: "inline-block", "background-size": "32px 32px"
-                      })
-                .on("click", function(){
-                    let self = this;
-                    box_choice_symbol(res_symbols).then(confirmed => {
-                        if(confirmed){
-                            self.style.backgroundImage = confirmed;
-                        }
-                    });
-                });
-
-        newbox.selectAll(".typo_class")
-                .insert("span")
-                .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: d.nb_elem}));
-
-        newbox.selectAll(".typo_class")
-                .insert("input").attr("type", "number").attr("id", "symbol_size")
-                .style("width", "38px").style("display", "inline-block")
-                .attr("value", 32);
-
-        newbox.selectAll(".typo_class")
-                .insert("span")
-                .style("display", "inline-block")
-                .html(" px");
-
-        $( "#typo_categories" ).sortable({
-            placeholder: "ui-state-highlight",
-            helper: 'clone'  // Avoid propagation of the click event to the enclosed button
-        });
-
-        var deferred = Q.defer();
-        $("#symbol_box").dialog({
-            modal: true,
-            resizable: true,
-            buttons:[{
-                text: i18next.t("app_page.common.confirm"),
-                click: function(){
-                        let symbol_map = fetch_symbol_categories();
-                        deferred.resolve([nb_class, symbol_map]);
-                        $(this).dialog("close");
-                        }
-                    },
-               {
-                text: i18next.t("app_page.common.cancel"),
-                click: function(){
-                    $(this).dialog("close");
-                    $(this).remove();}
-               }],
-            close: function(event, ui){
-                    d3.selectAll(".color_input").remove();
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()){
-                        deferred.resolve(false);
-                    }
-                }
-        })
-        return deferred.promise;
-    };
-}
-

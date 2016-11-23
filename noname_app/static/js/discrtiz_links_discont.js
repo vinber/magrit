@@ -102,11 +102,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             .data(data)
           .enter()
             .append("rect")
-            .attr("class", "bar")
-            .attr("x", 1)
-            .attr("width", x(data[1].x1) - x(data[1].x0))
-            .attr("height",  d => height - y(d.length))
-            .attr("transform", d => "translate(" + x(d.x0) + "," + y(d.length) + ")" )
+            .attrs(d => ({
+              "class": "bar", "x": 1, "width": x(data[1].x1) - x(data[1].x0),
+              "height": height - y(d.length), "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+            }))
             .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
         svg_ref_histo.append("g")
@@ -117,9 +116,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .scale(x)
                 .ticks(4))
             .selectAll("text")
-                .attr("y", 4).attr("x", -4)
-                .attr("dy", ".45em")
-                .attr("transform", "rotate(-40)")
+                .attrs({x: -4, y: 4, dy: ".45em", "transform": "rotate(-40)"})
                 .style("text-anchor", "end");
 
         svg_ref_histo.append("g")
@@ -132,15 +129,17 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
-        newBox.append("div").attr("id","summary")
-                        .style("font-size", "10px").style("float", "right")
-                        .styles({"margin-left": "25px", "margin-right": "50px"})
-                        .insert("p").html(["<b>", i18next.t("disc_box.summary"),"</b><br>", content_summary].join(""));
+        newBox.append("div")
+            .attr("id","summary")
+            .styles({"margin-left": "25px", "margin-right": "50px",
+                     "font-size": "10px", "float": "right"})
+            .insert("p")
+            .html(["<b>", i18next.t("disc_box.summary"),"</b><br>", content_summary].join(""));
     }
 
     var update_breaks = function(user_defined){
         if(!user_defined){
-            make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div");
+            make_min_max_tableau(values, nb_class, type, last_min, last_max, "sizes_div", undefined, callback);
         }
         let tmp_breaks = fetch_min_max_table_value("sizes_div");
         let len_breaks = tmp_breaks.sizes.length;
@@ -155,10 +154,9 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
         for(let i = 0; i<len_breaks; i++)
             breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
-        console.log(breaks_info)
         breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
         if(user_defined){
-            make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info);
+            make_min_max_tableau(null, nb_class, type, last_min, last_max, "sizes_div", breaks_info, callback);
         }
     }
 
@@ -180,7 +178,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
             for(let i=0, len = bins.length; i<len; ++i)
-                bins[i].color = ColorsSelected.random();
+                bins[i].color = array_color[i];
 
             var x = d3.scaleLinear()
                 .domain([serie.min(), serie.max()])
@@ -195,14 +193,16 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
               .enter().append("rect")
-                .attr("class", "bar")
-                .attr("transform", "translate(0, -17.5)")
-                .style("fill", d => d.color )
-                .styles({"opacity": 0.5, "stroke-opacity":1})
-                .attr("x", d => x(d.offset) )
-                .attr("width", d => x(d.width) )
-                .attr("y", d => y(d.height) - margin.bottom )
-                .attr("height", d => svg_h - y(d.height) );
+                .attrs( (d,i) => ({
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "x": x(d.offset), "y": y(d.height) - margin.bottom,
+                  "width": x(d.width), "height": svg_h - y(d.height)
+                }))
+                .styles(d => ({
+                  "opacity": 0.95,
+                  "stroke-opacity": 1,
+                  "fill": d.color
+                }));
 
             svg_histo.append("g")
                 .attr("class", "y axis")
@@ -217,17 +217,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     //////////////////////////////////////////////////////////////////////////
 
-    var formatCount = d3.formatLocale({
-                        decimal: getDecimalSeparator(),
-                        thousands: "",
-                        grouping: 3,
-                        currency: ["", ""]
-                        }).format('.2f');
+    var title_box = [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join('');
+    var modal_box = make_dialog_container("discretiz_charts", title_box, "discretiz_charts_dialog");
 
-    var newBox = d3.select("body").append("div")
-                     .style("font-size", "12px")
-                     .attr("id", "discretiz_charts")
-                     .attr("title", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''));
+    var newBox = d3.select("#discretiz_charts").select(".modal-body");
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
@@ -257,10 +250,11 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         breaks = [+breaks_info[0][0][0]],
         stock_class = [],
         bins = [],
-        max_nb_class = 22 < nb_values ? 22 : nb_values,
+        max_nb_class = 20 < nb_values ? 20 : nb_values,
         sizes = current_layers[layer_name].breaks.map(el => el[1]),
         last_min = min_fast(sizes),
-        last_max = max_fast(sizes);
+        last_max = max_fast(sizes),
+        array_color = d3.schemeCategory20.slice();
 
     breaks_info.forEach(elem => { breaks.push(elem[0][1]) });
 
@@ -283,6 +277,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
+
+    var formatCount = d3.formatLocale({
+                        decimal: getDecimalSeparator(),
+                        thousands: "",
+                        grouping: 3,
+                        currency: ["", ""]
+                      }).format('.' + serie.precision + 'f');
 
     var discretization = newBox.append('div')
                             .attr("id", "discretization_panel")
@@ -320,8 +321,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         disc_nb_class = d3.select("#discretization_panel")
                             .insert("input")
                             .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
-                            .attrs({id: "nb_class_range", type: "range"})
-                            .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
+                            .attrs({id: "nb_class_range", type: "range",
+                                    min: 2, max: max_nb_class, value: nb_class, step:1})
                             .on("change", function(){
                                 type = discretization.node().value;
                                 if(type == "user_defined"){
@@ -344,6 +345,10 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         svg_w = w - (w / 8),
         margin = {top: 17.5, right: 30, bottom: 7.5, left: 30},
         height = svg_h - margin.top - margin.bottom;
+
+    d3.select("#discretiz_charts").select(".modal-dialog")
+        .styles({width: svg_w + margin.top + margin.bottom + 90 + "px",
+                 height: window.innerHeight - 60 + "px"});
 
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
@@ -415,7 +420,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
         .classed("active", false);
 
-
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
         .attr("class", "x axis")
@@ -427,47 +431,35 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     box_content.append("h3").style("margin", "0").html(i18next.t("disc_box.line_size"));
     var sizes_div =  d3.select("#box_content")
                             .append("div").attr("id", "sizes_div");
-    make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info);
-    box_content.append("p")
-            .insert("button")
-            .attr("class", "button_st3")
-            .html(i18next.t("disc_box.apply"))
-            .on("click", function(){
-                discretization.node().value = type;
-                update_breaks(true);
-                redisplay.compute();
-                redisplay.draw();
-            });
+    var callback = function(){
+      discretization.node().value = type;
+      update_breaks(true);
+      redisplay.compute();
+      redisplay.draw();
+    };
+    make_min_max_tableau(null, nb_class, type, null, null, "sizes_div", breaks_info, callback);
+
     redisplay.compute();
     redisplay.draw();
 
-    var deferred = Q.defer();
-    $("#discretiz_charts").dialog({
-        modal:true,
-        resizable: true,
-        width: svg_w + margin.top + margin.bottom + 90,
-        height: window.innerHeight - 60,
-        buttons:[{
-            text: i18next.t("app_page.common.confirm"),
-            click: function(){
-                    breaks[0] = serie.min();
-                    breaks[nb_class] = serie.max();
-                    deferred.resolve([serie, breaks_info, breaks]);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: i18next.t("app_page.common.cancel"),
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-      });
+    let deferred = Q.defer(),
+        container = document.getElementById("discretiz_charts");
+
+    container.querySelector(".btn_ok").onclick = () => {
+        breaks[0] = serie.min();
+        breaks[nb_class] = serie.max();
+        deferred.resolve([serie, breaks_info, breaks]);
+        modal_box.close();
+        container.remove();
+        reOpenParent('.styleBox');
+    }
+    let _onclose = () => {
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+        reOpenParent('.styleBox');
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
-}
+};

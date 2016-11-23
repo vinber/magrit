@@ -4,7 +4,7 @@ function get_menu_option(func){
     var menu_option = {
         "smooth":{
             "name": "smooth",
-            "title":i18next.t("app_page.func_title.smooth"),
+            "title": i18next.t("app_page.func_title.smooth"),
             "menu_factory": "fillMenu_Stewart",
             "fields_handler": "fields_Stewart",
             },
@@ -64,29 +64,34 @@ function get_menu_option(func){
             "menu_factory": "fillMenu_Typo",
             "fields_handler": "fields_Typo",
             },
-        "label":{
-            "name": "label",
-            "title": i18next.t("app_page.func_title.label"),
-            "menu_factory": "fillMenu_Label",
-            "fields_handler": "fields_Label",
-            },
         "typosymbol":{
             "name": "typosymbol",
             "title": i18next.t("app_page.func_title.typosymbol"),
             "menu_factory": "fillMenu_TypoSymbol",
-            "fields_handler": "fields_Symbol",
+            "fields_handler": "fields_TypoSymbol",
             }
     };
     return menu_option[func.toLowerCase()] || {};
 }
 
-
+/**
+* Remove the div on which we are displaying the options related to each
+* kind of rendering.
+*
+*/
 function clean_menu_function(){
-    let s2 = section2.node();
-    for(let i = s2.childElementCount - 1; i > -1 ; i--){
-        s2.removeChild(s2.childNodes[i]);
-    }
+    section2.select(".form-rendering").remove();
 }
+
+/**
+* Function to remove each node (each <option>) of a <select> HTML element :
+*
+*/
+function unfillSelectInput(select_node){
+    for(let i = select_node.childElementCount - 1; i > -1; i--)
+        select_node.removeChild(select_node.children[i]);
+}
+
 
 /** Function trying to avoid layer name collision by adding a suffix
 * to the layer name if already exists and incrementing it if necessary
@@ -103,9 +108,9 @@ function check_layer_name(name){
     else {
         let i = 1;
         if(name.match(/_\d+$/)){
-            i = name.match(/\d+$/);
+            i = name.match(/_\d+$/);
             name = name.substring(name, name.indexOf(i));
-            return check_layer_name([name, parseInt(i) + 1].join(''));
+            return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
         }
         else {
             name = [name, i].join('_');
@@ -113,301 +118,82 @@ function check_layer_name(name){
         }
     }
 }
-
-function box_choice_symbol(sample_symbols){
-    var newbox = d3.select("body")
-                        .append("div").style("font-size", "10px")
-                        .attrs({id: "box_choice_symbol", title: "Symbol selection"});
-
-    newbox.append("h3").html(i18next.t("Symbol selection"));
-    newbox.append("p").html(i18next.t("Select a symbol..."));
-
-    var box_select = newbox.append("div")
-                        .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
-                        .attr("id", "symbols_select");
-
-    box_select.selectAll("p")
-            .data(sample_symbols)
-            .enter()
-            .append("p")
-            .attr("id", d => "p_" + d[0].replace(".svg", ""))
-            .attr("title", d => d[0])
-            .html(d => d[1])
-            .styles({width: "32px", height: "32px",
-                    "margin": "auto", display: "inline-block"});
-
-    box_select.selectAll("svg")
-            .attr("id", function(){ return this.parentElement.id.slice(2) })
-            .attrs({height: "32px", width: "32px"})
-            .on("click", function(){
-                box_select.selectAll("svg").each(function(){
-                    this.parentElement.style.border = "";
-                    this.parentElement.style.padding = "0px";
-                })
-                this.parentElement.style.padding = "-1px";
-                this.parentElement.style.border = "1px dashed red";
-                let svg_dataUrl = [
-                    'url("data:image/svg+xml;base64,',
-                    btoa(new XMLSerializer().serializeToString(this)),
-                    '")'].join('');
-                newbox.select("#current_symb").style("background-image", svg_dataUrl);
-            });
-
-    newbox.append("p")
-        .attr("display", "inline")
-        .html(i18next.t("Or upload your symbol "));
-    newbox.append("button")
-        .html("Browse")
-        .on("click", function(){
-            let input = document.createElement('input');
-            input.setAttribute("type", "file");
-            input.onchange = function(event){
-                let file = event.target.files[0];
-                let file_name = file.name;
-                let reader = new FileReader()
-                reader.onloadend = function(){
-                    let result = reader.result;
-                    let dataUrl_res = ['url("', result, '")'].join('');
-                    newbox.select("#current_symb").style("background-image", dataUrl_res);
-                }
-                reader.readAsDataURL(file);
-            }
-            input.dispatchEvent(new MouseEvent("click"));
-        });
-
-    newbox.insert("p").html("Selected symbol :")
-    newbox.insert("p").attr("id", "current_symb")
-            .attr("class", "symbol_section")
-            .style("margin", "auto")
-            .style("background-image", "url('')")
-            .style("vertical-align", "middle")
-            .styles({width: "32px", height: "32px",
-                    "border-radius": "10%",
-                    display: "inline-block", "background-size": "32px 32px"
-                  });
-    var deferred = Q.defer();
-    $("#box_choice_symbol").dialog({
-        modal: true,
-        resizable: true,
-        buttons:[{
-            text: "Confirm",
-            click: function(){
-                    let res_url = newbox.select("#current_symb").style("background-image");
-                    deferred.resolve(res_url);
-                    $(this).dialog("close");
-                    }
-                },
-           {
-            text: "Cancel",
-            click: function(){
-                $(this).dialog("close");
-                $(this).remove();}
-           }],
-        close: function(event, ui){
-                $(this).dialog("destroy").remove();
-                if(deferred.promise.isPending()){
-                    deferred.resolve(false);
-                }
-            }
-    })
-    return deferred.promise;
-}
-
-function make_style_box_indiv_symbol(label_node){
-    let current_options = {size: label_node.getAttribute("width")};
-    let ref_coords = {x: +label_node.getAttribute("x") + (+current_options.size.slice(0, -2) / 2),
-                      y: +label_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
-    let new_params = {};
-    let self = this;
-    make_confirm_dialog("styleTextAnnotation", "Label options")
-        .then(function(confirmed){
-            if(!confirmed){
-                label_node.setAttribute("width", current_options.size);
-                label_node.setAttribute("height", current_options.size);
-                label_node.setAttribute("x", ref_coords.x - (+current_options.size.slice(0, -2) / 2));
-                label_node.setAttribute("y", ref_coords.y - (+current_options.size.slice(0, -2) / 2));
-            }
-        });
-    let box_content = d3.select(".styleTextAnnotation").insert("div");
-    box_content.append("p").html("Image size ")
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
-            .on("change", function(){
-                let new_val = this.value + "px";
-                label_node.setAttribute("width", new_val);
-                label_node.setAttribute("height", new_val);
-                label_node.setAttribute("x", ref_coords.x - (+this.value / 2));
-                label_node.setAttribute("y", ref_coords.y - (+this.value / 2));
-            });
+/**
+* Display a message when switching between functionnalitiesif the layer to render
+* doesn't have any interesting field to use.
+*/
+function display_error_num_field(){
+    swal({title: "",
+          text: i18next.t("app_page.common.error_numerical_fields"),
+          type: "error"});
 };
 
-
-var fields_Symbol = {
-    fill: function(layer){
-        if(!layer) return;
-        let fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
-            field_to_use = d3.select("#field_Symbol"),
-            self = this;
-        fields_all.forEach(function(field){
-            field_to_use.append("option").text(field).attr("value", field);
-        });
-        d3.selectAll(".params").attr("disabled", null);
-        field_to_use.on("change", function(){
-            document.getElementById("yesTypoSymbols").disabled = true;
-            self.box_typo = display_box_symbol_typo(layer, this.value);
-        });
-        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
-    },
-    unfill: function(){
-        unfillSelectInput(document.getElementById("field_Symbol"));
-        d3.selectAll(".params").attr("disabled", true);
-    },
-    box_typo: undefined
+/**
+* Return an approximate value (based on the bbox of the targeted layer)
+* to fill the "span" field in stewart functionnality
+* as well as the "resolution" field in grid functionnality.
+*
+*/
+var get_first_guess_span = function(){
+    let bbox = _target_layer_file.bbox,
+        abs = Math.abs;
+    let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
+                                  [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
+        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
+                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    return Math.round((width_km + height_km) / 2 * 0.02);
 }
 
-function fillMenu_TypoSymbol(){
-    let dv2 = section2.append("p").attr("class", "form-rendering");
+/**
+* Check if the wanted resolution isn't too big before sending the request
+* to the server.
+*
+*/
+function test_maxmin_resolution(cell_value){
+    let bbox = _target_layer_file.bbox,
+        abs = Math.abs;
+    let width_km = haversine_dist(
+            [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+    let height_km = haversine_dist(
+            [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    let area = width_km * height_km,
+        bigger_side = Math.max(height_km, width_km);
+    if(area / (cell_value * cell_value) > 15000)
+        return "higher";
+    else if(cell_value > bigger_side / 1.66)
+        return "lower"
+    return;
+}
 
-    dv2.append("img")
+
+function make_template_functionnality(parent_node){
+    let dialog_content = parent_node.append("div").attr("class", "form-rendering");
+    dialog_content.append("p").attr("class", "container_img_help")
+        .append("img")
         .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
                 class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    let field_selec = dv2.append("p").html(i18next.t("app_page.func_options.typosymbol.field"))
-                    .insert('select')
-                    .attrs({class: "params", id: "field_Symbol"});
-
-    let rendering_params;
-    dv2.insert('p').style("margin", "auto").html("")
-        .append("button")
-        .attrs({id: "selec_Symbol", class: "button_disc params"})
-        .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("app_page.func_options.typosymbol.symbols_choice"))
-        .on("click", function(){
-            swal({
-                    title: "",
-                    text: i18next.t("app_page.common.error_too_many_features"),
-                    type: "warning",
-                    showCancelButton: true,
-                    allowOutsideClick: false,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
-                    cancelButtonText: i18next.t("app_page.common.cancel"),
-                    closeOnConfirm: true
-                }).then(() => {
-                    fields_Symbol.box_typo().then(function(confirmed){
-                        if(confirmed){
-                            ok_button.attr("disabled", null);
-                            rendering_params = {
-                                nb_cat: confirmed[0],
-                                symbols_map: confirmed[1],
-                                field: field_selec.node().value
-                            };
-                        }
-                    });
-                }, () => {
-                    return;
-                });
-        });
-
-    dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-        .insert('input')
-        .style("width", "200px")
-        .attr('class', 'params')
-        .attr("id", "TypoSymbols_output_name");
-
-    let ok_button = dv2.append("p")
-                      .styles({"text-align": "right", margin: "auto"})
-                      .append('button')
-                      .attr("disabled", true)
-                      .attr('id', 'yesTypoSymbols')
-                      .attr('class', 'button_st3')
-                      .text(i18next.t('app_page.func_options.common.render'))
-                      .on("click", function(){
-                          let new_name = document.getElementById("TypoSymbols_output_name").value;
-                          render_TypoSymbols(rendering_params, new_name);
-                      });
-
-    d3.selectAll(".params").attr("disabled", true);
+        .styles({"cursor": "pointer"});
+    return dialog_content;
 }
 
-function render_TypoSymbols(rendering_params, new_name){
-    let layer_name = Object.getOwnPropertyNames(user_data)[0];
-    let field = rendering_params.field;
-    let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    let new_layer_data = [];
-
-    let ref_selection = document.getElementById(layer_name).querySelectorAll("path");
-    let nb_ft = ref_selection.length;
-
-    for(let i=0; i<nb_ft; i++){
-        let ft = ref_selection[i].__data__;
-        new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
-    }
-
-    let context_menu = new ContextMenu(),
-        getItems = (self_parent) => [
-            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
-            {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
-    ];
-
-    map.append("g").attrs({id: layer_to_add, class: "layer"})
-        .selectAll("image")
-        .data(new_layer_data).enter()
-        .insert("image")
-        .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-        .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-        .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0])
-        .on("mouseover", function(){ this.style.cursor = "pointer";})
-        .on("mouseout", function(){ this.style.cursor = "initial";})
-        .on("contextmenu dblclick", function(){
-            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-            })
-        .call(drag_elem_geo);
-
-    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
-
-    current_layers[layer_to_add] = {
-        "n_features": current_layers[layer_name].n_features,
-        "renderer": "TypoSymbols",
-        "symbols_map": rendering_params.symbols_map,
-        "rendered_field": field,
-        "is_result": true,
-        "symbol": "image",
-        "ref_layer_name": layer_name,
-        };
-    up_legends();
-    zoom_without_redraw();
-    switch_accordion_section();
+function make_layer_name_button(parent, id){
+    let a = parent.append('p');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
+      .html(i18next.t('app_page.func_options.common.output'));
+    a.insert('input')
+      .style('width', '240px')
+      .attrs({class: 'params', id: id});
 }
 
-var fields_Discont = {
-    fill: function(layer){
-        if(!layer) return;
-        let fields_num = type_col(layer, "number"),
-            fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
-            field_discont = d3.select("#field_Discont"),
-            field_id = d3.select("#field_id_Discont");
-
-        if(fields_num.length == 0){
-            display_error_num_field();
-            return;
-        }
-
-        fields_num.forEach(function(field){
-                field_discont.append("option").text(field).attr("value", field);
-        });
-        fields_all.forEach(function(field){
-                field_id.append("option").text(field).attr("value", field);
-        });
-        d3.selectAll(".params").attr("disabled", null);
-    },
-    unfill: function(){
-        unfillSelectInput(document.getElementById("field_Discont"));
-        unfillSelectInput(document.getElementById("field_id_Discont"));
-        d3.selectAll(".params").attr("disabled", true);
-    }
+function make_ok_button(parent, id, disabled=true){
+  let a = parent.append('p')
+    .styles({"text-align": "right", margin: "auto"});
+  a.append('button')
+    .attrs({'id': id, 'class': 'params button_st3 i18n',
+            'data-i18n': '[html]app_page.func_options.common.render',
+            'disabled': disabled ? true : null})
+    .html(i18next.t('app_page.func_options.common.render'));
 }
 
 function insert_legend_button(layer_name){
@@ -418,339 +204,7 @@ function insert_legend_button(layer_name){
     selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
 
-function fillMenu_Discont(){
-    let dv2 = section2.append("p").attr("class", "form-rendering");
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.field"))
-                .insert('select')
-                .attrs({class: 'params', id: "field_Discont"});
-
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.id_field"))
-                .insert('select')
-                .attrs({class: 'params', id: "field_id_Discont"});
-
-    {
-        let disc_kind = dv2.append('p')
-                    .html(i18next.t("app_page.func_options.discont.type_discontinuity"))
-                    .insert('select')
-                    .attrs({class: 'params', id: "kind_Discont"});
-
-        [[i18next.t("app_page.func_options.discont.type_relative"), "rel"],
-          [i18next.t("app_page.func_options.discont.type_absolute"), "abs"]
-        ].forEach(function(k){
-            disc_kind.append("option").text(k[0]).attr("value", k[1]);
-        });
-
-        dv2.append('p').html(i18next.t("app_page.func_options.discont.nb_class"))
-                .insert('input')
-                .attrs({type: "number", class: 'params', id: "Discont_nbClass", min: 1, max: 33, value: 4})
-                .style("width", "50px");
-
-        let disc_type = dv2.append('p')
-                            .html(i18next.t("app_page.func_options.discont.discretization"))
-                            .insert('select')
-                            .attrs({'class': 'params', "id": "Discont_discKind"});
-
-        [
-         [i18next.t("app_page.common.equal_interval"), "equal_interval"],
-         [i18next.t("app_page.common.quantiles"), "quantiles"],
-//         [i18next.t("app_page.common.std_dev"), "std_dev"],
-         [i18next.t("app_page.common.Q6"), "Q6"],
-         [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
-         [i18next.t("app_page.common.jenks"), "jenks"]
-        ].forEach(field => {
-             disc_type.append("option").text(field[0]).attr("value", field[1]);
-        });
-    }
-
-    dv2.append('p').html(i18next.t("app_page.func_options.discont.color"))
-                .insert('input')
-                .attrs({class: 'params', id: "color_Discont",
-                       type: "color", value: ColorsSelected.random()});
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "Discont_output_name");
-
-    let ok_button = dv2.append("p")
-                      .styles({"text-align": "right", margin: "auto"})
-                      .append('button')
-                      .attr('id', 'yes')
-                      .attr('class', 'params button_st3')
-                      .text(i18next.t('app_page.func_options.common.render'));
-
-    d3.selectAll(".params").attr("disabled", true);
-
-    ok_button.on("click", function(){
-//            let p1 = new Promise(function(resolve, reject){
-//                document.getElementById("overlay").style.display = "";
-//                resolve(true);
-//            });
-//            p1.then(render_discont()
-//            ).then(() => {
-//                document.getElementById("overlay").style.display = "none";
-//            })
-            // ^^^^^ Currently displaying the overlay during computation dont work as expected
-            document.getElementById("overlay").style.display = "";
-            render_discont();
-            document.getElementById("overlay").style.display = "none";
-            // ^^^^^ Currently displaying the overlay during computation dont work as expected
-
-        });
-}
-
-var render_discont = function(){
-//    return new Promise(function(resolve, reject){
-    let layer = Object.getOwnPropertyNames(user_data)[0],
-        field = document.getElementById("field_Discont").value,
-        field_id = document.getElementById("field_id_Discont").value,
-        min_size = 1,
-        max_size = 10,
-        threshold = 1,
-        disc_kind = document.getElementById("kind_Discont").value,
-        nb_class = +document.getElementById("Discont_nbClass").value,
-        user_color = document.getElementById("color_Discont").value,
-        method = document.getElementById("kind_Discont").value,
-        new_layer_name = document.getElementById("Discont_output_name").value;
-
-    new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", layer, field, disc_kind].join('_'));
-
-    let result_value = new Map(),
-        result_geom = {},
-        topo_mesh = topojson.mesh,
-        math_max = Math.max;
-
-    // Use topojson.mesh a first time to compute the discontinuity value
-    // for each border (according to the given topology)
-    // (Discontinuities could also be computed relativly fastly server side
-    // which can be a better solution for large dataset..)
-    if(disc_kind == "rel")
-        topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-                if(a !== b){
-                    let new_id = [a.id, b.id].join('_'),
-                        new_id_rev = [b.id, a.id].join('_');
-                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                        let value = math_max(a.properties[field] / b.properties[field],
-                                             b.properties[field] / a.properties[field]);
-                        result_value.set(new_id, value);
-                    }
-                }
-                return false; });
-    else
-        topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-                if(a !== b){
-                    let new_id = [a.id, b.id].join('_'),
-                        new_id_rev = [b.id, a.id].join('_');
-                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                        let value = math_max(a.properties[field] - b.properties[field],
-                                             b.properties[field] - a.properties[field]);
-                        result_value.set(new_id, value);
-                    }
-                }
-                return false; });
-
-    let arr_disc = [],
-        arr_tmp = [];
-    for(let kv of result_value.entries()){
-        if(!isNaN(kv[1])){
-            arr_disc.push(kv);
-            arr_tmp.push(kv[1]);
-        }
-    }
-
-    arr_disc.sort((a,b) => a[1] - b[1]);
-    arr_tmp.sort((a,b) => a - b);
-
-    let nb_ft = arr_tmp.length,
-        step = (max_size - min_size) / (nb_class - 1),
-        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
-
-    let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
-    if(!disc_result || !disc_result[2]){
-        let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-        let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
-        swal("", i18next.t("app_page.common.error_discretization", {arg: w}), "error");
-        return;
-    }
-    let serie = disc_result[3],
-        breaks = disc_result[2].map(ft => [ft[0], ft[1]]);
-
-    let result_layer = map.append("g").attr("id", new_layer_name)
-            .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
-            .attr("class", "result_layer layer");
-
-    result_data[new_layer_name] = [];
-    let data_result = result_data[new_layer_name],
-        result_lyr_node = result_layer.node();
-
-    // This is bad and should be replaced by somthing better as we are
-    // traversing the whole topojson again and again
-    // looking for each "border" from its "id" (though it isn't that slow)
-//    let chunk_size = 450 > nb_ft ? nb_ft : 450,
-//        _s = 0;
-//
-//    var compute = function(){
-//        for(let i=_s; i<chunk_size; i++){
-////            let id_ft = arr_disc[i][0],
-////                val = arr_disc[i][1],
-//            let [id_ft, val] = arr_disc[i],
-//                p_size = class_size[serie.getClass(val)];
-//            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
-//            result_layer.append("path")
-//                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-////                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-//                    let [a_id, b_id] = id_ft.split("_");
-//                    return a != b
-//                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
-//                .attrs({d: path, id: ["feature", i].join('_')})
-//                .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
-//                .style("stroke-opacity", val >= threshold ? 1 : 0);
-//            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-//        }
-//        _s = chunk_size;
-//        if(_s < nb_ft){
-//            chunk_size += 450;
-//            if(chunk_size > nb_ft) chunk_size = nb_ft;
-//            setTimeout(compute, 0);
-//            return;
-//        }
-//    }
-//
-//    compute();
-
-//    var datums = [];
-    var d_res = [];
-    var compute = function(){
-        for(let i=0; i<nb_ft; i++){
-            let id_ft = arr_disc[i][0],
-                val = arr_disc[i][1],
-                p_size = class_size[serie.getClass(val)],
-                datum = topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
-                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-                    return a != b
-                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); });
-            d_res.push([val, {id: id_ft, disc_value: val, prop_value: p_size}, datum, p_size]);
-        }
-    }
-
-    compute();
-    d_res.sort((a,b) => b[0] - a[0]);
-
-    for(let i=0; i<nb_ft; i++){
-        let val = d_res[i][0];
-        result_layer.append("path")
-            .datum(d_res[i][2])
-            .attrs({d: path, id: ["feature", i].join('_')})
-            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent"})
-            .style("stroke-opacity", val >= threshold ? 1 : 0);
-        data_result.push(d_res[i][1])
-        result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-    }
-
-    current_layers[new_layer_name] = {
-        "renderer": "DiscLayer",
-        "breaks": breaks,
-        "min_display": threshold,
-        "type": "Line",
-        "rendered_field": field,
-        "size": [0.5, 10],
-        "is_result": true,
-        "fixed_stroke": true,
-        "ref_layer_name": layer,
-        "fill_color": { "single": user_color },
-        "n_features": nb_ft
-        };
-    create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
-    send_layer_server(new_layer_name, "/layers/add");
-    up_legends();
-    zoom_without_redraw();
-    switch_accordion_section();
-//    resolve(true);
-//});
-}
-
-/**
-* Send a geo result layer computed client-side (currently only discontinuities)
-* to the server in order to use it as other result layers computed server side
-* @param {string} layer_name
-* @param {string} url
-*/
-function send_layer_server(layer_name, url){
-    var formToSend = new FormData();
-    var JSON_layer = path_to_geojson(layer_name);
-    formToSend.append("geojson", JSON_layer);
-    formToSend.append("layer_name", layer_name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: url,
-        data: formToSend,
-        global: false,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation(); console.log(error);
-        },
-        success: function(data){
-                let key = JSON.parse(data).key;
-                current_layers[layer_name].key_name = key;
-            }
-        });
-}
-
-var fields_FlowMap = {
-    fill: function(layer){
-        if(joined_dataset.length > 0
-            && document.getElementById("FlowMap_field_i").options.length == 0){
-            let fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                field_i = d3.select('#FlowMap_field_i'),
-                field_j = d3.select('#FlowMap_field_j'),
-                field_fij = d3.select('#FlowMap_field_fij');
-
-            fields.forEach(function(field){
-                field_i.append("option").text(field).attr("value", field);
-                field_j.append("option").text(field).attr("value", field);
-                field_fij.append("option").text(field).attr("value", field);
-            });
-        }
-        if(layer){
-            let ref_fields = Object.getOwnPropertyNames(user_data[layer][0]),
-                join_field = d3.select('#FlowMap_field_join');
-
-            ref_fields.forEach(function(field){
-                join_field.append("option").text(field).attr("value", field);
-            });
-        }
-        if(layer || joined_dataset.length > 0)
-            d3.selectAll(".params").attr("disabled", null);
-    },
-
-    unfill: function(){
-        let field_i = document.getElementById('FlowMap_field_i'),
-            field_j = document.getElementById('FlowMap_field_j'),
-            field_fij = document.getElementById('FlowMap_field_fij'),
-            join_field = document.getElementById('FlowMap_field_join');
-
-        for(let i = field_i.childElementCount - 1; i > -1; --i){
-            field_i.removeChild(field_i.children[i]);
-            field_j.removeChild(field_j.children[i]);
-            field_fij.removeChild(field_fij.children[i]);
-        }
-        unfillSelectInput(join_field);
-        document.getElementById("FlowMap_discTable").innerHTML = "";
-        d3.selectAll(".params").attr("disabled", true);
-
-    }
-};
-
-function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks){
+function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks, callback){
     document.getElementById(id_parent).innerHTML = "";
     if(values && breaks == undefined){
         let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size);
@@ -780,45 +234,47 @@ function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, i
         let selection = parent_nd.select('#line_' + i);
         selection
             .insert('input')
-            .attr("type", "number")
-            .attr("id", "min_class")
-            .attr("step", 0.1)
-            .attr("value", (+breaks[i][0][0]).toFixed(2))
             .style("width", "60px")
+            .attrs({type: 'number', class: 'min_class', step: 0.1, value: (+breaks[i][0][0]).toFixed(2)});
 
         selection
             .insert('input')
-            .attr("type", "number")
-            .attr("id", "max_class")
-            .attr("step", 0.1)
-            .attr("value", (+breaks[i][0][1]).toFixed(2))
             .style("width", "60px")
+            .attrs({type: 'number', class: 'max_class', step: 0.1, value: (+breaks[i][0][1]).toFixed(2)});
 
         selection
             .insert('input')
-            .attr("type", "number")
-            .attr("id", "size_class")
-            .attr("step", 0.11)
-            .attr("value", (+breaks[i][1]).toFixed(2))
-            .style("margin-left", "20px")
-            .style("width", "55px");
+            .attrs({type: 'number', class: 'size_class', step: 0.11, value: (+breaks[i][1]).toFixed(2)})
+            .styles({"margin-left": "20px", width: '55px'});
 
         selection
             .insert('span')
             .html(" px");
     }
-    let mins = document.getElementById(id_parent).querySelectorAll("#min_class"),
-        maxs = document.getElementById(id_parent).querySelectorAll("#max_class");
+    let mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
+        maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
 
     for(let i = 0; i < mins.length; i++){
         if(i > 0){
             let prev_ix = i-1;
-            mins[i].onchange = function(){ maxs[prev_ix].value = this.value };
+            mins[i].onchange = function(){
+              maxs[prev_ix].value = this.value;
+              if(callback) callback();
+            };
         }
         if(i < mins.length - 1){
             let next_ix = i+1;
-            maxs[i].onchange = function(){ mins[next_ix].value = this.value };
+            maxs[i].onchange = function(){
+              mins[next_ix].value = this.value;
+              if(callback) callback();
+            };
         }
+    }
+    if(callback){
+      let sizes = document.getElementById(id_parent).getElementsByClassName("size_class")
+      for(let i = 0; i < sizes.length; i++){
+        sizes[i].onchange = callback;
+      }
     }
 }
 
@@ -830,9 +286,9 @@ function fetch_min_max_table_value(parent_id){
 
     if(!parent_node) return;
 
-    let mins = Array.prototype.map.call(parent_node.querySelectorAll("#min_class"), el => +el.value),
-        maxs = Array.prototype.map.call(parent_node.querySelectorAll("#max_class"), el => +el.value),
-        sizes = Array.prototype.map.call(parent_node.querySelectorAll("#size_class"), el => +el.value),
+    let mins = Array.prototype.map.call(parent_node.getElementsByClassName("min_class"), el => +el.value),
+        maxs = Array.prototype.map.call(parent_node.getElementsByClassName("max_class"), el => +el.value),
+        sizes = Array.prototype.map.call(parent_node.getElementsByClassName("size_class"), el => +el.value),
         nb_class = mins.length,
         comp_fun = (a,b) => a - b;
 
@@ -850,255 +306,82 @@ function fetch_min_max_table_value(parent_id){
     return {"mins" : mins.sort(comp_fun), "maxs" : maxs.sort(comp_fun), "sizes" : sizes.sort(comp_fun)};
 }
 
-function fillMenu_FlowMap(){
-    var dv2 = section2.append("p").attr("class", "form-rendering");
+function fillMenu_PropSymbolChoro(layer){
+    var rendering_params = fields_PropSymbolChoro.rendering_params,
+        dv2 = make_template_functionnality(section2);
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var a = dv2.append('p').attr('class', 'params_section2');
+    a.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1'})
+      .html(i18next.t("app_page.func_options.choroprop.field1"));
+    var field1_selec = a.insert('select')
+      .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
 
-    dv2.append('p').html('<b>' + i18next.t("app_page.func_options.flow.subtitle1") + '</b>');
+    var b = dv2.append('p').attr('class', 'params_section2');
+    b.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size'})
+      .html(i18next.t("app_page.func_options.choroprop.fixed_size"));
+    var ref_size = b.insert('input')
+                    .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
+                            min: 0.1, max: 66.0, value: 30.0, step: "any"})
+                    .style("width", "50px");
+    b.append('label-item').html(' (px)');
 
-    var field_i = dv2.append('p').html('<b><i> i </i></b> field ')
-                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_i"),
-        field_j = dv2.append('p').html('<b><i> j </i></b> field ')
-                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_j"),
-        field_fij = dv2.append('p').html('<b><i> fij </i></b> field ')
-                        .insert('select').attr('class', 'params').attr("id", "FlowMap_field_fij");
+    var c = dv2.append('p').attr('class', 'params_section2');
+    c.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value'})
+      .html(i18next.t("app_page.func_options.choroprop.on_value"));
+    var ref_value = c.insert('input')
+      .styles({'width': '100px', "margin-left": "10px"})
+      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
+      .attrs({min: 0.1, step: 0.1});
 
-    var disc_type = dv2.append('p').html(i18next.t("app_page.func_options.flow.discretization"))
-                        .insert('select')
-                        .attrs({class: 'params', id: "FlowMap_discKind"});
-    [
-     [i18next.t("app_page.common.equal_interval"), "equal_interval"],
-     [i18next.t("app_page.common.quantiles"), "quantiles"],
-//     [i18next.t("app_page.common.std_dev"), "std_dev"],
-     [i18next.t("app_page.common.Q6"), "Q6"],
-     [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
-     [i18next.t("app_page.common.jenks"), "jenks"]
-    ].forEach(field => {
-            disc_type.append("option").text(field[0]).attr("value", field[1])
-        });
+    // Other symbols could probably easily be proposed :
+    var d = dv2.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type'})
+      .html(i18next.t("app_page.func_options.choroprop.symbol_type"));
+    var symb_selec = d.insert('select')
+      .attrs({class: 'params i18n', id: 'PropSymbolChoro_symbol_type'});
 
-    var nb_class_input = dv2.append('p').html(i18next.t("app_page.func_options.flow.nb_class"))
-                        .insert('input')
-                        .attrs({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
-                        .style("width", "50px");
-
-    var values_fij;
-
-    field_fij.on("change", function(){
-        let name = this.value,
-            nclass = nb_class_input.node().value,
-            disc = disc_type.node().value,
-            min_size = 0.5,
-            max_size = 10;
-        values_fij = joined_dataset[0].map(obj => +obj[name]);
-        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
+    [['app_page.func_options.common.symbol_circle', 'circle'],
+     ['app_page.func_options.common.symbol_square', 'rect']
+     ].forEach( symb => {
+        symb_selec.append("option").text(i18next.t(symb[0])).attrs({value: symb[1], 'data-i18n': '[text]' + symb[0]});
     });
 
-    disc_type.on("change", function(){
-        let name = field_fij.node().value,
-            nclass = nb_class_input.node().value,
-            disc = this.value,
-            min_size = 0.5,
-            max_size = 10;
-        if(disc == "Q6"){
-            nclass = 6;
-            nb_class_input.attr("value", 6);
-        }
-        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
-    })
+    var e = dv2.append('p').attr('class', 'params_section2');
+    e.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
+      .html(i18next.t("app_page.func_options.choroprop.field2"));
+    var field2_selec = e.insert('select')
+      .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
-    nb_class_input.on("change", function(){
-        let name = field_fij.node().value,
-            nclass = this.value,
-            disc = disc_type.node().value,
-            min_size = 0.5,
-            max_size = 10;
-        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
-    });
-
-    dv2.append('p').attr("class", "params").attr("id", "FlowMap_discTable").html('');
-    dv2.append('p').html('<b>Reference layer fields :</b>');
-
-    var join_field = dv2.append('p').html('join field :')
-                        .insert('select')
-                        .attr('class', 'params')
-                        .attr("id", "FlowMap_field_join");
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "FlowMap_output_name");
-
-    let ok_button = dv2.append('button')
-                        .attr('id', 'yes')
-                        .attr('class', 'params button_st3')
-                        .styles({"text-align": "right", margin: "auto"})
-                        .text(i18next.t('app_page.func_options.common.render'));
-
-    d3.selectAll(".params").attr("disabled", true);
-
-    ok_button.on("click", function(){
-            let ref_layer = Object.getOwnPropertyNames(user_data)[0],
-                name_join_field = join_field.node().value,
-                formToSend = new FormData(),
-                join_field_to_send = {};
-
-            let disc_params = fetch_min_max_table_value("FlowMap_discTable"),
-                mins = disc_params.mins,
-                maxs = disc_params.maxs,
-                sizes = disc_params.sizes,
-                nb_class = mins.length,
-                user_breaks = [].concat(mins, maxs[nb_class - 1]),
-                min_size = min_fast(sizes),
-                max_size = max_fast(sizes);
-
-            join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
-
-            formToSend.append("json", JSON.stringify({
-                "topojson": current_layers[ref_layer].key_name,
-                "csv_table": JSON.stringify(joined_dataset[0]),
-                "field_i": field_i.node().value,
-                "field_j": field_j.node().value,
-                "field_fij": field_fij.node().value,
-                "join_field": join_field_to_send
-                }));
-
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/links',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
-                    let new_layer_name = add_layer_topojson(data, {result_layer_on_add: true});
-                    if(!new_layer_name) return;
-                    let layer_to_render = d3.select("#" + new_layer_name).selectAll("path"),
-                        fij_field_name = field_fij.node().value,
-                        fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
-                        nb_ft = fij_values.length,
-                        serie = new geostats(fij_values);
-
-                    if(user_breaks[0] < serie.min())
-                        user_breaks[0] = serie.min();
-
-                    if(user_breaks[nb_class] > serie.max())
-                        user_breaks[nb_class] = serie.max();
-
-                    serie.setClassManually(user_breaks);
-
-                    current_layers[new_layer_name].fixed_stroke = true;
-                    current_layers[new_layer_name].renderer = "Links";
-                    current_layers[new_layer_name].breaks = [];
-                    current_layers[new_layer_name].linksbyId = [];
-                    current_layers[new_layer_name].size = [min_size, max_size];
-                    current_layers[new_layer_name].rendered_field = fij_field_name;
-                    current_layers[new_layer_name].ref_layer_name = ref_layer;
-                    current_layers[new_layer_name].min_display = 0;
-
-                    let links_byId = current_layers[new_layer_name].linksbyId;
-
-                    for(let i = 0; i < nb_ft; ++i){
-                        let val = +fij_values[i];
-                        links_byId.push([i, val, sizes[serie.getClass(val)]]);
-                    }
-
-                    for(let i = 0; i<nb_class; ++i)
-                        current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]], sizes[i]]);
-
-                    layer_to_render.style('fill-opacity', 0)
-                                   .style('stroke-opacity', 0.75)
-                                   .style("stroke-width", (d,i) => {return links_byId[i][2]});
-
-                    switch_accordion_section();
-                }
-            });
-    });
+    let f = dv2.insert('p').attr('class', 'params_section2');
+    f.append("button")
+        .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+        .styles({"font-size": "0.8em", "text-align": "center"})
+        .html(i18next.t("app_page.func_options.common.discretization_choice"));
+    make_layer_name_button(dv2, "PropSymbolChoro_output_name");
+    make_ok_button(dv2, 'propChoro_yes');
+    dv2.selectAll(".params").attr("disabled", true);
 }
-
-var fields_PropSymbolTypo = {
-    fill: function(layer){
-        if(!layer) return;
-        d3.selectAll(".params").attr("disabled", null);
-        let fields_num = type_col(layer, "number"),
-            fields_all = type_col(layer),
-            nb_features = user_data[layer].length,
-            field1_selec = d3.select("#PropSymbolTypo_field_1"),
-            field2_selec = d3.select("#PropSymbolTypo_field_2");
-
-        if(fields.length == 0){
-            display_error_num_field();
-            return;
-        }
-
-        fields_num.forEach(function(field){
-            field1_selec.append("option").text(field).attr("value", field);
-        });
-
-        fields_all.forEach(function(field){
-            field2_selec.append("option").text(field).attr("value", field);
-        });
-
-        field1_selec.on("change", function(){
-            let field_name = this.value,
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-                ref_value_field = document.getElementById("PropSymbolTypo_ref_value");
-
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field);
-        });
-        setSelected(field1_selec.node(), fields[0]);
-    },
-
-    unfill: function(){
-        let field1_selec = document.getElementById("PropSymbolTypo_field_1"),
-            field2_selec = document.getElementById("PropSymbolTypo_field_2");
-        for(let i = field1_selec.childElementCount - 1; i >= 0; i--){
-            field1_selec.removeChild(field1_selec.children[i]);
-        }
-        for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
-            field2_selec.removeChild(field2_selec.children[i]);
-        }
-        d3.selectAll(".params").attr("disabled", true);
-    },
-    rendering_params: {}
-};
-
-
-var fields_Test = {
-    fill: function(layer){
-        if(layer){
-            d3.selectAll(".params").attr("disabled", null);
-            let fields = type_col(layer, "number"),
-                nb_features = user_data[layer].length,
-                field_selec = d3.select("#Test_field");
-
-            fields.forEach(function(field){
-                field_selec.append("option").text(field).attr("value", field);
-            });
-        }
-    },
-    unfill: function(){
-        let field_selec = document.getElementById("#Test_field");
-        unfillSelectInput(field_selec);
-        d3.selectAll(".params").attr("disabled", true);
-    }
-};
-
 
 var fields_PropSymbolChoro = {
     fill: function(layer){
         if(!layer) return;
         d3.selectAll(".params").attr("disabled", null);
-        let fields = type_col(layer, "number"),
+        let self = this,
+            fields = type_col(layer, "number"),
             nb_features = user_data[layer].length,
-            field1_selec = d3.select("#PropSymbolChoro_field_1"),
-            field2_selec = d3.select("#PropSymbolChoro_field_2");
+            field1_selec = section2.select("#PropSymbolChoro_field_1"),
+            field2_selec = section2.select("#PropSymbolChoro_field_2"),
+            btn_disc = section2.select('#PropSymbolChoro_btn_disc'),
+            uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
+            ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
+            symb_selec = section2.select('#PropSymbolChoro_symbol_type'),
+            ref_size = section2.select('#PropSymbolChoro_ref_size'),
+            ok_button = section2.select('#propChoro_yes');
 
         if(fields.length == 0){
             display_error_num_field();
@@ -1112,13 +395,106 @@ var fields_PropSymbolChoro = {
 
         field1_selec.on("change", function(){
             let field_name = this.value,
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-                ref_value_field = document.getElementById("PropSymbolChoro_ref_value");
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
 
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field);
+            ref_value_field.attrs({"max": max_val_field, 'value': max_val_field});
+            uo_layer_name.attr('value', ["PropSymbols", field_name, field2_selec.node().value, layer].join('_'));
+        });
+
+        field2_selec.on("change", function(){
+            let field_name = this.value;
+            uo_layer_name.attr('value', ["PropSymbols", field1_selec.node().value, field_name, layer].join('_'));
+            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+        });
+
+        btn_disc.on("click", function(){
+            let selected_field = field2_selec.node().value,
+                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
+                conf_disc_box;
+
+            if(self.rendering_params[selected_field])
+                conf_disc_box = display_discretization(layer,
+                                                       selected_field,
+                                                       self.rendering_params[selected_field].nb_class,
+                                                       self.rendering_params[selected_field].type,
+                                                       {schema: self.rendering_params[selected_field].schema,
+                                                        colors: self.rendering_params[selected_field].colors,
+                                                        no_data: self.rendering_params[selected_field].no_data});
+            else
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+
+            conf_disc_box.then(function(confirmed){
+                if(confirmed){
+                    ok_button.attr("disabled", null);
+                    self.rendering_params[selected_field] = {
+                        nb_class: confirmed[0], type: confirmed[1],
+                        schema: confirmed[5], no_data: confirmed[6],
+                        breaks: confirmed[2], colors: confirmed[3],
+                        colorsByFeature: confirmed[4],
+                        renderer: "PropSymbolsChoro"
+                        };
+                } else
+                    return;
+            });
+        });
+        ok_button.on("click", function(){
+            if(!ref_value_field.node().value) return;
+            let rendering_params = self.rendering_params;
+            if(rendering_params[field2_selec.node().value]){
+                let layer = Object.getOwnPropertyNames(user_data)[0],
+                    nb_features = user_data[layer].length,
+                    rd_params = {},
+                    color_field = field2_selec.node().value,
+                    new_layer_name = uo_layer_name.node().value;
+
+                new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                                ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsChoro");
+
+                rd_params.field = field1_selec.node().value;
+                rd_params.new_name = new_layer_name;
+                rd_params.nb_features = nb_features;
+                rd_params.ref_layer_name = layer;
+                rd_params.symbol = symb_selec.node().value;
+                rd_params.ref_value = +ref_value_field.node().value;
+                rd_params.ref_size = +ref_size.node().value;
+                rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+
+                let id_map = make_prop_symbols(rd_params),
+                    colors_breaks = [];
+
+                for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
+                    colors_breaks.push([
+                            [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
+                            rendering_params[color_field]['colors'][i-1]
+                        ]);
+                }
+
+                let options_disc = {schema: rendering_params[color_field].schema,
+                                    colors: rendering_params[color_field].colors,
+                                    no_data: rendering_params[color_field].no_data}
+
+                current_layers[new_layer_name] = {
+                    renderer: "PropSymbolsChoro",
+                    features_order: id_map,
+                    symbol: rd_params.symbol,
+                    ref_layer_name: layer,
+                    options_disc: options_disc,
+                    rendered_field: field1_selec.node().value,
+                    rendered_field2: field2_selec.node().value,
+                    size: [+ref_value_field.node().value, +ref_size.node().value],
+                    "stroke-width-const": 1,
+                    fill_color: { "class": id_map.map(obj => obj[3]) },
+                    colors_breaks: colors_breaks,
+                    is_result: true,
+                    n_features: nb_features
+                };
+                zoom_without_redraw();
+                switch_accordion_section();
+                handle_legend(new_layer_name);
+            }
         });
         setSelected(field1_selec.node(), fields[0]);
+        setSelected(field2_selec.node(), fields[0]);
     },
 
     unfill: function(){
@@ -1134,210 +510,39 @@ var fields_PropSymbolChoro = {
     rendering_params: {}
 };
 
+var fillMenu_Typo = function(){
+    var dv2 = make_template_functionnality(section2);
 
-function fillMenu_PropSymbolChoro(layer){
-    var rendering_params = fields_PropSymbolChoro.rendering_params,
-        dv2 = section2.append("p").attr("class", "form-rendering");
+    let a = dv2.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice'})
+      .html(i18next.t("app_page.func_options.typo.color_choice"))
+    a.insert('select')
+      .attrs({id: 'Typo_field_1', class: 'params'});
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    let b = dv2.insert('p').style("margin", "auto");
+    b.append("button")
+      .attrs({id: "Typo_class", class: "button_disc params i18n",
+              'data-i18n': '[html]app_page.func_options.typo.color_choice'})
+      .styles({"font-size": "0.8em", "text-align": "center"})
+      .html(i18next.t("app_page.func_options.typo.color_choice"));
 
-    var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field1"))
-                          .insert('select')
-                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
-
-    var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.choroprop.fixed_size"))
-                     .insert('input')
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
-                     .style("width", "50px");
-
-    dv2.append('label-item').html(' px');
-
-    var ref_value = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.on_value"))
-                     .insert('input')
-                     .styles({'width': '100px', "margin-left": "10px"})
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value'})
-                     .attrs({min: 0.1, step: 0.1});
-
-    // Other symbols could probably easily be proposed :
-    var symb_selec = dv2.append('p')
-                        .html(i18next.t("app_page.func_options.choroprop.symbol_type"))
-                        .insert('select')
-                        .attr('class', 'params');
-
-    [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
-     [i18next.t("app_page.func_options.common.symbol_square"), "rect"]].forEach( symb => {
-        symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
-    });
-
-    var field2_selec = dv2.append('p').html(i18next.t("app_page.func_options.choroprop.field2"))
-                        .insert('select').attrs({class: 'params', id: 'PropSymbolChoro_field_2'})
-                        .on("change", function(){
-                            let field_name = this.value;
-                            if(rendering_params[field_name])
-                                d3.select("#propChoro_yes").attr("disabled", null);
-                            else
-                                d3.select("#propChoro_yes").attr("disabled", true);
-                        });
-
-    dv2.insert('p').style("margin", "auto").html("")
-                .append("button").attr('class', 'params button_disc')
-                .styles({"font-size": "0.8em", "text-align": "center"})
-                .html(i18next.t("app_page.func_options.common.discretization_choice"))
-                .on("click", function(){
-                    let layer = Object.getOwnPropertyNames(user_data)[0],
-                        selected_field = field2_selec.node().value,
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
-                        conf_disc_box;
-
-                    if(rendering_params[selected_field])
-                        conf_disc_box = display_discretization(layer,
-                                                               selected_field,
-                                                               rendering_params[selected_field].nb_class,
-                                                               rendering_params[selected_field].type,
-                                                               {schema: rendering_params[selected_field].schema,
-                                                                colors: rendering_params[selected_field].colors,
-                                                                no_data: rendering_params[selected_field].no_data});
-                    else
-                        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
-
-                    conf_disc_box.then(function(confirmed){
-                        if(confirmed){
-                            dv2.select('#propChoro_yes').attr("disabled", null);
-                            rendering_params[selected_field] = {
-                                nb_class: confirmed[0], type: confirmed[1],
-                                schema: confirmed[5], no_data: confirmed[6],
-                                breaks: confirmed[2], colors: confirmed[3],
-                                colorsByFeature: confirmed[4],
-                                renderer: "PropSymbolsChoro"
-                                };
-                        } else
-                            return;
-                    });
-                });
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "PropSymbolChoro_output_name");
-
-    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-                        .append('button')
-                        .attr('id', 'propChoro_yes')
-                        .attr('class', 'button_st3')
-                        .attr('disabled', true)
-                        .text(i18next.t("app_page.func_options.common.render"));
-
-    ok_button.on("click", function(){
-        if(!ref_value.node().value) return
-        if(rendering_params[field2_selec.node().value]){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                nb_features = user_data[layer].length,
-                rd_params = {},
-                color_field = field2_selec.node().value,
-                new_layer_name = uo_layer_name.node().value;
-
-            new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                            ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsChoro");
-
-            rd_params.field = field1_selec.node().value;
-            rd_params.new_name = new_layer_name;
-            rd_params.nb_features = nb_features;
-            rd_params.ref_layer_name = layer;
-            rd_params.symbol = symb_selec.node().value;
-            rd_params.ref_value = +ref_value.node().value;
-            rd_params.ref_size = +ref_size.node().value;
-            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
-
-            let id_map = make_prop_symbols(rd_params),
-                colors_breaks = [];
-
-            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
-                colors_breaks.push([
-                        [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
-                        rendering_params[color_field]['colors'][i-1]
-                    ]);
-            }
-
-            let options_disc = {schema: rendering_params[color_field].schema,
-                                colors: rendering_params[color_field].colors,
-                                no_data: rendering_params[color_field].no_data}
-
-            current_layers[new_layer_name] = {
-                renderer: "PropSymbolsChoro",
-                features_order: id_map,
-                symbol: rd_params.symbol,
-                ref_layer_name: layer,
-                options_disc: options_disc,
-                rendered_field: field1_selec.node().value,
-                rendered_field2: field2_selec.node().value,
-                size: [+ref_value.node().value, +ref_size.node().value],
-                "stroke-width-const": 1,
-                fill_color: { "class": id_map.map(obj => obj[3]) },
-                colors_breaks: colors_breaks,
-                is_result: true,
-                n_features: nb_features
-            };
-            zoom_without_redraw();
-            switch_accordion_section();
-        }
-    });
-    d3.selectAll(".params").attr("disabled", true);
+    make_layer_name_button(dv2, "Typo_output_name");
+    make_ok_button(dv2, 'Typo_yes');
+    dv2.selectAll(".params").attr("disabled", true);
 }
-
-function display_error_num_field(){
-    swal({title: "",
-          text: i18next.t("app_page.common.error_numerical_fields"),
-          type: "error"});
-};
-
-var fields_Choropleth = {
-    fill: function(layer){
-        if(!layer) return;
-        let g_lyr_name = "#"+layer,
-            fields = type_col(layer, "number"),
-            field_selec = d3.select("#choro_field_1");
-
-        if(fields.length === 0){
-            display_error_num_field();
-            return;
-        }
-
-        fields.forEach(field => {
-            field_selec.append("option").text(field).attr("value", field);
-        });
-
-        field_selec.on("change", function(){
-            document.getElementById("Choro_output_name").value = ["Choro", this.value, layer].join('_');
-        });
-
-        d3.selectAll(".params").attr("disabled", null);
-    },
-
-    unfill: function(){
-        let field_selec = document.getElementById("choro_field_1"),
-            nb_fields = field_selec.childElementCount;
-
-        for(let i = nb_fields - 1; i > -1 ; --i){
-//            delete this.rendering_params[field_selec.children[i]];
-            field_selec.removeChild(field_selec.children[i]);
-        }
-        d3.selectAll(".params").attr("disabled", true);
-    },
-    rendering_params: {}
-};
 
 var fields_Typo = {
     fill: function(layer){
         if(!layer) return;
-        let g_lyr_name = "#" + layer,
+        let self = this,
+            g_lyr_name = "#" + layer,
             fields = type_col(layer),
             fields_name = Object.getOwnPropertyNames(fields),
-            field_selec = d3.select("#Typo_field_1");
+            field_selec = section2.select("#Typo_field_1"),
+            ok_button = section2.select('#Typo_yes'),
+            btn_typo_class = section2.select('#Typo_class'),
+            uo_layer_name = section2.select('#Typo_output_name');
 
         fields_name.forEach(f_name => {
             if(f_name != '_uid' && f_name != "UID")
@@ -1345,10 +550,43 @@ var fields_Typo = {
         });
 
         field_selec.on("change", function(){
-            document.getElementById("Typo_output_name").value = ["Typo", this.value, layer].join('_');
+          let selected_field = this.value;
+          uo_layer_name.attr('value', ["Typo", selected_field, layer].join('_'));
+          ok_button.attr('disabled', self.rendering_params[selected_field] ? null : true)
         });
 
-        d3.selectAll(".params").attr("disabled", null);
+        btn_typo_class.on("click", function(){
+          let selected_field = field_selec.node().value;
+          display_categorical_box(layer, selected_field)
+              .then(function(confirmed){
+                  if(confirmed){
+                      ok_button.attr("disabled", null);
+                      self.rendering_params[selected_field] = {
+                              nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                              renderer:"Categorical", rendered_field: selected_field
+                          }
+                  }
+              });
+        });
+
+        ok_button.on('click', function(){
+          let selected_field = field_selec.node().value;
+          if(self.rendering_params[selected_field]){
+              let layer = Object.getOwnPropertyNames(user_data)[0],
+                  output_name = uo_layer_name.node().value;
+              if(output_name.length > 0 && /^\w+$/.test(output_name)){
+                  self.rendering_params[selected_field].new_name = check_layer_name(output_name);
+              } else {
+                  self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+              }
+              render_categorical(layer, self.rendering_params[selected_field]);
+              switch_accordion_section();
+              handle_legend(self.rendering_params[selected_field].new_name)
+          }
+        });
+
+        uo_layer_name.attr('value', "Typo_" + layer);
+        section2.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
         let field_selec = document.getElementById("Typo_field_1"),
@@ -1357,373 +595,90 @@ var fields_Typo = {
         for(let i = nb_fields - 1; i > -1 ; --i)
             field_selec.removeChild(field_selec.children[i]);
 
-        d3.selectAll(".params").attr("disabled", true);
-    }
-};
-
-var fields_Label = {
-    fill: function(layer){
-        if(!layer) return;
-        let g_lyr_name = "#" + layer,
-            fields = type_col(layer),
-            fields_name = Object.getOwnPropertyNames(fields),
-            field_selec = d3.select("#Label_field_1"),
-            field_prop_selec = d3.select("#Label_field_prop");
-
-        fields_name.forEach(f_name => {
-            field_selec.append("option").text(f_name).attr("value", f_name);
-            if(fields[f_name] == "number")
-                field_prop_selec.append("option").text(f_name).attr("value", f_name);
-        });
-        document.getElementById("Label_output_name").value = "Labels_" + layer;
-        d3.selectAll(".params").attr("disabled", null);
+        section2.selectAll(".params").attr("disabled", true);
     },
-    unfill: function(){
-        let field_selec = document.getElementById("Label_field_1"),
-            nb_fields = field_selec.childElementCount;
-
-        for(let i = nb_fields - 1; i > -1 ; --i)
-            field_selec.removeChild(field_selec.children[i]);
-
-        d3.selectAll(".params").attr("disabled", true);
-    }
+    rendering_params: {}
 };
-
-var fillMenu_Label = function(){
-    var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = {};
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    var field_selec = dv2.append('p')
-                            .html(i18next.t("app_page.func_options.label.field"))
-                         .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'Label_field_1');
-
-    var prop_selec = dv2.append('p').html(i18next.t("app_page.func_options.label.prop_labels"))
-                        .insert("input").attr("type", "checkbox")
-                        .on("change", function(){
-                            let display_style = this.checked ? "initial" : "none";
-                            prop_menu.style("display", display_style);
-                        });
-
-    var prop_menu = dv2.append("div");
-
-    var field_prop_selec = prop_menu.append("p").html("Proportional values field ")
-                            .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'Label_field_prop');
-
-    var max_font_size = prop_menu.append("p").html("Maximum font size ")
-                            .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 70, value: 11, step: "any"});
-
-    var ref_font_size = dv2.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-                            .insert("input").attr("type", "number")
-                            .attrs({min: 0, max: 35, value: 9, step: "any"});
-
-
-    var choice_font = dv2.append("p").html(i18next.t("app_page.func_options.label.font_type"))
-                            .insert("select")
-                            .attr("class", "params")
-                            .attr("id", "Label_font_name");
-
-    available_fonts.forEach( name => {
-        choice_font.append("option").attr("value", name[1]).text(name[0]);
-    });
-
-    var choice_color = dv2.append("p").html(i18next.t("app_page.func_options.label.color"))
-                            .insert("input").attr("type", "color")
-                            .attr("class", "params")
-                            .attr("id", "Label_color")
-                            .attr("value", "#000");
-
-    prop_menu.style("display", "none");
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "Label_output_name");
-
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'Label_yes')
-        .attr('class', 'button_st3')
-        .html(i18next.t("app_page.func_options.common.render"))
-        .on("click", function(){
-            rendering_params["label_field"] = field_selec.node().value;
-            if(prop_selec.node().checked){
-                rendering_params["prop_field"] = field_prop_selec.node().value;
-                rendering_params["max_size"] = max_font_size.node().value;
-            }
-
-            let output_name = uo_layer_name.node().value;
-            if(!(/^\w+$/.test(output_name))){
-                output_name = "";
-            }
-            rendering_params["font"] = choice_font.node().value;
-            rendering_params["ref_font_size"] = ref_font_size.node().value;
-            rendering_params["color"] = choice_color.node().value;
-            rendering_params["uo_layer_name"] = output_name;
-            let layer = Object.getOwnPropertyNames(user_data)[0];
-            let new_layer_name = render_label(layer, rendering_params);
-            binds_layers_buttons(new_layer_name);
-            switch_accordion_section();
-         });
-    d3.selectAll(".params").attr("disabled", true);
-}
-
-let drag_elem_geo = d3.drag()
-         .subject(function() {
-                var t = d3.select(this);
-                return {
-                    x: t.attr("x"), y: t.attr("y")
-                };
-            })
-        .on("start", () => {
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.preventDefault();
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
-
-          })
-        .on("end", () => {
-            if(map_div.select("#hand_button").classed("active"))
-                zoom.on("zoom", zoom_without_redraw);
-          })
-        .on("drag", function(){
-            d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
-          });
-
-function make_style_box_indiv_label(label_node){
-    let current_options = {size: label_node.style.fontSize,
-                           content: label_node.textContent,
-                           font: label_node.style.fontFamily,
-                           color: label_node.style.fill};
-
-    if(current_options.color.startsWith("rgb"))
-        current_options.color = rgb2hex(current_options.color);
-
-    let new_params = {};
-    let self = this;
-    make_confirm_dialog("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
-        .then(function(confirmed){
-            if(!confirmed){
-                label_node.style.fontsize = current_options.size;
-                label_node.textContent = current_options.content;
-                label_node.style.fill = current_options.color;
-                label_node.style.fontFamily = current_options.font;
-            }
-        });
-    let box_content = d3.select(".styleTextAnnotation").insert("div");
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-            .append("input")
-            .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
-            .style("width", "70px")
-            .on("change", function(){
-                label_node.style.fontSize = this.value + "px";
-            });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.content"))
-            .append("input").attrs({"value": label_node.textContent, id: "label_content"})
-            .on("keyup", function(){
-                label_node.textContent = this.value;
-            });
-    box_content.append("p").html(i18next.t("app_page.func_options.common.color"))
-            .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
-            .on("change", function(){
-                label_node.style.fill = this.value;
-            });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
-    let selec_fonts = box_content.append("select")
-            .on("change", function(){
-                label_node.style.fontFamily = this.value;
-            });
-
-    available_fonts.forEach( name => {
-        selec_fonts.append("option").attr("value", name[1]).text(name[0]);
-    });
-    selec_fonts.node().value = label_node.style.fontFamily;
-};
-
-
-var render_label = function(layer, rendering_params){
-    let label_field = rendering_params.label_field;
-    let txt_color = rendering_params.color;
-    let selected_font = rendering_params.font;
-    let font_size = rendering_params.ref_font_size + "px"
-    let new_layer_data = [];
-    let ref_selection = document.getElementById(layer).querySelectorAll("path");
-    let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
-                    ? check_layer_name(rendering_params.uo_layer_name)
-                    : check_layer_name("Labels_" + layer);
-    let nb_ft = ref_selection.length;
-    for(let i=0; i<nb_ft; i++){
-        let ft = ref_selection[i].__data__;
-        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
-    }
-
-    var context_menu = new ContextMenu(),
-        getItems = (self_parent) =>  [
-            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_label(self_parent); }},
-            {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
-        ];
-
-    map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
-        .selectAll("text")
-        .data(new_layer_data).enter()
-        .insert("text")
-        .attr("id", (d,i) => "Feature_" + i)
-        .attr("x", d => d.coords[0])
-        .attr("y", d => d.coords[1])
-        .attrs({"alignment-baseline": "middle", "text-anchor": "middle"})
-        .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
-        .text(d => d.label)
-        .on("mouseover", function(){ this.style.cursor = "pointer";})
-        .on("mouseout", function(){ this.style.cursor = "initial";})
-        .on("dblclick contextmenu", function(){
-            context_menu.showMenu(d3.event,
-                                  document.querySelector("body"),
-                                  getItems(this)); })
-        .call(drag_elem_geo);
-
-    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
-
-    current_layers[layer_to_add] = {
-        "n_features": current_layers[layer].n_features,
-        "renderer": "Label",
-        "symbol": "text",
-        "fill_color" : txt_color,
-        "rendered_field": label_field,
-        "is_result": true,
-        "ref_layer_name": layer,
-        "default_size": font_size,
-        "default_font": selected_font
-        };
-    up_legends();
-    zoom_without_redraw();
-    return layer_to_add;
-}
-
-var fillMenu_Typo = function(){
-    var dv2 = section2.append("p").attr("class", "form-rendering"),
-        rendering_params = {};
-
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    var field_selec = dv2.append('p')
-                            .html(i18next.t("app_page.func_options.typo.color_choice"))
-                         .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'Typo_field_1');
-
-    dv2.insert('p').style("margin", "auto").html("")
-        .append("button")
-        .attrs({id: "Typo_class", class: "button_disc params"})
-        .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("app_page.func_options.typo.color_choice"))
-        .on("click", function(){
-            let layer = Object.getOwnPropertyNames(user_data)[0];
-            let selected_field = field_selec.node().value;
-            let new_layer_name = check_layer_name([layer, "Typo", selected_field].join('_'));
-            display_categorical_box(layer, selected_field)
-                .then(function(confirmed){
-                    if(confirmed){
-                        d3.select("#Typo_yes").attr("disabled", null)
-                        rendering_params = {
-                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
-                            }
-                    }
-                });
-        });
-
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "Typo_output_name");
-
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'Typo_yes')
-        .attr("disabled", true)
-        .attr('class', 'button_st3')
-        .html(i18next.t("app_page.func_options.common.render"))
-        .on("click", function(){
-            if(rendering_params){
-                let layer = Object.getOwnPropertyNames(user_data)[0],
-                    output_name = uo_layer_name.node().value;
-                if(output_name.length > 0 && /^\w+$/.test(output_name)){
-                    rendering_params.new_name = check_layer_name(output_name);
-                } else {
-                    rendering_params.new_name = check_layer_name([layer, "Typo", field_selec.node().value].join('_'));
-                }
-                render_categorical(layer, rendering_params);
-                switch_accordion_section();
-            }
-         });
-    d3.selectAll(".params").attr("disabled", true);
-}
 
 function fillMenu_Choropleth(){
-    var dv2 = section2.append("p").attr("class", "form-rendering");
-    let rendering_params = fields_Choropleth.rendering_params;
+    let dv2 = make_template_functionnality(section2),
+        rendering_params = fields_Choropleth.rendering_params;
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    var field_selec_section = dv2.append('p').attr('class', 'params_section2');
+    field_selec_section.insert("span")
+      .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
+      .html(i18next.t("app_page.func_options.common.field"));
+    field_selec_section.insert("span")
+      .attr("id", "container_sparkline")
+      .style("margin", "4px");
 
-    var field_selec = dv2.append('p')
-                            .html(i18next.t("app_page.func_options.common.field"))
-                         .insert('select')
-                            .attr('class', 'params')
-                            .attr('id', 'choro_field_1')
-                            .on("change", function(){
-                                let field_name = this.value;
-                                if(rendering_params[field_name])
-                                    d3.select("#choro_yes").attr("disabled", null);
-                                else
-                                    d3.select("#choro_yes").attr("disabled", true);
-                            });
+   field_selec_section.insert('select')
+    .attrs({id: 'choro_field1', class: 'params'});
 
-    dv2.insert('p').style("margin", "auto").html("")
-        .append("button")
-        .attrs({id: "choro_class", class: "button_disc params"})
-        .styles({"font-size": "0.8em", "text-align": "center"})
-        .html(i18next.t("app_page.func_options.common.discretization_choice"))
-        .on("click", function(){
-            let layer_name = Object.getOwnPropertyNames(user_data)[0],
-                selected_field = field_selec.node().value,
-                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer_name].length)),
+    dv2.insert('p').style("margin", "auto")
+      .append("button")
+      .attrs({id: "choro_class", class: "button_disc params i18n",
+              'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+      .styles({"font-size": "0.8em", "text-align": "center"})
+      .html(i18next.t("app_page.func_options.common.discretization_choice"));
+
+    make_layer_name_button(dv2, 'Choro_output_name');
+    make_ok_button(dv2, 'choro_yes');
+    dv2.selectAll(".params").attr("disabled", true);
+}
+
+var fields_Choropleth = {
+    fill: function(layer){
+        if(!layer) return;
+        let self = this,
+            g_lyr_name = "#"+layer,
+            fields = type_col(layer, "number"),
+            field_selec = section2.select("#choro_field1"),
+            uo_layer_name = section2.select('#Choro_output_name'),
+            btn_class = section2.select('#choro_class'),
+            ok_button = section2.select('#choro_yes');
+
+        if(fields.length === 0){
+            display_error_num_field();
+            return;
+        }
+        section2.selectAll(".params").attr("disabled", null);
+        fields.forEach(field => {
+            field_selec.append("option").text(field).attr("value", field);
+        });
+
+        field_selec.on("change", function(){
+            let field_name = this.value,
+                vals = user_data[layer].map(a => +a[field_name]);
+            render_mini_chart_serie(vals, document.getElementById("container_sparkline"));
+            uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
+            ok_button.attr('disabled', self.rendering_params[field_name] !== undefined ? null : true);
+        });
+
+        btn_class.on("click", function(){
+            let selected_field = field_selec.node().value,
+                opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
                 conf_disc_box;
 
-            if(rendering_params[selected_field])
-                conf_disc_box = display_discretization(layer_name, selected_field,
-                                                       rendering_params[selected_field].nb_class,
-                                                       rendering_params[selected_field].type,
-                                                       {schema: rendering_params[selected_field].schema,
-                                                        colors: rendering_params[selected_field].colors,
-                                                        no_data: rendering_params[selected_field].no_data});
+            if(self.rendering_params[selected_field]) {
+                conf_disc_box = display_discretization(layer, selected_field,
+                                                       self.rendering_params[selected_field].nb_class,
+                                                       self.rendering_params[selected_field].type,
+                                                       {schema: self.rendering_params[selected_field].schema,
+                                                        colors: self.rendering_params[selected_field].colors,
+                                                        no_data: self.rendering_params[selected_field].no_data});
 
-            else
-                conf_disc_box = display_discretization(layer_name,
+            } else {
+                conf_disc_box = display_discretization(layer,
                                                        selected_field,
                                                        opt_nb_class,
                                                        "quantiles",
                                                        {});
-
+            }
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    d3.select("#choro_yes").attr("disabled", null);
-                    rendering_params[selected_field] = {
+                    ok_button.attr("disabled", null);
+                    self.rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
                             breaks: confirmed[2], colors: confirmed[3],
                             schema: confirmed[5], no_data: confirmed[6],
@@ -1735,60 +690,34 @@ function fillMenu_Choropleth(){
             });
         });
 
-    dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-        .insert('input')
-        .style("width", "200px")
-        .attr('class', 'params')
-        .attr("id", "Choro_output_name");
+        ok_button.on("click", function(){
+          let field_to_render = field_selec.node().value;
+          if(self.rendering_params[field_to_render]){
+              let user_new_layer_name = uo_layer_name.node().value;
+              self.rendering_params[field_to_render].new_name = check_layer_name(
+                  user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
+                  ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
+                  );
+              render_choro(layer, self.rendering_params[field_to_render]);
+              handle_legend(self.rendering_params[field_to_render].new_name)
+              switch_accordion_section();
+          }
+        });
+        setSelected(field_selec.node(), fields[0]);
+    },
 
-    dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attr('id', 'choro_yes')
-        .attr("disabled", true)
-        .attr('class', 'button_st3')
-        .html('Render')
-        .on("click", function(){
-            if(rendering_params){
+    unfill: function(){
+        let field_selec = document.getElementById("choro_field1"),
+            nb_fields = field_selec.childElementCount;
 
-                let layer = Object.getOwnPropertyNames(user_data)[0],
-                    user_new_layer_name = document.getElementById("Choro_output_name").value,
-                    field_to_render = field_selec.node().value;
-                rendering_params[field_to_render].new_name = check_layer_name(
-                    user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
-                    ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
-                    );
-                render_choro(layer, rendering_params[field_to_render]);
-                switch_accordion_section();
-            }
-         });
-    d3.selectAll(".params").attr("disabled", true);
-}
-
-var get_first_guess_span = function(){
-    let bbox = _target_layer_file.bbox,
-        abs = Math.abs;
-    let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
-                                  [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
-        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
-                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    return Math.round((width_km + height_km) / 2 * 0.02);
-}
-
-function test_maxmin_resolution(cell_value){
-    let bbox = _target_layer_file.bbox,
-        abs = Math.abs;
-    let width_km = haversine_dist(
-            [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
-    let height_km = haversine_dist(
-            [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    let area = width_km * height_km,
-        bigger_side = Math.max(height_km, width_km);
-    if(area / (cell_value * cell_value) > 15000)
-        return "higher";
-    else if(cell_value > bigger_side / 1.66)
-        return "lower"
-    return;
-}
+        for(let i = nb_fields - 1; i > -1 ; --i){
+//            delete this.rendering_params[field_selec.children[i]];
+            field_selec.removeChild(field_selec.children[i]);
+        }
+        d3.selectAll(".params").attr("disabled", true);
+    },
+    rendering_params: {}
+};
 
 var fields_Stewart = {
     fill: function(layer){
@@ -1811,8 +740,8 @@ var fields_Stewart = {
 
         if(layer){
             let fields = type_col(layer, "number"),
-                field_selec = d3.select("#stewart_field"),
-                field_selec2 = d3.select("#stewart_field2");
+                field_selec = section2.select("#stewart_field"),
+                field_selec2 = section2.select("#stewart_field2");
 
             if(fields.length == 0){
                 display_error_num_field();
@@ -1829,9 +758,10 @@ var fields_Stewart = {
             field_selec.on("change", function(){
                 document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
             });
-
+            section2.select('#stewart_yes')
+                .on('click', render_stewart);
         }
-        d3.selectAll(".params").attr("disabled", null);
+        section2.selectAll(".params").attr("disabled", null);
     },
 
     unfill: function(){
@@ -1845,184 +775,214 @@ var fields_Stewart = {
     }
 };
 
+function render_stewart(){
+  let formToSend = new FormData(),
+      doc = document,
+      field1_n = doc.getElementById('stewart_field').value,
+      field2_n = doc.getElementById('stewart_field2').value,
+      var1_to_send = {},
+      var2_to_send = {},
+      layer = Object.getOwnPropertyNames(user_data)[0],
+      bval = doc.getElementById('stewart_breaks').value.trim(),
+      reso = +doc.getElementById('stewart_resolution').value,
+      span = +doc.getElementById('stewart_span').value,
+      beta = +doc.getElementById('stewart_beta').value,
+      nb_class = doc.getElementById('stewart_nb_class').value,
+      func_selec = doc.getElementById('stewart_func').value,
+      mask_name = doc.getElementById('stewart_mask').value,
+      new_user_layer_name = document.getElementById("stewart_output_name").value;
+
+  if(reso && reso > 0){
+      let res_test = test_maxmin_resolution(reso);
+      if(res_test){
+          let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+          display_error_during_computation(message);
+          return;
+      }
+      reso = reso * 1000;
+  } else {
+      reso = null;
+  }
+  bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
+
+  if(current_layers[layer].original_fields.has(field1_n))
+      var1_to_send[field1_n] = [];
+  else
+      var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
+
+  if(field2_n != "None"){
+      if(current_layers[layer].original_fields.has(field2_n))
+          var2_to_send[field2_n] = [];
+      else
+          var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
+  }
+
+  formToSend.append("json", JSON.stringify({
+      "topojson": current_layers[layer].key_name,
+      "variable1": var1_to_send,
+      "variable2": var2_to_send,
+      "span": span * 1000,
+      "beta": beta,
+      "typefct": func_selec,
+      "resolution": reso,
+      "nb_class": nb_class,
+      "user_breaks": bval,
+      "mask_layer": mask_name !== "None" ? current_layers[mask_name].key_name : ""}));
+
+  xhrequest("POST", '/compute/stewart', formToSend, true)
+      .then(res => {
+          let data_split = res.split('|||'),
+              raw_topojson = data_split[0],
+              options = {result_layer_on_add: true};
+          if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+              options["choosed_name"] = new_user_layer_name;
+          }
+          var n_layer_name = add_layer_topojson(raw_topojson, options);
+          if(!n_layer_name)
+              return;
+          var class_lim = JSON.parse(data_split[1]),
+              col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
+              nb_class = class_lim['min'].length,
+              colors_breaks = [];
+          for(let i = 0; i < nb_class; i++){
+               colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[nb_class - 1 - i]]);
+          }
+
+          current_layers[n_layer_name].fill_color = {"class": []};
+          current_layers[n_layer_name].renderer = "Stewart";
+          current_layers[n_layer_name].colors_breaks = colors_breaks;
+          current_layers[n_layer_name].rendered_field = field1_n;
+          current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
+          map.select("#"+n_layer_name)
+                  .selectAll("path")
+                  .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
+          handle_legend(n_layer_name);
+          switch_accordion_section();
+          // Todo : use the function render_choro to render the result from stewart too
+      }, error => {
+          display_error_during_computation();
+          console.log(error);
+      });
+}
+
+
 function fillMenu_Stewart(){
-    var dialog_content = section2.append("div").attr("class", "form-rendering");
+    var dialog_content = make_template_functionnality(section2);
 
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    let a = dialog_content.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .style("margin", "10px 0px 0px")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field'})
+      .html(i18next.t("app_page.func_options.smooth.field"));
+    a.append('span')
+      .insert('select')
+      .attrs({class: 'params marg_auto', id: "stewart_field"});
 
+    let b = dialog_content.append('p').attr('class', 'params_section2');
+    b.append('span')
+      .style("margin", "10px 0px 0px")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field'})
+      .html(i18next.t("app_page.func_options.smooth.divide_field"));
+    b.insert('select')
+      .attrs({class: 'params marg_auto', id: "stewart_field2"});
 
-    var field_selec = dialog_content.append('p')
-                        .style("margin", "10px 0px 0px")
-                        .html(i18next.t("app_page.func_options.smooth.field"))
-                        .insert('select')
-                        .attrs({class: 'params marg_auto', id: "stewart_field"});
+    let p_span = dialog_content.append("p").attr('class', 'params_section2');
+    p_span.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.span'})
+      .text(i18next.t("app_page.func_options.smooth.span"));
+    p_span.append('input')
+      .style("width", "60px")
+      .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
+    p_span.append("span")
+      .html(" (km)");
 
-    var field_selec2 = dialog_content.append('p')
-                        .style("margin", "10px 0px 0px")
-                        .html(i18next.t("app_page.func_options.smooth.divide_field"))
-                        .insert('select')
-                        .attrs({class: 'params marg_auto', id: "stewart_field2"});
+    let d = dialog_content.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .styles({"margin-right": "35px"})
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta'})
+      .html(i18next.t("app_page.func_options.smooth.beta"));
+    d.insert('input')
+      .style("width", "60px")
+      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
-    {
-        let p_span = dialog_content
-                        .append("p")
-                            .style("float", "left")
-                            .text(i18next.t("app_page.func_options.smooth.span"));
-        var span = p_span.append('input')
-                        .style("width", "60px")
-                        .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
-        p_span.insert("span").html(" km");
+    let p_reso = dialog_content.append('p').attr('class', 'params_section2');
+    p_reso.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution'})
+      .text(i18next.t("app_page.func_options.smooth.resolution"));
+    p_reso.insert('input')
+      .style("width", "60px")
+      .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
+    p_reso.insert("label")
+      .html(" (km)");
 
-        var beta = dialog_content
-                        .append('p')
-                            .styles({"float": "right", "margin-right": "35px"})
-                            .html(i18next.t("app_page.func_options.smooth.beta"))
-                        .insert('input')
-                            .style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
+    let f = dialog_content.append('p').attr('class', 'params_section2');
+    f.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.func_options'})
+      .html(i18next.t("app_page.func_options.smooth.function"));
+    let func_selec = f.insert('select')
+      .attrs({class: 'params i18n', id: "stewart_func"});
 
-        let p_reso = dialog_content
-                        .append('p').text(i18next.t("app_page.func_options.smooth.resolution"));
-        var resolution = p_reso.insert('input').style("width", "60px")
-                            .attrs({type: 'number', class: 'params', id: "stewart_resolution", min: 1, max: 1000000, step: "any"});
-        p_reso.insert("span").html(" km");
-    }
+    let g = dialog_content.append("p").attr('class', 'params_section2');
+    g.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.nb_class'})
+      .html(i18next.t("app_page.func_options.smooth.nb_class"));
+    g.insert("input")
+      .style("width", "50px")
+      .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1});
 
-    var func_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.smooth.function"))
-                                .insert('select').attrs({class: 'params', id: "stewart_func"}),
-        nb_class = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.nb_class"))
-                                .insert("input").style("width", "50px")
-                                .attrs({type: "number", class: 'params', id: "stewart_nb_class", value: 8, min: 1, max: 22, step: 1}),
-        breaks_val = dialog_content.append("p").html(i18next.t("app_page.func_options.smooth.break_values"))
-                                .insert("textarea")
-                                .styles({"width": "260px", "height": "30px"})
-                                .attrs({class: 'params i18n', id: "stewart_breaks",
-                                        "data-i18n": "[placeholder]app_page.common.expected_class",
-                                        "placeholder": i18next.t("app_page.common.expected_class")}),
-        mask_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.smooth.mask"))
-                                .insert('select').attrs({class: 'params', id: "stewart_mask"});
+    let bvs = dialog_content.append("p").attr('class', 'params_section2');
+    bvs.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.break_values'})
+      .html(i18next.t("app_page.func_options.smooth.break_values"));
+    bvs.insert("textarea")
+      .styles({width: "100%", height: "2.2em", "font-size": "0.9em"})
+      .attrs({class: 'params i18n', id: "stewart_breaks",
+              "data-i18n": "[placeholder]app_page.common.expected_class",
+              "placeholder": i18next.t("app_page.common.expected_class")});
+    let m  = dialog_content.append('p').attr('class', 'params_section2');
+    m.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask'})
+      .html(i18next.t("app_page.func_options.smooth.mask"));
+    m.insert('select')
+      .attrs({class: 'params', id: "stewart_mask"});
 
-    [['exponential', i18next.t("app_page.func_options.smooth.func_exponential")],
-     ['pareto', i18next.t("app_page.func_options.smooth.func_pareto")]].forEach(function(fun_name){
-        func_selec.append("option").text(fun_name[1]).attr("value", fun_name[0]);
+    [['exponential', 'app_page.func_options.smooth.func_exponential'],
+     ['pareto', 'app_page.func_options.smooth.func_pareto']
+     ].forEach( fun_name => {
+        func_selec.append("option").text(i18next.t(fun_name[1])).attrs({value: fun_name[0], 'data-i18n': '[text]' + fun_name[1]});
     });
 
-    dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "stewart_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr('id', 'stewart_yes')
-        .attr('class', "params button_st3")
-        .text(i18next.t('app_page.func_options.common.render'))
-        .on('click', function(){
-            let formToSend = new FormData(),
-                field1_n = field_selec.node().value,
-                field2_n = field_selec2.node().value,
-                var1_to_send = {},
-                var2_to_send = {},
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                bval = breaks_val.node().value.trim(),
-                reso = +resolution.node().value,
-                new_user_layer_name = document.getElementById("stewart_output_name").value;
-
-            if(reso && reso > 0){
-                let res_test = test_maxmin_resolution(reso);
-                if(res_test){
-                    let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
-                    display_error_during_computation(message);
-                    return;
-                }
-                reso = reso * 1000;
-            } else {
-                reso = null;
-            }
-            bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
-
-            if(current_layers[layer].original_fields.has(field1_n))
-                var1_to_send[field1_n] = [];
-            else
-                var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
-
-            if(field2_n != "None"){
-                if(current_layers[layer].original_fields.has(field2_n))
-                    var2_to_send[field2_n] = [];
-                else
-                    var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
-            }
-
-            formToSend.append("json", JSON.stringify({
-                "topojson": current_layers[layer].key_name,
-                "variable1": var1_to_send,
-                "variable2": var2_to_send,
-                "span": +span.node().value * 1000,
-                "beta": +beta.node().value,
-                "typefct": func_selec.node().value,
-                "resolution": reso,
-                "nb_class": nb_class.node().value,
-                "user_breaks": bval,
-                "mask_layer": mask_selec.node().value !== "None" ? current_layers[mask_selec.node().value].key_name : ""}));
-
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/stewart',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
-                    {
-                        let data_split = data.split('|||'),
-                            raw_topojson = data_split[0];
-                        let options = {result_layer_on_add: true};
-                        if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-                            options["choosed_name"] = new_user_layer_name;
-                        }
-                        var n_layer_name = add_layer_topojson(raw_topojson, options);
-                        if(!n_layer_name)
-                            return;
-                        var class_lim = JSON.parse(data_split[1]);
-                    }
-                    var col_pal = getColorBrewerArray(class_lim.min.length, "Oranges"),
-                        nb_class = class_lim['min'].length,
-                        colors_breaks = [];
-                    for(let i = 0; i < nb_class; i++){
-                         colors_breaks.push([class_lim['min'][i] + " - " + class_lim['max'][i], col_pal[nb_class - 1 - i]]);
-                    }
-
-                    current_layers[n_layer_name].fill_color = {"class": []};
-                    current_layers[n_layer_name].renderer = "Stewart";
-                    current_layers[n_layer_name].colors_breaks = colors_breaks;
-                    current_layers[n_layer_name].rendered_field = field_selec.node().value;
-                    current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
-                    d3.select("#"+n_layer_name)
-                            .selectAll("path")
-                            .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
-                    // Todo : use the function render_choro to render the result from stewart too
-                }
-            });
-        });
-    d3.selectAll(".params").attr("disabled", true);
+    make_layer_name_button(dialog_content, 'stewart_output_name');
+    make_ok_button(dialog_content, 'stewart_yes', false);
+    dialog_content.selectAll(".params").attr("disabled", true);
 }
 
 var fields_Anamorphose = {
     fill: function(layer){
         if(!layer) return;
         let fields = type_col(layer, "number"),
-            field_selec = d3.select("#Anamorph_field");
+            field_selec = section2.select("#Anamorph_field"),
+            algo_selec = section2.select('#Anamorph_algo'),
+            ok_button = section2.select("#Anamorph_yes"),
+            fixed_size_dorling = section2.select('#Anamorph_dorling_fixed_size');
 
         if(fields.length == 0){
             display_error_num_field();
             return;
         }
-
-        d3.selectAll(".params").attr("disabled", null);
+        algo_selec.on('change', function(){
+          if(this.value === "dorling"){
+            section2.selectAll('.opt_dougenik, .opt_olson').style('display', 'none');
+            section2.selectAll('.opt_dorling').style('display', undefined);
+          } else if (this.value === "olson") {
+            section2.selectAll('.opt_dougenik, .opt_dorling').style('display', 'none');
+            section2.selectAll('.opt_olson').style('display', undefined);
+          } else if (this.value === "dougenik") {
+            section2.selectAll('.opt_dorling, .opt_olson').style('display', 'none');
+            section2.selectAll('.opt_dougenik').style('display', undefined);
+          }
+        })
+        section2.selectAll(".params").attr("disabled", null);
         fields.forEach(function(field){
             field_selec.append("option").text(field).attr("value", field);
         });
@@ -2039,129 +999,13 @@ var fields_Anamorphose = {
                 ref_value_field.value = max_val_field;
             }
         });
-        setSelected(field_selec.node(), field_selec.node().options[0].value);
 
-
-    },
-    unfill: function(){
-        let field_selec = document.getElementById("Anamorph_field");
-        d3.selectAll(".params").attr("disabled", true);
-        unfillSelectInput(field_selec);
-    }
-}
-
-
-function fillMenu_Anamorphose(){
-    var make_opt_dorling = function(){
-
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
-        option2_txt.html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px");
-        option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
-        option2_txt2.html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
-        option2_val2 = option2_txt2.insert("input").attr("type", "number").attrs({class: "params", id: "Anamorph_opt3"}).style("width", "100px");
-
-        symbols.forEach(function(symb){
-            option1_val.append("option").text(symb[0]).attr("value", symb[1]);
+        fixed_size_dorling.on("change", function(){
+            document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
         });
 
-        field_selec.on("change", function(){
-            let field_name = this.value,
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name])),
-                ref_value_field = document.getElementById("Anamorph_opt3");
-
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.value = max_val_field;
-        });
-        setSelected(field_selec.node(), field_selec.node().options[0].value);
-
-        option2_val.on("change", function(){
-            document.getElementById("Anamorph_ref_size_txt").innerHTML = this.value + " px";
-        });
-
-    };
-
-    var make_opt_iter = function(){
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
-        option2_txt.html("");
-        option2_txt2.html("");
-        option1_val = option1_txt.insert('input')
-                        .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1});
-    };
-
-    var make_opt_olson = function(){
-        option1_txt.html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
-        option2_txt.html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"});
-        [[i18next.t("app_page.func_options.cartogram.olson_scale_max"), "max"],
-         [i18next.t("app_page.func_options.cartogram.olson_scale_mean"), "mean"]].forEach(function(opt_field){
-            option1_val.append("option").attr("value", opt_field[1]).text(opt_field[0]);
-        });
-        option2_val = option2_txt.insert('input')
-                        .style("width", "60px")
-                        .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
-        option2_txt2.html("");
-    };
-
-    var dialog_content = section2.append("div").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    var algo_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.algo")).insert('select').attr('class', 'params'),
-        field_selec = dialog_content.append('p').html(i18next.t("app_page.func_options.cartogram.field")).insert('select').attrs({class: 'params', id: 'Anamorph_field'}),
-        option1_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt").html(i18next.t("app_page.func_options.cartogram.dorling_symbol")),
-        option1_val = option1_txt.insert("select").attrs({class: "params", id: "Anamorph_opt"}),
-        option2_txt = dialog_content.append('p').attr("id", "Anamorph_opt_txt2").html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size")),
-        option2_val = option2_txt.insert("input").attrs({type: "range", min: 0, max: 30, step: 0.1, value: 10, id: "Anamorph_opt2", class: "params"}).style("width", "50px"),
-        option2_txt2 = dialog_content.append("p").attr("id", "Anamorph_opt_txt3").html(i18next.t("app_page.func_options.cartogram.dorling_on_value")),
-        option2_val2 = option2_txt2.insert("input").attrs({type: "number", min: 0, step: 0.1}).attrs({class: "params", id: "Anamorph_opt3"}),
-        symbols = [
-            [i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
-            [i18next.t("app_page.func_options.common.symbol_square"), "rect"]
-        ];
-
-    option2_txt.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
-
-    option2_val.on("change", function(){
-        document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
-    });
-
-    symbols.forEach(function(symb){
-        option1_val.append("option").text(symb[0]).attr("value", symb[1]);
-    });
-
-    algo_selec.on("change", function(){
-        if(this.value == "dorling")
-            make_opt_dorling();
-        else if(this.value == "olson")
-            make_opt_olson();
-        else
-            make_opt_iter();
-    });
-
-    [['Pseudo-Dorling', 'dorling'],
-     ['Dougenik & al. (1985)', 'dougenik'],
-     ['Olson (2005)', 'olson']].forEach(function(fun_name){
-        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]); });
-
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "Anamorph_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append("button")
-        .attrs({id: 'Anamorph_yes', class: "params button_st3"})
-        .html('Compute')
-        .on("click", function(){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                algo = algo_selec.node().value,
+        ok_button.on("click", function(){
+            let algo = algo_selec.node().value,
                 nb_features = user_data[layer].length,
                 field_name = field_selec.node().value,
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
@@ -2174,7 +1018,7 @@ function fillMenu_Anamorphose(){
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
-                let layer_select = document.getElementById(layer).querySelectorAll("path"),
+                let layer_select = document.getElementById(layer).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
@@ -2228,14 +1072,8 @@ function fillMenu_Anamorphose(){
                         field_name: field_n,
                         scale_max: scale_max})
                     );
-                $.ajax({
-                    processData: false,
-                    contentType: false,
-                    url: '/compute/olson',
-                    data: formToSend,
-                    type: 'POST',
-                    error: function(error) { display_error_during_computation(); console.log(error); },
-                    success: function(result){
+                xhrequest("POST", '/compute/olson', formToSend, true)
+                    .then( result => {
                         let options = {result_layer_on_add: true};
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
@@ -2246,13 +1084,16 @@ function fillMenu_Anamorphose(){
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
-                        d3.select("#" + n_layer_name)
+                        map.select("#" + n_layer_name)
                                 .selectAll("path")
                                 .style("fill-opacity", 0.8)
                                 .style("stroke", "black")
                                 .style("stroke-opacity", 0.8);
-                    }
-                });
+                        switch_accordion_section();
+                    }, err => {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
                     field_n = field_selec.node().value,
@@ -2273,14 +1114,8 @@ function fillMenu_Anamorphose(){
                     "var_name": var_to_send,
                     "iterations": nb_iter }));
 
-                $.ajax({
-                    processData: false,
-                    contentType: false,
-                    url: '/compute/carto_doug',
-                    data: formToSend,
-                    type: 'POST',
-                    error: function(error) { display_error_during_computation(); console.log(error); },
-                    success: function(data){
+                xhrequest("POST", '/compute/carto_doug', formToSend, true)
+                    .then(data => {
                         let options = {result_layer_on_add: true};
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
@@ -2297,8 +1132,11 @@ function fillMenu_Anamorphose(){
                             .style("fill-opacity", 0.8)
                             .style("stroke", "black")
                             .style("stroke-opacity", 0.8);
-                    }
-                });
+                        switch_accordion_section();
+                    }, error => {
+                        display_error_during_computation();
+                        console.log(error);
+                    });
             } else if (algo === "dorling"){
                 let fixed_value = +document.getElementById("Anamorph_opt3").value,
                     fixed_size = +document.getElementById("Anamorph_opt2").value,
@@ -2328,13 +1166,113 @@ function fillMenu_Anamorphose(){
                 zoom_without_redraw();
                 switch_accordion_section();
                 }
+        });
+        setSelected(field_selec.node(), field_selec.node().options[0].value);
+
+    },
+    unfill: function(){
+        let field_selec = document.getElementById("Anamorph_field");
+        d3.selectAll(".params").attr("disabled", true);
+        unfillSelectInput(field_selec);
+    }
+}
+
+
+function fillMenu_Anamorphose(){
+    var dialog_content = make_template_functionnality(section2);
+
+    let algo_choice = dialog_content.append('p').attr('class', 'params_section2');
+    algo_choice.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.algo'})
+      .html(i18next.t("app_page.func_options.cartogram.algo"));
+    let algo_selec = algo_choice.insert('select')
+      .attrs({id: 'Anamorph_algo', class: 'params i18n'});
+
+    let field_choice = dialog_content.append('p').attr('class', 'params_section2');
+    field_choice.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.field'})
+      .html(i18next.t("app_page.func_options.cartogram.field"));
+    let field_selec = field_choice.insert('select')
+      .attrs({class: 'params', id: 'Anamorph_field'});
+
+    // Options for Dorling mode :
+    let option1_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling');
+      // .attr('class', 'params_section2').attr("id", "Anamorph_opt_txt");
+    option1_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_symbol'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
+    let option1_val = option1_section.append("select")
+      .attrs({class: "params i18n", id: "Anamorph_dorling_symbol"});
+
+    let option2_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt2");
+    option2_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_fixed_size'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
+    let option2_val = option2_section.insert("input")
+      .style("width", "50px")
+      .attrs({type: "range", min: 0, max: 45, step: 0.1, value: 20, id: "Anamorph_dorling_fixed_size", class: "params"});
+    option2_section.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
+
+    let option3_section = dialog_content.append("p").attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt3");
+    option3_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_on_value'})
+      .html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
+    let option2_val2 = option3_section.insert("input")
+      .attrs({class: "params", id: "Anamorph_dorling_onvalue", type: "number", min: 0, step: 0.1});
+
+    // Options for Dougenik mode :
+    let doug1 = dialog_content.append('p')
+      .attr('class', 'params_section2 opt_dougenik');
+    doug1.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations'})
+      .html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
+    doug1.insert('input')
+      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"})
+
+    // Options for Olson mode :
+    let o1 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');;
+    o1.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_txt'})
+      .html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
+    let type_scale_olson = o1.append("select")
+      .attrs({class: "params", id: "Anamorph_olson_scale_kind"});
+
+    let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
+    o2.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
+      .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
+    o2.insert('input')
+      .style("width", "60px")
+      .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
+
+    [['Pseudo-Dorling', 'dorling'],
+     ['Dougenik & al. (1985)', 'dougenik'],
+     ['Olson (2005)', 'olson']].forEach(function(fun_name){
+        algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
     });
-    d3.selectAll(".params").attr("disabled", true);
+
+    [["app_page.func_options.common.symbol_circle", "circle"],
+     ["app_page.func_options.common.symbol_square", "rect"]
+    ].forEach(function(symb){
+        option1_val.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+    });
+
+    [["app_page.func_options.cartogram.olson_scale_max", "max"],
+     ["app_page.func_options.cartogram.olson_scale_mean", "mean"]
+    ].forEach(opt_field => {
+        type_scale_olson.append("option").attrs({"value": opt_field[1], 'data-i18n': '[text]' + opt_field[0]}).text(i18next.t(opt_field[0]));
+    });
+
+    make_layer_name_button(dialog_content, "Anamorph_output_name");
+    make_ok_button(dialog_content, 'Anamorph_yes', false);
+
+    dialog_content.selectAll(".params").attr("disabled", true);
+    dialog_content.selectAll(".opt_olson, .opt_dougenik").style('display', 'none');
 }
 
 
 function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add){
-    let ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
+    let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         nb_features = current_layers[layer].n_features,
         d_values = [],
         symbol_layer = undefined,
@@ -2377,8 +1315,10 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .selectAll("circle")
                           .data(nodes).enter()
                           .append("circle")
-                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("r", d => d.r )
+                            .attrs( (d,i) => ({
+                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
+                              "r": d.r
+                            }))
                             .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     } else {
@@ -2387,278 +1327,26 @@ function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_s
                           .selectAll("rect")
                           .data(nodes).enter()
                           .append("rect")
-                            .attr("id", (d,i) => ["PropSymbol_", i, " feature_", d.ix].join(''))
-                            .attr("height", d => d.r * 2 )
-                            .attr("width", d => d.r * 2 )
+                            .attrs( (d,i) => ({
+                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
+                              "height": d.r * 2,
+                              "width": d.r * 2
+                            }))
                             .style("fill", () => Colors.random() )
                             .style("stroke", "black");
     }
 
     function tick(e){
         if(shape_symbol == "circle")
-            symbol_layer
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y);
+            symbol_layer.attrs(d => ({"cx": d.x, "cy": d.y}));
+                // .attr("cx", d => d.x)
+                // .attr("cy", d => d.y);
         else
-            symbol_layer
-                .attr("x", d => d.x - d.r)
-                .attr("y", d => d.y - d.r)
+            symbol_layer.attrs(d => ({"x": d.x - d.r, "y": d.y - d.r}));
+                // .attr("x", d => d.x - d.r)
+                // .attr("y", d => d.y - d.r)
     }
     return [d_values, animation];
-}
-
-
-var boxExplore = {
-    display_table: function(table_name){
-        document.querySelector("body").style.cursor = "";
-        let the_table = this.layer_names.get(table_name)[1];
-        this.current_table = table_name;
-        this.nb_features = the_table.length;
-        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
-        this.columns_headers = [];
-        for(let i=0, col=this.columns_names, len = col.length; i<len; ++i)
-            this.columns_headers.push({data: col[i], title: col[i]});
-        if(this.top_buttons.select("#add_field_button").node()){
-            this.top_buttons.select("#add_field_button").remove()
-            document.getElementById("table_intro").remove();
-            document.getElementById("myTable").remove();
-            document.getElementById("myTable_wrapper").remove();
-        }
-        let self = this;
-        this.top_buttons
-             .insert("button")
-             .attrs({id: "add_field_button", class: "button_st3"})
-             .html(i18next.t("app_page.explore_box.button_add_field"))
-             .on('click', function(){
-                add_table_field(the_table, table_name, self);
-             });
-        let txt_intro = [
-             "<b>", table_name, "</b><br>",
-             this.nb_features, " ", i18next.t("app_page.common.feature", {count: this.nb_features}), " - ",
-             this.columns_names.length, " ", i18next.t("app_page.common.field", {count: this.columns_names.length})
-            ].join('');
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        this.box_table.append("table")
-                      .attrs({class: "display compact", id: "myTable"})
-                      .style("width", "80%");
-        let myTable = $('#myTable').DataTable({
-            data: the_table,
-            columns: this.columns_headers,
-        });
-    },
-    get_available_tables: function(){
-        let target_layer = Object.getOwnPropertyNames(user_data),
-            ext_dataset = dataset_name,
-            result_layers = Object.getOwnPropertyNames(result_data),
-            available = new Map();
-        for(let lyr_name of target_layer)
-            available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
-        if(ext_dataset)
-            available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
-        for(let lyr_name of result_layers)
-            available.set(lyr_name, [i18next.t("app_page.common.result_layer"), result_data[lyr_name]]);
-        return available;
-    },
-    create: function(){
-        this.layer_names = this.get_available_tables()
-        if(this.layer_names.size == 0) return;
-        this.columns_headers = [];
-        this.nb_features = undefined;
-        this.columns_names = undefined;
-        this.current_table = undefined,
-        this.box_table = d3.select("body").append("div")
-                            .style("font-size", "0.75em")
-                            .attrs({id: "browse_data_box", title: i18next.t("app_page.explore_box.title")});
-
-        let self = this;
-
-        this.top_buttons = this.box_table.append('p')
-                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
-
-        let select_a_table = this.box_table
-                                .append('p').html(i18next.t("app_page.explore_box.available_table"))
-                                .insert("select").attr("id", "select_table")
-                                .on("change", function(){
-                                    self.display_table(this.value);
-                                });
-
-        this.layer_names.forEach( (value, key) => {
-            let txt = [key, " (", value[0], ")"].join('');
-            select_a_table.append("option").attr("value", key).text(txt);
-        });
-        setSelected(select_a_table.node(), select_a_table.node().options[0].value);
-        var deferred = Q.defer();
-        $("#browse_data_box").dialog({
-            modal:false,
-            resizable: true,
-            width: Math.round(window.innerWidth * 0.8),
-            buttons:[{
-                    text: i18next.t("app_page.common.close"),
-                    click: function(){deferred.resolve([true, true]);$(this).dialog("close");}
-                        }],
-            close: function(event, ui){
-                    $(this).dialog("destroy").remove();
-                    if(deferred.promise.isPending()) deferred.resolve(false);
-                }
-        });
-        return deferred.promise;
-    }
-};
-
-
-var fields_PropSymbol = {
-    fill: function(layer){
-        if(!layer) return;
-        d3.selectAll(".params").attr("disabled", null);
-        let fields = type_col(layer, "number"),
-            nb_features = user_data[layer].length,
-            field_selec = d3.select("#PropSymbol_field_1");
-
-        fields.forEach(function(field){
-            field_selec.append("option").text(field).attr("value", field);
-        });
-
-        field_selec.on("change", function(){
-            let field_name = this.value,
-                data_layer = user_data[layer],
-                field_values = data_layer.map(obj => +obj[field_name]),
-                max_val_field = max_fast(field_values),
-                has_neg = has_negative(field_values),
-                ref_value_field = document.getElementById("PropSymbol_ref_value").querySelector('input');
-
-            document.getElementById("PropSymbol_output_name").value = ["PropSymbol", this.value, layer].join('_');
-
-            ref_value_field.setAttribute("max", max_val_field);
-            ref_value_field.setAttribute("value", max_val_field);
-            if(has_neg){
-                setSelected(document.getElementById("PropSymbol_nb_colors"), 2);
-                document.getElementById("PropSymbol_break_val").value = 0;
-            } else {
-                setSelected(document.getElementById("PropSymbol_nb_colors"), 1);
-            }
-        });
-        setSelected(field_selec.node(), fields[0]);
-    },
-
-    unfill: function(){
-        let field_selec = document.getElementById("PropSymbol_field_1");
-        unfillSelectInput(field_selec);
-        d3.selectAll(".params").attr("disabled", true);
-    }
-};
-
-function fillMenu_PropSymbol(layer){
-    var max_allowed_size = Math.round(h/2 - h/20),
-        dialog_content = section2.append("p").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-
-    var field_selec = dialog_content.append('p')
-                          .html(i18next.t("app_page.func_options.common.field"))
-                          .insert('select')
-                          .attrs({class: 'params', 'id': "PropSymbol_field_1"}),
-        ref_size = dialog_content.append('p')
-                         .style("display", "inline")
-                         .html(i18next.t("app_page.func_options.prop.fixed_size"))
-                         .insert('input')
-                         .attrs({type: 'number', class: 'params'})
-                         .attrs({min: 0.2, max: max_allowed_size, value: 15.0, step: 0.1})
-                         .style("width", "50px");
-
-    dialog_content.append('span').html(" px");
-
-    var ref_value = dialog_content.append('p').attr("id", "PropSymbol_ref_value")
-                            .html(i18next.t("app_page.func_options.prop.on_value"))
-                            .insert('input')
-                            .styles({'width': '100px', "margin-left": "10px"})
-                            .attrs({type: 'number', class: "params", min: 0.1, step: 0.1});
-
-    var symb_selec = dialog_content
-                        .append('p').html(i18next.t("app_page.func_options.prop.symbol_type"))
-                        .insert('select').attr('class', 'params');
-
-    [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
-     [i18next.t("app_page.func_options.common.symbol_square"), "rect"]
-    ].forEach(function(symb){
-        symb_selec.append("option").text(symb[0]).attr("value", symb[1]);});
-
-    dialog_content.append('p').html(i18next.t("app_page.func_options.prop.symbol_color"));
-    let color_par = dialog_content.append('select')
-                            .attr("class", "params")
-                            .attr("id", "PropSymbol_nb_colors")
-                            .style("margin-right", "15px");
-    color_par.append("option").attr("value", 1).text(i18next.t("app_page.func_options.prop.options_one_color"));
-    color_par.append("option").attr("value", 2).text(i18next.t("app_page.func_options.prop.options_two_colors"));
-
-    color_par.on("change", function(){
-        if(this.value == 1){
-            fill_color2.style("display", "none");
-            fill_color_opt.style("display", "none");
-            fill_color_text.style("display", "none");
-        } else {
-            fill_color2.style("display", null);
-            fill_color_opt.style("display", null);
-            fill_color_text.style("display", "inline");
-        }
-    });
-    var col_p = dialog_content.append("p").style("display", "inline");
-    var fill_color = col_p.insert('input')
-                                .attr('type', 'color')
-                                .attrs({class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
-    var fill_color2 = col_p.insert('input')
-                                .attr('type', 'color')
-                                .style("display", "none")
-                                .attrs({class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
-    var col_b = dialog_content.insert("p");
-    var fill_color_text = col_b.insert("span").style("display", "none")
-                                .html(i18next.t("app_page.func_options.prop.options_break_two_colors"));
-    var fill_color_opt = col_b.insert('input')
-                                .attr('type', 'number')
-                                .attrs({class: "params", "id": "PropSymbol_break_val"})
-                                .style("display", "none")
-                                .style("width", "75px");
-
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-        .insert('input')
-        .style("width", "200px")
-        .attr('class', 'params')
-        .attr("id", "PropSymbol_output_name");
-
-    dialog_content.insert("p").styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr('id', 'yes')
-        .attr("class", "params button_st3")
-        .html(i18next.t('app_page.func_options.common.render'))
-        .on("click", function(){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                nb_features = user_data[layer].length,
-                field_to_render = field_selec.node().value,
-                user_new_layer_name = uo_layer_name.node().value,
-                new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
-                rendering_params = { "field": field_to_render,
-                                     "nb_features": nb_features,
-                                     "new_name": new_layer_name,
-                                     "ref_layer_name": layer,
-                                     "symbol": symb_selec.node().value,
-                                     "ref_size": +ref_size.node().value,
-                                     "ref_value": +ref_value.node().value,
-                                     "fill_color": fill_color.node().value };
-            if(+color_par.node().value == 2){
-                rendering_params["break_val"] = +fill_color_opt.node().value;
-                rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
-            }
-            console.log(rendering_params)
-            make_prop_symbols(rendering_params);
-            binds_layers_buttons(new_layer_name);
-            zoom_without_redraw();
-            switch_accordion_section();
-
-        });
-    d3.selectAll(".params").attr("disabled", true);
 }
 
 
@@ -2670,7 +1358,7 @@ function make_prop_symbols(rendering_params){
         _values = [],
         abs = Math.abs,
         comp = function(a,b){ return abs(b[1])-abs(a[1]); },
-        ref_layer_selection = document.getElementById(layer).querySelectorAll("path"),
+        ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
@@ -2798,165 +1486,6 @@ function make_prop_symbols(rendering_params){
     return d_values;
 }
 
-var fields_griddedMap = {
-    fill: function(layer){
-        if(!layer) return;
-
-        let fields = type_col(layer, "number"),
-            field_selec = d3.select("#Gridded_field");
-
-        fields.forEach(function(field){
-            field_selec.append("option").text(field).attr("value", field); });
-        field_selec.on("change", function(){
-            document.getElementById("Gridded_output_name").value = ["Gridded", this.value, layer].join('_');
-        });
-        d3.selectAll(".params").attr("disabled", null);
-        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
-    },
-    unfill: function(){
-        let field_selec = document.getElementById("Gridded_field");
-        unfillSelectInput(field_selec);
-        d3.selectAll(".params").attr("disabled", true);
-    }
-}
-
-function fillMenu_griddedMap(layer){
-    var dialog_content = section2.append("p").attr("class", "form-rendering");
-
-    dialog_content.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
-
-    var field_selec = dialog_content.append('p')
-                        .html(i18next.t("app_page.func_options.common.field"))
-                        .insert('select')
-                        .attrs({class: 'params', id: "Gridded_field"});
-
-    var cellsize = dialog_content.append('p')
-                        .html(i18next.t("app_page.func_options.grid.cellsize"))
-                        .insert('input')
-                        .style("width", "100px")
-                        .attrs({
-                            type: 'number', class: 'params', id: "Gridded_cellsize",
-                            value: 10.0, min: 1.000, max: 7000, step: "any"});
-
-    var grid_shape = dialog_content.append('p')
-                        .html(i18next.t("app_page.func_options.grid.shape"))
-                        .insert('select')
-                        .attrs({class: 'params', id: "Gridded_shape"});
-
-    var col_pal = dialog_content.append('p')
-                        .html(i18next.t("app_page.func_options.grid.coloramp"))
-                        .insert('select')
-                        .attr('class', 'params');
-
-    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
-    'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds']
-    .forEach( d => { col_pal.append("option").text(d).attr("value", d); });
-
-    ['Square', 'Diamond', 'Hexagon'].forEach( d => {
-        grid_shape.append("option").text(d).attr("value",d);
-    });
-
-    var uo_layer_name = dialog_content.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "Gridded_output_name");
-
-    dialog_content.insert("p")
-        .styles({"text-align": "right", margin: "auto"})
-        .append('button')
-        .attr("class", "params button_st3")
-        .attr('id', 'Gridded_yes')
-        .html(i18next.t('app_page.func_options.common.render'))
-        .on("click", function(){
-            let field_n = field_selec.node().value,
-                layer = Object.getOwnPropertyNames(user_data)[0],
-                formToSend = new FormData(),
-                var_to_send = {},
-                new_user_layer_name = document.getElementById("Gridded_output_name").value,
-                reso = +cellsize.node().value;
-
-            let res_test = test_maxmin_resolution(reso);
-
-            if(res_test){
-                let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
-                display_error_during_computation(message);
-                return;
-            }
-
-            if(current_layers[layer].original_fields.has(field_n))
-                var_to_send[field_n] = [];
-            else
-                var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
-
-            formToSend.append("json", JSON.stringify({
-                "topojson": current_layers[layer].key_name,
-                "var_name": var_to_send,
-                "cellsize": reso * 1000,
-                "grid_shape": grid_shape.node().value
-                }));
-            $.ajax({
-                processData: false,
-                contentType: false,
-                url: '/compute/gridded',
-                data: formToSend,
-                type: 'POST',
-                error: function(error) { display_error_during_computation(); console.log(error); },
-                success: function(data){
-                    let options = {result_layer_on_add: true};
-                    if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-                        options["choosed_name"] = new_user_layer_name;
-                    }
-
-                    let n_layer_name = add_layer_topojson(data, options);
-                    if(!n_layer_name)
-                        return;
-                    let res_data = result_data[n_layer_name],
-                        nb_ft = res_data.length,
-                        opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
-                        d_values = [];
-
-                    for(let i=0; i < nb_ft; i++){
-                        d_values.push(+res_data[i]["densitykm"])
-                    }
-
-                    current_layers[n_layer_name].renderer = "Gridded";
-                    let disc_result = discretize_to_colors(d_values, "quantiles", opt_nb_class, col_pal.node().value),
-                        rendering_params = {
-                            nb_class: opt_nb_class,
-                            type: "quantiles",
-                            schema: [col_pal.node().value],
-                            breaks: disc_result[2],
-                            colors: disc_result[3],
-                            colorsByFeature: disc_result[4],
-                            renderer: "Gridded",
-                            rendered_field: "densitykm",
-                                };
-                    render_choro(n_layer_name, rendering_params);
-                }
-            });
-        });
-    d3.selectAll(".params").attr("disabled", true);
-}
-
-function copy_layer(ref_layer, new_name, type_result){
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+ref_layer).cloneNode(true));
-    svg_map.lastChild.setAttribute("id", new_name);
-    svg_map.lastChild.setAttribute("class", "result_layer layer");
-    current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
-                             type: current_layers[ref_layer].type,
-                             ref_layer_name: ref_layer};
-    let selec_src = document.getElementById(ref_layer).querySelectorAll("path");
-    let selec_dest = document.getElementById(new_name).querySelectorAll("path");
-    for(let i = 0; i < selec_src.length; i++)
-        selec_dest[i].__data__ = selec_src[i].__data__;
-    up_legends();
-    create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
-}
-
 function render_categorical(layer, rendering_params){
     if(rendering_params.new_name){
         copy_layer(layer, rendering_params.new_name, "typo");
@@ -2983,30 +1512,6 @@ function render_categorical(layer, rendering_params){
     zoom_without_redraw();
 }
 
-function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
-    let _list_display_name = get_display_name_on_layer_list(layer_name),
-        layers_listed = layer_list.node(),
-        li = document.createElement("li");
-
-    li.setAttribute("layer_name", layer_name);
-    if(type_layer == "result"){
-        li.setAttribute("class", ["ui-state-default sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2,
-                        button_trash, button_zoom_fit, eye_open0, button_legend,
-                        button_result_type.get(type_geom[1]), "</div> ", _list_display_name].join('');
-    } else if(type_layer == "sample"){
-        li.setAttribute("class", ["ui-state-default ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
-        li.innerHTML = ['<div class="layer_buttons">', button_style,
-                        button_trash, button_zoom_fit, eye_open0,
-                        button_type.get(type_geom), "</div> ", _list_display_name].join('');
-    }
-    layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-    binds_layers_buttons(layer_name);
-}
 // Function to render the `layer` according to the `rendering_params`
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
@@ -3047,702 +1552,1278 @@ function render_choro(layer, rendering_params){
     zoom_without_redraw();
 }
 
-// Function returning the name of all current layers (excepted the sample layers used as layout)
-function get_other_layer_names(){
-    let other_layers = Object.getOwnPropertyNames(current_layers),
-        tmp_idx = null;
+function render_mini_chart_serie(values, parent, cap, bins){
+  bins = bins || values.length > 20 ? 16 : values.length > 15 ? 10 : 5;
+  var class_count = getBinsCount(values, bins),
+      background = '#f1f1f1',
+      color = '#6633ff',
+      width = 3 * bins - 3,
+      height = 25,
+      canvas = document.createElement('canvas');
+  cap = cap || max_fast(class_count.counts);
+  canvas.width = width;
+  canvas.height = height;
 
-    tmp_idx = other_layers.indexOf("Graticule");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  let old = parent.querySelector("canvas");
+  if(old) old.remove();
+  parent.append(canvas);
 
-    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    tmp_idx = other_layers.indexOf("Sphere");
-    if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  let x = 0,
+      y = 0,
+      barwidth = 2,
+      barspace = 1;
 
-    return other_layers;
-}
-
-// Function to remove each node (each <option>) of a <select> HTML element :
-function unfillSelectInput(select_node){
-    for(let i = select_node.childElementCount - 1; i > -1; i--)
-        select_node.removeChild(select_node.children[i]);
-}
-
-function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
-
-    if(!fixed_value || fixed_value == 0)
-        fixed_value = max_fast(arr);
-
-    if(type_symbol == "circle"){
-        let smax = fixed_size * fixed_size * pi;
-        for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value) / pi);
-
-    } else {
-        let smax = fixed_size * fixed_size;
-        for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value));
-    }
-    return res;
-}
-
-function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
-
-    if(!fixed_value || fixed_value == 0)
-        fixed_value = max_fast(arr);
-
-    if(type_symbol == "circle") {
-        let smax = fixed_size * fixed_size * pi;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
-                );
-        }
-    } else {
-        let smax = fixed_size * fixed_size;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
-                );
-        }
-    }
-    return res
-}
-
-var type_col = function(layer_name, target, skip_if_empty_values=false){
-// Function returning an object like {"field1": "field_type", "field2": "field_type"},
-//  for the fields of the selected layer.
-// If target is set to "number" it should return an array containing only the name of the numerical fields
-// ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name]
-                    : result_data.hasOwnProperty(layer_name) ? result_data[layer_name]
-                    : joined_dataset[0],
-        fields = Object.getOwnPropertyNames(table[0]),
-        nb_features = table.length,
-        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-        result = {},
-        field = undefined,
-        tmp_type = undefined;
-    for(let j = 0, len = fields.length; j < len; ++j){
-        field = fields[j];
-        result[field] = [];
-        for(let i=0; i < deepth_test; ++i){
-            tmp_type = typeof table[i][field];
-            if(tmp_type == "string" && table[i][field].length == 0)
-                tmp_type = "empty";
-            else if(tmp_type === "string" && !isNaN(Number(table[i][field])))
-                tmp_type = "number";
-            else if(tmp_type === "object" && isFinite(table[i][field]))
-                tmp_type = "empty"
-            result[fields[j]].push(tmp_type);
-        }
-    }
-
-    for(let j = 0, len = fields.length; j < len; ++j){
-        field = fields[j];
-        if(result[field].every(function(ft){return ft === "number" || ft === "empty";})
-            && result[field].indexOf("number") > -1)
-            result[field] = "number";
-        else
-            result[field] = "string";
-    }
-    if(target){
-        let res = [];
-        for(let k in result)
-            if(result[k] === target && k != "_uid")
-                res.push(k);
-        return res;
-    } else
-        return result;
-}
-
-/**
-* Return a basic operator as a function, each one taking two numbers in arguments
-*
-* @param {String} operator
-* @return {function}
-*/
-function get_fun_operator(operator){
-    let operators = new Map([
-        ["+", function(a, b){ return a + b; }],
-        ["-", function(a, b){ return a - b; }],
-        ["/", function(a, b){ return a / b; }],
-        ["*", function(a, b){ return a * b; }],
-        ["^", function(a, b){ return Math.pow(a, b); }],
-    ]);
-    return operators.get(operator);
-}
-
-/**
-* Function to add a field to the targeted layer
-*
-* @param {Array} table - A reference to the "table" to work on
-* @param {String} layer - The name of the layer
-* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
-*
-*/
-function add_table_field(table, layer_name, parent){
-    function check_name(){
-        if(regexp_name.test(this.value) || this.value == "")
-            chooses_handler.new_name = this.value;
-        else { // Rollback to the last correct name  :
-            this.value = chooses_handler.new_name;
-            swal({title: i18next.t("Error") + "!",
-                  text: i18next.t("Unauthorized character!"),
-                  type: "error",
-                  allowOutsideClick: false});
-        }
-    };
-
-    function compute_and_add(){
-        let options = chooses_handler,
-            fi1 = options.field1,
-            fi2 = options.field2,
-            new_name_field = options.new_name,
-            operation = options.operator,
-            opt_val = options.opt_val;
-
-        if(!regexp_name.test(new_name_field)){
-            swal({title: "",
-                  text: i18next.t("app_page.explore_box.add_field_box.invalid_name"),
-                  type: "error",
-                  allowOutsideClick: false});
-            return Promise.reject("Invalid name");
-        }
-
-        if(options.type_operation === "math_compute" && table.length > 3200){
-            let formToSend = new FormData();
-            let var1 = [],
-                var2 = (fi2 == "user_const_value") ? +opt_val : [];
-            for(let i=0; i<table.length; i++){
-                var1.push(+table[i][fi1])
-            }
-            if(fi2 != "user_const_value"){
-                for(let i=0; i<table.length; i++){
-                    var2.push(+table[i][fi2])
-                }
-            }
-            formToSend.append('var1', JSON.stringify(var1));
-            formToSend.append('var2', JSON.stringify(var2));
-            formToSend.append('operator', operation);
-            return request_data("POST", "/helpers/calc", formToSend).then(function(e){
-                let data = JSON.parse(e.target.responseText);
-                for(let i=0; i<table.length; i++)
-                    table[i][new_name_field] = data[i];
-
-                return true;
-            });
-        }
-        else if(options.type_operation === "math_compute"){
-            let math_func = get_fun_operator(operation)
-            if(fi2 != "user_const_value"){
-                for(let i=0; i<table.length; i++){
-                    if(table[i][fi1] != null && table[i][fi2] != null){
-                        table[i][new_name_field] = math_func(+table[i][fi1], +table[i][fi2]);
-                    } else {
-                        table[i][new_name_field] = null;
-                    }
-                }
-            } else {
-                opt_val = +opt_val;
-                for(let i=0; i<table.length; i++){
-                    if(table[i][fi1] != null){
-                        table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
-                    } else {
-                        table[i][new_name_field] = null;
-                    }
-                }
-            }
-            return Promise.resolve(true);
-        } else {
-            if(operation == "truncate"){
-                for(let i=0; i < table.length; i++)
-                    table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
-
-            } else if (operation == "concatenate"){
-                for(let i=0; i < table.length; i++)
-                    table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
-            }
-            return Promise.resolve(true);
-        }
-        return Promise.reject("Unknown error")
-    };
-
-
-    function refresh_type_content(type){
-        field1.node().remove(); operator.node().remove(); field2.node().remove();
-        field1 = div1.append("select")
-                    .on("change", function(){ chooses_handler.field1 = this.value; });
-        operator = div1.append("select")
-                    .on("change", function(){
-                        chooses_handler.operator=this.value;
-                        refresh_subtype_content(chooses_handler.type_operation, this.value);
-                        });
-        field2 = div1.append("select")
-                    .on("change", function(){
-                        chooses_handler.field2 = this.value;
-                        if(this.value == "user_const_value"){
-                            val_opt.style("display", null);
-                        }
-                    });
-        if(type == "math_compute"){
-            math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
-            for(let k in fields_type){
-                if(fields_type[k] == "number"){
-                    field1.append("option").text(k).attr("value", k);
-                    field2.append("option").text(k).attr("value", k);
-                }
-            }
-            field2.append("option")
-                .attr("value", "user_const_value")
-                .text(i18next.t("app_page.explore_box.add_field_box.constant_value"));
-            val_opt.style("display", "none");
-            txt_op.text("");
-            chooses_handler.operator = math_operation[0];
-        } else {
-            string_operation.forEach(function(op){
-                operator.append("option").text(op[0]).attr("value", op[1]);
-            })
-            for(let k in fields_type){
-                if(fields_type[k] == "string"){
-                    field1.append("option").text(k).attr("value", k);
-                    field2.append("option").text(k).attr("value", k);
-                }
-            }
-            val_opt.style("display", null);
-            txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
-            chooses_handler.operator = string_operation[0];
-        }
-        chooses_handler.field1 = field1.node().value;
-        chooses_handler.field2 = field2.node().value;
-    };
-
-    function refresh_subtype_content(type, subtype){
-        if(type != "string_field"){
-            if(field2.node().value != "user_const_value"){
-                val_opt.style("display", "none");
-                txt_op.text("");
-            }
-        } else {
-            if(subtype == "truncate"){
-                txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
-                field2.attr("disabled", true);
-            } else {
-                txt_op.html("app_page.explore_box.add_field_box.join_char");
-                field2.attr("disabled", null);
-            }
-        }
-    };
-
-    var chooses_handler = {
-        field1: undefined, field2: undefined,
-        operator: undefined, type_operation: undefined,
-        opt_val: undefined, new_name: 'NewFieldName'
-        }
-
-    make_confirm_dialog("addFieldBox", i18next.t("app_page.explore_box.button_add_field"),
-                    {width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined}
-        ).then(function(valid){
-            if(valid){
-                document.querySelector("body").style.cursor = "wait";
-                compute_and_add(chooses_handler).then(
-                    function(resolved){
-                        if(window.fields_handler && current_layers[layer_name].targeted){
-                            fields_handler.unfill();
-                            fields_handler.fill(layer_name);
-                        }
-                        if(parent)
-                            parent.display_table(layer_name);
-                    }, function(error){
-                        if(error != "Invalid name")
-                            display_error_during_computation();
-                        console.log(error);
-                        document.querySelector("body").style.cursor = "";
-                }).done(()=> { document.querySelector("body").style.cursor = ""; });
-            }
-        });
-
-    var current_fields = Object.getOwnPropertyNames(table),
-        fields_type = type_col(layer_name),
-        regexp_name = new RegExp(/^[a-z0-9_]+$/i), // Only allow letters (lower & upper cases), number and underscore in the field name
-        box_content = d3.select(".addFieldBox").append("div"),
-        div1 = box_content.append("div").attr("id", "field_div1"),
-        div2 = box_content.append("div").attr("id", "field_div2");
-
-    var new_name = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_name"))
-                            .insert("input").attr('value', 'NewFieldName')
-                            .on("keyup", check_name);
-    var type_content = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_content"))
-                            .insert("select").attr("id", "type_content_select")
-                            .on("change", function(){
-                                chooses_handler.type_operation = this.value;
-                                refresh_type_content(this.value); });
-
-    [[i18next.t("app_page.explore_box.add_field_box.between_numerical"), "math_compute"],
-     [i18next.t("app_page.explore_box.add_field_box.between_string"), "string_field"]
-    ].forEach(function(d,i){
-        type_content.append("option").text(d[0]).attr("value", d[1]);
-    });
-
-    var field1 = div1.append("select").on("change", function(){ chooses_handler.field1 = this.value; }),
-        operator = div1.append("select").on("change", function(){
-                            chooses_handler.operator = this.value;
-                            refresh_subtype_content(chooses_handler.type_operation, this.value);
-                            }),
-        field2 = div1.append("select").on("change", function(){ chooses_handler.field2 = this.value; });
-
-    var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
-        val_opt = div2.append("input").attr("id", "val_opt")
-                        .style("display", "none")
-                        .on("change", function(){ chooses_handler.opt_val = this.value;});
-
-    var math_operation = ["+", "-", "*", "/", "^"];
-
-    var string_operation = [
-         [i18next.t("app_page.explore_box.add_field_box.concatenate"), "concatenate"],
-         [i18next.t("app_page.explore_box.add_field_box.truncate"), "truncate"]
-        ];
-    {
-        let a = type_content.node(),
-            b = false;
-        for(let fi in fields_type){
-            if(fields_type[fi] == "number"){
-                b = true;
-                break;
-            }
-        }
-        a.value = b ? "math_compute" : "string_field";
-        a.dispatchEvent(new Event('change'));
-    }
-    return;
-}
-
-
-// Function to be called after clicking on "render" in order to close the section 2
-// and to have the section 3 opened
-function switch_accordion_section(id_to_close="accordion2", id_to_open="accordion3"){
-    let section2 = document.getElementById(id_to_close).firstChild,
-        section3 = document.getElementById(id_to_open).firstChild;
-    if(section2.getAttribute("aria-expanded") == "true")
-        section2.dispatchEvent(new Event("click"));
-    if(section3.getAttribute("aria-expanded") == "false")
-        section3.dispatchEvent(new Event("click"));
-}
-
-/**
-* Return the haversine distance in kilometers between two points (lat/long coordinates)
-*
-* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
-* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
-* @return {Number} distance - The distance in km between A and B
-*/
-function haversine_dist(A, B){
-    let pi_dr = Math.PI / 180;
-
-    let lat1 = +A[0], lon1 = +A[1],
-        lat2 = +B[0], lon2 = +B[1];
-
-    let x1 = lat2 - lat1,
-        dLat = x1 * pi_dr,
-        x2 = lon2 - lon1,
-        dLon = x2 * pi_dr;
-
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-/**
-* Return the distance in kilometers between two points (lat/long coordinates)
-* according to the spherical law of cosines
-*
-* @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
-* @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
-* @return {Number} distance - The distance in km between A and B
-*/
-function coslaw_dist(A, B){
-    let pi_dr = Math.PI / 180;
-
-    let lat1 = +A[0], lon1 = +A[1],
-        lat2 = +B[0], lon2 = +B[1];
-    let phi1 = lat1 * pi_dr,
-        phi2 = lat2 * pi_dr,
-        d_lambda = (lon2-lon1) * pi_dr;
-    return Math.acos(Math.sin(phi1) * Math.sin(phi2) +
-                Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)
-                ) * 6371;
-}
-
-function path_to_geojson(id_layer){
-    if(id_layer.indexOf('#') != 0)
-        id_layer = ["#", id_layer].join('');
-    var result_geojson = [];
-    d3.select(id_layer)
-        .selectAll("path")
-        .each(function(d,i){
-            result_geojson.push({
-                type: "Feature",
-                id: i,
-                properties: d.properties,
-                geometry: {type: d.type, coordinates: d.coordinates}
-            });
-        });
-    return JSON.stringify({
-        type: "FeatureCollection",
-        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-        features: result_geojson
-    });
-}
-
-function display_error_during_computation(msg){
-    msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
-    swal({title: i18next.t("app_page.common.error") + "!",
-          text: i18next.t("app_page.common.error_message") + msg,
-          type: "error",
-          allowOutsideClick: false});
-}
-
-/**
-* Perform an asynchronous request
-*
-* @param {String} method - the method like "GET" or "POST"
-* @param {String} url - the targeted url
-* @param {FormData} data - Optionnal, the data to be send
-* @return {Promise} response
-*/
-function request_data(method, url, data){
-    return new Promise(function(resolve, reject){
-        var request = new XMLHttpRequest();
-        request.open(method, url, true);
-        request.onload = resolve;
-        request.onerror = reject;
-        request.send(data);
-    });
-}
-
-/**
-* Function computing the min of an array of values (tking care of empty/null/undefined slot)
-*  - no fancy functionnalities here (it doesn't add anything comparing to Math.min.apply()
-*    or d3.min() except a little speed-up)
-*
-* @param {Array} arr
-* @return {Number} min
-*/
-function min_fast(arr){
-  let min = arr[0];
-  for(let i = 1; i < arr.length; ++i){
-    let val = +arr[i];
-    if(val && val < min)
-       min = val;
+  ctx.fillStyle = color;
+  for (let i = 0; i < bins; i++) {
+    var barheight = Math.floor(Math.min(class_count.counts[i] / cap, 1) * (height - 1));
+    x += barspace;
+    ctx.fillRect(x, height, barwidth, - barheight);
+    x += barwidth;
   }
-  return min;
+  canvas.setAttribute("tooltip-info", make_mini_summary(class_count))
+  new Tooltip(canvas, {
+          dataAttr: "tooltip-info",
+          animation: "slideNfade",
+          duration: 50,
+          delay: 100,
+          container: document.getElementById("twbs"),
+          placement: "top"
+      });
 }
 
-/**
-* Return the maximum value of an array of numbers
-*
-* @param {Array} arr - the array of numbers
-* @return {Number} max
-*/
-function max_fast(arr){
-  let max = arr[0];
-  for(let i = 1; i < arr.length; ++i){
-    let val = +arr[i];
-    if(val > max)
-       max = arr[i];
-  }
-  return max;
+function make_mini_summary(summary){
+  let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
+  return [
+   i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
+   i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
+   i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
+   i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
+  ].join('');
 }
-
-/**
-* Test an array of numbers for negative values
-*
-* @param {Array} arr - the array of numbers
-* @return {Bool} result - True or False, whether it contains negatives values or not
-*/
-function has_negative(arr){
-  for(let i = 0; i < arr.length; ++i)
-    if(+arr[i] < 0)
-       return true;
-  return false;
-}
-
-/**
-* @param {Array} arr - The array to test
-* @return {Boolean} result - True or False, according to whether it contains empty values or not
-*/
-var contains_empty_val = function(arr){
-    for(let i = arr.length - 1; i > -1; --i)
-        if(arr[i] == null) return true;
-    return false;
-}
-
-var round_value = function(val, nb){
-    if(nb == undefined)
-        return val;
-    let dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
-    return nb >= 0
-        ? Math.round(+val * dec_mult) / dec_mult
-        : Math.round(+val / dec_mult) * dec_mult;
-}
-
-function get_nb_decimals(nb){
-    let tmp = nb.toString().split('.');
-    return tmp.length < 2 ? 0 : tmp[1].length;
-}
-
-function get_nb_left_separator(nb){
-    let tmp = nb.toString().split('.');
-    return tmp[0].length;
-}
-
-function getDecimalSeparator(){
-    return 1.1.toLocaleString().substr(1,1)
-}
-
-function make_content_summary(serie, precision=6){
-    return [
-        i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>",
-        i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ",
-        i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>",
-        i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>",
-        i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>",
-        i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>",
-        i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>",
-        i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)
-    ].join('')
-}
-
 
 function fillMenu_PropSymbolTypo(layer){
-    var rendering_params = fields_PropSymbolTypo.rendering_params,
-        dv2 = section2.append("p").attr("class", "form-rendering");
+    var dv2 = make_template_functionnality(section2);
 
-    dv2.append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer", "vertical-align": "bottom", "float": "right"});
+    let a = dv2.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1'})
+      .html(i18next.t("app_page.func_options.proptypo.field1"))
+    let field1_selec = a.insert('select')
+      .attrs({class: 'params', id: 'PropSymbolTypo_field_1'});
 
-    var field1_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field1"))
-                          .insert('select')
-                          .attrs({class: 'params', id: 'PropSymbolChoro_field_1'});
+    let b = dv2.append('p').attr('class', 'params_section2');
+    b.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size'})
+      .html(i18next.t("app_page.func_options.proptypo.fixed_size"));
+    let ref_size = b.insert('input')
+        .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size',
+                min: 0.1, max: 66.0, value: 30.0, step: "any"})
+        .style("width", "50px");
+    b.append('label-item').html(' (px)');
 
-    var ref_size = dv2.append('p').style("display", "inline").html(i18next.t("app_page.func_options.proptypo.fixed_size"))
-                     .insert('input')
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size'})
-                     .attrs({min: 0.1, max: 66.0, value: 15.0, step: "any"})
-                     .style("width", "50px");
-
-    dv2.append('label-item').html(' px');
-
-    var ref_value = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.on_value"))
-                     .insert('input')
-                     .styles({'width': '100px', "margin-left": "10px"})
-                     .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value'})
-                     .attrs({min: 0.1, step: 0.1});
+    let c = dv2.append('p').attr('class', 'params_section2');
+    c.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.on_value'})
+      .html(i18next.t("app_page.func_options.proptypo.on_value"))
+    let ref_value = c.insert('input')
+      .styles({'width': '100px', "margin-left": "10px"})
+      .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value'})
+      .attrs({min: 0.1, step: 0.1});
 
     // Other symbols could probably easily be proposed :
-    var symb_selec = dv2.append('p')
-                        .html(i18next.t("app_page.func_options.proptypo.symbol_type"))
-                        .insert('select')
-                        .attr('class', 'params');
+    let d = dv2.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.symbol_type'})
+      .html(i18next.t("app_page.func_options.proptypo.symbol_type"));
+    let symb_selec = d.insert('select')
+      .attrs({'class': 'params', 'id': 'PropSymbolTypo_symbol_type'});
 
-    [[i18next.t("app_page.func_options.common.symbol_circle"), "circle"],
-     [i18next.t("app_page.func_options.common.symbol_square"), "rect"]].forEach( symb => {
-        symb_selec.append("option").text(symb[0]).attr("value", symb[1]);
+    [['app_page.func_options.common.symbol_circle', 'circle'],
+     ['app_page.func_options.common.symbol_square', 'rect']].forEach( symb => {
+        symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
     });
 
-    var field2_selec = dv2.append('p').html(i18next.t("app_page.func_options.proptypo.field2"))
-                        .insert('select').attrs({class: 'params', id: 'PropSymbolTypo_field_2'})
-                        .on("change", function(){
-                            let field_name = this.value;
-                            if(rendering_params[field_name])
-                                d3.select("#propChoro_yes").attr("disabled", null);
-                            else
-                                d3.select("#propChoro_yes").attr("disabled", true);
-                        });
+    let e = dv2.append('p').attr('class', 'params_section2');
+    e.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2'})
+      .html(i18next.t("app_page.func_options.proptypo.field2"));
+    var field2_selec = e.insert('select')
+        .attrs({class: 'params', id: 'PropSymbolTypo_field_2'});
 
-    var uo_layer_name = dv2.append('p').html(i18next.t("app_page.func_options.common.output"))
-                        .insert('input')
-                        .style("width", "200px")
-                        .attr('class', 'params')
-                        .attr("id", "PropSymbolTypo_output_name");
+    let f = dv2.insert('p').style("margin", "auto");
+    f.append("button")
+      .attrs({id: "Typo_class", class: "button_disc params i18n",
+              'data-i18n': '[html]app_page.func_options.typo.color_choice'})
+      .styles({"font-size": "0.8em", "text-align": "center"})
+      .html(i18next.t("app_page.func_options.typo.color_choice"));
 
-    var ok_button = dv2.insert("p").styles({"text-align": "right", margin: "auto"})
-                        .append('button')
-                        .attr('id', 'propTypo_yes')
-                        .attr('class', 'button_st3')
-                        .attr('disabled', true)
-                        .text(i18next.t("app_page.func_options.common.render"));
+    make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
+    make_ok_button(dv2, 'propTypo_yes');
+    section2.selectAll(".params").attr("disabled", true);
+}
 
-    ok_button.on("click", function(){
-        if(!ref_value.node().value) return
-        if(rendering_params[field2_selec.node().value]){
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                nb_features = user_data[layer].length,
-                rd_params = {},
-                color_field = field2_selec.node().value,
-                new_layer_name = uo_layer_name.node().value;
+var fields_PropSymbolTypo = {
+    fill: function(layer){
+        if(!layer) return;
+        section2.selectAll(".params").attr("disabled", null);
+        let self = this,
+            fields_num = type_col(layer, "number"),
+            fields_all = type_col(layer),
+            nb_features = user_data[layer].length,
+            field1_selec = section2.select("#PropSymbolTypo_field_1"),
+            field2_selec = section2.select("#PropSymbolTypo_field_2"),
+            ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
+            uo_layer_name = section2.select('#PropSymbolTypo_output_name'),
+            btn_typo_class = section2.select('#Typo_class'),
+            ok_button = section2.select('#propTypo_yes');
 
-            new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                            ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsTypo");
+        if(fields_all.length == 0){
+            display_error_num_field();
+            return;
+        }
 
-            rd_params.field = field1_selec.node().value;
-            rd_params.new_name = new_layer_name;
-            rd_params.nb_features = nb_features;
-            rd_params.ref_layer_name = layer;
-            rd_params.symbol = symb_selec.node().value;
-            rd_params.ref_value = +ref_value.node().value;
-            rd_params.ref_size = +ref_size.node().value;
-            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+        fields_num.forEach(function(field){
+            field1_selec.append("option").text(field).attr("value", field);
+        });
 
-            let id_map = make_prop_symbols(rd_params),
-                colors_breaks = [];
+        for(let field in fields_all){
+            field2_selec.append("option").text(field).attr("value", field);
+        }
 
-            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
-                colors_breaks.push([
-                        [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
-                        rendering_params[color_field]['colors'][i-1]
-                    ]);
+        field1_selec.on("change", function(){
+            let field_name = this.value,
+                max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+            ref_value_field.attrs({max: max_val_field, value: max_val_field});
+            uo_layer_name.attr('value', ['Typo', field_name, field2_selec.node().value, layer].join('_'));
+        });
+        field2_selec.on("change", function(){
+            let field_name = this.value;
+            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+            uo_layer_name.attr('value', ['Typo', field1_selec.node().value, field_name, layer].join('_'));
+        });
+        btn_typo_class.on("click", function(){
+            let selected_field = field2_selec.node().value,
+                new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
+            display_categorical_box(layer, selected_field)
+                .then(function(confirmed){
+                    if(confirmed){
+                        ok_button.attr("disabled", null);
+                        self.rendering_params[selected_field] = {
+                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                            }
+                    }
+                });
+        });
+        ok_button.on('click', function(){
+          render_PropSymbolTypo(
+            field1_selec.node().value,
+            field2_selec.node().value,
+            uo_layer_name.node().value,
+            ref_value_field.node().value,
+            section2.select('#PropSymbolTypo_ref_size').node().value,
+            section2.select('#PropSymbolTypo_symbol_type').node().value
+          )
+        });
+        setSelected(field2_selec.node(), Object.getOwnPropertyNames(fields_all)[0]);
+    },
+
+    unfill: function(){
+        let field1_selec = document.getElementById("PropSymbolTypo_field_1"),
+            field2_selec = document.getElementById("PropSymbolTypo_field_2");
+        for(let i = field1_selec.childElementCount - 1; i >= 0; i--){
+            field1_selec.removeChild(field1_selec.children[i]);
+        }
+        for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
+            field2_selec.removeChild(field2_selec.children[i]);
+        }
+        section2.selectAll(".params").attr("disabled", true);
+    },
+    rendering_params: {}
+};
+
+
+function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, ref_size, symb_selec){
+  if(!ref_value || !color_field || !fields_PropSymbolTypo.rendering_params[color_field])
+      return;
+  let layer = Object.getOwnPropertyNames(user_data)[0],
+      nb_features = user_data[layer].length,
+      rendering_params = fields_PropSymbolTypo.rendering_params[color_field],
+      rd_params = {};
+
+  new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                  ? check_layer_name(new_layer_name) : check_layer_name(["PropSymbolsTypo", field1, color_field, layer].join('_'));
+
+  rd_params.field = field1;
+  rd_params.new_name = new_layer_name;
+  rd_params.nb_features = nb_features;
+  rd_params.ref_layer_name = layer;
+  rd_params.symbol = symb_selec;
+  rd_params.ref_value = +ref_value;
+  rd_params.ref_size = +ref_size;
+  rd_params.fill_color = rendering_params.colorByFeature;
+
+  let id_map = make_prop_symbols(rd_params);
+
+  current_layers[new_layer_name] = {
+      renderer: "PropSymbolsTypo",
+      features_order: id_map,
+      symbol: rd_params.symbol,
+      ref_layer_name: layer,
+      rendered_field: field1,
+      rendered_field2: color_field,
+      size: [ref_value, ref_size],
+      "stroke-width-const": 1,
+      fill_color: { "class": id_map.map(obj => obj[3]) },
+      is_result: true,
+      n_features: nb_features,
+      color_map: rendering_params.color_map
+  };
+  zoom_without_redraw();
+  switch_accordion_section();
+  handle_legend(new_layer_name);
+}
+
+function fillMenu_Discont(){
+    var dv2 = make_template_functionnality(section2);
+
+    let a = dv2.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field'})
+      .html(i18next.t('app_page.func_options.discont.field'));
+    a.insert('select')
+      .attrs({class: 'params', id: 'field_Discont'});
+
+    let b = dv2.append('p').attr('class', 'params_section2');
+    b.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+      .html(i18next.t('app_page.func_options.discont.id_field'));
+    b.insert('select')
+      .attrs({class: 'params', id: 'field_id_Discont'});
+
+    let c = dv2.append('p').attr('class', 'params_section2');
+    c.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity'})
+      .html(i18next.t('app_page.func_options.discont.type_discontinuity'));
+    let disc_kind = c.insert('select')
+      .attrs({class: 'params i18n', id: 'kind_Discont'});
+
+    [['app_page.func_options.discont.type_relative', 'rel'],
+      ['app_page.func_options.discont.type_absolute', 'abs']
+    ].forEach(k => {
+        disc_kind.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
+    });
+
+    let d = dv2.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+      .html(i18next.t('app_page.func_options.discont.nb_class'));
+    d.insert('input')
+      .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
+      .style('width', '50px');
+
+    let e = dv2.append('p').attr('class', 'params_section2');
+    e.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization'})
+      .html(i18next.t('app_page.func_options.discont.discretization'))
+    let disc_type = e.insert('select')
+      .attrs({'class': 'params i18n', 'id': 'Discont_discKind'});
+
+    [
+     ['app_page.common.equal_interval', 'equal_interval'],
+     ['app_page.common.quantiles', 'quantiles'],
+     ['app_page.common.Q6', 'Q6'],
+     ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
+     ['app_page.common.jenks', 'jenks']
+    ].forEach(field => {
+         disc_type.append('option').text(i18next.t(field[0])).attrs({'value': field[1], 'data-i18n': '[text]' + field[0]});
+    });
+
+    let f = dv2.append('p').attr('class', 'params_section2');
+    f.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color'})
+      .html(i18next.t('app_page.func_options.discont.color'));
+    f.insert('input')
+      .attrs({class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random()});
+
+    make_layer_name_button(dv2, 'Discont_output_name');
+    make_ok_button(dv2, 'yes_Discont', false);
+
+    dv2.selectAll('.params').attr('disabled', true);
+}
+
+var fields_Discont = {
+    fill: function(layer){
+        if(!layer) return;
+        let fields_num = type_col(layer, "number"),
+            fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+            field_discont = section2.select("#field_Discont"),
+            field_id = section2.select("#field_id_Discont"),
+            ok_button = section2.select('#yes_Discont');
+
+        if(fields_num.length == 0){
+            display_error_num_field();
+            return;
+        }
+
+        fields_num.forEach(function(field){
+                field_discont.append("option").text(field).attr("value", field);
+        });
+        fields_all.forEach(function(field){
+                field_id.append("option").text(field).attr("value", field);
+        });
+        field_discont.on("change", function(){
+          let disc_kind = document.getElementById("Discont_discKind").value;
+          document.getElementById("Discont_output_name").value = ["Disc", this.value, disc_kind, layer].join('_');
+        });
+        ok_button.on('click', render_discont);
+        section2.selectAll(".params").attr("disabled", null);
+        document.getElementById("Discont_output_name").value = ["Disc", layer].join('_');
+    },
+    unfill: function(){
+        unfillSelectInput(document.getElementById("field_Discont"));
+        unfillSelectInput(document.getElementById("field_id_Discont"));
+        section2.selectAll(".params").attr("disabled", true);
+    }
+}
+
+var render_discont = function(){
+//    return new Promise(function(resolve, reject){
+    let layer = Object.getOwnPropertyNames(user_data)[0],
+        field = document.getElementById("field_Discont").value,
+        field_id = document.getElementById("field_id_Discont").value,
+        min_size = 1,
+        max_size = 10,
+        threshold = 1,
+        disc_kind = document.getElementById("kind_Discont").value,
+        nb_class = +document.getElementById("Discont_nbClass").value,
+        user_color = document.getElementById("color_Discont").value,
+        method = document.getElementById("kind_Discont").value,
+        new_layer_name = document.getElementById("Discont_output_name").value;
+
+    new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
+                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, disc_kind, layer].join('_'));
+
+    let result_value = new Map(),
+        result_geom = {},
+        topo_mesh = topojson.mesh,
+        math_max = Math.max;
+
+    // Use topojson.mesh a first time to compute the discontinuity value
+    // for each border (according to the given topology)
+    // (Discontinuities could also be computed relativly fastly server side
+    // which can be a better solution for large dataset..)
+    if(disc_kind == "rel")
+        topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                if(a !== b){
+                    let new_id = [a.id, b.id].join('_'),
+                        new_id_rev = [b.id, a.id].join('_');
+                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
+                        let value = math_max(a.properties[field] / b.properties[field],
+                                             b.properties[field] / a.properties[field]);
+                        result_value.set(new_id, value);
+                    }
+                }
+                return false; });
+    else
+        topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                if(a !== b){
+                    let new_id = [a.id, b.id].join('_'),
+                        new_id_rev = [b.id, a.id].join('_');
+                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
+                        let value = math_max(a.properties[field] - b.properties[field],
+                                             b.properties[field] - a.properties[field]);
+                        result_value.set(new_id, value);
+                    }
+                }
+                return false; });
+
+    let arr_disc = [],
+        arr_tmp = [];
+    for(let kv of result_value.entries()){
+        if(!isNaN(kv[1])){
+            arr_disc.push(kv);
+            arr_tmp.push(kv[1]);
+        }
+    }
+
+    arr_disc.sort((a,b) => a[1] - b[1]);
+    arr_tmp.sort((a,b) => a - b);
+
+    let nb_ft = arr_tmp.length,
+        step = (max_size - min_size) / (nb_class - 1),
+        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
+
+    let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
+    if(!disc_result || !disc_result[2]){
+        let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+        let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
+        swal("", i18next.t("app_page.common.error_discretization", {arg: w}), "error");
+        return;
+    }
+    let serie = disc_result[3],
+        breaks = disc_result[2].map(ft => [ft[0], ft[1]]);
+
+    let result_layer = map.append("g").attr("id", new_layer_name)
+            .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
+            .attr("class", "result_layer layer");
+
+    result_data[new_layer_name] = [];
+    let data_result = result_data[new_layer_name],
+        result_lyr_node = result_layer.node();
+
+    // This is bad and should be replaced by somthing better as we are
+    // traversing the whole topojson again and again
+    // looking for each "border" from its "id" (though it isn't that slow)
+//    let chunk_size = 450 > nb_ft ? nb_ft : 450,
+//        _s = 0;
+//
+//    var compute = function(){
+//        for(let i=_s; i<chunk_size; i++){
+////            let id_ft = arr_disc[i][0],
+////                val = arr_disc[i][1],
+//            let [id_ft, val] = arr_disc[i],
+//                p_size = class_size[serie.getClass(val)];
+//            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
+//            result_layer.append("path")
+//                .datum(topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+////                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
+//                    let [a_id, b_id] = id_ft.split("_");
+//                    return a != b
+//                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
+//                .attrs({d: path, id: ["feature", i].join('_')})
+//                .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
+//                .style("stroke-opacity", val >= threshold ? 1 : 0);
+//            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+//        }
+//        _s = chunk_size;
+//        if(_s < nb_ft){
+//            chunk_size += 450;
+//            if(chunk_size > nb_ft) chunk_size = nb_ft;
+//            setTimeout(compute, 0);
+//            return;
+//        }
+//    }
+//
+//    compute();
+
+//    var datums = [];
+    var d_res = [];
+    var compute = function(){
+        for(let i=0; i<nb_ft; i++){
+            let id_ft = arr_disc[i][0],
+                val = arr_disc[i][1],
+                p_size = class_size[serie.getClass(val)],
+                datum = topo_mesh(_target_layer_file, _target_layer_file.objects[layer], function(a, b){
+                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
+                    return a != b
+                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); });
+            d_res.push([val, {id: id_ft, disc_value: val, prop_value: p_size}, datum, p_size]);
+        }
+    }
+
+    compute();
+    d_res.sort((a,b) => b[0] - a[0]);
+
+    for(let i=0; i<nb_ft; i++){
+        let val = d_res[i][0];
+        result_layer.append("path")
+            .datum(d_res[i][2])
+            .attrs({d: path, id: ["feature", i].join('_')})
+            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
+        data_result.push(d_res[i][1])
+        result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
+    }
+
+    current_layers[new_layer_name] = {
+        "renderer": "DiscLayer",
+        "breaks": breaks,
+        "min_display": threshold,
+        "type": "Line",
+        "rendered_field": field,
+        "size": [0.5, 10],
+        "is_result": true,
+        "fixed_stroke": true,
+        "ref_layer_name": layer,
+        "fill_color": { "single": user_color },
+        "n_features": nb_ft
+        };
+    create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+    up_legends();
+    zoom_without_redraw();
+    switch_accordion_section();
+    handle_legend(new_layer_name);
+    send_layer_server(new_layer_name, "/layers/add");
+//    resolve(true);
+//});
+}
+
+function fillMenu_PropSymbol(layer){
+    var dialog_content = make_template_functionnality(section2),
+        max_allowed_size = Math.round(h/2 - h/10);
+
+    let a = dialog_content.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
+      .html(i18next.t("app_page.func_options.common.field"));
+    let field_selec = a.insert('select')
+      .attrs({class: 'params', 'id': "PropSymbol_field_1"});
+
+    let b = dialog_content.append('p').attr('class', 'params_section2');
+    b.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size'})
+      .html(i18next.t("app_page.func_options.prop.fixed_size"));
+    let ref_size = b.insert('input')
+      .attrs({id: 'PropSymbol_ref_size', type: 'number', class: 'params', min: 0.2, max: max_allowed_size, value: 30.0, step: 0.1})
+      .style("width", "50px");
+    b.append('span').html(" px");
+
+    let c = dialog_content.append('p').attr('class', 'params_section2');
+    c.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.on_value'})
+      .html(i18next.t("app_page.func_options.prop.on_value"));
+    let ref_value = c.insert('input')
+      .styles({'width': '100px', "margin-left": "10px"})
+      .attrs({id: 'PropSymbol_ref_value', type: 'number', class: "params", min: 0.1, step: 0.1});
+
+    let d = dialog_content.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_type'})
+      .html(i18next.t("app_page.func_options.prop.symbol_type"));
+    let symb_selec = d.insert('select')
+      .attrs({'class': 'params i18n', "id": "PropSymbol_symbol"});
+
+    [['app_page.func_options.common.symbol_circle', 'circle'],
+     ['app_page.func_options.common.symbol_square', 'rect']
+    ].forEach(function(symb){
+        symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});});
+
+    let color_section = dialog_content.append('p').attr('class', 'params_section2');
+    color_section.append("span")
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_color'})
+      .html(i18next.t("app_page.func_options.prop.symbol_color"));
+    let color_par = color_section.append('select')
+      .attrs({id: 'PropSymbol_nb_colors', class: 'params'});
+    color_par.append("option")
+        .attrs({value: 1, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_one_color'})
+        .text(i18next.t("app_page.func_options.prop.options_one_color"));
+    color_par.append("option")
+        .attrs({value: 2, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_two_colors'})
+        .text(i18next.t("app_page.func_options.prop.options_two_colors"));
+
+    let col_p = dialog_content.append("p")
+      .attr('class', 'params_section2')
+      .styles({'padding-top': '5px', 'margin-bottom': '-5px', 'text-align': 'center'});
+    col_p.insert('input')
+      .styles({"position": "unset"})
+      .attrs({type: "color", class: "params", id: "PropSymbol_color1", value: ColorsSelected.random()});
+    col_p.insert('input')
+      .styles({"display": "none", "position": "unset"})
+      .attrs({type: "color", class: "params", id: "PropSymbol_color2", value: ColorsSelected.random()});
+
+    let col_b = dialog_content.insert("p").attr('class', 'params_section2');
+    col_b.insert("span")
+      .style("display", "none")
+      .attrs({id: 'PropSymbol_color_txt', class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.options_break_two_colors'})
+      .html(i18next.t("app_page.func_options.prop.options_break_two_colors"));
+    col_b.insert('input')
+      .attrs({id: 'PropSymbol_break_val', 'type': 'number', class: "params"})
+      .styles({"display": "none", "width": "75px"});
+
+    make_layer_name_button(dialog_content, 'PropSymbol_output_name');
+    make_ok_button(dialog_content, 'PropSymbol_yes', false);
+    dialog_content.selectAll(".params").attr("disabled", true);
+}
+
+var fields_PropSymbol = {
+    fill: function(layer){
+        if(!layer) return;
+        section2.selectAll(".params").attr("disabled", null);
+        let fields = type_col(layer, "number"),
+            nb_features = user_data[layer].length,
+            field_selec = section2.select("#PropSymbol_field_1"),
+            nb_color = section2.select('#PropSymbol_nb_colors'),
+            ok_button = section2.select('#PropSymbol_yes'),
+            ref_value_field = section2.select('#PropSymbol_ref_value'),
+            ref_size = section2.select('#PropSymbol_ref_size'),
+            symb_selec = section2.select('#PropSymbol_symbol'),
+            uo_layer_name = section2.select('#PropSymbol_output_name'),
+            fill_color = section2.select('#PropSymbol_color1'),
+            fill_color2 = section2.select('#PropSymbol_color2'),
+            fill_color_opt = section2.select('#PropSymbol_break_val'),
+            fill_color_text = section2.select('#PropSymbol_color_txt');
+
+        fields.forEach(function(field){
+            field_selec.append("option").text(field).attr("value", field);
+        });
+
+        field_selec.on("change", function(){
+            let field_name = this.value,
+                field_values = user_data[layer].map(obj => +obj[field_name]),
+                max_val_field = max_fast(field_values);
+
+            uo_layer_name.attr('value', ["PropSymbol", this.value, layer].join('_'));
+            ref_value_field.attrs({"max": max_val_field, 'value': max_val_field});
+            if(has_negative(field_values)){
+                setSelected(nb_color.node(), 2);
+                break_val.attr('value', 0);
+            } else {
+                setSelected(nb_color.node(), 1);
             }
+        });
 
-            let options_disc = {schema: rendering_params[color_field].schema,
-                                colors: rendering_params[color_field].colors,
-                                no_data: rendering_params[color_field].no_data}
-
-            current_layers[new_layer_name] = {
-                renderer: "PropSymbolsTypo",
-                features_order: id_map,
-                symbol: rd_params.symbol,
-                ref_layer_name: layer,
-                options_disc: options_disc,
-                rendered_field: field1_selec.node().value,
-                rendered_field2: field2_selec.node().value,
-                size: [+ref_value.node().value, +ref_size.node().value],
-                "stroke-width-const": 1,
-                fill_color: { "class": id_map.map(obj => obj[3]) },
-                colors_breaks: colors_breaks,
-                is_result: true,
-                n_features: nb_features
-            };
+        nb_color.on("change", function(){
+            if(this.value == 1){
+                fill_color2.style("display", "none");
+                fill_color_opt.style("display", "none");
+                fill_color_text.style("display", "none");
+            } else {
+                fill_color2.style("display", null);
+                fill_color_opt.style("display", null);
+                fill_color_text.style("display", "inline");
+            }
+          });
+        ok_button.on("click", function(){
+            let nb_features = user_data[layer].length,
+                field_to_render = field_selec.node().value,
+                user_new_layer_name = uo_layer_name.node().value,
+                new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
+                rendering_params = { "field": field_to_render,
+                                     "nb_features": nb_features,
+                                     "new_name": new_layer_name,
+                                     "ref_layer_name": layer,
+                                     "symbol": symb_selec.node().value,
+                                     "ref_size": +ref_size.node().value,
+                                     "ref_value": +ref_value_field.node().value,
+                                     "fill_color": fill_color.node().value };
+            if(+nb_color.node().value == 2){
+                rendering_params["break_val"] = +fill_color_opt.node().value;
+                rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
+            }
+            make_prop_symbols(rendering_params);
             zoom_without_redraw();
             switch_accordion_section();
-        }
+            handle_legend(new_layer_name);
+        });
+        uo_layer_name.attr('value', ["PropSymbols", layer].join('_'));
+        setSelected(field_selec.node(), fields[0]);
+    },
+
+    unfill: function(){
+        let field_selec = document.getElementById("PropSymbol_field_1");
+        unfillSelectInput(field_selec);
+        section2.selectAll(".params").attr("disabled", true);
+    }
+};
+
+function fillMenu_TypoSymbol(){
+    var dv2 = make_template_functionnality(section2);
+    let a = dv2.append("p").attr('class', 'params_section2');
+    a.append('span')
+      .attrs({"class": "i18n", "data-i18n": "[html]app_page.func_options.typosymbol.field"})
+      .html(i18next.t("app_page.func_options.typosymbol.field"));
+    let field_selec = a.insert('select')
+      .attrs({class: "params", id: "field_Symbol"});
+
+    let b = dv2.insert('p').style("margin", "auto").attr('class', 'params_section2');
+    b.append("button")
+      .attrs({id: "selec_Symbol", class: "button_disc params i18n",
+              "data-i18n": "[html]app_page.func_options.typosymbol.symbols_choice"})
+      .styles({"font-size": "0.8em", "text-align": "center"})
+      .html(i18next.t("app_page.func_options.typosymbol.symbols_choice"));
+
+    make_layer_name_button(dv2, 'TypoSymbols_output_name')
+    make_ok_button(dv2, 'yesTypoSymbols');
+    dv2.selectAll(".params").attr("disabled", true);
+}
+
+var fields_TypoSymbol = {
+    fill: function(layer){
+        if(!layer) return;
+        let fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+            field_to_use = section2.select("#field_Symbol"),
+            selec_symbol = section2.select("#selec_Symbol"),
+            uo_layer_name = section2.select('#TypoSymbols_output_name'),
+            ok_button = section2.select('#yesTypoSymbols'),
+            self = this;
+
+        section2.selectAll(".params").attr("disabled", null);
+        fields_all.forEach(function(field){
+            field_to_use.append("option").text(field).attr("value", field);
+        });
+        field_to_use.on("change", function(){
+            let field = this.value;
+            if(self.rendering_params[field]){
+              document.getElementById("yesTypoSymbols").disabled = null;
+              self.box_typo = display_box_symbol_typo(layer, this.value, self.rendering_params[field].symbols_map);
+            } else {
+              document.getElementById("yesTypoSymbols").disabled = true;
+              self.box_typo = display_box_symbol_typo(layer, this.value);
+            }
+        });
+        selec_symbol.on("click", function(){
+            swal({
+                    title: "",
+                    text: i18next.t("app_page.common.error_too_many_features"),
+                    type: "warning",
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    cancelButtonText: i18next.t("app_page.common.cancel"),
+                }).then(() => {
+                    fields_TypoSymbol.box_typo().then(function(confirmed){
+                        if(confirmed){
+                          let field = document.getElementById("field_Symbol").value;
+                          document.getElementById("yesTypoSymbols").disabled = null;
+                          self.rendering_params[field] = {
+                              nb_cat: confirmed[0],
+                              symbols_map: confirmed[1],
+                              field: field
+                          };
+                        }
+                    });
+                }, () => {
+                    return;
+                });
+        });
+        ok_button.on('click', function(){
+          let field = field_to_use.node().value;
+          render_TypoSymbols(fields_TypoSymbol.rendering_params[field], uo_layer_name.node().value);
+        });
+
+        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
+        uo_layer_name.attr('value', ["Symbols", layer].join('_'));
+        document.getElementById("TypoSymbols_output_name").value = ["Symbols", layer].join('_');
+    },
+    unfill: function(){
+        unfillSelectInput(document.getElementById("field_Symbol"));
+        section2.selectAll(".params").attr("disabled", true);
+    },
+    box_typo: undefined,
+    rendering_params: {},
+    cats: {}
+}
+
+function render_TypoSymbols(rendering_params, new_name){
+    let layer_name = Object.getOwnPropertyNames(user_data)[0];
+    let field = rendering_params.field;
+    let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
+    let new_layer_data = [];
+
+    let ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
+    let nb_ft = ref_selection.length;
+
+    for(let i=0; i<nb_ft; i++){
+        let ft = ref_selection[i].__data__;
+        new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
+    }
+
+    let context_menu = new ContextMenu(),
+        getItems = (self_parent) => [
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
+    ];
+
+    map.append("g").attrs({id: layer_to_add, class: "layer"})
+        .selectAll("image")
+        .data(new_layer_data).enter()
+        .insert("image")
+        .attrs( d => {
+          let symb = rendering_params.symbols_map.get(d.Symbol_field);
+          return {
+            "x": d.coords[0] - symb[1] / 2,
+            "y": d.coords[1] - symb[1] / 2,
+            "width": symb[1] + "px",
+            "height": symb[1] + "px",
+            "xlink:href": symb[0]
+          };
+        })
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("contextmenu dblclick", function(){
+            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+            })
+        .call(drag_elem_geo);
+
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "symbol"], "result");
+
+    current_layers[layer_to_add] = {
+        "n_features": current_layers[layer_name].n_features,
+        "renderer": "TypoSymbols",
+        "symbols_map": rendering_params.symbols_map,
+        "rendered_field": field,
+        "is_result": true,
+        "symbol": "image",
+        "ref_layer_name": layer_name,
+        };
+    handle_legend(layer_to_add);
+    up_legends();
+    zoom_without_redraw();
+    switch_accordion_section();
+}
+
+function fillMenu_griddedMap(layer){
+    var dialog_content = make_template_functionnality(section2)
+
+    let a = dialog_content.append('p').attr('class', 'params_section2');
+    a.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field'})
+      .html(i18next.t("app_page.func_options.common.field"));
+    a.insert('select')
+      .attrs({class: 'params', id: "Gridded_field"});
+
+    let b = dialog_content.append('p').attr('class', 'params_section2');
+    b.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize'})
+      .html(i18next.t("app_page.func_options.grid.cellsize"));
+    b.insert('input')
+      .style("width", "100px")
+      .attrs({type: 'number', class: 'params', id: "Gridded_cellsize",
+              value: 10.0, min: 1.000, max: 7000, step: "any"});
+
+    let c = dialog_content.append('p').attr('class', 'params_section2');
+    c.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape'})
+      .html(i18next.t("app_page.func_options.grid.shape"));
+
+    var grid_shape = c.insert('select')
+        .attrs({class: 'params i18n', id: "Gridded_shape"});
+
+    let d = dialog_content.append('p').attr('class', 'params_section2');
+    d.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp'})
+      .html(i18next.t("app_page.func_options.grid.coloramp"));
+    var col_pal = d.insert('select')
+      .attrs({'class': 'params', 'id': 'Gridded_color_pal'});
+
+    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
+    'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds']
+    .forEach( color => { col_pal.append("option").text(color).attr("value", color); });
+
+    [['app_page.func_options.grid.square', 'Square'],
+     ['app_page.func_options.grid.diamond', 'Diamond'],
+     ['app_page.func_options.grid.hexagon', 'Hexagon']
+   ].forEach( shape => {
+        grid_shape.append("option").text(i18next.t(shape[0])).attrs({'value': shape[1], 'data-i18n': '[text]' + shape[0]});
     });
+
+    make_layer_name_button(dialog_content, 'Gridded_output_name');
+    make_ok_button(dialog_content, 'Gridded_yes', false);
+    section2.selectAll(".params").attr("disabled", true);
+}
+
+
+var fields_griddedMap = {
+    fill: function(layer){
+        if(!layer) return;
+
+        let fields = type_col(layer, "number"),
+            field_selec = section2.select("#Gridded_field"),
+            output_name = section2.select('#Gridded_output_name'),
+            grip_shape = section2.select('#Gridded_shape'),
+            ok_button = section2.select('#Gridded_yes');
+
+        fields.forEach(function(field){
+            field_selec.append("option").text(field).attr("value", field); });
+        field_selec.on("change", function(){
+            output_name.attr('value', ["Gridded", this.value, layer].join('_'));
+        });
+        ok_button.on("click", () => {
+          render_Gridded(
+            field_selec.node().value,
+            document.getElementById('Gridded_cellsize').value,
+            grip_shape.node().value,
+            document.getElementById('Gridded_color_pal').value,
+            output_name.node().value
+          )
+        });
+        output_name.attr('value', ["Gridded", layer].join('_'));
+        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
+        section2.selectAll(".params").attr("disabled", null);
+    },
+    unfill: function(){
+        let field_selec = document.getElementById("Gridded_field");
+        unfillSelectInput(field_selec);
+        section2.selectAll(".params").attr("disabled", true);
+    }
+}
+
+function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name){
+  let layer = Object.getOwnPropertyNames(user_data)[0],
+      formToSend = new FormData(),
+      var_to_send = {},
+      res_test = test_maxmin_resolution(resolution);
+
+  if(res_test){
+      let message = res_test === "low" ? i18next.t("app_page.common.error_too_low_resolution") : i18next.t("app_page.common.error_too_high_resolution")
+      display_error_during_computation(message);
+      return;
+  }
+
+  if(current_layers[layer].original_fields.has(field_n))
+      var_to_send[field_n] = [];
+  else
+      var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+
+  formToSend.append("json", JSON.stringify({
+      "topojson": current_layers[layer].key_name,
+      "var_name": var_to_send,
+      "cellsize": resolution * 1000,
+      "grid_shape": cell_shape
+      }));
+  xhrequest("POST", '/compute/gridded', formToSend, true)
+      .then(data => {
+          let options = {result_layer_on_add: true};
+          if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+              options["choosed_name"] = new_user_layer_name;
+          }
+
+          let n_layer_name = add_layer_topojson(data, options);
+          if(!n_layer_name)
+              return;
+          let res_data = result_data[n_layer_name],
+              nb_ft = res_data.length,
+              opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
+              d_values = [];
+
+          for(let i=0; i < nb_ft; i++){
+              d_values.push(+res_data[i]["densitykm"])
+          }
+
+          current_layers[n_layer_name].renderer = "Gridded";
+          let disc_result = discretize_to_colors(d_values, "quantiles", opt_nb_class, color_palette),
+              rendering_params = {
+                  nb_class: opt_nb_class,
+                  type: "quantiles",
+                  schema: [color_palette],
+                  breaks: disc_result[2],
+                  colors: disc_result[3],
+                  colorsByFeature: disc_result[4],
+                  renderer: "Gridded",
+                  rendered_field: "densitykm",
+                      };
+          render_choro(n_layer_name, rendering_params);
+          handle_legend(n_layer_name);
+          switch_accordion_section();
+      }, error => {
+          display_error_during_computation();
+          console.log(error);
+      });
+}
+
+
+function fillMenu_FlowMap(){
+    var dv2 = make_template_functionnality(section2);
+
+    let subtitle = dv2.append('p').attr('class', 'params_section2');
+    subtitle.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1'})
+      .html(i18next.t("app_page.func_options.flow.subtitle1"));
+
+    let origin_section = dv2.append('p').attr('class', 'params_section2');
+    origin_section.append('span')
+      .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.func_options.flow.origin_field'})
+      .html(i18next.t('app_page.func_options.flow.origin_field'));
+    origin_section.insert('select')
+      .attrs({id: 'FlowMap_field_i', class: 'params'});
+
+    let destination_section = dv2.append('p').attr('class', 'params_section2');
+    destination_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field'})
+      .html(i18next.t('app_page.func_options.flow.origin_field'));
+    destination_section.append('select')
+      .attrs({class: 'params', id: 'FlowMap_field_j'});
+
+    let intensity_section = dv2.append('p').attr('class', 'params_section2');
+    intensity_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field'})
+      .html(i18next.t('app_page.func_options.flow.destination_field'));
+    intensity_section.append('select')
+      .attrs({class: 'params', id: 'FlowMap_field_fij'});
+
+    let discretization_section = dv2.append('p').attr('class', 'params_section2');
+    discretization_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization'})
+      .html(i18next.t("app_page.func_options.flow.discretization"));
+    let disc_type = discretization_section.insert('select')
+      .attrs({class: 'params i18n', id: "FlowMap_discKind"});
+
+    [
+     ["app_page.common.equal_interval", "equal_interval"],
+     ["app_page.common.quantiles", "quantiles"],
+     ["app_page.common.Q6", "Q6"],
+     ["app_page.common.arithmetic_progression", "arithmetic_progression"],
+     ["app_page.common.jenks", "jenks"]
+    ].forEach(field => {
+            disc_type.append("option").text(i18next.t(field[0])).attrs({"value": field[1], 'data-i18n': '[text]' + field[0]});
+        });
+
+    let nb_class_section = dv2.append('p').attr('class', 'params_section2');
+    nb_class_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class'})
+      .html(i18next.t("app_page.func_options.flow.nb_class"));
+    nb_class_section.insert('input')
+      .attrs({type: "number", class: 'params', id: "FlowMap_nbClass", min: 1, max: 33, value: 8})
+      .style("width", "50px");
+
+    dv2.append('p')
+      .attrs({class: 'params', id: 'FlowMap_discTable'});
+    dv2.append('p').attr('class', 'params_section2')
+      .insert('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field'})
+      .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
+
+    let join_field_section = dv2.append('p').attr('class', 'params_section2');
+    join_field_section.append('span')
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field'})
+      .html(i18next.t('app_page.func_options.flow.join_field'));
+    join_field_section.insert('select')
+      .attrs({class: 'params', id: 'FlowMap_field_join'});
+
+    make_layer_name_button(dv2, "FlowMap_output_name");
+    make_ok_button(dv2, 'FlowMap_yes', false);
+
     d3.selectAll(".params").attr("disabled", true);
+}
+
+var fields_FlowMap = {
+    fill: function(layer){
+            let self = this,
+                field_i = section2.select('#FlowMap_field_i'),
+                field_j = section2.select('#FlowMap_field_j'),
+                field_fij = section2.select('#FlowMap_field_fij'),
+                join_field = section2.select('#FlowMap_field_join'),
+                nb_class_input = section2.select('#FlowMap_nbClass'),
+                disc_type = section2.select('#FlowMap_discKind'),
+                ok_button = section2.select('#FlowMap_yes'),
+                uo_layer_name = section2.select('#FlowMap_output_name');
+
+        if(joined_dataset.length > 0
+              && document.getElementById("FlowMap_field_i").options.length == 0){
+            let fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+            fields.forEach(function(field){
+                field_i.append("option").text(field).attr("value", field);
+                field_j.append("option").text(field).attr("value", field);
+                field_fij.append("option").text(field).attr("value", field);
+            });
+        }
+        if(layer){
+            let ref_fields = Object.getOwnPropertyNames(user_data[layer][0]);
+
+            ref_fields.forEach(function(field){
+                join_field.append("option").text(field).attr("value", field);
+            });
+        }
+        if(layer || joined_dataset.length > 0){
+            section2.selectAll(".params").attr("disabled", null);
+            uo_layer_name.attr('value', ["Links", layer].join('_'));
+        }
+        var values_fij;
+
+        field_fij.on("change", function(){
+            let name = this.value,
+                nclass = nb_class_input.node().value,
+                disc = disc_type.node().value,
+                min_size = 0.5,
+                max_size = 10;
+            values_fij = joined_dataset[0].map(obj => +obj[name]);
+            make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
+        });
+
+        disc_type.on("change", function(){
+            let name = field_fij.node().value,
+                nclass = nb_class_input.node().value,
+                disc = this.value,
+                min_size = 0.5,
+                max_size = 10;
+            if(disc == "Q6"){
+                nclass = 6;
+                nb_class_input.attr("value", 6);
+            }
+            make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
+        })
+
+        nb_class_input.on("change", function(){
+            let name = field_fij.node().value,
+                nclass = this.value,
+                disc = disc_type.node().value,
+                min_size = 0.5,
+                max_size = 10;
+            make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, "FlowMap_discTable");
+        });
+
+        ok_button.on('click', function(){
+          render_FlowMap(
+            field_i.node().value,
+            field_j.node().value,
+            field_fij.node().value,
+            join_field.node().value,
+            disc_type.node().value,
+            uo_layer_name.node().value
+          )
+        });
+    },
+
+    unfill: function(){
+        let field_i = document.getElementById('FlowMap_field_i'),
+            field_j = document.getElementById('FlowMap_field_j'),
+            field_fij = document.getElementById('FlowMap_field_fij'),
+            join_field = document.getElementById('FlowMap_field_join');
+
+        for(let i = field_i.childElementCount - 1; i > -1; --i){
+            field_i.removeChild(field_i.children[i]);
+            field_j.removeChild(field_j.children[i]);
+            field_fij.removeChild(field_fij.children[i]);
+        }
+        unfillSelectInput(join_field);
+        document.getElementById("FlowMap_discTable").innerHTML = "";
+        document.getElementById("FlowMap_output_name").value = "";
+        d3.selectAll(".params").attr("disabled", true);
+
+    }
+};
+
+function render_FlowMap(field_i, field_j, field_fij, name_join_field, new_user_layer_name){
+      let ref_layer = Object.getOwnPropertyNames(user_data)[0],
+          formToSend = new FormData(),
+          join_field_to_send = {};
+
+      let disc_params = fetch_min_max_table_value("FlowMap_discTable"),
+          mins = disc_params.mins,
+          maxs = disc_params.maxs,
+          sizes = disc_params.sizes,
+          nb_class = mins.length,
+          user_breaks = [].concat(mins, maxs[nb_class - 1]),
+          min_size = min_fast(sizes),
+          max_size = max_fast(sizes);
+
+      join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
+
+      formToSend.append("json", JSON.stringify({
+          "topojson": current_layers[ref_layer].key_name,
+          "csv_table": JSON.stringify(joined_dataset[0]),
+          "field_i": field_i,
+          "field_j": field_j,
+          "field_fij": field_fij,
+          "join_field": join_field_to_send
+          }));
+
+      xhrequest("POST", '/compute/links', formToSend, true)
+          .then(data => {
+              // FIXME : should use the user selected new name if any
+              let options = {result_layer_on_add: true};
+              if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+                  options["choosed_name"] = new_user_layer_name;
+              }
+
+              let new_layer_name = add_layer_topojson(data, options);
+              if(!new_layer_name) return;
+              let layer_to_render = map.select("#" + new_layer_name).selectAll("path"),
+                  fij_field_name = field_fij,
+                  fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
+                  nb_ft = fij_values.length,
+                  serie = new geostats(fij_values);
+
+              if(user_breaks[0] < serie.min())
+                  user_breaks[0] = serie.min();
+
+              if(user_breaks[nb_class] > serie.max())
+                  user_breaks[nb_class] = serie.max();
+
+              serie.setClassManually(user_breaks);
+
+              current_layers[new_layer_name].fixed_stroke = true;
+              current_layers[new_layer_name].renderer = "Links";
+              current_layers[new_layer_name].breaks = [];
+              current_layers[new_layer_name].linksbyId = [];
+              current_layers[new_layer_name].size = [min_size, max_size];
+              current_layers[new_layer_name].rendered_field = fij_field_name;
+              current_layers[new_layer_name].ref_layer_name = ref_layer;
+              current_layers[new_layer_name].min_display = 0;
+
+              let links_byId = current_layers[new_layer_name].linksbyId;
+
+              for(let i = 0; i < nb_ft; ++i){
+                  let val = +fij_values[i];
+                  links_byId.push([i, val, sizes[serie.getClass(val)]]);
+              }
+
+              for(let i = 0; i<nb_class; ++i)
+                  current_layers[new_layer_name].breaks.push([[user_breaks[i], user_breaks[i+1]], sizes[i]]);
+
+              layer_to_render.style('fill-opacity', 0)
+                             .style('stroke-opacity', 0.8)
+                             .style("stroke-width", (d,i) => {return links_byId[i][2]});
+              switch_accordion_section();
+              handle_legend(new_layer_name);
+          }, error => {
+              display_error_during_computation();
+              console.log(error);
+          });
+};
+
+var render_label = function(layer, rendering_params){
+    let label_field = rendering_params.label_field;
+    let txt_color = rendering_params.color;
+    let selected_font = rendering_params.font;
+    let font_size = rendering_params.ref_font_size + "px"
+    let new_layer_data = [];
+    let ref_selection = document.getElementById(layer).getElementsByTagName("path");
+    let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
+                    ? check_layer_name(rendering_params.uo_layer_name)
+                    : check_layer_name("Labels_" + layer);
+    let nb_ft = ref_selection.length;
+    for(let i=0; i<nb_ft; i++){
+        let ft = ref_selection[i].__data__;
+        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
+    }
+
+    var context_menu = new ContextMenu(),
+        getItems = (self_parent) =>  [
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_label(self_parent); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
+        ];
+
+    map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
+        .selectAll("text")
+        .data(new_layer_data).enter()
+        .insert("text")
+        .attrs( (d,i) => ({
+          "id": "Feature_" + i,
+          "x": d.coords[0],
+          "y": d.coords[1],
+          "alignment-baseline": "middle",
+          "text-anchor": "middle"
+        }))
+        .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
+        .text(d => d.label)
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("dblclick contextmenu", function(){
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems(this)); })
+        .call(drag_elem_geo);
+
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
+
+    current_layers[layer_to_add] = {
+        "n_features": current_layers[layer].n_features,
+        "renderer": "Label",
+        "symbol": "text",
+        "fill_color" : txt_color,
+        "rendered_field": label_field,
+        "is_result": true,
+        "ref_layer_name": layer,
+        "default_size": font_size,
+        "default_font": selected_font
+        };
+    up_legends();
+    zoom_without_redraw();
+    return layer_to_add;
 }

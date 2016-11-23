@@ -192,7 +192,7 @@ function handleOneByOneShp(files, target_layer_on_add){
             } else {
                 swal({
                     title: "",
-                    text: "Select layer type",
+                    text: i18next.t("app_page.common.layer_type_selection"),
                     type: "info",
                     showCancelButton: true,
                     showCloseButton: false,
@@ -201,15 +201,15 @@ function handleOneByOneShp(files, target_layer_on_add){
                     confirmButtonColor: "#DD6B55",
                     confirmButtonText: i18next.t("app_page.common.confirm"),
                     input: 'select',
-                    inputPlaceholder: 'Select the type of layer',
+                    inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
                     inputOptions: {
-                        'target': 'Target layer',
-                        'layout': 'Layout layer',
+                        'target': i18next.t("app_page.common.target_l"),
+                        'layout': i18next.t("app_page.common.layout_l"),
                       },
                     inputValidator: function(value) {
                         return new Promise(function(resolve, reject){
                             if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                reject("No value selected");
+                                reject(i18next.t("app_page.common.no_value"));
                             } else {
                                 resolve();
                                 let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
@@ -242,11 +242,11 @@ function handleOneByOneShp(files, target_layer_on_add){
             document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
         }
     })
-    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
+    document.getElementById("dv_drop_shp").addEventListener("dragover", event => {
         this.style.border = "dashed 2.5px green";
         event.preventDefault(); event.stopPropagation();
     });
-    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
+    document.getElementById("dv_drop_shp").addEventListener("dragleave", event => {
         this.style.border = "dashed 1px green";
         event.preventDefault(); event.stopPropagation();
     });
@@ -261,15 +261,20 @@ function prepare_drop_section(){
     Array.prototype.forEach.call(
         document.querySelectorAll("#map,.overlay_drop"),
         function(elem){
-
             elem.addEventListener("dragenter", e => {
-                let overlay_drop = document.getElementById("overlay_drop");
                 e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
+                let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
             });
 
             elem.addEventListener("dragover", e => {
                 e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 if(timeout){
                     clearTimeout(timeout);
                     timeout = setTimeout(function(){
@@ -282,23 +287,30 @@ function prepare_drop_section(){
             });
 
             elem.addEventListener("dragleave", e => {
+                e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1){
+                    document.body.classList.remove("no-drop");
+                    return;
+                }
                 timeout = setTimeout(function(){
                     let overlay_drop = document.getElementById("overlay_drop");
-                    e.preventDefault(); e.stopPropagation();
                     overlay_drop.style.display = "none";
                     timeout = null;
                 }, 2500);
             });
 
             elem.addEventListener("drop", function _drop_func(e){
+                e.preventDefault(); e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 if(timeout){
                     clearTimeout(timeout);
                 }
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
-                e.preventDefault(); e.stopPropagation();
                 let files = e.dataTransfer.files;
-                console.log(files)
                 if(files.length == 1
                         && (files[0].name.indexOf(".shp") > -1
                            || files[0].name.indexOf(".shx") > -1
@@ -311,7 +323,7 @@ function prepare_drop_section(){
                 } else {
                     swal({
                         title: "",
-                        text: "Select layer type",
+                        text: i18next.t("app_page.common.layer_type_selection"),
                         type: "info",
                         showCancelButton: true,
                         showCloseButton: false,
@@ -320,15 +332,15 @@ function prepare_drop_section(){
                         confirmButtonColor: "#DD6B55",
                         confirmButtonText: i18next.t("app_page.common.confirm"),
                         input: 'select',
-                        inputPlaceholder: 'Select the type of layer',
+                        inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
                         inputOptions: {
-                            'target': 'Target layer',
-                            'layout': 'Layout layer',
+                          'target': i18next.t("app_page.common.target_l"),
+                          'layout': i18next.t("app_page.common.layout_l"),
                           },
                         inputValidator: function(value) {
                             return new Promise(function(resolve, reject){
                                 if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                    reject("No value selected");
+                                    reject(i18next.t("app_page.common.no_value"));
                                 } else {
                                     resolve();
                                     handle_upload_files(files, value === "target", elem);
@@ -352,21 +364,32 @@ function prepare_drop_section(){
             elem.addEventListener("dragenter", function(e){
                 e.preventDefault();
                 e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragover", function(e){
                 e.preventDefault();
                 e.stopPropagation();
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    return;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragleave", function(e){
                 e.preventDefault();
                 e.stopPropagation();
                 elem.style.border = '';
+                if(String.prototype.indexOf.call(
+                        document.body.classList, "no-drop") > -1)
+                    document.body.classList.remove("no-drop");
             });
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                if(!e.dataTransfer.files.length)
+                    return;
                 let files = e.dataTransfer.files,
                     target_layer_on_add = elem.id === "section1" ? true : false;
                 if(files.length == 1
@@ -387,20 +410,13 @@ function convert_dataset(file){
     var ajaxData = new FormData();
     ajaxData.append("action", "submit_form");
     ajaxData.append('file[]', file);
-     $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_tabular',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
+    xhrequest("POST", '/convert_tabular', ajaxData, true)
+        .then(data => {
+            data = JSON.parse(data);
+            dataset_name = data.name;
+            add_dataset(d3.csvParse(data.file));
+        }, error => {
             display_error_during_computation();
-        },
-        success: function(data) {
-                data = JSON.parse(data);
-                dataset_name = data.name;
-                add_dataset(d3.csvParse(data.file));
-            }
         });
 }
 
@@ -411,20 +427,14 @@ function handle_shapefile(files, target_layer_on_add){
     for(let j=0; j<files.length; j++){
         ajaxData.append('file['+j+']', files[j]);
     }
-     $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_to_topojson',
-        data: ajaxData,
-        type: 'POST',
-        success: function(data) {
+    xhrequest("POST", '/convert_to_topojson', ajaxData, true)
+        .then(data => {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
-        },
-        error: function(error) {
+        }, error => {
             display_error_during_computation();
-        }
-    });
+        });
 }
+
 
 function handle_TopoJSON_files(files, target_layer_on_add) {
     var f = files[0],
@@ -432,17 +442,8 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         reader = new FileReader(),
         ajaxData = new FormData();
     ajaxData.append('file[]', f);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/cache_topojson/user',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation();
-        },
-        success: function(res){
+    xhrequest("POST", '/cache_topojson/user', ajaxData, false)
+        .then(res => {
             let key = JSON.parse(res).key;
             reader.onloadend = function(){
                 let text = reader.result;
@@ -450,9 +451,11 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
                 add_layer_topojson(topoObjText, {target_layer_on_add: target_layer_on_add});
                 }
             reader.readAsText(f);
-        }
-    });
+        }, error => {
+            display_error_during_computation();
+        });
 };
+
 
 function handle_reload_TopoJSON(text, param_add_func){
     var ajaxData = new FormData();
@@ -620,38 +623,38 @@ function add_dataset(readed_dataset){
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
-    if(document.getElementById("browse_button").disabled === true)
-        document.getElementById("browse_button").disabled = false;
-    $("[layer-target-tooltip!='']").qtip("destoy");
-    $("[layer-target-tooltip!='']").qtip({
-        content: { attr: "layer-target-tooltip" },
-        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-        events: {show: {solo: true}}
-//        events: {
-//            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-//            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-//        }
-    });
+
+//    if(document.getElementById("browse_button").disabled === true)
+//        document.getElementById("browse_button").disabled = false;
+
+//    $("[layer-target-tooltip!='']").qtip("destoy");
+//    $("[layer-target-tooltip!='']").qtip({
+//        content: { attr: "layer-target-tooltip" },
+//        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+//        events: {show: {solo: true}}
+////        events: {
+////            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
+////            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
+////        }
+//    });
+
+    if(targeted_layer_added){
+        let layer_name = Object.getOwnPropertyNames(user_data)[0];
+        ask_join_now(layer_name);
+    }
 }
 
 function add_csv_geom(file, name){
     var ajaxData = new FormData();
     ajaxData.append('filename', name);
     ajaxData.append('csv_file', file);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_csv_geo',
-        data: ajaxData,
-        type: 'POST',
-        error: function(error) {
-            display_error_during_computation();
-        },
-        success: function(data) {
+    xhrequest("POST", '/convert_csv_geo', ajaxData, true)
+        .then( data => {
             dataset_name = undefined;
             add_layer_topojson(data, {target_layer_on_add: true});
-        }
-    });
+        }, error => {
+            display_error_during_computation();
+        });
 }
 
 /**
@@ -663,25 +666,47 @@ function handle_single_file(file, target_layer_on_add) {
     var ajaxData = new FormData();
     ajaxData.append("action", "single_file");
     ajaxData.append('file[]', file);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/convert_to_topojson',
-        data: ajaxData,
-        type: 'POST',
-        success: function(data) {
+    xhrequest("POST", '/convert_to_topojson', ajaxData, true)
+        .then( data => {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
-        },
-        error: function(error) {
+        }, error => {
             display_error_during_computation();
-        }
-    });
+        });
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
-    return +layer_name_to_add.length > 28
-        ? [layer_name_to_add.substring(0, 23), '(...)'].join('')
+    return +layer_name_to_add.length > 38
+        ? [layer_name_to_add.substring(0, 35), '(...)'].join('')
         : layer_name_to_add;
+}
+
+function ask_join_now(layer_name){
+  swal({title: "",
+        text: i18next.t("app_page.join_box.before_join_ask"),
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        type: "question",
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: i18next.t("app_page.common.yes"),
+        cancelButtonText: i18next.t("app_page.common.no"),
+      }).then(() => {
+          createJoinBox(layer_name);
+      }, dismiss => { null; });
+}
+
+function ask_existing_feature(feature_name){
+  return swal({
+    title: "",
+    text: i18next.t('app_page.common.error_existing_' + feature_name),
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    type: "question",
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: i18next.t("app_page.common.yes"),
+    cancelButtonText: i18next.t("app_page.common.no"),
+  });
 }
 
 // Add the TopoJSON to the 'svg' element :
@@ -700,10 +725,6 @@ function add_layer_topojson(text, options){
         topoObj = parsedJSON.file,
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects);
-
-//    // Loop over the layers to add them all ?
-//    // Probably better open an alert asking to the user which one to load ?
-//    for(let i=0; i < layers_names.length; i++){
 
     if(layers_names.length > 1){
         swal("", i18next.t("app_page.common.warning_multiple_layers"), "warning");
@@ -763,11 +784,10 @@ function add_layer_topojson(text, options){
           .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
                    "stroke-opacity": .4,
                    "fill": type != 'Line' ? random_color1 : null,
-                   "fill-opacity": type != 'Line' ? 0.95 : 0})
+                   "fill-opacity": type != 'Line' ? 0.90 : 0})
           .attrs({"height": "100%", "width": "100%"});
 
     let class_name = [
-        "ui-state-default ",
         target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
         lyr_name_to_add
         ].join('');
@@ -786,8 +806,8 @@ function add_layer_topojson(text, options){
     li.setAttribute("layer-tooltip", layer_tooltip_content)
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-        if(document.getElementById("browse_button").disabled === true)
-            document.getElementById("browse_button").disabled = false;
+//        if(document.getElementById("browse_button").disabled === true)
+//            document.getElementById("browse_button").disabled = false;
 
         if(joined_dataset.length != 0){
             valid_join_check_display(false);
@@ -818,25 +838,26 @@ function add_layer_topojson(text, options){
         remove_target.onmouseover = function(){ this.style.opacity = 1; };
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
         targeted_layer_added = true;
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
-        $("[layer-target-tooltip!='']").qtip("destoy");
-        $("[layer-target-tooltip!='']").qtip({
-            content: { attr: "layer-target-tooltip" },
-            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-            events: {show: {solo: true}}
-        });
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
+//        $("[layer-target-tooltip!='']").qtip("destoy");
+//        $("[layer-target-tooltip!='']").qtip({
+//            content: { attr: "layer-target-tooltip" },
+//            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
+//            events: {show: {solo: true}}
+//        });
 
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
         center_map(lyr_name_to_add);
+        handle_click_hand("lock");
         if(current_functionnality)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        li.innerHTML = ['<div class="layer_buttons">', sys_run_button_t2, button_trash, button_zoom_fit, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div> ",_lyr_name_display_menu].join('');
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
         center_map(lyr_name_to_add);
-        switch_accordion_section();
+        handle_click_hand("lock");
     } else {
-        li.innerHTML = ['<div class="layer_buttons">', button_style, button_trash, button_zoom_fit, eye_open0, button_type.get(type), "</div> ",_lyr_name_display_menu].join('')
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
     }
 
     if (!target_layer_on_add && current_functionnality && current_functionnality.name == "smooth"){
@@ -859,8 +880,12 @@ function add_layer_topojson(text, options){
               allowOutsideClick: true,
               allowEscapeKey: true,
               type: "success"
-            }).then(function(){ null; },
-                    function(dismiss){ null; });
+            }).then(() => { null; },
+                    dismiss => { null; });
+
+    if(target_layer_on_add && joined_dataset.length > 0){
+        ask_join_now(lyr_name_to_add);
+    }
     return lyr_name_to_add;
 };
 
@@ -898,7 +923,6 @@ function scale_to_lyr(name){
 */
 function center_map(name){
     var bbox_layer_path = undefined;
-//    name = current_layers[name].ref_layer_name || name;
     name = current_layers[name].symbol && current_layers[name].ref_layer_name
             ? current_layers[name].ref_layer_name : name;
     map.select("#"+name).selectAll('path').each(function(d, i){
@@ -934,12 +958,13 @@ function select_layout_features(){
         ];
     var selected_ft;
 
-    make_confirm_dialog("sampleLayoutFtDialogBox", i18next.t("app_page.layout_features_box.title")).then(
-            confirmed => { if(confirmed) add_layout_feature(selected_ft);
-        });
+    make_confirm_dialog2(
+            "sampleLayoutFtDialogBox",
+            i18next.t("app_page.layout_features_box.title"),
+            {widthFitContent: true}
+        ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
 
-    var box_body = d3.select(".sampleLayoutFtDialogBox");
-    box_body.node().parentElement.style.width = "auto";
+    var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
     box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
 
     var layout_ft_selec = box_body.append('p').html('')
@@ -959,7 +984,7 @@ function select_layout_features(){
 }
 
 function setSphereBottom(){
-    let layers = document.querySelectorAll(".layer"),
+    let layers = document.getElementsByClassName("layer"),
         layers_list = document.querySelector(".layer_list");
 
     svg_map.insertBefore(layers[layers.length - 1], layers[0]);
@@ -969,7 +994,7 @@ function setSphereBottom(){
 
 function add_layout_feature(selected_feature){
     if(selected_feature == "text_annot"){
-        let existing_annotation = document.querySelectorAll(".txt_annot"),
+        let existing_annotation = document.getElementsByClassName("txt_annot"),
             existing_id = [],
             new_id;
         if(existing_annotation)
@@ -997,9 +1022,7 @@ function add_layout_feature(selected_feature){
             .append("path")
             .datum({type: "Sphere"})
             .styles({fill: "lightblue", "fill-opacity": 0.2})
-            .attr("id", "sphere")
-            .attr("clip-path", "url(#clip)")
-            .attr("d", path);
+            .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
         setSphereBottom();
@@ -1008,23 +1031,32 @@ function add_layout_feature(selected_feature){
             return;
         map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
-               .attr("class", "graticule")
-               .style("stroke-dasharray",  5)
-               .datum(d3.geoGraticule())
-               .attr("clip-path", "url(#clip)")
-               .attr("d", path)
-               .style("fill", "none")
-               .style("stroke", "grey");
+               .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
+               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'})
+               .datum(d3.geoGraticule());
         current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}, opacity: 1, step: 10, dasharray: 5};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
-        if(!(scaleBar.displayed))
+        if(!(scaleBar.displayed)){
             scaleBar.create();
-        else
-            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_existing_scalebar"), "error");
+        } else {
+            ask_existing_feature('scalebar')
+              .then(() => {
+                  scaleBar.remove();
+                  scaleBar.create();
+                }, dismiss => { null; });
+        }
     } else if (selected_feature == "north_arrow"){
-        northArrow.display();
+      if(!(northArrow.displayed)){
+          northArrow.display();
+      } else {
+          ask_existing_feature('north_arrow')
+            .then( _ => {
+              northArrow.remove();
+              northArrow.display();
+            }, dismiss => { null; });
+      }
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
     } else if (selected_feature == "ellipse"){
@@ -1049,9 +1081,7 @@ function handleCreateFreeDraw(){
     let render_line = d3.line().x(d => d[0]).y(d => d[1]);
     let draw_calc = map.append("g")
                         .append("rect")
-                        .attr("x",  0).attr("y",  0)
-                        .attr("width", w).attr("height", h)
-                        .attr("class", "draw_calc")
+                        .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
                         .style("opacity", 0.1).style("fill", "grey");
 
     function redraw() {
@@ -1103,47 +1133,20 @@ function add_single_symbol(symbol_dataurl){
     map.append("g")
         .attrs({class: "legend_features legend single_symbol"})
         .insert("image")
-        .attr("x", w/2)
-        .attr("y", h/2)
-        .attr("width", "30px")
-        .attr("height", "30px")
-        .attr("xlink:href", symbol_dataurl.split("url(")[1].substring(1).slice(0,-2))
+        .attrs({"x": w/2, "y": h/2, "width": "30px", "height": "30px",
+                "xlink:href": symbol_dataurl.split("url(")[1].substring(1).slice(0,-2)})
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
             })
         .call(drag_elem_geo);
-
 }
 
-var drag_lgd_features = d3.drag()
-         .subject(function() {
-                var t = d3.select(this),
-                    prev_translate = t.attr("transform");
-                prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
-                return {
-                    x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1]
-                };
-            })
-        .on("start", () => {
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.preventDefault();
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", null);
-          })
-        .on("end", () => {
-            if(map_div.select("#hand_button").classed("active")) zoom.on("zoom", zoom_without_redraw);
-          })
-        .on("drag", function(){
-            let t = d3.select(this),
-                scale_value = t.attr("scale"),
-                rotation_value = t.attr("rotate");
-            scale_value = scale_value ? "scale(" + scale_value + ")" : "";
-            rotation_value = rotation_value ? "rotate(" + rotation_value + ",0,0)" : "";
-            t.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')' + scale_value + rotation_value);
-          });
-
 function add_layout_layers(){
+    var existing_box = document.querySelector(".sampleLayoutDialogBox");
+    if(existing_box){ existing_box.remove(); }
+
     var selec = {layout: null};
     var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
                          [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
@@ -1152,7 +1155,7 @@ function add_layout_layers(){
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
                          ];
 
-    make_confirm_dialog("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
+    make_confirm_dialog2("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
                 if(selec.layout && selec.layout.length > 0){
@@ -1163,7 +1166,7 @@ function add_layout_layers(){
             }
         });
 
-    var box_body = d3.select(".sampleLayoutDialogBox").style("text-align", "center");
+    var box_body = d3.select(".sampleLayoutDialogBox").select(".modal-body").style("text-align", "center");
     box_body.node().parentElement.style.width = "auto";
     box_body.append('h3').html(i18next.t("app_page.layout_layer_box.msg_select_layer"));
     box_body.append("p").style("color", "grey").html(i18next.t("app_page.layout_layer_box.msg_select_multi"));
@@ -1183,6 +1186,9 @@ function add_layout_layers(){
 }
 
 function add_sample_layer(){
+    var existing_dialog = document.querySelector(".sampleDialogBox");
+    if(existing_dialog) existing_dialog.remove();
+
     var dialog_res = [],
         selec = {layout: null, target: null},
         sample_datasets = undefined;
@@ -1208,11 +1214,10 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
          [i18next.t("app_page.sample_layer_box.gpm_dataset"), 'gpm_dataset'],
          [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
-//                    ['GDP - GNIPC - Population - WGI - etc. (World Bank 2015 datasets extract) <i>(To link with World countries geometries)</i>', 'wb_extract.csv'],
          [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
         ];
 
-    make_confirm_dialog("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
+    make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
                 let url = undefined;
@@ -1229,8 +1234,8 @@ function add_sample_layer(){
             }
         });
 
-    var box_body = d3.select(".sampleDialogBox");
-    box_body.node().parentElement.style.width = "auto";
+    var box_body = d3.select(".sampleDialogBox").select(".modal-body");
+//    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
@@ -1260,32 +1265,21 @@ function add_sample_layer(){
 function add_sample_geojson(name, options){
     var formToSend = new FormData();
     formToSend.append("layer_name", name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        url: '/cache_topojson/sample_data',
-        data: formToSend,
-        type: 'POST',
-        success: function(data){ add_layer_topojson(data, options); },
-        error: function(error) {
+    xhrequest("POST", '/cache_topojson/sample_data', formToSend, true)
+        .then( data => {
+            add_layer_topojson(data, options);
+        }).catch( err => {
             display_error_during_computation();
-        }
-    });
+            console.log(err);
+        });
 }
 
 function send_remove_server(layer_name){
     let formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
-    $.ajax({
-        processData: false,
-        contentType: false,
-        global: false,
-        url: '/layers/delete',
-        data: formToSend,
-        type: 'POST',
-        success: function(data){ console.log(JSON.parse(data)) },
-        error: function(error) { console.log(error); }
-    });
+    xhrequest("POST", '/layers/delete', formToSend, true)
+        .then(data => { console.log(JSON.parse(data)) })
+        .catch(err => { console.log(err); });
 }
 
 function get_map_xy0(){
@@ -1295,7 +1289,7 @@ function get_map_xy0(){
 
 function handleClickAddEllipse(){
     let getId = () => {
-        let ellipses = document.querySelectorAll(".user_ellipse");
+        let ellipses = document.getElementsByClassName("user_ellipse");
         if(!ellipses){
             return 0;
         } else if (ellipses.length > 30){
@@ -1350,7 +1344,7 @@ function handleClickAddEllipse(){
 
 function handleClickAddArrow(){
     let getId = () => {
-        let arrows = document.querySelectorAll(".arrow");
+        let arrows = document.getElementsByClassName("arrow");
         if(!arrows){
             return 0;
         } else if (arrows.length > 30){
@@ -1418,14 +1412,35 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    let list_symbols = request_data('GET', '/static/json/list_symbols.json', null)
+    let list_symbols = xhrequest('GET', '/static/json/list_symbols.json', null)
             .then( list_res => {
-               list_res = JSON.parse(list_res.target.responseText);
-               Q.all(list_res.map(name => request_data('GET', "/static/img/svg_symbols/" + name, null)))
+               list_res = JSON.parse(list_res);
+               Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
-                        default_symbols.push([list_res[i], symbols[i].target.responseText]);
+                        default_symbols.push([list_res[i], symbols[i]]);
                     }
                 });
             })
+}
+
+function accordionize(css_selector=".accordion", parent){
+    parent = parent && typeof parent === "object" ? parent
+            : parent && typeof parent === "string" ? document.querySelector(parent)
+            : document;
+    let acc = parent.querySelectorAll(css_selector),
+        opened_css_selector = css_selector + ".active";
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].onclick = function(){
+            let opened = parent.querySelector(opened_css_selector);
+            if(opened){
+                opened.classList.toggle("active");
+                opened.nextElementSibling.classList.toggle("show");
+            }
+            if(!opened || opened.id != this.id){
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("show");
+            }
+      }
+    }
 }
