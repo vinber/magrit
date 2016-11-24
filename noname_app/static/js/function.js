@@ -463,8 +463,9 @@ var fields_PropSymbolChoro = {
                 rd_params.ref_value = +ref_value_field.node().value;
                 rd_params.ref_size = +ref_size.node().value;
                 rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+                rd_params.color_field = color_field;
 
-                let id_map = make_prop_symbols(rd_params),
+                let color_map = make_prop_symbols(rd_params),
                     colors_breaks = [];
 
                 for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
@@ -480,7 +481,6 @@ var fields_PropSymbolChoro = {
 
                 current_layers[new_layer_name] = {
                     renderer: "PropSymbolsChoro",
-                    features_order: id_map,
                     symbol: rd_params.symbol,
                     ref_layer_name: layer,
                     options_disc: options_disc,
@@ -488,7 +488,7 @@ var fields_PropSymbolChoro = {
                     rendered_field2: field2_selec.node().value,
                     size: [+ref_value_field.node().value, +ref_size.node().value],
                     "stroke-width-const": 1,
-                    fill_color: { "class": id_map.map(obj => obj[3]) },
+                    fill_color: color_map,
                     colors_breaks: colors_breaks,
                     is_result: true,
                     n_features: nb_features
@@ -1389,14 +1389,25 @@ function getCentroids(ref_layer_selection){
   return centroids;
 }
 
-function make_prop_symbols(rendering_params){
-    function getCentroidsValues(){
+function make_prop_symbols(rendering_params, geojson_pt_layer){
+    function make_geojson_pt_layer(){
       let result = [];
       for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
         let ft = ref_layer_selection[i].__data__,
-            value = +ft.properties[field];
+            value = +ft.properties[field],
+            new_obj = {
+                id: i,
+                type: "Feature",
+                properties: {},
+                geometry: { type: 'Point' }
+              };
         if(ft.geometry.type.indexOf('Multi') < 0){
-          result.push([i, value, propSize.scale(value), path.centroid(ft.geometry), get_color(value, i)]);
+          new_obj.properties[field] = value;
+          new_obj.properties[t_field_name] = propSize.scale(value);
+          new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+          new_obj.properties['color'] = get_color(value, i);
+          if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
+          result.push([value, new_obj])
         } else {
           let areas = [];
           for(let j = 0; j < ft.geometry.coordinates.length; j++){
@@ -1406,32 +1417,33 @@ function make_prop_symbols(rendering_params){
             }));
           }
           let ix_max = areas.indexOf(max_fast(areas));
-          result.push([
-            i,
-            value,
-            propSize.scale(value),
-            path.centroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] }),
-            get_color(value, i)
-          ]);
+          new_obj.properties[field] = value;
+          new_obj.properties[t_field_name] = propSize.scale(value);
+          new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+          new_obj.properties['color'] = get_color(value, i);
+          if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
+          result.push([value, new_obj]);
         }
       }
-      return result;
+      result.sort((a, b) => abs(b[0]) - abs(a[0]));
+      return {
+        type: "FeatureCollection",
+        features: result.map( d => d[1])
+      };
     }
 
     let layer = rendering_params.ref_layer_name,
         field = rendering_params.field,
+        color_field = rendering_params.color_field,
+        t_field_name = 'prop_value',
         nb_features = rendering_params.nb_features,
-        values_to_use = rendering_params.values_to_use,
-        d_values = [],
         abs = Math.abs,
-        comp = function(a, b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
         zs = d3.zoomTransform(svg_map).k,
-        res_data = [],
         propSize = new PropSizer(ref_value, ref_size, symbol_type),
         get_color, col1, col2;
 
@@ -1439,85 +1451,56 @@ function make_prop_symbols(rendering_params){
         col1 = rendering_params.fill_color.two[0],
         col2 = rendering_params.fill_color.two[1];
         get_color = (val, ix) => val > rendering_params.break_val ? col2 : col1;
-        // for(let i = 0; i < nb_features; ++i){
-        //     d_values[i].push(d_values[i][1] > rendering_params.break_val ? col2 : col1)
-        // }
     } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features){
         get_color = (val, ix) => rendering_params.fill_color[ix];
-        // for(let i = 0; i < nb_features; i++)
-        //     d_values[i].push(rendering_params.fill_color[i]);
     } else {
         get_color = () => rendering_params.fill_color;
-        // for(let i = 0; i < nb_features; ++i)
-        //     d_values[i].push(rendering_params.fill_color);
     }
 
-    if(values_to_use){
-        let centroids = getCentroids(ref_layer_selection)
-        for(let i = 0; i < nb_features; ++i){
-            let value = +values_to_use[i];
-            d_values.push([i, value, propSize.scale(value), centroids[i], get_color(value, i)]);
-        }
-    } else {
-        d_values = getCentroidsValues();
-    }
-
-    d_values.sort(comp);
-    // var d_values = prop_sizer3(_values, ref_value, ref_size, symbol_type);
-    // d_values.sort(comp);
-
-    /*
-        Values have been sorted (descendant order on the absolute values) to have larger symbols
-        displayed under the smaller, so now d_values is an array like :
-        [
-         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
-         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
-         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
-         [...]
-        ]
-    */
-    var symbol_layer = map.append("g").attr("id", layer_to_add)
-                          .attr("class", "result_layer layer");
-
-    if(symbol_type === "circle"){
-        for(let i = 0; i < nb_features; i++){
-            let params = d_values[i],
-                id_ref = params[0];
-            symbol_layer.append('circle')
-                .attr('cx', params[3][0])
-                .attr("cy", params[3][1])
-                .attr("r", params[2])
-                .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
-                .style("fill", params[4])
-                .style("stroke", "black")
-                .style("stroke-width", 1 / zs);
-            let res_obj = {};
-            res_obj["uid"] = i;
-            res_obj["id_layer_reference"] = id_ref;
-            res_obj[field] = params[1];
-            res_data.push(res_obj);
-        }
+    geojson_pt_layer = geojson_pt_layer || make_geojson_pt_layer();
+    result_data[layer_to_add] = []
+    if(symbol_type === 'circle'){
+      map.append("g")
+        .attr("id", layer_to_add)
+        .attr("class", "result_layer layer")
+        .selectAll('circle')
+        .data(geojson_pt_layer.features)
+        .enter()
+        .append('circle')
+        .attrs( (d,i) => {
+            result_data[layer_to_add].push(d.properties);
+            return {
+              'id': ['PropSymbol_', i, ' feature_', d.id].join(''),
+              'r': d.properties[t_field_name],
+              'cx': path.centroid(d)[0],
+              'cy': path.centroid(d)[1]
+            }
+          })
+        .style("fill", d => d.properties.color)
+        .style("stroke", "black")
+        .style("stroke-width", 1 / zs);
     } else if(symbol_type === "rect"){
-        for(let i = 0; i < nb_features; i++){
-            let params = d_values[i],
-                id_ref = params[0],
-                size = params[2];
-
-            symbol_layer.append('rect')
-                .attr('x', params[3][0] - size/2)
-                .attr("y", params[3][1] - size/2)
-                .attr("height", size)
-                .attr("width", size)
-                .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
-                .style("fill", params[4])
-                .style("stroke", "black")
-                .style("stroke-width", 1 / zs);
-            let res_obj = {};
-            res_obj["uid"] = i;
-            res_obj["id_layer_reference"] = id_ref;
-            res_obj[field] = params[1];
-            res_data.push(res_obj);
-        };
+      map.append("g")
+        .attr("id", layer_to_add)
+        .attr("class", "result_layer layer")
+        .selectAll('circle')
+        .data(geojson_pt_layer.features)
+        .enter()
+        .append('rect')
+        .attrs( (d,i) => {
+            let size = d.properties[t_field_name];
+            result_data[layer_to_add].push(d.properties);
+            return {
+              'id': ['PropSymbol_', i, ' feature_', d.id].join(''),
+              'height': size,
+              'width': size,
+              'x': path.centroid(d)[0] - size / 2,
+              'y': path.centroid(d)[1] - size / 2
+            };
+          })
+        .style("fill", d => d.properties.color)
+        .style("stroke", "black")
+        .style("stroke-width", 1 / zs);
     }
 
     let fill_color = rendering_params.fill_color.two != undefined
@@ -1535,15 +1518,13 @@ function make_prop_symbols(rendering_params){
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
-        "features_order": d_values
         };
     if(rendering_params.break_val != undefined){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
     up_legends();
-    result_data[layer_to_add] = res_data;
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
-    return d_values;
+    return fill_color;
 }
 
 function render_categorical(layer, rendering_params){
@@ -1789,6 +1770,7 @@ var fields_PropSymbolTypo = {
             section2.select('#PropSymbolTypo_symbol_type').node().value
           )
         });
+        setSelected(field1_selec.node(), fields_num[0]);
         setSelected(field2_selec.node(), Object.getOwnPropertyNames(fields_all)[0]);
     },
 
@@ -1827,18 +1809,17 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
   rd_params.ref_size = +ref_size;
   rd_params.fill_color = rendering_params.colorByFeature;
 
-  let id_map = make_prop_symbols(rd_params);
+  let colors = make_prop_symbols(rd_params);
 
   current_layers[new_layer_name] = {
       renderer: "PropSymbolsTypo",
-      features_order: id_map,
       symbol: rd_params.symbol,
       ref_layer_name: layer,
       rendered_field: field1,
       rendered_field2: color_field,
       size: [ref_value, ref_size],
       "stroke-width-const": 1,
-      fill_color: { "class": id_map.map(obj => obj[3]) },
+      fill_color: colors,
       is_result: true,
       n_features: nb_features,
       color_map: rendering_params.color_map

@@ -410,12 +410,18 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
     let sqrt = Math.sqrt;
 
-    let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
-        id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
-        size_max = +ref_symbols[nb_features - 1].getAttribute(type_param),
-        size_min = +ref_symbols[0].getAttribute(type_param),
-        val_min = Math.abs(+user_data[ref_layer_name][id_ft_val_min][field]),
-        val_max = Math.abs(+user_data[ref_layer_name][id_ft_val_max][field]),
+    // let id_ft_val_min = +Array.prototype.filter.call(ref_symbols, (d, i) => { if(d.r.baseVal.value != 0) return d.r.baseVal.value; })
+    // // let id_ft_val_min = +ref_symbols[nb_features - 1].id.split(' ')[1].split('_')[1],
+    //     id_ft_val_max = +ref_symbols[0].id.split(' ')[1].split('_')[1],
+    //     size_max = +ref_symbols[nb_features - 1].getAttribute(type_param),
+    //     size_min = +ref_symbols[0].getAttribute(type_param),
+    //     val_min = Math.abs(+user_data[ref_layer_name][id_ft_val_min][field]),
+    //     val_max = Math.abs(+user_data[ref_layer_name][id_ft_val_max][field]),
+    let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d.r.baseVal.value != 0) return d.r.baseVal.value; }),
+        size_max = +non_empty[0].getAttribute(type_param),
+        size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
         nb_decimals = get_nb_decimals(val_max),
         diff_size = sqrt(size_max) - sqrt(size_min),
         diff_val = val_max - val_min,
@@ -425,10 +431,10 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         size_interm2 = size_interm1 + diff_size / 3,
         z_scale = +d3.zoomTransform(map.node()).k,
         ref_symbols_params = [
-            {size: size_min * z_scale, value: val_max.toFixed(nb_decimals)},
-            {size: Math.pow(size_interm1, 2) * z_scale, value: val_interm2.toFixed(nb_decimals)},
-            {size: Math.pow(size_interm2, 2) * z_scale, value: val_interm1.toFixed(nb_decimals)},
-            {size: size_max * z_scale, value: val_min.toFixed(nb_decimals)}
+            {size: size_max * z_scale, value: val_max.toFixed(nb_decimals)},
+            {size: Math.pow(size_interm2, 2) * z_scale, value: val_interm2.toFixed(nb_decimals)},
+            {size: Math.pow(size_interm1, 2) * z_scale, value: val_interm1.toFixed(nb_decimals)},
+            {size: size_min * z_scale, value: val_min.toFixed(nb_decimals)}
         ];
 
     var legend_elems = legend_root.selectAll('.legend')

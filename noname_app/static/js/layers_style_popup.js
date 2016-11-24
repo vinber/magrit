@@ -45,7 +45,8 @@ function make_single_color_menu(layer, fill_prev, symbol = "path"){
 }
 
 function make_random_color(layer, symbol = "path"){
-    let block = d3.select("#fill_color_section").insert("p");
+    let block = d3.select("#fill_color_section");
+    block.selectAll('span').remove();
     block.insert("span")
         .styles({"cursor": "pointer", "text-align": "center"})
         .html(i18next.t("app_page.layer_style_popup.toggle_colors"))
@@ -59,28 +60,27 @@ function make_random_color(layer, symbol = "path"){
         });
 }
 
-function fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer){
-    let data_layer = ref_layer ? user_data[ref_layer] : user_data[layer] ? user_data[layer] : result_data[layer];
-
-    if(ref_layer && current_layers[layer].features_order){
-        let features_order = current_layers[layer].features_order;
-        map.select("#"+layer)
-            .selectAll(symbol)
-            .transition()
-            .style("fill", function(d, i){
-                let idx = features_order[i][0];
-                return color_cat_map.get(data_layer[idx][field_name]);
-            });
-    } else if (ref_layer)
-        map.select("#"+layer)
-            .selectAll(symbol)
-            .transition()
-            .style("fill", (d,i) => color_cat_map.get(data_layer[i][field_name]));
-    else
-        map.select("#"+layer)
-            .selectAll(symbol)
-            .transition()
-            .style("fill", d => color_cat_map.get(d.properties[field_name]));
+function fill_categorical(layer, field_name, symbol, color_cat_map){
+    // let data_layer = ref_layer ? user_data[ref_layer] : user_data[layer] ? user_data[layer] : result_data[layer];
+    // if(ref_layer && current_layers[layer].features_order){
+    //     let features_order = current_layers[layer].features_order;
+    //     map.select("#"+layer)
+    //         .selectAll(symbol)
+    //         .transition()
+    //         .style("fill", function(d, i){
+    //             let idx = features_order[i][0];
+    //             return color_cat_map.get(data_layer[idx][field_name]);
+    //         });
+    // } else if (ref_layer)
+    //     map.select("#"+layer)
+    //         .selectAll(symbol)
+    //         .transition()
+    //         .style("fill", (d,i) => color_cat_map.get(data_layer[i][field_name]));
+    // else
+    map.select("#"+layer)
+        .selectAll(symbol)
+        .transition()
+        .style("fill", d => color_cat_map.get(d.properties[field_name]));
 }
 
 function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", ref_layer){
@@ -981,7 +981,7 @@ function createStyleBox_ProbSymbol(layer_name){
         type_method = current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,
         field_used = current_layers[layer_name].rendered_field,
-        selection = d3.select(g_lyr_name).selectAll(type_symbol),
+        selection = map.select(g_lyr_name).selectAll(type_symbol),
         rendering_params,
         old_size = [current_layers[layer_name].size[0],
                     current_layers[layer_name].size[1]];
@@ -1111,10 +1111,10 @@ function createStyleBox_ProbSymbol(layer_name){
                    i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
     if(type_method === "PropSymbolsChoro"){
         let field_color = current_layers[layer_name].rendered_field2;
-         popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))
+        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))
             .append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
-                display_discretization(ref_layer_name,
+                display_discretization(layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
                                        "quantiles",
@@ -1129,9 +1129,9 @@ function createStyleBox_ProbSymbol(layer_name){
                             field: field_color
                             };
                         console.log(rendering_params)
-                        let features = current_layers[layer_name].features_order;
+                        // let features = current_layers[layer_name].features_order;
                         selection.style('fill-opacity', 0.9)
-                                 .style("fill", (d,i) => rendering_params.colorsByFeature[+features[i][0]]);
+                                 .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                     }
                 });
         });
