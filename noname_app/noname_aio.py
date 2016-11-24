@@ -365,7 +365,8 @@ async def convert(request):
         [os.remove(dir_path + file) for file in os.listdir(dir_path)]
         os.removedirs(dir_path)
 
-    elif 'octet-stream' in datatype and "geojson" in name.lower():
+    elif ('octet-stream' in datatype
+            or 'text/json' in datatype) and "geojson" in name.lower():
         data = data.decode()
         if '"crs"' in data and '"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data:
             crs = True

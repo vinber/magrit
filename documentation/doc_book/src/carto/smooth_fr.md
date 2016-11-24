@@ -12,4 +12,7 @@ Méthode d'analyse spatiale et de réprésentation basée sur le calcul de poten
 > * Le nombre de classe souhaité lors de la création des isolignes
 > * (optionnel) Le nom de la couche de masquage
 
-#### Exemple de rendu à partir des jeux de données d'exemple :
+
+#### Exemple de rendu à partir d'un jeu de données d'exemple :
+
+<p style="text-align: center;"> <img src="/img/smoothed2.png" alt="smoothed_map" style="width: 480px;"/> </p>

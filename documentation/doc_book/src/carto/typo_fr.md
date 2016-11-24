@@ -5,3 +5,10 @@ Ce type de carte permet de représenter des entités surfaciques selon la valeur
 > ### Paramètres
 > * Nom du champ contenant les valeurs à utiliser
 > * Choix des couleurs correspondantes aux catégories à représenter
+
+#### Exemple de rendu à partir d'un jeu de données d'exemple :
+
+<p style="text-align: center;">
+<img src="/img/typo.png" alt="img_typo_map" style="width: 480px;"/>
+
+- Champ utilisé : **LIBEPT**  

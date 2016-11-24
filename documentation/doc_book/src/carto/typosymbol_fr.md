@@ -5,3 +5,10 @@ Ce type de représentation permet de faire figurer des symboles en fonction des 
 > ### Paramètres
 > * Le nom du champ contenant les valeurs à utiliser
 > * Le choix de pictogrammes correspondants aux différentes catégories à représenter
+
+
+#### Exemple de rendu à partir d'un jeu de données d'exemple :
+
+<p style="text-align: center;">
+<img src="/img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
+</p>

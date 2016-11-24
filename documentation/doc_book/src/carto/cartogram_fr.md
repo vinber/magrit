@@ -12,3 +12,11 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 > * La valeur statistique à utiliser comme référence pour la transformation
 
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
+
+<p style="text-align: center;">
+<img src="/img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+</p>
+
+- Méthode de **Dougenik**
+- Champ utilisé : **pop2008**
+- **5 itérations**

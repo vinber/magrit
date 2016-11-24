@@ -14,4 +14,11 @@ Ce type de représentation permet d'établir une correspondance entre des donné
 
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
-<img src="/img/propsymboltypo_map.png" alt="img_propsymboltypo_map" style="width: 420px;"/>
+<p style="text-align: center;">
+<img src="/img/propsymboltypo_map.png" alt="img_propsymboltypo_map" style="width: 480px;"/>
+</p>
+
+- Champ utilisé : **pop1999**
+- Symbole **carré**
+- Taille fixée de **22px** sur la valeur **1000000**
+- Champ utilisé pour l'aplat de couleur : **Pays**

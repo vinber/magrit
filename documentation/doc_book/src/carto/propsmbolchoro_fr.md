@@ -13,5 +13,6 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
-
-<img src="/img/propsymbolchoro_map.png" alt="img_propsymbolchoro_map" style="width: 420px;"/>
+<p style="text-align: center;">
+<img src="/img/propsymbolschoro.png" alt="img_propsymbolchoro_map" style="width: 480px;"/>
+</p>
