@@ -54,6 +54,7 @@ function has_negative(arr){
 var contains_empty_val = function(arr){
     for(let i = arr.length - 1; i > -1; --i)
         if(arr[i] == null) return true;
+        else if(isNaN(+arr[i])) return true;
     return false;
 }
 
@@ -114,6 +115,20 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
             res.push(sqrt(abs(arr[i]) * smax / fixed_value));
     }
     return res;
+}
+
+var PropSizer = function(fixed_value, fixed_size, type_symbol){
+  this.fixed_value = fixed_value;
+  var sqrt = Math.sqrt,
+      abs = Math.abs,
+      pi = Math.PI;
+  if(type_symbol === "circle"){
+    this.smax = fixed_size * fixed_size * pi;
+    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
+  } else {
+    this.smax = fixed_size * fixed_size
+    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
+  }
 }
 
 function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){

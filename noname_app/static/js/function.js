@@ -1016,27 +1016,35 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson"){
-                let field_n = field_selec.node().value,
-                    layer = Object.getOwnPropertyNames(user_data)[0],
-                    ref_size = option1_val.node().value,
-                    scale_max = +option2_val.node().value / 100,
+                let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    scale_max = +document.getElementById("Anamorph_opt2").value / 100,
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
+
+                if(contains_empty_val(dataset.map(a => a[field_name]))){
+                  discard_rendering_empty_val();
+                  return;
+                }
 
                 let layer_select = document.getElementById(layer).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
-                    area_values = [];
+                    area_values = [],
+                    min = +dataset[0][field_name],
+                    max = +dataset[0][field_name],
+                    sum = 0;
 
                 for(let i = 0; i < nb_ft; ++i){
-                    d_values.push(sqrt(+dataset[i][field_n]));
+                    let val = +dataset[i][field_name];
+                    if(val > max) max = val;
+                    else if (val < min) min = val;
+                    sum += val;
+                    d_values.push(sqrt(val));
                     area_values.push(+path.area(layer_select[i].__data__.geometry));
                 }
-
-                let mean = d3.mean(d_values),
-                    min = d3.min(d_values),
-                    max = d3.max(d_values),
+                console.log(area_values)
+                let mean = sum / nb_ft,
                     transform = [];
                 if(ref_size == "mean"){
                     let low_ = abs(mean-min),
@@ -1074,7 +1082,7 @@ var fields_Anamorphose = {
                     JSON.stringify({
                         topojson: current_layers[layer].key_name,
                         scale_values: transform,
-                        field_name: field_n,
+                        field_name: field_name,
                         scale_max: scale_max})
                     );
                 xhrequest("POST", '/compute/olson', formToSend, true)
@@ -1085,7 +1093,7 @@ var fields_Anamorphose = {
                         }
                         let n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
-                        current_layers[n_layer_name].rendered_field = field_n;
+                        current_layers[n_layer_name].rendered_field = field_name;
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
@@ -1101,10 +1109,13 @@ var fields_Anamorphose = {
                     });
             } else if (algo === "dougenik"){
                 let formToSend = new FormData(),
-                    field_n = field_selec.node().value,
-                    layer = Object.getOwnPropertyNames(user_data)[0],
                     var_to_send = {},
-                    nb_iter = option1_val.node().value;
+                    nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
+
+                if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
+                  discard_rendering_empty_val();
+                  return;
+                }
 
                 var_to_send[field_name] = [];
                 if(!current_layers[layer].original_fields.has(field_name)){
@@ -1131,7 +1142,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                         current_layers[n_layer_name].renderer = "Carto_doug";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        d3.select("#" + n_layer_name)
+                        map.select("#" + n_layer_name)
                             .selectAll("path")
                             .style("fill", function(){ return Colors.random(); })
                             .style("fill-opacity", 0.8)
@@ -1143,9 +1154,9 @@ var fields_Anamorphose = {
                         console.log(error);
                     });
             } else if (algo === "dorling"){
-                let fixed_value = +document.getElementById("Anamorph_opt3").value,
-                    fixed_size = +document.getElementById("Anamorph_opt2").value,
-                    shape_symbol = option1_val.node().value;
+                let fixed_value = +document.getElementById("Anamorph_dorling_onvalue").value,
+                    fixed_size = +document.getElementById("Anamorph_dorling_fixed_size").value,
+                    shape_symbol = document.getElementById("Anamorph_dorling_symbol").value;
 
                 let layer_to_add = check_layer_name(
                         new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)
@@ -1177,7 +1188,7 @@ var fields_Anamorphose = {
     },
     unfill: function(){
         let field_selec = document.getElementById("Anamorph_field");
-        d3.selectAll(".params").attr("disabled", true);
+        section2.selectAll(".params").attr("disabled", true);
         unfillSelectInput(field_selec);
     }
 }
@@ -1378,131 +1389,133 @@ function getCentroids(ref_layer_selection){
   return centroids;
 }
 
-function getCentroidsValues(ref_layer_selection, field){
-  let result = [];
-  for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
-    let ft = ref_layer_selection[i].__data__;
-    if(ft.geometry.type.indexOf('Multi') < 0){
-      result.push([i, +ft.properties[field], path.centroid(ft.geometry)]);
-    } else {
-      let areas = [];
-      for(let j = 0; j < ft.geometry.coordinates.length; j++){
-        areas.push(path.area({
-          type: ft.geometry.type,
-          coordinates: [ft.geometry.coordinates[j]]
-        }));
-      }
-      let ix_max = areas.indexOf(max_fast(areas));
-      result.push([
-        i,
-        +ft.properties[field],
-        path.centroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] })
-      ]);
-    }
-  }
-  return result;
-}
-
 function make_prop_symbols(rendering_params){
+    function getCentroidsValues(){
+      let result = [];
+      for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
+        let ft = ref_layer_selection[i].__data__,
+            value = +ft.properties[field];
+        if(ft.geometry.type.indexOf('Multi') < 0){
+          result.push([i, value, propSize.scale(value), path.centroid(ft.geometry), get_color(value, i)]);
+        } else {
+          let areas = [];
+          for(let j = 0; j < ft.geometry.coordinates.length; j++){
+            areas.push(path.area({
+              type: ft.geometry.type,
+              coordinates: [ft.geometry.coordinates[j]]
+            }));
+          }
+          let ix_max = areas.indexOf(max_fast(areas));
+          result.push([
+            i,
+            value,
+            propSize.scale(value),
+            path.centroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] }),
+            get_color(value, i)
+          ]);
+        }
+      }
+      return result;
+    }
+
     let layer = rendering_params.ref_layer_name,
         field = rendering_params.field,
         nb_features = rendering_params.nb_features,
         values_to_use = rendering_params.values_to_use,
-        _values = [],
+        d_values = [],
         abs = Math.abs,
-        comp = function(a,b){ return abs(b[1])-abs(a[1]); },
+        comp = function(a, b){ return abs(b[1])-abs(a[1]); },
         ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
-        zs = d3.zoomTransform(svg_map).k;
+        zs = d3.zoomTransform(svg_map).k,
+        res_data = [],
+        propSize = new PropSizer(ref_value, ref_size, symbol_type),
+        get_color, col1, col2;
 
-    let res_data = [];
+    if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
+        col1 = rendering_params.fill_color.two[0],
+        col2 = rendering_params.fill_color.two[1];
+        get_color = (val, ix) => val > rendering_params.break_val ? col2 : col1;
+        // for(let i = 0; i < nb_features; ++i){
+        //     d_values[i].push(d_values[i][1] > rendering_params.break_val ? col2 : col1)
+        // }
+    } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features){
+        get_color = (val, ix) => rendering_params.fill_color[ix];
+        // for(let i = 0; i < nb_features; i++)
+        //     d_values[i].push(rendering_params.fill_color[i]);
+    } else {
+        get_color = () => rendering_params.fill_color;
+        // for(let i = 0; i < nb_features; ++i)
+        //     d_values[i].push(rendering_params.fill_color);
+    }
+
     if(values_to_use){
         let centroids = getCentroids(ref_layer_selection)
         for(let i = 0; i < nb_features; ++i){
-            _values.push([i, +values_to_use[i], centroids[i]]);
+            let value = +values_to_use[i];
+            d_values.push([i, value, propSize.scale(value), centroids[i], get_color(value, i)]);
         }
     } else {
-        _values = getCentroidsValues(ref_layer_selection, field);
+        d_values = getCentroidsValues();
     }
 
-    if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
-        let col1 = rendering_params.fill_color.two[0],
-            col2 = rendering_params.fill_color.two[1];
-        var tmp_fill_color = [];
-        for(let i = 0; i < nb_features; ++i){
-            tmp_fill_color.push(_values[i][1] > rendering_params.break_val ? col2 : col1)
-        }
-    } else {
-        var tmp_fill_color = rendering_params.fill_color;
-    }
-
-    var d_values = prop_sizer3(_values, ref_value, ref_size, symbol_type);
     d_values.sort(comp);
+    // var d_values = prop_sizer3(_values, ref_value, ref_size, symbol_type);
+    // d_values.sort(comp);
 
     /*
         Values have been sorted (descendant order on the absolute values) to have larger symbols
         displayed under the smaller, so now d_values is an array like :
         [
-         [id_ref_feature, value, [x_centroid, y_centroid]],
-         [id_ref_feature, value, [x_centroid, y_centroid]],
-         [id_ref_feature, value, [x_centroid, y_centroid]],
+         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
+         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
+         [id_ref_feature, value, proportionnal_value, [x_centroid, y_centroid], color_to_use],
          [...]
         ]
     */
-
-    if(!(rendering_params.fill_color instanceof Array) && !(rendering_params.fill_color.two)){
-        for(let i=0; i<nb_features; ++i)
-            d_values[i].push(rendering_params.fill_color);
-    } else {
-        for(let i=0; i<nb_features; ++i){
-//            let idx = d_values[i][0];
-            d_values[i].push(tmp_fill_color[d_values[i][0]]);
-        }
-    }
-
     var symbol_layer = map.append("g").attr("id", layer_to_add)
                           .attr("class", "result_layer layer");
 
     if(symbol_type === "circle"){
         for(let i = 0; i < nb_features; i++){
-            let params = d_values[i];
-            let id_ref = params[0];
+            let params = d_values[i],
+                id_ref = params[0];
             symbol_layer.append('circle')
-                .attr('cx', params[2][0])
-                .attr("cy", params[2][1])
-                .attr("r", params[1])
+                .attr('cx', params[3][0])
+                .attr("cy", params[3][1])
+                .attr("r", params[2])
                 .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
-                .style("fill", params[3])
+                .style("fill", params[4])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);
             let res_obj = {};
             res_obj["uid"] = i;
             res_obj["id_layer_reference"] = id_ref;
-            res_obj[field] = _values[id_ref][1];
+            res_obj[field] = params[1];
             res_data.push(res_obj);
         }
     } else if(symbol_type === "rect"){
         for(let i = 0; i < nb_features; i++){
             let params = d_values[i],
                 id_ref = params[0],
-                size = params[1];
+                size = params[2];
 
             symbol_layer.append('rect')
-                .attr('x', params[2][0] - size/2)
-                .attr("y", params[2][1] - size/2)
+                .attr('x', params[3][0] - size/2)
+                .attr("y", params[3][1] - size/2)
                 .attr("height", size)
                 .attr("width", size)
                 .attr("id", ["PropSymbol_", i , " feature_", id_ref].join(''))
-                .style("fill", params[3])
+                .style("fill", params[4])
                 .style("stroke", "black")
                 .style("stroke-width", 1 / zs);
             let res_obj = {};
             res_obj["uid"] = i;
             res_obj["id_layer_reference"] = id_ref;
-            res_obj[field] = _values[id_ref][1];
+            res_obj[field] = params[1];
             res_data.push(res_obj);
         };
     }
@@ -2286,6 +2299,12 @@ function fillMenu_TypoSymbol(){
     make_layer_name_button(dv2, 'TypoSymbols_output_name')
     make_ok_button(dv2, 'yesTypoSymbols');
     dv2.selectAll(".params").attr("disabled", true);
+}
+
+function discard_rendering_empty_val(){
+  swal({title: "",
+        text: i18next.t("app_page.common.error_empty_vals"),
+        type: "error"});
 }
 
 var fields_TypoSymbol = {
