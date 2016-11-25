@@ -798,7 +798,8 @@ function display_categorical_box(layer, field){
         i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features}),
         "dialog");
 
-    var newbox = d3.select("#categorical_box").select(".modal-body");
+    var newbox = d3.select("#categorical_box").select(".modal-body")
+                    .styles({'overflow-y': 'scroll', 'max-height': (window.innerHeight - 145) + 'px'});
 
     newbox.append("h3").html("")
     newbox.append("p")

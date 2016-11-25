@@ -479,20 +479,27 @@ var fields_PropSymbolChoro = {
                                     colors: rendering_params[color_field].colors,
                                     no_data: rendering_params[color_field].no_data}
 
-                current_layers[new_layer_name] = {
+                Object.assign(current_layers[new_layer_name],{
                     renderer: "PropSymbolsChoro",
-                    symbol: rd_params.symbol,
-                    ref_layer_name: layer,
                     options_disc: options_disc,
                     rendered_field: field1_selec.node().value,
                     rendered_field2: field2_selec.node().value,
-                    size: [+ref_value_field.node().value, +ref_size.node().value],
-                    "stroke-width-const": 1,
-                    fill_color: color_map,
                     colors_breaks: colors_breaks,
-                    is_result: true,
-                    n_features: nb_features
-                };
+                });
+                // current_layers[new_layer_name] = {
+                //     renderer: "PropSymbolsChoro",
+                //     symbol: rd_params.symbol,
+                //     ref_layer_name: layer,
+                //     options_disc: options_disc,
+                //     rendered_field: field1_selec.node().value,
+                //     rendered_field2: field2_selec.node().value,
+                //     size: [+ref_value_field.node().value, +ref_size.node().value],
+                //     "stroke-width-const": 1,
+                //     fill_color: color_map,
+                //     colors_breaks: colors_breaks,
+                //     is_result: true,
+                //     n_features: nb_features
+                // };
                 zoom_without_redraw();
                 switch_accordion_section();
                 handle_legend(new_layer_name);
@@ -1043,7 +1050,7 @@ var fields_Anamorphose = {
                     d_values.push(sqrt(val));
                     area_values.push(+path.area(layer_select[i].__data__.geometry));
                 }
-                console.log(area_values)
+
                 let mean = sum / nb_ft,
                     transform = [];
                 if(ref_size == "mean"){
@@ -1809,21 +1816,26 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
   rd_params.ref_size = +ref_size;
   rd_params.fill_color = rendering_params.colorByFeature;
 
-  let colors = make_prop_symbols(rd_params);
-
-  current_layers[new_layer_name] = {
+  make_prop_symbols(rd_params);
+  Object.assign(current_layers[new_layer_name],{
       renderer: "PropSymbolsTypo",
-      symbol: rd_params.symbol,
-      ref_layer_name: layer,
       rendered_field: field1,
       rendered_field2: color_field,
-      size: [ref_value, ref_size],
-      "stroke-width-const": 1,
-      fill_color: colors,
-      is_result: true,
-      n_features: nb_features,
       color_map: rendering_params.color_map
-  };
+  });
+  // current_layers[new_layer_name] = {
+  //     renderer: "PropSymbolsTypo",
+  //     symbol: rd_params.symbol,
+  //     ref_layer_name: layer,
+  //     rendered_field: field1,
+  //     rendered_field2: color_field,
+  //     size: [ref_value, ref_size],
+  //     "stroke-width-const": 1,
+  //     fill_color: colors,
+  //     is_result: true,
+  //     n_features: nb_features,
+  //     color_map: rendering_params.color_map
+  // };
   zoom_without_redraw();
   switch_accordion_section();
   handle_legend(new_layer_name);
@@ -2360,16 +2372,48 @@ function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     let field = rendering_params.field;
     let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    let new_layer_data = [];
-
     let ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 
-    for(let i=0; i<nb_ft; i++){
-        let ft = ref_selection[i].__data__;
-        new_layer_data.push({Symbol_field: ft.properties[field], coords: path.centroid(ft)});
+    function make_geojson_pt_layer(){
+      let result = [];
+      for(let i = 0, nb_features = ref_selection.length; i < nb_features; ++i){
+        let ft = ref_selection[i].__data__,
+            value = ft.properties[field],
+            new_obj = {
+                id: i,
+                type: "Feature",
+                properties: {},
+                geometry: { type: 'Point' }
+              };
+        if(ft.geometry.type.indexOf('Multi') < 0){
+          new_obj.properties['symbol_field'] = value;
+          new_obj.properties['id_parent'] = ft.id;
+          new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+          result.push(new_obj)
+        } else {
+          let areas = [];
+          for(let j = 0; j < ft.geometry.coordinates.length; j++){
+            areas.push(path.area({
+              type: ft.geometry.type,
+              coordinates: [ft.geometry.coordinates[j]]
+            }));
+          }
+          let ix_max = areas.indexOf(max_fast(areas));
+          new_obj.properties['symbol_field'] = value;
+          new_obj.properties['id_parent'] = ft.id;
+          new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+          result.push(new_obj);
+        }
+      }
+      return {
+        type: "FeatureCollection",
+        features: result
+      };
     }
 
+    var new_layer_data = make_geojson_pt_layer();
+    console.log(new_layer_data);
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
@@ -2378,13 +2422,14 @@ function render_TypoSymbols(rendering_params, new_name){
 
     map.append("g").attrs({id: layer_to_add, class: "layer"})
         .selectAll("image")
-        .data(new_layer_data).enter()
+        .data(new_layer_data.features).enter()
         .insert("image")
         .attrs( d => {
-          let symb = rendering_params.symbols_map.get(d.Symbol_field);
+          let symb = rendering_params.symbols_map.get(d.properties.symbol_field),
+              coords = path.centroid(d.geometry);
           return {
-            "x": d.coords[0] - symb[1] / 2,
-            "y": d.coords[1] - symb[1] / 2,
+            "x":coords[0] - symb[1] / 2,
+            "y": coords[1] - symb[1] / 2,
             "width": symb[1] + "px",
             "height": symb[1] + "px",
             "xlink:href": symb[0]

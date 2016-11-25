@@ -1307,35 +1307,47 @@ function reproj_symbol_layer(){
                 .selectAll(symbol)
                 .attr("x", (d,i) => new_coords[i][0])
                 .attr("y", (d,i) => new_coords[i][1])
+          // map.select('#' + lyr_name)
+          //       .selectAll(symbol)
+          //       .attrs( d => {
+          //         let coords = path.centroid(d.geometry);
+          //         return {'x': coords[0], 'y': coords[1]};
+          //       });
       } else if (symbol == "image"){
-          map.select("#"+lyr_name)
-                .selectAll(symbol)
-                .attr("x", (d,i) => new_coords[i][0] - +this.getAttribute("width").slice(0, -2) / 2)
-                .attr("y", (d,i) => new_coords[i][1] - +this.getAttribute("width").slice(0, -2) / 2)
+          map.select('#' + lyr_name)
+              .selectAll(symbol)
+              .attrs(function(d,i){
+                let coords = path.centroid(d.geometry),
+                    size = +this.getAttribute('width').slice(0, -2) / 2;
+                return { 'x': coords[0] - size, 'y': coords[1] - size };
+              });
       } else if(symbol == "circle"){
           map.select("#"+lyr_name)
-                .selectAll(symbol)
-                .attrs( d => {
-                  let centroid = path.centroid(d);
-                  return {
-                    'r': d.properties.prop_value,
-                    'cx': centroid[0],
-                    'cy': centroid[1]
-                  };
-                });
+              .selectAll(symbol)
+              .attrs( d => {
+                let centroid = path.centroid(d);
+                return {
+                  'r': d.properties.prop_value,
+                  'cx': centroid[0],
+                  'cy': centroid[1]
+                };
+              })
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined);
       } else if (symbol == "rect") {
           map.select("#"+lyr_name)
-                .selectAll(symbol)
-                .attrs( d => {
-                  let centroid = path.centroid(d),
-                      size =  d.properties.prop_value;
-                  return {
-                    'height': size,
-                    'width': size,
-                    'x': centroid[0] - size / 2,
-                    'y': centroid[1] - size / 2
-                  };
-                });
+              .selectAll(symbol)
+              .attrs( d => {
+                let centroid = path.centroid(d),
+                    size =  d.properties.prop_value;
+                return {
+                  'height': size,
+                  'width': size,
+                  'x': centroid[0] - size / 2,
+                  'y': centroid[1] - size / 2
+                };
+              })
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined);
+
       }
     }
   }

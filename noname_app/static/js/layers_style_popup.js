@@ -18,13 +18,6 @@ function handle_click_layer(layer_name){
     return;
 };
 
-let setSelected = function(selectNode, value)
-{
-    selectNode.value = value;
-    selectNode.dispatchEvent(new Event('change'));
-}
-
-
 function make_single_color_menu(layer, fill_prev, symbol = "path"){
     var fill_color_section = d3.select("#fill_color_section"),
         g_lyr_name = "#" + layer,
@@ -155,20 +148,20 @@ function createStyleBoxTypoSymbols(layer_name){
     if(existing_box) existing_box.remove();
 
     var selection = map.select("#" + layer_name).selectAll("image"),
-        ref_layer_name = current_layers[layer_name].ref_layer_name,
-        ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
+        // ref_layer_name = current_layers[layer_name].ref_layer_name,
+        // ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
         symbols_map = current_layers[layer_name].symbols_map,
-        rendered_field = current_layers[layer_name].rendered_field,
-        ref_coords = [];
+        rendered_field = current_layers[layer_name].rendered_field;
+        // ref_coords = [];
 
     var prev_settings = [],
         prev_settings_defaults = {};
 
     get_prev_settings();
 
-    for(let i = 0; i < ref_layer_selection.length; i++){
-        ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
-    }
+    // for(let i = 0; i < ref_layer_selection.length; i++){
+    //     ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
+    // }
 
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
@@ -190,8 +183,13 @@ function createStyleBoxTypoSymbols(layer_name){
             .text(i18next.t("app_page.layer_style_popup.reset_symbols_location"))
             .on("click", function(){
                 selection.transition()
-                        .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
-                        .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
+                        .attrs(d => {
+                          let centroid = path.centroid(d.geometry),
+                              size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2
+                          return {x: centroid[0] - size_symbol, y: centroid[1] - size_symbol};
+                        });
+                        // .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
+                        // .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
             });
 
     popup.append("p").style("text-align", "center")

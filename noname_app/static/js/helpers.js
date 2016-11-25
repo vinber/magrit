@@ -22,6 +22,11 @@ var drag_elem_geo = d3.drag()
     });
 
 
+function setSelected(selectNode, value){
+    selectNode.value = value;
+    selectNode.dispatchEvent(new Event('change'));
+}
+
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
 function switch_accordion_section(){

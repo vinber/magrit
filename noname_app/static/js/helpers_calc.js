@@ -94,6 +94,20 @@ function getDecimalSeparator(){
     return 1.1.toLocaleString().substr(1,1)
 }
 
+var PropSizer = function(fixed_value, fixed_size, type_symbol){
+  this.fixed_value = fixed_value;
+  var sqrt = Math.sqrt,
+      abs = Math.abs,
+      pi = Math.PI;
+  if(type_symbol === "circle"){
+    this.smax = fixed_size * fixed_size * pi;
+    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
+  } else {
+    this.smax = fixed_size * fixed_size
+    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
+  }
+}
+
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     let pi = Math.PI,
         abs = Math.abs,
@@ -117,49 +131,35 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     return res;
 }
 
-var PropSizer = function(fixed_value, fixed_size, type_symbol){
-  this.fixed_value = fixed_value;
-  var sqrt = Math.sqrt,
-      abs = Math.abs,
-      pi = Math.PI;
-  if(type_symbol === "circle"){
-    this.smax = fixed_size * fixed_size * pi;
-    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
-  } else {
-    this.smax = fixed_size * fixed_size
-    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
-  }
-}
-
-function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
-    let pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
-
-    if(!fixed_value || fixed_value == 0)
-        fixed_value = max_fast(arr);
-
-    if(type_symbol == "circle") {
-        let smax = fixed_size * fixed_size * pi;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
-                );
-        }
-    } else {
-        let smax = fixed_size * fixed_size;
-        for(let i=0; i < arr_len; ++i){
-            let val = arr[i];
-            res.push(
-                [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
-                );
-        }
-    }
-    return res
-}
+// function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
+//     let pi = Math.PI,
+//         abs = Math.abs,
+//         sqrt = Math.sqrt,
+//         arr_len = arr.length,
+//         res = [];
+//
+//     if(!fixed_value || fixed_value == 0)
+//         fixed_value = max_fast(arr);
+//
+//     if(type_symbol == "circle") {
+//         let smax = fixed_size * fixed_size * pi;
+//         for(let i=0; i < arr_len; ++i){
+//             let val = arr[i];
+//             res.push(
+//                 [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
+//                 );
+//         }
+//     } else {
+//         let smax = fixed_size * fixed_size;
+//         for(let i=0; i < arr_len; ++i){
+//             let val = arr[i];
+//             res.push(
+//                 [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
+//                 );
+//         }
+//     }
+//     return res
+// }
 
 
 /**

@@ -50,7 +50,8 @@ var display_box_symbol_typo = function(layer, field){
             "symbol_box",
             i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features}),
             "dialog");
-        var newbox = d3.select("#symbol_box").select(".modal-body");
+        var newbox = d3.select("#symbol_box").select(".modal-body")
+                        .styles({'overflow-y': 'scroll', 'max-height': (window.innerHeight - 145) + 'px'});
 
         newbox.append("h3").html("")
         newbox.append("p")
