@@ -135,7 +135,8 @@
             "median": "Médiane",
             "variance": "Variance",
             "stddev": "Écart-type",
-            "cov": "Coefficient de variation"
+            "cov": "Coefficient de variation",
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}}<br>Médianne : {{median}}"
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
@@ -240,6 +241,14 @@
             "change_field": "Changer les champs joints",
             "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
 
+        },
+        "box_type_fields": {
+            "title": "Typage des données",
+            "message_invite": "Sélection/modification du type de données présent dans chacun des champs.",
+            "stock": "Stock",
+            "ratio": "Ratio",
+            "category": "Catégorie",
+            "unknown": "Inconnu"
         },
         "explore_box": {
             "title": "Table de données",

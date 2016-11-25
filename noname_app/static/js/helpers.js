@@ -237,3 +237,118 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
     } else
         return result;
 }
+
+var type_col2 = function(table, skip_if_empty_values=false){
+// Function returning an object like {"field1": "field_type", "field2": "field_type"},
+//  for the fields of the selected layer.
+// If target is set to "number" it should return an array containing only the name of the numerical fields
+// ------------------- "string" ---------------------------------------------------------non-numerial ----
+    var fields = Object.getOwnPropertyNames(table[0]),
+        nb_features = table.length,
+        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
+        tmp = {},
+        field = undefined,
+        tmp_type = undefined,
+        result = [];
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        tmp[field] = [];
+        for(let i=0; i < deepth_test; ++i){
+            tmp_type = typeof table[i][field];
+            if(tmp_type === "string" && table[i][field].length == 0)
+                tmp_type = "empty";
+            else if( (tmp_type === "string" && !isNaN(Number(table[i][field]))) || tmp_type === 'number'){
+                let val = Number(table[i][field]);
+                tmp_type = (val | 0) === val ? "stock" : "ratio";
+            } else if(tmp_type === "object" && isFinite(table[i][field]))
+                tmp_type = "empty"
+            tmp[fields[j]].push(tmp_type);
+        }
+    }
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
+            result.push([field, "stock"]);
+        else if (tmp[field].every(ft => ft === "string" || ft === "empty") && tmp[field].indexOf("string") > -1)
+            result.push([field, "category"]);
+        else if (tmp[field].every(ft => ft === "ratio" || ft === "stock" || ft === "empty") && tmp[field].indexOf("ratio") > -1)
+            result.push([field, "ratio"]);
+        else
+            result.push([field, "unknown"]);
+    }
+    return result;
+}
+
+function getFieldsType(type, layer_name, ref){
+    if(!layer_name && !ref) return;
+    ref = ref || current_layers[layer_name].fields_type;
+    return ref.filter(d => d[1] === type).map(d => d[0]);
+}
+
+function make_box_type_fields(layer_name){
+    var modal_box = make_dialog_container(
+        "box_type_fields",
+        i18next.t("app_page.box_type_fields.title"),
+        "dialog");
+    d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
+    var newbox = d3.select("#box_type_fields").select(".modal-body"),
+        fields_type = type_col2(user_data[layer_name]),
+        // fields_type = current_layers[layer_name].fields_type,
+        ref_type = ['stock', 'ratio', 'category', 'unknown'];
+
+    newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
+    newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
+
+    var box_select = newbox.append("div")
+      .attr("id", "fields_select");
+
+    var a = box_select.selectAll("p")
+        .data(fields_type)
+        .enter()
+        .append('p')
+        .style('margin', '15px');
+
+    box_select.selectAll("p")
+        .insert('span')
+        .html(d => d[0]);
+
+    box_select.selectAll('p')
+        .insert('select')
+        .style('float', 'right')
+        .selectAll('option')
+        .data(ref_type).enter()
+        .insert('option')
+        .attr('value', d => d).text(d => i18next.t('app_page.box_type_fields.' + d))
+        .exit();
+
+    box_select.selectAll('select')
+        .each(function(d){
+          this.value = d[1];
+        });
+
+    let deferred = Q.defer(),
+        container = document.getElementById("box_type_fields");
+
+    container.querySelector(".btn_ok").onclick = function(){
+        let r = [];
+        Array.prototype.forEach.call(
+            document.getElementById('fields_select').getElementsByTagName('p'),
+            elem => {
+              r.push([elem.childNodes[0].innerHTML.trim(), elem.childNodes[1].value])
+            });
+        deferred.resolve(r);
+        // deferred.resolve(true);
+        // current_layers[layer_name].fields_type = r.slice();
+        modal_box.close();
+        container.remove();
+    }
+
+    let _onclose = () => {
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    return deferred.promise;
+};

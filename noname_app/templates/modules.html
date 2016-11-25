@@ -53,7 +53,7 @@
   <body>
       <div id="header">
         <p style="display:inline;margin-left:15px;">
-        <a href="/"><img src="/static/img/magrit.png" alt="Export" height="20" style="position: absolute; top: 6px;"></a>
+        <a href=""><img class="tada" src="/static/img/magrit.png" alt="Export" height="20" style="position: absolute; top: 6px;"></a>
         </p>
         <p id="rgt" class="header_options"></p>
       </div>
@@ -109,6 +109,7 @@ function setUpInterface(resume_project)
     document.body.appendChild(bg_drop);
 
     let menu = d3.select("#menu"),
+
         b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2 = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
@@ -941,6 +942,7 @@ function make_ico_choice(){
                     fields_handler.unfill();
                     let previous_button = document.getElementById("button_" + current_functionnality.name);
                     previous_button.style.filter = "invert(0%) saturate(100%)";
+                    // previous_button.style.animation = "";
                     previous_button.style.boxShadow = "";
                     clean_menu_function();
                 }
@@ -948,6 +950,7 @@ function make_ico_choice(){
                 // Highlight the icon of the selected functionnality :
                 this.style.filter = "invert(100%) saturate(200%)";
                 this.style.boxShadow = "-1px 1px 5px 2px #888888";
+                // this.style.animation = "none";
 
                 // Get the function to fill the menu with the appropriate options (and do it):
                 current_functionnality = get_menu_option(func_name);
@@ -1552,10 +1555,6 @@ function remove_layer_cleanup(name){
 
         // Restore the state of the bottom of the section 1 :
         document.getElementById("join_section").innerHTML = "";
-
-        // If after this removal there isn't nor a targeted layer neither an external dataset :
-        if(joined_dataset.length == 0)
-            document.getElementById("browse_button").disabled = true;
 
         // Also reset the user choosen values, remembered for its ease :
         fields_TypoSymbol.box_typo = undefined;

@@ -133,7 +133,8 @@
             "median": "Median",
             "variance": "Variance",
             "stddev": "Standard deviation",
-            "cov": "Coefficient of variation"
+            "cov": "Coefficient of variation",
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}}<br>Median : {{median}}"
         },
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
@@ -239,6 +240,14 @@
             "ref_layer_fields": "Reference layer fields",
             "join_field": "Join field",
             "before_join_ask": "A layer and an external dataset have been provided. Want to join them now ?"
+        },
+        "box_type_fields": {
+            "title": "Data type",
+            "message_invite": "Select/modify the kind of data in each field.",
+            "stock": "Stock",
+            "ratio": "Ratio",
+            "category": "Category",
+            "unknown": "Unknown"
         },
         "explore_box": {
             "title": "Explore dataset",

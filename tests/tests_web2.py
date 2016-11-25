@@ -346,17 +346,17 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("projection_to_use")
             ).select_by_value("epsg:4326")
 
-#         driver.find_element_by_css_selector(".dialogGeoExport"
-#             ).find_element_by_css_selector("button.btn_ok").click()
-#         time.sleep(2)
-#         with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
-#             raw_geojson = f.read()
-#         parsed_geojson = json.loads(raw_geojson)
-#         self.assertIn("features", parsed_geojson)
-#         self.assertIn("type", parsed_geojson)
-# #        self.assertIn("crs", parsed_geojson)
-#         self.assertEqual(len(parsed_geojson["features"]), 310)
-#         os.remove(self.tmp_folder + "nuts2_data.geojson")
+        driver.find_element_by_css_selector(".dialogGeoExport"
+            ).find_element_by_css_selector("button.btn_ok").click()
+        time.sleep(2)
+        with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+#        self.assertIn("crs", parsed_geojson)
+        self.assertEqual(len(parsed_geojson["features"]), 310)
+        os.remove(self.tmp_folder + "nuts2_data.geojson")
 
         # # Test export on result layer this time
         # # First coompute a result from smoothed map functionnality :
@@ -580,8 +580,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 ).select_by_value("us_county")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+        time.sleep(0.3)
         self.open_menu_section(3)
-
         self.click_elem_retry(
             driver.find_element_by_css_selector(
                 "li.us_county").find_element_by_css_selector(

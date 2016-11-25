@@ -148,7 +148,7 @@ function createStyleBoxTypoSymbols(layer_name){
     if(existing_box) existing_box.remove();
 
     var selection = map.select("#" + layer_name).selectAll("image"),
-        // ref_layer_name = current_layers[layer_name].ref_layer_name,
+        ref_layer_name = current_layers[layer_name].ref_layer_name,
         // ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field;
@@ -156,6 +156,8 @@ function createStyleBoxTypoSymbols(layer_name){
 
     var prev_settings = [],
         prev_settings_defaults = {};
+
+    var zs = d3.zoomTransform(svg_map).k;
 
     get_prev_settings();
 
@@ -177,30 +179,46 @@ function createStyleBoxTypoSymbols(layer_name){
                    i18next.t("app_page.layer_style_popup.reference_layer", {layer: ref_layer_name})].join(''));
 
     popup.append("p").style("text-align", "center")
-            .insert("button")
-            .attr("id","reset_symb_loc")
-            .attr("class", "button_st4")
-            .text(i18next.t("app_page.layer_style_popup.reset_symbols_location"))
-            .on("click", function(){
-                selection.transition()
-                        .attrs(d => {
-                          let centroid = path.centroid(d.geometry),
-                              size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2
-                          return {x: centroid[0] - size_symbol, y: centroid[1] - size_symbol};
-                        });
-                        // .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
-                        // .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
-            });
+        .insert("button")
+        .attrs({id: 'reset_symb_loc', class: 'button_st4'})
+        .text(i18next.t("app_page.layer_style_popup.reset_symbols_location"))
+        .on("click", function(){
+            selection.transition()
+                    .attrs(d => {
+                      let centroid = path.centroid(d.geometry),
+                          size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2
+                      return {x: centroid[0] - size_symbol, y: centroid[1] - size_symbol};
+                    });
+                    // .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
+                    // .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
+        });
 
     popup.append("p").style("text-align", "center")
-            .insert("button")
-            .attr("id","reset_symb_display")
-            .attr("class", "button_st4")
-            .text(i18next.t("app_page.layer_style_popup.redraw_symbols"))
-            .on("click", function(){
-                selection.style("display", undefined);
-            });
+        .insert("button")
+        .attr("id","reset_symb_display")
+        .attr("class", "button_st4")
+        .text(i18next.t("app_page.layer_style_popup.redraw_symbols"))
+        .on("click", function(){
+            selection.style("display", undefined);
+        });
 
+    let size_section = popup.append('p');
+    size_section.append('span')
+        .html('Symbol sizes (will be applyed to all symbols)');
+    size_section.append('input')
+        .attrs({min: 0,  max: 200, step: 'any', value: 32, type: 'number'})
+        .styles({width: '60px', margin: 'auto'})
+        .on('change', function(){
+            let value = this.value;
+            selection.transition()
+                .attrs(function(){
+                    let current_size = this.height.baseVal.value;
+                    return {'width': value + 'px', 'height': value + 'px',
+                            'x': this.x.baseVal.value + current_size / 2 - value / 2,
+                            'y': this.y.baseVal.value + current_size / 2 - value / 2 };
+                });
+        })
+}
 //    popup.append("p").style("text-align", "center")
 //            .insert("button")
 //            .attr("id","modif_symb")
@@ -224,8 +242,8 @@ function createStyleBoxTypoSymbols(layer_name){
 //                    }
 //                });
 //            });
-
-}
+//
+// }
 
 function createStyleBoxLabel(layer_name){
     function get_prev_settings(){
@@ -386,7 +404,7 @@ function createStyleBoxGraticule(layer_name){
             .html(current_params.opacity);
     opacity_choice.append("input")
             .attrs({type: "range", value: current_params.opacity})
-            .styles({"width": "70px", "vertical-align": "middle", "display": "inline", "float": "right"})
+            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
             .on("change", function(){
                 selection.style("stoke-opacity", +this.value);
                 current_layers["Graticule"].opacity = +this.value;
@@ -397,7 +415,7 @@ function createStyleBoxGraticule(layer_name){
     stroke_width_choice.append("span").html(i18next.t("app_page.layer_style_popup.width"));
     stroke_width_choice.append("input")
             .attrs({type: "number", value: current_params["stroke-width-const"]})
-            .styles({"width": "70px", "float": "right"})
+            .styles({"width": "60px", "float": "right"})
             .on("change", function(){
                 selection_strokeW.style("stroke-width", this.value)
                 current_layers["Graticule"]["stroke-width-const"] = +this.value;
@@ -407,7 +425,7 @@ function createStyleBoxGraticule(layer_name){
     steps_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_steps"));
     steps_choice.append("input")
             .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
-            .styles({"vertical-align": "middle", "width": "70px", "display": "inline", "float": "right"})
+            .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
                 let step_val = +this.value,
                     dasharray_val = +document.getElementById("graticule_dasharray_txt");
@@ -415,7 +433,6 @@ function createStyleBoxGraticule(layer_name){
                 map.select("#Graticule").remove()
                 map.append("g").attrs({id: "Graticule", class: "layer"})
                                .append("path")
-                               .transition()
                                .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
                                .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val})
                                .datum(d3.geoGraticule().step([step_val, step_val]));
@@ -445,7 +462,7 @@ function createStyleBoxGraticule(layer_name){
             });
     dasharray_choice.append("input")
             .attrs({type: "range", value: current_params.step, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
-            .styles({"vertical-align": "middle", "width": "70px", "display": "inline", "float": "right"})
+            .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
                 selection.style("stroke-dasharray", this.value);
                 current_layers["Graticule"].dasharray = +this.value;
@@ -589,7 +606,7 @@ function createStyleBox(layer_name){
         pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));
         pt_size.append("input")
                 .attrs({type: "range", min: 0, max: 40, value: current_pt_size})
-                .styles({"width": "70px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
+                .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
                 .on("change", function(){
                     current_pt_size = +this.value;
                     document.getElementById("txt_pt_radius").innerHTML = current_pt_size;
@@ -754,7 +771,7 @@ function createStyleBox(layer_name){
                         .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
          fill_opacity_section.insert('input')
                         .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-                        .styles({"width": "70px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+                        .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
                         .on('change', function(){
                           selection.style('fill-opacity', this.value)
                           fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
@@ -774,7 +791,7 @@ function createStyleBox(layer_name){
         //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_section.insert('input')
                     .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-                    .styles({width: "70px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+                    .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
                     .on("change", function(){
                         lgd_to_change = true;
                         let val = +this.value;
@@ -818,7 +835,7 @@ function createStyleBox(layer_name){
         disc_part.append("span").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
         disc_part.insert("input")
                 .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
-                .styles({width: "70px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
+                .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
                 .on("change", function(){
                     lgd_to_change = true;
                     let val = +this.value;
@@ -867,7 +884,7 @@ function createStyleBox(layer_name){
             .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
     opacity_section.insert('input')
             .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-            .styles({"width": "70px", "vertical-align": "middle", "display": "inline", "float": "right"})
+            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
             .on('change', function(){
                 opacity_section.select("#opacity_val_txt").html(" " + this.value);
 //                        if(this.value !== "0" || type === 'Line'){
@@ -890,7 +907,7 @@ function createStyleBox(layer_name){
          width_section
               .insert('input')
               .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
-              .styles({"width": "70px", "float": "right"})
+              .styles({"width": "60px", "float": "right"})
               .on('change', function(){
                     let val = +this.value;
 //                                if(val != 0 || type === 'Line'){
@@ -1165,6 +1182,37 @@ function createStyleBox_ProbSymbol(layer_name){
                                 current_layers[layer_name].break_val = new_break_val;
                                 selection.transition().style("fill", (d,i) => (d_values[i] > new_break_val) ? col2.node().value : col1.node().value);
                             });
+    } else if (type_method === "PropSymbolsTypo") {
+      let field_color = current_layers[layer_name].rendered_field2;
+      popup.append('p')
+          .style("margin", "auto")
+          .html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}));
+      popup.append('p').insert('button')
+          .attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors"))
+          .on("click", function(){
+              null;
+              // display_discretization(layer_name,
+              //                        field_color,
+              //                        current_layers[layer_name].colors_breaks.length,
+              //                        "quantiles",
+              //                        current_layers[layer_name].options_disc)
+              //   .then(function(confirmed){
+              //     if(confirmed){
+              //         rendering_params = {
+              //             nb_class: confirmed[0], type: confirmed[1],
+              //             breaks: confirmed[2], colors:confirmed[3],
+              //             colorsByFeature: confirmed[4],
+              //             renderer:"PropSymbolsChoro",
+              //             field: field_color
+              //             };
+              //         console.log(rendering_params)
+              //         // let features = current_layers[layer_name].features_order;
+              //         selection.style('fill-opacity', 0.9)
+              //                  .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+              //     }
+              // });
+      });
+
     } else {
         let fields = type_col(ref_layer_name, "string"),
             fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
@@ -1191,19 +1239,19 @@ function createStyleBox_ProbSymbol(layer_name){
     let fill_opct_section = popup.append('p').attr("class", "line_elem")
     fill_opct_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
 
-    fill_opct_section.append("span")
-          .attr("id", "fill_opacity_txt")
-          .style("float", "right")
-          .html((+opacity * 100) + "%");
-
     fill_opct_section
           .insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-          .styles({width: "70px", "vertical-align": "middle", "display": "inline", "float": "right"})
+          .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
           .on('change', function(){
             selection.style('fill-opacity', this.value);
             fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
           });
+
+    fill_opct_section.append("span")
+          .attr("id", "fill_opacity_txt")
+          .style("float", "right")
+          .html((+opacity * 100) + "%");
 
     let border_color_section = popup.append('p').attr("class", "line_elem");
     border_color_section.append("span").html(i18next.t("app_page.layer_style_popup.border_color"));
@@ -1216,39 +1264,35 @@ function createStyleBox_ProbSymbol(layer_name){
 
     let border_opacity_section = popup.append('p')
     border_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.border_opacity"));
-    border_opacity_section.append("span")
-          .attr("id", "border_opacity_txt")
-          .style("float", "right")
-          .html((+border_opacity * 100) + "%");
 
     border_opacity_section.insert('input')
           .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-          .styles({width: "70px", "vertical-align": "middle", "display": "inline", float: "right"})
+          .styles({width: "58px", "vertical-align": "middle", "display": "inline", float: "right"})
           .on('change', function(){
             selection.style('stroke-opacity', this.value);
             border_opacity_section.select("#border_opacity_txt").html((+this.value * 100) + "%");
           });
 
+    border_opacity_section.append("span")
+          .attr("id", "border_opacity_txt")
+          .style("float", "right")
+          .html((+border_opacity * 100) + "%");
+
     let border_width_section = popup.append('p').attr("class", "line_elem");
     border_width_section.append("span").html(i18next.t("app_page.layer_style_popup.border_width"));
     border_width_section.insert('input')
           .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
-          .styles({width: "70px", float: "right"})
+          .styles({width: "60px", float: "right"})
           .on('change', function(){
                 selection.style("stroke-width", this.value+"px");
                 current_layers[layer_name]['stroke-width-const'] = +this.value
             });
 
     let prop_val_content = popup.append("p");
-    prop_val_content.append("p").html([
-        i18next.t("app_page.layer_style_popup.field_symbol_size", {field: field_used}),
-        i18next.t("app_page.layer_style_popup.symbol_fixed_size")].join(''));
-
-    prop_val_content.append("span")
-          .style("float", "right")
-          .html(' px');
+    prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", {field: field_used}));
+    prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
     prop_val_content.insert('input')
-          .styles({width: "50px", float: "right"})
+          .styles({width: "60px", float: "right"})
           .attrs({type: "number", id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
           .on("change", function(){
               let f_size = +this.value,
@@ -1256,6 +1300,9 @@ function createStyleBox_ProbSymbol(layer_name){
               current_layers[layer_name].size[1] = f_size;
               redraw_prop_val(prop_values);
           });
+    prop_val_content.append("span")
+          .style("float", "right")
+          .html('(px)');
 
     let prop_val_content2 = popup.append("p").attr("class", "line_elem");
     prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));

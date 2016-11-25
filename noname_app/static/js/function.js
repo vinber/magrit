@@ -486,20 +486,6 @@ var fields_PropSymbolChoro = {
                     rendered_field2: field2_selec.node().value,
                     colors_breaks: colors_breaks,
                 });
-                // current_layers[new_layer_name] = {
-                //     renderer: "PropSymbolsChoro",
-                //     symbol: rd_params.symbol,
-                //     ref_layer_name: layer,
-                //     options_disc: options_disc,
-                //     rendered_field: field1_selec.node().value,
-                //     rendered_field2: field2_selec.node().value,
-                //     size: [+ref_value_field.node().value, +ref_size.node().value],
-                //     "stroke-width-const": 1,
-                //     fill_color: color_map,
-                //     colors_breaks: colors_breaks,
-                //     is_result: true,
-                //     n_features: nb_features
-                // };
                 zoom_without_redraw();
                 switch_accordion_section();
                 handle_legend(new_layer_name);
@@ -596,9 +582,9 @@ var fields_Typo = {
               handle_legend(self.rendering_params[selected_field].new_name)
           }
         });
-
         uo_layer_name.attr('value', "Typo_" + layer);
         section2.selectAll(".params").attr("disabled", null);
+        setSelected(field_selec.node(), field_selec.node().options[0].value);
     },
     unfill: function(){
         let field_selec = document.getElementById("Typo_field_1"),
@@ -627,12 +613,39 @@ function fillMenu_Choropleth(){
    field_selec_section.insert('select')
     .attrs({id: 'choro_field1', class: 'params'});
 
-    dv2.insert('p').style("margin", "auto")
-      .append("button")
-      .attrs({id: "choro_class", class: "button_disc params i18n",
-              'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-      .styles({"font-size": "0.8em", "text-align": "center"})
+    let discr_section = dv2.insert('p').style("margin", "auto");
+    let subsection1 = discr_section.append('p');
+    subsection1.insert('span')
+      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
       .html(i18next.t("app_page.func_options.common.discretization_choice"));
+    subsection1.append('img')
+      .styles({width: '15px', position: 'absolute', right: '25px', 'margin-top': '15px'})
+      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
+    let subsection2 = discr_section.append('p');
+    subsection2.append('img')
+      .style('margin', '0 7.5px')
+      .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
+    subsection2.append('img')
+      .style('margin', '0 7.5px')
+      .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
+    subsection2.append('img')
+      .style('margin', '0 7.5px')
+      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
+    subsection2.append('img')
+      .style('margin','0 7.5px')
+      .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
+    subsection2.append('img')
+      .style('margin', '0 7.5px')
+      .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
+    subsection2.append('span')
+      .attrs({id: 'choro_mini_choice_disc'})
+      .styles({float: 'right', 'margin-top': '5px'});
+    // dv2.insert('p').style("margin", "auto")
+    //   .append("button")
+    //   .attrs({id: "choro_class", class: "button_disc params i18n",
+    //           'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+    //   .styles({"font-size": "0.8em", "text-align": "center"})
+    //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name');
     make_ok_button(dv2, 'choro_yes');
@@ -647,8 +660,10 @@ var fields_Choropleth = {
             fields = type_col(layer, "number"),
             field_selec = section2.select("#choro_field1"),
             uo_layer_name = section2.select('#Choro_output_name'),
-            btn_class = section2.select('#choro_class'),
-            ok_button = section2.select('#choro_yes');
+            btn_class = section2.select('#ico_others'),
+            ok_button = section2.select('#choro_yes'),
+            img_valid_disc = section2.select("#img_choice_disc"),
+            choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
         if(fields.length === 0){
             display_error_num_field();
@@ -664,7 +679,16 @@ var fields_Choropleth = {
                 vals = user_data[layer].map(a => +a[field_name]);
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_choro"));
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
-            ok_button.attr('disabled', self.rendering_params[field_name] !== undefined ? null : true);
+            if(self.rendering_params[field_name] !== undefined){
+                ok_button.attr('disabled', null);
+                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                choro_mini_choice_disc.html(
+                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+            } else {
+                ok_button.attr('disabled', true);
+                img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                choro_mini_choice_disc.html('');
+            }
         });
 
         btn_class.on("click", function(){
@@ -690,13 +714,15 @@ var fields_Choropleth = {
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
                     ok_button.attr("disabled", null);
+                    img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                    choro_mini_choice_disc.html(
+                        i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', {count: confirmed[0]}));
                     self.rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
                             breaks: confirmed[2], colors: confirmed[3],
                             schema: confirmed[5], no_data: confirmed[6],
                             colorsByFeature: confirmed[4], renderer:"Choropleth",
-                            rendered_field: selected_field,
-                            new_name: ""
+                            rendered_field: selected_field, new_name: ""
                         };
                 }
             });
@@ -1644,14 +1670,24 @@ function render_mini_chart_serie(values, parent, cap, bins){
 }
 
 function make_mini_summary(summary){
-  let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
-  return [
-   i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
-   i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
-   i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
-   i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
-  ].join('');
+    let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max)),
+        props = {min : summary.min, max: summary.max, mean: summary.mean.toFixed(p), median: summary.median.toFixed(p)};
+    // let elem = document.createElement('span');
+    // elem.setAttribute('class', 'i18n');
+    // elem.setAttribute('data-i18n', 'app_page.stat_summary.mini_summary');
+    // elem.setAttribute('data-i18n-data', props);
+    // elem.innerHTML = i18next.t('app_page.stat_summary.mini_summary', props);
+    return i18next.t('app_page.stat_summary.mini_summary', props);
 }
+// function make_mini_summary(summary){
+//   let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
+//   return [
+//    i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
+//    i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
+//    i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
+//    i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
+//   ].join('');
+// }
 
 function fillMenu_PropSymbolTypo(layer){
     var dv2 = make_template_functionnality(section2);
@@ -1823,19 +1859,6 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
       rendered_field2: color_field,
       color_map: rendering_params.color_map
   });
-  // current_layers[new_layer_name] = {
-  //     renderer: "PropSymbolsTypo",
-  //     symbol: rd_params.symbol,
-  //     ref_layer_name: layer,
-  //     rendered_field: field1,
-  //     rendered_field2: color_field,
-  //     size: [ref_value, ref_size],
-  //     "stroke-width-const": 1,
-  //     fill_color: colors,
-  //     is_result: true,
-  //     n_features: nb_features,
-  //     color_map: rendering_params.color_map
-  // };
   zoom_without_redraw();
   switch_accordion_section();
   handle_legend(new_layer_name);
@@ -2354,7 +2377,7 @@ var fields_TypoSymbol = {
           let field = field_to_use.node().value;
           render_TypoSymbols(fields_TypoSymbol.rendering_params[field], uo_layer_name.node().value);
         });
-
+        setSelected(field_to_use.node(), fields_all[0]);
         self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
         uo_layer_name.attr('value', ["Symbols", layer].join('_'));
         document.getElementById("TypoSymbols_output_name").value = ["Symbols", layer].join('_');

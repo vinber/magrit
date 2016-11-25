@@ -101,9 +101,9 @@ var display_box_symbol_typo = function(layer, field){
                 .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: d.nb_elem}));
 
         newbox.selectAll(".typo_class")
-                .insert("input").attr("type", "number").attr("id", "symbol_size")
-                .style("width", "38px").style("display", "inline-block")
-                .attr("value", 32);
+                .insert('input')
+                .attrs({type: 'number', id: 'symbol_size', value: 32})
+                .styles({width: '50px', display: 'inline-block'});
 
         newbox.selectAll(".typo_class")
                 .insert("span")
