@@ -124,7 +124,7 @@ function check_layer_name(name){
 */
 function display_error_num_field(){
     swal({title: "",
-          text: i18next.t("app_page.common.error_numerical_fields"),
+          text: i18next.t("app_page.common.error_type_fields"),
           type: "error"});
 };
 
@@ -373,9 +373,11 @@ function fillMenu_PropSymbolChoro(layer){
 var fields_PropSymbolChoro = {
     fill: function(layer){
         if(!layer) return;
-        d3.selectAll(".params").attr("disabled", null);
+        section2.selectAll(".params").attr("disabled", null);
         let self = this,
-            fields = type_col(layer, "number"),
+            fields_stock = getFieldsType('stock', layer),
+            fields_ratio = getFieldsType('ratio', layer),
+            // fields = type_col(layer, "number"),
             nb_features = user_data[layer].length,
             field1_selec = section2.select("#PropSymbolChoro_field_1"),
             field2_selec = section2.select("#PropSymbolChoro_field_2"),
@@ -386,16 +388,17 @@ var fields_PropSymbolChoro = {
             ref_size = section2.select('#PropSymbolChoro_ref_size'),
             ok_button = section2.select('#propChoro_yes');
 
-        if(fields.length == 0){
+        if(fields_stock.length == 0 || fields_ratio.length == 0){
             display_error_num_field();
             return;
         }
 
-        fields.forEach(function(field){
+        fields_stock.forEach(function(field){
             field1_selec.append("option").text(field).attr("value", field);
-            field2_selec.append("option").text(field).attr("value", field);
         });
-
+        fields_ratio.forEach(field => {
+            field2_selec.append('option').text(field).attr('value', field);
+        });
         field1_selec.on("change", function(){
             let field_name = this.value,
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
@@ -491,8 +494,8 @@ var fields_PropSymbolChoro = {
                 handle_legend(new_layer_name);
             }
         });
-        setSelected(field1_selec.node(), fields[0]);
-        setSelected(field2_selec.node(), fields[0]);
+        setSelected(field1_selec.node(), fields_stock[0]);
+        setSelected(field2_selec.node(), fields_ratio[0]);
     },
 
     unfill: function(){
@@ -501,9 +504,12 @@ var fields_PropSymbolChoro = {
 
         for(let i = field1_selec.childElementCount - 1; i >= 0; i--){
             field1_selec.removeChild(field1_selec.children[i]);
+        }
+
+        for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
             field2_selec.removeChild(field2_selec.children[i]);
         }
-        d3.selectAll(".params").attr("disabled", true);
+        sectio2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
 };
@@ -535,16 +541,16 @@ var fields_Typo = {
         if(!layer) return;
         let self = this,
             g_lyr_name = "#" + layer,
-            fields = type_col(layer),
-            fields_name = Object.getOwnPropertyNames(fields),
+            fields_name = getFieldsType('category', layer),
+            // fields = type_col(layer),
+            // fields_name = Object.getOwnPropertyNames(fields),
             field_selec = section2.select("#Typo_field_1"),
             ok_button = section2.select('#Typo_yes'),
             btn_typo_class = section2.select('#Typo_class'),
             uo_layer_name = section2.select('#Typo_output_name');
 
         fields_name.forEach(f_name => {
-            if(f_name != '_uid' && f_name != "UID")
-                field_selec.append("option").text(f_name).attr("value", f_name);
+            field_selec.append("option").text(f_name).attr("value", f_name);
         });
 
         field_selec.on("change", function(){
@@ -585,7 +591,7 @@ var fields_Typo = {
         });
         uo_layer_name.attr('value', "Typo_" + layer);
         section2.selectAll(".params").attr("disabled", null);
-        setSelected(field_selec.node(), field_selec.node().options[0].value);
+        setSelected(field_selec.node(), fields_name[0]);
     },
     unfill: function(){
         let field_selec = document.getElementById("Typo_field_1"),
@@ -658,7 +664,8 @@ var fields_Choropleth = {
         if(!layer) return;
         let self = this,
             g_lyr_name = "#"+layer,
-            fields = type_col(layer, "number"),
+            fields = getFieldsType("ratio", layer),
+            // fields = type_col(layer, "number"),
             field_selec = section2.select("#choro_field1"),
             uo_layer_name = section2.select('#Choro_output_name'),
             btn_class = section2.select('#ico_others'),
@@ -778,7 +785,8 @@ var fields_Stewart = {
             setSelected(mask_selec.node(), default_selected_mask);
 
         if(layer){
-            let fields = type_col(layer, "number"),
+            // let fields = type_col(layer, "number"),
+            let fields = getFieldsType("stock", layer).concat(getFieldsType("ratio", layer)),
                 field_selec = section2.select("#stewart_field"),
                 field_selec2 = section2.select("#stewart_field2");
 
@@ -999,7 +1007,8 @@ function fillMenu_Stewart(){
 var fields_Anamorphose = {
     fill: function(layer){
         if(!layer) return;
-        let fields = type_col(layer, "number"),
+        // let fields = type_col(layer, "number"),
+        let fields = getFieldsType('stock', layer),
             field_selec = section2.select("#Anamorph_field"),
             algo_selec = section2.select('#Anamorph_algo'),
             ok_button = section2.select("#Anamorph_yes"),
@@ -1757,8 +1766,10 @@ var fields_PropSymbolTypo = {
         if(!layer) return;
         section2.selectAll(".params").attr("disabled", null);
         let self = this,
-            fields_num = type_col(layer, "number"),
-            fields_all = type_col(layer),
+            fields_num = getFieldsType('stock', layer),
+            fields_categ = getFieldsType('category', layer),
+            // fields_num = type_col(layer, "number"),
+            // fields_all = type_col(layer),
             nb_features = user_data[layer].length,
             field1_selec = section2.select("#PropSymbolTypo_field_1"),
             field2_selec = section2.select("#PropSymbolTypo_field_2"),
@@ -1767,18 +1778,18 @@ var fields_PropSymbolTypo = {
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
 
-        if(fields_all.length == 0){
+        if(fields_categ.length == 0 || fields_num.length == 0){
             display_error_num_field();
             return;
         }
 
-        fields_num.forEach(function(field){
+        fields_num.forEach(field => {
             field1_selec.append("option").text(field).attr("value", field);
         });
 
-        for(let field in fields_all){
-            field2_selec.append("option").text(field).attr("value", field);
-        }
+        fields_categ.forEach(field => {
+          field2_selec.append('option').text(field).attr('value', field);
+        });
 
         field1_selec.on("change", function(){
             let field_name = this.value,
@@ -1816,7 +1827,7 @@ var fields_PropSymbolTypo = {
           )
         });
         setSelected(field1_selec.node(), fields_num[0]);
-        setSelected(field2_selec.node(), Object.getOwnPropertyNames(fields_all)[0]);
+        setSelected(field2_selec.node(), fields_categ[0]);
     },
 
     unfill: function(){
@@ -1937,8 +1948,10 @@ function fillMenu_Discont(){
 var fields_Discont = {
     fill: function(layer){
         if(!layer) return;
-        let fields_num = type_col(layer, "number"),
-            fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+        // let fields_num = type_col(layer, "number"),
+        //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+        let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
+            fields_id = getFieldsType('category', layer),
             field_discont = section2.select("#field_Discont"),
             field_id = section2.select("#field_id_Discont"),
             ok_button = section2.select('#yes_Discont');
@@ -1951,7 +1964,7 @@ var fields_Discont = {
         fields_num.forEach(function(field){
                 field_discont.append("option").text(field).attr("value", field);
         });
-        fields_all.forEach(function(field){
+        fields_id.forEach(function(field){
                 field_id.append("option").text(field).attr("value", field);
         });
         field_discont.on("change", function(){
@@ -2221,7 +2234,8 @@ var fields_PropSymbol = {
     fill: function(layer){
         if(!layer) return;
         section2.selectAll(".params").attr("disabled", null);
-        let fields = type_col(layer, "number"),
+        // let fields = type_col(layer, "number"),
+        let fields = getFieldsType('stock', layer),
             nb_features = user_data[layer].length,
             field_selec = section2.select("#PropSymbol_field_1"),
             nb_color = section2.select('#PropSymbol_nb_colors'),
@@ -2530,7 +2544,8 @@ var fields_griddedMap = {
     fill: function(layer){
         if(!layer) return;
 
-        let fields = type_col(layer, "number"),
+        // let fields = type_col(layer, "number"),
+        let fields = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             field_selec = section2.select("#Gridded_field"),
             output_name = section2.select('#Gridded_output_name'),
             grip_shape = section2.select('#Gridded_shape'),

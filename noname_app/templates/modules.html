@@ -176,6 +176,19 @@ function setUpInterface(resume_project)
         .styles({"text-align": "center", "margin-top": "2px"})
         .html("");
 
+    dv1.append('p')
+        .styles({'text-align': 'center','margin': '5px'})
+        .insert('button')
+        .attrs({'id': 'btn_type_fields', 'class': 'i18n',
+                'data-i18n': '[html]app_page.box_type_fields.title',
+                'disabled': true})
+        .styles({cursor: 'pointer', disabled: 'true'})
+        .html(i18next.t('app_page.box_type_fields.title'))
+        .on('click', function(){
+            let layer_name = Object.getOwnPropertyNames(user_data)[0];
+            make_box_type_fields(layer_name);
+          });
+
     make_ico_choice();
 
     let section3 = d3.select("#section3");
@@ -1503,9 +1516,6 @@ function remove_ext_dataset_cleanup(){
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
     document.getElementById('sample_zone').style.display = null;
-    if(Object.getOwnPropertyNames(user_data).length == 0){
-        document.getElementById("browse_button").disabled = true;
-    }
 }
 
 // Do some clean-up when a layer is removed
@@ -1554,6 +1564,9 @@ function remove_layer_cleanup(name){
 
         // Restore the state of the bottom of the section 1 :
         document.getElementById("join_section").innerHTML = "";
+
+        // Disabled the button allowing the user to choose type for its layer :
+        document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
         // Also reset the user choosen values, remembered for its ease :
         fields_TypoSymbol.box_typo = undefined;

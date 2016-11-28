@@ -692,7 +692,9 @@ function ask_join_now(layer_name){
         cancelButtonText: i18next.t("app_page.common.no"),
       }).then(() => {
           createJoinBox(layer_name);
-      }, dismiss => { null; });
+      }, dismiss => {
+          make_box_type_fields(layer_name);
+      });
 }
 
 function ask_existing_feature(feature_name){
@@ -753,6 +755,7 @@ function add_layer_topojson(text, options){
         current_layers[lyr_name_to_add].targeted = true;
         user_data[lyr_name_to_add] = [];
         data_to_load = true;
+        current_layers[lyr_name_to_add].fields_type = [];
     } else if(result_layer_on_add){
         result_data[lyr_name_to_add] = [];
         current_layers[lyr_name_to_add].is_result = true;
@@ -874,17 +877,24 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
 
-    if(!skip_alert)
+    if(!skip_alert){
         swal({title: "",
               text: i18next.t("app_page.common.layer_success"),
               allowOutsideClick: true,
               allowEscapeKey: true,
               type: "success"
-            }).then(() => { null; },
-                    dismiss => { null; });
-
-    if(target_layer_on_add && joined_dataset.length > 0){
-        ask_join_now(lyr_name_to_add);
+            }).then(() => {
+                if(target_layer_on_add && joined_dataset.length > 0)
+                    ask_join_now(lyr_name_to_add);
+                else
+                    make_box_type_fields(lyr_name_to_add);
+            },
+                    dismiss => {
+                if(target_layer_on_add && joined_dataset.length > 0)
+                    ask_join_now(lyr_name_to_add);
+                else
+                    make_box_type_fields(lyr_name_to_add);
+            });
     }
     return lyr_name_to_add;
 };

@@ -200,6 +200,7 @@ function add_field_table(table, layer_name, parent){
                         if(parent){
                             parent.display_table(layer_name);
                         }
+                        current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name))
                     }, function(error){
                         if(error != "Invalid name")
                             display_error_during_computation();

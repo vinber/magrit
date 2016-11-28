@@ -238,18 +238,21 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
         return result;
 }
 
-var type_col2 = function(table, skip_if_empty_values=false){
+var type_col2 = function(table, field, skip_if_empty_values=false){
 // Function returning an object like {"field1": "field_type", "field2": "field_type"},
 //  for the fields of the selected layer.
-// If target is set to "number" it should return an array containing only the name of the numerical fields
-// ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var fields = Object.getOwnPropertyNames(table[0]),
+    var tmp_type = undefined,
+        result = [],
         nb_features = table.length,
         deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-        tmp = {},
-        field = undefined,
-        tmp_type = undefined,
-        result = [];
+        tmp = {};
+    if(!field){
+        var fields = Object.getOwnPropertyNames(table[0]).filter(v => v != '_uid');
+        field = undefined;
+    } else {
+        var fields = [field];
+        field = undefined;
+    }
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         tmp[field] = [];
@@ -292,10 +295,12 @@ function make_box_type_fields(layer_name){
         "dialog");
     d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
     var newbox = d3.select("#box_type_fields").select(".modal-body"),
-        fields_type = type_col2(user_data[layer_name]),
+        tmp = type_col2(user_data[layer_name]),
+        fields_type = current_layers[layer_name].fields_type !== undefined && current_layers[layer_name].fields_type.length === tmp.length ? current_layers[layer_name].fields_type : current_layers[layer_name].fields_type.concat(tmp.slice(current_layers[layer_name].fields_type.length, tmp.length)),
         // fields_type = current_layers[layer_name].fields_type,
         ref_type = ['stock', 'ratio', 'category', 'unknown'];
 
+    document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
 
@@ -336,9 +341,14 @@ function make_box_type_fields(layer_name){
             elem => {
               r.push([elem.childNodes[0].innerHTML.trim(), elem.childNodes[1].value])
             });
-        deferred.resolve(r);
-        // deferred.resolve(true);
-        // current_layers[layer_name].fields_type = r.slice();
+        // deferred.resolve(r);
+        deferred.resolve(true);
+        current_layers[layer_name].fields_type = r.slice();
+        getAvailablesFunctionnalities(layer_name);
+        if(window.fields_handler){
+            fields_handler.unfill();
+            fields_handler.fill(layer_name);
+        }
         modal_box.close();
         container.remove();
     }
@@ -352,3 +362,37 @@ function make_box_type_fields(layer_name){
     container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 };
+
+function getAvailablesFunctionnalities(layer_name){
+    let fields_stock = getFieldsType('stock', layer_name),
+        fields_ratio = getFieldsType('ratio', layer_name),
+        fields_categ = getFieldsType('category', layer_name),
+        func_stock = document.querySelectorAll('#button_smooth, #button_prop, #button_choroprop, #button_proptypo, #button_grid, #button_cartogram, #button_discont'),
+        func_ratio = document.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
+        func_categ = document.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+    if(fields_stock.length === 0){
+        Array.prototype.forEach.call(func_stock, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_stock, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_categ.length === 0){
+        Array.prototype.forEach.call(func_ratio, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_ratio, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_categ.length === 0){
+        Array.prototype.forEach.call(func_categ, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_categ, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_stock.length === 0 && fields_ratio.length === 0){
+        document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
+    } else {
+        document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
+    }
+    if(fields_stock.length === 0 && fields_categ.length === 0){
+        document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
+    } else {
+        document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
+    }
+}

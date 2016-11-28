@@ -72,7 +72,7 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
         && cd smoomapy/ && python3 setup.py install && cd /home/app \
         && cp /usr/local/lib/python3.5/dist-packages/noname_app-0.0.0-py3.5-linux-x86_64.egg/noname_app/helpers/*.so /home/app/noname-stuff/noname_app/helpers/
 
-
+RUN cd /home/app/noname-stuff/documentation/doc_book && ./mdbook build
 EXPOSE 9999
 
 #CMD service redis-server start && noname_app
