@@ -26,7 +26,7 @@ function handle_legend(layer){
                     limit_right = map_xy0.x + +w + tol,
                     limit_top = map_xy0.y - tol,
                     limit_bottom = map_xy0.y + +h + tol;
-                let legends = svg_map.querySelectorAll(class_name);
+                let legends = svg_map.getElementsByClassName(class_name.slice(1, class_name.length));
                 for(let i = 0; i < legends.length; i++){
                     let bbox_legend = legends[i].getBoundingClientRect();
                     if(bbox_legend.left < limit_left || bbox_legend.right > limit_right
@@ -84,7 +84,7 @@ function createLegend(layer, title){
 }
 
 function up_legend(legend_node){
-    let lgd_features = svg_map.querySelectorAll(".legend"),
+    let lgd_features = svg_map.getElementsByClassName("legend"),
         nb_lgd_features = +lgd_features.length,
         self_position;
     for(let i=0; i<nb_lgd_features; i++){
@@ -101,7 +101,7 @@ function up_legend(legend_node){
 }
 
 function down_legend(legend_node){
-    let lgd_features = svg_map.querySelectorAll(".legend"),
+    let lgd_features = svg_map.getElementsByClassName("legend"),
         nb_lgd_features = +lgd_features.length,
         self_position;
     for(let i=0; i<nb_lgd_features; i++){
@@ -405,7 +405,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
             .attr("x", xpos + space_elem)
             .attr("y", ypos + 15);
 
-    let ref_symbols = document.getElementById(layer).querySelectorAll(symbol_type),
+    let ref_symbols = document.getElementById(layer).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width';
 
     let sqrt = Math.sqrt;
@@ -520,9 +520,14 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         if(symbol_type === "circle"){
             legend_elems
                   .append("circle")
-                  .attr("cx", xpos + space_elem + boxgap + max_size / 2)
-                  .attr("cy", d => ypos + 45 + max_size + (max_size / 2) - d.size)
-                  .attr('r', d => d.size)
+                  .attrs(d => ({
+                    cx: xpos + space_elem + boxgap + max_size / 2,
+                    cy: ypos + 45 + max_size + (max_size / 2) - d.size,
+                    r: d.size
+                    }))
+                  // .attr("cx", xpos + space_elem + boxgap + max_size / 2)
+                  // .attr("cy", d => ypos + 45 + max_size + (max_size / 2) - d.size)
+                  // .attr('r', d => d.size)
                   .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
@@ -534,10 +539,14 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         } else if(symbol_type === "rect"){
             legend_elems
                   .append("rect")
-                  .attr("x", xpos + space_elem + boxgap)
-                  .attr("y", d => ypos + 45 + max_size - d.size)
-                  .attr('height', d => d.size)
-                  .attr('width', d => d.size)
+                  .attrs(d => ({
+                      x: xpos + space_elem + boxgap,
+                      y: ypos + 45 + max_size - d.size,
+                      width: d.size, height: d.size}))
+                  // .attr("x", xpos + space_elem + boxgap)
+                  // .attr("y", d => ypos + 45 + max_size - d.size)
+                  // .attr('height', d => d.size)
+                  // .attr('width', d => d.size)
                   .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
@@ -605,11 +614,14 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     boxgap = +boxgap;
 
     var legend_root = map.insert('g')
-                        .attr('id', 'legend_root')
-                        .attr("class", tmp_class_name)
-                        .attr("transform", "translate(0,0)")
-                        .attr("boxgap", boxgap)
-                        .attr("rounding_precision", rounding_precision)
+                        .attrs({id: 'legend_root', class: tmp_class_name,
+                                transform: 'translate(0,0)', 'boxgap': boxgap,
+                                'rounding_precision': rounding_precision})
+                        // .attr('id', 'legend_root')
+                        // .attr("class", tmp_class_name)
+                        // .attr("transform", "translate(0,0)")
+                        // .attr("boxgap", boxgap)
+                        // .attr("rounding_precision", rounding_precision)
                         .style("cursor", "grab");
 
     var rect_under_legend = legend_root.insert("rect");

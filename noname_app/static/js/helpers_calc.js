@@ -131,37 +131,6 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     return res;
 }
 
-// function prop_sizer3(arr, fixed_value, fixed_size, type_symbol){
-//     let pi = Math.PI,
-//         abs = Math.abs,
-//         sqrt = Math.sqrt,
-//         arr_len = arr.length,
-//         res = [];
-//
-//     if(!fixed_value || fixed_value == 0)
-//         fixed_value = max_fast(arr);
-//
-//     if(type_symbol == "circle") {
-//         let smax = fixed_size * fixed_size * pi;
-//         for(let i=0; i < arr_len; ++i){
-//             let val = arr[i];
-//             res.push(
-//                 [val[0], sqrt(abs(val[1]) * smax / fixed_value) / pi, val[2]]
-//                 );
-//         }
-//     } else {
-//         let smax = fixed_size * fixed_size;
-//         for(let i=0; i < arr_len; ++i){
-//             let val = arr[i];
-//             res.push(
-//                 [val[0], sqrt(abs(val[1]) * smax / fixed_value), val[2]]
-//                 );
-//         }
-//     }
-//     return res
-// }
-
-
 /**
 * Compute breaks according to "Q6" methods
 * and compute the number of item in each bin.
@@ -195,6 +164,8 @@ function getBreaksQ6(serie){
 function getBinsCount(_values, bins=16){
     _values = _values.filter(a => a).sort((a,b) => a-b);
     let nb_ft = _values.length,
+        mean = undefined,
+        stddev = undefined,
         min = _values[0],
         max = _values[nb_ft - 1],
         extend = max - min,
@@ -216,14 +187,17 @@ function getBinsCount(_values, bins=16){
             j++;
         }
     }
+    mean = sum / nb_ft;
+    stddev = getStdDev(_values, mean);
 
     return {
         breaks: break_values,
         counts: counts,
         min: min,
         max: max,
-        mean: sum / nb_ft,
-        median: (ix_med | 0) == ix_med ? _values[ix_med] : (_values[Math.floor(ix_med)] + _values[Math.ceil(ix_med)]) / 2
+        mean: mean,
+        median: (ix_med | 0) == ix_med ? _values[ix_med] : (_values[Math.floor(ix_med)] + _values[Math.ceil(ix_med)]) / 2,
+        stddev: stddev
         };
 }
 
@@ -292,4 +266,14 @@ function coslaw_dist(A, B){
     return Math.acos(Math.sin(phi1) * Math.sin(phi2) +
                 Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)
                 ) * 6371;
+}
+
+function getStdDev(values, mean_val){
+  let nb_val = values.length,
+      pow = Math.pow,
+      s = 0;
+  for(let i=0; i < nb_val; i++){
+      s += pow(values[i] - mean_val, 2);
+  }
+  return Math.sqrt((1/nb_val) * s)
 }

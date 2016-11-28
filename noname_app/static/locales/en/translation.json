@@ -134,7 +134,7 @@
             "variance": "Variance",
             "stddev": "Standard deviation",
             "cov": "Coefficient of variation",
-            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}}<br>Median : {{median}}"
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}} | Median : {{median}}<br> Std Deviation : {{stddev}}"
         },
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
@@ -338,7 +338,8 @@
             "title": "Choose symbols for fields categories - {{ layer }} - {{ nb_features }} features",
             "field_categ": "<strong>Field</strong> : {{ field }}<br>{{ nb_class }} categories<br>{{ nb_features}} features",
             "count_feature": " <i> ({{ nb_features }} feature)</i>",
-            "count_feature_plural": " <i> ({{ nb_features }} features)</i>"
+            "count_feature_plural": " <i> ({{ nb_features }} features)</i>",
+            "title_click": "Click me to choose a symbol!"
         },
         "categorical_box": {
             "title": "Color a categorical field - {{ layer }} - {{ nb_features }} features",

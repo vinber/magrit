@@ -41,6 +41,7 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
     return [nb_class, type, breaks, color_array, colors_map];
 }
 
+// Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
 var display_discretization = function(layer_name, field_name, nb_class, type, options){
     var make_no_data_section = function(){
         var section = d3.select("#color_div")
@@ -270,6 +271,66 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 .ticks(5)
                 .tickFormat(formatCount));
     }
+
+    var display_ref_histo_beeswarm = function(){
+      var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
+          svg_w = w / 4.75,
+          nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+
+      nb_bins = nb_bins < 3 ? 3 : nb_bins;
+      nb_bins = nb_bins > +values.length ? nb_bins : values.length;
+
+      var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
+          width = svg_w - margin.right - margin.left;
+          height = svg_h - margin.top - margin.bottom;
+
+      var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
+      ref_histo.append('p').style("margin", "auto")
+                .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+
+      var x = d3.scaleLog()
+          .domain([serie.min(), serie.max()])
+          .rangeRound([0, width]);
+
+      var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
+          .attr("width", svg_w + margin.left + margin.right)
+          .attr("height", svg_h + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var simulation = d3.forceSimulation(data)
+          .force("x", d3.forceX(function(d) { return x(d.value); }).strength(1))
+          .force("y", d3.forceY(height / 2))
+          .force("collide", d3.forceCollide(4))
+          .stop();
+
+      for (var i = 0; i < 120; ++i) simulation.tick();
+
+      svg_ref_histo.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x).ticks(20, ".0s"));
+
+      var cell = svg_ref_histo.append("g")
+          .attr("class", "cells")
+        .selectAll("g").data(d3.voronoi()
+            .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.top]])
+            .x(function(d) { return d.x; })
+            .y(function(d) { return d.y; })
+          .polygons(data)).enter().append("g");
+
+      cell.append("circle")
+          .attr("r", 3)
+          .attr("cx", function(d) { return d.data.x; })
+          .attr("cy", function(d) { return d.data.y; });
+
+      cell.append("path")
+          .attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+
+      cell.append("title")
+          .text(function(d) { return d.data.id + "\n" + formatValue(d.data.value); });
+
+    };
 
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
@@ -762,37 +823,42 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
 
 function fetch_categorical_colors(){
-    let categ = document.querySelectorAll(".typo_class"),
+    let categ = document.getElementsByClassName("typo_class"),
         color_map = new Map();
     for(let i = 0; i < categ.length; i++){
         let color = rgb2hex(categ[i].querySelector(".color_square").style.backgroundColor),
-            new_name = categ[i].querySelector(".typo_name").value;
-        color_map.set(categ[i].__data__.name, [color, new_name]);
+            new_name = categ[i].querySelector(".typo_name").value,
+            nb_features = categ[i].querySelector('.typo_count_ft').getAttribute('data-count');
+        color_map.set(categ[i].__data__.name, [color, new_name, nb_features]);
     }
     return color_map;
 }
 
-function display_categorical_box(layer, field){
+function display_categorical_box(layer, field, categories){
     var nb_features = current_layers[layer].n_features,
-        categories = new Map(),
         data_layer = user_data[layer],
         cats = [];
 
-    for(let i = 0; i < nb_features; ++i){
-        let value = data_layer[i][field];
-        let ret_val = categories.get(value);
-        if(ret_val)
-            categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
-        else
-            categories.set(value, [1, [i]]);
+    if(!categories){
+        categories = new Map();
+        for(let i = 0; i < nb_features; ++i){
+            let value = data_layer[i][field];
+            let ret_val = categories.get(value);
+            if(ret_val)
+                categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
+            else
+                categories.set(value, [1, [i]]);
+        }
+        categories.forEach( (v,k) => {
+            cats.push({name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
+        });
+    } else {
+        categories.forEach( (v,k) => {
+            cats.push({name: k, display_name: v[1], nb_elem: v[2], color: v[0]});
+      });
     }
 
-    let nb_class = categories.size;
-
-    categories.forEach( (v,k) => {
-        cats.push({name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
-    });
-
+    var nb_class = categories.size;
     var modal_box = make_dialog_container(
         "categorical_box",
         i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features}),
@@ -803,29 +869,26 @@ function display_categorical_box(layer, field){
 
     newbox.append("h3").html("")
     newbox.append("p")
-                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));
+        .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: +nb_class, nb_features: +nb_features}));
 
     newbox.append("ul").style("padding", "unset").attr("id", "sortable_typo_name")
-            .selectAll("li")
-            .data(cats).enter()
-            .append("li")
-                .styles({margin: "auto", "list-style": "none"})
-                .attr("class", "typo_class")
-                .attr("id", (d,i) => ["line", i].join('_'));
+        .selectAll("li")
+        .data(cats).enter()
+        .append("li")
+            .styles({margin: "auto", "list-style": "none"})
+            .attr("class", "typo_class")
+            .attr("id", (d,i) => ["line", i].join('_'));
 
     newbox.selectAll(".typo_class")
             .append("input")
             .styles({width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px"})
-            .attr("class", "typo_name")
-            .attr("value", d => d.name)
-            .attr("id", d => d.name);
+            .attrs(d => ({class: 'typo_name', value: d.display_name, id: d.name}));
 
     newbox.selectAll(".typo_class")
             .insert("p").attr("class", "color_square")
             .style("background-color", d => d.color)
-            .style("margin", "auto")
-            .style("vertical-align", "middle")
-            .styles({width: "22px", height: "22px", "border-radius": "10%", display: "inline-block"})
+            .styles({width: "22px", height: "22px", margin: 'auto', 'vertical-align': 'middle',
+                     "border-radius": "10%", display: "inline-block"})
             .on("click", function(){
                 let self = this;
                 let this_color = self.style.backgroundColor;
@@ -841,6 +904,7 @@ function display_categorical_box(layer, field){
 
     newbox.selectAll(".typo_class")
             .insert("span")
+            .attrs(d => ({class: 'typo_count_ft', 'data-count': d.nb_elem}))
             .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: +d.nb_elem}));
 
     newbox.insert("p")
@@ -848,7 +912,7 @@ function display_categorical_box(layer, field){
         .attr("class", "button_st3")
         .html(i18next.t("app_page.categorical_box.new_random_colors"))
         .on("click", function(){
-            let lines = document.querySelectorAll(".typo_class");
+            let lines = document.getElementsByClassName("typo_class");
             for(let i=0; i<lines.length; ++i){
                 lines[i].querySelector(".color_square").style.backgroundColor = Colors.names[Colors.random()];
             }

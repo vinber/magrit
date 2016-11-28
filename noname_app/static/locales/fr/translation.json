@@ -136,7 +136,7 @@
             "variance": "Variance",
             "stddev": "Écart-type",
             "cov": "Coefficient de variation",
-            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}}<br>Médianne : {{median}}"
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}} | Médianne : {{median}}<br>Écart-type : {{stddev}}"
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
@@ -332,7 +332,8 @@
             "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
             "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
             "count_feature": " <i> ({{ nb_features }} entité)</i>",
-            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>"
+            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>",
+            "title_click": "Cliquer pour choisir un symbole!"
         },
         "categorical_box": {
             "title": "Choix des couleurs - {{ layer }} - {{ nb_features }} entités",

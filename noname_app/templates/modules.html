@@ -340,7 +340,7 @@ function setUpInterface(resume_project)
         .style("display", "inline-table")
         .style("cursor", "pointer");
     c.on("click", function(){
-        let sections = document.querySelectorAll(".to_hide"),
+        let sections = document.getElementsByClassName("to_hide"),
             arg;
         if(sections[0].style.display == "none"){
             arg = "";
@@ -438,7 +438,6 @@ function setUpInterface(resume_project)
                   .append('path')
                   .attr("d", path)
                   .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
-        map.selectAll(".layer").selectAll("path").attr("d", path);
         current_layers["Simplified_land_polygons"] = {
             "type": "Polygon", "n_features":125,
             "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
@@ -458,27 +457,25 @@ function setUpInterface(resume_project)
     let select_type_export = type_export.append("select")
             .attrs({"id": "select_export_type", "class": "m_elem_right"})
             .on("change", function(){
-                let type = this.value;
+                let type = this.value,
+                    export_filename = document.getElementById("export_filename");
                 if(type === "svg"){
                     document.getElementById("export_options_png").style.display = "none";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.svg";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "png"){
                     document.getElementById("export_options_png").style.display = "";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.png";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "geo"){
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                     document.getElementById("export_options_png").style.display = "none";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.style.display = "none";
                     export_filename.previousSibling.style.display = "none";
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                 }
             });
 
@@ -535,8 +532,7 @@ function setUpInterface(resume_project)
             in_h.disabled = undefined;
             in_w.disabled = undefined;
         }
-        console.log(in_w)
-    })
+    });
 
     let exp_a = export_png_options.append("p");
     exp_a.append("span")
@@ -620,6 +616,12 @@ function setUpInterface(resume_project)
                      "color": " white", "background-color": "#173a50",
                      "vertical-align": "calc(20%)"})
             .on("change", function(){
+                let val = +this.value,
+                    old_value = +document.getElementById('form_projection_center').value;
+                if(this.value.length == 0 || val > 180 || val < -180){
+                    this.value = old_value;
+                    return;
+                }
                 handle_proj_center_button([this.value, null, null]);
                 document.getElementById("form_projection_center").value = this.value;
             });
@@ -628,12 +630,12 @@ function setUpInterface(resume_project)
             .html("°");
 
     let proj_select = const_options.append("select")
-                .attr("id","form_projection")
-                .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
-                .on("change", function(){
-                    current_proj_name = this.selectedOptions[0].textContent;
-                    change_projection(this.value);
-                });
+            .attr("id","form_projection")
+            .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
+            .on("change", function(){
+                current_proj_name = this.selectedOptions[0].textContent;
+                change_projection(this.value);
+            });
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             available_projections.set(d.name, d.projection);
@@ -673,7 +675,7 @@ function setUpInterface(resume_project)
                             {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
                             ];
                         let menu = document.createElement("div");
-                        menu.style.top = "30px";
+                        menu.style.top = "40px";
                         menu.style.right = "38px";
                         menu.style.background = "#173a50";
                         menu.style.color = "#f5f5f5";
@@ -723,7 +725,7 @@ function setUpInterface(resume_project)
 
     const_options.append("button")
         .attrs({id: "current_app_lang", class: "const_buttons"})
-        .styles({color: "white",
+        .styles({color: "white", cursor: 'pointer',
                  "font-size": "14px", "vertical-align": "super",
                  background: "transparent", "font-weight": "bold"})
         .html(i18next.language)
@@ -740,7 +742,7 @@ function setUpInterface(resume_project)
                     {"name": other_lang, "callback": change_lang}
                     ];
                 let menu = document.createElement("div");
-                menu.style.top = "30px";
+                menu.style.top = "40px";
                 menu.style.right = "0px";
                 menu.className = "context-menu";
                 menu.id = "menu_lang";
@@ -825,7 +827,7 @@ function setUpInterface(resume_project)
           }
           let desired_order = [],
               actual_order = [],
-              layers = svg_map.querySelectorAll(".layer");
+              layers = svg_map.getElementsByClassName("layer");
 
           for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
               let n = a.target.childNodes[i].getAttribute("layer_name");
@@ -928,14 +930,12 @@ function make_ico_choice(){
             func_desc = get_menu_option(func_name).desc;
         function_panel
             .insert("img")
-            .styles({"float": "left", "list-style": "none"})
-            .attr("class", "i18n")
-            .attr("data-i18n", ["[title]app_page.func_description.", func_name].join(''))
-            .attr("src", ["/static/img/func_icons/", ico_name].join(''))
-            .attr("id", "button_" + func_name)
-            .style("margin", "1px")
-            .style("cursor", "pointer")
-            .style("width", "50px")
+            .styles({margin: '1px', cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})            // .attr("class", "i18n")
+            // .attr("data-i18n", ["[title]app_page.func_description.", func_name].join(''))
+            // .attr("src", ["/static/img/func_icons/", ico_name].join(''))
+            // .attr("id", "button_" + func_name)
+            .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+                    src: ['/static/img/func_icons/', ico_name].join(''), id: 'button_' + func_name})
             .on("click", function(){
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
@@ -1172,7 +1172,7 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
 {% endraw %}
 
 function up_legends(){
-    let legend_features = svg_map.querySelectorAll('.legend');
+    let legend_features = svg_map.getElementsByClassName('legend');
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);
     }
@@ -1225,7 +1225,7 @@ function displayInfoOnMove(){
         info_features.style("display", "none");
         document.getElementById("map").style.cursor="";
     } else {
-        let layers = document.querySelectorAll(".layer"),
+        let layers = document.getElementsByClassName("layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
 
@@ -1327,6 +1327,7 @@ function reproj_symbol_layer(){
       } else if(symbol == "circle"){
           map.select("#"+lyr_name)
               .selectAll(symbol)
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
                 let centroid = path.centroid(d);
                 return {
@@ -1334,11 +1335,11 @@ function reproj_symbol_layer(){
                   'cx': centroid[0],
                   'cy': centroid[1]
                 };
-              })
-              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined);
+              });
       } else if (symbol == "rect") {
           map.select("#"+lyr_name)
               .selectAll(symbol)
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
                 let centroid = path.centroid(d),
                     size =  d.properties.prop_value;
@@ -1348,9 +1349,7 @@ function reproj_symbol_layer(){
                   'x': centroid[0] - size / 2,
                   'y': centroid[1] - size / 2
                 };
-              })
-              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined);
-
+              });
       }
     }
   }
@@ -1833,7 +1832,7 @@ function change_projection(proj_name) {
                 || Object.getOwnPropertyNames(result_data)[0]
                 || null;
     if(!layer_name){
-        let layers = document.querySelectorAll(".layer");
+        let layers = document.getElementsByClassName("layer");
         layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
     }
     if(layer_name){
@@ -2030,8 +2029,8 @@ function canvas_mod_size(shape){
 function patchSvgForFonts(){
     function getListUsedFonts(){
         let elems = [
-            svg_map.querySelectorAll('text'),
-            svg_map.querySelectorAll('p')
+            svg_map.getElementsByTagName('text'),
+            svg_map.getElementsByTagName('p')
         ];
         let needed_definitions = [];
         elems.map(d => d ? d : []);
@@ -2071,7 +2070,7 @@ function unpatchSvgForFonts(){
 
 function patchSvgForInkscape(){
     svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
-    let elems = svg_map.querySelectorAll("g");
+    let elems = svg_map.getElementsByTagName("g");
     for(let i = elems.length - 1; i > -1; i--){
         if(elems[i].id == ""){
             continue;
@@ -2089,7 +2088,7 @@ function patchSvgForInkscape(){
 
 function unpatchSvgForInkscape(){
     svg_map.removeAttribute("xmlns:inkscape");
-    let elems = svg_map.querySelectorAll("g");
+    let elems = svg_map.getElementsByTagName("g");
     for(let i = elems.length - 1; i > -1; i--){
         if(elems[i].id == ""){
             continue;

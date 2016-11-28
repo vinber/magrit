@@ -554,8 +554,9 @@ var fields_Typo = {
         });
 
         btn_typo_class.on("click", function(){
-          let selected_field = field_selec.node().value;
-          display_categorical_box(layer, selected_field)
+          let selected_field = field_selec.node().value,
+              col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
+          display_categorical_box(layer, selected_field, col_map)
               .then(function(confirmed){
                   if(confirmed){
                       ok_button.attr("disabled", null);
@@ -1671,7 +1672,8 @@ function render_mini_chart_serie(values, parent, cap, bins){
 
 function make_mini_summary(summary){
     let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max)),
-        props = {min : summary.min, max: summary.max, mean: summary.mean.toFixed(p), median: summary.median.toFixed(p)};
+        props = {min : summary.min, max: summary.max, mean: summary.mean.toFixed(p),
+                 median: summary.median.toFixed(p), stddev: summary.stddev.toFixed(p)};
     // let elem = document.createElement('span');
     // elem.setAttribute('class', 'i18n');
     // elem.setAttribute('data-i18n', 'app_page.stat_summary.mini_summary');
@@ -2315,12 +2317,15 @@ function fillMenu_TypoSymbol(){
     make_layer_name_button(dv2, 'TypoSymbols_output_name')
     make_ok_button(dv2, 'yesTypoSymbols');
     dv2.selectAll(".params").attr("disabled", true);
+    if(!window.default_symbols){
+        window.default_symbols = [];
+        prepare_available_symbols();
+    }
 }
 
 function discard_rendering_empty_val(){
-  swal({title: "",
-        text: i18next.t("app_page.common.error_empty_vals"),
-        type: "error"});
+  swal({title: "", type: "error",
+        text: i18next.t("app_page.common.error_empty_vals")});
 }
 
 var fields_TypoSymbol = {
@@ -2339,28 +2344,22 @@ var fields_TypoSymbol = {
         });
         field_to_use.on("change", function(){
             let field = this.value;
-            if(self.rendering_params[field]){
-              document.getElementById("yesTypoSymbols").disabled = null;
-              self.box_typo = display_box_symbol_typo(layer, this.value, self.rendering_params[field].symbols_map);
-            } else {
-              document.getElementById("yesTypoSymbols").disabled = true;
-              self.box_typo = display_box_symbol_typo(layer, this.value);
-            }
+            ok_button.attr('disabled', self.rendering_params[field] ? null : true)
         });
         selec_symbol.on("click", function(){
-            swal({
-                    title: "",
-                    text: i18next.t("app_page.common.error_too_many_features"),
-                    type: "warning",
-                    showCancelButton: true,
-                    allowOutsideClick: false,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
-                    cancelButtonText: i18next.t("app_page.common.cancel"),
+            swal({title: "",
+                  text: i18next.t("app_page.common.error_too_many_features"),
+                  type: "warning",
+                  showCancelButton: true,
+                  allowOutsideClick: false,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                  cancelButtonText: i18next.t("app_page.common.cancel")
                 }).then(() => {
-                    fields_TypoSymbol.box_typo().then(function(confirmed){
+                    let field = document.getElementById("field_Symbol").value,
+                        symbol_map = self.rendering_params[field] ? self.rendering_params[field].symbols_map : undefined;
+                    display_box_symbol_typo(layer, field, symbol_map).then(confirmed => {
                         if(confirmed){
-                          let field = document.getElementById("field_Symbol").value;
                           document.getElementById("yesTypoSymbols").disabled = null;
                           self.rendering_params[field] = {
                               nb_cat: confirmed[0],
@@ -2369,26 +2368,20 @@ var fields_TypoSymbol = {
                           };
                         }
                     });
-                }, () => {
-                    return;
-                });
+                }, () => { return; });
         });
         ok_button.on('click', function(){
           let field = field_to_use.node().value;
-          render_TypoSymbols(fields_TypoSymbol.rendering_params[field], uo_layer_name.node().value);
+          render_TypoSymbols(self.rendering_params[field], uo_layer_name.node().value);
         });
         setSelected(field_to_use.node(), fields_all[0]);
-        self.box_typo = display_box_symbol_typo(layer, fields_all[0]);
         uo_layer_name.attr('value', ["Symbols", layer].join('_'));
-        document.getElementById("TypoSymbols_output_name").value = ["Symbols", layer].join('_');
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Symbol"));
         section2.selectAll(".params").attr("disabled", true);
     },
-    box_typo: undefined,
-    rendering_params: {},
-    cats: {}
+    rendering_params: {}
 }
 
 function render_TypoSymbols(rendering_params, new_name){

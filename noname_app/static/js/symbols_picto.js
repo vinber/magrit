@@ -1,38 +1,30 @@
 "use strict";
 
-var display_box_symbol_typo = function(layer, field){
+var display_box_symbol_typo = function(layer, field, categories){
     var fetch_symbol_categories = function(){
         let categ = document.getElementsByClassName("typo_class"),
             symbol_map = new Map();
         for(let i = 0; i < categ.length; i++){
             let selec =  categ[i].querySelector(".symbol_section"),
                 new_name = categ[i].querySelector(".typo_name").value;
-                cats[i].new_name = new_name;
             if(selec.style.backgroundImage.length > 7){
                 let img = selec.style.backgroundImage.split("url(")[1].substring(1).slice(0,-2);
                 let size = +categ[i].querySelector("#symbol_size").value
                 symbol_map.set(categ[i].__data__.name, [img, size, new_name, cats[i].nb_elem]);
-                cats[i].img = selec.style.backgroundImage;
             } else {
                 symbol_map.set(categ[i].__data__.name, [null, 0, new_name, cats[i].nb_elem]);
-                cats[i].img = default_d_url;
             }
         }
         return symbol_map;
     }
-
-    if(!window.default_symbols){
-        window.default_symbols = [];
-        prepare_available_symbols();
-    }
     var nb_features = current_layers[layer].n_features,
         data_layer = user_data[layer],
-        cats = fields_TypoSymbol.cats[field] || [],
+        cats = [],
         res_symbols = window.default_symbols,
         default_d_url = 'url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJmbGFnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDU3OS45OTcgNTc5Ljk5NyIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgNTc5Ljk5NyA1NzkuOTk3IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIGQ9Ik0yMzEuODQ2LDQ3Mi41NzJWMzEuODA2aC0yMi4xOHY0NDAuNTU3JiMxMDsmIzk7Yy0zNC4wMTYsMi42NDktNTkuNDE5LDE4Ljc2Ny01OS40MTksMzguODcxYzAsMjIuMDIxLDMwLjQ1NiwzOS4yNzEsNjkuMzM3LDM5LjI3MWMzOC44NzcsMCw2OS4zMzItMTcuMjUsNjkuMzMyLTM5LjI3MSYjMTA7JiM5O0MyODguOTE3LDQ5MS41OTUsMjY0LjY3NCw0NzUuNzY0LDIzMS44NDYsNDcyLjU3MnoiLz4KPHBvbHlnb24gZmlsbD0icGFyYW0oZmlsbCkgIzAwMCIgZmlsbC1vcGFjaXR5PSJwYXJhbShmaWxsLW9wYWNpdHkpIiBzdHJva2U9InBhcmFtKG91dGxpbmUpICNGRkYiIHN0cm9rZS1vcGFjaXR5PSJwYXJhbShvdXRsaW5lLW9wYWNpdHkpIiBzdHJva2Utd2lkdGg9InBhcmFtKG91dGxpbmUtd2lkdGgpIDAiIHBvaW50cz0iMjM1LjI0MywyOS40OTIgMjMzLjcyMywyMDcuNjI4IDQyOS43NDksMjEwLjMyOSAiLz4KPC9zdmc+")';
 
-    if(cats.length == 0){
-        var categories = new Map();
+    if(!categories){
+        categories = new Map();
         for(let i = 0; i < nb_features; ++i){
             let value = data_layer[i][field];
             let ret_val = categories.get(value);
@@ -42,93 +34,87 @@ var display_box_symbol_typo = function(layer, field){
                 categories.set(value, [1, [i]]);
         }
         categories.forEach( (v,k) => { cats.push({name: k, new_name: k, nb_elem: v[0], img: default_d_url}) });
+    } else {
+        categories.forEach( (v,k) => { cats.push({name: k, new_name: v[2], nb_elem: v[3], img: v[0]}) });
     }
     let nb_class = cats.length;
 
-    return function(){
-        var modal_box = make_dialog_container(
-            "symbol_box",
-            i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features}),
-            "dialog");
-        var newbox = d3.select("#symbol_box").select(".modal-body")
-                        .styles({'overflow-y': 'scroll', 'max-height': (window.innerHeight - 145) + 'px'});
+    var modal_box = make_dialog_container(
+        "symbol_box",
+        i18next.t("app_page.symbol_typo_box.title", {layer: layer, nb_features: nb_features}),
+        "dialog");
+    var newbox = d3.select("#symbol_box").select(".modal-body")
+                    .styles({'overflow-y': 'scroll', 'max-height': (window.innerHeight - 145) + 'px'});
 
-        newbox.append("h3").html("")
-        newbox.append("p")
-                .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
-        newbox.append("ul").style("padding", "unset").attr("id", "typo_categories")
-                .selectAll("li")
-                .data(cats).enter()
-                .append("li")
-                    .styles({margin: "auto", "list-style": "none"})
-                    .attr("class", "typo_class")
-                    .attr("id", (d,i) => ["line", i].join('_'));
+    newbox.append("h3").html("")
+    newbox.append("p")
+            .html(i18next.t("app_page.symbol_typo_box.field_categ", {field: field, nb_class: nb_class, nb_features: nb_features}));
+    newbox.append("ul").style("padding", "unset").attr("id", "typo_categories")
+            .selectAll("li")
+            .data(cats).enter()
+            .append("li")
+                .styles({margin: "auto", "list-style": "none"})
+                .attr("class", "typo_class")
+                .attr("id", (d,i) => ["line", i].join('_'));
 
-        newbox.selectAll(".typo_class")
-                .append("span")
-                .attrs({"class": "three_dots"})
-                .style("cursor", "grab");
+    newbox.selectAll(".typo_class")
+            .append("span")
+            .attrs({"class": "three_dots"})
+            .style("cursor", "grab");
 
-        newbox.selectAll(".typo_class")
-                .append("input")
-                .styles({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
-                .attr("class", "typo_name")
-                .attr("value", d => d.new_name)
-                .attr("id", d => d.name);
+    newbox.selectAll(".typo_class")
+            .append("input")
+            .styles({width: "100px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "7.5px"})
+            .attrs(d => ({class: 'typo_name', value: d.new_name, id: d.name}));
 
-        newbox.selectAll(".typo_class")
-                .insert("p")
-                .attr("title", "Click me to choose a symbol!")
-                .attr("class", "symbol_section")
-                .style("margin", "auto")
-                .style("background-image", d => d.img)
-                .style("vertical-align", "middle")
-                .styles({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
-                        "border-radius": "10%", border: "1px dashed blue",
-                        display: "inline-block", "background-size": "32px 32px"
-                      })
-                .on("click", function(){
-                    box_choice_symbol(res_symbols, ".dialog")
-                      .then(confirmed => {
-                        if(confirmed){
-                            this.style.backgroundImage = confirmed;
-                        }
-                    });
+    newbox.selectAll(".typo_class")
+            .insert("p")
+            .attrs({class: 'symbol_section', 'title': i18next.t('app_page.symbol_typo_box.title_click')})
+            .style("background-image", d => d.img)
+            .styles({width: "32px", height: "32px", margin: "0px 1px 0px 1px",
+                    "border-radius": "10%", border: "1px dashed blue",
+                    display: "inline-block", "background-size": "32px 32px",
+                    'vertical-align': 'middle'})
+            .on("click", function(){
+                box_choice_symbol(res_symbols, ".dialog")
+                  .then(confirmed => {
+                    if(confirmed){
+                        this.style.backgroundImage = confirmed;
+                    }
                 });
+            });
 
-        newbox.selectAll(".typo_class")
-                .insert("span")
-                .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: d.nb_elem}));
+    newbox.selectAll(".typo_class")
+            .insert("span")
+            .html( d => i18next.t("app_page.symbol_typo_box.count_feature", {nb_features: d.nb_elem}));
 
-        newbox.selectAll(".typo_class")
-                .insert('input')
-                .attrs({type: 'number', id: 'symbol_size', value: 32})
-                .styles({width: '50px', display: 'inline-block'});
+    newbox.selectAll(".typo_class")
+            .insert('input')
+            .attrs({type: 'number', id: 'symbol_size', value: 50})
+            .styles({width: '50px', display: 'inline-block'});
 
-        newbox.selectAll(".typo_class")
-                .insert("span")
-                .style("display", "inline-block")
-                .html(" px");
-        new Sortable(document.getElementById("typo_categories"));
+    newbox.selectAll(".typo_class")
+            .insert("span")
+            .style("display", "inline-block")
+            .html(" px");
+    new Sortable(document.getElementById("typo_categories"));
 
-        let deferred = Q.defer(),
-            container = document.getElementById("symbol_box"),
-            _onclose = () => {
-                deferred.resolve(false);
-                modal_box.close();
-                container.remove();
-              }
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = function(){
-            let symbol_map = fetch_symbol_categories();
-            fields_TypoSymbol.cats[field] = cats;
-            deferred.resolve([nb_class, symbol_map]);
+    let deferred = Q.defer(),
+        container = document.getElementById("symbol_box"),
+        _onclose = () => {
+            deferred.resolve(false);
             modal_box.close();
             container.remove();
-        }
-        return deferred.promise;
+          }
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    container.querySelector(".btn_ok").onclick = function(){
+        let symbol_map = fetch_symbol_categories();
+        deferred.resolve([nb_class, symbol_map]);
+        modal_box.close();
+        container.remove();
     }
+    return deferred.promise;
 };
 
 function box_choice_symbol(sample_symbols, parent_css_selector){
