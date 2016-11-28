@@ -1,6 +1,8 @@
 #!/bin/sh
 cd app/
-docker build -t "noname_app:latest" --build-arg CACHEBUST=$(date +%s) .
+
+
+docker build -t "noname_app:$(date +%y%m%d)" --build-arg CACHEBUST=$(date +%s) .
 cd ..
 cd nginx/
 docker build -t "nginx:latest" .

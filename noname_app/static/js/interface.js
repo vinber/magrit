@@ -675,8 +675,8 @@ function handle_single_file(file, target_layer_on_add) {
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
-    return +layer_name_to_add.length > 38
-        ? [layer_name_to_add.substring(0, 35), '(...)'].join('')
+    return +layer_name_to_add.length > 40
+        ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
         : layer_name_to_add;
 }
 
@@ -886,13 +886,12 @@ function add_layer_topojson(text, options){
             }).then(() => {
                 if(target_layer_on_add && joined_dataset.length > 0)
                     ask_join_now(lyr_name_to_add);
-                else
+                else if (target_layer_on_add)
                     make_box_type_fields(lyr_name_to_add);
-            },
-                    dismiss => {
+            }, dismiss => {
                 if(target_layer_on_add && joined_dataset.length > 0)
                     ask_join_now(lyr_name_to_add);
-                else
+                else if (target_layer_on_add)
                     make_box_type_fields(lyr_name_to_add);
             });
     }

@@ -296,9 +296,15 @@ function make_box_type_fields(layer_name){
     d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
     var newbox = d3.select("#box_type_fields").select(".modal-body"),
         tmp = type_col2(user_data[layer_name]),
-        fields_type = current_layers[layer_name].fields_type !== undefined && current_layers[layer_name].fields_type.length === tmp.length ? current_layers[layer_name].fields_type : current_layers[layer_name].fields_type.concat(tmp.slice(current_layers[layer_name].fields_type.length, tmp.length)),
+        fields_type = current_layers[layer_name].fields_type,
+        f = fields_type.filter(v => v[0]),
         // fields_type = current_layers[layer_name].fields_type,
         ref_type = ['stock', 'ratio', 'category', 'unknown'];
+
+    if(f.lenght === 0)
+        fields_type = tmp.slice();
+    else if(tmp.length > fields_type.length)
+        tmp.forEach(d => { if(f.indexOf(d[0]) == -1) fields_type.push(d) });
 
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));

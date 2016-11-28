@@ -744,7 +744,8 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     make_legend_context_menu(legend_root, layer);
 }
 
-
+// Todo : find a better organization for the options in this box
+//       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name){
     function bind_selections(){
         box_class = [layer_name, "_legend_popup"].join('');
@@ -918,30 +919,36 @@ function createlegendEditBox(legend_id, layer_name){
 
     if(legend_id === "legend_root"){
         let current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
-        box_body.insert("p").html(i18next.t("app_page.legend_style_box.gap_boxes"))
-                .insert("input").attr("type", "checkbox")
-                .attr("id", "style_lgd")
-                .on("change", function(){
-                    let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
-                    legend_node = svg_map.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                    let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
-                    let rounding_precision = document.getElementById("precision_range") ? document.getElementById("precision_range").value : undefined;
-                    let transform_param = legend_node.getAttribute("transform"),
-                        lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
+        let gap_section = box_body.insert("p");
+        gap_section.append("input")
+            .style('margin-left', '0px')
+            .attrs({"type": "checkbox", id: 'style_lgd'})
+            .on("change", function(){
+                let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
+                legend_node = svg_map.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+                let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
+                let rounding_precision = document.getElementById("precision_range") ? document.getElementById("precision_range").value : undefined;
+                let transform_param = legend_node.getAttribute("transform"),
+                    lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+                    lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
 
-                    legend_node.remove();
-                    createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision);
-                    bind_selections();
-                    if(transform_param)
-                        svg_map.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
-                });
+                legend_node.remove();
+                createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision);
+                bind_selections();
+                if(transform_param)
+                    svg_map.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
+            });
+        gap_section.append('label')
+            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes'})
+            .html(i18next.t('[html]app_page.legend_style_box.gap_boxes'));
+
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root2"){
         let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
-        box_body.insert("p").html(i18next.t("app_page.legend_style_box.nested_symbols"))
-                .insert("input").attr("type", "checkbox")
-                .attr("id", "style_lgd")
+        let gap_section = box_body.insert("p");
+        gap_section.append("input")
+                .style('margin-left', '0px')
+                .attrs({id: 'style_lgd', type: 'checkbox'})
                 .on("change", function(){
                     legend_node = svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join(''))
                     let rendered_field = current_layers[layer_name].rendered_field;
@@ -956,6 +963,9 @@ function createlegendEditBox(legend_id, layer_name){
                     if(transform_param)
                         svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
                 });
+      gap_section.append('label')
+          .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
+          .html(i18next.t("[text]app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = current_state;
     }
 
@@ -983,39 +993,43 @@ function createlegendEditBox(legend_id, layer_name){
                 note_content.textContent = this.value;
             });
 
-    let rectangle_options = box_body.insert('p').html(i18next.t("app_page.legend_style_box.under_rectangle"));
-    rectangle_options.insert("input")
-                .attrs({type: "checkbox",
-                        value: rect_fill_value.color || "#ededed",
-                        checked: rect_fill_value.color === undefined ? null : true,
-                        id: "rect_lgd_checkbox"})
-                .on("change", function(){
-                    if(this.checked){
-                        rectangle_options.select("#choice_color_under_rect")
-                                        .attr("disabled", null);
-                        rect_fill_value = {color: "#ffffff", opacity: 1};
-                    } else {
-                        rectangle_options.select("#choice_color_under_rect")
-                                        .attr("disabled", true);
-                        rect_fill_value = undefined;
-                    }
-                    make_underlying_rect(legend_node_d3,
-                                         legend_node_d3.select("#under_rect"),
-                                         rect_fill_value
-                                         );
-                });
-    rectangle_options.insert("input")
-                .attrs({id: "choice_color_under_rect",
-                        type: "color",
-                        value: rect_fill_value ? rgb2hex(rect_fill_value.color) : undefined,
-                        disabled: rect_fill_value === undefined ? true : null})
-                .on("change", function(){
-                    rect_fill_value = {color: this.value, opacity: 1};
-                    make_underlying_rect(legend_node_d3,
-                                         legend_node_d3.select("#under_rect"),
-                                         rect_fill_value
-                                         );
-                });
+    let rectangle_options1 = box_body.insert('p');
+    rectangle_options1.insert("input")
+        .style('margin-left', '0px')
+        .attrs({type: "checkbox",
+                value: rect_fill_value.color || "#ededed",
+                checked: rect_fill_value.color === undefined ? null : true,
+                id: "rect_lgd_checkbox"})
+        .on("change", function(){
+            if(this.checked){
+                rectangle_options2.style('display', "");
+                rect_fill_value = {color: "#ffffff", opacity: 1};
+            } else {
+                rectangle_options2.style("display", "none");
+                rect_fill_value = undefined;
+            }
+            make_underlying_rect(legend_node_d3,
+                                 legend_node_d3.select("#under_rect"),
+                                 rect_fill_value
+                                 );
+        });
+    rectangle_options1.append('label')
+        .attrs({for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle'})
+        .html(i18next.t("app_page.legend_style_box.under_rectangle"));
+
+    let rectangle_options2 = box_body.insert('p').style('display', 'none');
+    rectangle_options2.insert("input")
+        .attrs({id: "choice_color_under_rect",
+                type: "color",
+                value: rect_fill_value ? rgb2hex(rect_fill_value.color) : undefined,
+                disabled: rect_fill_value === undefined ? true : null})
+        .on("change", function(){
+            rect_fill_value = {color: this.value, opacity: 1};
+            make_underlying_rect(legend_node_d3,
+                                 legend_node_d3.select("#under_rect"),
+                                 rect_fill_value
+                                 );
+        });
 }
 
 function move_legends(){
