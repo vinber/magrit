@@ -1,7 +1,9 @@
 "use strict";
 
 function getBreaks(values, type, nb_class){
-    var serie = new geostats(values),
+    var _values = values.filter(v => v),
+        no_data = _values.length - values.length,
+        serie = new geostats(_values),
         nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
         breaks = [];
     if(type === "Q6"){
@@ -14,7 +16,7 @@ function getBreaks(values, type, nb_class){
         let _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
     }
-    return [serie, breaks, nb_class];
+    return [serie, breaks, nb_class, no_data];
 }
 
 function discretize_to_size(values, type, nb_class, min_size, max_size){
@@ -30,15 +32,19 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
 
 function discretize_to_colors(values, type, nb_class, col_ramp_name){
     col_ramp_name = col_ramp_name || "Reds";
-    var [serie, breaks, nb_class] = getBreaks(values, type, nb_class),
+    var [serie, breaks, nb_class, nb_no_data] = getBreaks(values, type, nb_class),
         color_array = getColorBrewerArray(nb_class, col_ramp_name),
-        sorted_values = serie.sorted(),
+        no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
         colors_map = [];
-    for(let j=0; j<sorted_values.length; ++j){
-        let idx = serie.getClass(values[j])
-        colors_map.push(color_array[idx])
+    for(let j=0; j<values.length; ++j){
+        if(values[j] != null){
+          let idx = serie.getClass(values[j]);
+          colors_map.push(color_array[idx]);
+        } else {
+          colors_map.push(no_data_color);
+        }
     }
-    return [nb_class, type, breaks, color_array, colors_map];
+    return [nb_class, type, breaks, color_array, colors_map, no_data_color];
 }
 
 // Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?

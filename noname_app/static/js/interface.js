@@ -1213,7 +1213,7 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
          [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
          [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"],
-         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_50m"],
+         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
          [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
          [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
         ];
@@ -1221,9 +1221,7 @@ function add_sample_layer(){
     var tabular_datasets = [
          [i18next.t("app_page.sample_layer_box.tabular_dataset"),""],
          [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
-         [i18next.t("app_page.sample_layer_box.gpm_dataset"), 'gpm_dataset'],
          [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
-         [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
         ];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))

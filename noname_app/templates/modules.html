@@ -18,7 +18,7 @@
     <script  src="static/js/lib/d3-geo-projection.v1.2.0.min.js"></script>
     <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script> -->
     <script  src="static/js/lib/d3.custom.min.js"></script>
-    <script  src="static/js/lib/topojson.v1.min.js"></script>
+    <script  src="static/js/lib/topojson-client.2.1.0.min.js"></script>
     <script  src="static/js/lib/bootstrap-native-mod.min.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
@@ -2247,7 +2247,7 @@ function make_export_layer_box(){
     });
 
     selec_type.on("change", function(){
-        if(this.value == "TopoJSON" || this.value == "KML"){
+        if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
             selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr("disabled", true);
         } else {

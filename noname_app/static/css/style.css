@@ -648,7 +648,7 @@ div.panel {
 
 div.panel.show {
     //opacity: 1;
-    max-height: 650px;
+    max-height: 775px;
     width: 335px;
     margin: auto;
     margin-bottom: 7px;

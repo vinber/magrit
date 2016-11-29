@@ -131,6 +131,10 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
     return res;
 }
 
+function getOptNbClass(len_serie){
+    return Math.floor(1 + 3.3 * Math.log10(len_serie));
+}
+
 /**
 * Compute breaks according to "Q6" methods
 * and compute the number of item in each bin.

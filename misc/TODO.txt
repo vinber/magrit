@@ -1,6 +1,5 @@
 TODO list:
 - /!\ fix reloading a project from previously exported one
-- /!\ Update to new topojson version on client side
 - /!\ Allow the display the frequence histogram as beeswarm in the appropriate box
 - /!\ Choose some nice icons related to the fields data type (ratio, stock, category, unknown, id ?)
 - /!\ Allow the user to change the quantization used (or to simplify its layers) for the discontinuity fonctionnalities if he is not fully satisfied by the result (ig. missing borders due to the topology) (related to topojson lib. update)
@@ -11,6 +10,4 @@ TODO list:
 - Design a favicon.
 - Make a short documentation about how the project is structured in order to facilitate potential contributions
 - Split the actual repository in two repo. : one for the website and one for the application and its documentation.
-- Bind the little icons for the discretization on choropleth / PropChoro functionnalities
-- Fix the table displayed as parameters for the links functionnality (they all stick in the right of the menu)
 - Double-check the legend on discontinuity as it seems to be some problems... sometimes ? (still haven't catch when/why..).

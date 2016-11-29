@@ -56,7 +56,7 @@ try:
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
-        make_geojson_links)
+        make_geojson_links, repairCoordsPole)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
 
@@ -69,7 +69,7 @@ except:
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
-        make_geojson_links)
+        make_geojson_links, repairCoordsPole)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
 
@@ -416,6 +416,7 @@ async def convert(request):
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
     else:
+        print(datatype, name)
         return web.Response(text='{"Error": "Incorrect datatype"}')
 
     request.app['logger'].info(
@@ -725,6 +726,9 @@ async def call_stewart(posted_data, user_id, app):
             app['redis_conn'].set(reusable_val, dump_obj))
 
     os.remove(filenames['point_layer'])
+    res = json.loads(res.decode())
+    repairCoordsPole(res)
+    res = json.dumps(res).encode()
     savefile(filenames['point_layer'], res)
     res = await geojson_to_topojson(filenames['point_layer'], remove=True)
 
@@ -792,31 +796,14 @@ async def handler_exists_layer2(request):
         return web.Response(text=res.decode())
     else:
         res_geojson = topojson_to_geojson(json.loads(res.decode()))
-        out_proj = check_projection(projection["name"] if "name" in projection
-                                    else projection["proj4string"])
-        if not out_proj:
-            return web.Response(
-                text="Error: Unable to understand the projection string")
         if "GeoJSON" in file_format:
-            res_geojson = json.loads(res_geojson)
-            if out_proj == "epsg:4326":
-                res_geojson["crs"] = {
-                    'type': 'name', 'properties': {
-                        'name': 'urn:ogc:def:crs:OGC:1.3:CRS84'
-                        }
-                    }
-                return web.Response(text=json.dumps(res_geojson))
-            else:
-                reproj_layer(res_geojson, out_proj)
-                if "epsg" in out_proj:
-                    res_geojson["crs"] = {
-                        'type': 'name', 'properties': {
-                            'name': 'urn:ogc:def:crs:{}'
-                                .format(out_proj.replace("epsg", "EPSG:"))
-                            }
-                        }
-                return web.Response(text=json.dumps(res_geojson))
+            return web.Response(text=res_geojson)
         else:
+            out_proj = check_projection(projection["name"] if "name" in projection
+                                        else projection["proj4string"])
+            if not out_proj:
+                return web.Response(
+                    text="Error: Unable to understand the projection string")
             available_formats = {"ESRI Shapefile": ".shp",
                                  "KML": ".kml",
                                  "GML": ".gml"}

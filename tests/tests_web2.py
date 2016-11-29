@@ -5,6 +5,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
+from flaky import flaky
 from signal import SIGINT
 import psutil
 import unittest
@@ -103,7 +104,7 @@ def get_port_available(port_nb):
 #        pass
 port = 9999
 
-
+@flaky
 @on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
     """
@@ -225,6 +226,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("twincities")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_flow")
 
@@ -248,6 +253,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_grid")
 
@@ -270,6 +279,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         self.click_elem_retry(
             driver.find_element_by_css_selector(
@@ -306,6 +319,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         # Open the appropriate menu:
         self.open_menu_section(5)
 
@@ -413,6 +430,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
 
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         driver.find_element_by_css_selector("li.nuts2_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
@@ -466,6 +487,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
 
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_smooth")
 
@@ -488,6 +513,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts3_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         driver.find_element_by_css_selector("li.nuts3_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
@@ -581,6 +610,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
         time.sleep(0.3)
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         self.click_elem_retry(
             driver.find_element_by_css_selector(
@@ -642,6 +675,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ".btn_ok")[0].click()
         # Now the alert about how it was successful :
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_discont")
 
@@ -683,6 +720,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Now the alert about how it was successful :
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
 
         self.open_menu_section(2)
         self.clickWaitTransition("#button_prop")
@@ -730,6 +770,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     # def test_propSymbolsChoro(self):
     #     # TODO
     #     pass
+
+    def validTypefield(self):
+        self.click_elem_retry(
+            self.driver.find_element_by_id(
+                "box_type_fields").find_elements_by_css_selector(
+                ".btn_ok")[0])
+        time.sleep(0.5)
+
+    def changeTypefield(self):
+        pass
 
     def deeper_test_legend(self, id_legend, type_elem):
         legend_root = self.driver.find_element_by_id(id_legend)
