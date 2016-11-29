@@ -322,12 +322,6 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     make_legend_context_menu(legend_root, layer);
 }
 
-function get_distance(pt1, pt2){
-    let xs = pt2[0] - pt1[1],
-        ys = pt2[1] - pt1[1];
-    return Math.sqrt((xs*xs)+(ys*ys));
-}
-
 /**
 * Function computing the size of the rectangle to be put under the legend
 * (called on each change modifying the size of the legend box,

@@ -1,16 +1,16 @@
 TODO list:
 - /!\ fix reloading a project from previously exported one
-- /!\ Correct many nonsenses due to the incremental way in which were added some features, aka "clean the code"
-- /!\ Choose some fonts (to be served by the server) to be used by the user (title, label, text annotation) instead of relying on the avaiables fonts in the current browser.
-- /!\ fix the zoom by rectangular zone
-- Switch to CeCILL licence ?
-- Handle correctly missing values according to the functionnality used
+- /!\ Update to new topojson version on client side
+- /!\ Allow the display the frequence histogram as beeswarm in the appropriate box
+- /!\ Choose some nice icons related to the fields data type (ratio, stock, category, unknown, id ?)
+- /!\ Allow the user to change the quantization used (or to simplify its layers) for the discontinuity fonctionnalities if he is not fully satisfied by the result (ig. missing borders due to the topology) (related to topojson lib. update)
+- /!\ re-allow the user to browse its imported (csv etc.) dataset ? (as the functionnalities was squizzed when moving the "browse table" button on each layer)
+			or allow a preview (as the dataset aims to be joined to the targeted layer)
 - Do more data validation (client and/or server side) to avoid weird user-uploads
-- Add soem specials options for the garticule in the "stylebox"
-- Improve the new "Textbox" class (in order to have the same behavior with chromium than with firefox)
 - Make a fancy chart for selecting class and size for values quantization in discontinuities / links
-- Allow the PNG export with a better resolution ? (currently it fits stricly the pixel size defined in "basemap options")
-- Design a favicon
-- (Partially done) Create an index page + Insert message about how cookies are used for EU visitors to comply with whatever directive it is
-- (Partially done) Fill some fields with "first guess values" (Stewart span, etc.) and add limitations to some fields (Stewart resolution, grid cell-size, etc.)
-
+- Design a favicon.
+- Make a short documentation about how the project is structured in order to facilitate potential contributions
+- Split the actual repository in two repo. : one for the website and one for the application and its documentation.
+- Bind the little icons for the discretization on choropleth / PropChoro functionnalities
+- Fix the table displayed as parameters for the links functionnality (they all stick in the right of the menu)
+- Double-check the legend on discontinuity as it seems to be some problems... sometimes ? (still haven't catch when/why..).

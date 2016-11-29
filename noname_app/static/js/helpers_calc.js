@@ -268,6 +268,19 @@ function coslaw_dist(A, B){
                 ) * 6371;
 }
 
+/**
+* Return the eclidian distance between pt1 and pt2, in the unit provided
+*
+* @param {Array} pt1 - Coordinates of the 1st point as [x, y].
+* @param {Array} pt2 - Coordinates of the 2nd point as [x, y].
+* @return {Number} distance - The distance between pt1 and pt2.
+*/
+function get_distance(pt1, pt2){
+    let xs = pt2[0] - pt1[1],
+        ys = pt2[1] - pt1[1];
+    return Math.sqrt((xs*xs)+(ys*ys));
+}
+
 function getStdDev(values, mean_val){
   let nb_val = values.length,
       pow = Math.pow,

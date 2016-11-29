@@ -271,13 +271,13 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
-            result.push([field, "stock"]);
+            result.push({name: field, type: "stock"});
         else if (tmp[field].every(ft => ft === "string" || ft === "empty") && tmp[field].indexOf("string") > -1)
-            result.push([field, "category"]);
+            result.push({name: field, type: "category"});
         else if (tmp[field].every(ft => ft === "ratio" || ft === "stock" || ft === "empty") && tmp[field].indexOf("ratio") > -1)
-            result.push([field, "ratio"]);
+            result.push({name: field, type: "ratio"});
         else
-            result.push([field, "unknown"]);
+            result.push({name: field, type: "unknown"});
     }
     return result;
 }
@@ -285,7 +285,7 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
 function getFieldsType(type, layer_name, ref){
     if(!layer_name && !ref) return;
     ref = ref || current_layers[layer_name].fields_type;
-    return ref.filter(d => d[1] === type).map(d => d[0]);
+    return ref.filter(d => d.type === type).map(d => d.name);
 }
 
 function make_box_type_fields(layer_name){
@@ -297,14 +297,17 @@ function make_box_type_fields(layer_name){
     var newbox = d3.select("#box_type_fields").select(".modal-body"),
         tmp = type_col2(user_data[layer_name]),
         fields_type = current_layers[layer_name].fields_type,
-        f = fields_type.filter(v => v[0]),
+        f = fields_type.map(v => v.name),
         // fields_type = current_layers[layer_name].fields_type,
         ref_type = ['stock', 'ratio', 'category', 'unknown'];
 
-    if(f.lenght === 0)
+    if(f.length === 0)
         fields_type = tmp.slice();
     else if(tmp.length > fields_type.length)
-        tmp.forEach(d => { if(f.indexOf(d[0]) == -1) fields_type.push(d) });
+        tmp.forEach(d => {
+          if(f.indexOf(d.name) === -1)
+            fields_type.push(d);
+          })
 
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
@@ -321,7 +324,7 @@ function make_box_type_fields(layer_name){
 
     box_select.selectAll("p")
         .insert('span')
-        .html(d => d[0]);
+        .html(d => d.name);
 
     box_select.selectAll('p')
         .insert('select')
@@ -334,7 +337,7 @@ function make_box_type_fields(layer_name){
 
     box_select.selectAll('select')
         .each(function(d){
-          this.value = d[1];
+          this.value = d.type;
         });
 
     let deferred = Q.defer(),
@@ -345,7 +348,7 @@ function make_box_type_fields(layer_name){
         Array.prototype.forEach.call(
             document.getElementById('fields_select').getElementsByTagName('p'),
             elem => {
-              r.push([elem.childNodes[0].innerHTML.trim(), elem.childNodes[1].value])
+              r.push({name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value})
             });
         // deferred.resolve(r);
         deferred.resolve(true);

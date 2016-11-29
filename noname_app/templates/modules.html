@@ -421,11 +421,13 @@ function setUpInterface(resume_project)
             if(isNaN(val) || val < -361){
                 this.value = old_value;
                 return;
-            } else if(val < 0 && val > -361)
+            } else if(val < 0 && val > -361) {
                 this.value = 360 + val;
-            else if(val > 360)
+            } else if(val > 360) {
                 this.value = 360;
-
+            } else { // Should remove trailing zeros (right/left) if any :
+              this.value = +this.value;
+            }
             rotate_global(this.value);
             document.getElementById("form_rotate").value = this.value;
         });
@@ -634,6 +636,8 @@ function setUpInterface(resume_project)
                 if(this.value.length == 0 || val > 180 || val < -180){
                     this.value = old_value;
                     return;
+                } else { // Should remove trailing zeros (right/left) if any :
+                    this.value = +this.value;
                 }
                 handle_proj_center_button([this.value, null, null]);
                 document.getElementById("form_projection_center").value = this.value;
@@ -1224,8 +1228,6 @@ function binds_layers_buttons(layer_name){
 }
 
 // Function to display information on the top layer (in the layer manager)
-// it will only works on layers appearing in blue in the layer manager
-// (ie. the targeted layer and result(s?) layer(s?))
 function displayInfoOnMove(){
     var info_features = d3.select("#info_features");
     if(info_features.classed("active")){
@@ -1236,9 +1238,9 @@ function displayInfoOnMove(){
         info_features.classed("active", false);
         info_features.node().innerHTML = "";
         info_features.style("display", "none");
-        document.getElementById("map").style.cursor="";
+        svg_map.style.cursor = "";
     } else {
-        let layers = document.getElementsByClassName("layer"),
+        let layers = svg_map.getElementsByClassName("layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
 
@@ -1289,7 +1291,7 @@ function displayInfoOnMove(){
                 info_features.style("display", "none");
         });
         info_features.classed("active", true);
-        document.getElementById("map").style.cursor="help";
+        svg_map.style.cursor="help";
     }
 }
 
@@ -1634,15 +1636,15 @@ function zoom_without_redraw(){
           .attr("transform", transform.toString() + rot_val);
     } else {
         map.selectAll(".layer")
-                  .transition()
-                  .duration(50)
-                  .style("stroke-width", function(){
-                        let lyr_name = this.id;
-                        return current_layers[lyr_name].fixed_stroke
-                                ? this.style.strokeWidth
-                                : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
-                    })
-                  .attr("transform", d3.event.transform + rot_val);
+          .transition()
+          .duration(50)
+          .style("stroke-width", function(){
+                let lyr_name = this.id;
+                return current_layers[lyr_name].fixed_stroke
+                        ? this.style.strokeWidth
+                        : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
+            })
+          .attr("transform", d3.event.transform + rot_val);
         map.selectAll(".scalable-legend")
           .transition()
           .duration(50)
@@ -2149,8 +2151,8 @@ function export_compo_svg(output_name){
     document.body.appendChild(dl_link);
     dl_link.click();
     dl_link.remove();
-    //unpatchSvgForFonts();
-    unpatchSvgForInkscape();
+    unpatchSvgForFonts();
+    //unpatchSvgForInkscape();
 }
 
 function _export_compo_png(type="web", scalefactor=1, output_name){
