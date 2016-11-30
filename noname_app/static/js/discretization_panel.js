@@ -2,9 +2,9 @@
 
 function getBreaks(values, type, nb_class){
     var _values = values.filter(v => v),
-        no_data = _values.length - values.length,
+        no_data = values.length - _values.length,
         serie = new geostats(_values),
-        nb_class = +nb_class || Math.floor(1 + 3.3 * Math.log10(values.length)),
+        nb_class = +nb_class || getOptNbClass(_values.length),
         breaks = [];
     if(type === "Q6"){
         let tmp = getBreaksQ6(serie.sorted());
@@ -211,18 +211,19 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     };
 
     var display_ref_histo = function(){
-        var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
+        var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
             svg_w = w / 4.75,
             nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
 
         nb_bins = nb_bins < 3 ? 3 : nb_bins;
         nb_bins = nb_bins > +values.length ? nb_bins : values.length;
 
-        var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
+        var margin = {top: 10, right: 10, bottom: 20, left: 22.5},
             width = svg_w - margin.right - margin.left;
             height = svg_h - margin.top - margin.bottom;
 
-        var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
+        var ref_histo = newBox.select("#ref_histo_box").select('#inner_ref_histo_box');
+        ref_histo.node().innerHTML = "";
         ref_histo.append('p').style("margin", "auto")
                   .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
@@ -279,63 +280,72 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     }
 
     var display_ref_histo_beeswarm = function(){
-      var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
-          svg_w = w / 4.75,
-          nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+        var svg_h = h / 7.25 > 85 ? h / 7.25 : 85,
+            svg_w = w / 4.75;
 
-      nb_bins = nb_bins < 3 ? 3 : nb_bins;
-      nb_bins = nb_bins > +values.length ? nb_bins : values.length;
+        var data = [];
+        for(let i = 0; i < values.length; i++){
+            data.push({value: +values[i]});
+        }
+        var margin = {top: 10, right: 10, bottom: 20, left: 22.5},
+            width = svg_w - margin.right - margin.left;
+            height = svg_h - margin.top - margin.bottom;
 
-      var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
-          width = svg_w - margin.right - margin.left;
-          height = svg_h - margin.top - margin.bottom;
+        var ref_histo = newBox.select("#ref_histo_box").select('#inner_ref_histo_box');
+        ref_histo.node().innerHTML = "";
+        ref_histo.append('p').style("margin", "auto")
+                  .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
-      var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
-      ref_histo.append('p').style("margin", "auto")
-                .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+        var x = d3.scaleLinear()
+            .domain([serie.min(), serie.max()])
+            .rangeRound([0, width]);
 
-      var x = d3.scaleLog()
-          .domain([serie.min(), serie.max()])
-          .rangeRound([0, width]);
+        var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
+            .attr("width", svg_w + margin.left + margin.right)
+            .attr("height", svg_h + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
-          .attr("width", svg_w + margin.left + margin.right)
-          .attr("height", svg_h + margin.top + margin.bottom)
-        .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var simulation = d3.forceSimulation(data)
+            .force("x", d3.forceX(function(d) { return x(d.value); }).strength(0.5))
+            .force("y", d3.forceY(height / 2))
+            .force("collide", d3.forceCollide(2.5))
+            .stop();
 
-      var simulation = d3.forceSimulation(data)
-          .force("x", d3.forceX(function(d) { return x(d.value); }).strength(1))
-          .force("y", d3.forceY(height / 2))
-          .force("collide", d3.forceCollide(4))
-          .stop();
+        for (var i = 0; i < 75; ++i)
+            simulation.tick();
 
-      for (var i = 0; i < 120; ++i) simulation.tick();
+        svg_ref_histo.append("g")
+            .attr("class", "x_axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom()
+                .scale(x)
+                .ticks(4)
+                .tickFormat(formatCount))
+            .selectAll("text")
+                .attr("y", 4).attr("x", -4)
+                .attr("dy", ".45em")
+                .attr("transform", "rotate(-40)")
+                .style("text-anchor", "end");
 
-      svg_ref_histo.append("g")
-          .attr("class", "axis axis--x")
-          .attr("transform", "translate(0," + height + ")")
-          .call(d3.axisBottom(x).ticks(20, ".0s"));
+        var cell = svg_ref_histo.append("g")
+            .attr("class", "cells")
+          .selectAll("g").data(d3.voronoi()
+              .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.top]])
+              .x(function(d) { return d.x; })
+              .y(function(d) { return d.y; })
+            .polygons(data)).enter().append("g");
 
-      var cell = svg_ref_histo.append("g")
-          .attr("class", "cells")
-        .selectAll("g").data(d3.voronoi()
-            .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.top]])
-            .x(function(d) { return d.x; })
-            .y(function(d) { return d.y; })
-          .polygons(data)).enter().append("g");
+        cell.append("circle")
+            .attr("r", data.length < 250 ? 3 : 2)
+            .attr("cx", function(d) { if(d) return d.data.x; })
+            .attr("cy", function(d) { if(d) return d.data.y; });
 
-      cell.append("circle")
-          .attr("r", 3)
-          .attr("cx", function(d) { return d.data.x; })
-          .attr("cy", function(d) { return d.data.y; });
+        cell.append("path")
+            .attr("d", function(d) { if(d) return "M" + d.join("L") + "Z"; });
 
-      cell.append("path")
-          .attr("d", function(d) { return "M" + d.join("L") + "Z"; });
-
-      cell.append("title")
-          .text(function(d) { return d.data.id + "\n" + formatValue(d.data.value); });
-
+        cell.append("title")
+            .text(function(d) { if(d) return "" + d.data.value; });
     };
 
     var make_summary = function(){
@@ -603,6 +613,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     discretization.node().value = type;
     make_box_histo_option();
     make_summary();
+    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
+    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
     display_ref_histo();
 
     var svg_h = h / 5 > 100 ? h / 5 : 100,
@@ -614,7 +626,24 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .styles({width: svg_w + margin.top + margin.bottom + 90 + "px",
                  height: window.innerHeight - 60 + "px"});
 
-
+    if(values.length < 500){ // Only allow for beeswarm plot if there isn't too many values
+        // as it seems to be costly due to the "simulation" + the voronoi
+        let current_histo = "regular",
+            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+        choice_histo.insert('button')
+            .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
+            .styles({padding: '3px', 'font-size': '10px'})
+            .html(i18next.t('disc_box.switch_ref_histo'))
+            .on('click', function(){
+                if(current_histo == 'regular'){
+                    display_ref_histo_beeswarm();
+                    current_histo = "beeswarm";
+                } else if (current_histo == "beeswarm"){
+                    display_ref_histo();
+                    current_histo = "regular";
+               }
+            });
+    }
     var div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)

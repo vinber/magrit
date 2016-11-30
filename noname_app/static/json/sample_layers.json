@@ -15,6 +15,6 @@
  "us_states": "/static/data_sample/cb_2015_us_state_5m.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
  "world_country": "/static/data_sample/simplified_land_polygons.geojson",
- "world_cities": "/static/data_sample/world_cities_extract5000.geojson",
+ "world_cities": "/static/data_sample/world_cities_extract5000.geojson"
  }
 ]

@@ -771,3 +771,12 @@ p.line_elem {
   float: left;
   width: 10px;
 }
+
+.cells path {
+  fill: none;
+  pointer-events: all;
+}
+
+.cells :hover circle {
+  fill: red;
+}

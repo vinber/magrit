@@ -204,10 +204,10 @@ function insert_legend_button(layer_name){
     selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
 
-function make_min_max_tableau(values, nb_class, disc_kind, min_size, max_size, id_parent, breaks, callback){
+function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback){
     document.getElementById(id_parent).innerHTML = "";
     if(values && breaks == undefined){
-        let disc_result = discretize_to_size(values, disc_kind, nb_class, min_size, max_size);
+        let disc_result = discretize_to_size(values, discontinuity_type, nb_class, min_size, max_size);
         breaks = disc_result[2];
         if(!breaks)
             return false;
@@ -2063,13 +2063,13 @@ function fillMenu_Discont(){
     c.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity'})
       .html(i18next.t('app_page.func_options.discont.type_discontinuity'));
-    let disc_kind = c.insert('select')
+    let discontinuity_type = c.insert('select')
       .attrs({class: 'params i18n', id: 'kind_Discont'});
 
     [['app_page.func_options.discont.type_relative', 'rel'],
       ['app_page.func_options.discont.type_absolute', 'abs']
     ].forEach(k => {
-        disc_kind.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
+        discontinuity_type.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
     });
 
     let d = dv2.append('p').attr('class', 'params_section2');
@@ -2104,12 +2104,12 @@ function fillMenu_Discont(){
     f.insert('input')
       .attrs({class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random()});
 
-    let g = dv2.append('p').attr('class', 'params_section2');
-    g.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
-      .html("quantization");
-    g.insert('input')
-      .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
+    // let g = dv2.append('p').attr('class', 'params_section2');
+    // g.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
+    //   .html("quantization");
+    // g.insert('input')
+    //   .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
 
     make_layer_name_button(dv2, 'Discont_output_name');
     make_ok_button(dv2, 'yes_Discont', false);
@@ -2140,8 +2140,8 @@ var fields_Discont = {
                 field_id.append("option").text(field).attr("value", field);
         });
         field_discont.on("change", function(){
-          let disc_kind = document.getElementById("Discont_discKind").value;
-          document.getElementById("Discont_output_name").value = ["Disc", this.value, disc_kind, layer].join('_');
+          let discontinuity_type = document.getElementById("kind_Discont").value;
+          document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
         });
         ok_button.on('click', render_discont);
         section2.selectAll(".params").attr("disabled", null);
@@ -2162,15 +2162,15 @@ var render_discont = function(){
         min_size = 1,
         max_size = 10,
         threshold = 1,
-        quantization = +document.getElementById('quantiz_discont').value,
-        disc_kind = document.getElementById("kind_Discont").value,
+        // quantization = +document.getElementById('quantiz_discont').value,
+        discontinuity_type = document.getElementById("kind_Discont").value,
+        discretization_type = document.getElementById('Discont_discKind').value,
         nb_class = +document.getElementById("Discont_nbClass").value,
         user_color = document.getElementById("color_Discont").value,
-        method = document.getElementById("kind_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, disc_kind, layer].join('_'));
+                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
     let result_value = new Map(),
         result_geom = {},
@@ -2178,20 +2178,19 @@ var render_discont = function(){
         math_max = Math.max,
         topo_to_use;
 
-    let tmp_topo = JSON.stringify(_target_layer_file);
-
     // Use topojson.mesh a first time to compute the discontinuity value
     // for each border (according to the given topology)
     // (Discontinuities could also be computed relativly fastly server side
     // which can be a better solution for large dataset..)
 
-    if(quantization < 7){
-        topo_to_use = topojson.quantize(_target_layer_file, '1e' + quantization);
-    } else {
-        topo_to_use = _target_layer_file;
-    }
+    // let tmp_topo = JSON.stringify(_target_layer_file);
+    // if(quantization < 7){
+    //     topo_to_use = topojson.quantize(_target_layer_file, '1e' + quantization);
+    // } else {
+    topo_to_use = _target_layer_file;
+    // }
 
-    if(disc_kind == "rel")
+    if(discontinuity_type == "rel")
         topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
                 if(a !== b){
                     let new_id = [a.id, b.id].join('_'),
@@ -2232,7 +2231,7 @@ var render_discont = function(){
         step = (max_size - min_size) / (nb_class - 1),
         class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
-    let disc_result = discretize_to_size(arr_tmp, document.getElementById("Discont_discKind").value, nb_class, min_size, max_size);
+    let disc_result = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
     if(!disc_result || !disc_result[2]){
         let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
         let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
@@ -2286,6 +2285,10 @@ var render_discont = function(){
 //    compute();
 
 //    var datums = [];
+
+
+    // TODO : change structure of the data made in this step in order to better fit geojson features (properties, etc.)
+    //            + re-use something (chunking, webworker, .. ) to avoid blocking the ui if there is many features
     var d_res = [];
     var compute = function(){
         for(let i=0; i<nb_ft; i++){
@@ -2332,7 +2335,7 @@ var render_discont = function(){
     switch_accordion_section();
     handle_legend(new_layer_name);
     send_layer_server(new_layer_name, "/layers/add");
-    _target_layer_file = JSON.parse(tmp_topo);
+    // _target_layer_file = JSON.parse(tmp_topo);
 //    resolve(true);
 //});
 }

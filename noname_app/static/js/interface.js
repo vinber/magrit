@@ -1203,7 +1203,8 @@ function add_sample_layer(){
         sample_datasets = undefined;
 
     d3.json('/static/json/sample_layers.json', function(error, json){
-        sample_datasets = json[0];
+        if(error) throw error;
+        else sample_datasets = json[0];
         });
 
     var target_layers = [

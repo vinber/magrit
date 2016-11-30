@@ -48,7 +48,7 @@
     <script  src="static/js/join_popup.js"></script>
     <script  src="static/js/colors_helpers.js"></script>
     <script  src="static/js/helpers_calc.js"></script>
-
+    <script  src="https://d3js.org/d3-voronoi.v1.min.js"></script>
   </head>
   <body>
       <div id="header">
@@ -2262,6 +2262,7 @@ function make_export_layer_box(){
             proj4_input.style("display", "none");
     });
 
+    // TODO : allow export to "geopackage" format ?
     let extensions = new Map([
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
