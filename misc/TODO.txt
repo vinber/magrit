@@ -1,6 +1,5 @@
 TODO list:
 - /!\ fix reloading a project from previously exported one
-- /!\ Allow the display the frequence histogram as beeswarm in the appropriate box
 - /!\ Choose some nice icons related to the fields data type (ratio, stock, category, unknown, id ?)
 - /!\ re-allow the user to browse its imported (csv etc.) dataset ? (as the functionnalities was squizzed when moving the "browse table" button on each layer)
 			or allow a preview (as the dataset aims to be joined to the targeted layer)

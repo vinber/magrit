@@ -705,20 +705,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         Select(driver.find_element_by_css_selector("select.sample_target")
                 ).select_by_value("GrandParisMunicipalities")
-        Select(driver.find_element_by_css_selector("select.sample_dataset")
-                ).select_by_value("gpm_dataset")
         driver.find_element_by_css_selector(".btn_ok").click()
-        self.waitClickButtonSwal()
-        time.sleep(0.5)
-        # Choosing fields :
-        Select(driver.find_element_by_id("button_field2")
-                ).select_by_visible_text("DEPCOM")
-
-        driver.find_element_by_css_selector(
-            ".joinBox").find_elements_by_css_selector(
-            ".btn_ok")[0].click()
-
-        # Now the alert about how it was successful :
         self.waitClickButtonSwal()
 
         # Valid the type of each field :

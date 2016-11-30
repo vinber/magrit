@@ -375,7 +375,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         xpos = 30,
         ypos = 30,
         y_pos2 =  ypos + space_elem * 1.5,
-        ref_layer_name = current_layers[layer].ref_layer_name, // TODO : avoid using the reference layer 
+        ref_layer_name = current_layers[layer].ref_layer_name, // TODO : avoid using the reference layer
         nb_features = user_data[ref_layer_name].length,
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
@@ -933,8 +933,8 @@ function createlegendEditBox(legend_id, layer_name){
                     svg_map.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
             });
         gap_section.append('label')
-            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes'})
-            .html(i18next.t('[html]app_page.legend_style_box.gap_boxes'));
+            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[text]app_page.legend_style_box.gap_boxes'})
+            .html(i18next.t('[text]app_page.legend_style_box.gap_boxes'));
 
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root2"){
@@ -958,7 +958,7 @@ function createlegendEditBox(legend_id, layer_name){
                         svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
                 });
       gap_section.append('label')
-          .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
+          .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[text]app_page.legend_style_box.nested_symbols'})
           .html(i18next.t("[text]app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = current_state;
     }
@@ -1076,6 +1076,10 @@ var get_max_nb_dec = function(layer_name){
                 max = tmp[1].length - 1 - tmp[1].indexOf('.');
         });
     return max;
+}
+
+function _get_max_nb_left_sep(values){
+    return max_fast(values.map(d => (''+d).split('.')[0].length));
 }
 
 var get_max_nb_left_sep = function(layer_name){

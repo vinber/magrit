@@ -152,12 +152,13 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                             .attr("id", "histo_options")
                             .style("margin-left", "10px");
 
-        var a = histo_options.append("p").style("margin", 0).style("display", "inline"),
-            b = histo_options.append("p").style("margin", 0).style("display", "inline"),
-            c = histo_options.append("p").style("margin", 0).style("display", "inline");
+        var a = histo_options.append("p").style("margin", 0),
+            b = histo_options.append("p").style("margin", 0),
+            c = histo_options.append("p").style("margin", 0),
+            d = histo_options.append("p").style("margin", 0);
 
         a.insert("input")
-            .attrs({type: "checkbox", value: "mean"})
+            .attrs({type: "checkbox", value: "mean", id: 'check_mean'})
             .on("change", function(){
                     if(line_mean.classed("active")){
                         line_mean.style("stroke-width", 0)
@@ -171,7 +172,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 });
 
         b.insert("input")
-            .attrs({type: "checkbox", value: "median"})
+            .attrs({type: "checkbox", value: "median", id: 'check_median'})
             .on("change", function(){
                     if(line_median.classed("active")){
                         line_median.style("stroke-width", 0)
@@ -185,7 +186,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 });
 
         c.insert("input")
-            .attrs({type: "checkbox", value: "std"})
+            .attrs({type: "checkbox", value: "std", id: 'check_std'})
             .on("change", function(){
                     if(line_std_left.classed("active")){
                         line_std_left.style("stroke-width", 0)
@@ -198,163 +199,272 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         line_std_right.style("stroke-width", 2)
                         line_std_right.classed("active", true)
                     }
-                })
-        a.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_mean") + "<br>");
-        b.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_median") + "<br>");
-        c.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_sd") + "<br>");
+                });
+        d.insert('input')
+            .attrs({type: 'checkbox', value: 'pop', id: 'check_rug'})
+            .on('change', function(){
+                if(rug_plot.classed('active')){
+                    rug_plot.style('display', 'none');
+                    rug_plot.classed('active', false);
+                } else {
+                    rug_plot.style('display', '');
+                    rug_plot.classed('active', true);
+                }
+            });
+        a.append("label")
+            .attr("for", "check_mean")
+            .html(i18next.t("disc_box.disp_mean"));
+        b.append("label")
+            .attr("for", "check_median")
+            .html(i18next.t("disc_box.disp_median"));
+        c.append("label")
+            .attr("for", "check_std")
+            .html(i18next.t("disc_box.disp_sd"));
+        d.append("label")
+            .attr("for", "check_rug")
+            .html(i18next.t("disc_box.disp_rug_pop"));
     };
 
-    var display_ref_histo = function(){
+    var prepare_ref_histo = function(){
         var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
-            svg_w = w / 4.75,
+            svg_w = w / 4.75 > 310 ? 310 : w / 4.75,
             nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
 
-        nb_bins = nb_bins < 3 ? 3 : nb_bins;
-        nb_bins = nb_bins > +values.length ? nb_bins : values.length;
-
-        var margin = {top: 10, right: 10, bottom: 20, left: 22.5},
-            width = svg_w - margin.right - margin.left;
-            height = svg_h - margin.top - margin.bottom;
+        var m_margin = {top: 10, right: 20, bottom: 10, left: 20},
+            m_width = svg_w - m_margin.right - m_margin.left,
+            m_height = svg_h - m_margin.top - m_margin.bottom;
 
         var ref_histo = newBox.select("#ref_histo_box").select('#inner_ref_histo_box');
-        ref_histo.node().innerHTML = "";
-        ref_histo.append('p').style("margin", "auto")
+        // ref_histo.node().innerHTML = "";
+        ref_histo.append('p').styles({"margin": "auto", "text-align": "center"})
                   .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
-        var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
-            .attr("width", svg_w + margin.left + margin.right)
-            .attr("height", svg_h + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var c = ref_histo.append("svg").attr("id", "svg_ref_histo")
+            .attr("width", svg_w + m_margin.left + m_margin.right)
+            .attr("height", svg_h + m_margin.top + m_margin.bottom)
+        var svg_ref_histo = c.append("g")
+            .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
 
         var x = d3.scaleLinear()
             .domain([serie.min(), serie.max()])
-            .rangeRound([0, width]);
+            .rangeRound([0, m_width]);
 
-        var data = d3.histogram()
-            .domain(x.domain())
-            .thresholds(x.ticks(nb_bins))
-            (values);
+        return function(type){
+            svg_ref_histo.remove();
+            svg_ref_histo = c.append("g")
+              .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+            if(type == 'histogram'){
+                var data = d3.histogram()
+                    .domain(x.domain())
+                    .thresholds(x.ticks(nb_bins))
+                    (values);
 
-        var y = d3.scaleLinear()
-            .domain([0, d3.max(data, function(d) { return d.length; })])
-            .range([height, 0]);
+                var y = d3.scaleLinear()
+                    .domain([0, d3.max(data, function(d) { return d.length; })])
+                    .range([m_height, 0]);
 
-        var bar = svg_ref_histo.selectAll(".bar")
-            .data(data)
-          .enter()
-            .append("rect")
-            .attrs( d => ({
-              "class": "bar", "width": 1, "height": height - y(d.length), "x": 1,
-              "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-            }))
-            .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+                var bar = svg_ref_histo.selectAll(".bar")
+                    .data(data)
+                  .enter()
+                    .append("rect")
+                    .attrs( d => ({
+                      "class": "bar", "width": x(d.x1 - d.x0), "height": m_height - y(d.length), "x": 1,
+                      "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+                    }))
+                    .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
-        svg_ref_histo.append("g")
-            .attr("class", "x_axis")
-            .style("font-size", "10px")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom()
-                .scale(x)
-                .ticks(4)
-                .tickFormat(formatCount))
-            .selectAll("text")
-                .attr("y", 4).attr("x", -4)
-                .attr("dy", ".45em")
-                .attr("transform", "rotate(-40)")
-                .style("text-anchor", "end");
+                svg_ref_histo.append("g")
+                    .style("font-size", "10px")
+                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                    .call(d3.axisBottom()
+                        .scale(x)
+                        .ticks(4)
+                        .tickFormat(formatCount))
+                    .selectAll("text")
+                        .attr("y", 4)
+                        .attr("x", -4)
+                        .attr("dy", ".45em")
+                        .attr("transform", "rotate(-40)")
+                        .style("text-anchor", "end");
 
-        svg_ref_histo.append("g")
-            .attr("class", "y_axis")
-            .style("font-size", "10px")
-            .call(d3.axisLeft()
-                .scale(y)
-                .ticks(5)
-                .tickFormat(formatCount));
-    }
+                svg_ref_histo.append("g")
+                    .attr("class", "y_axis")
+                    .style("font-size", "10px")
+                    .call(d3.axisLeft()
+                        .scale(y)
+                        .ticks(5)
+                        .tickFormat(d3.format(".2f")));
+            } else if (type == "box_plot") {
+                svg_ref_histo.append("g")
+                    .style("font-size", "10px")
+                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                    .call(d3.axisBottom()
+                        .scale(x)
+                        .ticks(4)
+                        .tickFormat(formatCount))
+                    .selectAll("text")
+                        .attr("y", 4).attr("x", -4)
+                        .attr("dy", ".45em")
+                        .attr("transform", "rotate(-40)")
+                        .style("text-anchor", "end");
 
-    var display_ref_histo_beeswarm = function(){
-        var svg_h = h / 7.25 > 85 ? h / 7.25 : 85,
-            svg_w = w / 4.75;
+                var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2
 
-        var data = [];
-        for(let i = 0; i < values.length; i++){
-            data.push({value: +values[i]});
-        }
-        var margin = {top: 10, right: 10, bottom: 20, left: 22.5},
-            width = svg_w - margin.right - margin.left;
-            height = svg_h - margin.top - margin.bottom;
+                var min = svg_ref_histo.append('g')
+                        .insert('line')
+                        .attrs({x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "none"});
 
-        var ref_histo = newBox.select("#ref_histo_box").select('#inner_ref_histo_box');
-        ref_histo.node().innerHTML = "";
-        ref_histo.append('p').style("margin", "auto")
-                  .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+                var rect = svg_ref_histo.append('g')
+                        .insert('rect')
+                        .attrs({x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
 
-        var x = d3.scaleLinear()
-            .domain([serie.min(), serie.max()])
-            .rangeRound([0, width]);
+                var med = svg_ref_histo.append('g')
+                        .insert('line')
+                        .attrs({x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2:  m_height - m_margin.bottom})
+                        .styles({"stroke-width": 3, stroke: "black", fill: "none"});
 
-        var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
-            .attr("width", svg_w + margin.left + margin.right)
-            .attr("height", svg_h + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                var rect = svg_ref_histo.append('g')
+                        .insert('rect')
+                        .attrs({x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
 
-        var simulation = d3.forceSimulation(data)
-            .force("x", d3.forceX(function(d) { return x(d.value); }).strength(0.5))
-            .force("y", d3.forceY(height / 2))
-            .force("collide", d3.forceCollide(2.5))
-            .stop();
+                var max = svg_ref_histo.append('g')
+                        .insert('line')
+                        .attrs({x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "none"});
 
-        for (var i = 0; i < 75; ++i)
-            simulation.tick();
+                var interline_min = svg_ref_histo.append('g')
+                        .insert('line')
+                        .attrs({x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
 
-        svg_ref_histo.append("g")
-            .attr("class", "x_axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom()
-                .scale(x)
-                .ticks(4)
-                .tickFormat(formatCount))
-            .selectAll("text")
-                .attr("y", 4).attr("x", -4)
-                .attr("dy", ".45em")
-                .attr("transform", "rotate(-40)")
-                .style("text-anchor", "end");
+                var interline_max = svg_ref_histo.append('g')
+                        .insert('line')
+                        .attrs({x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid})
+                        .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
+            } else if (type == "beeswarm"){
+                var data = values.map(v => ({value: +v}));
+                // for(let i = 0; i < values.length; i++){
+                //     data.push({value: +values[i]});
+                // }
+                var simulation = d3.forceSimulation(data)
+                    .force("x", d3.forceX(d => x(d.value)).strength(1))
+                    .force("y", d3.forceY(height / 2).strength(2))
+                    .force("collide", d3.forceCollide(4))
+                    .stop();
 
-        var cell = svg_ref_histo.append("g")
-            .attr("class", "cells")
-          .selectAll("g").data(d3.voronoi()
-              .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.top]])
-              .x(function(d) { return d.x; })
-              .y(function(d) { return d.y; })
-            .polygons(data)).enter().append("g");
+                for (var i = 0; i < 75; ++i)
+                    simulation.tick();
 
-        cell.append("circle")
-            .attr("r", data.length < 250 ? 3 : 2)
-            .attr("cx", function(d) { if(d) return d.data.x; })
-            .attr("cy", function(d) { if(d) return d.data.y; });
+                svg_ref_histo.append("g")
+                    .style("font-size", "10px")
+                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                    .call(d3.axisBottom()
+                        .scale(x)
+                        .ticks(4)
+                        .tickFormat(formatCount))
+                    .selectAll("text")
+                        .attr("y", 4).attr("x", -4)
+                        .attr("dy", ".45em")
+                        .attr("transform", "rotate(-40)")
+                        .style("text-anchor", "end");
 
-        cell.append("path")
-            .attr("d", function(d) { if(d) return "M" + d.join("L") + "Z"; });
+                var cell = svg_ref_histo.append("g")
+                    .attr("class", "cells")
+                  .selectAll("g").data(d3.voronoi()
+                      .extent([[-m_margin.left, -m_margin.top], [m_width + m_margin.right, m_height + m_margin.top]])
+                      .x(d => d.x).y(d => d.y)
+                    .polygons(data)).enter().append("g");
 
-        cell.append("title")
-            .text(function(d) { if(d) return "" + d.data.value; });
+                cell.append("circle")
+                    .attrs(d => {
+                        if(d) return {
+                        r: data.lenght < 250 ? 3 : 2, cx: d.data.x, cy: d.data.y };
+                      });
+
+                cell.append("path")
+                    .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
+            }
+        };
     };
+
+    var make_overlay_elements = function(){
+
+      let mean_val = serie.mean(),
+          stddev = serie.stddev();
+
+      line_mean = overlay_svg.append("line")
+          .attr("class", "line_mean")
+          .attr("x1", x(mean_val))
+          .attr("y1", 10)
+          .attr("x2", x(mean_val))
+          .attr("y2", svg_h - margin.bottom)
+          .styles({"stroke-width": 0, stroke: "red", fill: "none"})
+          .classed("active", false);
+
+      txt_mean = overlay_svg.append("text")
+          .attr("y", 0)
+          .attr("dy", "0.75em")
+          .attr("x", x(mean_val))
+          .style("fill", "none")
+          .attr("text-anchor", "middle")
+          .text(i18next.t("disc_box.mean"));
+
+      line_median = overlay_svg.append("line")
+          .attr("class", "line_med")
+          .attr("x1", x(serie.median()))
+          .attr("y1", 10)
+          .attr("x2", x(serie.median()))
+          .attr("y2", svg_h - margin.bottom)
+          .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
+          .classed("active", false);
+
+      txt_median = overlay_svg.append("text")
+          .attr("y", 0)
+          .attr("dy", "0.75em")
+          .attr("x", x(serie.median()))
+          .style("fill", "none")
+          .attr("text-anchor", "middle")
+          .text(i18next.t("disc_box.median"));
+
+      line_std_left = overlay_svg.append("line")
+          .attr("class", "lines_std")
+          .attr("x1", x(mean_val - stddev))
+          .attr("y1", 10)
+          .attr("x2", x(mean_val - stddev))
+          .attr("y2", svg_h - margin.bottom)
+          .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
+          .classed("active", false);
+
+      line_std_right = overlay_svg.append("line")
+          .attr("class", "lines_std")
+          .attr("x1", x(mean_val + stddev))
+          .attr("y1", 10)
+          .attr("x2", x(mean_val + stddev))
+          .attr("y2", svg_h - margin.bottom)
+          .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
+          .classed("active", false);
+
+
+      rug_plot = overlay_svg.append('g')
+          .style('display', 'none')
+          .attrs({id: 'rug_plot', transform: 'translate(30,0)'});
+      rug_plot.selectAll('.indiv')
+          .data(values.map(i => ({value: +i})))
+          .enter()
+          .insert('line')
+          .attrs(d => ({class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom}))
+          .styles({'stroke': 'red', 'fill': 'none', 'stroke-width': 1});
+    }
 
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
         newBox.append("div").attr("id", "summary")
-                        .style("font-size", "10px").style("float", "right")
-                        .style("margin", "0px 10px")
-                        .insert("p")
-                        .html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
+            .styles({'font-size': '10px', 'float': 'right', 'margin': '10px 10px 0px 10px'})
+            .insert("p")
+            .html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
     }
 
     var redisplay = {
@@ -488,7 +598,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 .call(d3.axisLeft()
                     .scale(y)
                     .ticks(5)
-                    .tickFormat(formatCount));
+                    .tickFormat(d3.format(".2f")));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
             return true;
@@ -538,7 +648,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     }
 
     values = serie.sorted();
-//    serie.setPrecision(6);
+    var q5 = serie.getQuantile(4).map(v => +v);
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
@@ -551,14 +661,17 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     if(!serie._hasZeroValue() && !serie._hasZeroValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-
-    var formatCount = d3.formatLocale({
-                        decimal: getDecimalSeparator(),
-                        thousands: "",
-                        grouping: 3,
-                        currency: ["", ""]
-                      }).format('.' + serie.precision + 'f');
-
+    if(serie.max() > 1 && serie.max() - serie.min() > 100){
+        var formatCount = d3.format(".0f");
+    } else {
+        var nb_right_decimal = _get_max_nb_left_sep(values) > 2 ? 2 : serie.precision;
+        var formatCount = d3.formatLocale({
+                            decimal: getDecimalSeparator(),
+                            thousands: "",
+                            grouping: 3,
+                            currency: ["", ""]
+                          }).format('.' + nb_right_decimal + 'f');
+    }
     var discretization = newBox.append('div')
                                 .attr("id", "discretization_panel")
                                 .insert("p")
@@ -610,12 +723,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                                 }
                             });
 
+    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
+    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
+
     discretization.node().value = type;
     make_box_histo_option();
     make_summary();
-    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
-    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
-    display_ref_histo();
+    var refDisplay = prepare_ref_histo();
+    refDisplay("histogram");
 
     var svg_h = h / 5 > 100 ? h / 5 : 100,
         svg_w = 760 < (window.innerWidth - 40) ? 760 : (window.innerWidth - 40),
@@ -636,10 +751,12 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .html(i18next.t('disc_box.switch_ref_histo'))
             .on('click', function(){
                 if(current_histo == 'regular'){
-                    display_ref_histo_beeswarm();
-                    current_histo = "beeswarm";
-                } else if (current_histo == "beeswarm"){
-                    display_ref_histo();
+                    refDisplay("box_plot");
+                    // display_ref_histo_box_plot();
+                    current_histo = "box_plot";
+                } else if (current_histo == "box_plot"){
+                    // display_ref_histo();
+                    refDisplay("histogram");
                     current_histo = "regular";
                }
             });
@@ -652,66 +769,14 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var overlay_svg = div_svg.append("g");
-
     var x = d3.scaleLinear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
-    let mean_val = serie.mean(),
-        stddev = serie.stddev();
+    var overlay_svg = div_svg.append("g"),
+        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot;
 
-    var line_mean = overlay_svg.append("line")
-        .attr("class", "line_mean")
-        .attr("x1", x(mean_val))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "red", fill: "none"})
-        .classed("active", false);
-
-    var txt_mean = overlay_svg.append("text")
-        .attr("y", 0)
-        .attr("dy", "0.75em")
-        .attr("x", x(mean_val))
-        .style("fill", "none")
-        .attr("text-anchor", "middle")
-        .text(i18next.t("disc_box.mean"));
-
-    var line_median = overlay_svg.append("line")
-        .attr("class", "line_med")
-        .attr("x1", x(serie.median()))
-        .attr("y1", 10)
-        .attr("x2", x(serie.median()))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
-        .classed("active", false);
-
-    var txt_median = overlay_svg.append("text")
-        .attr("y", 0)
-        .attr("dy", "0.75em")
-        .attr("x", x(serie.median()))
-        .style("fill", "none")
-        .attr("text-anchor", "middle")
-        .text(i18next.t("disc_box.median"));
-
-    var line_std_left = overlay_svg.append("line")
-        .attr("class", "lines_std")
-        .attr("x1", x(mean_val - stddev))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val - stddev))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
-        .classed("active", false);
-
-    var line_std_right = overlay_svg.append("line")
-        .attr("class", "lines_std")
-        .attr("x1", x(mean_val + stddev))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val + stddev))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
-        .classed("active", false);
+    make_overlay_elements();
 
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
