@@ -24,8 +24,6 @@ body {
     letter-spacing: 3px;
 }
 
-.tada { animation: tada_5160 7.6s linear infinite; transform-origin: 50% 50%; } @keyframes tada_5160 { 0% { transform: scale(1) } 2.63158% { transform:scale(.9) rotate(-8deg) } 5.26316% { transform:scale(.9) rotate(-8deg) } 7.89474% { transform:scale(1.3) rotate(8deg) } 10.52632% { transform:scale(1.3) rotate(-8deg) } 13.15789% { transform:scale(1.3) rotate(8deg) } 15.78947% { transform:scale(1.3) rotate(-8deg) } 18.42105% { transform:scale(1.3) rotate(8deg) } 21.05263% { transform:scale(1) rotate(0) } 100% { transform:scale(1) rotate(0) } }
-
 #page {
     width: 100%;
     height : auto;
@@ -48,58 +46,6 @@ body {
     position: relative;
     border: 1px solid lightgrey;
 }
-
-/*#list_ico_func > img { display: block; }
-#list_ico_func > img:nth-child(n+1) {
-  -webkit-animation: filter-animation 5s infinite ;
-}
-#list_ico_func > img:nth-child(n+2) {
-  -webkit-animation: filter-animation 5s infinite 0.1s;
-}
-#list_ico_func > img:nth-child(n+3) {
-  -webkit-animation: filter-animation 5s infinite 0.2s;
-}
-#list_ico_func > img:nth-child(n+4) {
-  -webkit-animation: filter-animation 5s infinite 0.3s;
-}
-#list_ico_func > img:nth-child(n+5) {
-  -webkit-animation: filter-animation 5s infinite 0.4s;
-}
-#list_ico_func > img:nth-child(n+6) {
-  -webkit-animation: filter-animation 5s infinite 0.5s;
-}
-#list_ico_func > img:nth-child(n+7) {
-  -webkit-animation: filter-animation 5s infinite 0.5s;
-}
-#list_ico_func > img:nth-child(n+8) {
-  -webkit-animation: filter-animation 5s infinite 0.4s;
-}
-#list_ico_func > img:nth-child(n+9) {
-  -webkit-animation: filter-animation 5s infinite 0.3s;
-}
-#list_ico_func > img:nth-child(n+10) {
-  -webkit-animation: filter-animation 5s infinite 0.2s;
-}
-#list_ico_func > img:nth-child(n+11) {
-  -webkit-animation: filter-animation 5s infinite 0.1s;
-}
-@-webkit-keyframes filter-animation {
-  0% {
-    -webkit-filter: sepia(0) saturate(2);
-  }
-  25% {
-    -webkit-filter: sepia(0.5) saturate(5) constrat(2);
-  }
-  50% {
-    -webkit-filter: sepia(1) saturate(8);
-  }
-  75% {
-     -webkit-filter: sepia(0.5) saturate(6) blur(3);
-  }
-  100% {
-    -webkit-filter: sepia(0) saturate(2);
-  }
-}*/
 
 .user_panel{
     text-align: left;
@@ -722,7 +668,8 @@ div.panel.show {
 }
 
 .twbs .modal-body > p {
-  margin: 8px 0 !important;
+  margin: 11px 0 !important;
+  clear: both;
 }
 
 .fitContent {

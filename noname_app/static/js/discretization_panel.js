@@ -53,7 +53,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         var section = d3.select("#color_div")
                 .append("div").attr("id", "no_data_section")
                 .append("p")
-                .html(i18next.t("disc_box.with_no_data", {nb_features: no_data}));
+                .html(i18next.t("disc_box.withnodata", {count: +no_data}));
 
         section.append("input")
                 .attrs({type: "color", value: "#ebebcd", id: "no_data_color"})
@@ -617,7 +617,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
-
+    else {
+      let layer = svg_map.querySelector('#' + layer_name);
+      var db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
+    }
     var color_array = [],
         nb_values = db_data.length,
         indexes = [],
@@ -934,9 +937,8 @@ function fetch_categorical_colors(){
     return color_map;
 }
 
-function display_categorical_box(layer, field, categories){
-    var nb_features = current_layers[layer].n_features,
-        data_layer = user_data[layer],
+function display_categorical_box(data_layer, layer_name, field, categories){
+    var nb_features = current_layers[layer_name].n_features,
         cats = [];
 
     if(!categories){
@@ -961,7 +963,7 @@ function display_categorical_box(layer, field, categories){
     var nb_class = categories.size;
     var modal_box = make_dialog_container(
         "categorical_box",
-        i18next.t("app_page.categorical_box.title", {layer: layer, nb_features: nb_features}),
+        i18next.t("app_page.categorical_box.title", {layer: layer_name, nb_features: nb_features}),
         "dialog");
 
     var newbox = d3.select("#categorical_box").select(".modal-body")

@@ -54,29 +54,13 @@ function make_random_color(layer, symbol = "path"){
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map){
-    // let data_layer = ref_layer ? user_data[ref_layer] : user_data[layer] ? user_data[layer] : result_data[layer];
-    // if(ref_layer && current_layers[layer].features_order){
-    //     let features_order = current_layers[layer].features_order;
-    //     map.select("#"+layer)
-    //         .selectAll(symbol)
-    //         .transition()
-    //         .style("fill", function(d, i){
-    //             let idx = features_order[i][0];
-    //             return color_cat_map.get(data_layer[idx][field_name]);
-    //         });
-    // } else if (ref_layer)
-    //     map.select("#"+layer)
-    //         .selectAll(symbol)
-    //         .transition()
-    //         .style("fill", (d,i) => color_cat_map.get(data_layer[i][field_name]));
-    // else
     map.select("#"+layer)
         .selectAll(symbol)
         .transition()
         .style("fill", d => color_cat_map.get(d.properties[field_name]));
 }
 
-function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", ref_layer){
+function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path"){
     var fill_color_section = d3.select("#fill_color_section").append("p");
    fill_color_section.insert("span").html(i18next.t("app_page.layer_style_popup.categorical_field"));
    var field_selec = fill_color_section.insert("select");
@@ -89,7 +73,7 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", 
 
     field_selec.on("change", function(){
         let field_name = this.value,
-            data_layer = ref_layer ? user_data[ref_layer] : current_layers[layer].is_result ? result_data[layer] : user_data[layer],
+            data_layer = current_layers[layer].is_result ? result_data[layer] : user_data[layer],
             values = data_layer.map(i => i[field_name]),
             cats = new Set(values),
             txt = [cats.size, " cat."].join('');
@@ -99,7 +83,7 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = "path", 
             color_cat_map.set(val, Colors.names[Colors.random()])
 
         current_layers[layer].fill_color = { "categorical": [field_name, color_cat_map] };
-        fill_categorical(layer, field_name, symbol, color_cat_map, ref_layer)
+        fill_categorical(layer, field_name, symbol, color_cat_map)
     });
 
     if((!fill_prev || !fill_prev.categorical) && field_selec.node().options.length > 0)
@@ -285,19 +269,13 @@ function createStyleBoxLabel(layer_name){
     if(existing_box) existing_box.remove();
 
     var selection = map.select("#" + layer_name).selectAll("text"),
-        ref_layer_name = current_layers[layer_name].ref_layer_name,
-        ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
-        ref_coords = [];
+        ref_layer_name = current_layers[layer_name].ref_layer_name;
 
     var prev_settings = [],
         prev_settings_defaults = {},
         rendering_params = {};
 
     get_prev_settings();
-
-    for(let i = 0; i < ref_layer_selection.length; i++){
-        ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
-    }
 
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
@@ -317,8 +295,8 @@ function createStyleBoxLabel(layer_name){
             .text(i18next.t("app_page.layer_style_popup.reset_labels_location"))
             .on("click", function(){
                 selection.transition()
-                        .attr("x", (d,i) => ref_coords[i][0])
-                        .attr("y", (d,i) => ref_coords[i][1]);
+                        .attr("x", (d,i) => d.coords[0])
+                        .attr("y", (d,i) => d.coords[1]);
             });
 
     popup.append("p").style("text-align", "center")
@@ -496,6 +474,12 @@ function createStyleBox(layer_name){
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
 
+    var table = [];
+    Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
+        table.push(d.__data__.properties);
+    });
+    var fields_layer = current_layers[layer_name].fields_type || type_col2(table);
+
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){
@@ -534,6 +518,7 @@ function createStyleBox(layer_name){
                     let transform_param = lgd.getAttribute("transform"),
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+                        rounding_precision = lgd.getAttribute("rounding_precision"),
                         boxgap = lgd.getAttribute("boxgap");
 
                     if(_type_layer_links){
@@ -543,7 +528,7 @@ function createStyleBox(layer_name){
                         let no_data_txt = document.getElementById("no_data_txt");
                         no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
                         lgd.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, undefined, no_data_txt);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt);
                     }
                     lgd = document.querySelector(
                         [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
@@ -621,7 +606,7 @@ function createStyleBox(layer_name){
      if(type !== 'Line'){
         if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
             if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
-                let fields = type_col(layer_name, "string");
+                let fields =  getFieldsType('category', null, fields_layer);
                 let fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
                 [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
                  [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
@@ -645,8 +630,7 @@ function createStyleBox(layer_name){
         } else if (renderer == "Categorical"){
             let renderer_field = current_layers[layer_name].rendered_field,
                 ref_layer_name = current_layers[layer_name].ref_layer_name,
-                fields_layer = type_col(ref_layer_name),
-                fields_name = Object.getOwnPropertyNames(fields_layer),
+                fields_name = getFieldsType('category', null, fields_layer),
                 field_to_render;
 
             var field_selec = popup.append('p').html(i18next.t("app_page.layer_style_popup.field_to_render"))
@@ -663,7 +647,7 @@ function createStyleBox(layer_name){
                 .styles({"font-size": "0.8em", "text-align": "center"})
                 .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
-                    display_categorical_box(ref_layer_name, field_selec.node().value)
+                    display_categorical_box(layer_name, field_selec.node().value)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
@@ -678,13 +662,10 @@ function createStyleBox(layer_name){
 
         } else if (renderer != "Stewart"){
             let field_to_discretize;
-            var table_layer_name = layer_name;
             if(renderer == "Gridded")
                 field_to_discretize = "densitykm";
             else {
-                if(renderer == "Choropleth")
-                    table_layer_name = current_layers[layer_name].ref_layer_name;
-                var fields = type_col(table_layer_name, "number");
+                var fields = getFieldsType('ratio', undefined, fields_layer);
                 var field_selec_block = popup.append('p').attr("class", "line_elem");
                 field_selec_block.append("span").html(i18next.t("app_page.layer_style_popup.field"));
                 var field_selec = field_selec_block.insert('select')
@@ -703,7 +684,7 @@ function createStyleBox(layer_name){
                 .attr("class", "button_disc")
                 .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
                 .on("click", function(){
-                    display_discretization(table_layer_name,
+                    display_discretization(layer_name,
                                            field_to_discretize,
                                            current_layers[layer_name].colors_breaks.length,
                                            "quantiles",
@@ -1009,12 +990,12 @@ function createStyleBox_ProbSymbol(layer_name){
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
 
-    var d_values = [],
-        abs = Math.abs,
-        comp = function(a, b){return abs(b)-abs(a)};
-    for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-        d_values.push(+user_data[ref_layer_name][i][field_used]);
-    d_values.sort(comp);
+    var d_values = result_data[layer_name].map(v => +v[field_used]);
+    //     abs = Math.abs,
+    //     comp = function(a, b){return abs(b)-abs(a)};
+    // for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
+    //     d_values.push(+user_data[ref_layer_name][i][field_used]);
+    // d_values.sort(comp);
 
     let redraw_prop_val = function(prop_values){
         let selec = selection._groups[0];
@@ -1051,6 +1032,15 @@ function createStyleBox_ProbSymbol(layer_name){
                 if(current_layers[layer_name].size != old_size){
                     let lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
                     if(lgd_prop_symb){ redraw_legends_symbols(lgd_prop_symb); }
+                    if(type_symbol === "circle") {
+                        selection.each(function(d,i){
+                            d.properties.prop_value = this.getAttribute('r');
+                        });
+                    } else {
+                        selection.each(function(d,i){
+                            d.properties.prop_value = this.getAttribute('height');
+                        });
+                    }
                 }
 
                 if(type_method == "PropSymbolsChoro"){
@@ -1078,10 +1068,14 @@ function createStyleBox_ProbSymbol(layer_name){
                             lgd_choro.setAttribute("transform", transform_param);
                     }
                 }
+                if(selection._groups[0][0].__data__.properties.color){
+                    selection.each((d,i) => {
+                        d.properties.color = rendering_params.colorsByFeature[i];
+                    });
+                }
             } else {
-                selection.style('fill-opacity', opacity)
-                             .style('stroke-opacity', border_opacity);
-                d3.select(g_lyr_name).style('stroke-width', stroke_width);
+                selection.style('fill-opacity', opacity);
+                map.select(g_lyr_name).style('stroke-width', stroke_width);
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
                 if(fill_meth == "single") {
@@ -1106,8 +1100,7 @@ function createStyleBox_ProbSymbol(layer_name){
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "categorical"){
                     fill_categorical(layer_name, fill_prev.categorical[0],
-                                     type_symbol, fill_prev.categorical[1],
-                                     ref_layer_name)
+                                     type_symbol, fill_prev.categorical[1])
                 }
                 current_layers[layer_name].fill_color = fill_prev;
                 if(current_layers[layer_name].size[1] != old_size[1]){
@@ -1143,8 +1136,6 @@ function createStyleBox_ProbSymbol(layer_name){
                             renderer:"PropSymbolsChoro",
                             field: field_color
                             };
-                        console.log(rendering_params)
-                        // let features = current_layers[layer_name].features_order;
                         selection.style('fill-opacity', 0.9)
                                  .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                     }
@@ -1190,31 +1181,21 @@ function createStyleBox_ProbSymbol(layer_name){
       popup.append('p').insert('button')
           .attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors"))
           .on("click", function(){
-              null;
-              // display_discretization(layer_name,
-              //                        field_color,
-              //                        current_layers[layer_name].colors_breaks.length,
-              //                        "quantiles",
-              //                        current_layers[layer_name].options_disc)
-              //   .then(function(confirmed){
-              //     if(confirmed){
-              //         rendering_params = {
-              //             nb_class: confirmed[0], type: confirmed[1],
-              //             breaks: confirmed[2], colors:confirmed[3],
-              //             colorsByFeature: confirmed[4],
-              //             renderer:"PropSymbolsChoro",
-              //             field: field_color
-              //             };
-              //         console.log(rendering_params)
-              //         // let features = current_layers[layer_name].features_order;
-              //         selection.style('fill-opacity', 0.9)
-              //                  .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
-              //     }
-              // });
+            display_categorical_box(result_data[layer_name], layer_name, field_color, current_layers[layer_name].color_map)
+                .then(function(confirmed){
+                    if(confirmed){
+                        rendering_params = {
+                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                            }
+                        selection.style('fill-opacity', 0.9)
+                                 .style("fill", (d,i) => rendering_params.colorByFeature[i]);
+                    }
+                });
       });
 
     } else {
-        let fields = type_col(ref_layer_name, "string"),
+        let fields_all = type_col2(result_data[layer_name]),
+            fields = getFieldsType('category', null, fields_all),
             fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
 
         [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
@@ -1229,7 +1210,7 @@ function createStyleBox_ProbSymbol(layer_name){
             if (this.value == "single")
                 make_single_color_menu(layer_name, fill_prev, type_symbol);
             else if (this.value == "categorical")
-                make_categorical_color_menu(fields, layer_name, fill_prev, type_symbol, ref_layer_name);
+                make_categorical_color_menu(fields, layer_name, fill_prev, type_symbol);
             else if (this.value == "random")
                 make_random_color(layer_name, type_symbol);
         });
@@ -1293,7 +1274,7 @@ function createStyleBox_ProbSymbol(layer_name){
     prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
     prop_val_content.insert('input')
           .styles({width: "60px", float: "right"})
-          .attrs({type: "number", id: "max_size_range", min: 0.1, max: 40, step: "any", value: current_layers[layer_name].size[1]})
+          .attrs({type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1]})
           .on("change", function(){
               let f_size = +this.value,
                   prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);

@@ -367,34 +367,26 @@ async def convert(request):
 
     elif ('octet-stream' in datatype
             or 'text/json' in datatype) and "geojson" in name.lower():
-        data = data.decode()
-        if '"crs"' in data and '"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data:
-            crs = True
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(data)
-            request.app['logger'].info(
-                '{} - Transform coordinates from GeoJSON'.format(user_id))
-            os.remove(filepath)
-            res = await ogr_to_geojson(filepath, to_latlong=True)
-            with open(filepath, 'wb') as f:
-                f.write(res)
-        else:
-            crs = False
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(data)
-
-        result = await geojson_to_topojson(filepath, "-q 1e5")
-
-        if len(result) == 0 and not crs:
+        # if '"crs"' in data and ('"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data or "4326" not in data):
+        with open(filepath, 'wb') as f:
+            f.write(data)
+        res = await ogr_to_geojson(filepath, to_latlong=True)
+        if len(res) == 0:
             return web.Response(text=json.dumps(
-                {'Error': 'GeoJSON layer provided without CRS'}))
-        else:
-            result = result.replace(''.join([user_id, '_']), '')
-            asyncio.ensure_future(
-                store_non_quantized(
-                    filepath, f_nameNQ, request.app['redis_conn']))
-            asyncio.ensure_future(
-                request.app['redis_conn'].set(f_nameQ, result))
+                {'Error': 'Error with the GeoJSON file provided'}))
+        with open(filepath, 'wb') as f:
+            f.write(res)
+        result = await geojson_to_topojson(filepath, "-q 1e5")
+        if len(result) == 0:
+            return web.Response(text=json.dumps(
+                {'Error': 'Error with the GeoJSON file provided'}))
+
+        result = result.replace(''.join([user_id, '_']), '')
+        asyncio.ensure_future(
+            store_non_quantized(
+                filepath, f_nameNQ, request.app['redis_conn']))
+        asyncio.ensure_future(
+            request.app['redis_conn'].set(f_nameQ, result))
 
     elif 'octet-stream' in datatype and "kml" in name.lower():
         print(datatype, name)

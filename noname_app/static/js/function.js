@@ -323,7 +323,7 @@ function fillMenu_PropSymbolChoro(layer){
       .html(i18next.t("app_page.func_options.choroprop.fixed_size"));
     var ref_size = b.insert('input')
                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
-                            min: 0.1, max: 66.0, value: 30.0, step: "any"})
+                            min: 0.1, max: 100.0, value: 60.0, step: "any"})
                     .style("width", "50px");
     b.append('label-item').html(' (px)');
 
@@ -499,9 +499,8 @@ var fields_PropSymbolChoro = {
 
         ico_q6.on('click', function(){
             let selected_field = field_color.node().value,
-                _values = user_data[layer].map(v => v[selected_field]),
-                n_class = getOptNbClass(_values.length);
-            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", n_class, 'BuGn');
+                _values = user_data[layer].map(v => v[selected_field]);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6, 'BuGn');
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'Q6', colors: color_array,
                 breaks: breaks, no_data: no_data_color,
@@ -566,9 +565,9 @@ var fields_PropSymbolChoro = {
                 rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
                 rd_params.color_field = color_field;
 
-                let color_map = make_prop_symbols(rd_params),
-                    colors_breaks = [];
+                make_prop_symbols(rd_params);
 
+                let colors_breaks = [];
                 for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
                     colors_breaks.push([
                             [rendering_params[color_field]['breaks'][i-1], " - ", rendering_params[color_field]['breaks'][i]].join(''),
@@ -660,7 +659,7 @@ var fields_Typo = {
         btn_typo_class.on("click", function(){
           let selected_field = field_selec.node().value,
               col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
-          display_categorical_box(layer, selected_field, col_map)
+          display_categorical_box(user_data[layer], layer, selected_field, col_map)
               .then(function(confirmed){
                   if(confirmed){
                       ok_button.attr("disabled", null);
@@ -850,9 +849,8 @@ var fields_Choropleth = {
 
         ico_q6.on('click', function(){
             let selected_field = field_selec.node().value,
-                _values = user_data[layer].map(v => v[selected_field]),
-                n_class = getOptNbClass(_values.length);
-            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", n_class);
+                _values = user_data[layer].map(v => v[selected_field]);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6);
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'Q6', colors: color_array,
                 breaks: breaks, no_data: no_data_color,
@@ -951,7 +949,7 @@ var fields_Stewart = {
 
         if(layer){
             // let fields = type_col(layer, "number"),
-            let fields = getFieldsType("stock", layer).concat(getFieldsType("ratio", layer)),
+            let fields = getFieldsType("stock", layer),
                 field_selec = section2.select("#stewart_field"),
                 field_selec2 = section2.select("#stewart_field2");
 
@@ -1434,7 +1432,7 @@ function fillMenu_Anamorphose(){
       .html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
     let option2_val = option2_section.insert("input")
       .style("width", "50px")
-      .attrs({type: "range", min: 0, max: 45, step: 0.1, value: 20, id: "Anamorph_dorling_fixed_size", class: "params"});
+      .attrs({type: "range", min: 0, max: 60, step: 0.1, value: 20, id: "Anamorph_dorling_fixed_size", class: "params"});
     option2_section.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
 
     let option3_section = dialog_content.append("p").attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt3");
@@ -1711,28 +1709,30 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         .style("stroke-width", 1 / zs);
     }
 
-    let fill_color = rendering_params.fill_color.two != undefined
-                    ? rendering_params.fill_color
-                    : rendering_params.fill_color instanceof Array
-                    ? {"class": rendering_params.fill_color}
-                    : {"single" : rendering_params.fill_color};
     current_layers[layer_to_add] = {
         "n_features": nb_features,
         "renderer": rendering_params.renderer || "PropSymbols",
         "symbol": symbol_type,
-        "fill_color" : fill_color,
         "rendered_field": field,
         "size": [ref_value, ref_size],
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
         };
+
+    if(rendering_params.fill_color.two != undefined){
+        current_layers[layer_to_add]["fill_color"] = cloneObj(rendering_params.fill_color);
+    } else if (rendering_params.fill_color instanceof Array){
+        current_layers[layer_to_add]["fill_color"] = {'class': geojson_pt_layer.features.map(v => v.properties.color)};
+    } else {
+        current_layers[layer_to_add]["fill_color"] = {"single" : rendering_params.fill_color};
+    }
     if(rendering_params.break_val != undefined){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
     up_legends();
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
-    return fill_color;
+    return;
 }
 
 function render_categorical(layer, rendering_params){
@@ -1881,7 +1881,7 @@ function fillMenu_PropSymbolTypo(layer){
       .html(i18next.t("app_page.func_options.proptypo.fixed_size"));
     let ref_size = b.insert('input')
         .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size',
-                min: 0.1, max: 66.0, value: 30.0, step: "any"})
+                min: 0.1, max: 100.0, value: 60.0, step: "any"})
         .style("width", "50px");
     b.append('label-item').html(' (px)');
 
@@ -1970,7 +1970,7 @@ var fields_PropSymbolTypo = {
         btn_typo_class.on("click", function(){
             let selected_field = field2_selec.node().value,
                 new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
-            display_categorical_box(layer, selected_field)
+            display_categorical_box(user_data[layer], layer, selected_field)
                 .then(function(confirmed){
                     if(confirmed){
                         ok_button.attr("disabled", null);
@@ -2027,6 +2027,7 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
   rd_params.ref_layer_name = layer;
   rd_params.symbol = symb_selec;
   rd_params.ref_value = +ref_value;
+  rd_params.color_field = color_field;
   rd_params.ref_size = +ref_size;
   rd_params.fill_color = rendering_params.colorByFeature;
 
@@ -2356,7 +2357,7 @@ function fillMenu_PropSymbol(layer){
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size'})
       .html(i18next.t("app_page.func_options.prop.fixed_size"));
     let ref_size = b.insert('input')
-      .attrs({id: 'PropSymbol_ref_size', type: 'number', class: 'params', min: 0.2, max: max_allowed_size, value: 30.0, step: 0.1})
+      .attrs({id: 'PropSymbol_ref_size', type: 'number', class: 'params', min: 0.2, max: max_allowed_size, value: 60.0, step: 0.1})
       .style("width", "50px");
     b.append('span').html(" px");
 
@@ -2732,7 +2733,7 @@ var fields_griddedMap = {
         if(!layer) return;
 
         // let fields = type_col(layer, "number"),
-        let fields = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
+        let fields = getFieldsType('stock', layer),
             field_selec = section2.select("#Gridded_field"),
             output_name = section2.select('#Gridded_output_name'),
             grip_shape = section2.select('#Gridded_shape'),
@@ -3090,7 +3091,7 @@ var render_label = function(layer, rendering_params){
     let nb_ft = ref_selection.length;
     for(let i=0; i<nb_ft; i++){
         let ft = ref_selection[i].__data__;
-        new_layer_data.push({label: ft.properties[label_field], coords: path.centroid(ft)});
+        new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
     }
 
     var context_menu = new ContextMenu(),
@@ -3103,13 +3104,16 @@ var render_label = function(layer, rendering_params){
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
-        .attrs( (d,i) => ({
-          "id": "Feature_" + i,
-          "x": d.coords[0],
-          "y": d.coords[1],
-          "alignment-baseline": "middle",
-          "text-anchor": "middle"
-        }))
+        .attrs( (d,i) => {
+          let centroid = path.centroid({'type': 'Point', 'coordinates': d.coords});
+          return {
+            "id": "Feature_" + i,
+            "x": centroid[0],
+            "y": centroid[1],
+            "alignment-baseline": "middle",
+            "text-anchor": "middle"
+            };
+        })
         .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
         .text(d => d.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})

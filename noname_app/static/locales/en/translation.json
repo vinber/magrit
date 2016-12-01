@@ -276,14 +276,14 @@
         "legend_style_box": {
             "title": "Layer style options - {{layer_name}}",
             "subtitle": "Legend customization",
-            "lgd_title": "Legend title",
-            "var_name": "Variable name<br>",
+            "lgd_title": "Title",
+            "var_name": "Subtitle<br>",
             "float_rounding": "Floating number rounding precision<br> ",
             "gap_boxes": "No gap between color boxes",
             "nested_symbols": "Nested symbols",
             "no_data": "No data category name",
-            "additionnal_notes": "Additionnal legend notes<br>",
-            "under_rectangle": "Display a rectangle under the legend",
+            "additionnal_notes": "Notes<br>",
+            "under_rectangle": "Display a box under the legend",
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
         },
         "help_box": {
@@ -581,11 +581,12 @@
         "sequential": "Sequential",
         "diverging": "Diverging",
         "reverse_palette": "Reverse palette",
-        "with_no_data": "{{ nb_features }} feature without data",
-        "with_no_data_plural": "{{ nb_features }} features without data",
+        "withnodata": "{{ count }} feature without data",
+        "withnodata_plural": "{{ count }} features without data",
         "colored_central_class": "colored central class",
         "color_palette": "Color palette ",
-        "break_on": "Break on "
+        "break_on": "Break on ",
+        "switch_ref_histo": "Switch representation"
     },
     "index":{
         "buttons": {

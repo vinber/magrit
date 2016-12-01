@@ -270,13 +270,13 @@
         "legend_style_box": {
             "title": "Style de la couche - {{layer_name}}",
             "subtitle": "Personnalisation de la légende",
-            "lgd_title": "Titre de la légende",
-            "var_name": "Nom de la variable<br>",
+            "lgd_title": "Titre",
+            "var_name": "Sous-titre<br>",
             "float_rounding": "Arrondi des nombres flottants<br> ",
             "gap_boxes": "Pas d'espaces entre les boites",
             "nested_symbols": "Symboles encastrés",
-            "no_data": "Affichage de la catégorie \"absence de données\"",
-            "additionnal_notes": "Notes additionnelles de la légende<br>",
+            "no_data": "Catégorie \"absence de données\"",
+            "additionnal_notes": "Notes<br>",
             "under_rectangle": "Afficher un rectangle sous la légende",
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
@@ -581,11 +581,12 @@
         "sequential": "Séquentiel",
         "diverging": "Divergent",
         "reverse_palette": "Inverser l'ordre des couleurs",
-        "with_no_data": "{{ nb_features }} entité sans valeur",
-        "with_no_data_plural": "{{ nb_features }} entités sans valeur",
+        "withnodata": "{{ count }} entité sans valeur",
+        "withnodata_plural": "{{ count }} entités sans valeur",
         "colored_central_class": "classe centrale colorée",
         "color_palette": "Palette de couleur ",
-        "break_on": "Rupture de couleur à la classe "
+        "break_on": "Rupture de couleur à la classe ",
+        "switch_ref_histo": "Autre représentation"
     },
     "index":{
         "buttons": {
