@@ -1,8 +1,8 @@
-### MAPOLOGIC
+### MAGRIT
 
 What does it do for you ?
 
-*MAPOLOGIC* lets you :
+*MAGRIT* lets you :
  - import your geometries (and an other dataset of values to be joined if necessary)
  - prepare your data (make a jointure, use basic operands to create a new field, show your values distribution and discretize them with some relevant methods or with your custom break values)
  - make a nice map (according to a selected method (see below), using nice on-the-fly-computed colorramps)
@@ -12,7 +12,7 @@ What does it do for you ?
 Currently allowed geometry input :
 
  - **shapefile** (.shp .dbf and .prj are requested, provided in a .zip archive or together as multiple files)
- - **geojson** (with "crs" information, otherwise crs is assumed to be EPSG:4326 / OGC:1.3:CRS84)
+ - **geojson** (with a crs assupmed to be EPSG:4326 / OGC:1.3:CRS84)
  - **kml** (specs. only seems to allow spherical coordinates to be stored in this file format)
  - **topojson** (converted from sherical coordinates only)
  - **csv file** (with "x"/"y" or "latitude"/"longitude" fields for points)
@@ -54,4 +54,3 @@ python3.5 setup.py install
 
 ##### Testing
 
->>>>>>> 8f82d320a89b005529264ccf6224ec5a2ee723d3
