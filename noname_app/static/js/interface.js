@@ -953,44 +953,44 @@ function center_map(name){
     _zoom.y = zoom_translate[1];
 };
 
-function select_layout_features(){
-    var available_features = [
-         ["north_arrow", i18next.t("app_page.layout_features_box.north_arrow")],
-         ["scale", i18next.t("app_page.layout_features_box.scale")],
-         ["sphere", i18next.t("app_page.layout_features_box.sphere")],
-         ["graticule", i18next.t("app_page.layout_features_box.graticule")],
-         ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
-         ["arrow", i18next.t("app_page.layout_features_box.arrow")],
-         ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
-         ["symbol", i18next.t("app_page.layout_features_box.symbol")],
-         ["free_draw", i18next.t("app_page.layout_features_box.free_draw")]
-        ];
-    var selected_ft;
-
-    make_confirm_dialog2(
-            "sampleLayoutFtDialogBox",
-            i18next.t("app_page.layout_features_box.title"),
-            {widthFitContent: true}
-        ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
-
-    var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
-    box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
-
-    var layout_ft_selec = box_body.append('p').html('')
-                            .insert('select')
-                            .attrs({class: 'sample_layout',
-                                    size: available_features.length});
-
-    available_features.forEach(function(ft){
-        layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
-    });
-    layout_ft_selec.on("change", function(){ selected_ft = this.value; });
-
-    if(!window.default_symbols){
-        window.default_symbols = [];
-        prepare_available_symbols();
-    }
-}
+// function select_layout_features(){
+//     var available_features = [
+//          ["north_arrow", i18next.t("app_page.layout_features_box.north_arrow")],
+//          ["scale", i18next.t("app_page.layout_features_box.scale")],
+//          ["sphere", i18next.t("app_page.layout_features_box.sphere")],
+//          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
+//          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
+//          ["arrow", i18next.t("app_page.layout_features_box.arrow")],
+//          ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
+//          ["symbol", i18next.t("app_page.layout_features_box.symbol")],
+//          ["free_draw", i18next.t("app_page.layout_features_box.free_draw")]
+//         ];
+//     var selected_ft;
+//
+//     make_confirm_dialog2(
+//             "sampleLayoutFtDialogBox",
+//             i18next.t("app_page.layout_features_box.title"),
+//             {widthFitContent: true}
+//         ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
+//
+//     var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
+//     box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
+//
+//     var layout_ft_selec = box_body.append('p').html('')
+//                             .insert('select')
+//                             .attrs({class: 'sample_layout',
+//                                     size: available_features.length});
+//
+//     available_features.forEach(function(ft){
+//         layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
+//     });
+//     layout_ft_selec.on("change", function(){ selected_ft = this.value; });
+//
+//     if(!window.default_symbols){
+//         window.default_symbols = [];
+//         prepare_available_symbols();
+//     }
+// }
 
 function setSphereBottom(){
     let layers = document.getElementsByClassName("layer"),
@@ -1071,9 +1071,13 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "ellipse"){
         handleClickAddEllipse();
     } else if (selected_feature == "symbol"){
-        let a = box_choice_symbol(window.default_symbols).then( result => {
-            if(result){ add_single_symbol(result); }
-        });
+      if(!window.default_symbols){
+          window.default_symbols = [];
+          prepare_available_symbols();
+      }
+      let a = box_choice_symbol(window.default_symbols).then( result => {
+          if(result){ add_single_symbol(result); }
+      });
 //    } else if (selected_feature == "free_draw"){
 //        handleCreateFreeDraw();
     } else {

@@ -240,17 +240,17 @@ function setUpInterface(resume_project)
                 handle_bg_color(this.value);
             });
 
-    let _h = dv4.append("li").styles({margin: "1px", padding: "0px 4px"});
-    _h.append("p")
-            .attr("id", "btn_add_layout_ft")
-            .attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.layout_features")
-            .style("cursor", "pointer")
-            .on("click", select_layout_features);
-    _h.append("span").html(sys_run_button)
-    _h.select("img").style("vertical-align", "sub")
-            .style("cursor", "pointer")
-            .on("click", select_layout_features);
+    // let _h = dv4.append("li").styles({margin: "1px", padding: "0px 4px"});
+    // _h.append("p")
+    //         .attr("id", "btn_add_layout_ft")
+    //         .attr("class", "list_elem_section4 i18n")
+    //         .attr("data-i18n", "[html]app_page.section4.layout_features")
+    //         .style("cursor", "pointer")
+    //         .on("click", select_layout_features);
+    // _h.append("span").html(sys_run_button)
+    // _h.select("img").style("vertical-align", "sub")
+    //         .style("cursor", "pointer")
+    //         .on("click", select_layout_features);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -441,6 +441,17 @@ function setUpInterface(resume_project)
                   rotate_global(this.value);
                   document.getElementById("canvas_rotation_value_txt").value = this.value;
               });
+
+    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/arrow-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/draw-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/ellipse-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/graticule-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/north-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/scale.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/sphere-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/symbols-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/text-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
 
     let background = map.append("g")
                         .attrs({id: "Simplified_land_polygons", class: "layer"})
@@ -927,35 +938,32 @@ function change_lang(){
 }
 
 function make_ico_choice(){
-    let list_fun_ico = ['icon_prop.png',
-                        'icon_choro.png',
-                        'icon_typo.png',
-                        'icon_choroprop.png',
-                        'icon_proptypo.png',
-                        'icon_grid.png',
-                        'icon_cartogram.png',
-                        'icon_smooth.png',
-                        'icon_discont.png',
-                        'icon_typosymbol.png',
-                        'icon_flow.png'];
+    let list_fun_ico = ['prop.svg',
+                        'choro.svg',
+                        'typo.svg',
+                        'choroprop.svg',
+                        'proptypo.svg',
+                        'grid.svg',
+                        'cartogram.svg',
+                        'smooth.svg',
+                        'discont.svg',
+                        'typosymbol.svg',
+                        'flow.svg'];
     let function_panel = section2.append("div")
                             .attr("id", "list_ico_func");
 
     for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
         let ico_name = list_fun_ico[i],
-            func_name = ico_name.split('.')[0].split("_")[1],
-            func_desc = get_menu_option(func_name).desc;
+            func_name = ico_name.split('.')[0],
+            func_desc = get_menu_option(func_name).desc,
+            margin_value = i == 9 ? '5px 28px 5px 80px' : '5px 28px';
         function_panel
             .insert("img")
-            .styles({margin: '1px', cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})            // .attr("class", "i18n")
-            // .attr("data-i18n", ["[title]app_page.func_description.", func_name].join(''))
-            // .attr("src", ["/static/img/func_icons/", ico_name].join(''))
-            // .attr("id", "button_" + func_name)
+            .styles({margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})
             .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-                    src: ['/static/img/func_icons/', ico_name].join(''), id: 'button_' + func_name})
+                    src: ['/static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
             .on("click", function(){
                 // Do some clean-up related to the previously displayed options :
-
                 if(window.fields_handler){
                     fields_handler.unfill();
                     let previous_button = document.getElementById("button_" + current_functionnality.name);

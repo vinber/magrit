@@ -727,3 +727,16 @@ p.line_elem {
 .cells :hover circle {
   fill: red;
 }
+
+img.layout_ft_ico {
+  margin: 2px;
+  -webkit-filter: grayscale(1); /* Webkit Nightlies & Chrome Canary */
+  -webkit-transform: scale(0.9);
+  -webkit-transition: all .2s;
+}
+
+img.layout_ft_ico:hover {
+  filter: none;
+  -webkit-filter: grayscale(0);
+  -webkit-transform: scale(1);
+}

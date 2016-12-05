@@ -442,7 +442,6 @@ var scaleBar = {
         this.bar_size = bar_size;
         this.unit = "km";
         this.precision = 0;
-        this.nb_intermediate_markers = 0;
         this.start_end_bar = false;
         this.fixed_size = false;
         this.getDist();
@@ -454,10 +453,10 @@ var scaleBar = {
 
         let scale_context_menu = new ContextMenu();
         this.under_rect = scale_gp.insert("rect")
-            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: bar_size + 5})
+            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5})
             .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
-            .attrs({x: x_pos, y: y_pos, height: 2, width: bar_size})
+            .attrs({x: x_pos, y: y_pos, height: 2, width: this.bar_size})
             .style("fill", "black");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale")
             .attrs({x: x_pos + bar_size, y: y_pos - 5})
@@ -481,7 +480,13 @@ var scaleBar = {
                 });
         this.Scale = scale_gp;
         this.displayed = true;
-        this.resize(Math.round(this.dist / 10) * 10);
+        if(this.dist > 100){
+            this.resize(Math.round(this.dist / 100) * 100);
+        } else if (this.dist > 10){
+            this.resize(Math.round(this.dist / 10) * 10);
+        } else {
+            this.resize(this.dist);
+        }
     },
     getDist: function(){
         let x_pos = w / 2,
@@ -492,7 +497,7 @@ var scaleBar = {
 
         if(isNaN(this.bar_size)){
             console.log("scaleBar.bar_size : NaN");
-            this.bar_size = 1;
+            this.bar_size = 50;
         }
 
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
@@ -535,41 +540,14 @@ var scaleBar = {
         this.Scale = null;
         this.displayed = false;
     },
-//    update_interm_markers: function(){
-//        this.Scale.selectAll(".interm_marker").remove();
-//        if(this.nb_intermediate_markers == 0)
-//            return;
-//        else {
-//            let k = +this.nb_intermediate_markers + 1;
-//            let dist_b = +this.bar_size / k;
-//            let markers_pos = [];
-//            for(let i =1; i < this.nb_intermediate_markers + 1; i++){
-//                markers_pos.push(this.x + dist_b * i);
-//                this.Scale.insert("rect")
-//                            .attr("class", "interm_marker")
-//                            .attr("x", this.x + dist_b * i - 0.5)
-//                            .attr("y", this.y - 4)
-//                            .attr("width", "1px")
-//                            .attr("height", "4px")
-//            }
-//        }
-//    },
     handle_start_end_bar: function(){
         this.Scale.selectAll(".se_bar").remove();
         if(this.start_end_bar){
             this.Scale.insert("rect")
-                        .attr("class", "start_bar se_bar")
-                        .attr("x", this.x)
-                        .attr("y", this.y - 4.5)
-                        .attr("width", "1.5px")
-                        .attr("height", "4.5px");
+                .attrs({class: 'start_bar se_bar', x: this.x, y: this.y - 4.5, width: '1.5px', height: '4.5px'});
 
             this.Scale.insert("rect")
-                        .attr("class", "end_bar se_bar")
-                        .attr("x", this.x + this.bar_size - 1.5)
-                        .attr("y", this.y - 4.5)
-                        .attr("width", "1.5px")
-                        .attr("height", "4.5px");
+                .attrs({class: 'end_bar se_bar', x: this.x + this.bar_size - 1.5, y: this.y - 4.5, width: '1.5px', height: '4.5px'});
         }
     },
     editStyle: function(){
@@ -585,92 +563,67 @@ var scaleBar = {
             };
         make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
-                if(confirmed){
-                    redraw_now();
-                    // if(new_val)
-                    //     self.resize(new_val);
-                    // else {
-                    //     self.fixed_size = false;
-                    //     self.changeText();
-                    // }
-                }
+                if(confirmed){ redraw_now(); }
             });
         var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
         box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
-                .html(i18next.t("app_page.scale_bar_edit_box.title"));
+            .html(i18next.t("app_page.scale_bar_edit_box.title"));
         box_body.append("p").style("display", "inline")
-                .html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
+            .html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
         box_body.append("input")
-                .attr("type", "checkbox")
-                .attr("checked", self.fixed_size ? true : null)
-                .on("change", function(){
-                    if(box_body.select("#scale_fixed_field").attr("disabled")){
-                        box_body.select("#scale_fixed_field").attr("disabled", null);
-                        new_val = +box_body.select("#scale_fixed_field").attr("value");
-                    } else {
-                        box_body.select("#scale_fixed_field").attr("disabled", true);
-                        new_val = false;
-                    }
-                    redraw_now();
-                  });
+            .attrs({type: 'checkbox', "checked": self.fixed_size ? true : null})
+            .on("change", function(){
+                if(box_body.select("#scale_fixed_field").attr("disabled")){
+                    box_body.select("#scale_fixed_field").attr("disabled", null);
+                    new_val = +box_body.select("#scale_fixed_field").attr("value");
+                } else {
+                    box_body.select("#scale_fixed_field").attr("disabled", true);
+                    new_val = false;
+                }
+                redraw_now();
+              });
         box_body.append("input")
-                .attr('id', "scale_fixed_field")
-                .attr("type", "number")
-                .attr("disabled", self.fixed_size ? null : true)
-                .attr("value", +this.dist_txt)
-                .on("change", function(){
-                  new_val = +this.value;
-                  redraw_now();
-                });
+            .attrs({id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt})
+            .on("change", function(){
+              new_val = +this.value;
+              redraw_now();
+            });
 
         let b = box_body.append("p");
         b.insert("span")
-                .html(i18next.t("app_page.scale_bar_edit_box.precision"));
+            .html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input")
-                .attr('id', "scale_precision")
-                .attrs({type: "number", min: 0, max: 6, step: 1, value: +this.precision})
-                .style("width", "60px")
-                .on("change", function(){
-                  self.precision = +this.value;
-                  redraw_now();
-                });
+            .attrs({id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision})
+            .style("width", "60px")
+            .on("change", function(){
+              self.precision = +this.value;
+              redraw_now();
+            });
 
         let c = box_body.append("p");
         c.insert("span")
-                .html(i18next.t("app_page.scale_bar_edit_box.unit"));
+            .html(i18next.t("app_page.scale_bar_edit_box.unit"));
         let unit_select = c.insert("select")
-                .attr('id', "scale_unit")
-                .on("change", function(){
-                  self.unit = this.value;
-                  redraw_now();
-                });
+            .attr('id', "scale_unit")
+            .on("change", function(){
+              self.unit = this.value;
+              redraw_now();
+            });
         unit_select.append("option").text("km").attr("value", "km");
         unit_select.append("option").text("m").attr("value", "m");
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-//        let d = box_body.append("p");
-//        d.append("span")
-//                .html(i18next.t("app_page.scale_bar_edit_box.intermediate_markers"));
-//        d.append("input")
-//                .attrs({type: "number", min: 0, max: 10, step: 1, value: self.nb_intermediate_markers})
-//                .style("width", "60px")
-//                .on("change", function(){
-//                    self.nb_intermediate_markers = +this.value;
-//                    self.update_interm_markers();
-//        });
-
         let e = box_body.append("p");
         e.append("span")
                 .html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
         e.append("input")
-                .attr("id", "checkbox_start_end_bar")
-                .attr("type", "checkbox")
-                .on("change", function(a){
-                    self.start_end_bar = self.start_end_bar == true ? false : true;
-                    self.handle_start_end_bar()
-        });
+            .attrs({id: 'checkbox_start_end_bar', type: 'checkbox'})
+            .on("change", function(a){
+                self.start_end_bar = self.start_end_bar == true ? false : true;
+                self.handle_start_end_bar()
+            });
         document.getElementById("checkbox_start_end_bar").checked = self.start_end_bar;
 
     },

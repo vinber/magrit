@@ -1015,16 +1015,10 @@ function render_stewart(){
   }
   bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
-  if(current_layers[layer].original_fields.has(field1_n))
-      var1_to_send[field1_n] = [];
-  else
-      var1_to_send[field1_n] = user_data[layer].map(i => +i[field1_n]);
 
+  var1_to_send[field1_n] = current_layers[layer].original_fields.has(field1_n) ? [] : user_data[layer].map(i => +i[field1_n]);
   if(field2_n != "None"){
-      if(current_layers[layer].original_fields.has(field2_n))
-          var2_to_send[field2_n] = [];
-      else
-          var2_to_send[field2_n] = user_data[layer].map(i => +i[field2_n]);
+      var2_to_send[field2_n] = current_layers[layer].original_fields.has(field2_n) ? [] : user_data[layer].map(i => +i[field2_n]);
   }
 
   formToSend.append("json", JSON.stringify({
@@ -1065,7 +1059,7 @@ function render_stewart(){
           current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
           map.select("#"+n_layer_name)
                   .selectAll("path")
-                  .style("fill", (d,i) => col_pal[nb_class - 1 - i]);
+                  .styles( (d,i) => ({'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0}));
           handle_legend(n_layer_name);
           switch_accordion_section();
           // Todo : use the function render_choro to render the result from stewart too
@@ -1780,9 +1774,9 @@ function render_choro(layer, rendering_params){
     map.select("#"+layer)
             .style("opacity", 1)
             .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
-    layer_to_render.style('fill-opacity', 0.9)
+    layer_to_render.style('fill-opacity', 1)
                    .style("fill", (d,i) => rendering_params['colorsByFeature'][i] )
-                   .style('stroke-opacity', 0.9)
+                   .style('stroke-opacity', 1)
                    .style("stroke", "black");
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
