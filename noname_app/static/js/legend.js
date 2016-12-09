@@ -789,10 +789,10 @@ function createlegendEditBox(legend_id, layer_name){
     let a = box_body.append('p');
     a.append('span')
         .html(i18next.t("app_page.legend_style_box.lgd_title"));
-    a.append("img")
-        .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
-                class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.legend_style_box.info_tooltip_line_break")})
-        .styles({"cursor": "pointer", "vertical-align": "bottom"});
+    // a.append("img")
+    //     .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
+    //             class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.legend_style_box.info_tooltip_line_break")})
+    //     .styles({"cursor": "pointer", "vertical-align": "bottom"});
 
     a.append('input')
         .styles({float: "right"})
@@ -821,14 +821,14 @@ function createlegendEditBox(legend_id, layer_name){
             note_content.textContent = this.value;
         });
 
-    let tooltip_elem = document.querySelector("[data-tooltip_info]");
-    new Tooltip(tooltip_elem, {
-        dataAttr: "data-tooltip_info",
-        animation: "slideNfade",
-        duration: 50,
-        delay: 100,
-        container: document.getElementById("twbs")
-    });
+    // let tooltip_elem = document.querySelector("[data-tooltip_info]");
+    // new Tooltip(tooltip_elem, {
+    //     dataAttr: "data-tooltip_info",
+    //     animation: "slideNfade",
+    //     duration: 50,
+    //     delay: 100,
+    //     container: document.getElementById("twbs")
+    // });
 
     if(no_data_txt){
         let d = box_body.insert('p');

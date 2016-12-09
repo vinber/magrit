@@ -8,5 +8,5 @@ TODO list:
 - Design a favicon.
 - Make a short documentation about how the project is structured in order to facilitate potential contributions
 - Split the actual repository in two repo. : one for the website and one for the application and its documentation.
-- Fix legend when using q6 discretization.
 - Add support for GML and geopackage format (input/output ? why ? why not ?!)
+- Allow the same behavior when zooming on symbols as on arrows and ellipses

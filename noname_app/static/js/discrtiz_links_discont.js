@@ -63,70 +63,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     };
 
-    var display_ref_histo = function(){
-        var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
-            svg_w = w / 4.75,
-            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
-
-        nb_bins = nb_bins < 3 ? 3 : nb_bins;
-        nb_bins = nb_bins > values.length ? nb_bins : values.length;
-
-        var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
-            width = svg_w - margin.right - margin.left;
-            height = svg_h - margin.top - margin.bottom;
-
-        var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
-        ref_histo.append('p').style("margin", "auto")
-                  .html(i18next.t("disc_box.hist_ref_title"));
-
-        var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
-            .attr("width", svg_w + margin.left + margin.right)
-            .attr("height", svg_h + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        var x = d3.scaleLinear()
-            .domain([serie.min(), serie.max()])
-            .rangeRound([0, width]);
-
-        var data = d3.histogram()
-            .domain(x.domain())
-            .thresholds(x.ticks(nb_bins))
-            (values);
-
-        var y = d3.scaleLinear()
-            .domain([0, d3.max(data, function(d) { return d.length; })])
-            .range([height, 0]);
-
-        var bar = svg_ref_histo.selectAll(".bar")
-            .data(data)
-          .enter()
-            .append("rect")
-            .attrs(d => ({
-              "class": "bar", "x": 1, "width": x(data[1].x1) - x(data[1].x0),
-              "height": height - y(d.length), "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-            }))
-            .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
-
-        svg_ref_histo.append("g")
-            .attr("class", "x axis")
-            .style("font-size", "10px")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom()
-                .scale(x)
-                .ticks(4))
-            .selectAll("text")
-                .attrs({x: -4, y: 4, dy: ".45em", "transform": "rotate(-40)"})
-                .style("text-anchor", "end");
-
-        svg_ref_histo.append("g")
-            .attr("class", "y axis")
-            .style("font-size", "10px")
-            .call(d3.axisLeft()
-                .scale(y)
-                .ticks(5));
-    }
-
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
         newBox.append("div")
@@ -194,7 +130,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .data(bins)
               .enter().append("rect")
                 .attrs( (d,i) => ({
-                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -17.5)",
                   "x": x(d.offset), "y": y(d.height) - margin.bottom,
                   "width": x(d.width), "height": svg_h - y(d.height)
                 }))
@@ -310,10 +246,37 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
+    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
+    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
+
     discretization.node().value = type;
     make_box_histo_option();
     make_summary();
-    display_ref_histo();
+    var refDisplay = prepare_ref_histo(newBox, serie, formatCount);
+    refDisplay("histogram");
+
+    if(values.length < 500){ // Only allow for beeswarm plot if there isn't too many values
+        // as it seems to be costly due to the "simulation" + the voronoi
+        let current_histo = "regular",
+            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+        choice_histo.insert('button')
+            .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
+            .styles({padding: '3px', 'font-size': '10px'})
+            .html(i18next.t('disc_box.switch_ref_histo'))
+            .on('click', function(){
+                if(current_histo == 'histogram'){
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                } else if (current_histo == "box_plot"){
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+               } else if (current_histo == "beeswarm"){
+                     refDisplay("histogram");
+                     current_histo = "histogram";
+               }
+            });
+    }
+
 
     var txt_nb_class = d3.select("#discretization_panel")
                             .insert("p").style("display", "inline")

@@ -1073,11 +1073,18 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "symbol"){
       if(!window.default_symbols){
           window.default_symbols = [];
-          prepare_available_symbols();
+          let a = prepare_available_symbols();
+          a.then(confirmed => {
+              let a = box_choice_symbol(window.default_symbols).then( result => {
+                  if(result){ add_single_symbol(result); }
+              });
+          });
+      } else {
+          let a = box_choice_symbol(window.default_symbols).then( result => {
+              if(result){ add_single_symbol(result); }
+          });
       }
-      let a = box_choice_symbol(window.default_symbols).then( result => {
-          if(result){ add_single_symbol(result); }
-      });
+
 //    } else if (selected_feature == "free_draw"){
 //        handleCreateFreeDraw();
     } else {
@@ -1424,10 +1431,10 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    let list_symbols = xhrequest('GET', '/static/json/list_symbols.json', null)
+    return xhrequest('GET', '/static/json/list_symbols.json', null)
             .then( list_res => {
                list_res = JSON.parse(list_res);
-               Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
+               return Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
                         default_symbols.push([list_res[i], symbols[i]]);

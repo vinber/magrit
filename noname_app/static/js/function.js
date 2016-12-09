@@ -2239,7 +2239,7 @@ var render_discont = function(){
         return;
     }
     let serie = disc_result[3],
-        breaks = disc_result[2].map(ft => [ft[0], ft[1]]);
+        breaks = disc_result[2].map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
 
     let result_layer = map.append("g").attr("id", new_layer_name)
             .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})

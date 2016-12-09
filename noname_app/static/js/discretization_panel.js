@@ -148,247 +148,162 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     };
 
     var make_box_histo_option = function(){
+
         var histo_options = newBox.append('div')
-                            .attr("id", "histo_options")
-                            .style("margin-left", "10px");
+            .attrs({id: 'histo_options', class: 'row equal'})
+            .styles({'margin': '5px 5px 10px 15px', 'width': '100%'});
+        var a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+            b = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+            c = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+            d = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3');
 
-        var a = histo_options.append("p").style("margin", 0),
-            b = histo_options.append("p").style("margin", 0),
-            c = histo_options.append("p").style("margin", 0),
-            d = histo_options.append("p").style("margin", 0);
-
-        a.insert("input")
-            .attrs({type: "checkbox", value: "mean", id: 'check_mean'})
-            .on("change", function(){
-                    if(line_mean.classed("active")){
-                        line_mean.style("stroke-width", 0)
-                        txt_mean.style("fill", "none")
-                        line_mean.classed("active", false)
-                    } else {
-                        line_mean.style("stroke-width", 2)
-                        txt_mean.style("fill", "red")
-                        line_mean.classed("active", true)
-                    }
-                });
-
-        b.insert("input")
-            .attrs({type: "checkbox", value: "median", id: 'check_median'})
-            .on("change", function(){
-                    if(line_median.classed("active")){
-                        line_median.style("stroke-width", 0)
-                        txt_median.style("fill", "none")
-                        line_median.classed("active", false)
-                    } else {
-                        line_median.style("stroke-width", 2)
-                        txt_median.style("fill", "blue")
-                        line_median.classed("active", true)
-                    }
-                });
-
-        c.insert("input")
-            .attrs({type: "checkbox", value: "std", id: 'check_std'})
-            .on("change", function(){
-                    if(line_std_left.classed("active")){
-                        line_std_left.style("stroke-width", 0)
-                        line_std_left.classed("active", false)
-                        line_std_right.style("stroke-width", 0)
-                        line_std_right.classed("active", false)
-                    } else {
-                        line_std_left.style("stroke-width", 2)
-                        line_std_left.classed("active", true)
-                        line_std_right.style("stroke-width", 2)
-                        line_std_right.classed("active", true)
-                    }
-                });
-        d.insert('input')
-            .attrs({type: 'checkbox', value: 'pop', id: 'check_rug'})
-            .on('change', function(){
-                if(rug_plot.classed('active')){
-                    rug_plot.style('display', 'none');
-                    rug_plot.classed('active', false);
+        a.insert('button')
+            .attrs({class: 'btn_population'})
+            .html(i18next.t('disc_box.disp_rug_pop'))
+            .on('click', function(){
+                if(this.classList.contains('active')){
+                  this.classList.remove('active');
+                  rug_plot.style('display', 'none');
+                  rug_plot.classed('active', false);
                 } else {
-                    rug_plot.style('display', '');
-                    rug_plot.classed('active', true);
+                  this.classList.add('active');
+                  rug_plot.style('display', '');
+                  rug_plot.classed('active', true);
                 }
             });
-        a.append("label")
-            .attr("for", "check_mean")
-            .html(i18next.t("disc_box.disp_mean"));
-        b.append("label")
-            .attr("for", "check_median")
-            .html(i18next.t("disc_box.disp_median"));
-        c.append("label")
-            .attr("for", "check_std")
-            .html(i18next.t("disc_box.disp_sd"));
-        d.append("label")
-            .attr("for", "check_rug")
-            .html(i18next.t("disc_box.disp_rug_pop"));
-    };
 
-    var prepare_ref_histo = function(){
-        var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
-            svg_w = w / 4.75 > 310 ? 310 : w / 4.75,
-            nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+        b.insert('button')
+            .attrs({class: 'btn_mean'})
+            .html(i18next.t('disc_box.disp_mean'))
+            .on('click', function(){
+                if(this.classList.contains('active')){
+                    this.classList.remove('active');
+                    line_mean.style("stroke-width", 0);
+                    txt_mean.style("fill", "none");
+                    line_mean.classed("active", false);
+                } else {
+                    this.classList.add('active');
+                    line_mean.style("stroke-width", 2);
+                    txt_mean.style("fill", "blue");
+                    line_mean.classed("active", true);
+                }
+            });
 
-        var m_margin = {top: 10, right: 20, bottom: 10, left: 20},
-            m_width = svg_w - m_margin.right - m_margin.left,
-            m_height = svg_h - m_margin.top - m_margin.bottom;
+        c.insert('button')
+            .attrs({class: 'btn_median'})
+            .html(i18next.t('disc_box.disp_median'))
+            .on('click', function(){
+                if(this.classList.contains('active')){
+                    this.classList.remove('active');
+                    line_median.style('stroke-width', 0)
+                                .classed('active', false);
+                    txt_median.style('fill', 'none');
+                } else {
+                    this.classList.add('active');
+                    line_median.style('stroke-width', 2)
+                                .classed('active', true);
+                    txt_median.style('fill', 'darkgreen');
+                }
+            });
 
-        var ref_histo = newBox.select("#ref_histo_box").select('#inner_ref_histo_box');
-        // ref_histo.node().innerHTML = "";
-        ref_histo.append('p').styles({"margin": "auto", "text-align": "center"})
-                  .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+        d.insert('button')
+            .attrs({class: 'btn_stddev'})
+            .html(i18next.t('disc_box.disp_sd'))
+            .on('click', function(){
+                if(this.classList.contains('active')){
+                    this.classList.remove('active');
+                    line_std_left.style("stroke-width", 0)
+                    line_std_left.classed("active", false)
+                    line_std_right.style("stroke-width", 0)
+                    line_std_right.classed("active", false)
+                } else {
+                    this.classList.add('active');
+                    line_std_left.style("stroke-width", 2)
+                    line_std_left.classed("active", true)
+                    line_std_right.style("stroke-width", 2)
+                    line_std_right.classed("active", true)
+                }
+            });
+    }
 
-        var c = ref_histo.append("svg").attr("id", "svg_ref_histo")
-            .attr("width", svg_w + m_margin.left + m_margin.right)
-            .attr("height", svg_h + m_margin.top + m_margin.bottom)
-        var svg_ref_histo = c.append("g")
-            .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
-
-        var x = d3.scaleLinear()
-            .domain([serie.min(), serie.max()])
-            .rangeRound([0, m_width]);
-
-        return function(type){
-            svg_ref_histo.remove();
-            svg_ref_histo = c.append("g")
-              .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
-            if(type == 'histogram'){
-                var data = d3.histogram()
-                    .domain(x.domain())
-                    .thresholds(x.ticks(nb_bins))
-                    (values);
-
-                var y = d3.scaleLinear()
-                    .domain([0, d3.max(data, function(d) { return d.length; })])
-                    .range([m_height, 0]);
-
-                var bar = svg_ref_histo.selectAll(".bar")
-                    .data(data)
-                  .enter()
-                    .append("rect")
-                    .attrs( d => ({
-                      "class": "bar", "width": x(d.x1 - d.x0), "height": m_height - y(d.length), "x": 1,
-                      "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-                    }))
-                    .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
-
-                svg_ref_histo.append("g")
-                    .style("font-size", "10px")
-                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                    .call(d3.axisBottom()
-                        .scale(x)
-                        .ticks(4)
-                        .tickFormat(formatCount))
-                    .selectAll("text")
-                        .attr("y", 4)
-                        .attr("x", -4)
-                        .attr("dy", ".45em")
-                        .attr("transform", "rotate(-40)")
-                        .style("text-anchor", "end");
-
-                svg_ref_histo.append("g")
-                    .attr("class", "y_axis")
-                    .style("font-size", "10px")
-                    .call(d3.axisLeft()
-                        .scale(y)
-                        .ticks(5)
-                        .tickFormat(d3.format(".2f")));
-            } else if (type == "box_plot") {
-                svg_ref_histo.append("g")
-                    .style("font-size", "10px")
-                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                    .call(d3.axisBottom()
-                        .scale(x)
-                        .ticks(4)
-                        .tickFormat(formatCount))
-                    .selectAll("text")
-                        .attr("y", 4).attr("x", -4)
-                        .attr("dy", ".45em")
-                        .attr("transform", "rotate(-40)")
-                        .style("text-anchor", "end");
-
-                var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2
-
-                var min = svg_ref_histo.append('g')
-                        .insert('line')
-                        .attrs({x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "none"});
-
-                var rect = svg_ref_histo.append('g')
-                        .insert('rect')
-                        .attrs({x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
-
-                var med = svg_ref_histo.append('g')
-                        .insert('line')
-                        .attrs({x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2:  m_height - m_margin.bottom})
-                        .styles({"stroke-width": 3, stroke: "black", fill: "none"});
-
-                var rect = svg_ref_histo.append('g')
-                        .insert('rect')
-                        .attrs({x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
-
-                var max = svg_ref_histo.append('g')
-                        .insert('line')
-                        .attrs({x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "none"});
-
-                var interline_min = svg_ref_histo.append('g')
-                        .insert('line')
-                        .attrs({x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
-
-                var interline_max = svg_ref_histo.append('g')
-                        .insert('line')
-                        .attrs({x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid})
-                        .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
-            } else if (type == "beeswarm"){
-                var data = values.map(v => ({value: +v}));
-                // for(let i = 0; i < values.length; i++){
-                //     data.push({value: +values[i]});
-                // }
-                var simulation = d3.forceSimulation(data)
-                    .force("x", d3.forceX(d => x(d.value)).strength(1))
-                    .force("y", d3.forceY(height / 2).strength(2))
-                    .force("collide", d3.forceCollide(4))
-                    .stop();
-
-                for (var i = 0; i < 75; ++i)
-                    simulation.tick();
-
-                svg_ref_histo.append("g")
-                    .style("font-size", "10px")
-                    .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                    .call(d3.axisBottom()
-                        .scale(x)
-                        .ticks(4)
-                        .tickFormat(formatCount))
-                    .selectAll("text")
-                        .attr("y", 4).attr("x", -4)
-                        .attr("dy", ".45em")
-                        .attr("transform", "rotate(-40)")
-                        .style("text-anchor", "end");
-
-                var cell = svg_ref_histo.append("g")
-                    .attr("class", "cells")
-                  .selectAll("g").data(d3.voronoi()
-                      .extent([[-m_margin.left, -m_margin.top], [m_width + m_margin.right, m_height + m_margin.top]])
-                      .x(d => d.x).y(d => d.y)
-                    .polygons(data)).enter().append("g");
-
-                cell.append("circle")
-                    .attrs(d => {
-                        if(d) return {
-                        r: data.lenght < 250 ? 3 : 2, cx: d.data.x, cy: d.data.y };
-                      });
-
-                cell.append("path")
-                    .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
-            }
-        };
-    };
+    // var make_box_histo_option = function(){
+    //
+    //     var histo_options = newBox.append('div')
+    //                         .attr("id", "histo_options")
+    //                         .style("margin-left", "10px");
+    //
+    //     var a = histo_options.append("p").style("margin", 0),
+    //         b = histo_options.append("p").style("margin", 0),
+    //         c = histo_options.append("p").style("margin", 0),
+    //         d = histo_options.append("p").style("margin", 0);
+    //
+    //     a.insert("input")
+    //         .attrs({type: "checkbox", value: "mean", id: 'check_mean'})
+    //         .on("change", function(){
+    //                 if(line_mean.classed("active")){
+    //                     line_mean.style("stroke-width", 0)
+    //                     txt_mean.style("fill", "none")
+    //                     line_mean.classed("active", false)
+    //                 } else {
+    //                     line_mean.style("stroke-width", 2)
+    //                     txt_mean.style("fill", "red")
+    //                     line_mean.classed("active", true)
+    //                 }
+    //             });
+    //
+    //     b.insert("input")
+    //         .attrs({type: "checkbox", value: "median", id: 'check_median'})
+    //         .on("change", function(){
+    //                 if(line_median.classed("active")){
+    //                     line_median.style("stroke-width", 0)
+    //                     txt_median.style("fill", "none")
+    //                     line_median.classed("active", false)
+    //                 } else {
+    //                     line_median.style("stroke-width", 2)
+    //                     txt_median.style("fill", "blue")
+    //                     line_median.classed("active", true)
+    //                 }
+    //             });
+    //
+    //     c.insert("input")
+    //         .attrs({type: "checkbox", value: "std", id: 'check_std'})
+    //         .on("change", function(){
+    //                 if(line_std_left.classed("active")){
+    //                     line_std_left.style("stroke-width", 0)
+    //                     line_std_left.classed("active", false)
+    //                     line_std_right.style("stroke-width", 0)
+    //                     line_std_right.classed("active", false)
+    //                 } else {
+    //                     line_std_left.style("stroke-width", 2)
+    //                     line_std_left.classed("active", true)
+    //                     line_std_right.style("stroke-width", 2)
+    //                     line_std_right.classed("active", true)
+    //                 }
+    //             });
+    //     d.insert('input')
+    //         .attrs({type: 'checkbox', value: 'pop', id: 'check_rug'})
+    //         .on('change', function(){
+    //             if(rug_plot.classed('active')){
+    //                 rug_plot.style('display', 'none');
+    //                 rug_plot.classed('active', false);
+    //             } else {
+    //                 rug_plot.style('display', '');
+    //                 rug_plot.classed('active', true);
+    //             }
+    //         });
+    //     a.append("label")
+    //         .attr("for", "check_mean")
+    //         .html(i18next.t("disc_box.disp_mean"));
+    //     b.append("label")
+    //         .attr("for", "check_median")
+    //         .html(i18next.t("disc_box.disp_median"));
+    //     c.append("label")
+    //         .attr("for", "check_std")
+    //         .html(i18next.t("disc_box.disp_sd"));
+    //     d.append("label")
+    //         .attr("for", "check_rug")
+    //         .html(i18next.t("disc_box.disp_rug_pop"));
+    // };
 
     var make_overlay_elements = function(){
 
@@ -401,7 +316,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
           .attr("y1", 10)
           .attr("x2", x(mean_val))
           .attr("y2", svg_h - margin.bottom)
-          .styles({"stroke-width": 0, stroke: "red", fill: "none"})
+          .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
           .classed("active", false);
 
       txt_mean = overlay_svg.append("text")
@@ -418,7 +333,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
           .attr("y1", 10)
           .attr("x2", x(serie.median()))
           .attr("y2", svg_h - margin.bottom)
-          .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
+          .styles({"stroke-width": 0, stroke: "darkgreen", fill: "none"})
           .classed("active", false);
 
       txt_median = overlay_svg.append("text")
@@ -651,7 +566,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     }
 
     values = serie.sorted();
-    var q5 = serie.getQuantile(4).map(v => +v);
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
@@ -730,9 +644,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
 
     discretization.node().value = type;
-    make_box_histo_option();
     make_summary();
-    var refDisplay = prepare_ref_histo();
+    var refDisplay = prepare_ref_histo(newBox, serie, formatCount);
     refDisplay("histogram");
 
     var svg_h = h / 5 > 100 ? h / 5 : 100,
@@ -746,21 +659,22 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
     if(values.length < 500){ // Only allow for beeswarm plot if there isn't too many values
         // as it seems to be costly due to the "simulation" + the voronoi
-        let current_histo = "regular",
+        let current_histo = "histogram",
             choice_histo = ref_histo_box.append('p').style('text-align', 'center');
         choice_histo.insert('button')
             .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
             .styles({padding: '3px', 'font-size': '10px'})
             .html(i18next.t('disc_box.switch_ref_histo'))
             .on('click', function(){
-                if(current_histo == 'regular'){
+                if(current_histo == 'histogram'){
                     refDisplay("box_plot");
-                    // display_ref_histo_box_plot();
                     current_histo = "box_plot";
                 } else if (current_histo == "box_plot"){
-                    // display_ref_histo();
-                    refDisplay("histogram");
-                    current_histo = "regular";
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+               } else if (current_histo == "beeswarm"){
+                     refDisplay("histogram");
+                     current_histo = "histogram";
                }
             });
     }
@@ -768,6 +682,8 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
         .attr("height", svg_h + margin.top + margin.bottom);
+
+    make_box_histo_option();
 
     var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -1053,3 +969,174 @@ function reOpenParent(css_selector){
         parent_style_box.style.display = "block";
     }
 }
+
+var prepare_ref_histo = function(parent_node, serie, formatCount){
+    var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
+        svg_w = w / 4.75 > 310 ? 310 : w / 4.75,
+        values = serie.sorted(),
+        nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+    var q5 = serie.getQuantile(4).map(v => +v);
+
+    var m_margin = {top: 10, right: 20, bottom: 10, left: 20},
+        m_width = svg_w - m_margin.right - m_margin.left,
+        m_height = svg_h - m_margin.top - m_margin.bottom;
+
+    var ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
+    // ref_histo.node().innerHTML = "";
+    ref_histo.append('p').styles({"margin": "auto", "text-align": "center"})
+              .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+
+    var c = ref_histo.append("svg").attr("id", "svg_ref_histo")
+        .attr("width", svg_w + m_margin.left + m_margin.right)
+        .attr("height", svg_h + m_margin.top + m_margin.bottom)
+    var svg_ref_histo = c.append("g")
+        .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+
+    var x = d3.scaleLinear()
+        .domain([serie.min(), serie.max()])
+        .rangeRound([0, m_width]);
+
+    return function(type){
+        svg_ref_histo.remove();
+        svg_ref_histo = c.append("g")
+          .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+        if(type == 'histogram'){
+            var data = d3.histogram()
+                .domain(x.domain())
+                .thresholds(x.ticks(nb_bins))
+                (values);
+
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(data, function(d) { return d.length; })])
+                .range([m_height, 0]);
+
+            var bar = svg_ref_histo.selectAll(".bar")
+                .data(data)
+              .enter()
+                .append("rect")
+                .attrs( d => ({
+                  "class": "bar", "width": Math.abs(x(d.x1)) - Math.abs(x(d.x0)), "height": m_height - y(d.length), "x": 0,
+                  "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+                }))
+                .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+
+            svg_ref_histo.append("g")
+                .style("font-size", "10px")
+                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                .call(d3.axisBottom()
+                    .scale(x)
+                    .ticks(4)
+                    .tickFormat(formatCount))
+                .selectAll("text")
+                    .attr("y", 4)
+                    .attr("x", -4)
+                    .attr("dy", ".45em")
+                    .attr("transform", "rotate(-40)")
+                    .style("text-anchor", "end");
+
+            svg_ref_histo.append("g")
+                .attr("class", "y_axis")
+                .style("font-size", "10px")
+                .call(d3.axisLeft()
+                    .scale(y)
+                    .ticks(5)
+                    .tickFormat(d3.format(".2f")));
+        } else if (type == "box_plot") {
+            svg_ref_histo.append("g")
+                .style("font-size", "10px")
+                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                .call(d3.axisBottom()
+                    .scale(x)
+                    .ticks(4)
+                    .tickFormat(formatCount))
+                .selectAll("text")
+                    .attr("y", 4).attr("x", -4)
+                    .attr("dy", ".45em")
+                    .attr("transform", "rotate(-40)")
+                    .style("text-anchor", "end");
+
+            var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2
+
+            var min = svg_ref_histo.append('g')
+                    .insert('line')
+                    .attrs({x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "none"});
+
+            var rect = svg_ref_histo.append('g')
+                    .insert('rect')
+                    .attrs({x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
+
+            var med = svg_ref_histo.append('g')
+                    .insert('line')
+                    .attrs({x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2:  m_height - m_margin.bottom})
+                    .styles({"stroke-width": 3, stroke: "black", fill: "none"});
+
+            var rect = svg_ref_histo.append('g')
+                    .insert('rect')
+                    .attrs({x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
+
+            var max = svg_ref_histo.append('g')
+                    .insert('line')
+                    .attrs({x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "none"});
+
+            var interline_min = svg_ref_histo.append('g')
+                    .insert('line')
+                    .attrs({x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
+
+            var interline_max = svg_ref_histo.append('g')
+                    .insert('line')
+                    .attrs({x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid})
+                    .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
+        } else if (type == "beeswarm"){
+            var data = values.map(v => ({value: +v}));
+            // for(let i = 0; i < values.length; i++){
+            //     data.push({value: +values[i]});
+            // }
+            var simulation = d3.forceSimulation(data)
+                .force("x", d3.forceX(d => x(d.value)).strength(1))
+                .force("y", d3.forceY(m_height / 2).strength(2))
+                .force("collide", d3.forceCollide(4))
+                .stop();
+
+            for (var i = 0; i < 75; ++i)
+                simulation.tick();
+
+            svg_ref_histo.append("g")
+                .style("font-size", "10px")
+                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+                .call(d3.axisBottom()
+                    .scale(x)
+                    .ticks(4)
+                    .tickFormat(formatCount))
+                .selectAll("text")
+                    .attr("y", 4).attr("x", -4)
+                    .attr("dy", ".45em")
+                    .attr("transform", "rotate(-40)")
+                    .style("text-anchor", "end");
+
+            var cell = svg_ref_histo.append("g")
+                .attr("class", "cells")
+              .selectAll("g").data(d3.voronoi()
+                  .extent([[0, 0], [m_width, m_height]])
+                  .x(d => d.x).y(d => d.y)
+                .polygons(data)).enter().append("g");
+
+            cell.append("circle")
+                .attrs(d => {
+                    if(d) return {
+                    r: data.lenght < 250 ? 3 : 2, transform: 'translate(' + d.data.x + ',' + d.data.y + ')'};
+                  });
+                // .attrs(d => {
+                //     if(d) return {
+                //     r: data.lenght < 250 ? 3 : 2, cx: d.data.x, cy: d.data.y, title: d.value };
+                //   });
+
+            cell.append("path")
+                .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
+        }
+    };
+};
