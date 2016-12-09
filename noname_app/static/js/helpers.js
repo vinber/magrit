@@ -29,8 +29,9 @@ function setSelected(selectNode, value){
 
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
-function switch_accordion_section(){
-    document.getElementById("btn_s3").dispatchEvent(new MouseEvent("click"));
+function switch_accordion_section(id_elem){
+    id_elem = id_elem || 'btn_s3';
+    document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
 function path_to_geojson(id_layer){

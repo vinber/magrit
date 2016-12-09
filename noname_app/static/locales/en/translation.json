@@ -79,6 +79,9 @@
         "section2": {
             "title": "Choose a representation"
         },
+        "section2_": {
+            "title_no_choice": "Pas de représentation selectionnée"
+        },
         "section3": {
             "title": "Layers"
         },

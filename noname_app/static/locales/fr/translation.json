@@ -81,6 +81,9 @@
         "section2": {
             "title": "Choix de la représentation"
         },
+        "section2_": {
+            "title_no_choice": "Pas de représentation selectionnée"
+        },
         "section3": {
             "title": "Gestion des couches"
         },

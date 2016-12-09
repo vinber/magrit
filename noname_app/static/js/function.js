@@ -81,6 +81,11 @@ function get_menu_option(func){
 */
 function clean_menu_function(){
     section2.select(".form-rendering").remove();
+    document.getElementById('accordion2b').style.display = 'none';
+    let btn_s2b = document.getElementById('btn_s2b');
+    btn_s2b.innerHTML = i18next.t('app_page.section2_.title_no_choice');
+    btn_s2b.setAttribute('data-i18n', 'app_page.section2_.title_no_choice');
+    btn_s2b.style.display = 'none';
 }
 
 /**
@@ -325,7 +330,7 @@ function fillMenu_PropSymbolChoro(layer){
                     .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
                             min: 0.1, max: 100.0, value: 60.0, step: "any"})
                     .style("width", "50px");
-    b.append('label-item').html(' (px)');
+    b.append('span').html(' (px)');
 
     var c = dv2.append('p').attr('class', 'params_section2');
     c.append("span")
@@ -1877,7 +1882,7 @@ function fillMenu_PropSymbolTypo(layer){
         .attrs({type: 'number', class: 'params', id: 'PropSymbolTypo_ref_size',
                 min: 0.1, max: 100.0, value: 60.0, step: "any"})
         .style("width", "50px");
-    b.append('label-item').html(' (px)');
+    b.append('span').html(' (px)');
 
     let c = dv2.append('p').attr('class', 'params_section2');
     c.append('span')
