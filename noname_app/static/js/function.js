@@ -191,6 +191,36 @@ function make_layer_name_button(parent, id){
       .attrs({class: 'params', id: id});
 }
 
+function make_discretization_icons(discr_section){
+    let subsection1 = discr_section.append('p');
+    subsection1.insert('span')
+      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+      .html(i18next.t("app_page.func_options.common.discretization_choice"));
+    subsection1.append('img')
+      .styles({width: '15px', position: 'absolute', right: '25px', 'margin-top': '15px'})
+      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
+    let subsection2 = discr_section.append('p');
+    subsection2.append('img')
+      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+      .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
+    subsection2.append('img')
+      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+      .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
+    subsection2.append('img')
+      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
+    subsection2.append('img')
+      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+      .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
+    subsection2.append('img')
+      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+      .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
+    subsection2.append('span')
+      .attrs({id: 'choro_mini_choice_disc'})
+      .styles({float: 'right', 'margin-top': '5px'});
+}
+
+
 function make_ok_button(parent, id, disabled=true){
   let a = parent.append('p')
     .styles({"text-align": "right", margin: "auto"});
@@ -366,33 +396,7 @@ function fillMenu_PropSymbolChoro(layer){
       .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
     let discr_section = dv2.insert('p').style("margin", "auto");
-    let subsection1 = discr_section.append('p');
-    subsection1.insert('span')
-      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-      .html(i18next.t("app_page.func_options.common.discretization_choice"));
-    subsection1.append('img')
-      .styles({width: '15px', position: 'absolute', right: '25px', 'margin-top': '15px'})
-      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
-    let subsection2 = discr_section.append('p');
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
-    subsection2.append('img')
-      .style('margin','0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
-    subsection2.append('span')
-      .attrs({id: 'choro_mini_choice_disc'})
-      .styles({float: 'right', 'margin-top': '5px'});
-
+    make_discretization_icons(discr_section);
     // let f = dv2.insert('p').attr('class', 'params_section2');
     // f.append("button")
     //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
@@ -722,32 +726,7 @@ function fillMenu_Choropleth(){
     .attrs({id: 'choro_field1', class: 'params'});
 
     let discr_section = dv2.insert('p').style("margin", "auto");
-    let subsection1 = discr_section.append('p');
-    subsection1.insert('span')
-      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-      .html(i18next.t("app_page.func_options.common.discretization_choice"));
-    subsection1.append('img')
-      .styles({width: '15px', position: 'absolute', right: '25px', 'margin-top': '15px'})
-      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
-    let subsection2 = discr_section.append('p');
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
-    subsection2.append('img')
-      .style('margin','0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
-    subsection2.append('img')
-      .style('margin', '0 7.5px')
-      .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
-    subsection2.append('span')
-      .attrs({id: 'choro_mini_choice_disc'})
-      .styles({float: 'right', 'margin-top': '5px'});
+    make_discretization_icons(discr_section);
     // dv2.insert('p').style("margin", "auto")
     //   .append("button")
     //   .attrs({id: "choro_class", class: "button_disc params i18n",

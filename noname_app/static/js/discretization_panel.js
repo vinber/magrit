@@ -30,7 +30,7 @@ function discretize_to_size(values, type, nb_class, min_size, max_size){
     return [nb_class, type, breaks_prop, serie];
 }
 
-function discretize_to_colors(values, type, nb_class, col_ramp_name){
+var discretize_to_colors = (function discretize_to_colors(values, type, nb_class, col_ramp_name){
     col_ramp_name = col_ramp_name || "Reds";
     var [serie, breaks, nb_class, nb_no_data] = getBreaks(values, type, nb_class),
         color_array = getColorBrewerArray(nb_class, col_ramp_name),
@@ -45,7 +45,7 @@ function discretize_to_colors(values, type, nb_class, col_ramp_name){
         }
     }
     return [nb_class, type, breaks, color_array, colors_map, no_data_color];
-}
+}).memoize();
 
 // Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
 var display_discretization = function(layer_name, field_name, nb_class, type, options){
@@ -377,7 +377,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
         newBox.append("div").attr("id", "summary")
-            .styles({'font-size': '10px', 'float': 'right', 'margin': '10px 10px 0px 10px'})
+            .styles({'font-size': '11px', 'float': 'right', 'margin': '10px 10px 0px 10px'})
             .insert("p")
             .html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
     }
@@ -665,7 +665,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
             .styles({padding: '3px', 'font-size': '10px'})
             .html(i18next.t('disc_box.switch_ref_histo'))
-            .on('click', function(){
+            .on('click', () => {
                 if(current_histo == 'histogram'){
                     refDisplay("box_plot");
                     current_histo = "box_plot";
@@ -972,7 +972,7 @@ function reOpenParent(css_selector){
 
 var prepare_ref_histo = function(parent_node, serie, formatCount){
     var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
-        svg_w = w / 4.75 > 310 ? 310 : w / 4.75,
+        svg_w = w / 4 > 320 ? 320 : w / 4,
         values = serie.sorted(),
         nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
     var q5 = serie.getQuantile(4).map(v => +v);

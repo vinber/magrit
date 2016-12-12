@@ -257,13 +257,13 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     if(values.length < 500){ // Only allow for beeswarm plot if there isn't too many values
         // as it seems to be costly due to the "simulation" + the voronoi
-        let current_histo = "regular",
+        let current_histo = "histogram",
             choice_histo = ref_histo_box.append('p').style('text-align', 'center');
         choice_histo.insert('button')
             .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
             .styles({padding: '3px', 'font-size': '10px'})
             .html(i18next.t('disc_box.switch_ref_histo'))
-            .on('click', function(){
+            .on('click', () => {
                 if(current_histo == 'histogram'){
                     refDisplay("box_plot");
                     current_histo = "box_plot";

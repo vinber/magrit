@@ -34,6 +34,11 @@
 
     <script  src="static/js/context-menu.js"></script>
     <script  src="static/js/layout_features.js"></script>
+    <script  src="static/js/tables.js"></script>
+    <script  src="static/js/helpers.js"></script>
+    <script  src="static/js/join_popup.js"></script>
+    <script  src="static/js/colors_helpers.js"></script>
+    <script  src="static/js/helpers_calc.js"></script>
     <script  src="static/js/interface.js"></script>
     <script  src="static/js/map_project.js"></script>
     <script  src="static/js/zoneTextEdit.js"></script>
@@ -43,11 +48,7 @@
     <script  src="static/js/function.js"></script>
     <script  src="static/js/legend.js"></script>
     <script  src="static/js/symbols_picto.js"></script>
-    <script  src="static/js/tables.js"></script>
-    <script  src="static/js/helpers.js"></script>
-    <script  src="static/js/join_popup.js"></script>
-    <script  src="static/js/colors_helpers.js"></script>
-    <script  src="static/js/helpers_calc.js"></script>
+
     <script  src="https://d3js.org/d3-voronoi.v1.min.js"></script>
   </head>
   <body>
@@ -242,18 +243,6 @@ function setUpInterface(resume_project)
             .on("change", function(){
                 handle_bg_color(this.value);
             });
-
-    // let _h = dv4.append("li").styles({margin: "1px", padding: "0px 4px"});
-    // _h.append("p")
-    //         .attr("id", "btn_add_layout_ft")
-    //         .attr("class", "list_elem_section4 i18n")
-    //         .attr("data-i18n", "[html]app_page.section4.layout_features")
-    //         .style("cursor", "pointer")
-    //         .on("click", select_layout_features);
-    // _h.append("span").html(sys_run_button)
-    // _h.select("img").style("vertical-align", "sub")
-    //         .style("cursor", "pointer")
-    //         .on("click", select_layout_features);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -952,6 +941,7 @@ function make_ico_choice(){
                         'discont.svg',
                         'typosymbol.svg',
                         'flow.svg'];
+
     let function_panel = section2_pre.append("div")
                             .attr("id", "list_ico_func");
 
@@ -959,7 +949,7 @@ function make_ico_choice(){
         let ico_name = list_fun_ico[i],
             func_name = ico_name.split('.')[0],
             func_desc = get_menu_option(func_name).desc,
-            margin_value = i == 9 ? '5px 28px 5px 80px' : '5px 28px';
+            margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
         function_panel
             .insert("img")
             .styles({margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})

@@ -406,3 +406,31 @@ function getAvailablesFunctionnalities(layer_name){
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
     }
 }
+
+/*
+* Memoization functions (naive LRU implementation)
+*
+*/
+Function.prototype.memoized = function(max_size=25) {
+  this._memo = this._memo || {values: new Map(), stack: [], max_size: max_size};
+  var key = JSON.stringify(Array.prototype.slice.call(arguments));
+  var cache_value = this._memo.values.get(key);
+  if (cache_value !== undefined) {
+    return JSON.parse(cache_value);
+  } else {
+    cache_value = this.apply(this, arguments);
+    this._memo.values.set(key, JSON.stringify(cache_value));
+    this._memo.stack.push(key)
+    if(this._memo.stack.length >= this._memo.max_size){
+        let old_key = this._memo.stack.shift();
+        this._memo.values.delete(old_key);
+    }
+    return cache_value;
+  }
+};
+Function.prototype.memoize = function() {
+  var fn = this;
+  return function() {
+    return fn.memoized.apply(fn, arguments);
+  };
+};

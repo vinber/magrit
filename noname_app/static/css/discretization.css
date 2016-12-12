@@ -1,7 +1,7 @@
-#discretization_panel, #histo_options {
+#discretization_panel {
     float: left;
-    font-size: 10.5px;
-    margin-top: 11px;
+    font-size: 11px;
+    margin: 15px 0 0 27.5px;
 }
 
 #ref_histo_box {
