@@ -14,7 +14,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+<img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
 </p>
 
 - Méthode de **Dougenik**
