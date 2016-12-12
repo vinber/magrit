@@ -10,5 +10,5 @@ Elles expriment les caractéristiques des individus observés mais leur total n'
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/choropleth_map.png" alt="choro_map" style="width: 480px;"/>
+<img src="img/choropleth_map.png" alt="choro_map" style="width: 480px;"/>
 </p>

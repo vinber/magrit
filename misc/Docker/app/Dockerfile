@@ -76,4 +76,4 @@ EXPOSE 9999
 
 CMD service redis-server start \
     && gunicorn "noname_app.noname_aio:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname-stuff/
-#CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py
+

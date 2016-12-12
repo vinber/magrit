@@ -12,7 +12,7 @@ Les cartes de stock permettent de représenter des données de stocks. Ces donn�
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/propsymbol.png" alt="img_propsymbol_map" style="width: 480px;"/>
+<img src="img/propsymbol.png" alt="img_propsymbol_map" style="width: 480px;"/>
 </p>
 
 - Champ utilisé : **jamesbond**

@@ -15,4 +15,4 @@ Méthode d'analyse spatiale et de réprésentation basée sur le calcul de poten
 
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
-<p style="text-align: center;"> <img src="/img/smoothed2.png" alt="smoothed_map" style="width: 480px;"/> </p>
+<p style="text-align: center;"> <img src="img/smoothed2.png" alt="smoothed_map" style="width: 480px;"/> </p>

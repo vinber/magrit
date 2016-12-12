@@ -12,5 +12,5 @@ Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/flows.png" alt="link_map" style="width: 480px;"/>
+<img src="img/flows.png" alt="link_map" style="width: 480px;"/>
 </p>

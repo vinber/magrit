@@ -12,7 +12,7 @@ Elle met en évidence les grandes tendances de le répartition spatiale d'une do
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/gridded.png" alt="gridded_map" style="width: 480px;"/>
+<img src="img/gridded.png" alt="gridded_map" style="width: 480px;"/>
 </p>
 
 - Champ utilisé : **pop2008**

@@ -15,5 +15,5 @@ Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la
 #### Exemple de rendu à partir d'un jeu de données d'exemple :
 
 <p style="text-align: center;">
-<img src="/img/discont.png" alt="discont_map" style="width: 480px;"/>
+<img src="img/discont.png" alt="discont_map" style="width: 480px;"/>
 </p>
