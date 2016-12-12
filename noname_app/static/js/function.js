@@ -2134,14 +2134,12 @@ var fields_Discont = {
 }
 
 var render_discont = function(){
-//    return new Promise(function(resolve, reject){
     let layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
         field_id = document.getElementById("field_id_Discont").value,
         min_size = 1,
         max_size = 10,
         threshold = 1,
-        // quantization = +document.getElementById('quantiz_discont').value,
         discontinuity_type = document.getElementById("kind_Discont").value,
         discretization_type = document.getElementById('Discont_discKind').value,
         nb_class = +document.getElementById("Discont_nbClass").value,
@@ -2155,168 +2153,72 @@ var render_discont = function(){
         result_geom = {},
         topo_mesh = topojson.mesh,
         math_max = Math.max,
-        topo_to_use;
+        topo_to_use = _target_layer_file;
 
-    // Use topojson.mesh a first time to compute the discontinuity value
-    // for each border (according to the given topology)
-    // (Discontinuities could also be computed relativly fastly server side
-    // which can be a better solution for large dataset..)
+    document.getElementById("overlay").style.display = "";
 
-    // let tmp_topo = JSON.stringify(_target_layer_file);
-    // if(quantization < 7){
-    //     topo_to_use = topojson.quantize(_target_layer_file, '1e' + quantization);
-    // } else {
-    topo_to_use = _target_layer_file;
-    // }
+    // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
+    // (a waiting message is displayed during this time to avoid action from the user)
+    let discont_worker = new Worker('/static/js/webworker_discont.js');
+    discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type]);
+    discont_worker.onmessage = function(e){
+        let [arr_tmp, d_res] = e.data;
+        discont_worker.terminate();
+        let nb_ft = arr_tmp.length,
+            step = (max_size - min_size) / (nb_class - 1),
+            class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
-    if(discontinuity_type == "rel")
-        topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
-                if(a !== b){
-                    let new_id = [a.id, b.id].join('_'),
-                        new_id_rev = [b.id, a.id].join('_');
-                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                        let value = math_max(a.properties[field] / b.properties[field],
-                                             b.properties[field] / a.properties[field]);
-                        result_value.set(new_id, value);
-                    }
-                }
-                return false; });
-    else
-        topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
-                if(a !== b){
-                    let new_id = [a.id, b.id].join('_'),
-                        new_id_rev = [b.id, a.id].join('_');
-                    if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                        let value = math_max(a.properties[field] - b.properties[field],
-                                             b.properties[field] - a.properties[field]);
-                        result_value.set(new_id, value);
-                    }
-                }
-                return false; });
-
-    let arr_disc = [],
-        arr_tmp = [];
-    for(let kv of result_value.entries()){
-        if(!isNaN(kv[1])){
-            arr_disc.push(kv);
-            arr_tmp.push(kv[1]);
+        let [ , , breaks, serie] = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
+        console.log(serie, breaks)
+        if(!serie || !breaks){
+            let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+            let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
+            swal("", i18next.t("app_page.common.error_discretization", {arg: w}), "error");
+            return;
         }
-    }
 
-    arr_disc.sort((a,b) => a[1] - b[1]);
-    arr_tmp.sort((a,b) => a - b);
+        breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
+        let result_layer = map.append("g").attr("id", new_layer_name)
+                .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
+                .attr("class", "result_layer layer");
 
-    let nb_ft = arr_tmp.length,
-        step = (max_size - min_size) / (nb_class - 1),
-        class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
+        result_data[new_layer_name] = [];
+        let data_result = result_data[new_layer_name],
+            result_lyr_node = result_layer.node();
 
-    let disc_result = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
-    if(!disc_result || !disc_result[2]){
-        let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-        let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
-        swal("", i18next.t("app_page.common.error_discretization", {arg: w}), "error");
-        return;
-    }
-    let serie = disc_result[3],
-        breaks = disc_result[2].map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
-
-    let result_layer = map.append("g").attr("id", new_layer_name)
-            .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
-            .attr("class", "result_layer layer");
-
-    result_data[new_layer_name] = [];
-    let data_result = result_data[new_layer_name],
-        result_lyr_node = result_layer.node();
-
-    // This is bad and should be replaced by somthing better as we are
-    // traversing the whole topojson again and again
-    // looking for each "border" from its "id" (though it isn't that slow)
-//    let chunk_size = 450 > nb_ft ? nb_ft : 450,
-//        _s = 0;
-//
-//    var compute = function(){
-//        for(let i=_s; i<chunk_size; i++){
-////            let id_ft = arr_disc[i][0],
-////                val = arr_disc[i][1],
-//            let [id_ft, val] = arr_disc[i],
-//                p_size = class_size[serie.getClass(val)];
-//            data_result.push({id: id_ft, disc_value: val, prop_value: p_size});
-//            result_layer.append("path")
-//                .datum(topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
-////                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-//                    let [a_id, b_id] = id_ft.split("_");
-//                    return a != b
-//                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); }))
-//                .attrs({d: path, id: ["feature", i].join('_')})
-//                .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent"})
-//                .style("stroke-opacity", val >= threshold ? 1 : 0);
-//            result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-//        }
-//        _s = chunk_size;
-//        if(_s < nb_ft){
-//            chunk_size += 450;
-//            if(chunk_size > nb_ft) chunk_size = nb_ft;
-//            setTimeout(compute, 0);
-//            return;
-//        }
-//    }
-//
-//    compute();
-
-//    var datums = [];
-
-
-    // TODO : change structure of the data made in this step in order to better fit geojson features (properties, etc.)
-    //            + re-use something (chunking, webworker, .. ) to avoid blocking the ui if there is many features
-    var d_res = [];
-    var compute = function(){
         for(let i=0; i<nb_ft; i++){
-            let id_ft = arr_disc[i][0],
-                val = arr_disc[i][1],
+            let val = d_res[i][0],
                 p_size = class_size[serie.getClass(val)],
-                datum = topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
-                    let a_id = id_ft.split("_")[0], b_id = id_ft.split("_")[1];
-                    return a != b
-                        && (a.id == a_id && b.id == b_id || a.id == b_id && b.id == a_id); });
-            d_res.push([val, {id: id_ft, disc_value: val, prop_value: p_size}, datum, p_size]);
+                elem = result_layer.append("path")
+                        .datum(d_res[i][2])
+                        .attrs({d: path, id: ["feature", i].join('_')})
+                        .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
+            data_result.push(d_res[i][1]);
+            elem.node().__data__.geometry = d_res[i][2];
+            elem.node().__data__.properties = data_result[i];
+            elem.node().__data__.properties['prop_val'] = p_size;
         }
-    }
-
-    compute();
-    d_res.sort((a,b) => b[0] - a[0]);
-
-    for(let i=0; i<nb_ft; i++){
-        let val = d_res[i][0];
-        result_layer.append("path")
-            .datum(d_res[i][2])
-            .attrs({d: path, id: ["feature", i].join('_')})
-            .styles({stroke: user_color, "stroke-width": d_res[i][3], "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
-        data_result.push(d_res[i][1])
-        result_lyr_node.querySelector(["#feature", i].join('_')).__data__.properties = data_result[i];
-    }
-
-    current_layers[new_layer_name] = {
-        "renderer": "DiscLayer",
-        "breaks": breaks,
-        "min_display": threshold,
-        "type": "Line",
-        "rendered_field": field,
-        "size": [0.5, 10],
-        "is_result": true,
-        "fixed_stroke": true,
-        "ref_layer_name": layer,
-        "fill_color": { "single": user_color },
-        "n_features": nb_ft
-        };
-    create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
-    up_legends();
-    zoom_without_redraw();
-    switch_accordion_section();
-    handle_legend(new_layer_name);
-    send_layer_server(new_layer_name, "/layers/add");
-    // _target_layer_file = JSON.parse(tmp_topo);
-//    resolve(true);
-//});
+        document.getElementById("overlay").style.display = "none";
+        current_layers[new_layer_name] = {
+            "renderer": "DiscLayer",
+            "breaks": breaks,
+            "min_display": threshold,
+            "type": "Line",
+            "rendered_field": field,
+            "size": [0.5, 10],
+            "is_result": true,
+            "fixed_stroke": true,
+            "ref_layer_name": layer,
+            "fill_color": { "single": user_color },
+            "n_features": nb_ft
+            };
+        create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+        up_legends();
+        zoom_without_redraw();
+        switch_accordion_section();
+        handle_legend(new_layer_name);
+        send_layer_server(new_layer_name, "/layers/add");
+    };
 }
 
 function fillMenu_PropSymbol(layer){

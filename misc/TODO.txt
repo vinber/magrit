@@ -11,4 +11,4 @@ TODO list:
 - Add support for GML and geopackage format (input/output ? why ? why not ?!)
 - Allow the same behavior when zooming on symbols as on arrows and ellipses
 - Use some "caching" method to avoid recalculation of jenks breaks (partially done)
-- Fix generation of labels layer from a discontinuity layer + allow to generate labels from prop. symbols layers.
+- Allow to generate labels from prop. symbols layers.

@@ -378,7 +378,11 @@ function setUpInterface(resume_project)
     c2.append("input")
             .attrs({id: "input-center-y", class: "list_elem_section4 m_elem_right",
                     type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
-            .style("width", "80px");
+            .style("width", "80px")
+            .on("change", function(){
+                            svg_map.__zoom.y = +this.value;
+                            zoom_without_redraw();
+                        });;
 
     let d = dv4.append("li").style("display", "none").attr("class", "to_hide");
     d.append("p").attr("class", "list_elem_section4 i18n")

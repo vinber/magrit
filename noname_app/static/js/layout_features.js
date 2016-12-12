@@ -4,19 +4,13 @@ class UserArrow {
     constructor(id, origin_pt, destination_pt, parent=undefined){
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
-        this.pt1 = origin_pt;
-        this.pt2 = destination_pt;
         this.id = id;
         this.lineWeight = 4;
         this.color = "rgb(0, 0, 0)";
 
-        let zoom_param = svg_map.__zoom,
-            _tx = zoom_param.k * zoom_param.x,
-            _ty = zoom_param.k * zoom_param.y;
-        this.pt1[0] = this.pt1[0] - _tx;
-        this.pt1[1] = this.pt1[1] - _ty;
-        this.pt2[0] = this.pt2[0] - _tx;
-        this.pt2[1] = this.pt2[1] - _ty;
+        let zoom_param = svg_map.__zoom;
+        this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k],
+        this.pt2 = [(destination_pt[0] - zoom_param.x) / zoom_param.k, (destination_pt[1] - zoom_param.y) / zoom_param.k];
 
         let self = this;
         this.drag_behavior = d3.drag()
@@ -128,9 +122,12 @@ class UserArrow {
         let current_options = {pt1: this.pt1.slice(),
                                pt2: this.pt2.slice()};
         let self = this,
-            line = self.arrow.node().querySelector("line");
+            line = self.arrow.node().querySelector("line"),
+            angle = (-this.calcAngle()).toFixed(0),
+            zoom_params = svg_map.__zoom,
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
-        let angle = (-this.calcAngle()).toFixed(0);
+        if(!map_locked) handle_click_hand('lock');
 
         make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
@@ -138,6 +135,8 @@ class UserArrow {
                     // Store shorcut of useful values :
                     self.lineWeight = line.style.strokeWidth;
                     self.color = line.style.stroke;
+                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
                 } else {
                     //Rollback on initials parameters :
                     line.x1.baseVal.value = current_options.pt1[0];
@@ -149,6 +148,9 @@ class UserArrow {
                     line.style.strokeWidth = self.lineWeight;
                     line.style.stroke = self.color;
                 }
+                map.select('#arrow_start_pt').remove();
+                map.select('#arrow_end_pt').remove();
+                if(!map_locked) handle_click_hand('unlock');
             });
         let box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
         let s1 = box_content.append("p");
@@ -186,63 +188,54 @@ class UserArrow {
             });
 
         s2.insert("span").html("°");
-//        let s3 = box_content.append("p");
-//        s3.append("button")
-//            .attr("class", "button_st4")
-//            .html(i18next.t("app_page.arrow_edit_box.move_points"))
-//            .on("click", function(){
-//                let tmp_start_point = map.append("rect")
-//                    .attr("x", self.pt1[0] - 3)
-//                    .attr("y", self.pt1[1] - 3)
-//                    .attr("height", 6).attr("width", 6)
-//                    .style("fill", "red")
-//                    .style("cursor", "grab")
-//                    .call(d3.drag().on("drag", function(){
-//                        let t = d3.select(this);
-//                        let nx = d3.event.x,
-//                            ny = d3.event.y;
-//                        t.attr("x", nx).attr("y", ny);
-//                        line.x1.baseVal.value = nx;
-//                        line.y1.baseVal.value = ny;
-//                    }));
-//
-//                let tmp_end_point = map.append("rect")
-//                    .attr("x", self.pt2[0] - 3)
-//                    .attr("y", self.pt2[1] - 3)
-//                    .attr("height", 6).attr("width", 6)
-//                    .style("fill", "red")
-//                    .style("cursor", "grab")
-//                    .call(d3.drag().on("drag", function(){
-//                        let t = d3.select(this);
-//                        let nx = d3.event.x,
-//                            ny = d3.event.y;
-//                        t.attr("x", nx).attr("y", ny);
-//                        line.x2.baseVal.value = nx;
-//                        line.y2.baseVal.value = ny;
-//                    }));
-//                let arrowDialog = $(".styleBoxArrow"),
-//                    original_position = arrowDialog.dialog("option", "position");
-//                arrowDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-//                arrowDialog.dialog("option", "draggable", false);
-//                arrowDialog.hide()
-//                document.querySelector(".ui-widget-overlay").style.display = "none";
-//                let el = document.createElement("button");
-//                el.className = "button_st3";
-//                el.style = "float:right;background:forestgreen;font-size:22px;";
-//                el.innerHTML = i18next.t("app_page.common.done");
-//                el.onclick = function(){
-//                    document.querySelector(".ui-widget-overlay").style.display = "";
-//                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-//                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-//                    tmp_end_point.remove();
-//                    tmp_start_point.remove();
-//                    el.remove();
-//                    arrowDialog.show();
-//                    arrowDialog.dialog("option", "draggable", true);
-//                    arrowDialog.dialog("option", "position", original_position);
-//                }
-//                document.querySelector(".styleBoxArrow").parentElement.appendChild(el);
-//            });
+
+       let s3 = box_content.append("p");
+       s3.append("button")
+           .attr("class", "button_st4")
+           .html(i18next.t("app_page.arrow_edit_box.move_points"))
+           .on("click", function(){
+              d3.select(".styleBoxArrow").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
+              box_content.style('display', 'none');
+              map.append("rect")
+                  .attrs({x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1]  * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_start_pt'})
+                  .styles({fill: 'red', cursor: 'grab'})
+                  .call(d3.drag().on("drag", function(){
+                      let t = d3.select(this),
+                          nx = d3.event.x,
+                          ny = d3.event.y;
+                      t.attrs({x: nx - 3, y: ny - 3});
+                      line.x1.baseVal.value = nx / zoom_params.k - zoom_params.x;
+                      line.y1.baseVal.value = ny / zoom_params.k - zoom_params.y;
+                  }));
+
+              map.append("rect")
+                  .attrs({x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_end_pt'})
+                  .styles({fill: 'red', cursor: 'grab'})
+                  .call(d3.drag().on("drag", function(){
+                      let t = d3.select(this),
+                          nx = d3.event.x,
+                          ny = d3.event.y;
+                      t.attrs({x: nx - 3, y: ny - 3});
+                      line.x2.baseVal.value = nx / zoom_params.k - zoom_params.x;
+                      line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
+                   }));
+
+              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").append('div').attr('id', 'move_pt_content').node();
+              let el = document.createElement("button");
+              el.className = "button_st3";
+              el.style = "float:right;background:forestgreen;font-size:14px;";
+              el.innerHTML = i18next.t("app_page.common.done");
+              el.onclick = function(){
+                   self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                   self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+                   map.select('#arrow_start_pt').remove();
+                   map.select('#arrow_end_pt').remove();
+                   el.remove();
+                   box_content.style('display', '');
+                   d3.select(".styleBoxArrow").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
+               }
+               move_pt_content.appendChild(el);
+           });
     }
 }
 
@@ -830,16 +823,12 @@ class UserEllipse {
     constructor(id, origin_pt, parent=undefined){
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
-        this.pt1 = origin_pt;
         this.id = id;
         this.strokeWeight = 4;
         this.stroke_color = "rgb(0, 0, 0)";
 
-        let zoom_param = svg_map.__zoom,
-            _tx = zoom_param.k * zoom_param.x,
-            _ty = zoom_param.k * zoom_param.y;
-        this.pt1[0] = this.pt1[0] - _tx;
-        this.pt1[1] = this.pt1[1] - _ty;
+        let zoom_param = svg_map.__zoom;
+        this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
 
         let self = this;
         this.drag_behavior = d3.drag()
@@ -862,12 +851,12 @@ class UserEllipse {
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("ellipse"),
-                    tx = +d3.event.x * svg_map.__zoom.k,
-                    ty = +d3.event.y * svg_map.__zoom.k;
-                _t.cx.baseVal.value = tx;
-                _t.cy.baseVal.value = ty;
-                self.pt1[0] = tx;
-                self.pt1[1] = ty;
+                    subject = d3.event.subject,
+                    tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
+                    ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
+                self.pt1 = [+subject.x + tx, +subject.y + ty];
+                _t.cx.baseVal.value = self.pt1[0];
+                _t.cy.baseVal.value = self.pt1[1];
               });
 
         this.draw()
@@ -907,16 +896,33 @@ class UserEllipse {
         down_legend(this.ellipse.node());
     }
 
+    calcAngle(){
+        let ellipse_elem = this.ellipse.node().querySelector("ellipse");
+        let dx = ellipse_elem.rx.baseVal.value - this.pt1[0],
+            dy = ellipse_elem.ry.baseVal.value - this.pt1[1];
+        return Math.atan2(dy, dx) * (180 / Math.PI);
+    }
+
+    calcDestFromOAD(origin, angle, distance){
+        let theta = angle / (180 / Math.PI),
+            dx = distance * Math.cos(theta),
+            dy = distance * Math.sin(theta);
+        return [origin[0] + dx, origin[1] + dy]
+    }
+
     editStyle(){
         let self = this,
             ellipse_elem = self.ellipse.node().querySelector("ellipse"),
+            zoom_param = svg_map.__zoom,
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
             current_options = {
                 pt1: this.pt1.slice(),
                 rx: ellipse_elem.rx.baseVal.value,
                 ry: ellipse_elem.ry.baseVal.value
             };
-//        let angle = (-this.calcAngle()).toFixed(0);
+       let angle = (-this.calcAngle()).toFixed(0);
 
+        if(!map_locked) handle_click_hand('lock');
         make_confirm_dialog2("styleBoxEllipse", i18next.t("app_page.ellipse_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 map.selectAll(".ctrl_pt").remove();
@@ -934,6 +940,7 @@ class UserEllipse {
                     ellipse_elem.style.strokeWidth = self.strokeWeight;
                     ellipse_elem.style.stroke = self.stroke_color;
                 }
+                if(!map_locked) handle_click_hand('unlock');
             });
         let box_content = d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "styleBoxEllipse");
         let s1 = box_content.append("p");
@@ -959,88 +966,76 @@ class UserEllipse {
                 ellipse_elem.style.stroke = this.value;
             });
 
-//        let s2 = box_content.append("p");
-//        s2.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
-//        s2.insert("input")
-//            .attrs({id: "ellipse_angle", type: "range", value: angle, min: 0, max: 360, step: 1})
-//            .styles({width: "80px", "vertical-align": "middle"})
-//            .on("change", function(){
-//                let distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
-//                let angle = -(+this.value);
-//                let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
-//                line.x2.baseVal.value = nx;
-//                line.y2.baseVal.value = ny;
-//                document.getElementById("ellipse_angle_text").value = +this.value;
-//            });
-//
-//        s2.insert("input")
-//            .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-//            .styles({width: "30px", "margin-left": "10px"})
-//            .on("input", function(){
-//                let elem = document.getElementById("ellipse_angle");
-//                elem.value = this.value;
-//                elem.dispatchEvent(new Event('change'));
-//            });
-//
-//        s2.insert("span").html("°");
+       let s2b = box_content.append("p");
+       s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+       s2b.insert("input")
+           .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
+           .styles({width: "80px", "vertical-align": "middle"})
+           .on("change", function(){
+               let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]];
+               let distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1]));
+               let angle = Math.abs(+this.value);
+               let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+               ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
+               ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
+               document.getElementById("ellipse_angle_text").value = +this.value;
+           });
 
-//        let s3 = box_content.append("p");
-//
-//        s3.append("button")
-//            .attr("class", "button_st4")
-//            .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-//            .on("click", function(){
-//                let tmp_start_point = map.append("rect")
-//                    .attr("class", "ctrl_pt")
-//                    .attr("x", self.pt1[0] - ellipse_elem.rx.baseVal.value)
-//                    .attr("y", self.pt1[1])
-//                    .attr("height", 6).attr("width", 6)
-//                    .style("fill", "red")
-//                    .style("cursor", "grab")
-//                    .call(d3.drag().on("drag", function(){
-//                        let t = d3.select(this);
-//                        let nx = d3.event.x,
-//                            ny = d3.event.y;
-//                        t.attr("x", nx);
-//                        let dist = self.pt1[0] - +t.attr("x");
-//                        ellipse_elem.rx.baseVal.value = dist;
-//                    }));
-//
-//                let tmp_end_point = map.append("rect")
-//                    .attr("class", "ctrl_pt")
-//                    .attr("x", self.pt1[0])
-//                    .attr("y", self.pt1[1] - ellipse_elem.ry.baseVal.value)
-//                    .attr("height", 6).attr("width", 6)
-//                    .style("fill", "red")
-//                    .style("cursor", "grab")
-//                    .call(d3.drag().on("drag", function(){
-//                        let t = d3.select(this);
-//                        let nx = d3.event.x,
-//                            ny = d3.event.y;
-//                        t.attr("y", ny);
-//                        let dist = self.pt1[1] - +t.attr("y");
-//                        ellipse_elem.ry.baseVal.value = dist;
-//                    }));
-//                let ellipseDialog = $(".styleBoxEllipse"),
-//                    original_position = ellipseDialog.dialog("option", "position");
-//                ellipseDialog.dialog("option", "position", { my: "left", at: "left", of: window });
-//                ellipseDialog.dialog("option", "draggable", false);
-//                ellipseDialog.hide();
-//                document.querySelector(".ui-widget-overlay").style.display = "none";
-//                let el = document.createElement("button");
-//                el.className = "button_st3";
-//                el.style = "float:right;background:forestgreen;font-size:22px;";
-//                el.innerHTML = i18next.t("app_page.common.done");
-//                el.onclick = function(){
-//                    document.querySelector(".ui-widget-overlay").style.display = "";
-//                    tmp_end_point.remove();
-//                    tmp_start_point.remove();
-//                    el.remove();
-//                    ellipseDialog.show();
-//                    ellipseDialog.dialog("option", "draggable", true);
-//                    ellipseDialog.dialog("option", "position", original_position);
-//                }
-//                document.querySelector(".styleBoxEllipse").parentElement.appendChild(el);
-//            });
+       s2b.insert("input")
+           .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+           .styles({width: "30px", "margin-left": "10px"})
+           .on("input", function(){
+               let elem = document.getElementById("ellipse_angle");
+               elem.value = this.value;
+               elem.dispatchEvent(new Event('change'));
+           });
+
+       s2b.insert("span").html("°");
+
+       let s3 = box_content.append("p");
+
+       s3.append("button")
+           .attr("class", "button_st4")
+           .html(i18next.t("app_page.ellipse_edit_box.move_points"))
+           .on("click", function(){
+              d3.select(".styleBoxEllipse").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
+              box_content.style('display', 'none');
+              let tmp_start_point = map.append("rect")
+                   .attr("class", "ctrl_pt").attr('id', 'pt1')
+                   .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
+                   .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
+                   .attr("height", 6).attr("width", 6)
+                   .style("fill", "red")
+                   .style("cursor", "grab")
+                   .call(d3.drag().on("drag", function(){
+                       let t = d3.select(this);
+                       t.attr("x", d3.event.x);
+                       let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
+                       ellipse_elem.rx.baseVal.value = dist;
+                   }));
+
+               let tmp_end_point = map.append("rect")
+                   .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
+                           x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
+                   .styles({fill: 'red', cursor: 'grab'})
+                   .call(d3.drag().on("drag", function(){
+                       let t = d3.select(this);
+                       t.attr("y", d3.event.y);
+                       let dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
+                       ellipse_elem.ry.baseVal.value = dist;
+                   }));
+
+               let el = document.createElement("button");
+               el.className = "button_st3";
+               el.style = "float:right;background:forestgreen;font-size:22px;";
+               el.innerHTML = i18next.t("app_page.common.done");
+               el.onclick = function(){
+                   map.selectAll('.ctrl_pt').remove();
+                   el.remove();
+                   d3.select(".styleBoxEllipse").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
+                   box_content.style('display', 'none');
+               }
+               d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
+           });
     }
 }
