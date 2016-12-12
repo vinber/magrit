@@ -364,56 +364,82 @@ class Textbox {
         this.font_family = 'Verdana,Geneva,sans-serif';
         this.id = new_id_txt_annot;
     }
-
     editStyle(){
-        let current_options = {size: this.text_annot.select("p").style("font-size"),
-                               content: unescape(this.text_annot.select("p").html()),
-                               font: ""};
-        let self = this;
-        make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
-            .then(function(confirmed){
-                if(!confirmed){
-                    self.text_annot.select("p").text(current_options.content);
-                    self.fontsize = current_options.size;
-                }
-                zoneEditBox.remove();
+            let current_options = {size: this.text_annot.select("p").style("font-size"),
+                                   content: unescape(this.text_annot.select("p").html()),
+                                   font: ""};
+            let self = this;
+            make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
+                .then(function(confirmed){
+                    if(!confirmed){
+                        self.text_annot.select("p").text(current_options.content);
+                        self.fontsize = current_options.size;
+                    }
+                });
+            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation"),
+                options_font = box_content.append('p'),
+                font_select = options_font.insert("select").on("change", function(){ self.text_annot.select("p").style("font-family", this.value); });
+
+            available_fonts.forEach(function(font){
+                font_select.append("option").text(font[0]).attr("value", font[1])
             });
-        let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
-        // box_content.append("p").html(i18next.t("app_page.text_box_edit_box.font_size"))
-        //         .append("input").attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
-        //         .on("change", function(){
-        //             self.fontsize = +this.value;
-        //             self.text_annot.select("p").style("font-size", self.fontsize + "px")
-        //         });
-        // let font_select = box_content.append("p").html(i18next.t("app_page.text_box_edit_box.default_font"))
-        //         .insert("select")
-        //         .on("change", function(){
-        //             self.text_annot.select("p").style("font-family", this.value);
-        //         });
-        // available_fonts.forEach(function(font){
-        //     font_select.append("option").text(font[0]).attr("value", font[1])
-        // });
-        // font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
+            font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
 
-        let content_modif_zone = box_content.append("p");
-        content_modif_zone.append("span")
-                .html(i18next.t("app_page.text_box_edit_box.content"));
-        // content_modif_zone.append("img")
-        //     .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
-        //             class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
-        //     .styles({"cursor": "pointer", "vertical-align": "bottom"});
-        // content_modif_zone.append("span")
-        //         .html("<br>");
+            options_font.append("input")
+                .attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+                .style('width', '60px')
+                .on("change", function(){
+                    self.fontsize = +this.value;
+                    self.text_annot.select("p").style("font-size", self.fontsize + "px")
+                });
 
-        zoneEditBox.create(content_modif_zone.node(), {
-          "content": current_options.content,
-          "id": "textEditZone",
-          "callback": updateContent
-        })
-        function updateContent(newContent){
-          self._text = newContent;
-          self.text_annot.select("p").html(newContent)
-        }
+            let options_format = box_content.append('p'),
+                btn_bold = options_format.insert('img').attrs({title: 'Bold', src: 'data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs='}),
+                btn_italic = options_format.insert('img').attrs({title: 'Italic', src: 'data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw=='}),
+                btn_underline = options_format.insert('img').attrs({title: 'Underline', src: 'data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7'});
+
+            let content_modif_zone = box_content.append("p");
+            content_modif_zone.append("span")
+                    .html(i18next.t("app_page.text_box_edit_box.content"));
+            content_modif_zone.append("img")
+                .attrs({"id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17",  "alt": "Information",
+                        class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip")})
+                .styles({"cursor": "pointer", "vertical-align": "bottom"});
+            content_modif_zone.append("span")
+                    .html("<br>");
+            let textarea = content_modif_zone.append("textarea")
+                    .attr("id", "annotation_content")
+                    .style("margin", "5px 0px 0px")
+                    .on("keyup", function(){
+                        self.text_annot.select("p").html(this.value)
+                    });
+            textarea = textarea.node();
+            document.getElementById("annotation_content").value = current_options.content;
+            btn_bold.on('click', function(){
+                let startIdx = +textarea.selectionStart,
+                    endIdx = +textarea.selectionEnd,
+                    current_text = textarea.value;
+                let tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
+                self.text_annot.select("p").html(tmp);
+                textarea.value = tmp;
+            });
+
+            btn_italic.on('click', function(){
+                let startIdx = +textarea.selectionStart,
+                    endIdx = +textarea.selectionEnd,
+                    current_text = textarea.value;
+                let tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
+                self.text_annot.select("p").html(tmp);
+                textarea.value = tmp;
+            });
+            btn_underline.on('click', function(){
+                let startIdx = +textarea.selectionStart,
+                    endIdx = +textarea.selectionEnd,
+                    current_text = textarea.value;
+                let tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
+                self.text_annot.select("p").html(tmp);
+                textarea.value = tmp;
+            });
     }
 
     up_element(){

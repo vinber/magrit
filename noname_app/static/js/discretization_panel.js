@@ -226,85 +226,6 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             });
     }
 
-    // var make_box_histo_option = function(){
-    //
-    //     var histo_options = newBox.append('div')
-    //                         .attr("id", "histo_options")
-    //                         .style("margin-left", "10px");
-    //
-    //     var a = histo_options.append("p").style("margin", 0),
-    //         b = histo_options.append("p").style("margin", 0),
-    //         c = histo_options.append("p").style("margin", 0),
-    //         d = histo_options.append("p").style("margin", 0);
-    //
-    //     a.insert("input")
-    //         .attrs({type: "checkbox", value: "mean", id: 'check_mean'})
-    //         .on("change", function(){
-    //                 if(line_mean.classed("active")){
-    //                     line_mean.style("stroke-width", 0)
-    //                     txt_mean.style("fill", "none")
-    //                     line_mean.classed("active", false)
-    //                 } else {
-    //                     line_mean.style("stroke-width", 2)
-    //                     txt_mean.style("fill", "red")
-    //                     line_mean.classed("active", true)
-    //                 }
-    //             });
-    //
-    //     b.insert("input")
-    //         .attrs({type: "checkbox", value: "median", id: 'check_median'})
-    //         .on("change", function(){
-    //                 if(line_median.classed("active")){
-    //                     line_median.style("stroke-width", 0)
-    //                     txt_median.style("fill", "none")
-    //                     line_median.classed("active", false)
-    //                 } else {
-    //                     line_median.style("stroke-width", 2)
-    //                     txt_median.style("fill", "blue")
-    //                     line_median.classed("active", true)
-    //                 }
-    //             });
-    //
-    //     c.insert("input")
-    //         .attrs({type: "checkbox", value: "std", id: 'check_std'})
-    //         .on("change", function(){
-    //                 if(line_std_left.classed("active")){
-    //                     line_std_left.style("stroke-width", 0)
-    //                     line_std_left.classed("active", false)
-    //                     line_std_right.style("stroke-width", 0)
-    //                     line_std_right.classed("active", false)
-    //                 } else {
-    //                     line_std_left.style("stroke-width", 2)
-    //                     line_std_left.classed("active", true)
-    //                     line_std_right.style("stroke-width", 2)
-    //                     line_std_right.classed("active", true)
-    //                 }
-    //             });
-    //     d.insert('input')
-    //         .attrs({type: 'checkbox', value: 'pop', id: 'check_rug'})
-    //         .on('change', function(){
-    //             if(rug_plot.classed('active')){
-    //                 rug_plot.style('display', 'none');
-    //                 rug_plot.classed('active', false);
-    //             } else {
-    //                 rug_plot.style('display', '');
-    //                 rug_plot.classed('active', true);
-    //             }
-    //         });
-    //     a.append("label")
-    //         .attr("for", "check_mean")
-    //         .html(i18next.t("disc_box.disp_mean"));
-    //     b.append("label")
-    //         .attr("for", "check_median")
-    //         .html(i18next.t("disc_box.disp_median"));
-    //     c.append("label")
-    //         .attr("for", "check_std")
-    //         .html(i18next.t("disc_box.disp_sd"));
-    //     d.append("label")
-    //         .attr("for", "check_rug")
-    //         .html(i18next.t("disc_box.disp_rug_pop"));
-    // };
-
     var make_overlay_elements = function(){
 
       let mean_val = serie.mean(),
@@ -364,8 +285,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
 
 
       rug_plot = overlay_svg.append('g')
-          .style('display', 'none')
-          .attrs({id: 'rug_plot', transform: 'translate(30,0)'});
+          .style('display', 'none');
       rug_plot.selectAll('.indiv')
           .data(values.map(i => ({value: +i})))
           .enter()
@@ -692,7 +612,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
-    var overlay_svg = div_svg.append("g"),
+    var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
         line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot;
 
     make_overlay_elements();
@@ -1093,9 +1013,7 @@ var prepare_ref_histo = function(parent_node, serie, formatCount){
                     .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
         } else if (type == "beeswarm"){
             var data = values.map(v => ({value: +v}));
-            // for(let i = 0; i < values.length; i++){
-            //     data.push({value: +values[i]});
-            // }
+
             var simulation = d3.forceSimulation(data)
                 .force("x", d3.forceX(d => x(d.value)).strength(1))
                 .force("y", d3.forceY(m_height / 2).strength(2))
@@ -1128,12 +1046,8 @@ var prepare_ref_histo = function(parent_node, serie, formatCount){
             cell.append("circle")
                 .attrs(d => {
                     if(d) return {
-                    r: data.lenght < 250 ? 3 : 2, transform: 'translate(' + d.data.x + ',' + d.data.y + ')'};
+                    r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1, transform: 'translate(' + d.data.x + ',' + d.data.y + ')'};
                   });
-                // .attrs(d => {
-                //     if(d) return {
-                //     r: data.lenght < 250 ? 3 : 2, cx: d.data.x, cy: d.data.y, title: d.value };
-                //   });
 
             cell.append("path")
                 .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
