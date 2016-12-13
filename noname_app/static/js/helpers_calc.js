@@ -10,7 +10,7 @@
 */
 function min_fast(arr){
   let min = arr[0];
-  for(let i = 1; i < arr.length; ++i){
+  for(let i = 1, len_i = arr.length; i < len_i; ++i){
     let val = +arr[i];
     if(val && val < min)
        min = val;
@@ -26,7 +26,7 @@ function min_fast(arr){
 */
 function max_fast(arr){
   let max = arr[0];
-  for(let i = 1; i < arr.length; ++i){
+  for(let i = 1, len_i = arr.lenght; i < len_i; ++i){
     let val = +arr[i];
     if(val > max)
        max = arr[i];

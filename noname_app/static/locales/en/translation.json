@@ -604,7 +604,7 @@
         },
         "intro_section": {
             "arg1": "<strong>Hassle-free thematic mapping</strong>",
-            "arg2": "<strong>Use your own data</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg2": "<strong>Use your own data</strong> (Shapefile, GeoJSON, kml, tabular data, etc.)",
             "arg3": "<strong>Custom your map as you wish</strong>",
             "arg4": "<strong>Export or save your composition with ease!</strong> (SVG and PNG exports, project saving in human-readable fashion)"
         },
@@ -625,7 +625,7 @@
             "gallery": "More examples are visible on the gallery"
         },
         "documentation_section": {
-            "intro": "A full description of each of the methods is available on the website http://onapastrouvedenom.fr. The website also includes detailed information on the technologies employed and is used to announce the latest changes."
+            "intro": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>. The website also includes detailed information on the technologies employed and is used to announce the latest changes."
         },
         "source_section":{
             "box1_title": "Free and Open-Source",

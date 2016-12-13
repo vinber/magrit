@@ -625,7 +625,7 @@
             "gallery": "Des examples supplémentaires sont visibles dans la gallerie"
         },
         "documentation_section": {
-            "intro": "Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
+            "intro": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
         },
         "source_section":{
             "box1_title": "Libre et gratuit",
