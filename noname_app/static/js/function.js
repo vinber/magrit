@@ -1080,7 +1080,7 @@ function fillMenu_Stewart(){
       .text(i18next.t("app_page.func_options.smooth.span"));
     p_span.append('input')
       .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0.001, max: 100000.000, step: "any"});
+      .attrs({type: 'number', class: 'params', id: "stewart_span", value: 5, min: 0, max: 100000, step: "any"});
     p_span.append("span")
       .html(" (km)");
 
@@ -1575,7 +1575,8 @@ function getCentroids(ref_layer_selection){
 
 function make_prop_symbols(rendering_params, geojson_pt_layer){
     function make_geojson_pt_layer(){
-      let result = [];
+      let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+          result = [];
       for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
         let ft = ref_layer_selection[i].__data__,
             value = +ft.properties[field],
@@ -1622,7 +1623,6 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         t_field_name = 'prop_value',
         nb_features = rendering_params.nb_features,
         abs = Math.abs,
-        ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
         ref_size = rendering_params.ref_size,
         ref_value = rendering_params.ref_value,
         symbol_type = rendering_params.symbol,
@@ -2958,22 +2958,27 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
           });
 };
 
-var render_label = function(layer, rendering_params){
+var render_label = function(layer, rendering_params, options){
     let label_field = rendering_params.label_field;
     let txt_color = rendering_params.color;
     let selected_font = rendering_params.font;
     let font_size = rendering_params.ref_font_size + "px"
     let new_layer_data = [];
-    let ref_selection = document.getElementById(layer).getElementsByTagName("path");
     let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);
-    let nb_ft = ref_selection.length;
-    for(let i=0; i<nb_ft; i++){
-        let ft = ref_selection[i].__data__;
-        new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
-    }
 
+    if(options && options.data){
+        new_layer_data = options.data;
+    } else if (layer){
+        let ref_selection = document.getElementById(layer).getElementsByTagName("path");
+        let nb_ft = ref_selection.length;
+
+        for(let i=0; i<nb_ft; i++){
+            let ft = ref_selection[i].__data__;
+            new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
+        }
+    }
     var context_menu = new ContextMenu(),
         getItems = (self_parent) =>  [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_label(self_parent); }},
@@ -3007,7 +3012,7 @@ var render_label = function(layer, rendering_params){
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
 
     current_layers[layer_to_add] = {
-        "n_features": current_layers[layer].n_features,
+        "n_features": new_layer_data.length,
         "renderer": "Label",
         "symbol": "text",
         "fill_color" : txt_color,

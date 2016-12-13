@@ -70,7 +70,9 @@
             "layout_l": "Fond de carte d'habillage",
             "no_value": "Pas de valeur selectionnée",
             "yes": "Oui",
-            "no": "Non"
+            "no": "Non",
+            "warn_xls_sheet": "Seules les données du fichier sont chargées (les formules et les propriétés de style sont ignorées).",
+            "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé."
         },
         "section1": {
             "title": "Import des données",

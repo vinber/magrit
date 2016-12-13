@@ -39,6 +39,7 @@ from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from pyexcel import get_book
 
 # Web related stuff :
 import jinja2
@@ -267,19 +268,6 @@ def get_user_id(session_redis, app_users):
         return user_id
 
 
-async def ajson_loads(str_data):
-    """
-    Just a wrapper around json.loads to make it an awaitable coroutine.
-    Not sure yet if their is a real benefit to "gather" simultaneously multiple
-    loaded JSON this way.
-    Args:
-        - str_data, str: the raw JSON, decoded as String
-    Return:
-        - parsed_json, dict : the JSON file loaded in a python dictionnary
-    """
-    return json.loads(str_data)
-
-
 async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
@@ -431,7 +419,7 @@ async def carto_doug(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson']), "Q"])
     ref_layer = await app['redis_conn'].get(f_name)
-    ref_layer = await ajson_loads(ref_layer.decode())
+    ref_layer = json.loads(ref_layer.decode())
     new_field = posted_data['var_name']
     iterations = int(posted_data['iterations'])
     n_field_name = list(new_field.keys())[0]
@@ -586,7 +574,7 @@ async def compute_olson(posted_data, user_id, app):
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
 
     ref_layer = await app['redis_conn'].get(f_name)
-    ref_layer = await ajson_loads(ref_layer.decode())
+    ref_layer = json.loads(ref_layer.decode())
 
     scale_values = posted_data['scale_values']
     ref_layer_geojson = convert_from_topo(ref_layer)
@@ -927,9 +915,11 @@ async def convert_tabular(request):
     _, name, data, datatype = posted_data.get('file[]')
 
     if datatype in allowed_datatypes:
-        data = BytesIO(data.read())
-        df = pd.read_excel(data)
-        result = df.to_csv()
+        name, extension = name.split('.')
+        book = get_book(file_content=data.read(), file_type=extension)
+        sheet_names = list(book.sheets.keys())
+        result = book.sheets[sheet_names[0]].csv
+        message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(book.sheets) > 1 else None
     else:
         result = "Unknown tabular file format"
         request.app['logger'].info(
@@ -939,7 +929,8 @@ async def convert_tabular(request):
     request.app['logger'].info(
         ' - timing : spreadsheet -> csv : {:.4f}s'
         .format(time.time()-st))
-    return web.Response(text=json.dumps({"file": result, "name": name}))
+    return web.Response(text=json.dumps(
+        {"file": result, "name": name, "message": message}))
 
 
 def prepare_list_svg_symbols():

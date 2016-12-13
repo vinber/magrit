@@ -3,8 +3,7 @@ TODO list:
 - /!\ Choose some nice icons related to the fields data type (ratio, stock, category, unknown, id ?)
 - /!\ re-allow the user to browse its imported (csv etc.) dataset ? (as the functionnalities was squizzed when moving the "browse table" button on each layer)
 			or allow a preview (as the dataset aims to be joined to the targeted layer)
-- Do more data validation (client and/or server side) to avoid weird user-uploads (also check xls/xlsx/ods files to warn if there is formula or multiples sheets)
-- Make a fancy chart for selecting class and size for values quantization in discontinuities / links
+- Do more data validation (client and/or server side) to avoid weird user-uploads
 - Design a favicon.
 - Make a short documentation about how the project is structured in order to facilitate potential contributions
 - Split the current repository in two repo. : one for the website and one for the application and its documentation.

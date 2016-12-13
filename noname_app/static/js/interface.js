@@ -406,20 +406,50 @@ function prepare_drop_section(){
 
 }
 
-function convert_dataset(file){
-    var ajaxData = new FormData();
-    ajaxData.append("action", "submit_form");
-    ajaxData.append('file[]', file);
-    xhrequest("POST", '/convert_tabular', ajaxData, true)
-        .then(data => {
-            data = JSON.parse(data);
-            dataset_name = data.name;
-            add_dataset(d3.csvParse(data.file));
-        }, error => {
-            display_error_during_computation();
-        });
+function ask_replace_dataset(){
+    return swal({
+        title: "",
+        text: i18next.t("app_page.common.ask_replace_dataset"),
+        type: "warning",
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: i18next.t("app_page.common.confirm")
+      });
 }
 
+function convert_dataset(file){
+    let do_convert = () => {
+        var ajaxData = new FormData();
+        ajaxData.append("action", "submit_form");
+        ajaxData.append('file[]', file);
+        xhrequest("POST", '/convert_tabular', ajaxData, true)
+            .then(data => {
+                data = JSON.parse(data);
+                dataset_name = data.name;
+                swal({title: "",
+                      text: i18next.t('app_page.common.warn_xls_sheet') + (data.message ? '\n' + i18next.t(data.message[0], {sheet_name: data.message[1][0]}) : ''),
+                      type: "info",
+                      allowOutsideClick: false,
+                      allowEscapeKey: false
+                    }).then(() => {
+                        add_dataset(d3.csvParse(data.file));
+                    }, dismiss => { null; });
+            }, error => {
+                display_error_during_computation();
+            });
+    };
+
+    if(joined_dataset.length !== 0){
+        ask_replace_dataset().then(_ => {
+                remove_ext_dataset_cleanup();
+                do_convert();
+            }, _ => { null; });
+    } else {
+      do_convert();
+    }
+}
 
 function handle_shapefile(files, target_layer_on_add){
     var ajaxData = new FormData();
@@ -531,18 +561,10 @@ function handle_dataset(f){
     }
 
     if(joined_dataset.length !== 0){
-        swal({
-            title: "",
-            text: i18next.t("app_page.common.ask_replace_dataset"),
-            type: "warning",
-            showCancelButton: true,
-            allowOutsideClick: false,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: i18next.t("app_page.common.confirm")
-            }).then(() => {
-                remove_ext_dataset_cleanup();
-                check_dataset();
-            }, () => { null; });
+        ask_replace_dataset().then(() => {
+            remove_ext_dataset_cleanup();
+            check_dataset();
+          }, () => { null; });
     } else {
         check_dataset();
     }
@@ -623,20 +645,6 @@ function add_dataset(readed_dataset){
     }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
-
-//    if(document.getElementById("browse_button").disabled === true)
-//        document.getElementById("browse_button").disabled = false;
-
-//    $("[layer-target-tooltip!='']").qtip("destoy");
-//    $("[layer-target-tooltip!='']").qtip({
-//        content: { attr: "layer-target-tooltip" },
-//        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-//        events: {show: {solo: true}}
-////        events: {
-////            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-////            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-////        }
-//    });
 
     if(targeted_layer_added){
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -809,8 +817,6 @@ function add_layer_topojson(text, options){
     li.setAttribute("layer-tooltip", layer_tooltip_content)
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-//        if(document.getElementById("browse_button").disabled === true)
-//            document.getElementById("browse_button").disabled = false;
 
         if(joined_dataset.length != 0){
             valid_join_check_display(false);
@@ -842,12 +848,6 @@ function add_layer_topojson(text, options){
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
         targeted_layer_added = true;
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
-//        $("[layer-target-tooltip!='']").qtip("destoy");
-//        $("[layer-target-tooltip!='']").qtip({
-//            content: { attr: "layer-target-tooltip" },
-//            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-//            events: {show: {solo: true}}
-//        });
 
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);

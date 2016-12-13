@@ -68,7 +68,9 @@
             "layer_type_selection": "Select layer type",
             "no_value": "No value selected",
             "yes": "Yes",
-            "no": "No"
+            "no": "No",
+            "warn_xls_sheet": "Only data is taken into account (formulas and styling properties are ignored).",
+            "warn_multiple_sheets": "The provided file contains multiple sheets, only the first one (<i>{{ sheet_name }}</i>) was used."
         },
         "section1": {
             "title": "Add your data",
