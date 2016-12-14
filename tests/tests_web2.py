@@ -174,12 +174,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get("http://localhost:9999/modules")
         self.open_menu_section(4)
-        self.clickWaitTransition("#btn_add_layout_ft")
-        # driver.find_element_by_id("btn_add_layout_ft").click()
-        # time.sleep(0.4)
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("text_annot")
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+
+        driver.find_element_by_id('btn_text_annot').click()
+        time.sleep(0.2)
         elem = driver.find_element_by_id("in_text_annotation_0")
         self.assertEqual(elem.is_displayed(), True)
         action = webdriver.ActionChains(driver)
@@ -187,31 +184,23 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         action.perform()
         time.sleep(0.2)
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("scale")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("graticule")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_graticule').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "Graticule"):
             self.fail("Graticule won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("sphere")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_sphere').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "Sphere"):
             self.fail("Sphere background won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("north_arrow")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_north').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
 

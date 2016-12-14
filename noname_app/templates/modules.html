@@ -439,15 +439,15 @@ function setUpInterface(resume_project)
               });
 
     let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/arrow-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/draw-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/ellipse-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/graticule-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/north-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/scale.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/sphere-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/symbols-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
-    _i.insert('span').insert('img').attrs({src: '/static/img/layout_icons/text-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
+    _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
+    _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
+    _i.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
+    _i.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
+    _i.insert('span').insert('img').attrs({id: 'btn_scale', src: '/static/img/layout_icons/scale.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
+    _i.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
+    _i.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    _i.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
 
     let background = map.append("g")
                         .attrs({id: "Simplified_land_polygons", class: "layer"})
