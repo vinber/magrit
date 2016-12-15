@@ -1,6 +1,6 @@
 # Projections
 
-De nombreuses projections sont disponibles dans l'application.   
+De nombreuses projections cartographiques sont disponibles dans l'application.   
 La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.
 
@@ -9,9 +9,9 @@ Certaines projections peuvent être utilisée avec n'importe quel centrage (exem
 La projection appelée "orthographique" présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.
 
 Plusieurs attributs permettent de distinguer ces projections :
-- la conservation des distances (par exemple ...)
-- la conservation des ;;;; (par exemple)
-- la représentation du globe sous une forme interrompue (projections HEALPix, machin-truc)
+- la conservation locale des surfaces (ces projections sont dites **équivalentes**, c'est par exemple le cas de la *projection azimutale équivalente de Lambert*)
+- la conservation locale des angles (ces projections conservent les formes et sont dites **conformes**, c'est par exemple le cas de la *projection Mercator*)
+- la représentation du globe sous une forme interrompue (*projection HEALPix* et *projection de Goode* par exemple)
 
 Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.  
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé "graticule" et est disponible dans la section "ajout d'éléments d'habillage"). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.

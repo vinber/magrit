@@ -449,25 +449,7 @@ function setUpInterface(resume_project)
     _i.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
     _i.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
 
-    let background = map.append("g")
-                        .attrs({id: "Simplified_land_polygons", class: "layer"})
-                        .style("stroke-width", "0.3px");
-
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
-        background.selectAll('.subunit')
-                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-                  .enter()
-                  .append('path')
-                  .attr("d", path)
-                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
-        current_layers["Simplified_land_polygons"] = {
-            "type": "Polygon", "n_features":125,
-            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
-        };
-        scale_to_lyr("Simplified_land_polygons");
-        center_map("Simplified_land_polygons");
-        zoom_without_redraw();
-    });
+    add_simplified_land_layer();
 
     let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")

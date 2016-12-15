@@ -73,6 +73,7 @@ function get_map_template(){
         } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
                     || current_layers[layer_name].renderer == "Choropleth"
+                    || current_layers[layer_name].renderer == "Categorical"
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -85,7 +86,11 @@ function get_map_template(){
                 color_by_id.push(rgb2hex(this.style.fill));
             });
             layers_style[i].color_by_id = color_by_id;
-            layers_style[i].options_disc = current_layers[layer_name].options_disc;
+            if(current_layers[layer_name].renderer !== "Categorical") {
+                layers_style[i].options_disc = current_layers[layer_name].options_disc;
+            } else {
+                layers_style[i].color_map = [...current_layers[layer_name].color_map];
+            }
         } else if (current_layers[layer_name].renderer == "Links"
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
@@ -105,7 +110,7 @@ function get_map_template(){
             }
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
-            layers_style[i].symbols_map = JSON.stringify([...current_layers[layer_name].symbols_map]);
+            layers_style[i].symbols_map = JSON.parse(JSON.stringify([...current_layers[layer_name].symbols_map]));
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
 
@@ -199,6 +204,9 @@ function apply_user_preferences(json_pref){
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
+    let proj_select = document.getElementById('form_projection');
+    proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
+
     for(let i = map_config.n_layers - 1; i > -1; --i){
         let layer_name = layers[i].layer_name,
             symbol,
@@ -261,7 +269,9 @@ function apply_user_preferences(json_pref){
                         .style("stroke-opacity", stroke_opacity)
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
-            add_layout_feature(layer_name);
+            add_layout_feature(layer_name.toLowerCase());
+        } else if (layer_name == "Simplified_land_polygons"){
+            add_simplified_land_layer();
         } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
             let geojson_pt_layer = layers[i].geo_pt;
 
@@ -279,13 +289,21 @@ function apply_user_preferences(json_pref){
             make_prop_symbols(rendering_params, geojson_pt_layer)
 
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
+            null;
             // let rendering_params = {
             //     uo_layer_name: layer_name,
             //     label_field: ,
             //
             // };
             // render_label(null, rendering_params, layers[i].data_labels);
-
+          } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
+              let rendering_params = {
+                  colorByFeature: layers[i].color_by_id,
+                  color_map: new Map(layers[i].color_map),
+                  rendered_field: layers[i].rendered_field,
+                  renderer: "Categorical"
+              };
+              render_categorical(layers[i].ref_layer_name, rendering_params);
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
             let rendering_params = {
                     "nb_class": "",
@@ -296,9 +314,9 @@ function apply_user_preferences(json_pref){
                     "colorsByFeature": layers[i].color_by_id,
                     "renderer": "Choropleth",
                     "rendered_field": layers[i].rendered_field,
-                    "new_name": layer_name
+                    // "new_name": layer_name
                 };
-            render_choro(layers[i].ref_layer_name, rendering_params);
+            render_choro(layer_name, rendering_params);
         } else {
             null;
         }

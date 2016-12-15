@@ -1171,6 +1171,7 @@ function add_layout_layers(){
     var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
                          [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
                          [i18next.t("app_page.layout_layer_box.nuts2"), "nuts2"],
+                         [i18next.t("app_page.layout_layer_box.brazil"), "brazil"],
                          [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"],
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
                          ];
@@ -1225,6 +1226,7 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
          [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
          [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"],
+         [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
          [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
          [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
          [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
@@ -1280,6 +1282,27 @@ function add_sample_layer(){
     }
 }
 
+function add_simplified_land_layer(){
+    let background = map.append("g")
+                        .attrs({id: "Simplified_land_polygons", class: "layer"})
+                        .style("stroke-width", "0.3px");
+
+    d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
+        background.selectAll('.subunit')
+                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+                  .enter()
+                  .append('path')
+                  .attr("d", path)
+                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+        current_layers["Simplified_land_polygons"] = {
+            "type": "Polygon", "n_features":125,
+            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
+        };
+        scale_to_lyr("Simplified_land_polygons");
+        center_map("Simplified_land_polygons");
+        zoom_without_redraw();
+    });
+}
 
 function add_sample_geojson(name, options){
     var formToSend = new FormData();

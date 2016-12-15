@@ -8,19 +8,19 @@ Il est également possible, afin de partager son travail avec un collègue ou af
 ----------
 
 
-Export au format svg
+Export au format SVG
 -------------
 
-Grace à cette méthode il est possible d'exporter le rendu actuel selon les spécifications SVG 1.2.
+Grâce à cette méthode il est possible d'exporter le rendu actuel selon les spécifications *SVG 1.2*.
 
 > **Note:**
-> * Les spécifications svg ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.
-> * Les exports svg fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme [Inkscape], Adobe Illustrator ou [SVGEdit].
+> * Les spécifications SVG ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.
+> * Les exports SVG fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme [Inkscape], Adobe Illustrator ou [SVGEdit].
 > * Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.
 
 
 
-Export au format png
+Export au format PNG
 -------------
 Cette méthde permet d'exporter la carte dans un format dit "matriciel", c'est à dire composé de points.
 La résolution de ce type de fichier est fixe.  
@@ -31,7 +31,7 @@ Export d'un fichier de couche géographique
 
 Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
 C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissée, carte des liens et carte des discontinuités.
-Les formats proposés à l'export sont les memes que ceux acceptés lors de l'import :
+Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :
 - GeoJSON
 - TopoJSON
 - Shapefile
@@ -43,8 +43,8 @@ Différents systèmes de projection sont proposés par défaut lors de l'export 
 Sauvegarde du projet en cours
 -------------
 
-Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format JSON.
-Le fichier "projet" ainsi exporté pourra etre ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
+Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format *JSON*.
+Le fichier "projet" ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.
 
 

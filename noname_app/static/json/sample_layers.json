@@ -1,5 +1,6 @@
 [
  {
+ "brazil": "/static/data_sample/brazil.geojson",
  "GrandParisMunicipalities": "/static/data_sample/GrandParisMunicipalities.geojson",
  "nuts0": "/static/data_sample/nuts0.geojson",
  "nuts1": "/static/data_sample/nuts1.geojson",

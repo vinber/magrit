@@ -1716,6 +1716,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 function render_categorical(layer, rendering_params){
     if(rendering_params.new_name){
         copy_layer(layer, rendering_params.new_name, "typo");
+        current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
     map.select("#" + layer).style("opacity", 1)
