@@ -623,11 +623,9 @@
             "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
             "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
         },
-        "examples_section": {
-            "gallery": "Des examples supplémentaires sont visibles dans la gallerie"
-        },
         "documentation_section": {
-            "intro": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
+            "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
+            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités de l'application"
         },
         "source_section":{
             "box1_title": "Libre et gratuit",
@@ -635,7 +633,7 @@
             "box3_title": "Contenus traduits/traduisibles",
             "box4_title": "En developpement actif",
             "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
-            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub.",
+            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
         },

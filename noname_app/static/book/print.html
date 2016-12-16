@@ -85,7 +85,7 @@ De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces
 <li><code>TopoJSON</code></li>
 <li><code>kml</code></li>
 <li><code>gml</code></li>
-<li>Fichier <code>csv</code> avec colonnes x/y ou geometry</li>
+<li>Fichier <code>csv</code> avec colonnes x/y ou <em>geometry</em></li>
 </ul>
 <blockquote>
 <p><strong>Note:</strong>
@@ -93,19 +93,19 @@ La plupart des formats permettent de spécifier un système de coordonnées de r
 Si aucun système de coordonnées de référence n'est spécifié, l'application considère qu'il s'agit de coordonnées géographiques.</p>
 </blockquote>
 <h2>Import d'un tableau de données</h2>
-<p>L'ajout d'un tableau de données peut ^etre effectué de plusieurs manières :</p>
+<p>L'ajout d'un tableau de données peut être effectué de plusieurs manières :</p>
 <ul>
 <li>Par un glisser-déposer du fichier vers la section appropriée du menu</li>
-<li>Par un click sur le bouton <em>'ajout d'un jeu de données'</em> <img src="img/addtabular.png" alt="image_ajout_tableau" style="width: 35px;"/></li>
+<li>Par un clic sur le bouton <em>'ajout d'un jeu de données'</em> <img src="img/addtabular.png" alt="image_ajout_tableau" style="width: 35px;"/></li>
 </ul>
 <p>Plusieurs format sont pris en charge pour l'import des données :</p>
 <ul>
 <li><code>csv</code> (champs séparés par une virgule ou par un point virgule)</li>
 <li><code>tsv</code> (champs séparés par une tabulation)</li>
-<li><code>xls</code> et <code>xlsx</code> (à condition que le feuillet à utiliser contiennent seulement la table de données; cf. example).</li>
+<li><code>xls</code> et <code>xlsx</code> (à condition que le feuillet à utiliser contiennent seulement la table de données; cf. exemple).</li>
 </ul>
 <h2>Jointure des données</h2>
-<p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindres.
+<p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
 Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant la colonne de données....</p>
 <p><img src="img/data_join.png" alt="image_join" style="width: 480px;"/></p>
 <blockquote>
@@ -113,18 +113,18 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
 <h2>Affichage et enrichissement des tables de données</h2>
-<p>L'affichage des tableaux de données correspondant à chaqu'une des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée dont est affublée chaque couche.</p>
+<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée dont est affublée chaque couche.</p>
 <h1>Projections</h1>
-<p>De nombreuses projections sont disponibles dans l'application.<br />
+<p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
 La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.</p>
 <p>Certaines projections peuvent être utilisée avec n'importe quel centrage (exemple exemple) quand d'autres ne sont pertinentes qu'avec certains centres... (exemple exemple)</p>
 <p>La projection appelée &quot;orthographique&quot; présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.</p>
 <p>Plusieurs attributs permettent de distinguer ces projections :</p>
 <ul>
-<li>la conservation des distances (par exemple ...)</li>
-<li>la conservation des ;;;; (par exemple)</li>
-<li>la représentation du globe sous une forme interrompue (projections HEALPix, machin-truc)</li>
+<li>la conservation locale des surfaces (ces projections sont dites <strong>équivalentes</strong>, c'est par exemple le cas de la <em>projection azimutale équivalente de Lambert</em>)</li>
+<li>la conservation locale des angles (ces projections conservent les formes et sont dites <strong>conformes</strong>, c'est par exemple le cas de la <em>projection Mercator</em>)</li>
+<li>la représentation du globe sous une forme interrompue (<em>projection HEALPix</em> et <em>projection de Goode</em> par exemple)</li>
 </ul>
 <p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.<br />
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé &quot;graticule&quot; et est disponible dans la section &quot;ajout d'éléments d'habillage&quot;). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
@@ -143,7 +143,7 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
 <img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
 <h1>Choix de la représentation</h1>
-<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue de manière relative au type de données à représenter et au type de fond de carte présent (points, polygones, etc.).</p>
+<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue de manière relative au type de données à représenter (données brutes, de rapport/ratio ou de catégories) et au type de fond de carte présent (points, polygones, etc.).</p>
 <p>Plusieurs type de représentations sont adaptés à des données de stocks :</p>
 <ul>
 <li><a href="./carto/propsmbol_fr.html">carte de stocks</a></li>
@@ -151,23 +151,22 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 </ul>
 <p>Des types de représentations sont pour leur part adaptées à la représentation de données de ratios :</p>
 <ul>
-<li><a href="./carto/choro_fr.html">cartes choroplèthes</a></li>
-<li>...</li>
+<li><a href="./carto/choro_fr.html">carte choroplèthe</a></li>
+<li><a href="./carto/propsmbolchoro_fr.html">carte de stocks et ratios</a></li>
 </ul>
 <p>Des représentations permettant de mettre en avant les catégories d'appartenance des entités :</p>
 <ul>
-<li><a href="./carto/typo_fr.html">Carte qualitative</a></li>
-<li><a href="./carto/typosymbol_fr.html">Carte qualitative (pictogrammes)</a></li>
-<li><a href="./carto/propsmboltypo_fr.html">Carte de stocks et qualitative</a></li>
+<li><a href="./carto/typo_fr.html">carte qualitative</a></li>
+<li><a href="./carto/typosymbol_fr.html">carte qualitative (pictogrammes)</a></li>
+<li><a href="./carto/propsmboltypo_fr.html">carte de stocks et qualitative</a></li>
 </ul>
 <p>Des représentations originales etc etc :</p>
 <ul>
-<li><a href="./carto/propsmbolchoro_fr.html">Carte de stocks et ratios</a></li>
-<li><a href="./carto/grid_fr.html">Carroyage</a></li>
-<li><a href="./carto/cartogram_fr.html">Cartogramme</a></li>
-<li><a href="./carto/smooth_fr.html">Carte lissée</a></li>
-<li><a href="./carto/discont_fr.html">Carte des discontinuités</a></li>
-<li><a href="./carto/links_fr.html">Carte des liens</a></li>
+<li><a href="./carto/grid_fr.html">carroyage</a></li>
+<li><a href="./carto/cartogram_fr.html">cartogramme</a></li>
+<li><a href="./carto/smooth_fr.html">carte lissée</a></li>
+<li><a href="./carto/discont_fr.html">carte des discontinuités</a></li>
+<li><a href="./carto/links_fr.html">carte des liens</a></li>
 </ul>
 <h1>Carte de stocks</h1>
 <p>Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).</p>
@@ -370,9 +369,9 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <p>Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou bien comme des guides de lecture et d'analyse préalables à la saisie manuelle des limites de classes souhaitées.</p>
 <hr />
 <h2>Intervalles égaux</h2>
-<p>Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la meme étendue.</p>
+<p>Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</p>
 <h2>Quantiles</h2>
-<p>Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le meme nombre d'individus.</p>
+<p>Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le même nombre d'individus.</p>
 <h2>Q6</h2>
 <p>Cette méthode originale, notamment démocratisée par l'outil PhilCarto <a href="(Ref%20philcarto%20q6)">1</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</p>
 <h2>Seuils naturels (algorithme de Jenks)</h2>
@@ -388,7 +387,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Tracé des pays du monde</li>
 <li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
 </ul>
-<p>L'outil propose également d'ajouter des éléments se comportant comme des couches géographiques (ces éléments sont paramétrables via le gestionnaire de couches):</p>
+<p>L'outil propose également d'ajouter des éléments se comportant comme des couches géographiques (ces éléments sont paramétrables via le <em>gestionnaire de couches</em>):</p>
 <ul>
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
@@ -405,24 +404,24 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <p>L'outil offre la possibilité d'exporter aussi bien les cartes réalisées que les fichiers géographiques de couche sur lesquels elles reposent.
 Il est également possible, afin de partager son travail avec un collègue ou afin de le continuer plus tard, de sauvegarder l'état du projet en cours.</p>
 <hr />
-<h2>Export au format svg</h2>
-<p>Grace à cette méthode il est possible d'exporter le rendu actuel selon les spécifications SVG 1.2.</p>
+<h2>Export au format SVG</h2>
+<p>Grâce à cette méthode il est possible d'exporter le rendu actuel selon les spécifications <em>SVG 1.2</em>.</p>
 <blockquote>
 <p><strong>Note:</strong></p>
 <ul>
-<li>Les spécifications svg ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.</li>
-<li>Les exports svg fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme <a href="https://inkscape.org">Inkscape</a>, Adobe Illustrator ou <a href="https://github.com/SVG-Edit/svgedit">SVGEdit</a>.</li>
+<li>Les spécifications SVG ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.</li>
+<li>Les exports SVG fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme <a href="https://inkscape.org">Inkscape</a>, Adobe Illustrator ou <a href="https://github.com/SVG-Edit/svgedit">SVGEdit</a>.</li>
 <li>Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.</li>
 </ul>
 </blockquote>
-<h2>Export au format png</h2>
+<h2>Export au format PNG</h2>
 <p>Cette méthde permet d'exporter la carte dans un format dit &quot;matriciel&quot;, c'est à dire composé de points.
 La résolution de ce type de fichier est fixe.<br />
 Ainsi dans Magrit il est proposé de choisir la résolution du fichier à exporter en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
 <h2>Export d'un fichier de couche géographique</h2>
 <p>Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
 C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissée, carte des liens et carte des discontinuités.
-Les formats proposés à l'export sont les memes que ceux acceptés lors de l'import :</p>
+Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
 <ul>
 <li>GeoJSON</li>
 <li>TopoJSON</li>
@@ -432,11 +431,10 @@ Les formats proposés à l'export sont les memes que ceux acceptés lors de l'im
 </ul>
 <p>Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet <a href="https://github.com/OSGeo/proj.4/wiki">Proj.4</a>.</p>
 <h2>Sauvegarde du projet en cours</h2>
-<p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format JSON.
-Le fichier &quot;projet&quot; ainsi exporté pourra etre ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
+<p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format <em>JSON</em>.
+Le fichier &quot;projet&quot; ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 <h1>Contributors</h1>
-<p>They proudly did it.</p>
 
                 </div>
 
