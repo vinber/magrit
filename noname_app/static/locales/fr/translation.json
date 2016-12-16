@@ -20,7 +20,7 @@
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
-            "error_numerical_fields": "La couche cible ne semble pas contenir de champs numériques (ou ces derniers contiennent trop de valeurs nulles)",
+            "error_type_fields": "La couche cible ne semble pas contenir les champs appropriés pour ce type de représentation (ou ces derniers contiennent trop de valeurs nulles)",
             "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
             "error_too_low_resolution": "La résolution demandée est trop faible.",
             "error_too_high_resolution": "La résolution demandée est trop importante.",
@@ -70,7 +70,9 @@
             "layout_l": "Fond de carte d'habillage",
             "no_value": "Pas de valeur selectionnée",
             "yes": "Oui",
-            "no": "Non"
+            "no": "Non",
+            "warn_xls_sheet": "Seules les données du fichier sont chargées (les formules et les propriétés de style sont ignorées).",
+            "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé."
         },
         "section1": {
             "title": "Import des données",
@@ -81,13 +83,16 @@
         "section2": {
             "title": "Choix de la représentation"
         },
+        "section2_": {
+            "title_no_choice": "Pas de représentation selectionnée"
+        },
         "section3": {
             "title": "Gestion des couches"
         },
         "section4": {
             "title": "Habillage et mise en page",
-            "map_width": "<b>Largeur de la carte (px) </b>",
-            "map_height": "<b>Hauteur de la carte (px) </b>",
+            "map_width": "Largeur de la carte (px)",
+            "map_height": "Hauteur de la carte (px)",
             "map_ratio": "Ratio d'affichage",
             "ratio_user": "Personnalisé",
             "ratio_landscape": "Paysage",
@@ -96,7 +101,7 @@
             "map_center_x": "Centre de la carte (x)",
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
-            "map_title": "Titre de la carte ",
+            "map_title": "Titre de la carte",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte",
             "layout_features": "Ajout d'éléments d'habillage "
@@ -135,7 +140,8 @@
             "median": "Médiane",
             "variance": "Variance",
             "stddev": "Écart-type",
-            "cov": "Coefficient de variation"
+            "cov": "Coefficient de variation",
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}} | Médianne : {{median}}<br>Écart-type : {{stddev}}"
         },
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
@@ -241,6 +247,14 @@
             "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
 
         },
+        "box_type_fields": {
+            "title": "Typage des données",
+            "message_invite": "Sélection/modification du type de données présent dans chacun des champs.",
+            "stock": "Stock",
+            "ratio": "Ratio",
+            "category": "Catégorie",
+            "unknown": "Inconnu"
+        },
         "explore_box": {
             "title": "Table de données",
             "button_add_field": "Ajout d'un champ...",
@@ -261,13 +275,13 @@
         "legend_style_box": {
             "title": "Style de la couche - {{layer_name}}",
             "subtitle": "Personnalisation de la légende",
-            "lgd_title": "Titre de la légende",
-            "var_name": "Nom de la variable<br>",
+            "lgd_title": "Titre",
+            "var_name": "Sous-titre<br>",
             "float_rounding": "Arrondi des nombres flottants<br> ",
             "gap_boxes": "Pas d'espaces entre les boites",
             "nested_symbols": "Symboles encastrés",
-            "no_data": "Affichage de la catégorie \"absence de données\"",
-            "additionnal_notes": "Notes additionnelles de la légende<br>",
+            "no_data": "Catégorie \"absence de données\"",
+            "additionnal_notes": "Notes<br>",
             "under_rectangle": "Afficher un rectangle sous la légende",
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
@@ -323,7 +337,8 @@
             "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
             "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
             "count_feature": " <i> ({{ nb_features }} entité)</i>",
-            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>"
+            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>",
+            "title_click": "Cliquer pour choisir un symbole!"
         },
         "categorical_box": {
             "title": "Choix des couleurs - {{ layer }} - {{ nb_features }} entités",
@@ -477,11 +492,11 @@
                 "color_choice": "Choix des couleurs "
             },
             "choroprop": {
-                "field1": "Valeur 1 (taille du symbole) ",
+                "field1": "Valeur 1<br>(taille du symbole) ",
                 "fixed_size": "Taille fixée ",
                 "on_value": "sur la valeur ...",
                 "symbol_type": "Type de symbole ",
-                "field2": "Valeur 2 (couleur du symbole) ",
+                "field2": "Valeur 2<br>(couleur du symbole) ",
                 "discretization_choice": "Choix de la discrétisation ..."
             },
             "flow": {
@@ -554,9 +569,10 @@
         "title": "Options de discrétisation",
         "class": "{{count}} classe",
         "class_plural": "{{count}} classes",
-        "disp_mean": "Afficher la moyenne",
-        "disp_median": "Afficher la médiane",
-        "disp_sd": "Afficher l'écart-type",
+        "disp_mean": "Moyenne",
+        "disp_median": "Médiane",
+        "disp_sd": "Écart-type",
+        "disp_rug_pop": "Population",
         "hist_ref_title": "Histogramme de distribution des effectifs",
         "summary": "Résumé",
         "title_color_scheme": "<b>Choix de la progression de couleurs</b>",
@@ -570,17 +586,18 @@
         "sequential": "Séquentiel",
         "diverging": "Divergent",
         "reverse_palette": "Inverser l'ordre des couleurs",
-        "with_no_data": "{{ nb_features }} entité sans valeur",
-        "with_no_data_plural": "{{ nb_features }} entités sans valeur",
+        "withnodata": "{{ count }} entité sans valeur",
+        "withnodata_plural": "{{ count }} entités sans valeur",
         "colored_central_class": "classe centrale colorée",
         "color_palette": "Palette de couleur ",
-        "break_on": "Rupture de couleur à la classe "
+        "break_on": "Rupture de couleur à la classe ",
+        "switch_ref_histo": "Autre représentation"
     },
     "index":{
         "buttons": {
             "enter": "Démarrer",
             "resume": "Continuer le projet en cours...",
-            "overview": "Fonctionnalitées",
+            "overview": "Fonctionnalités",
             "examples": "Exemples",
             "projections": "Projections",
             "doc": "Documentation",
@@ -604,13 +621,12 @@
             "export2": "(en sélectionnant un export en PNG ou en SVG)",
             "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
             "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
+            "projection1": "Propose un large choix de projections cartographiques",
             "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
         },
-        "examples_section": {
-            "gallery": "Des examples supplémentaires sont visibles dans la gallerie"
-        },
         "documentation_section": {
-            "intro": "Une description complète de chacune des méthodes utilisées est disponible sur le site http://onapastrouvedenom.fr. Le site inclut également des informations détaillée sur les technologies utilisées et est utilisé pour annoncer les dernières modifications."
+            "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
+            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités de l'application"
         },
         "source_section":{
             "box1_title": "Libre et gratuit",
@@ -618,7 +634,7 @@
             "box3_title": "Contenus traduits/traduisibles",
             "box4_title": "En developpement actif",
             "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
-            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme GitHub.",
+            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
         },

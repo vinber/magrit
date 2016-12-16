@@ -1,9 +1,34 @@
-#!/bin/sh
-cd app/
-docker build -t "noname_app:latest" --build-arg CACHEBUST=$(date +%s) .
-cd ..
-cd nginx/
-docker build -t "nginx:latest" .
-cd ..
-docker run -dP --name magritapp "noname_app:latest"
-docker run --publish "80:80" -it --name nginx --link magritapp:magritapp nginx
+#!/bin/bash
+
+if [ "$1" == "install" ]
+then
+	cd /tmp/
+	mkdir magritapp
+	git clone http://github.com/mthh/noname-stuff
+	cp -r noname-stuff/misc/Docker/ magritapp/
+	cp -r noname-stuff/noname_app/static/ magritapp/Docker/nginx/
+	cd magritapp/Docker
+	cd app/
+	docker build -t "noname_app:$(date +%y%m%d)" --build-arg CACHEBUST=$(date +%s) .
+	cd ..
+	cd nginx/
+	docker build -t "nginx:latest" .
+	cd ..
+	docker run -dP --name magritapp "noname_app:latest"
+	docker run --publish "80:80" -dP --name nginx --link magritapp:magritapp nginx
+elif [ "$1" == "update" ]
+then
+	cd /tmp
+	rm -rf noname-stuff
+	rm -rf magritapp/Docker/nginx/static
+	git clone http://github.com/mthh/noname-stuff
+	cp -r noname-stuff/noname_app/static/ magritapp/Docker/nginx/
+	cd magritapp/Docker/nginx/
+	docker build -t "nginx:latest" .
+	cd ../app
+	docker build -t "noname_app:$(date +%y%m%d)" --build-arg CACHEBUST=$(date +%s) .
+	cd ..
+	docker kill magritapp nginx && docker rm magritapp nginx
+	docker run -dP --name magritapp "noname_app:$(date +%y%m%d)"
+	docker run --publish "80:80" -dP --name nginx --link magritapp:magritapp nginx
+fi

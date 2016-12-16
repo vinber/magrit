@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y gcc libpython3.5-dev libopenblas-dev li
         python3.5 python3.5-dev nodejs python3-pip gdal-bin libgdal-dev \
         libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev git wget \
+		libxslt1-dev libxml2 libxml2-dev \
         && npm -g install topojson \
         && rm -rf /var/lib/apt/lists/* \
         && ln -s /usr/bin/nodejs /usr/bin/node
@@ -72,10 +73,7 @@ RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
         && cd smoomapy/ && python3 setup.py install && cd /home/app \
         && cp /usr/local/lib/python3.5/dist-packages/noname_app-0.0.0-py3.5-linux-x86_64.egg/noname_app/helpers/*.so /home/app/noname-stuff/noname_app/helpers/
 
-
 EXPOSE 9999
 
-#CMD service redis-server start && noname_app
 CMD service redis-server start \
     && gunicorn "noname_app.noname_aio:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname-stuff/
-#CMD service redis-server start && cd /home/app/noname-stuff && py.test tests/test.py

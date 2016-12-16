@@ -58,16 +58,22 @@ function get_map_template(){
         } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layers[layer_name].symbol;
             selection = map.select("#" + layer_name).selectAll(type_symbol);
+            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_name).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
             layers_style[i].symbol = type_symbol;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
+            // layers_style[i].rendered_field2 = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : undefined;
             layers_style[i].renderer = current_layers[layer_name].renderer;
             layers_style[i].size = current_layers[layer_name].size;
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
-            layers_style[i].features_order = JSON.stringify(current_layers[layer_name].features_order);
+            layers_style[i].geo_pt = {
+              type: "FeatureCollection",
+              features: features
+            };
         } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
                     || current_layers[layer_name].renderer == "Choropleth"
+                    || current_layers[layer_name].renderer == "Categorical"
                     || current_layers[layer_name].renderer == "Carto_doug"){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].renderer = current_layers[layer_name].renderer;
@@ -80,7 +86,11 @@ function get_map_template(){
                 color_by_id.push(rgb2hex(this.style.fill));
             });
             layers_style[i].color_by_id = color_by_id;
-            layers_style[i].options_disc = current_layers[layer_name].options_disc;
+            if(current_layers[layer_name].renderer !== "Categorical") {
+                layers_style[i].options_disc = current_layers[layer_name].options_disc;
+            } else {
+                layers_style[i].color_map = [...current_layers[layer_name].color_map];
+            }
         } else if (current_layers[layer_name].renderer == "Links"
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
@@ -100,7 +110,7 @@ function get_map_template(){
             }
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
-            layers_style[i].symbols_map = JSON.stringify([...current_layers[layer_name].symbols_map]);
+            layers_style[i].symbols_map = JSON.parse(JSON.stringify([...current_layers[layer_name].symbols_map]));
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
 
@@ -194,6 +204,9 @@ function apply_user_preferences(json_pref){
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
+    let proj_select = document.getElementById('form_projection');
+    proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
+
     for(let i = map_config.n_layers - 1; i > -1; --i){
         let layer_name = layers[i].layer_name,
             symbol,
@@ -255,117 +268,42 @@ function apply_user_preferences(json_pref){
                         .style("fill-opacity", fill_opacity)
                         .style("stroke-opacity", stroke_opacity)
             });
-        } else if (layer_name == "Sphere" || layer_name == "Simplified_land_polygons"){
-            add_layout_feature(layer_name);
+        } else if (layer_name == "Sphere" || layer_name == "Graticule"){
+            add_layout_feature(layer_name.toLowerCase());
+        } else if (layer_name == "Simplified_land_polygons"){
+            add_simplified_land_layer();
         } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
-            let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
-            let zs = map_config.zoom_scale;
-            let full_params = JSON.parse(layers[i].features_order);
-            let n_ft = full_params.length;
-            symbol = layers[i].symbol;
+            let geojson_pt_layer = layers[i].geo_pt;
 
-            current_layers[layer_name] = {
-                renderer: layers[i].renderer,
-                rendered_field:layers[i].rendered_field,
-                'stroke-width-const': layers[i]['stroke-width-const'],
-                fixed_stroke: layers[i].fixed_stroke,
-                size: layers[i].size,
-                ref_layer_name: layers[i].ref_layer_name,
+            // let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
+            let rendering_params = {
+                new_name: layer_name,
+                field: layers[i].rendered_field,
                 fill_color: layers[i].fill_color,
-                features_order: full_params,
-                symbol: symbol,
-                n_features: n_ft,
-                }
+                ref_value:  layers[i].size[0],
+                ref_size: layers[i].size[1],
+                symbol: layers[i].symbol,
+                nb_features: geojson_pt_layer.features.length,
+            };
 
-            let ref_size = current_layers[layer_name].size[0],
-                max_size = current_layers[layer_name].size[1];
+            make_prop_symbols(rendering_params, geojson_pt_layer)
 
-            if(layers[i].colors_breaks)
-                current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
-
-            if(symbol == "circle"){
-                for(let ii = 0; ii < n_ft; ii++){
-                    let params = full_params[ii];
-                    layer_to_append.append('circle')
-                        .attr('cx', params[2][0])
-                        .attr("cy", params[2][1])
-                        .attr("r", ref_size / zs + params[1])
-                        .attr("id", ["PropSymbol_", ii , " feature_", params[0]].join(''))
-                        .style("fill", params[3])
-                        .style("stroke", "black")
-                        .style("stroke-width", 1 / zs);
-                }
-            } else if(symbol == "rect"){
-                for(let ii = 0; ii < n_ft; ii++){
-                    let params = full_params[ii],
-                        size = ref_size / zs + params[1];
-
-                    layer_to_append.append('rect')
-                        .attr('x', params[2][0] - size/2)
-                        .attr("y", params[2][1] - size/2)
-                        .attr("height", size)
-                        .attr("width", size)
-                        .attr("id", ["PropSymbol_", ii , " feature_", params[0]].join(''))
-                        .style("fill", params[3])
-                        .style("stroke", "black")
-                        .style("stroke-width", 1 / zs);
-                };
-            }
-            layer_selec = map.select("#"+layer_name);
-            layer_selec.selectAll(symbol)
-                    .style("fill-opacity", fill_opacity)
-                    .style("stroke-opacity", stroke_opacity);
-            create_li_layer_elem(layer_name, n_ft, ["Point", "prop"], "result");
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
-            let layer_to_append = map.append("g").attr("id", layer_name)
-                                        .attr("class", "result_layer layer");
-            let nb_ft = layers[i].n_features;
-            let symbols_map = new Map(layers[i].symbols_map);
-            current_layers[layer_name] = {
-                n_features: nb_ft,
-                renderer: "TypoSymbols",
-                symbols_map: symbols_map,
-                symbol: "image",
-                renderer_field: layers[i].rendered_field,
-                is_result: true,
-                default_size: undefined
-            }
-
-            let current_state = layers[i].current_state;
-            result_data[layer_name] = [];
-            for(let j = 0; j < nb_ft; j++){
-                result_data[layer_name].push(current_state[j].data);
-            }
-
-            layer_to_append.selectAll('image')
-                .data(result_data[layer_name]).enter()
-                .insert("image")
-                .attrs(d => {
-                  let _attr = current_state[i];
-                  return {
-                    "x": _attr.pos[0], "y": _attr.pos[1],
-                    "width": _attr.size, "height": _attr.size,
-                    "xlink:href": symbols_map.get(d.Symbol_field)[0]
-                    };
-                })
-                .style("display", (d,i) => current_state[i].display)
-                .on("mouseover", function(){ this.style.cursor = "pointer";})
-                .on("mouseout", function(){ this.style.cursor = "initial";})
-                .call(drag_elem_geo);
-                // .attr("x", (d,i) => current_state[i].pos[0])
-                // .attr("y", (d,i) => current_state[i].pos[1])
-                // .attr("width", (d,i) => current_state[i].size)
-                // .attr("height", (d,i) => current_state[i].size)
-                // .attr("xlink:href", (d,i) => symbols_map.get(d.Symbol_field)[0])
-                // .on("dblclick", function(){
-                //     context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-                //     })
-                // .on("contextmenu", function(){
-                //     context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-                //     })
-
-            create_li_layer_elem(layer_name, nb_ft, ["Point", "symbol"], "result");
-
+            null;
+            // let rendering_params = {
+            //     uo_layer_name: layer_name,
+            //     label_field: ,
+            //
+            // };
+            // render_label(null, rendering_params, layers[i].data_labels);
+          } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
+              let rendering_params = {
+                  colorByFeature: layers[i].color_by_id,
+                  color_map: new Map(layers[i].color_map),
+                  rendered_field: layers[i].rendered_field,
+                  renderer: "Categorical"
+              };
+              render_categorical(layers[i].ref_layer_name, rendering_params);
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
             let rendering_params = {
                     "nb_class": "",
@@ -376,9 +314,9 @@ function apply_user_preferences(json_pref){
                     "colorsByFeature": layers[i].color_by_id,
                     "renderer": "Choropleth",
                     "rendered_field": layers[i].rendered_field,
-                    "new_name": layer_name
+                    // "new_name": layer_name
                 };
-            render_choro(layers[i].ref_layer_name, rendering_params);
+            render_choro(layer_name, rendering_params);
         } else {
             null;
         }

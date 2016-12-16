@@ -11,12 +11,12 @@ Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou 
 Intervalles égaux
 -------------
 
-Cette méthode, parfois également appelées "amplitudes égale", permet de créer des classes qui possèdent toutes la meme étendue.
+Cette méthode, parfois également appelées "amplitudes égale", permet de créer des classes qui possèdent toutes la même étendue.
 
 
 Quantiles
 -------------
-Cette méthode, parfois également décrite par le terme de "discrétisation en classes d'effectifs égaux" permet de former des classes qui possèdent toutes le meme nombre d'individus.
+Cette méthode, parfois également décrite par le terme de "discrétisation en classes d'effectifs égaux" permet de former des classes qui possèdent toutes le même nombre d'individus.
 
 
 Q6
@@ -46,5 +46,3 @@ Cette méthode ...
 
   [1]: (Ref philcarto q6)
   [2]: (Ref jenks seuils naturels)
-
-

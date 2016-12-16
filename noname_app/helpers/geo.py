@@ -142,3 +142,26 @@ def check_projection(proj4string):
         return proj4string
     except:
         return False
+
+def on_geom(geom):
+    for pts in geom:
+        for pt in pts:
+            # if pt[0] > 179.9999:
+            #     pt[0] = 179.9999
+            # elif pt[0] < -179.9999:
+            #     pt[0] =  179.9999
+            if pt[1] > 89.9999:
+                pt[1] = 89.9999
+            elif pt[1] < -89.9999:
+                pt[1] = -89.9999
+
+def repairCoordsPole(geojson):
+    for ft in geojson['features']:
+        geom = ft["geometry"]
+        if "MultiPolygon" in geom["type"]:
+            for poly in geom['coordinates']:
+                # exterior = poly[:1]
+                on_geom(poly[:1])
+                if(len(poly) > 2):
+                    # interiors  = poly[1:]
+                    on_geom(poly[1:])

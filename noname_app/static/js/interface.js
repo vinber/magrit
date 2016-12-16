@@ -406,20 +406,50 @@ function prepare_drop_section(){
 
 }
 
-function convert_dataset(file){
-    var ajaxData = new FormData();
-    ajaxData.append("action", "submit_form");
-    ajaxData.append('file[]', file);
-    xhrequest("POST", '/convert_tabular', ajaxData, true)
-        .then(data => {
-            data = JSON.parse(data);
-            dataset_name = data.name;
-            add_dataset(d3.csvParse(data.file));
-        }, error => {
-            display_error_during_computation();
-        });
+function ask_replace_dataset(){
+    return swal({
+        title: "",
+        text: i18next.t("app_page.common.ask_replace_dataset"),
+        type: "warning",
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: i18next.t("app_page.common.confirm")
+      });
 }
 
+function convert_dataset(file){
+    let do_convert = () => {
+        var ajaxData = new FormData();
+        ajaxData.append("action", "submit_form");
+        ajaxData.append('file[]', file);
+        xhrequest("POST", '/convert_tabular', ajaxData, true)
+            .then(data => {
+                data = JSON.parse(data);
+                dataset_name = data.name;
+                swal({title: "",
+                      text: i18next.t('app_page.common.warn_xls_sheet') + (data.message ? '\n' + i18next.t(data.message[0], {sheet_name: data.message[1][0]}) : ''),
+                      type: "info",
+                      allowOutsideClick: false,
+                      allowEscapeKey: false
+                    }).then(() => {
+                        add_dataset(d3.csvParse(data.file));
+                    }, dismiss => { null; });
+            }, error => {
+                display_error_during_computation();
+            });
+    };
+
+    if(joined_dataset.length !== 0){
+        ask_replace_dataset().then(_ => {
+                remove_ext_dataset_cleanup();
+                do_convert();
+            }, _ => { null; });
+    } else {
+      do_convert();
+    }
+}
 
 function handle_shapefile(files, target_layer_on_add){
     var ajaxData = new FormData();
@@ -531,18 +561,10 @@ function handle_dataset(f){
     }
 
     if(joined_dataset.length !== 0){
-        swal({
-            title: "",
-            text: i18next.t("app_page.common.ask_replace_dataset"),
-            type: "warning",
-            showCancelButton: true,
-            allowOutsideClick: false,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: i18next.t("app_page.common.confirm")
-            }).then(() => {
-                remove_ext_dataset_cleanup();
-                check_dataset();
-            }, () => { null; });
+        ask_replace_dataset().then(() => {
+            remove_ext_dataset_cleanup();
+            check_dataset();
+          }, () => { null; });
     } else {
         check_dataset();
     }
@@ -624,20 +646,6 @@ function add_dataset(readed_dataset){
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
 
-//    if(document.getElementById("browse_button").disabled === true)
-//        document.getElementById("browse_button").disabled = false;
-
-//    $("[layer-target-tooltip!='']").qtip("destoy");
-//    $("[layer-target-tooltip!='']").qtip({
-//        content: { attr: "layer-target-tooltip" },
-//        style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-//        events: {show: {solo: true}}
-////        events: {
-////            show: function(){ $('.qtip.qtip-section1').qtip("hide") },
-////            hide: function(){ $('.qtip.qtip-section1').qtip("show") }
-////        }
-//    });
-
     if(targeted_layer_added){
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
         ask_join_now(layer_name);
@@ -675,8 +683,8 @@ function handle_single_file(file, target_layer_on_add) {
 };
 
 function get_display_name_on_layer_list(layer_name_to_add){
-    return +layer_name_to_add.length > 38
-        ? [layer_name_to_add.substring(0, 35), '(...)'].join('')
+    return +layer_name_to_add.length > 40
+        ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
         : layer_name_to_add;
 }
 
@@ -692,7 +700,9 @@ function ask_join_now(layer_name){
         cancelButtonText: i18next.t("app_page.common.no"),
       }).then(() => {
           createJoinBox(layer_name);
-      }, dismiss => { null; });
+      }, dismiss => {
+          make_box_type_fields(layer_name);
+      });
 }
 
 function ask_existing_feature(feature_name){
@@ -753,6 +763,7 @@ function add_layer_topojson(text, options){
         current_layers[lyr_name_to_add].targeted = true;
         user_data[lyr_name_to_add] = [];
         data_to_load = true;
+        current_layers[lyr_name_to_add].fields_type = [];
     } else if(result_layer_on_add){
         result_data[lyr_name_to_add] = [];
         current_layers[lyr_name_to_add].is_result = true;
@@ -806,8 +817,6 @@ function add_layer_topojson(text, options){
     li.setAttribute("layer-tooltip", layer_tooltip_content)
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-//        if(document.getElementById("browse_button").disabled === true)
-//            document.getElementById("browse_button").disabled = false;
 
         if(joined_dataset.length != 0){
             valid_join_check_display(false);
@@ -839,12 +848,6 @@ function add_layer_topojson(text, options){
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
         targeted_layer_added = true;
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
-//        $("[layer-target-tooltip!='']").qtip("destoy");
-//        $("[layer-target-tooltip!='']").qtip({
-//            content: { attr: "layer-target-tooltip" },
-//            style: { classes: 'qtip-rounded qtip-light qtip_layer'},
-//            events: {show: {solo: true}}
-//        });
 
         window._target_layer_file = topoObj;
         scale_to_lyr(lyr_name_to_add);
@@ -874,17 +877,23 @@ function add_layer_topojson(text, options){
     zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
 
-    if(!skip_alert)
+    if(!skip_alert){
         swal({title: "",
               text: i18next.t("app_page.common.layer_success"),
               allowOutsideClick: true,
               allowEscapeKey: true,
               type: "success"
-            }).then(() => { null; },
-                    dismiss => { null; });
-
-    if(target_layer_on_add && joined_dataset.length > 0){
-        ask_join_now(lyr_name_to_add);
+            }).then(() => {
+                if(target_layer_on_add && joined_dataset.length > 0)
+                    ask_join_now(lyr_name_to_add);
+                else if (target_layer_on_add)
+                    make_box_type_fields(lyr_name_to_add);
+            }, dismiss => {
+                if(target_layer_on_add && joined_dataset.length > 0)
+                    ask_join_now(lyr_name_to_add);
+                else if (target_layer_on_add)
+                    make_box_type_fields(lyr_name_to_add);
+            });
     }
     return lyr_name_to_add;
 };
@@ -944,44 +953,44 @@ function center_map(name){
     _zoom.y = zoom_translate[1];
 };
 
-function select_layout_features(){
-    var available_features = [
-         ["north_arrow", i18next.t("app_page.layout_features_box.north_arrow")],
-         ["scale", i18next.t("app_page.layout_features_box.scale")],
-         ["sphere", i18next.t("app_page.layout_features_box.sphere")],
-         ["graticule", i18next.t("app_page.layout_features_box.graticule")],
-         ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
-         ["arrow", i18next.t("app_page.layout_features_box.arrow")],
-         ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
-         ["symbol", i18next.t("app_page.layout_features_box.symbol")],
-         ["free_draw", i18next.t("app_page.layout_features_box.free_draw")]
-        ];
-    var selected_ft;
-
-    make_confirm_dialog2(
-            "sampleLayoutFtDialogBox",
-            i18next.t("app_page.layout_features_box.title"),
-            {widthFitContent: true}
-        ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
-
-    var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
-    box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
-
-    var layout_ft_selec = box_body.append('p').html('')
-                            .insert('select')
-                            .attrs({class: 'sample_layout',
-                                    size: available_features.length});
-
-    available_features.forEach(function(ft){
-        layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
-    });
-    layout_ft_selec.on("change", function(){ selected_ft = this.value; });
-
-    if(!window.default_symbols){
-        window.default_symbols = [];
-        prepare_available_symbols();
-    }
-}
+// function select_layout_features(){
+//     var available_features = [
+//          ["north_arrow", i18next.t("app_page.layout_features_box.north_arrow")],
+//          ["scale", i18next.t("app_page.layout_features_box.scale")],
+//          ["sphere", i18next.t("app_page.layout_features_box.sphere")],
+//          ["graticule", i18next.t("app_page.layout_features_box.graticule")],
+//          ["text_annot", i18next.t("app_page.layout_features_box.text_annot")],
+//          ["arrow", i18next.t("app_page.layout_features_box.arrow")],
+//          ["ellipse", i18next.t("app_page.layout_features_box.ellipse")],
+//          ["symbol", i18next.t("app_page.layout_features_box.symbol")],
+//          ["free_draw", i18next.t("app_page.layout_features_box.free_draw")]
+//         ];
+//     var selected_ft;
+//
+//     make_confirm_dialog2(
+//             "sampleLayoutFtDialogBox",
+//             i18next.t("app_page.layout_features_box.title"),
+//             {widthFitContent: true}
+//         ).then(confirmed => { if(confirmed) add_layout_feature(selected_ft); });
+//
+//     var box_body = d3.select(".sampleLayoutFtDialogBox").select(".modal-body");
+//     box_body.append('h3').html(i18next.t("app_page.layout_features_box.subtitle"));
+//
+//     var layout_ft_selec = box_body.append('p').html('')
+//                             .insert('select')
+//                             .attrs({class: 'sample_layout',
+//                                     size: available_features.length});
+//
+//     available_features.forEach(function(ft){
+//         layout_ft_selec.append("option").html(ft[1]).attr("value", ft[0]);
+//     });
+//     layout_ft_selec.on("change", function(){ selected_ft = this.value; });
+//
+//     if(!window.default_symbols){
+//         window.default_symbols = [];
+//         prepare_available_symbols();
+//     }
+// }
 
 function setSphereBottom(){
     let layers = document.getElementsByClassName("layer"),
@@ -1031,9 +1040,9 @@ function add_layout_feature(selected_feature){
             return;
         map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
+               .datum(d3.geoGraticule())
                .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'})
-               .datum(d3.geoGraticule());
+               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'});
         current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}, opacity: 1, step: 10, dasharray: 5};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
@@ -1062,9 +1071,20 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "ellipse"){
         handleClickAddEllipse();
     } else if (selected_feature == "symbol"){
-        let a = box_choice_symbol(window.default_symbols).then( result => {
-            if(result){ add_single_symbol(result); }
-        });
+      if(!window.default_symbols){
+          window.default_symbols = [];
+          let a = prepare_available_symbols();
+          a.then(confirmed => {
+              let a = box_choice_symbol(window.default_symbols).then( result => {
+                  if(result){ add_single_symbol(result); }
+              });
+          });
+      } else {
+          let a = box_choice_symbol(window.default_symbols).then( result => {
+              if(result){ add_single_symbol(result); }
+          });
+      }
+
 //    } else if (selected_feature == "free_draw"){
 //        handleCreateFreeDraw();
     } else {
@@ -1151,6 +1171,7 @@ function add_layout_layers(){
     var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"],
                          [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"],
                          [i18next.t("app_page.layout_layer_box.nuts2"), "nuts2"],
+                         [i18next.t("app_page.layout_layer_box.brazil"), "brazil"],
                          [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"],
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
                          ];
@@ -1194,7 +1215,8 @@ function add_sample_layer(){
         sample_datasets = undefined;
 
     d3.json('/static/json/sample_layers.json', function(error, json){
-        sample_datasets = json[0];
+        if(error) throw error;
+        else sample_datasets = json[0];
         });
 
     var target_layers = [
@@ -1204,7 +1226,8 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
          [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
          [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"],
-         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_50m"],
+         [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
+         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
          [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
          [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
         ];
@@ -1212,9 +1235,7 @@ function add_sample_layer(){
     var tabular_datasets = [
          [i18next.t("app_page.sample_layer_box.tabular_dataset"),""],
          [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
-         [i18next.t("app_page.sample_layer_box.gpm_dataset"), 'gpm_dataset'],
          [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
-         [i18next.t("app_page.sample_layer_box.bondcountries"), 'bondcountries']
         ];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
@@ -1261,6 +1282,27 @@ function add_sample_layer(){
     }
 }
 
+function add_simplified_land_layer(){
+    let background = map.append("g")
+                        .attrs({id: "Simplified_land_polygons", class: "layer"})
+                        .style("stroke-width", "0.3px");
+
+    d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
+        background.selectAll('.subunit')
+                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+                  .enter()
+                  .append('path')
+                  .attr("d", path)
+                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+        current_layers["Simplified_land_polygons"] = {
+            "type": "Polygon", "n_features":125,
+            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
+        };
+        scale_to_lyr("Simplified_land_polygons");
+        center_map("Simplified_land_polygons");
+        zoom_without_redraw();
+    });
+}
 
 function add_sample_geojson(name, options){
     var formToSend = new FormData();
@@ -1412,10 +1454,10 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    let list_symbols = xhrequest('GET', '/static/json/list_symbols.json', null)
+    return xhrequest('GET', '/static/json/list_symbols.json', null)
             .then( list_res => {
                list_res = JSON.parse(list_res);
-               Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
+               return Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
                         default_symbols.push([list_res[i], symbols[i]]);

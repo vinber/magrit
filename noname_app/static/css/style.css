@@ -6,6 +6,9 @@ body {
     font-family:"palatino linotype", palatino, serif;
     color: black;
     background: #e3e3da;
+    -webkit-text-rendering: optimizeLegibility;
+    -moz-text-rendering: optimizeLegibility;
+    text-rendering: optimizeLegibility;
 }
 
 #header {
@@ -43,7 +46,6 @@ body {
     position: relative;
     border: 1px solid lightgrey;
 }
-
 
 .user_panel{
     text-align: left;
@@ -144,7 +146,7 @@ a.menu {
     right: 20px;
     margin: auto;
     min-width: 40px;
-    //margin-left: 15px;
+    font-size: 11.5px;
 }
 
 .form-rendering {
@@ -170,6 +172,7 @@ p.params_section2 > span {
 }
 
 #section4 {
+    font-size: 11.5px;
     padding: 0.8em 1.2em 0.8em 1.2em;
 }
 
@@ -294,6 +297,10 @@ p.params_section2 > span {
 #table_intro{
     margin: auto;
     text-align: center;
+}
+
+.dataTable-sorter::before, .dataTable-sorter::after {
+    position: unset !important;
 }
 
 #join_button {
@@ -587,7 +594,7 @@ div.panel {
 
 div.panel.show {
     //opacity: 1;
-    max-height: 650px;
+    max-height: 775px;
     width: 335px;
     margin: auto;
     margin-bottom: 7px;
@@ -661,7 +668,8 @@ div.panel.show {
 }
 
 .twbs .modal-body > p {
-  margin: 8px 0 !important;
+  margin: 11px 0 !important;
+  clear: both;
 }
 
 .fitContent {
@@ -684,6 +692,7 @@ tr:nth-child(odd) {background: ##EFECEC;}
     right: 20px;
     width: 60px;
     margin-left: 15px;
+    font-size: 11.5px;
 }
 
 select.m_elem_right {
@@ -708,4 +717,26 @@ p.line_elem {
   height: 20px;
   float: left;
   width: 10px;
+}
+
+.cells path {
+  fill: none;
+  pointer-events: all;
+}
+
+.cells :hover circle {
+  fill: red;
+}
+
+img.layout_ft_ico {
+  margin: 2px;
+  -webkit-filter: grayscale(1); /* Webkit Nightlies & Chrome Canary */
+  -webkit-transform: scale(0.9);
+  -webkit-transition: all .2s;
+}
+
+img.layout_ft_ico:hover {
+  filter: none;
+  -webkit-filter: grayscale(0);
+  -webkit-transform: scale(1);
 }

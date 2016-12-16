@@ -5,6 +5,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
+from flaky import flaky
 from signal import SIGINT
 import psutil
 import unittest
@@ -103,7 +104,7 @@ def get_port_available(port_nb):
 #        pass
 port = 9999
 
-
+@flaky
 @on_platforms(browsers, RUN_LOCAL)
 class MainFunctionnalitiesTest(unittest.TestCase):
     """
@@ -173,12 +174,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get("http://localhost:9999/modules")
         self.open_menu_section(4)
-        self.clickWaitTransition("#btn_add_layout_ft")
-        # driver.find_element_by_id("btn_add_layout_ft").click()
-        # time.sleep(0.4)
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("text_annot")
-        driver.find_element_by_xpath("(//button[@type='button'])[2]").click()
+
+        driver.find_element_by_id('btn_text_annot').click()
+        time.sleep(0.2)
         elem = driver.find_element_by_id("in_text_annotation_0")
         self.assertEqual(elem.is_displayed(), True)
         action = webdriver.ActionChains(driver)
@@ -186,31 +184,23 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         action.perform()
         time.sleep(0.2)
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("scale")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("graticule")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_graticule').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "Graticule"):
             self.fail("Graticule won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("sphere")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_sphere').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "Sphere"):
             self.fail("Sphere background won't display")
 
-        self.clickWaitTransition("#btn_add_layout_ft")
-        list_elem = driver.find_element_by_class_name("sample_layout")
-        Select(list_elem).select_by_value("north_arrow")
-        self.clickWaitTransition(".btn_ok")
+        driver.find_element_by_id('btn_north').click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
 
@@ -225,6 +215,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("twincities")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_flow")
 
@@ -248,6 +242,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_grid")
 
@@ -270,6 +268,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         self.click_elem_retry(
             driver.find_element_by_css_selector(
@@ -306,6 +308,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         # Open the appropriate menu:
         self.open_menu_section(5)
 
@@ -346,17 +352,17 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("projection_to_use")
             ).select_by_value("epsg:4326")
 
-#         driver.find_element_by_css_selector(".dialogGeoExport"
-#             ).find_element_by_css_selector("button.btn_ok").click()
-#         time.sleep(2)
-#         with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
-#             raw_geojson = f.read()
-#         parsed_geojson = json.loads(raw_geojson)
-#         self.assertIn("features", parsed_geojson)
-#         self.assertIn("type", parsed_geojson)
-# #        self.assertIn("crs", parsed_geojson)
-#         self.assertEqual(len(parsed_geojson["features"]), 310)
-#         os.remove(self.tmp_folder + "nuts2_data.geojson")
+        driver.find_element_by_css_selector(".dialogGeoExport"
+            ).find_element_by_css_selector("button.btn_ok").click()
+        time.sleep(2)
+        with open(self.tmp_folder + "nuts2_data.geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+#        self.assertIn("crs", parsed_geojson)
+        self.assertEqual(len(parsed_geojson["features"]), 310)
+        os.remove(self.tmp_folder + "nuts2_data.geojson")
 
         # # Test export on result layer this time
         # # First coompute a result from smoothed map functionnality :
@@ -413,6 +419,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
 
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         driver.find_element_by_css_selector("li.nuts2_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
@@ -466,6 +476,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(".btn_ok").click()
 
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_smooth")
 
@@ -488,6 +502,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("nuts3_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(3)
         driver.find_element_by_css_selector("li.nuts3_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
@@ -580,8 +598,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 ).select_by_value("us_county")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
-        self.open_menu_section(3)
+        time.sleep(0.3)
 
+        # Valid the type of each field :
+        self.validTypefield()
+
+        self.open_menu_section(3)
         self.click_elem_retry(
             driver.find_element_by_css_selector(
                 "li.us_county").find_element_by_css_selector(
@@ -642,6 +664,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ".btn_ok")[0].click()
         # Now the alert about how it was successful :
         self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
         self.open_menu_section(2)
         self.clickWaitTransition("#button_discont")
 
@@ -668,21 +694,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         Select(driver.find_element_by_css_selector("select.sample_target")
                 ).select_by_value("GrandParisMunicipalities")
-        Select(driver.find_element_by_css_selector("select.sample_dataset")
-                ).select_by_value("gpm_dataset")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
-        time.sleep(0.5)
-        # Choosing fields :
-        Select(driver.find_element_by_id("button_field2")
-                ).select_by_visible_text("DEPCOM")
 
-        driver.find_element_by_css_selector(
-            ".joinBox").find_elements_by_css_selector(
-            ".btn_ok")[0].click()
-
-        # Now the alert about how it was successful :
-        self.waitClickButtonSwal()
+        # Valid the type of each field :
+        self.validTypefield()
 
         self.open_menu_section(2)
         self.clickWaitTransition("#button_prop")
@@ -730,6 +746,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     # def test_propSymbolsChoro(self):
     #     # TODO
     #     pass
+
+    def validTypefield(self):
+        self.click_elem_retry(
+            self.driver.find_element_by_id(
+                "box_type_fields").find_elements_by_css_selector(
+                ".btn_ok")[0])
+        time.sleep(0.5)
+
+    def changeTypefield(self):
+        pass
 
     def deeper_test_legend(self, id_legend, type_elem):
         legend_root = self.driver.find_element_by_id(id_legend)

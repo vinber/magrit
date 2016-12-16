@@ -22,10 +22,16 @@ var drag_elem_geo = d3.drag()
     });
 
 
+function setSelected(selectNode, value){
+    selectNode.value = value;
+    selectNode.dispatchEvent(new Event('change'));
+}
+
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
-function switch_accordion_section(){
-    document.getElementById("btn_s3").dispatchEvent(new MouseEvent("click"));
+function switch_accordion_section(id_elem){
+    id_elem = id_elem || 'btn_s3';
+    document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
 function path_to_geojson(id_layer){
@@ -232,3 +238,199 @@ var type_col = function(layer_name, target, skip_if_empty_values=false){
     } else
         return result;
 }
+
+var type_col2 = function(table, field, skip_if_empty_values=false){
+// Function returning an object like {"field1": "field_type", "field2": "field_type"},
+//  for the fields of the selected layer.
+    var tmp_type = undefined,
+        result = [],
+        nb_features = table.length,
+        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
+        tmp = {};
+    if(!field){
+        var fields = Object.getOwnPropertyNames(table[0]).filter(v => v != '_uid');
+        field = undefined;
+    } else {
+        var fields = [field];
+        field = undefined;
+    }
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        tmp[field] = [];
+        for(let i=0; i < deepth_test; ++i){
+            tmp_type = typeof table[i][field];
+            if(tmp_type === "string" && table[i][field].length == 0)
+                tmp_type = "empty";
+            else if( (tmp_type === "string" && !isNaN(Number(table[i][field]))) || tmp_type === 'number'){
+                let val = Number(table[i][field]);
+                tmp_type = (val | 0) === val ? "stock" : "ratio";
+            } else if(tmp_type === "object" && isFinite(table[i][field]))
+                tmp_type = "empty"
+            tmp[fields[j]].push(tmp_type);
+        }
+    }
+    for(let j = 0, len = fields.length; j < len; ++j){
+        field = fields[j];
+        if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
+            result.push({name: field, type: "stock"});
+        else if (tmp[field].every(ft => ft === "string" || ft === "empty") && tmp[field].indexOf("string") > -1)
+            result.push({name: field, type: "category"});
+        else if (tmp[field].every(ft => ft === "ratio" || ft === "stock" || ft === "empty") && tmp[field].indexOf("ratio") > -1)
+            result.push({name: field, type: "ratio"});
+        else
+            result.push({name: field, type: "unknown"});
+    }
+    return result;
+}
+
+function getFieldsType(type, layer_name, ref){
+    if(!layer_name && !ref) return;
+    ref = ref || current_layers[layer_name].fields_type;
+    return ref.filter(d => d.type === type).map(d => d.name);
+}
+
+function make_box_type_fields(layer_name){
+    var modal_box = make_dialog_container(
+        "box_type_fields",
+        i18next.t("app_page.box_type_fields.title"),
+        "dialog");
+    d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
+    var newbox = d3.select("#box_type_fields").select(".modal-body"),
+        tmp = type_col2(user_data[layer_name]),
+        fields_type = current_layers[layer_name].fields_type,
+        f = fields_type.map(v => v.name),
+        // fields_type = current_layers[layer_name].fields_type,
+        ref_type = ['stock', 'ratio', 'category', 'unknown'];
+
+    if(f.length === 0)
+        fields_type = tmp.slice();
+    else if(tmp.length > fields_type.length)
+        tmp.forEach(d => {
+          if(f.indexOf(d.name) === -1)
+            fields_type.push(d);
+          })
+
+    document.getElementById('btn_type_fields').removeAttribute('disabled');
+    newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
+    newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
+
+    var box_select = newbox.append("div")
+      .attr("id", "fields_select");
+
+    var a = box_select.selectAll("p")
+        .data(fields_type)
+        .enter()
+        .append('p')
+        .style('margin', '15px');
+
+    box_select.selectAll("p")
+        .insert('span')
+        .html(d => d.name);
+
+    box_select.selectAll('p')
+        .insert('select')
+        .style('float', 'right')
+        .selectAll('option')
+        .data(ref_type).enter()
+        .insert('option')
+        .attr('value', d => d).text(d => i18next.t('app_page.box_type_fields.' + d))
+        .exit();
+
+    box_select.selectAll('select')
+        .each(function(d){
+          this.value = d.type;
+        });
+
+    let deferred = Q.defer(),
+        container = document.getElementById("box_type_fields");
+
+    container.querySelector(".btn_ok").onclick = function(){
+        let r = [];
+        Array.prototype.forEach.call(
+            document.getElementById('fields_select').getElementsByTagName('p'),
+            elem => {
+              r.push({name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value})
+            });
+        // deferred.resolve(r);
+        deferred.resolve(true);
+        current_layers[layer_name].fields_type = r.slice();
+        getAvailablesFunctionnalities(layer_name);
+        if(window.fields_handler){
+            fields_handler.unfill();
+            fields_handler.fill(layer_name);
+        }
+        modal_box.close();
+        container.remove();
+    }
+
+    let _onclose = () => {
+        deferred.resolve(false);
+        modal_box.close();
+        container.remove();
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    return deferred.promise;
+};
+
+function getAvailablesFunctionnalities(layer_name){
+    let fields_stock = getFieldsType('stock', layer_name),
+        fields_ratio = getFieldsType('ratio', layer_name),
+        fields_categ = getFieldsType('category', layer_name),
+        func_stock = document.querySelectorAll('#button_smooth, #button_prop, #button_choroprop, #button_proptypo, #button_grid, #button_cartogram, #button_discont'),
+        func_ratio = document.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
+        func_categ = document.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+    if(fields_stock.length === 0){
+        Array.prototype.forEach.call(func_stock, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_stock, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_categ.length === 0){
+        Array.prototype.forEach.call(func_ratio, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_ratio, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_categ.length === 0){
+        Array.prototype.forEach.call(func_categ, d => d.style.filter = "grayscale(100%)");
+    } else {
+        Array.prototype.forEach.call(func_categ, d => d.style.filter = "invert(0%) saturate(100%)");
+    }
+    if(fields_stock.length === 0 && fields_ratio.length === 0){
+        document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
+    } else {
+        document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
+    }
+    if(fields_stock.length === 0 && fields_categ.length === 0){
+        document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
+    } else {
+        document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
+    }
+}
+
+/*
+* Memoization functions (naive LRU implementation)
+*
+*/
+Function.prototype.memoized = function(max_size=25) {
+  this._memo = this._memo || {values: new Map(), stack: [], max_size: max_size};
+  var key = JSON.stringify(Array.prototype.slice.call(arguments));
+  var cache_value = this._memo.values.get(key);
+  if (cache_value !== undefined) {
+    return JSON.parse(cache_value);
+  } else {
+    cache_value = this.apply(this, arguments);
+    this._memo.values.set(key, JSON.stringify(cache_value));
+    this._memo.stack.push(key)
+    if(this._memo.stack.length >= this._memo.max_size){
+        let old_key = this._memo.stack.shift();
+        this._memo.values.delete(old_key);
+    }
+    return cache_value;
+  }
+};
+Function.prototype.memoize = function() {
+  var fn = this;
+  return function() {
+    return fn.memoized.apply(fn, arguments);
+  };
+};

@@ -101,9 +101,14 @@ function add_field_table(table, layer_name, parent){
             return Promise.resolve(true);
         } else {
             if(operation == "truncate"){
-                for(let i=0; i < table.length; i++)
-                    table[i][new_name_field] = table[i][fi1].substring(0, +opt_val);
-
+                opt_val = +opt_val;
+                if(opt_val >= 0){
+                    for(let i=0; i < table.length; i++)
+                        table[i][new_name_field] = table[i][fi1].substring(0, opt_val);
+                } else {
+                    for(let i=0; i < table.length; i++)
+                        table[i][new_name_field] = table[i][fil].substr(opt_val);
+                }
             } else if (operation == "concatenate"){
                 for(let i=0; i < table.length; i++)
                     table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val);
@@ -193,9 +198,12 @@ function add_field_table(table, layer_name, parent){
                 document.querySelector("body").style.cursor = "wait";
                 compute_and_add(chooses_handler).then(
                     function(resolved){
-                        if(window.fields_handler && current_layers[layer_name].targeted){
-                            fields_handler.unfill();
-                            fields_handler.fill(layer_name);
+                        if(current_layers[layer_name].targeted){
+                            current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
+                            if(window.fields_handler){
+                                fields_handler.unfill();
+                                fields_handler.fill(layer_name);
+                            }
                         }
                         if(parent){
                             parent.display_table(layer_name);

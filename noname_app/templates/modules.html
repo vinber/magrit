@@ -18,7 +18,7 @@
     <script  src="static/js/lib/d3-geo-projection.v1.2.0.min.js"></script>
     <script  src="static/js/lib/d3-selection-multi.v1.min.js"></script> -->
     <script  src="static/js/lib/d3.custom.min.js"></script>
-    <script  src="static/js/lib/topojson.v1.min.js"></script>
+    <script  src="static/js/lib/topojson-client.2.1.0.min.js"></script>
     <script  src="static/js/lib/bootstrap-native-mod.min.js"></script>
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
@@ -34,26 +34,27 @@
 
     <script  src="static/js/context-menu.js"></script>
     <script  src="static/js/layout_features.js"></script>
+    <script  src="static/js/tables.js"></script>
+    <script  src="static/js/helpers.js"></script>
+    <script  src="static/js/join_popup.js"></script>
+    <script  src="static/js/colors_helpers.js"></script>
+    <script  src="static/js/helpers_calc.js"></script>
     <script  src="static/js/interface.js"></script>
     <script  src="static/js/map_project.js"></script>
-    <script  src="static/js/zoneTextEdit.js"></script>
+    <!-- <script  src="static/js/zoneTextEdit.js"></script> -->
     <script  src="static/js/discrtiz_links_discont.js"></script>
     <script  src="static/js/layers_style_popup.js"></script>
     <script  src="static/js/discretization_panel.js"></script>
     <script  src="static/js/function.js"></script>
     <script  src="static/js/legend.js"></script>
     <script  src="static/js/symbols_picto.js"></script>
-    <script  src="static/js/tables.js"></script>
-    <script  src="static/js/helpers.js"></script>
-    <script  src="static/js/join_popup.js"></script>
-    <script  src="static/js/colors_helpers.js"></script>
-    <script  src="static/js/helpers_calc.js"></script>
 
+    <script  src="https://d3js.org/d3-voronoi.v1.min.js"></script>
   </head>
   <body>
       <div id="header">
         <p style="display:inline;margin-left:15px;">
-        <a href="/"><img src="/static/img/magrit.png" alt="Export" height="20" style="position: absolute; top: 6px;"></a>
+        <a href=""><img src="/static/img/magrit.png" alt="Export" height="20" style="position: absolute; top: 6px;"></a>
         </p>
         <p id="rgt" class="header_options"></p>
       </div>
@@ -109,10 +110,13 @@ function setUpInterface(resume_project)
     document.body.appendChild(bg_drop);
 
     let menu = d3.select("#menu"),
+
         b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
+        b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").attr('data-i18n', 'app_page.section2_.title_no_choice').style('display', 'none'),
+        accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
         b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
         accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
         b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
@@ -125,7 +129,8 @@ function setUpInterface(resume_project)
                         .attr("class", "i18n")
                         .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
                         .attr("data-tooltip-position", "right");
-    window.section2 =  accordion2_pre.append("div").attr("id","section2");
+    window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
+    window.section2 = accordion2.append('div').attr('id', 'section2');
     accordion3.append("div")
         .attrs({id: "section3", class: "i18n",
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3",
@@ -174,6 +179,19 @@ function setUpInterface(resume_project)
         .attr("id", "join_section")
         .styles({"text-align": "center", "margin-top": "2px"})
         .html("");
+
+    dv1.append('p')
+        .styles({'text-align': 'center','margin': '5px'})
+        .insert('button')
+        .attrs({'id': 'btn_type_fields', 'class': 'i18n',
+                'data-i18n': '[html]app_page.box_type_fields.title',
+                'disabled': true})
+        .styles({cursor: 'pointer', disabled: 'true'})
+        .html(i18next.t('app_page.box_type_fields.title'))
+        .on('click', function(){
+            let layer_name = Object.getOwnPropertyNames(user_data)[0];
+            make_box_type_fields(layer_name);
+          });
 
     make_ico_choice();
 
@@ -225,18 +243,6 @@ function setUpInterface(resume_project)
             .on("change", function(){
                 handle_bg_color(this.value);
             });
-
-    let _h = dv4.append("li").styles({margin: "1px", padding: "0px 4px"});
-    _h.append("p")
-            .attr("id", "btn_add_layout_ft")
-            .attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.layout_features")
-            .style("cursor", "pointer")
-            .on("click", select_layout_features);
-    _h.append("span").html(sys_run_button)
-    _h.select("img").style("vertical-align", "sub")
-            .style("cursor", "pointer")
-            .on("click", select_layout_features);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -339,7 +345,7 @@ function setUpInterface(resume_project)
         .style("display", "inline-table")
         .style("cursor", "pointer");
     c.on("click", function(){
-        let sections = document.querySelectorAll(".to_hide"),
+        let sections = document.getElementsByClassName("to_hide"),
             arg;
         if(sections[0].style.display == "none"){
             arg = "";
@@ -372,7 +378,11 @@ function setUpInterface(resume_project)
     c2.append("input")
             .attrs({id: "input-center-y", class: "list_elem_section4 m_elem_right",
                     type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
-            .style("width", "80px");
+            .style("width", "80px")
+            .on("change", function(){
+                            svg_map.__zoom.y = +this.value;
+                            zoom_without_redraw();
+                        });;
 
     let d = dv4.append("li").style("display", "none").attr("class", "to_hide");
     d.append("p").attr("class", "list_elem_section4 i18n")
@@ -400,18 +410,20 @@ function setUpInterface(resume_project)
     g.append("input")
         .attrs({id: "canvas_rotation_value_txt", class: "without_spinner",
                 value: 0, min: 0, max: 360, step: "any"})
-        .styles({width: "30px", "margin-left": "10px", "float": "right"})
+        .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
         .on("change", function(){
             let val = +this.value,
                 old_value = document.getElementById("form_rotate").value;
             if(isNaN(val) || val < -361){
                 this.value = old_value;
                 return;
-            } else if(val < 0 && val > -361)
+            } else if(val < 0 && val > -361) {
                 this.value = 360 + val;
-            else if(val > 360)
+            } else if(val > 360) {
                 this.value = 360;
-
+            } else { // Should remove trailing zeros (right/left) if any :
+              this.value = +this.value;
+            }
             rotate_global(this.value);
             document.getElementById("form_rotate").value = this.value;
         });
@@ -426,26 +438,18 @@ function setUpInterface(resume_project)
                   document.getElementById("canvas_rotation_value_txt").value = this.value;
               });
 
-    let background = map.append("g")
-                        .attrs({id: "Simplified_land_polygons", class: "layer"})
-                        .style("stroke-width", "0.3px");
+    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
+    _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
+    _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
+    _i.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
+    _i.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
+    _i.insert('span').insert('img').attrs({id: 'btn_scale', src: '/static/img/layout_icons/scale.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
+    _i.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
+    _i.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    _i.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.svg', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
 
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
-        background.selectAll('.subunit')
-                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-                  .enter()
-                  .append('path')
-                  .attr("d", path)
-                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
-        map.selectAll(".layer").selectAll("path").attr("d", path);
-        current_layers["Simplified_land_polygons"] = {
-            "type": "Polygon", "n_features":125,
-            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
-        };
-        scale_to_lyr("Simplified_land_polygons");
-        center_map("Simplified_land_polygons");
-        zoom_without_redraw();
-    });
+    add_simplified_land_layer();
 
     let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")
@@ -457,27 +461,25 @@ function setUpInterface(resume_project)
     let select_type_export = type_export.append("select")
             .attrs({"id": "select_export_type", "class": "m_elem_right"})
             .on("change", function(){
-                let type = this.value;
+                let type = this.value,
+                    export_filename = document.getElementById("export_filename");
                 if(type === "svg"){
                     document.getElementById("export_options_png").style.display = "none";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.svg";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "png"){
                     document.getElementById("export_options_png").style.display = "";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.value = "export.png";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
                     document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "geo"){
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                     document.getElementById("export_options_png").style.display = "none";
-                    let export_filename = document.getElementById("export_filename");
                     export_filename.style.display = "none";
                     export_filename.previousSibling.style.display = "none";
+                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                 }
             });
 
@@ -534,8 +536,7 @@ function setUpInterface(resume_project)
             in_h.disabled = undefined;
             in_w.disabled = undefined;
         }
-        console.log(in_w)
-    })
+    });
 
     let exp_a = export_png_options.append("p");
     exp_a.append("span")
@@ -619,6 +620,14 @@ function setUpInterface(resume_project)
                      "color": " white", "background-color": "#173a50",
                      "vertical-align": "calc(20%)"})
             .on("change", function(){
+                let val = +this.value,
+                    old_value = +document.getElementById('form_projection_center').value;
+                if(this.value.length == 0 || val > 180 || val < -180){
+                    this.value = old_value;
+                    return;
+                } else { // Should remove trailing zeros (right/left) if any :
+                    this.value = +this.value;
+                }
                 handle_proj_center_button([this.value, null, null]);
                 document.getElementById("form_projection_center").value = this.value;
             });
@@ -627,12 +636,12 @@ function setUpInterface(resume_project)
             .html("°");
 
     let proj_select = const_options.append("select")
-                .attr("id","form_projection")
-                .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
-                .on("change", function(){
-                    current_proj_name = this.selectedOptions[0].textContent;
-                    change_projection(this.value);
-                });
+            .attr("id","form_projection")
+            .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
+            .on("change", function(){
+                current_proj_name = this.selectedOptions[0].textContent;
+                change_projection(this.value);
+            });
     d3.json("/static/json/projections.json", function(json) {
        json.forEach(function(d) {
             available_projections.set(d.name, d.projection);
@@ -672,7 +681,7 @@ function setUpInterface(resume_project)
                             {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
                             ];
                         let menu = document.createElement("div");
-                        menu.style.top = "30px";
+                        menu.style.top = "40px";
                         menu.style.right = "38px";
                         menu.style.background = "#173a50";
                         menu.style.color = "#f5f5f5";
@@ -722,7 +731,7 @@ function setUpInterface(resume_project)
 
     const_options.append("button")
         .attrs({id: "current_app_lang", class: "const_buttons"})
-        .styles({color: "white",
+        .styles({color: "white", cursor: 'pointer',
                  "font-size": "14px", "vertical-align": "super",
                  background: "transparent", "font-weight": "bold"})
         .html(i18next.language)
@@ -739,7 +748,7 @@ function setUpInterface(resume_project)
                     {"name": other_lang, "callback": change_lang}
                     ];
                 let menu = document.createElement("div");
-                menu.style.top = "30px";
+                menu.style.top = "40px";
                 menu.style.right = "0px";
                 menu.className = "context-menu";
                 menu.id = "menu_lang";
@@ -824,7 +833,7 @@ function setUpInterface(resume_project)
           }
           let desired_order = [],
               actual_order = [],
-              layers = svg_map.querySelectorAll(".layer");
+              layers = svg_map.getElementsByClassName("layer");
 
           for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
               let n = a.target.childNodes[i].getAttribute("layer_name");
@@ -907,47 +916,54 @@ function change_lang(){
 }
 
 function make_ico_choice(){
-    let list_fun_ico = ['icon_prop.png',
-                        'icon_choro.png',
-                        'icon_typo.png',
-                        'icon_choroprop.png',
-                        'icon_proptypo.png',
-                        'icon_grid.png',
-                        'icon_cartogram.png',
-                        'icon_smooth.png',
-                        'icon_discont.png',
-                        'icon_typosymbol.png',
-                        'icon_flow.png'];
-    let function_panel = section2.append("div")
+    let list_fun_ico = ['prop.svg',
+                        'choro.svg',
+                        'typo.svg',
+                        'choroprop.svg',
+                        'proptypo.svg',
+                        'grid.svg',
+                        'cartogram.svg',
+                        'smooth.svg',
+                        'discont.svg',
+                        'typosymbol.svg',
+                        'flow.svg'];
+
+    let function_panel = section2_pre.append("div")
                             .attr("id", "list_ico_func");
 
     for(let i = 0, len_i = list_fun_ico.length; i < len_i; i++){
         let ico_name = list_fun_ico[i],
-            func_name = ico_name.split('.')[0].split("_")[1],
-            func_desc = get_menu_option(func_name).desc;
+            func_name = ico_name.split('.')[0],
+            func_desc = get_menu_option(func_name).desc,
+            margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
         function_panel
             .insert("img")
-            .styles({"float": "left", "list-style": "none"})
-            .attr("class", "i18n")
-            .attr("data-i18n", ["[title]app_page.func_description.", func_name].join(''))
-            .attr("src", ["/static/img/func_icons/", ico_name].join(''))
-            .attr("id", "button_" + func_name)
-            .style("margin", "1px")
-            .style("cursor", "pointer")
-            .style("width", "50px")
+            .styles({margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})
+            .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+                    src: ['/static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
             .on("click", function(){
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
                     fields_handler.unfill();
                     let previous_button = document.getElementById("button_" + current_functionnality.name);
                     previous_button.style.filter = "invert(0%) saturate(100%)";
-                    previous_button.style.boxShadow = "";
+                    // previous_button.style.boxShadow = "";
                     clean_menu_function();
+                    if(this.classList.contains('active')){
+                        this.classList.remove('active');
+                        window.fields_handler = undefined;
+                        return;
+                    } else {
+                        previous_button.classList.remove('active');
+                    }
                 }
 
                 // Highlight the icon of the selected functionnality :
                 this.style.filter = "invert(100%) saturate(200%)";
-                this.style.boxShadow = "-1px 1px 5px 2px #888888";
+                // this.style.boxShadow = "-1px 1px 5px 2px #888888";
+                this.classList.add('active');
+
+                document.getElementById('accordion2b').style.display = '';
 
                 // Get the function to fill the menu with the appropriate options (and do it):
                 current_functionnality = get_menu_option(func_name);
@@ -956,7 +972,7 @@ function make_ico_choice(){
                 make_menu();
 
                 // Replace the title of the section:
-                let selec_title = document.getElementById("btn_s2");
+                let selec_title = document.getElementById("btn_s2b");
                 selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
                                         i18next.t("app_page.common.representation") +
                                         '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
@@ -964,7 +980,7 @@ function make_ico_choice(){
                                         '">' +
                                         i18next.t("app_page.func_title."+ current_functionnality.name) +
                                         '</span>';
-
+                selec_title.style.display = '';
                 // Bind the help tooltip (displayed when mouse over the 'i' icon) :
                 let btn_info = document.getElementById("btn_info");
                 btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
@@ -989,10 +1005,12 @@ function make_ico_choice(){
                 if(func_name == "flow" && joined_dataset){
                     fields_handler.fill();
                 }
+
+                switch_accordion_section('btn_s2b');
             });
     }
-    section2.append("hr")
-            .styles({"clear": "both", "position": "relative"});
+    // section2.append("hr")
+    //         .styles({"clear": "both", "position": "relative"});
 }
 
 var w = Math.round(window.innerWidth - 361),
@@ -1169,7 +1187,7 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
 {% endraw %}
 
 function up_legends(){
-    let legend_features = svg_map.querySelectorAll('.legend');
+    let legend_features = svg_map.getElementsByClassName('legend');
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);
     }
@@ -1208,8 +1226,6 @@ function binds_layers_buttons(layer_name){
 }
 
 // Function to display information on the top layer (in the layer manager)
-// it will only works on layers appearing in blue in the layer manager
-// (ie. the targeted layer and result(s?) layer(s?))
 function displayInfoOnMove(){
     var info_features = d3.select("#info_features");
     if(info_features.classed("active")){
@@ -1220,9 +1236,9 @@ function displayInfoOnMove(){
         info_features.classed("active", false);
         info_features.node().innerHTML = "";
         info_features.style("display", "none");
-        document.getElementById("map").style.cursor="";
+        svg_map.style.cursor = "";
     } else {
-        let layers = document.querySelectorAll(".layer"),
+        let layers = svg_map.getElementsByClassName("layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
 
@@ -1273,7 +1289,7 @@ function displayInfoOnMove(){
                 info_features.style("display", "none");
         });
         info_features.classed("active", true);
-        document.getElementById("map").style.cursor="help";
+        svg_map.style.cursor="help";
     }
 }
 
@@ -1300,43 +1316,49 @@ function reproj_symbol_layer(){
             || current_layers[lyr_name].renderer.indexOf('TypoSymbols')  > -1
             || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )){
       let ref_layer_name = current_layers[lyr_name].ref_layer_name,
-          features_order = current_layers[lyr_name].features_order,
-          symbol = current_layers[lyr_name].symbol,
-          new_coords = [];
-      map.select("#" + ref_layer_name)
-            .selectAll("path")
-            .each((d,i) => {
-                new_coords.push(path.centroid(d))
-            });
+          symbol = current_layers[lyr_name].symbol;
 
-      if (symbol == "text") {
-          map.select("#"+lyr_name)
+      if (symbol == "text") { // Reproject the labels :
+          map.select('#' + lyr_name)
                 .selectAll(symbol)
-                .attr("x", (d,i) => new_coords[i][0])
-                .attr("y", (d,i) => new_coords[i][1])
-      } else if (symbol == "image"){
+                .attrs( d => {
+                  let pt = path.centroid({'type': 'Point', 'coordinates': d.coords});
+                  return {'x': pt[0], 'y': pt[1]};
+                });
+      } else if (symbol == "image"){ // Reproject pictograms :
+          map.select('#' + lyr_name)
+              .selectAll(symbol)
+              .attrs(function(d,i){
+                let coords = path.centroid(d.geometry),
+                    size = +this.getAttribute('width').slice(0, -2) / 2;
+                return { 'x': coords[0] - size, 'y': coords[1] - size };
+              });
+      } else if(symbol == "circle"){ // Reproject Prop Symbol :
           map.select("#"+lyr_name)
-                .selectAll(symbol)
-                .attr("x", (d,i) => new_coords[i][0] - +this.getAttribute("width").slice(0, -2) / 2)
-                .attr("y", (d,i) => new_coords[i][1] - +this.getAttribute("width").slice(0, -2) / 2)
-      } else {
-          let ord = features_order.map(obj => obj[0]);
-          for(let i = 0; i < ord.length; i++)
-            features_order[i][2] = new_coords[ord[i]];
-
-          if(symbol == "circle")
-              map.select("#"+lyr_name)
-                    .selectAll(symbol)
-                    .attr("cx", (d,i) => features_order[i][2][0])
-                    .attr("cy", (d,i) => features_order[i][2][1])
-                    .attr("r", (d,i) => features_order[i][1]);
-          else if (symbol == "rect")
-              map.select("#"+lyr_name)
-                    .selectAll(symbol)
-                    .attr("x", (d,i) => features_order[i][2][0] - features_order[i][1] / 2)
-                    .attr("y", (d,i) => features_order[i][2][1] - features_order[i][1] / 2)
-                    .attr("height", (d,i) => features_order[i][1])
-                    .attr("width", (d,i) => features_order[i][1]);
+              .selectAll(symbol)
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
+              .attrs( d => {
+                let centroid = path.centroid(d);
+                return {
+                  'r': d.properties.prop_value,
+                  'cx': centroid[0],
+                  'cy': centroid[1]
+                };
+              });
+      } else if (symbol == "rect") { // Reproject Prop Symbol :
+          map.select("#"+lyr_name)
+              .selectAll(symbol)
+              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
+              .attrs( d => {
+                let centroid = path.centroid(d),
+                    size =  d.properties.prop_value;
+                return {
+                  'height': size,
+                  'width': size,
+                  'x': centroid[0] - size / 2,
+                  'y': centroid[1] - size / 2
+                };
+              });
       }
     }
   }
@@ -1490,9 +1512,6 @@ function remove_ext_dataset_cleanup(){
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
     document.getElementById('sample_zone').style.display = null;
-    if(Object.getOwnPropertyNames(user_data).length == 0){
-        document.getElementById("browse_button").disabled = true;
-    }
 }
 
 // Do some clean-up when a layer is removed
@@ -1542,9 +1561,8 @@ function remove_layer_cleanup(name){
         // Restore the state of the bottom of the section 1 :
         document.getElementById("join_section").innerHTML = "";
 
-        // If after this removal there isn't nor a targeted layer neither an external dataset :
-        if(joined_dataset.length == 0)
-            document.getElementById("browse_button").disabled = true;
+        // Disabled the button allowing the user to choose type for its layer :
+        document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
         // Also reset the user choosen values, remembered for its ease :
         fields_TypoSymbol.box_typo = undefined;
@@ -1612,15 +1630,15 @@ function zoom_without_redraw(){
           .attr("transform", transform.toString() + rot_val);
     } else {
         map.selectAll(".layer")
-                  .transition()
-                  .duration(50)
-                  .style("stroke-width", function(){
-                        let lyr_name = this.id;
-                        return current_layers[lyr_name].fixed_stroke
-                                ? this.style.strokeWidth
-                                : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
-                    })
-                  .attr("transform", d3.event.transform + rot_val);
+          .transition()
+          .duration(50)
+          .style("stroke-width", function(){
+                let lyr_name = this.id;
+                return current_layers[lyr_name].fixed_stroke
+                        ? this.style.strokeWidth
+                        : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
+            })
+          .attr("transform", d3.event.transform + rot_val);
         map.selectAll(".scalable-legend")
           .transition()
           .duration(50)
@@ -1654,6 +1672,7 @@ function redraw_legends_symbols(targeted_node){
             visible = legend_nodes[i].style.visibility;
 
         let transform_param = legend_nodes[i].getAttribute("transform"),
+            rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
             lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
             lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML;
 
@@ -1663,7 +1682,7 @@ function redraw_legends_symbols(targeted_node){
         } : undefined;
 
         legend_nodes[i].remove();
-        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value);
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
         let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
@@ -1689,6 +1708,8 @@ function interpolateZoom(translate, scale) {
 }
 
 function zoomClick() {
+    if(map_div.select("#hand_button").classed("locked"))
+        return;
     var direction = (this.id === 'zoom_in') ? 1 : -1,
         factor = 0.1,
         target_zoom = 1,
@@ -1821,7 +1842,7 @@ function change_projection(proj_name) {
                 || Object.getOwnPropertyNames(result_data)[0]
                 || null;
     if(!layer_name){
-        let layers = document.querySelectorAll(".layer");
+        let layers = document.getElementsByClassName("layer");
         layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
     }
     if(layer_name){
@@ -2018,8 +2039,8 @@ function canvas_mod_size(shape){
 function patchSvgForFonts(){
     function getListUsedFonts(){
         let elems = [
-            svg_map.querySelectorAll('text'),
-            svg_map.querySelectorAll('p')
+            svg_map.getElementsByTagName('text'),
+            svg_map.getElementsByTagName('p')
         ];
         let needed_definitions = [];
         elems.map(d => d ? d : []);
@@ -2059,7 +2080,7 @@ function unpatchSvgForFonts(){
 
 function patchSvgForInkscape(){
     svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
-    let elems = svg_map.querySelectorAll("g");
+    let elems = svg_map.getElementsByTagName("g");
     for(let i = elems.length - 1; i > -1; i--){
         if(elems[i].id == ""){
             continue;
@@ -2077,7 +2098,7 @@ function patchSvgForInkscape(){
 
 function unpatchSvgForInkscape(){
     svg_map.removeAttribute("xmlns:inkscape");
-    let elems = svg_map.querySelectorAll("g");
+    let elems = svg_map.getElementsByTagName("g");
     for(let i = elems.length - 1; i > -1; i--){
         if(elems[i].id == ""){
             continue;
@@ -2125,8 +2146,8 @@ function export_compo_svg(output_name){
     document.body.appendChild(dl_link);
     dl_link.click();
     dl_link.remove();
-    //unpatchSvgForFonts();
-    unpatchSvgForInkscape();
+    unpatchSvgForFonts();
+    //unpatchSvgForInkscape();
 }
 
 function _export_compo_png(type="web", scalefactor=1, output_name){
@@ -2221,7 +2242,7 @@ function make_export_layer_box(){
     });
 
     selec_type.on("change", function(){
-        if(this.value == "TopoJSON" || this.value == "KML"){
+        if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
             selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr("disabled", true);
         } else {
@@ -2236,6 +2257,7 @@ function make_export_layer_box(){
             proj4_input.style("display", "none");
     });
 
+    // TODO : allow export to "geopackage" format ?
     let extensions = new Map([
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
@@ -2277,10 +2299,12 @@ function make_export_layer_box(){
                 else
                     dataStr = "data:application/zip;base64," + data;
 
-                let dlAnchorElem = document.getElementById('downloadAnchorElem');
+                let dlAnchorElem = document.createElement('a');
                 dlAnchorElem.setAttribute("href", dataStr);
                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+                document.body.appendChild(dlAnchorElem);
                 dlAnchorElem.click();
+                dlAnchorElem.remove();
 
             }, error => {
                 console.log(error);

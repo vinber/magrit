@@ -39,6 +39,7 @@ from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from pyexcel import get_book
 
 # Web related stuff :
 import jinja2
@@ -56,7 +57,7 @@ try:
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
-        make_geojson_links)
+        make_geojson_links, repairCoordsPole)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
 
@@ -69,7 +70,7 @@ except:
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
         reproj_convert_layer, reproj_layer, check_projection, olson_transform,
-        make_geojson_links)
+        make_geojson_links, repairCoordsPole)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
 
@@ -267,19 +268,6 @@ def get_user_id(session_redis, app_users):
         return user_id
 
 
-async def ajson_loads(str_data):
-    """
-    Just a wrapper around json.loads to make it an awaitable coroutine.
-    Not sure yet if their is a real benefit to "gather" simultaneously multiple
-    loaded JSON this way.
-    Args:
-        - str_data, str: the raw JSON, decoded as String
-    Return:
-        - parsed_json, dict : the JSON file loaded in a python dictionnary
-    """
-    return json.loads(str_data)
-
-
 async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
@@ -365,35 +353,28 @@ async def convert(request):
         [os.remove(dir_path + file) for file in os.listdir(dir_path)]
         os.removedirs(dir_path)
 
-    elif 'octet-stream' in datatype and "geojson" in name.lower():
-        data = data.decode()
-        if '"crs"' in data and '"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data:
-            crs = True
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(data)
-            request.app['logger'].info(
-                '{} - Transform coordinates from GeoJSON'.format(user_id))
-            os.remove(filepath)
-            res = await ogr_to_geojson(filepath, to_latlong=True)
-            with open(filepath, 'wb') as f:
-                f.write(res)
-        else:
-            crs = False
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(data)
-
-        result = await geojson_to_topojson(filepath, "-q 1e5")
-
-        if len(result) == 0 and not crs:
+    elif ('octet-stream' in datatype
+            or 'text/json' in datatype) and "geojson" in name.lower():
+        # if '"crs"' in data and ('"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data or "4326" not in data):
+        with open(filepath, 'wb') as f:
+            f.write(data)
+        res = await ogr_to_geojson(filepath, to_latlong=True)
+        if len(res) == 0:
             return web.Response(text=json.dumps(
-                {'Error': 'GeoJSON layer provided without CRS'}))
-        else:
-            result = result.replace(''.join([user_id, '_']), '')
-            asyncio.ensure_future(
-                store_non_quantized(
-                    filepath, f_nameNQ, request.app['redis_conn']))
-            asyncio.ensure_future(
-                request.app['redis_conn'].set(f_nameQ, result))
+                {'Error': 'Error with the GeoJSON file provided'}))
+        with open(filepath, 'wb') as f:
+            f.write(res)
+        result = await geojson_to_topojson(filepath, "-q 1e5")
+        if len(result) == 0:
+            return web.Response(text=json.dumps(
+                {'Error': 'Error with the GeoJSON file provided'}))
+
+        result = result.replace(''.join([user_id, '_']), '')
+        asyncio.ensure_future(
+            store_non_quantized(
+                filepath, f_nameNQ, request.app['redis_conn']))
+        asyncio.ensure_future(
+            request.app['redis_conn'].set(f_nameQ, result))
 
     elif 'octet-stream' in datatype and "kml" in name.lower():
         print(datatype, name)
@@ -415,6 +396,7 @@ async def convert(request):
             asyncio.ensure_future(
                 request.app['redis_conn'].set(f_nameQ, result))
     else:
+        print(datatype, name)
         return web.Response(text='{"Error": "Incorrect datatype"}')
 
     request.app['logger'].info(
@@ -437,7 +419,7 @@ async def carto_doug(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson']), "Q"])
     ref_layer = await app['redis_conn'].get(f_name)
-    ref_layer = await ajson_loads(ref_layer.decode())
+    ref_layer = json.loads(ref_layer.decode())
     new_field = posted_data['var_name']
     iterations = int(posted_data['iterations'])
     n_field_name = list(new_field.keys())[0]
@@ -592,7 +574,7 @@ async def compute_olson(posted_data, user_id, app):
     f_name = '_'.join([user_id, str(posted_data['topojson']), "NQ"])
 
     ref_layer = await app['redis_conn'].get(f_name)
-    ref_layer = await ajson_loads(ref_layer.decode())
+    ref_layer = json.loads(ref_layer.decode())
 
     scale_values = posted_data['scale_values']
     ref_layer_geojson = convert_from_topo(ref_layer)
@@ -724,6 +706,9 @@ async def call_stewart(posted_data, user_id, app):
             app['redis_conn'].set(reusable_val, dump_obj))
 
     os.remove(filenames['point_layer'])
+    res = json.loads(res.decode())
+    repairCoordsPole(res)
+    res = json.dumps(res).encode()
     savefile(filenames['point_layer'], res)
     res = await geojson_to_topojson(filenames['point_layer'], remove=True)
 
@@ -791,31 +776,14 @@ async def handler_exists_layer2(request):
         return web.Response(text=res.decode())
     else:
         res_geojson = topojson_to_geojson(json.loads(res.decode()))
-        out_proj = check_projection(projection["name"] if "name" in projection
-                                    else projection["proj4string"])
-        if not out_proj:
-            return web.Response(
-                text="Error: Unable to understand the projection string")
         if "GeoJSON" in file_format:
-            res_geojson = json.loads(res_geojson)
-            if out_proj == "epsg:4326":
-                res_geojson["crs"] = {
-                    'type': 'name', 'properties': {
-                        'name': 'urn:ogc:def:crs:OGC:1.3:CRS84'
-                        }
-                    }
-                return web.Response(text=json.dumps(res_geojson))
-            else:
-                reproj_layer(res_geojson, out_proj)
-                if "epsg" in out_proj:
-                    res_geojson["crs"] = {
-                        'type': 'name', 'properties': {
-                            'name': 'urn:ogc:def:crs:{}'
-                                .format(out_proj.replace("epsg", "EPSG:"))
-                            }
-                        }
-                return web.Response(text=json.dumps(res_geojson))
+            return web.Response(text=res_geojson)
         else:
+            out_proj = check_projection(projection["name"] if "name" in projection
+                                        else projection["proj4string"])
+            if not out_proj:
+                return web.Response(
+                    text="Error: Unable to understand the projection string")
             available_formats = {"ESRI Shapefile": ".shp",
                                  "KML": ".kml",
                                  "GML": ".gml"}
@@ -947,9 +915,11 @@ async def convert_tabular(request):
     _, name, data, datatype = posted_data.get('file[]')
 
     if datatype in allowed_datatypes:
-        data = BytesIO(data.read())
-        df = pd.read_excel(data)
-        result = df.to_csv()
+        name, extension = name.split('.')
+        book = get_book(file_content=data.read(), file_type=extension)
+        sheet_names = list(book.sheets.keys())
+        result = book.sheets[sheet_names[0]].csv
+        message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(book.sheets) > 1 else None
     else:
         result = "Unknown tabular file format"
         request.app['logger'].info(
@@ -959,7 +929,8 @@ async def convert_tabular(request):
     request.app['logger'].info(
         ' - timing : spreadsheet -> csv : {:.4f}s'
         .format(time.time()-st))
-    return web.Response(text=json.dumps({"file": result, "name": name}))
+    return web.Response(text=json.dumps(
+        {"file": result, "name": name, "message": message}))
 
 
 def prepare_list_svg_symbols():

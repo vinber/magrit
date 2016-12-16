@@ -1,3 +1,3 @@
-# Noname
+# Magrit
 
 ...

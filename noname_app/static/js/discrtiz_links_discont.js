@@ -1,131 +1,151 @@
 "use strict";
 
 var display_discretization_links_discont = function(layer_name, field_name, nb_class, type){
-    var make_box_histo_option = function(){
-        var histo_options = newBox.append('div').attr("id", "histo_options");
+  var make_box_histo_option = function(){
+      var histo_options = newBox.append('div')
+          .attrs({id: 'histo_options', class: 'row equal'})
+          .styles({'margin': '5px 5px 10px 15px', 'width': '100%'});
+      var a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+          b = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+          c = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+          d = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3');
 
-        var a = histo_options.append("p").style("margin", 0).style("display", "inline");
-        var b = histo_options.append("p").style("margin", 0).style("display", "inline");
-        var c = histo_options.append("p").style("margin", 0).style("display", "inline");
+      a.insert('button')
+          .attrs({class: 'btn_population'})
+          .html(i18next.t('disc_box.disp_rug_pop'))
+          .on('click', function(){
+              if(this.classList.contains('active')){
+                this.classList.remove('active');
+                rug_plot.style('display', 'none');
+                rug_plot.classed('active', false);
+              } else {
+                this.classList.add('active');
+                rug_plot.style('display', '');
+                rug_plot.classed('active', true);
+              }
+          });
 
-        a.insert("input")
-            .attrs({type: "checkbox", value: "mean"})
-            .on("change", function(){
-                    if(line_mean.classed("active")){
-                        line_mean.style("stroke-width", 0)
-                        txt_mean.style("fill", "none")
-                        line_mean.classed("active", false)
-                    } else {
-                        line_mean.style("stroke-width", 2)
-                        txt_mean.style("fill", "red")
-                        line_mean.classed("active", true)
-                    }
-                });
+      b.insert('button')
+          .attrs({class: 'btn_mean'})
+          .html(i18next.t('disc_box.disp_mean'))
+          .on('click', function(){
+              if(this.classList.contains('active')){
+                  this.classList.remove('active');
+                  line_mean.style("stroke-width", 0);
+                  txt_mean.style("fill", "none");
+                  line_mean.classed("active", false);
+              } else {
+                  this.classList.add('active');
+                  line_mean.style("stroke-width", 2);
+                  txt_mean.style("fill", "blue");
+                  line_mean.classed("active", true);
+              }
+          });
 
-        b.insert("input")
-            .attrs({type: "checkbox", value: "median"})
-            .on("change", function(){
-                    if(line_median.classed("active")){
-                        line_median.style("stroke-width", 0)
-                        txt_median.style("fill", "none")
-                        line_median.classed("active", false)
-                    } else {
-                        line_median.style("stroke-width", 2)
-                        txt_median.style("fill", "blue")
-                        line_median.classed("active", true)
-                    }
-                });
+      c.insert('button')
+          .attrs({class: 'btn_median'})
+          .html(i18next.t('disc_box.disp_median'))
+          .on('click', function(){
+              if(this.classList.contains('active')){
+                  this.classList.remove('active');
+                  line_median.style('stroke-width', 0)
+                              .classed('active', false);
+                  txt_median.style('fill', 'none');
+              } else {
+                  this.classList.add('active');
+                  line_median.style('stroke-width', 2)
+                              .classed('active', true);
+                  txt_median.style('fill', 'darkgreen');
+              }
+          });
 
-        c.insert("input")
-            .attrs({type: "checkbox", value: "std"})
-            .on("change", function(){
-                    if(line_std_left.classed("active")){
-                        line_std_left.style("stroke-width", 0)
-                        line_std_left.classed("active", false)
-                        line_std_right.style("stroke-width", 0)
-                        line_std_right.classed("active", false)
-                    } else {
-                        line_std_left.style("stroke-width", 2)
-                        line_std_left.classed("active", true)
-                        line_std_right.style("stroke-width", 2)
-                        line_std_right.classed("active", true)
-                    }
-                })
-        a.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_mean") + "<br>");
-        b.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_median") + "<br>");
-        c.append("label_it_inline")
-            .attr("class", "label_it_inline")
-            .html(i18next.t("disc_box.disp_sd") + "<br>");
+      d.insert('button')
+          .attrs({class: 'btn_stddev'})
+          .html(i18next.t('disc_box.disp_sd'))
+          .on('click', function(){
+              if(this.classList.contains('active')){
+                  this.classList.remove('active');
+                  line_std_left.style("stroke-width", 0)
+                  line_std_left.classed("active", false)
+                  line_std_right.style("stroke-width", 0)
+                  line_std_right.classed("active", false)
+              } else {
+                  this.classList.add('active');
+                  line_std_left.style("stroke-width", 2)
+                  line_std_left.classed("active", true)
+                  line_std_right.style("stroke-width", 2)
+                  line_std_right.classed("active", true)
+              }
+          });
+  }
 
-    };
+  var make_overlay_elements = function(){
 
-    var display_ref_histo = function(){
-        var svg_h = h / 7.25 > 75 ? h / 7.25 : 75,
-            svg_w = w / 4.75,
-            nb_bins = 81 < (values.length / 3) ? 80 : Math.ceil(Math.sqrt(values.length)) + 1;
+    let mean_val = serie.mean(),
+        stddev = serie.stddev();
 
-        nb_bins = nb_bins < 3 ? 3 : nb_bins;
-        nb_bins = nb_bins > values.length ? nb_bins : values.length;
+    line_mean = overlay_svg.append("line")
+        .attr("class", "line_mean")
+        .attr("x1", x(mean_val))
+        .attr("y1", 10)
+        .attr("x2", x(mean_val))
+        .attr("y2", svg_h - margin.bottom)
+        .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
+        .classed("active", false);
 
-        var margin = {top: 5, right: 7.5, bottom: 15, left: 22.5},
-            width = svg_w - margin.right - margin.left;
-            height = svg_h - margin.top - margin.bottom;
+    txt_mean = overlay_svg.append("text")
+        .attr("y", 0)
+        .attr("dy", "0.75em")
+        .attr("x", x(mean_val))
+        .style("fill", "none")
+        .attr("text-anchor", "middle")
+        .text(i18next.t("disc_box.mean"));
 
-        var ref_histo = newBox.append('div').attr("id", "ref_histo_box");
-        ref_histo.append('p').style("margin", "auto")
-                  .html(i18next.t("disc_box.hist_ref_title"));
+    line_median = overlay_svg.append("line")
+        .attr("class", "line_med")
+        .attr("x1", x(serie.median()))
+        .attr("y1", 10)
+        .attr("x2", x(serie.median()))
+        .attr("y2", svg_h - margin.bottom)
+        .styles({"stroke-width": 0, stroke: "darkgreen", fill: "none"})
+        .classed("active", false);
 
-        var svg_ref_histo = ref_histo.append("svg").attr("id", "svg_ref_histo")
-            .attr("width", svg_w + margin.left + margin.right)
-            .attr("height", svg_h + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    txt_median = overlay_svg.append("text")
+        .attr("y", 0)
+        .attr("dy", "0.75em")
+        .attr("x", x(serie.median()))
+        .style("fill", "none")
+        .attr("text-anchor", "middle")
+        .text(i18next.t("disc_box.median"));
 
-        var x = d3.scaleLinear()
-            .domain([serie.min(), serie.max()])
-            .rangeRound([0, width]);
+    line_std_left = overlay_svg.append("line")
+        .attr("class", "lines_std")
+        .attr("x1", x(mean_val - stddev))
+        .attr("y1", 10)
+        .attr("x2", x(mean_val - stddev))
+        .attr("y2", svg_h - margin.bottom)
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .classed("active", false);
 
-        var data = d3.histogram()
-            .domain(x.domain())
-            .thresholds(x.ticks(nb_bins))
-            (values);
+    line_std_right = overlay_svg.append("line")
+        .attr("class", "lines_std")
+        .attr("x1", x(mean_val + stddev))
+        .attr("y1", 10)
+        .attr("x2", x(mean_val + stddev))
+        .attr("y2", svg_h - margin.bottom)
+        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
+        .classed("active", false);
 
-        var y = d3.scaleLinear()
-            .domain([0, d3.max(data, function(d) { return d.length; })])
-            .range([height, 0]);
 
-        var bar = svg_ref_histo.selectAll(".bar")
-            .data(data)
-          .enter()
-            .append("rect")
-            .attrs(d => ({
-              "class": "bar", "x": 1, "width": x(data[1].x1) - x(data[1].x0),
-              "height": height - y(d.length), "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-            }))
-            .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
-
-        svg_ref_histo.append("g")
-            .attr("class", "x axis")
-            .style("font-size", "10px")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom()
-                .scale(x)
-                .ticks(4))
-            .selectAll("text")
-                .attrs({x: -4, y: 4, dy: ".45em", "transform": "rotate(-40)"})
-                .style("text-anchor", "end");
-
-        svg_ref_histo.append("g")
-            .attr("class", "y axis")
-            .style("font-size", "10px")
-            .call(d3.axisLeft()
-                .scale(y)
-                .ticks(5));
-    }
+    rug_plot = overlay_svg.append('g')
+        .style('display', 'none');
+    rug_plot.selectAll('.indiv')
+        .data(values.map(i => ({value: +i})))
+        .enter()
+        .insert('line')
+        .attrs(d => ({class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom}))
+        .styles({'stroke': 'red', 'fill': 'none', 'stroke-width': 1});
+  }
 
     var make_summary = function(){
         let content_summary = make_content_summary(serie);
@@ -194,7 +214,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                 .data(bins)
               .enter().append("rect")
                 .attrs( (d,i) => ({
-                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
+                  "class": "bar", "id": "bar_" + i, "transform": "translate(0, -17.5)",
                   "x": x(d.offset), "y": y(d.height) - margin.bottom,
                   "width": x(d.width), "height": svg_h - y(d.height)
                 }))
@@ -310,10 +330,38 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
+    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
+    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
+
     discretization.node().value = type;
-    make_box_histo_option();
+
     make_summary();
-    display_ref_histo();
+
+    var refDisplay = prepare_ref_histo(newBox, serie, formatCount);
+    refDisplay("histogram");
+
+    if(values.length < 750){ // Only allow for beeswarm plot if there isn't too many values
+        // as it seems to be costly due to the "simulation" + the voronoi
+        let current_histo = "histogram",
+            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+        choice_histo.insert('button')
+            .attrs({id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo'})
+            .styles({padding: '3px', 'font-size': '10px'})
+            .html(i18next.t('disc_box.switch_ref_histo'))
+            .on('click', () => {
+                if(current_histo == 'histogram'){
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                } else if (current_histo == "box_plot"){
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+               } else if (current_histo == "beeswarm"){
+                     refDisplay("histogram");
+                     current_histo = "histogram";
+               }
+            });
+    }
+
 
     var txt_nb_class = d3.select("#discretization_panel")
                             .insert("p").style("display", "inline")
@@ -355,70 +403,19 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         .attr("width", svg_w + margin.left + margin.right)
         .attr("height", svg_h + margin.top + margin.bottom);
 
+    make_box_histo_option();
+
     var svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var overlay_svg = div_svg.append("g");
 
     var x = d3.scaleLinear()
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
-    let mean_val = serie.mean(),
-        median = serie.median(),
-        stddev = serie.stddev();
+    var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
+        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot;
 
-    var line_mean = overlay_svg.append("line")
-        .attr("class", "line_mean")
-        .attr("x1", x(mean_val))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "red", fill: "none"})
-        .classed("active", false);
-
-    var txt_mean = overlay_svg.append("text")
-        .attr("y", 0)
-        .attr("dy", "0.75em")
-        .attr("x", x(mean_val))
-        .style("fill", "none")
-        .attr("text-anchor", "middle")
-        .text("Mean");
-
-    var line_median = overlay_svg.append("line")
-        .attr("class", "line_med")
-        .attr("x1", x(median))
-        .attr("y1", 10)
-        .attr("x2", x(median))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
-        .classed("active", false);
-
-    var txt_median = overlay_svg.append("text")
-        .attr("y", 0)
-        .attr("dy", "0.75em")
-        .attr("x", x(median))
-        .style("fill", "none")
-        .attr("text-anchor", "middle")
-        .text("Median");
-
-    var line_std_left = overlay_svg.append("line")
-        .attr("class", "lines_std")
-        .attr("x1", x(mean_val - stddev))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val - stddev))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
-        .classed("active", false);
-
-    var line_std_right = overlay_svg.append("line")
-        .attr("class", "lines_std")
-        .attr("x1", x(mean_val + stddev))
-        .attr("y1", 10)
-        .attr("x2", x(mean_val + stddev))
-        .attr("y2", svg_h - margin.bottom)
-        .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
-        .classed("active", false);
+    make_overlay_elements();
 
     // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
