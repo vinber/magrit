@@ -411,9 +411,9 @@ function createStyleBoxGraticule(layer_name){
                 map.select("#Graticule").remove()
                 map.append("g").attrs({id: "Graticule", class: "layer"})
                                .append("path")
+                               .datum(d3.geoGraticule().step([step_val, step_val]))
                                .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
-                               .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val})
-                               .datum(d3.geoGraticule().step([step_val, step_val]));
+                               .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
@@ -478,8 +478,11 @@ function createStyleBox(layer_name){
     Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
         table.push(d.__data__.properties);
     });
-    var fields_layer = current_layers[layer_name].fields_type || type_col2(table);
-
+    if(layer_name != "Sphere")
+        var fields_layer = current_layers[layer_name].fields_type || type_col2(table);
+    else {
+        var fields_layer = [];
+    }
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){

@@ -597,7 +597,7 @@
         "buttons": {
             "enter": "Démarrer",
             "resume": "Continuer le projet en cours...",
-            "overview": "Fonctionnalitées",
+            "overview": "Fonctionnalités",
             "examples": "Exemples",
             "projections": "Projections",
             "doc": "Documentation",
@@ -621,6 +621,7 @@
             "export2": "(en sélectionnant un export en PNG ou en SVG)",
             "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
             "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
+            "projection1": "Propose un large choix de projections cartographiques",
             "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
         },
         "documentation_section": {

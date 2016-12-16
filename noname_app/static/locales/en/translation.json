@@ -623,6 +623,7 @@
             "export2": "(selecting between PNG and SVG exports)",
             "export_geo1": "Download your newly created geographic layers",
             "export_geo2":  "(file formats and projection available for export are too numerous to be listed)",
+            "projection1": "Pick a cartographic projection between the large choice available",
             "conclusion": "You might not need your favorite vector editing software !"
         },
         "documentation_section": {
