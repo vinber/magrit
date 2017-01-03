@@ -294,3 +294,81 @@ function getStdDev(values, mean_val){
   }
   return Math.sqrt((1/nb_val) * s)
 }
+
+/**
+* Return the maximal available rectangle in the map
+*  in order to locate a new legend without crossing existing ones.
+*
+*/
+function getMaximalAvailableRectangle(){
+  function fillMat(xs, ys){
+    for (let y = ys[0]; y < ys[1]; y++){
+      for (let x = xs[0]; x < xs[1]; x++){
+        mat[y][x] = 0;
+      }
+    }
+  }
+  let xy0 = get_map_xy0(),
+      x0 = Math.abs(xy0.x),
+      y0 = Math.abs(xy0.y);
+  let ww = Math.abs(w),
+      hh = Math.abs(h);
+  let mat = new Array(hh);
+  for (let i = 0; i < mat.length; i++){
+    mat[i] = new Array(ww);
+    for(let j = 0; j < ww; j++){
+      mat[i][j] = 1;
+    }
+  }
+  let legends = [
+      svg_map.querySelectorAll("#legend_root"),
+      svg_map.querySelectorAll("#legend_root2"),
+      svg_map.querySelectorAll("#legend_root_links")
+    ];
+  for(let i = 0; i < 3; i++){
+    for(let j = 0; j < legends[i].length; j++){
+      let bbox = legends[i][j].getBoundingClientRect(),
+          bx = Math.floor(bbox.x - x0),
+          by = Math.floor(bbox.y - y0);
+      fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+    }
+  }
+
+  let best_ll = {one: 0, two: 0},
+      best_ur = {one: -1, two: -1},
+      best_area = 0;
+  let stack = [],
+      push_stack = (a, b) => { stack.push([a, b]); },
+      pop_stack = () => stack.pop();
+  for(let i = 0; i < hh; i++){
+    let open_width = 0;
+    let col = mat[i];
+    for(let j = 0; j < ww; j++){
+      if(col[j] > open_width) {
+        push_stack(j, open_width);
+        open_width = col[j];
+      } else if(col[j] < open_width){
+        let m0, w0, area;
+        do {
+          [m0, w0] = pop_stack();
+          area = open_width * (j - m0);
+          if (area > best_area) {
+            best_area = area;
+            best_ll.one = m0;
+            best_ll.two = i;
+            best_ur.one = j - 1;
+            best_ur.two = i - open_width + 1;
+          }
+          open_width = w0;
+        } while (col[j] < open_width);
+        open_width = col[j];
+        if (open_width != 0){
+          push_stack(m0, w0);
+        }
+      }
+    }
+  }
+  console.log("Maximal rectangle area : ", best_area);
+  console.log("Location : [col :",best_ll.one + 1, ", row :", best_ll.two + 1,"] to [col : ", best_ur.one + 1, ", row : ", best_ur.two + 1, "]");
+  return [best_ll.one, best_ll.two, best_ur.one, best_ur.two];
+}

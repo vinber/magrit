@@ -613,6 +613,7 @@ function setUpInterface(resume_project)
                 handle_proj_center_button([this.value, null, null]);
                 document.getElementById("proj_center_value_txt").value = +this.value;
             });
+
     rotation_param.append("input")
             .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                     min: -180.0, max: 180.0, value: 0, step: "any"})
@@ -660,6 +661,7 @@ function setUpInterface(resume_project)
             // remove it :
             window.localStorage.removeItem("noname_app_project");
         }
+        proj_select.node().value = "d3.geoNaturalEarth().scale(400).translate([375, 50])";
     });
 
     const_options.append("button")
@@ -1114,7 +1116,6 @@ const available_fonts = [
     ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
     ['Bitter', 'Bitter,sans-serif'],
     ['Dosis', 'Dosis,sans-serif'],
-    ['Humor Sans', 'Humor Sans'],
     ['Roboto', 'Roboto,sans-serif'],
     ['Lobster', 'Lobster,sans-serif'],
     ['Impact', 'Impact,Charcoal,sans-serif'],
@@ -1910,7 +1911,11 @@ function handle_title(txt){
              .styles({"font-family": "Arial, Helvetica, sans-serif",
                       "font-size": "20px", position: "absolute", color: "black"})
              .text(txt)
-             .on("contextmenu dblclick", () => { d3.event.preventDefault(); })
+             .on("contextmenu dblclick", () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                handle_title_properties();
+              })
              .call(drag_elem_geo);
     }
 }

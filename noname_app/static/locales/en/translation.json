@@ -22,6 +22,7 @@
             "error_no_visible": "Error : no visible layer found",
             "error_type_fields": "The targeted layer doesn't seems to the suitable fields for this representation (or they may contain too many empty values)",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
+            "error_too_many_features_color": "Very many features. The high number of colors may affect the readability of the map.",
             "error_too_low_resolution": "Too low resolution selected.",
             "error_too_high_resolution": "Too high resolution selected.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
