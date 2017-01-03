@@ -1,9 +1,6 @@
 [
-	{"name": "Natural Earth", "projection": "d3.geoNaturalEarth().scale(400).translate([375, 50])"},
-	{"name": "mercator", "projection":  "d3.geoMercator().scale(375).translate([525, 350])"},
-	{"name": "azimuthalEqualArea", "projection":  "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},
-	{"name": "orthographic", "projection":  "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"},
 	{"name": "Armadillo", "projection": "d3.geoArmadillo().scale(400)"},
+	{"name": "AzimuthalEqualArea", "projection":  "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"},
 	{"name": "Baker", "projection": "d3.geoBaker().scale(400)"},
 	{"name": "Boggs", "projection": "d3.geoBoggs().scale(400)"},
 	{"name": "Interrupted Boggs", "projection": "d3.geoInterruptedBoggs().scale(400)"},
@@ -24,12 +21,12 @@
 	{"name": "Homolosine", "projection": "d3.geoHomolosine().scale(400)"},
 	{"name": "Interrupted Homolosine", "projection": "d3.geoInterruptedHomolosine().scale(400)"},
 	{"name": "Loximuthal", "projection": "d3.geoLoximuthal().scale(400)"},
+	{"name": "Mercator", "projection":  "d3.geoMercator().scale(375).translate([525, 350])"},
+	{"name": "Natural Earth", "projection": "d3.geoNaturalEarth().scale(400).translate([375, 50])"},
+	{"name": "Orthographic", "projection":  "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"},
 	{"name": "Peirce quincuncial", "projection": "d3.geoPeirceQuincuncial().scale(400)"},
 	{"name": "Robinson", "projection": "d3.geoRobinson().scale(400)"},
 	{"name": "Interrupted Sinu-Mollweide", "projection": "d3.geoInterruptedSinuMollweide().scale(400)"},
 	{"name": "Sinusoidal", "projection": "d3.geoSinusoidal().scale(400)"},
 	{"name": "Interrupted Sinusoidal", "projection": "d3.geoInterruptedSinusoidal().scale(400)"}
  ]
-
-
-

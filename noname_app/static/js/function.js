@@ -666,18 +666,28 @@ var fields_Typo = {
         });
 
         btn_typo_class.on("click", function(){
-          let selected_field = field_selec.node().value,
-              col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
-          display_categorical_box(user_data[layer], layer, selected_field, col_map)
-              .then(function(confirmed){
-                  if(confirmed){
-                      ok_button.attr("disabled", null);
-                      self.rendering_params[selected_field] = {
-                              nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                              renderer:"Categorical", rendered_field: selected_field
+          swal({title: "",
+                text: i18next.t("app_page.common.error_too_many_features_color"),
+                type: "warning",
+                showCancelButton: true,
+                allowOutsideClick: false,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                cancelButtonText: i18next.t("app_page.common.cancel")
+              }).then(() => {
+                  let selected_field = field_selec.node().value,
+                      col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
+                  display_categorical_box(user_data[layer], layer, selected_field, col_map)
+                      .then(function(confirmed){
+                          if(confirmed){
+                              ok_button.attr("disabled", null);
+                              self.rendering_params[selected_field] = {
+                                      nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                      renderer:"Categorical", rendered_field: selected_field
+                                  }
                           }
-                  }
-              });
+                      });
+                }, () => { return; });
         });
 
         ok_button.on('click', function(){
