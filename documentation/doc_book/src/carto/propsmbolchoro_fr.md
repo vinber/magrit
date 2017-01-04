@@ -1,7 +1,7 @@
 # Carte de stocks et ratios
 
-Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations.  
-Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte.
+Ce type de représentation permet de combiner la représentation de données de stocks et celles de ratios sur une même carte.  
+La donnée de ratiio est représentée à l’intérieur du figuré représentant le stock. 
 
 > ### Paramètres
 > * Le nom du champ contenant les valeurs à utiliser pour définir la taille des symboles.
@@ -11,7 +11,7 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 > * Le nom du champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles.
 
 
-#### Exemple de rendu à partir d'un jeu de données d'exemple :
+#### Exemple :
 
 <p style="text-align: center;">
 <img src="img/propsymbolschoro.png" alt="img_propsymbolchoro_map" style="width: 480px;"/>

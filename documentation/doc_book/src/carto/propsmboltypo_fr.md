@@ -1,6 +1,6 @@
 # Carte de stocks et qualitative
 
-Ce type de représentation permet d'établir une correspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle).
+Ce type de représentation permet d'établir une correspondance entre des données de stock et une variable d'appartenance (variable catégorielle).
 
 
 > ### Paramètres
@@ -12,7 +12,7 @@ Ce type de représentation permet d'établir une correspondance entre des donné
 > * Le choix des couleurs correspondantes aux catégories à représenter
 
 
-#### Exemple de rendu à partir d'un jeu de données d'exemple :
+#### Exemple :
 
 <p style="text-align: center;">
 <img src="img/propsymboltypo_map.png" alt="img_propsymboltypo_map" style="width: 480px;"/>

@@ -40,7 +40,7 @@ L'ajout d'un tableau de données peut être effectué de plusieurs manières :
 Plusieurs format sont pris en charge pour l'import des données :
 - ```csv``` (champs séparés par une virgule ou par un point virgule)
 - ```tsv``` (champs séparés par une tabulation)
-- ```xls``` et ```xlsx``` (à condition que le feuillet à utiliser contiennent seulement la table de données; cf. exemple).
+- ```xls``` et ```xlsx``` (à condition que la feuille à utiliser contiennent seulement la table de données).
 
 
 Jointure des données
@@ -60,9 +60,4 @@ Cette opération et appelée "jointure" (c'est également le cas dans les logici
 Affichage et enrichissement des tables de données
 -------------------------------------------------
 
-L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée dont est affublée chaque couche.
-
-
-
-  [1]: Ref
-  [2]: Ref
+L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.

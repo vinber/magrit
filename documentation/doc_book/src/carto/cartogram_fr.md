@@ -1,17 +1,15 @@
 # Cartogramme
 
-De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique.  
-Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).
+Les anamorphoses sont utilisées en cartographie statistique pour montrer l'importance d'un phénomène donné : ce type de carte est couramment appelé un cartogramme.  
+Elles permettent de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).  
+Magrit propose trois méthode de création de cartogrammes : Pseudo-Dorling, Dougenik et al et Olson (**refs**).   
 
-> ### Paramètres
+> ### Paramètres (méthode Dougenik)
 > * Le nom du champ contenant les valeurs à utiliser
-> * Le type de symbole à utiliser (parmi 'cercle' et 'carré')
-> * La taille (px) à appliquer sur le valeur définie par la suite
-> * La valeur sur laquelle fixer la taille
 > * Le nombre d'itérations à effectuer avant d'obtenir le résultat
-> * La valeur statistique à utiliser comme référence pour la transformation
+> * Le nom de la couche produite
 
-#### Exemple de rendu à partir d'un jeu de données d'exemple :
+#### Exemple :
 
 <p style="text-align: center;">
 <img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
@@ -20,3 +18,37 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 - Méthode de **Dougenik**
 - Champ utilisé : **pop2008**
 - **5 itérations**
+
+
+> ### Paramètres (méthode Olson)
+> * Le nom du champ contenant les valeurs à utiliser
+> * Le nombre d'itérations à effectuer avant d'obtenir le résultat
+> * Le nom de la couche produite
+
+#### Exemple :
+
+<p style="text-align: center;">
+<img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+</p>
+
+- Méthode de **Dougenik**
+- Champ utilisé : **pop2008**
+- **5 itérations**
+
+
+> ### Paramètres (méthode Dorling)
+> * Le nom du champ contenant les valeurs à utiliser
+> * Le nombre d'itérations à effectuer avant d'obtenir le résultat
+> * Le nom de la couche produite
+
+#### Exemple :
+
+<p style="text-align: center;">
+<img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+</p>
+
+- Méthode de **Dougenik**
+- Champ utilisé : **pop2008**
+- **5 itérations**
+
+[]Refs des méthodes

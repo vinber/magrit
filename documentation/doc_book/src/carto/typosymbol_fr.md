@@ -7,7 +7,7 @@ Ce type de représentation permet de faire figurer des symboles en fonction des 
 > * Le choix de pictogrammes correspondants aux différentes catégories à représenter
 
 
-#### Exemple de rendu à partir d'un jeu de données d'exemple :
+#### Exemple :
 
 <p style="text-align: center;">
 <img src="img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
