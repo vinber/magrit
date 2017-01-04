@@ -297,10 +297,63 @@ function getStdDev(values, mean_val){
 
 /**
 * Return the maximal available rectangle in the map
-*  in order to locate a new legend without crossing existing ones.
+*  in order to locate a new legend without covering existing ones.
 *
+* Implementation taken from http://www.codinghands.co.uk/blog/2013/02/javascript-implementation-omn-maximal-rectangle-algorithm/
 */
 function getMaximalAvailableRectangle(){
+  function getMaxRect(){
+      let matrix = mat;
+      var bestUpperLeft = {x: -1, y: -1};
+      var bestLowerRight = {x: -1, y: -1};
+
+      var cache = new Array(rows+1), stack = [];
+      for(var i = 0; i < cache.length; i++)
+          cache[i] = 0;
+
+      for(var x = cols-1; x >= 0; x--){
+          updateCache(x, cache);
+          var width = 0;
+          for(var y = 0; y < rows+1; y++){
+              if(cache[y] > width){
+                  stack.push({y: y, width: width});
+                  width = cache[y];
+              }
+              if(cache[y] < width){
+                  while(true){
+                      var pop = stack.pop();
+                      var y0 = pop.y, w0 = pop.width;
+                      if(((width * (y - y0)) > area(bestUpperLeft, bestLowerRight)) && (y-y0 >= minQuadY) && (width >= minQuadX)){
+                          bestUpperLeft = {x: x, y: y0};
+                          bestLowerRight = {x: x+width-1, y: y-1};
+                      }
+                      width = w0;
+                      if(cache[y] >= width)
+                          break;
+                  }
+                  width = cache[y];
+                  if(width != 0)
+                      stack.push({y: y0, width: w0});
+              }
+          }
+      }
+      return { x: bestUpperLeft.x, y: bestUpperLeft.y, lenX: bestLowerRight.x-bestUpperLeft.x+1, lenY: bestLowerRight.y-bestUpperLeft.y+1, area: area(bestUpperLeft, bestLowerRight)};
+  }
+
+  function area(upperLeft, lowerRight){
+      if(upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y)
+          return 0;
+      return ((lowerRight.x+1)-(upperLeft.x))*((lowerRight.y+1)-(upperLeft.y));
+  }
+
+  function updateCache(x, cache){
+      for(var y = 0; y < rows; y++)
+          if(mat[x][y] == 1)
+              cache[y]++;
+          else
+              cache[y] = 0;
+  }
+
   function fillMat(xs, ys){
     for (let y = ys[0]; y < ys[1]; y++){
       for (let x = xs[0]; x < xs[1]; x++){
@@ -311,12 +364,14 @@ function getMaximalAvailableRectangle(){
   let xy0 = get_map_xy0(),
       x0 = Math.abs(xy0.x),
       y0 = Math.abs(xy0.y);
-  let ww = Math.abs(w),
-      hh = Math.abs(h);
-  let mat = new Array(hh);
-  for (let i = 0; i < mat.length; i++){
-    mat[i] = new Array(ww);
-    for(let j = 0; j < ww; j++){
+  let cols = Math.abs(w),
+      rows = Math.abs(h),
+      minQuadY = 100,
+      minQuadX = 40;
+  let mat = new Array(cols);
+  for (let i = 0; i < cols; i++){
+    mat[i] = new Array(rows);
+    for(let j = 0; j < rows; j++){
       mat[i][j] = 1;
     }
   }
@@ -333,42 +388,49 @@ function getMaximalAvailableRectangle(){
       fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
     }
   }
-
-  let best_ll = {one: 0, two: 0},
-      best_ur = {one: -1, two: -1},
-      best_area = 0;
-  let stack = [],
-      push_stack = (a, b) => { stack.push([a, b]); },
-      pop_stack = () => stack.pop();
-  for(let i = 0; i < hh; i++){
-    let open_width = 0;
-    let col = mat[i];
-    for(let j = 0; j < ww; j++){
-      if(col[j] > open_width) {
-        push_stack(j, open_width);
-        open_width = col[j];
-      } else if(col[j] < open_width){
-        let m0, w0, area;
-        do {
-          [m0, w0] = pop_stack();
-          area = open_width * (j - m0);
-          if (area > best_area) {
-            best_area = area;
-            best_ll.one = m0;
-            best_ll.two = i;
-            best_ur.one = j - 1;
-            best_ur.two = i - open_width + 1;
-          }
-          open_width = w0;
-        } while (col[j] < open_width);
-        open_width = col[j];
-        if (open_width != 0){
-          push_stack(m0, w0);
-        }
-      }
-    }
-  }
-  console.log("Maximal rectangle area : ", best_area);
-  console.log("Location : [col :",best_ll.one + 1, ", row :", best_ll.two + 1,"] to [col : ", best_ur.one + 1, ", row : ", best_ur.two + 1, "]");
-  return [best_ll.one, best_ll.two, best_ur.one, best_ur.two];
+  return getMaxRect(mat)
 }
+  // let cache = new Array(ww);
+  // let update_cache = (line_idx) => {
+  //   for(let idx = 0; idx < ww; idx++){
+  //
+  //   }
+  // }
+  // let best_ll = {one: 0, two: 0},
+  //     best_ur = {one: -1, two: -1},
+  //     best_area = 0;
+  // let stack = [],
+  //     push_stack = (a, b) => { stack.push([a, b]); },
+  //     pop_stack = () => stack.pop();
+  // for(let i = 0; i < hh; i++){
+  //   let open_width = 0;
+  //   let col = mat[i];
+  //   for(let j = 0; j < ww; j++){
+  //     if(col[j] > open_width) {
+  //       push_stack(j, open_width);
+  //       open_width = col[j];
+  //     } else if(col[j] < open_width){
+  //       let m0, w0, area;
+  //       do {
+  //         [m0, w0] = pop_stack();
+  //         area = open_width * (j - m0);
+  //         if (area > best_area) {
+  //           best_area = area;
+  //           best_ll.one = m0;
+  //           best_ll.two = i;
+  //           best_ur.one = j - 1;
+  //           best_ur.two = i - open_width + 1;
+  //         }
+  //         open_width = w0;
+  //       } while (col[j] < open_width);
+  //       open_width = col[j];
+  //       if (open_width != 0){
+  //         push_stack(m0, w0);
+  //       }
+  //     }
+  //   }
+  // }
+  // console.log("Maximal rectangle area : ", best_area);
+  // console.log("Location : [col :",best_ll.one + 1, ", row :", best_ll.two + 1,"] to [col : ", best_ur.one + 1, ", row : ", best_ur.two + 1, "]");
+  // return [best_ll.one, best_ll.two, best_ur.one, best_ur.two];
+// }

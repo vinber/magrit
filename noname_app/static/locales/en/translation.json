@@ -629,7 +629,7 @@
         },
         "documentation_section": {
             "user_manual": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>.",
-            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research notebook</a> containing detailed tutorials and news about the application."
+            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research notebook</a> containing detailed tutorials and news about changes in the application."
         },
         "source_section":{
             "box1_title": "Free and Open-Source",
