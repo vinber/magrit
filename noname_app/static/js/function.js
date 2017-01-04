@@ -2978,13 +2978,14 @@ var render_label = function(layer, rendering_params, options){
     let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);
-
+    let nb_ft;
     if(options && options.data){
         new_layer_data = options.data;
+        nb_ft = new_layer_data.length;
     } else if (layer){
         let ref_selection = document.getElementById(layer).getElementsByTagName("path");
-        let nb_ft = ref_selection.length;
 
+        nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
             let ft = ref_selection[i].__data__;
             new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
@@ -3019,9 +3020,9 @@ var render_label = function(layer, rendering_params, options){
                                   document.querySelector("body"),
                                   getItems(this)); })
         .call(drag_elem_geo);
-
+    console.log("abcde");
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
-
+    console.log("abcde");
     current_layers[layer_to_add] = {
         "n_features": new_layer_data.length,
         "renderer": "Label",

@@ -444,7 +444,7 @@ function prepare_lang_buttons(){
 
 //i18n initialization :
 (function(){
-    var existing_lang = ["en", "fr"]
+    var existing_lang = ["en", "fr"];
     let lang = window.navigator.language.split('-')[0];
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)

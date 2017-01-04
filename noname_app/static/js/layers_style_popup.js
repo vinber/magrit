@@ -951,8 +951,8 @@ function createStyleBox(layer_name){
                               ref_font_size: 12,
                               uo_layer_name: ["Labels", value, layer_name].join('_')
                             };
-                            resolve();
                             render_label(layer_name, options_labels);
+                            resolve();
                           }
                       });
                   }
