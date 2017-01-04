@@ -627,7 +627,7 @@
         },
         "documentation_section": {
             "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
-            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités de l'application"
+            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application"
         },
         "source_section":{
             "box1_title": "Libre et gratuit",
