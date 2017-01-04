@@ -359,6 +359,7 @@ class Textbox {
     }
     editStyle(){
             let current_options = {size: this.text_annot.select("p").style("font-size"),
+                                   color: this.text_annot.select("p").style("color"),
                                    content: unescape(this.text_annot.select("p").html()),
                                    font: ""};
             let self = this;
@@ -383,7 +384,14 @@ class Textbox {
                 .style('width', '60px')
                 .on("change", function(){
                     self.fontsize = +this.value;
-                    self.text_annot.select("p").style("font-size", self.fontsize + "px")
+                    self.text_annot.select("p").style("font-size", self.fontsize + "px");
+                });
+
+            options_font.append("input")
+                .attrs({type: "color", id: "font_color", value: current_options.color})
+                .style('width', '60px')
+                .on("change", function(){
+                    self.text_annot.select("p").style("color", this.value);
                 });
 
             let options_format = box_content.append('p'),

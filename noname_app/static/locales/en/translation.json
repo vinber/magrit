@@ -646,5 +646,15 @@
             "accept": "I understand",
             "more_info": "More information"
         }
+    },
+    "contact_form": {
+        "send": "Send",
+        "name": "Name",
+        "email": "E-mail",
+        "subject": "Subject",
+        "message": "Message",
+        "contact": "Contact",
+        "index": "Index page",
+        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">support [at] url [dot] com</span>"
     }
 }
