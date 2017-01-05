@@ -22,6 +22,7 @@
             "error_no_visible": "Error : no visible layer found",
             "error_type_fields": "The targeted layer doesn't seems to the suitable fields for this representation (or they may contain too many empty values)",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
+            "error_too_many_features_color": "Very many features. The high number of colors may affect the readability of the map.",
             "error_too_low_resolution": "Too low resolution selected.",
             "error_too_high_resolution": "Too high resolution selected.",
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
@@ -41,6 +42,7 @@
             "close": "Close",
             "edit_style": "Edit style...",
             "options": "Options",
+            "default": "Default value",
             "error": "Error",
             "feature": "feature",
             "feature_plural": "features",
@@ -254,7 +256,8 @@
             "stock": "Stock",
             "ratio": "Ratio",
             "category": "Category",
-            "unknown": "Unknown"
+            "unknown": "Unknown",
+            "id": "Id"
         },
         "explore_box": {
             "title": "Explore dataset",
@@ -596,6 +599,7 @@
         "switch_ref_histo": "Switch representation"
     },
     "index":{
+        "title": "Magrit - Thematic cartography",
         "buttons": {
             "enter": "Enter!",
             "resume": "Resume last project...",
@@ -628,7 +632,7 @@
         },
         "documentation_section": {
             "user_manual": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>.",
-            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research notebook</a> containing detailed tutorials and news about the application."
+            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research notebook</a> containing detailed tutorials and news about changes in the application."
         },
         "source_section":{
             "box1_title": "Free and Open-Source",
@@ -636,7 +640,7 @@
             "box3_title": "Translated/translatable content",
             "box4_title": "Under active developpement",
             "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
-            "box2_text": "Bug reports and contributions are welcome. Please use project page on <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
+            "box2_text": "Bug reports and contributions are welcome. Please use the <a href=\"/contact\">contact page</a> or the project page on <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!"
         },
@@ -645,5 +649,15 @@
             "accept": "I understand",
             "more_info": "More information"
         }
+    },
+    "contact_form": {
+        "send": "Send",
+        "name": "Name",
+        "email": "E-mail",
+        "subject": "Subject",
+        "message": "Message",
+        "contact": "Contact",
+        "index": "Index page",
+        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">support [at] url [dot] com</span>"
     }
 }

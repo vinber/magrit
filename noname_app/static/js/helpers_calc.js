@@ -59,6 +59,20 @@ var contains_empty_val = function(arr){
 }
 
 /**
+* @param {Array} arr - The array to test
+* @return {Boolean} result - True or False, according to whether it contains duplicate or not
+*/
+function has_duplicate(arr){
+    let h = {},
+        len_arr = arr.length;
+    for(let i=0; i<len_arr; i++){
+        if(h[arr[i]]) return true;
+        else h[arr[i]] = true;
+    }
+    return false;
+}
+
+/**
 * Round a given value with the given precision
 *
 * @param {Number} val - The value to be rounded.
@@ -293,4 +307,103 @@ function getStdDev(values, mean_val){
       s += pow(values[i] - mean_val, 2);
   }
   return Math.sqrt((1/nb_val) * s)
+}
+
+/**
+* Return the maximal available rectangle in the map
+*  in order to locate a new legend without covering existing ones.
+*
+* Implementation taken from http://www.codinghands.co.uk/blog/2013/02/javascript-implementation-omn-maximal-rectangle-algorithm/
+*/
+function getMaximalAvailableRectangle(legend_nodes){
+  function getMaxRect(){
+      let matrix = mat;
+      var bestUpperLeft = {x: -1, y: -1};
+      var bestLowerRight = {x: -1, y: -1};
+
+      var cache = new Array(rows+1), stack = [];
+      for(var i = 0; i < cache.length; i++)
+          cache[i] = 0;
+
+      for(var x = cols-1; x >= 0; x--){
+          updateCache(x, cache);
+          var width = 0;
+          for(var y = 0; y < rows+1; y++){
+              if(cache[y] > width){
+                  stack.push({y: y, width: width});
+                  width = cache[y];
+              }
+              if(cache[y] < width){
+                  while(true){
+                      var pop = stack.pop();
+                      var y0 = pop.y, w0 = pop.width;
+                      if(((width * (y - y0)) > area(bestUpperLeft, bestLowerRight)) && (y-y0 >= minQuadY) && (width >= minQuadX)){
+                          bestUpperLeft = {x: x, y: y0};
+                          bestLowerRight = {x: x+width-1, y: y-1};
+                      }
+                      width = w0;
+                      if(cache[y] >= width)
+                          break;
+                  }
+                  width = cache[y];
+                  if(width != 0)
+                      stack.push({y: y0, width: w0});
+              }
+          }
+      }
+      return { x: bestUpperLeft.x, y: bestUpperLeft.y, lenX: bestLowerRight.x-bestUpperLeft.x+1, lenY: bestLowerRight.y-bestUpperLeft.y+1, area: area(bestUpperLeft, bestLowerRight)};
+  }
+
+  function area(upperLeft, lowerRight){
+      if(upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y)
+          return 0;
+      return ((lowerRight.x+1)-(upperLeft.x))*((lowerRight.y+1)-(upperLeft.y));
+  }
+
+  function updateCache(x, cache){
+      for(var y = 0; y < rows; y++)
+          if(mat[x][y] == 1)
+              cache[y]++;
+          else
+              cache[y] = 0;
+  }
+
+  function fillMat(xs, ys){
+      for (let x = xs[0]; x < xs[1]; x++){
+        for (let y = ys[0]; y < ys[1]; y++){
+          mat[x][y] = 0;
+      }
+    }
+  }
+  let xy0 = get_map_xy0(),
+      x0 = Math.abs(xy0.x),
+      y0 = Math.abs(xy0.y);
+  let cols = Math.abs(w),
+      rows = Math.abs(h),
+      minQuadY = 100,
+      minQuadX = 40;
+  let mat = new Array(cols);
+  for (let i = 0; i < cols; i++){
+    mat[i] = new Array(rows);
+    for(let j = 0; j < rows; j++){
+      mat[i][j] = 1;
+    }
+  }
+  for(let i = 0; i < legend_nodes.length; i++){
+      let bbox = legend_nodes[i].getBoundingClientRect(),
+          bx = Math.floor(bbox.x - x0),
+          by = Math.floor(bbox.y - y0);
+      fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+  }
+  return getMaxRect(mat);
+}
+
+function getTranslateNewLegend(){
+    let legends = svg_map.querySelectorAll("#legend_root, #legend_root2, #legend_root_links");
+    if(legends.length == 0) {
+      return [0, 0];
+    } else {
+      let max_rect = getMaximalAvailableRectangle(legends);
+      return max_rect;
+    }
 }

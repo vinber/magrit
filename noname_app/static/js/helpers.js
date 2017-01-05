@@ -245,7 +245,8 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
     var tmp_type = undefined,
         result = [],
         nb_features = table.length,
-        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
+        deepth_test = nb_features,
+        // deepth_test = 100 < nb_features ? 100 : nb_features - 1,
         tmp = {};
     if(!field){
         var fields = Object.getOwnPropertyNames(table[0]).filter(v => v != '_uid');
@@ -254,31 +255,38 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
         var fields = [field];
         field = undefined;
     }
+    let dups = {};
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         tmp[field] = [];
+        dups[field] = false;
+        let h = {};
         for(let i=0; i < deepth_test; ++i){
-            tmp_type = typeof table[i][field];
-            if(tmp_type === "string" && table[i][field].length == 0)
+            let val = table[i][field];
+            if(h[val]) dups[field] = true;
+            else h[val] = true,
+            tmp_type = typeof val;
+            if(tmp_type === "string" && val.length == 0)
                 tmp_type = "empty";
-            else if( (tmp_type === "string" && !isNaN(Number(table[i][field]))) || tmp_type === 'number'){
-                let val = Number(table[i][field]);
-                tmp_type = (val | 0) === val ? "stock" : "ratio";
-            } else if(tmp_type === "object" && isFinite(table[i][field]))
+            else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
+                let _val = Number(table[i][field]);
+                tmp_type = (_val | 0) === val ? "stock" : "ratio";
+            } else if(tmp_type === "object" && isFinite(val))
                 tmp_type = "empty"
             tmp[fields[j]].push(tmp_type);
         }
     }
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
+        let has_dup = dups[field];
         if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
-            result.push({name: field, type: "stock"});
+            result.push({name: field, type: "stock", has_duplicate: has_dup});
         else if (tmp[field].every(ft => ft === "string" || ft === "empty") && tmp[field].indexOf("string") > -1)
-            result.push({name: field, type: "category"});
+            result.push({name: field, type: "category", has_duplicate: has_dup});
         else if (tmp[field].every(ft => ft === "ratio" || ft === "stock" || ft === "empty") && tmp[field].indexOf("ratio") > -1)
             result.push({name: field, type: "ratio"});
         else
-            result.push({name: field, type: "unknown"});
+            result.push({name: field, type: "unknown", has_duplicate: has_dup});
     }
     return result;
 }
@@ -300,7 +308,7 @@ function make_box_type_fields(layer_name){
         fields_type = current_layers[layer_name].fields_type,
         f = fields_type.map(v => v.name),
         // fields_type = current_layers[layer_name].fields_type,
-        ref_type = ['stock', 'ratio', 'category', 'unknown'];
+        ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
 
     if(f.length === 0)
         fields_type = tmp.slice();
@@ -340,6 +348,12 @@ function make_box_type_fields(layer_name){
         .each(function(d){
           this.value = d.type;
         });
+
+    for(let i=0; i < fields_type.length; i++){
+        if(fields_type[i].has_duplicate){
+            box_select.node().childNodes[i].childNodes[1].options.remove(4);
+        }
+    }
 
     let deferred = Q.defer(),
         container = document.getElementById("box_type_fields");

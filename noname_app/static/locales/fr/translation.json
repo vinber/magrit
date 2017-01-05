@@ -21,7 +21,8 @@
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
             "error_type_fields": "La couche cible ne semble pas contenir les champs appropriés pour ce type de représentation (ou ces derniers contiennent trop de valeurs nulles)",
-            "error_too_many_features": "Le nombres d'entités est très élevé pour ce nombre de représentation. Celà risque de ralentir considérablement la naviguation.",
+            "error_too_many_features": "Le nombres d'entités est très élevé pour ce type de représentation. Celà risque de ralentir considérablement la naviguation.",
+            "error_too_many_features_color": "Le nombres d'entités est très élevé pour ce type de représentation. Celà risque de nuire à la lisibilité de la carte.",
             "error_too_low_resolution": "La résolution demandée est trop faible.",
             "error_too_high_resolution": "La résolution demandée est trop importante.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
@@ -42,6 +43,7 @@
             "edit_style": "Changer le style...",
             "error": "Erreur",
             "options": "Options",
+            "default": "Valeur par défaut",
             "feature": "entité",
             "feature_plural": "entités",
             "field": "champ",
@@ -253,7 +255,8 @@
             "stock": "Stock",
             "ratio": "Ratio",
             "category": "Catégorie",
-            "unknown": "Inconnu"
+            "unknown": "Inconnu",
+            "id": "Identifiant"
         },
         "explore_box": {
             "title": "Table de données",
@@ -358,7 +361,7 @@
             "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles appaortées! </i></b>",
             "labels_default_size": "Taille par défaut des labels",
             "labels_default_color": "Couleur par défaut des labels",
-            "labels_default_font": "Police utilisée par defaut",
+            "labels_default_font": "Police utilisée par défaut",
             "single_color": "Couleur unique",
             "categorical_color": "Couleur selon un champ catégoriel",
             "random_color": "Couleur aléatoire pour chaque entité",
@@ -594,6 +597,7 @@
         "switch_ref_histo": "Autre représentation"
     },
     "index":{
+        "title": "Magrit - Cartographie thématique",
         "buttons": {
             "enter": "Démarrer",
             "resume": "Continuer le projet en cours...",
@@ -608,7 +612,7 @@
             "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
             "arg2": "<strong>Utilisez votre propres données</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
             "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
-            "arg4": "<strong>Exportez ou sauvegarder facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
+            "arg4": "<strong>Exportez ou sauvegardez facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
         },
         "overview_section": {
             "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
@@ -626,7 +630,7 @@
         },
         "documentation_section": {
             "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
-            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités de l'application"
+            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application"
         },
         "source_section":{
             "box1_title": "Libre et gratuit",
@@ -634,7 +638,7 @@
             "box3_title": "Contenus traduits/traduisibles",
             "box4_title": "En developpement actif",
             "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
-            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via la plateforme <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
+            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via le <a href=\"/contact\">formulaire de contact</a> et via la plateforme <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
         },
@@ -643,5 +647,15 @@
             "accept": "J'ai compris",
             "more_info": "En savoir plus"
         }
+    },
+    "contact_form": {
+        "send": "Envoyer",
+        "name": "Nom",
+        "email": "E-mail",
+        "subject": "Sujet",
+        "message": "Message",
+        "contact": "Contact",
+        "index": "Acceuil",
+        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">support [at] url [dot] com</span>"
     }
 }

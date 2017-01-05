@@ -414,6 +414,11 @@ async def serve_main_page(request):
     return {"app_name": request.app["app_name"]}
 
 
+@aiohttp_jinja2.template('contact_form.html')
+async def serve_contact_form(request):
+    return {"app_name": request.app["app_name"]}
+
+
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
     posted_data = json.loads(posted_data.get("json"))
@@ -978,6 +983,7 @@ async def init(loop, port):
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
+    add_route('GET', '/contact', serve_contact_form)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)

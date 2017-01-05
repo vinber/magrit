@@ -951,8 +951,8 @@ function createStyleBox(layer_name){
                               ref_font_size: 12,
                               uo_layer_name: ["Labels", value, layer_name].join('_')
                             };
-                            resolve();
                             render_label(layer_name, options_labels);
+                            resolve();
                           }
                       });
                   }
@@ -1299,6 +1299,66 @@ function createStyleBox_ProbSymbol(layer_name){
             redraw_prop_val(prop_values);
             current_layers[layer_name].size[0] = f_val;
         });
+
+    let _fields = get_fields_name(layer_name);
+    if(_fields && _fields.length > 0){
+      let labels_section = popup.append("p");
+      let input_fields = {};
+      for(let i = 0; i < _fields.length; i++){
+        input_fields[_fields[i]] = _fields[i];
+      }
+      labels_section.append("span")
+          .attr("id", "generate_labels")
+          .styles({"cursor": "pointer", "margin-top": "15px"})
+          .html(i18next.t("app_page.layer_style_popup.generate_labels"))
+          .on("mouseover", function(){
+            this.style.fontWeight = "bold"
+          })
+          .on("mouseout", function(){
+            this.style.fontWeight = "";
+          })
+          .on("click", function(){
+            let fields =
+            swal({
+                title: "",
+                text: i18next.t("app_page.layer_style_popup.field_label"),
+                type: "question",
+                showCancelButton: true,
+                showCloseButton: false,
+                allowEscapeKey: false,
+                allowOutsideClick: false,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: i18next.t("app_page.common.confirm"),
+                input: 'select',
+                inputPlaceholder: i18next.t("app_page.common.field"),
+                inputOptions: input_fields,
+                inputValidator: function(value) {
+                    return new Promise(function(resolve, reject){
+                        console.log(value)
+                        if(_fields.indexOf(value) < 0){
+                            reject(i18next.t("app_page.common.no_value"));
+                        } else {
+                          let options_labels = {
+                            label_field: value,
+                            color: "#000",
+                            font: "Arial,Helvetica,sans-serif",
+                            ref_font_size: 12,
+                            uo_layer_name: ["Labels", value, layer_name].join('_'),
+                            symbol: type_symbol
+                          };
+                          render_label(layer_name, options_labels);
+                          resolve();
+                        }
+                    });
+                }
+              }).then( value => {
+                    console.log(value);
+                }, dismiss => {
+                    console.log(dismiss);
+                });
+          });
+    }
+
 }
 
 function make_style_box_indiv_label(label_node){
