@@ -128,9 +128,9 @@ form textarea {
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
           <div class="navbar-header page-scroll">
-                <a class="navbar-brand page-scroll" href="#page-top"><img src="/static/img/magrit.png" alt="Export" width="auto" height="20"></a>
+            <a class="navbar-brand page-scroll" href="/" style="padding-top: 2px;"><img src="/static/img/logo_magrit.png" alt="Magrit" width="auto" height="38"></a>
           </div>
-          <a class="btn btn-default enter_button i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]contact_form.index" href="/"></a>
+          <a class="btn btn-default enter_button i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]index.buttons.start_now"></a>
           <div class="btn-group" style="float:right;margin-top:7px;";>
               <button id="lang_current" type="button" class="btn btn-default" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
@@ -164,11 +164,11 @@ form textarea {
                   <div class="half right cf">
                     <textarea name="message" type="text" class="i18n" id="input-message" data-i18n="[placeholder]contact_form.message"></textarea>
                   </div>
+                  <p class="col-md-12 i18n">
+                  <input type="submit" class="btn btn-success i18n" style="margin: 5px; width: auto;" data-i18n="[html]contact_form.send" id="send_button">
+                </p>
                 </form>
             </div>
-            <p class="col-md-12">
-                <a class="btn btn-success i18n" style="margin: 5px;" data-i18n="[html]contact_form.send" id="send_button"></a>
-            </p>
           </div>
           <div class="box-wrap clearfix"></div>
           </div>

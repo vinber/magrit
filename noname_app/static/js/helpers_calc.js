@@ -59,6 +59,20 @@ var contains_empty_val = function(arr){
 }
 
 /**
+* @param {Array} arr - The array to test
+* @return {Boolean} result - True or False, according to whether it contains duplicate or not
+*/
+function has_duplicate(arr){
+    let h = {},
+        len_arr = arr.length;
+    for(let i=0; i<len_arr; i++){
+        if(h[arr[i]]) return true;
+        else h[arr[i]] = true;
+    }
+    return false;
+}
+
+/**
 * Round a given value with the given precision
 *
 * @param {Number} val - The value to be rounded.
@@ -301,7 +315,7 @@ function getStdDev(values, mean_val){
 *
 * Implementation taken from http://www.codinghands.co.uk/blog/2013/02/javascript-implementation-omn-maximal-rectangle-algorithm/
 */
-function getMaximalAvailableRectangle(){
+function getMaximalAvailableRectangle(legend_nodes){
   function getMaxRect(){
       let matrix = mat;
       var bestUpperLeft = {x: -1, y: -1};
@@ -355,9 +369,9 @@ function getMaximalAvailableRectangle(){
   }
 
   function fillMat(xs, ys){
-    for (let y = ys[0]; y < ys[1]; y++){
       for (let x = xs[0]; x < xs[1]; x++){
-        mat[y][x] = 0;
+        for (let y = ys[0]; y < ys[1]; y++){
+          mat[x][y] = 0;
       }
     }
   }
@@ -375,18 +389,21 @@ function getMaximalAvailableRectangle(){
       mat[i][j] = 1;
     }
   }
-  let legends = [
-      svg_map.querySelectorAll("#legend_root"),
-      svg_map.querySelectorAll("#legend_root2"),
-      svg_map.querySelectorAll("#legend_root_links")
-    ];
-  for(let i = 0; i < 3; i++){
-    for(let j = 0; j < legends[i].length; j++){
-      let bbox = legends[i][j].getBoundingClientRect(),
+  for(let i = 0; i < legend_nodes.length; i++){
+      let bbox = legend_nodes[i].getBoundingClientRect(),
           bx = Math.floor(bbox.x - x0),
           by = Math.floor(bbox.y - y0);
       fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
-    }
   }
-  return getMaxRect(mat)
+  return getMaxRect(mat);
+}
+
+function getTranslateNewLegend(){
+    let legends = svg_map.querySelectorAll("#legend_root, #legend_root2, #legend_root_links");
+    if(legends.length == 0) {
+      return [0, 0];
+    } else {
+      let max_rect = getMaximalAvailableRectangle(legends);
+      return max_rect;
+    }
 }

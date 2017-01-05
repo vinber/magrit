@@ -42,6 +42,7 @@
             "close": "Close",
             "edit_style": "Edit style...",
             "options": "Options",
+            "default": "Default value",
             "error": "Error",
             "feature": "feature",
             "feature_plural": "features",
@@ -255,7 +256,8 @@
             "stock": "Stock",
             "ratio": "Ratio",
             "category": "Category",
-            "unknown": "Unknown"
+            "unknown": "Unknown",
+            "id": "Id"
         },
         "explore_box": {
             "title": "Explore dataset",
@@ -597,6 +599,7 @@
         "switch_ref_histo": "Switch representation"
     },
     "index":{
+        "title": "Magrit - Thematic cartography",
         "buttons": {
             "enter": "Enter!",
             "resume": "Resume last project...",
@@ -637,7 +640,7 @@
             "box3_title": "Translated/translatable content",
             "box4_title": "Under active developpement",
             "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
-            "box2_text": "Bug reports and contributions are welcome. Please use project page on <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
+            "box2_text": "Bug reports and contributions are welcome. Please use the <a href=\"/contact\">contact page</a> or the project page on <a href=\"https://github.com/riatelab/noname-stuff\">GitHub</a>.",
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!"
         },

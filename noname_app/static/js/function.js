@@ -1597,6 +1597,11 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
                 geometry: { type: 'Point' }
               };
         if(ft.geometry.type.indexOf('Multi') < 0){
+          if(f_ix_len){
+              for(let f_ix=0; f_ix < f_ix_len; f_ix++){
+                  new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+              }
+          }
           new_obj.properties[field] = value;
           new_obj.properties[t_field_name] = propSize.scale(value);
           new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
@@ -1612,6 +1617,11 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
             }));
           }
           let ix_max = areas.indexOf(max_fast(areas));
+          if(f_ix_len){
+              for(let f_ix=0; f_ix < f_ix_len; f_ix++){
+                  new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+              }
+          }
           new_obj.properties[field] = value;
           new_obj.properties[t_field_name] = propSize.scale(value);
           new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
@@ -1640,6 +1650,9 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         zs = d3.zoomTransform(svg_map).k,
         propSize = new PropSizer(ref_value, ref_size, symbol_type),
         get_color, col1, col2;
+
+    let fields_id = getFieldsType('id', layer),
+        f_ix_len = fields_id.length;
 
     if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
         col1 = rendering_params.fill_color.two[0],
@@ -2113,7 +2126,7 @@ var fields_Discont = {
         // let fields_num = type_col(layer, "number"),
         //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
-            fields_id = getFieldsType('category', layer),
+            fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
             field_id = section2.select("#field_id_Discont"),
             ok_button = section2.select('#yes_Discont');
@@ -2124,11 +2137,15 @@ var fields_Discont = {
         }
 
         fields_num.forEach(function(field){
-                field_discont.append("option").text(field).attr("value", field);
+            field_discont.append("option").text(field).attr("value", field);
         });
-        fields_id.forEach(function(field){
-                field_id.append("option").text(field).attr("value", field);
-        });
+        if(fields_id.length == 0){
+            field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+        } else {
+          fields_id.forEach(function(field){
+              field_id.append("option").text(field).attr("value", field);
+          });
+        }
         field_discont.on("change", function(){
           let discontinuity_type = document.getElementById("kind_Discont").value;
           document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
@@ -2160,6 +2177,8 @@ var render_discont = function(){
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
                     ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
+    field_id = field_id == "__default__" ? undefined : field_id;
+
     let result_value = new Map(),
         result_geom = {},
         topo_mesh = topojson.mesh,
@@ -2171,7 +2190,7 @@ var render_discont = function(){
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
     let discont_worker = new Worker('/static/js/webworker_discont.js');
-    discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type]);
+    discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function(e){
         let [arr_tmp, d_res] = e.data;
         discont_worker.terminate();
@@ -2983,7 +3002,8 @@ var render_label = function(layer, rendering_params, options){
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer){
-        let ref_selection = document.getElementById(layer).getElementsByTagName("path");
+        let type_ft_ref = rendering_params.symbol || "path";
+        let ref_selection = document.getElementById(layer).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
