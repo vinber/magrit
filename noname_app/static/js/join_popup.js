@@ -83,25 +83,13 @@ function valid_join_on(layer_name, field1, field2){
     for(let i=0, len=joined_dataset[0].length; i<len; i++){
         join_values2.push(joined_dataset[0][i][field2]);
     }
-
-    var join_set2 = new Set(join_values2);
-    if(join_set2.size != join_values2.length){
-        swal("",
-             i18next.t("app_page.join_box.error_not_uniques"),
-             "warning");
-        return;
-    }
-
     for(let i=0, len=user_data[layer_name].length; i<len; i++){
         join_values1.push(user_data[layer_name][i][field1]);
     }
 
-    var join_set1 = new Set(join_values1);
-    if(join_set1.size != join_values1.length){
-        swal("",
-             i18next.t("app_page.join_box.error_not_uniques"),
-             "warning");
-        return;
+    if(has_duplicate(join_values1) || has_duplicate(join_values2)){
+      swal("", i18next.t("app_page.join_box.error_not_uniques"), "warning");
+      return;
     }
 
     if(typeof join_values1[0] === "number" && typeof join_values2[0] === "string"){
