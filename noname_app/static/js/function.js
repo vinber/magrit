@@ -1652,7 +1652,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         get_color, col1, col2;
 
     let fields_id = getFieldsType('id', layer),
-        f_ix_len = fields_id.length;
+        f_ix_len = fields_id ? fields_id.length : 0;
 
     if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
         col1 = rendering_params.fill_color.two[0],

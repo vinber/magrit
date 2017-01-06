@@ -74,7 +74,8 @@
             "yes": "Oui",
             "no": "Non",
             "warn_xls_sheet": "Seules les données du fichier sont chargées (les formules et les propriétés de style sont ignorées).",
-            "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé."
+            "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé.",
+            "resume_last_project": "Reprendre le projet en cours ?"
         },
         "section1": {
             "title": "Import des données",
@@ -148,7 +149,9 @@
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
             "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "export_load_pref": "Exporter / Charger un fichier de préférence"
+            "export_load_pref": "Exporter / Charger un fichier de préférence",
+            "load_project_file": "Load a project file",
+            "save_file": "Sauvegarde d'un fichier-projet"
         },
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",

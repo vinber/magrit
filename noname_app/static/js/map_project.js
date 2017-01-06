@@ -5,7 +5,7 @@ function get_map_template(){
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
-        displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
+        // displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
         zoom_transform = d3.zoomTransform(svg_map);
 
     map_config.projection = current_proj_name;
@@ -18,16 +18,18 @@ function get_map_template(){
     map_config.div_width = +w;
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
-    map_config.displayed_legend = displayed_legend.size() > 0 ? true : false;
+    // map_config.displayed_legend = displayed_legend.size() > 0 ? true : false;
 
     if(map_title){
         map_config.title = {
             "content": map_title.textContent,
-            "x": map_title.getAttribute("x"),
-            "y": map_title.getAttribute("y"),
-            "style": map_title.getAttribute("style")
+            "x": map_title.getElementsByTagName('text')[0].getAttribute("x"),
+            "y": map_title.getElementsByTagName('text')[0].getAttribute("y"),
+            "style": map_title.getElementsByTagName('text')[0].getAttribute("style")
             };
     }
+
+
 
     for(let i=map_config.n_layers-1; i > -1; --i){
         let layer_name = layers._groups[0][i].id,
@@ -37,6 +39,13 @@ function get_map_template(){
         layers_style[i] = new Object();
         layers_style[i].layer_name = layer_name;
         layers_style[i].n_features = nb_ft;
+
+        let lgd = document.getElementsByClassName('lgdf_' + layer_name);
+        if(lgd.size == 0){
+            layers_style[i].legend = undefined;
+        } else if (lgd.size >= 1) {
+            layers_style[i].legend = lgd[0].display == "none" ? "not_display" : "display";
+        }
 
         if(current_layers[layer_name]["stroke-width-const"])
             layers_style[i]["stroke-width-const"] = current_layers[layer_name]["stroke-width-const"];
@@ -183,6 +192,9 @@ function apply_user_preferences(json_pref){
         map_config = preferences.map_config,
         layers = preferences.layers;
 
+    let _l = svg_map.getElementsByClassName("layer"),  _ll = _l.length;
+    for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+
     var func_name_corresp = new Map([
         ["Links", "flow"], ["PropSymbolsChoro", "choroprop"],
         ["PropSymbols", "prop"], ["Stewart", "smooth"], ["Gridded", "grid"],
@@ -321,8 +333,12 @@ function apply_user_preferences(json_pref){
             null;
         }
 
-        if(layers[i].is_result && map_config.displayed_legend)
-            handle_legend(layer_name);
+        // if(layers[i].legend != undefined){
+        //     handle_legend(layer_name);
+        //     if(layers[i].legend == "not_display"){
+        //         handle_legend(layer_name);
+        //     }
+        // }
     }
     let _zoom = svg_map.__zoom;
     _zoom.k = map_config.zoom_scale;
@@ -331,19 +347,10 @@ function apply_user_preferences(json_pref){
     zoom_without_redraw();
 
     if(map_config.title){
-        let title = document.getElementById("map_title");
-        if(title){
-            title.textContent = map_config.title.content;
-            title.setAttribute("x", map_config.title.x);
-            title.setAttribute("y", map_config.title.y);
-            title.setAttribute("style", map_config.title.style);
-        } else {
-            title = map.append("g")
-                     .attr("class", "legend_feature title")
-                  .insert("text")
-                     .attrs({id: "map_title", x: map_config.title.x, y: map_config.title.y, "alignment-baseline": "middle", "text-anchor": "middle"})
-                     .text(map_config.title.content);
-            title.node().setAttribute("style", map_config.title.style);
-        }
+        handle_title(map_config.title.content);
+        let title = document.getElementById("map_title").getElementsByTagName('text')[0];
+        title.setAttribute('x', map_config.title.x);
+        title.setAttribute('y', map_config.title.y);
+        title.setAttribute('style', map_config.title.style);
     }
 }

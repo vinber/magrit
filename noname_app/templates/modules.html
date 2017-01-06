@@ -23,6 +23,7 @@
     <script  src="static/js/lib/geostats.min.js"></script>
     <script  src="static/js/lib/colorbrewer.v1.min.js"></script>
     <!-- <script  src="/static/js/lib/jschardet.min.js"></script> -->
+    <script src="/static/js/lib/cookies.min.js"></script>
     <script  src="static/js/lib/q.min.js"></script>
     <script  src="static/js/lib/i18next.min.js"></script>
     <script  src="static/js/lib/loc-i18next.min.js"></script>
@@ -56,7 +57,8 @@
         <p style="display:inline;margin-left:15px;">
         <a href="" style="margin-top: 3px;"><img src="/static/img/logo_magrit.png" alt="Magrit" width="auto" height="26"></a>
         </p>
-        <p id="rgt" class="header_options"></p>
+        <p class="header_options_projection"></p>
+        <p class="header_options_right"></p>
       </div>
       <div id="menu"></div>
       <div id="twbs" class="twbs"></div>
@@ -601,9 +603,9 @@ function setUpInterface(resume_project)
                 }
             });
 
-    let const_options = d3.select(".header_options").append("div").attr("id", "const_options").style("display", "inline");
+    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
 
-    let rotation_param = const_options.append("span");
+    let rotation_param = proj_options.append("span");
 
     rotation_param.append("input")
             .attrs({type: "range", id: "form_projection_center", value: 0.0,
@@ -636,7 +638,7 @@ function setUpInterface(resume_project)
             .style("vertical-align", "calc(20%)")
             .html("°");
 
-    let proj_select = const_options.append("select")
+    let proj_select = proj_options.append("select")
             .attr("id","form_projection")
             .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
             .on("change", function(){
@@ -647,73 +649,51 @@ function setUpInterface(resume_project)
        json.forEach(function(d) {
             available_projections.set(d.name, d.projection);
             proj_select.append("option").text(d.name).attr("value", d.projection);
-           });
-        if(resume_project){
-            // Fetch the last snapchot in localStorage :
-            var json_params = window.localStorage.getItem("noname_map_project");
-
-            // Apply the preferences :
-            if(json_params){
-                apply_user_preferences(json_params);
-            }
+        });
+        let last_project = window.localStorage.getItem("magrit_project");
+        if(resume_project === true && last_project){
+            apply_user_preferences(json_params);
+        } else if (last_project && last_project.length && last_project.length > 0) {
+            swal({title: "",
+                  text: i18next.t("app_page.common.resume_last_project"),
+                  allowOutsideClick: false,
+                  allowEscapeKey: true,
+                  type: "question",
+                  showConfirmButton: true,
+                  showCancelButton: true,
+                  confirmButtonText: i18next.t("app_page.common.yes"),
+                  cancelButtonText: i18next.t("app_page.common.no"),
+                }).then(() => {
+                    apply_user_preferences(last_project);
+                 }, dismiss => { null; })
         } else {
             // If we don't want to resume from the last project, we can
             // remove it :
-            window.localStorage.removeItem("noname_app_project");
+            window.localStorage.removeItem("magrit_project");
         }
         proj_select.node().value = "d3.geoNaturalEarth().scale(400).translate([375, 50])";
     });
 
-    const_options.append("button")
-              .attrs({class: "const_buttons i18n", id: "export_btn",
-                      "data-i18n": "[tooltip-title]app_page.tooltips.export_load_pref",
-                      "data-tooltip-position": "bottom"})
-              .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
-              .html('<img src="/static/img/Wikiversity-Mooc-Icon-Download_modif_blank.png" width="20" height="20" alt="export_load_preferences"/>')
-              .on("click", function(){
-                    if(document.getElementById("menu_pref")) {
-                        document.getElementById("menu_pref").remove();
-                        return;
-                    } else {
-                        if(document.getElementById("menu_lang"))
-                            document.getElementById("menu_lang").remove();
+    let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-                        let actions = [
-                            {"name": i18next.t("app_page.common.save_project_json"), "callback": save_map_template},
-                            {"name": i18next.t("app_page.common.load_project_json"), "callback": load_map_template}
-                            ];
-                        let menu = document.createElement("div");
-                        menu.style.top = "40px";
-                        menu.style.right = "38px";
-                        menu.style.background = "#173a50";
-                        menu.style.color = "#f5f5f5";
-                        menu.className = "context-menu";
-                        menu.id = "menu_pref";
-                        let list_elems = document.createElement("ul");
-                        menu.appendChild(list_elems);
-                        for (let i = 0; i < actions.length; i++) {
-                            let item = document.createElement("li");
-                            list_elems.appendChild(item);
-                            item.setAttribute("data-index",i);
-                            let name = document.createElement("span");
-                            name.className = "context-menu-item-name";
-                            name.textContent = actions[i].name;
-                            item.appendChild(name);
-                            item.onclick = function(){
-                                actions[i].callback();
-                                menu.remove();
-                            }
-                        }
-                        document.querySelector("body").appendChild(menu);
-                    }
-                });
+    const_options.append('button')
+        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom'})
+        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+        .html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
+        .on('click', load_map_template);
+
+    const_options.append('button')
+        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom'})
+        .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
+        .html('<img src="/static/img/Breezeicons-actions-22-document-save-as-blank.png" width="25" height="auto" alt="Save project to disk"/>')
+        .on('click', save_map_template)
 
     const_options.append("button")
               .attrs({id: "help_btn", class: "const_buttons i18n",
                       "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
                       "data-tooltip-position": "bottom"})
-              .styles({cursor: "pointer", background: "transparent", "margin-top": "none"})
-              .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="18" height="18" alt="export_load_preferences"/>')
+              .styles({cursor: "pointer", background: "transparent"})
+              .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
               .on("click", function(){
                   if(document.getElementById("menu_lang"))
                       document.getElementById("menu_lang").remove();
@@ -905,6 +885,7 @@ function change_lang(){
     if(new_lang == i18next.language){
         return;
     } else {
+        docCookies.setItem("user_lang", new_lang, 31536e3, "/");
         let other_lang = new_lang == "fr" ? "en" : "fr";
         i18next.changeLanguage(new_lang, () => {
             localize(".i18n");
@@ -1139,24 +1120,16 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
 {% raw %}
 
 (function(){
-    let lang = window.navigator.language.split('-')[0],
-        resume_project = false;
+    let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0],
+        resume_project = undefined;
 
     document.querySelector("noscript").remove();
 
     if(window.location.search){
         let old_url = window.location.search;
-        if(old_url.indexOf("?lang=") > -1){
-            lang = old_url.split("?lang=");
-            lang = lang[lang.length - 1].trim();
-        }
-
         if(old_url.indexOf("?resume") > -1){
             resume_project = true;
         }
-        // TODO : Better use cookie to store the lang preference
-        // (for use at the user's next sessions if (s)he didnt flush its browser cookies)
-        // instead of just passing the value between the two pages
         if (typeof (history.replaceState) != "undefined") {
             // replaceState should avoid creating a new entry on the history
             var obj = {Page: window.location.search, Url: window.location.pathname};
@@ -2361,8 +2334,8 @@ function fill_export_png_options(displayed_ratio){
 // (layer added, etc..)
 window.addEventListener("beforeunload", event => {
     get_map_template().then(function(json_params){
-        window.localStorage.removeItem("noname_app_project");
-        window.localStorage.setItem("noname_map_project", json_params);
+        window.localStorage.removeItem("magrit_project");
+        window.localStorage.setItem("magrit_project", json_params);
     });
     event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
                         ? "Confirm exit" : undefined;

@@ -388,6 +388,7 @@ function handle_change_lang(){
 
 // Actually change the content of the page :
 function change_lang(new_lang, old_lang){
+    docCookies.setItem("user_lang", new_lang, 31536e3, "/");
     i18next.changeLanguage(new_lang, () => { localize(".i18n");});
     document.getElementById("lang_current").innerHTML = new_lang;
     document.getElementById("lang2").innerHTML = old_lang;
@@ -400,17 +401,17 @@ function bind_enter_buttons(){
         if(!docCookies.getItem("cookie_law_validated")){
             docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
         }
-        window.location = "/modules?lang=" + i18next.language;
+        window.location = "/modules?"
     };
     let elems = document.querySelectorAll(".enter_button");
     for(let i=0; i < elems.length; i++){
         elems[i].onclick = enter;
     }
-    if(window.localStorage.getItem("noname_map_project")){
+    if(window.localStorage.getItem("magrit_project")){
         let resume_btn = document.getElementById("resume_btn");
         resume_btn.removeAttribute("disabled");
         resume_btn.onclick = function(){
-                 window.location = "/modules?resume?lang=" + i18next.language;
+                 window.location = "/modules?resume"
             }
     }
 }
@@ -445,7 +446,7 @@ function prepare_lang_buttons(){
 //i18n initialization :
 (function(){
     var existing_lang = ["en", "fr"];
-    let lang = window.navigator.language.split('-')[0];
+    let lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
       .init({

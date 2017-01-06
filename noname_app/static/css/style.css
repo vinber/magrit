@@ -241,10 +241,20 @@ p.params_section2 > span {
     font: 12px "Enriqueta", arial, sans-serif;
 }
 
-.header_options {
+.header_options_right {
+    clear: both;
     float: right;
     display:inline;
-    color:#99a8c4;
+    color: #99a8c4;
+    font-size:12px;
+    margin: auto;
+}
+
+.header_options_projection {
+    position: absolute;
+    left: 350px;
+    top: 0px;
+    color: #99a8c4;
     font-size:12px;
     margin: auto;
 }

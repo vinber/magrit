@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une type de projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte des discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte des liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributors</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributors</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -102,7 +102,7 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 <ul>
 <li><code>csv</code> (champs séparés par une virgule ou par un point virgule)</li>
 <li><code>tsv</code> (champs séparés par une tabulation)</li>
-<li><code>xls</code> et <code>xlsx</code> (à condition que le feuillet à utiliser contiennent seulement la table de données; cf. exemple).</li>
+<li><code>xls</code> et <code>xlsx</code> (à condition que la feuille à utiliser contiennent seulement la table de données).</li>
 </ul>
 <h2>Jointure des données</h2>
 <p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
@@ -113,7 +113,7 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
 <h2>Affichage et enrichissement des tables de données</h2>
-<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée dont est affublée chaque couche.</p>
+<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.</p>
 <h1>Projections</h1>
 <p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
 La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
@@ -143,33 +143,32 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
 <img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
 <h1>Choix de la représentation</h1>
-<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue de manière relative au type de données à représenter (données brutes, de rapport/ratio ou de catégories) et au type de fond de carte présent (points, polygones, etc.).</p>
-<p>Plusieurs type de représentations sont adaptés à des données de stocks :</p>
+<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).</p>
+<p>Représentations adaptées à des données de stocks :</p>
 <ul>
 <li><a href="./carto/propsmbol_fr.html">carte de stocks</a></li>
 <li><a href="./carto/cartogram_fr.html">cartogramme</a></li>
 </ul>
-<p>Des types de représentations sont pour leur part adaptées à la représentation de données de ratios :</p>
+<p>Représentations adaptées à des données de ratios :</p>
 <ul>
 <li><a href="./carto/choro_fr.html">carte choroplèthe</a></li>
 <li><a href="./carto/propsmbolchoro_fr.html">carte de stocks et ratios</a></li>
 </ul>
-<p>Des représentations permettant de mettre en avant les catégories d'appartenance des entités :</p>
+<p>Représentations adaptées à des données qualitatives :</p>
 <ul>
 <li><a href="./carto/typo_fr.html">carte qualitative</a></li>
 <li><a href="./carto/typosymbol_fr.html">carte qualitative (pictogrammes)</a></li>
 <li><a href="./carto/propsmboltypo_fr.html">carte de stocks et qualitative</a></li>
 </ul>
-<p>Des représentations originales etc etc :</p>
+<p>D'autres méthodes permettent de créer des représentations originales :</p>
 <ul>
 <li><a href="./carto/grid_fr.html">carroyage</a></li>
-<li><a href="./carto/cartogram_fr.html">cartogramme</a></li>
 <li><a href="./carto/smooth_fr.html">carte lissée</a></li>
 <li><a href="./carto/discont_fr.html">carte des discontinuités</a></li>
 <li><a href="./carto/links_fr.html">carte des liens</a></li>
 </ul>
 <h1>Carte de stocks</h1>
-<p>Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).</p>
+<p>Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens Les données de stocks peuvent être représentées par des figurés proportionnels.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -179,7 +178,7 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <li>La ou les couleurs des symboles, selon qu'un seuil soit défini ou non.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymbol.png" alt="img_propsymbol_map" style="width: 480px;"/>
 </p>
@@ -189,8 +188,9 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <li>Taille fixée de <strong>40px</strong> sur la valeur <strong>22</strong></li>
 </ul>
 <h1>Carte de ratios</h1>
-<p>Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total.
-Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).</p>
+<p>Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données de stoks dont ont fait le rapport ou dont on calcule le taux à partir d’un total.
+Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète.
+On peut représenter ces données par des cartes choroplèthes qui sont des représentation cartographique par plages de couleurs ou de niveaux de gris.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -198,7 +198,7 @@ Elles expriment les caractéristiques des individus observés mais leur total n'
 <li>Choix d'une discrétisation adaptée pour la série de valeurs</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/choropleth_map.png" alt="choro_map" style="width: 480px;"/>
 </p>
@@ -211,15 +211,15 @@ Elles expriment les caractéristiques des individus observés mais leur total n'
 <li>Choix des couleurs correspondantes aux catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/typo.png" alt="img_typo_map" style="width: 480px;"/>
 <ul>
 <li>Champ utilisé : <strong>LIBEPT</strong></li>
 </ul>
 <h1>Carte de stocks et ratios</h1>
-<p>Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations.<br />
-Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte.</p>
+<p>Ce type de représentation permet de combiner la représentation de données de stocks et celles de ratios sur une même carte.<br />
+La donnée de ratiio est représentée à l’intérieur du figuré représentant le stock.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -230,12 +230,12 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Le nom du champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymbolschoro.png" alt="img_propsymbolchoro_map" style="width: 480px;"/>
 </p>
 <h1>Carte de stocks et qualitative</h1>
-<p>Ce type de représentation permet d'établir une correspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle).</p>
+<p>Ce type de représentation permet d'établir une correspondance entre des données de stock et une variable d'appartenance (variable catégorielle).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -247,7 +247,7 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Le choix des couleurs correspondantes aux catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymboltypo_map.png" alt="img_propsymboltypo_map" style="width: 480px;"/>
 </p>
@@ -258,18 +258,18 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Champ utilisé pour l'aplat de couleur : <strong>Pays</strong></li>
 </ul>
 <h1>Carroyage</h1>
-<p>La méthode du carroyage est une des possibilités pour essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
+<p>La méthode du carroyage est une méthode permettant d'essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
 Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en <em>« carreaux égaux et repérés »</em> (Les mots de la géographie).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
-<li>Nom du champ à utiliser</li>
+<li>Nom du champ à utiliser (variable de stock)</li>
 <li>Taille des carreaux en kilomètres</li>
 <li>Forme des carreaux</li>
 <li>Palette de couleurs à utiliser</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/gridded.png" alt="gridded_map" style="width: 480px;"/>
 </p>
@@ -279,20 +279,18 @@ Elle met en évidence les grandes tendances de le répartition spatiale d'une do
 <li>Taille de référence : <strong>65km</strong></li>
 </ul>
 <h1>Cartogramme</h1>
-<p>De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique.<br />
-Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).</p>
+<p>Les anamorphoses sont utilisées en cartographie statistique pour montrer l'importance d'un phénomène donné : ce type de carte est couramment appelé un cartogramme.<br />
+Elles permettent de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br />
+Magrit propose trois méthode de création de cartogrammes : Pseudo-Dorling, Dougenik et al et Olson (<strong>refs</strong>).</p>
 <blockquote>
-<h3>Paramètres</h3>
+<h3>Paramètres (méthode Dougenik)</h3>
 <ul>
 <li>Le nom du champ contenant les valeurs à utiliser</li>
-<li>Le type de symbole à utiliser (parmi 'cercle' et 'carré')</li>
-<li>La taille (px) à appliquer sur le valeur définie par la suite</li>
-<li>La valeur sur laquelle fixer la taille</li>
 <li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
-<li>La valeur statistique à utiliser comme référence pour la transformation</li>
+<li>Le nom de la couche produite</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
 </p>
@@ -301,6 +299,41 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
+<blockquote>
+<h3>Paramètres (méthode Olson)</h3>
+<ul>
+<li>Le nom du champ contenant les valeurs à utiliser</li>
+<li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
+<li>Le nom de la couche produite</li>
+</ul>
+</blockquote>
+<h4>Exemple :</h4>
+<p style="text-align: center;">
+<img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+</p>
+<ul>
+<li>Méthode de <strong>Dougenik</strong></li>
+<li>Champ utilisé : <strong>pop2008</strong></li>
+<li><strong>5 itérations</strong></li>
+</ul>
+<blockquote>
+<h3>Paramètres (méthode Dorling)</h3>
+<ul>
+<li>Le nom du champ contenant les valeurs à utiliser</li>
+<li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
+<li>Le nom de la couche produite</li>
+</ul>
+</blockquote>
+<h4>Exemple :</h4>
+<p style="text-align: center;">
+<img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
+</p>
+<ul>
+<li>Méthode de <strong>Dougenik</strong></li>
+<li>Champ utilisé : <strong>pop2008</strong></li>
+<li><strong>5 itérations</strong></li>
+</ul>
+<p>[]Refs des méthodes</p>
 <h1>Carte lissée</h1>
 <p>Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.</p>
 <blockquote>
@@ -316,7 +349,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>(optionnel) Le nom de la couche de masquage</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;"> <img src="img/smoothed2.png" alt="smoothed_map" style="width: 480px;"/> </p>
 <h1>Carte des discontinuités</h1>
 <p>Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que <em>« l’espace géographique est fondamentalement discontinu »</em>.</p>
@@ -347,7 +380,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Le nombre de classes à créer lors de l'application de la méthode précédemment définie.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/flows.png" alt="link_map" style="width: 480px;"/>
 </p>
@@ -360,7 +393,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Le choix de pictogrammes correspondants aux différentes catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
 </p>
@@ -435,6 +468,8 @@ Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'i
 Le fichier &quot;projet&quot; ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 <h1>Contributors</h1>
+<p>Matthieu Viry : dev &amp; conception</p>
+<p>Timothée Giraud &amp; Nicolas Lambert : conception</p>
 
                 </div>
 
