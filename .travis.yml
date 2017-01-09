@@ -43,7 +43,7 @@ addons:
       - libopenblas-base
       - libopenblas-dev
       - gdal-bin
-      - libuv1-dev
+      - libuv-dev
       - libgdal-dev
       - libproj-dev
       - libspatialindex-dev
