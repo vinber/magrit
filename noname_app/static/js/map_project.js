@@ -5,6 +5,7 @@ function get_map_template(){
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
+        layout_features = document.querySelectorAll('.legend:not(.title):not(#legend_root2):not(#legend_root):not(#legend_root_links)'),
         // displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
         zoom_transform = d3.zoomTransform(svg_map);
 
@@ -29,8 +30,58 @@ function get_map_template(){
             };
     }
 
+    map_config.layout_features = {};
+    if(layout_features){
+        for(let i = 0; i < layout_features.length; i++){
+            let ft = layout_features[i];
+            if(ft.id === "scale_bar"){
+                map_config.layout_features.scale_bar = {
+                    bar_size: scaleBar.bar_size,
+                    displayed: scaleBar.displayed,
+                    dist: scaleBar.dist,
+                    dist_txt: scaleBar.dist_txt,
+                    fixed_size: scaleBar.fixed_size,
+                    precision: scaleBar.precision,
+                    unit: scaleBar.unit,
+                    x: scaleBar.x,
+                    y: scaleBar.y
+                };
+            } else if(ft.id === "north_arrow"){
+              map_config.layout_features.north_arrow = {
+                  arrow_img: ft.getAttribute('href'),
+                  displayed: northArrow.displayed,
+                  x_center: northArrow.x_center,
+                  y_center: northArrow.y_center
+              };
+            } else if(ft.classList.contains('user_ellipse')){
+                if(!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
+            } else if(ft.classList.contains('arrow')){
+                if(!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
+                let line = ft.childNodes[0];
+                map_config.layout_features.arrow.push({
+                    lineWeight: line.style.strokeWidth,
+                    stroke: line.style.stroke,
+                    pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
+                    pt2: [line.x2.baseVal.value, line.y2.baseVal.value],
+                    id: ft.id
+                });
+            } else if(ft.classList.contains('txt_annot')) {
+                if(!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
+                let inner_p = ft.childNodes[0];
+                map_config.layout_features.text_annot.push({
+                    id: ft.id,
+                    content: inner_p.innerHTML,
+                    fontFamily: inner_p.style.fontFamily,
+                    fontSize: inner_p.style.fontSize,
+                    position_x: ft.x.baseVal.value,
+                    position_y: ft.y.baseVal.value,
+                });
+            } else if(ft.classList.contains('single_symbol')) {
+                if(!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
+            }
+        }
 
-
+    }
     for(let i=map_config.n_layers-1; i > -1; --i){
         let layer_name = layers._groups[0][i].id,
             nb_ft = current_layers[layer_name].n_features,
@@ -336,13 +387,6 @@ function apply_user_preferences(json_pref){
         } else {
             null;
         }
-
-        // if(layers[i].legend != undefined){
-        //     handle_legend(layer_name);
-        //     if(layers[i].legend == "not_display"){
-        //         handle_legend(layer_name);
-        //     }
-        // }
     }
     if(map_config.title){
         handle_title(map_config.title.content);
@@ -351,6 +395,42 @@ function apply_user_preferences(json_pref){
         title.setAttribute('y', map_config.title.y);
         title.setAttribute('style', map_config.title.style);
     }
+    if(map_config.layout_features){
+        if(map_config.layout_features.scale_bar){
+            scaleBar.create();
+        }
+        if(map_config.layout_features.north_arrow){
+            northArrow.display();
+        }
+        if(map_config.layout_features.arrow){
+            for(let i = 0; i < map_config.layout_features.arrow.length; i++){
+                let ft = map_config.layout_features.arrow[i];
+                new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+            }
+        }
+        if(map_config.layout_features.ellipse){
+            for(let i = 0; i < map_config.layout_features.ellipse.length; i++) {
+                let ft = map_config.layout_features.ellipse[i];
+                // new UserEllipse()
+            }
+        }
+        if(map_config.layout_features.text_annot){
+            for(let i = 0; i < map_config.layout_features.text_annot.length; i++) {
+                let ft = map_config.layout_features.text_annot[i];
+                let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
+                let inner_p = new_txt_bow.text_annot.select("p").node();
+                inner_p.innerHTML = ft.content;
+                inner_p.style.fontFamily = ft.fontFamily;
+                inner_p.style.fontSize = ft.fontSize;
+            }
+        }
+        // if(map_config.layout_features.single_symbol){
+        //     for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
+        //
+        //     }
+        // }
+    }
+
     let _zoom = svg_map.__zoom;
     _zoom.k = map_config.zoom_scale;
     _zoom.x = map_config.zoom_translate[0];

@@ -603,7 +603,7 @@ function createStyleBox(layer_name){
         pt_size.append("span")
                 .attr("id", "txt_pt_radius")
                 .style("float", "right")
-                .html(current_pt_size + "")
+                .html(current_pt_size + "");
     }
 
      if(type !== 'Line'){
@@ -663,26 +663,25 @@ function createStyleBox(layer_name){
                 });
 
 
-        } else if (renderer != "Stewart"){
-            let field_to_discretize;
-            if(renderer == "Gridded")
-                field_to_discretize = "densitykm";
-            else {
-                var fields = getFieldsType('ratio', undefined, fields_layer);
-                var field_selec_block = popup.append('p').attr("class", "line_elem");
-                field_selec_block.append("span").html(i18next.t("app_page.layer_style_popup.field"));
-                var field_selec = field_selec_block.insert('select')
-                        .attr('class', 'params')
-                        .style("float", "right")
-                        .on("change", function(){
-                            field_to_discretize = this.value;
-                        });
-                field_to_discretize = fields[0];
-                fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
-                if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
-                    setSelected(field_selec.node(), current_layers[layer_name].rendered_field)
-            }
-             popup.append('p').style("margin", "auto").style("text-align", "center")
+        // } else if (renderer != "Stewart"){
+        } else if (renderer == "Gridded"){
+            let field_to_discretize = "densitykm";
+            // else {
+            //     var fields = getFieldsType('ratio', undefined, fields_layer);
+            //     var field_selec_block = popup.append('p').attr("class", "line_elem");
+            //     field_selec_block.append("span").html(i18next.t("app_page.layer_style_popup.field"));
+            //     var field_selec = field_selec_block.insert('select')
+            //             .attr('class', 'params')
+            //             .style("float", "right")
+            //             .on("change", function(){
+            //                 field_to_discretize = this.value;
+            //             });
+            //     field_to_discretize = fields[0];
+            //     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
+            //     if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
+            //         setSelected(field_selec.node(), current_layers[layer_name].rendered_field)
+            // }
+            popup.append('p').style("margin", "auto").style("text-align", "center")
                 .append("button")
                 .attr("class", "button_disc")
                 .html(i18next.t("app_page.layer_style_popup.choose_discretization"))

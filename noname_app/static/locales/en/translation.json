@@ -582,6 +582,8 @@
         "disp_sd": "Standard deviation",
         "disp_rug_pop": "Population",
         "hist_ref_title": "Distribution reference histogram",
+        "hist_ref_title_boxplot": "Distribution boxplot",
+        "hist_ref_title_beeswarm": "Distribution beeswarm",
         "summary": "Summary",
         "title_color_scheme": "Color scheme",
         "title_break_values": "Current break values",

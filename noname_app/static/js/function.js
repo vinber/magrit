@@ -181,13 +181,13 @@ function make_template_functionnality(parent_node){
     return dialog_content;
 }
 
-function make_layer_name_button(parent, id){
+function make_layer_name_button(parent, id, margin_top){
     let a = parent.append('p');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
       .html(i18next.t('app_page.func_options.common.output'));
     a.insert('input')
-      .styles({'width': '240px', 'font-size': '11.5px'})
+      .styles({'width': '240px', 'font-size': '11.5px', "margin-top": margin_top})
       .attrs({class: 'params', id: id});
 }
 
@@ -196,9 +196,6 @@ function make_discretization_icons(discr_section){
     subsection1.insert('span')
       .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
       .html(i18next.t("app_page.func_options.common.discretization_choice"));
-    subsection1.append('img')
-      .styles({width: '15px', position: 'absolute', right: '25px', 'margin-top': '15px'})
-      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
     let subsection2 = discr_section.append('p');
     subsection2.append('img')
       .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
@@ -218,6 +215,9 @@ function make_discretization_icons(discr_section){
     subsection2.append('span')
       .attrs({id: 'choro_mini_choice_disc'})
       .styles({float: 'right', 'margin-top': '5px'});
+    subsection2.append('img')
+      .styles({width: '15px', position: 'absolute', right: '5px'})
+      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
 }
 
 
@@ -389,13 +389,14 @@ function fillMenu_PropSymbolChoro(layer){
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
       .html(i18next.t("app_page.func_options.choroprop.field2"));
-    e.insert("span")
-      .attr("id", "container_sparkline_propsymbolchoro")
-      .style("margin", "4px");
+
     var field2_selec = e.insert('select')
       .attrs({class: 'params', id: 'PropSymbolChoro_field_2'});
 
     let discr_section = dv2.insert('p').style("margin", "auto");
+    discr_section.insert("span")
+      .attr("id", "container_sparkline_propsymbolchoro")
+      .styles({"margin": "16px 50px 0px 4px", "float": "right"});
     make_discretization_icons(discr_section);
     // let f = dv2.insert('p').attr('class', 'params_section2');
     // f.append("button")
@@ -403,7 +404,7 @@ function fillMenu_PropSymbolChoro(layer){
     //     .styles({"font-size": "0.8em", "text-align": "center"})
     //     .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
-    make_layer_name_button(dv2, "PropSymbolChoro_output_name");
+    make_layer_name_button(dv2, "PropSymbolChoro_output_name", "15px");
     make_ok_button(dv2, 'propChoro_yes');
     dv2.selectAll(".params").attr("disabled", true);
 }
@@ -728,14 +729,14 @@ function fillMenu_Choropleth(){
     field_selec_section.insert("span")
       .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
       .html(i18next.t("app_page.func_options.common.field"));
-    field_selec_section.insert("span")
-      .attr("id", "container_sparkline_choro")
-      .style("margin", "4px");
 
    field_selec_section.insert('select')
     .attrs({id: 'choro_field1', class: 'params'});
 
     let discr_section = dv2.insert('p').style("margin", "auto");
+    discr_section.insert("span")
+      .attr("id", "container_sparkline_choro")
+      .styles({"margin": "16px 50px 0px 4px", "float": "right"});
     make_discretization_icons(discr_section);
     // dv2.insert('p').style("margin", "auto")
     //   .append("button")
@@ -744,7 +745,7 @@ function fillMenu_Choropleth(){
     //   .styles({"font-size": "0.8em", "text-align": "center"})
     //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
-    make_layer_name_button(dv2, 'Choro_output_name');
+    make_layer_name_button(dv2, 'Choro_output_name', "15px");
     make_ok_button(dv2, 'choro_yes');
     dv2.selectAll(".params").attr("disabled", true);
 }

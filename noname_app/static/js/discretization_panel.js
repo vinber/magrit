@@ -586,16 +586,21 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
             .styles({padding: '3px', 'font-size': '10px'})
             .html(i18next.t('disc_box.switch_ref_histo'))
             .on('click', () => {
+                let str_tr;
                 if(current_histo == 'histogram'){
                     refDisplay("box_plot");
                     current_histo = "box_plot";
+                    str_tr = "_boxplot";
                 } else if (current_histo == "box_plot"){
                     refDisplay("beeswarm");
                     current_histo = "beeswarm";
+                    str_tr = '_beeswarm';
                } else if (current_histo == "beeswarm"){
                      refDisplay("histogram");
                      current_histo = "histogram";
+                     str_tr = '';
                }
+               document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
             });
     }
     var div_svg = newBox.append('div')
@@ -903,8 +908,10 @@ var prepare_ref_histo = function(parent_node, serie, formatCount){
 
     var ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
     // ref_histo.node().innerHTML = "";
-    ref_histo.append('p').styles({"margin": "auto", "text-align": "center"})
-              .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+    ref_histo.append('p')
+        .attrs({id: 'ref_histo_title'})
+        .styles({"margin": "auto", "text-align": "center"})
+        .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
     var c = ref_histo.append("svg").attr("id", "svg_ref_histo")
         .attr("width", svg_w + m_margin.left + m_margin.right)

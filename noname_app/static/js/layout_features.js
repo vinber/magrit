@@ -1,17 +1,21 @@
 "use strict";
 
 class UserArrow {
-    constructor(id, origin_pt, destination_pt, parent=undefined){
+    constructor(id, origin_pt, destination_pt, parent=undefined, untransformed=false){
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
         this.id = id;
         this.lineWeight = 4;
         this.color = "rgb(0, 0, 0)";
 
-        let zoom_param = svg_map.__zoom;
-        this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k],
-        this.pt2 = [(destination_pt[0] - zoom_param.x) / zoom_param.k, (destination_pt[1] - zoom_param.y) / zoom_param.k];
-
+        if(!untransformed){
+            let zoom_param = svg_map.__zoom;
+            this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k],
+            this.pt2 = [(destination_pt[0] - zoom_param.x) / zoom_param.k, (destination_pt[1] - zoom_param.y) / zoom_param.k];
+        } else {
+            this.pt1 = origin_pt;
+            this.pt2 = destination_pt;
+        }
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
@@ -240,7 +244,6 @@ class UserArrow {
 }
 
 class Textbox {
-    // woo lets use ES2015 classes !
     constructor(parent, new_id_txt_annot, position=[10, 30]){
         this.x = position[0];
         this.y = position[1];
@@ -356,6 +359,7 @@ class Textbox {
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
         this.id = new_id_txt_annot;
+        return this;
     }
     editStyle(){
             let current_options = {size: this.text_annot.select("p").style("font-size"),
