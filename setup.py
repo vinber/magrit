@@ -22,10 +22,10 @@ exts = [Extension("noname_app.helpers.cy_misc",
         ]
 
 setup(
-    name='noname_app',
+    name='magrit_app',
     version=noname_app.__version__,
     description="",
-    url='https://github.com/mthh/noname-stuff',
+    url='https://github.com/mthh/magrit',
     packages=find_packages(),
     setup_requires=['setuptools>=25.1', 'Cython>=0.24'],
     ext_modules=exts,
@@ -34,7 +34,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'noname_app=noname_app.noname_aio:main',
+            'magrit=noname_app.app:main',
         ],
     },
 )

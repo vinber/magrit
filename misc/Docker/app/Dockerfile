@@ -7,17 +7,17 @@
 ####################################################################
 # Can be build like this :
 #
-# $ docker build -t "noname_app:latest" --build-arg CACHEBUST=$(date +%s) .
+# $ docker build -t "magrit_app:latest" --build-arg CACHEBUST=$(date +%s) .
 #
 #
 # App can be started like this (exposing port 9999 in the host):
 #
-# $ docker run --publish "9999:9999" -it "noname_app:latest"
+# $ docker run --publish "9999:9999" -it "magrit_app:latest"
 #
 #
 # Access to a shell in the container can be obtained with a command like :
 #
-# $ docker run -it --entrypoint=/bin/bash "noname_app:latest"
+# $ docker run -it --entrypoint=/bin/bash "magrit_app:latest"
 #
 
 
@@ -64,16 +64,16 @@ ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.0/lib:${LD_LIBRARY_PATH}"
 ARG CACHEBUST=1
 
 RUN  mkdir /home/app && cd /home/app \
-		&& git clone http://github.com/mthh/noname-stuff/ \
-        && cd noname-stuff/ \
+		&& git clone http://github.com/mthh/magrit/ \
+        && cd magrit/ \
         && pip3 install -U -r requirements-dev.txt \
         && python3 setup.py install
 
 RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
         && cd smoomapy/ && python3 setup.py install && cd /home/app \
-        && cp /usr/local/lib/python3.5/dist-packages/noname_app-0.0.0-py3.5-linux-x86_64.egg/noname_app/helpers/*.so /home/app/noname-stuff/noname_app/helpers/
+        && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/noname_app/helpers/*.so /home/app/magrit/noname_app/helpers/
 
 EXPOSE 9999
 
 CMD service redis-server start \
-    && gunicorn "noname_app.noname_aio:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/noname-stuff/
+    && gunicorn "noname_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/magrit/

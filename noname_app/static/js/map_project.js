@@ -62,6 +62,7 @@ function get_map_template(){
             layers_style[i].targeted = true;
             layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            layers_style[i].fields_type = current_layers[layer_name].fields_type;
         } else if(!current_layers[layer_name].renderer){
             selection = map.select("#" + layer_name).selectAll("path");
         } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
@@ -191,7 +192,7 @@ function apply_user_preferences(json_pref){
     let preferences = JSON.parse(json_pref),
         map_config = preferences.map_config,
         layers = preferences.layers;
-
+    console.log(preferences);
     let _l = svg_map.getElementsByClassName("layer"),  _ll = _l.length;
     for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
 
@@ -241,6 +242,10 @@ function apply_user_preferences(json_pref){
                 layer_name = n_layer_name;
                 if(layers[i].renderer){
                     current_layers[layer_name].renderer = layers[i].renderer;
+                }
+                if(layers[i].targeted && layers[i].fields_type){
+                    current_layers[layer_name].fields_type = layers[i].fields_type;
+                    document.getElementById('btn_type_fields').removeAttribute('disabled')
                 }
 
                 symbol = "path";
@@ -299,7 +304,6 @@ function apply_user_preferences(json_pref){
             };
 
             make_prop_symbols(rendering_params, geojson_pt_layer)
-
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
             null;
             // let rendering_params = {
@@ -340,17 +344,41 @@ function apply_user_preferences(json_pref){
         //     }
         // }
     }
-    let _zoom = svg_map.__zoom;
-    _zoom.k = map_config.zoom_scale;
-    _zoom.x = map_config.zoom_translate[0];
-    _zoom.y = map_config.zoom_translate[1];
-    zoom_without_redraw();
-
     if(map_config.title){
         handle_title(map_config.title.content);
         let title = document.getElementById("map_title").getElementsByTagName('text')[0];
         title.setAttribute('x', map_config.title.x);
         title.setAttribute('y', map_config.title.y);
         title.setAttribute('style', map_config.title.style);
+    }
+    let _zoom = svg_map.__zoom;
+    _zoom.k = map_config.zoom_scale;
+    _zoom.x = map_config.zoom_translate[0];
+    _zoom.y = map_config.zoom_translate[1];
+
+}
+
+function reorder_layers(desired_order){
+    let actual_order = [],
+        layers = svg_map.getElementsByClassName('layer'),
+        parent = layers[0].parentNode,
+        nb_layers = desired_order.length;
+    for(let i = 0; i < nb_layers; i++){
+        actual_order.push(layers[i].id);
+    }
+    for(let i = 0; i < nb_layers; i++){
+        let lyr1 = document.getElementById(desired_order[i]),
+            lyr2 = document.getElementById(actual_order[i]),
+            next2 = lyr2.nextSibling;
+        if(next2 === lyr1) {
+            parent.insertBefore(lyr1, lyr2);
+        } else {
+            parent.insertBefore(lyr2, lyr1);
+            if(next2 != null) {
+                parent.insertBefore(lyr1, next2);
+            } else {
+                parent.appendChild(lyr1);
+            }
+        }
     }
 }

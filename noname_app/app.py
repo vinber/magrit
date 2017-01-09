@@ -1,14 +1,14 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 """
-noname_app
+magrit
 
 Usage:
-  noname_app
-  noname_app [--port <port_nb> --name-app <name>]
-  noname_app [-p <port_nb> -n <name>]
-  noname_app --version
-  noname_app --help
+  magrit
+  magrit [--port <port_nb> --name-app <name>]
+  magrit [-p <port_nb> -n <name>]
+  magrit --version
+  magrit --help
 
 Options:
   -h, --help                        Show this screen.
@@ -972,7 +972,7 @@ async def on_shutdown(app):
 
 async def init(loop, port):
     logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger("noname_app.main")
+    logger = logging.getLogger("magrit_app.main")
     redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50)
     redis_conn = await create_reconnecting_redis(('0.0.0.0', 6379), db=1)
     app = web.Application(
@@ -1022,7 +1022,7 @@ async def init(loop, port):
 
 def create_app(app_name="Magrit"):
     # Entry point when using Gunicorn to run the application with something like :
-    # $ gunicorn "noname_app.noname_aio:create_app('AppName')" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
+    # $ gunicorn "noname_app.app:create_app('AppName')" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
@@ -1034,9 +1034,9 @@ def create_app(app_name="Magrit"):
 
 def main():
     # Entry point used when the application is started directly like :
-    # $ ./noname_app/noname_aio.py --name AppName --port 9999
+    # $ ./noname_app/app.py --name AppName --port 9999
     #   or when installed and started like :
-    # $ noname_app --name AppName --port 9999
+    # $ magrit --name AppName --port 9999
     arguments = docopt.docopt(__doc__, version='Magrit 0.0.0 (Unreleased)')
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
