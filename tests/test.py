@@ -7,7 +7,7 @@ import pytest
 import ujson as json
 #import subprocess
 #import time
-from noname_app.noname_aio import rawcsv_to_geo
+from noname_app.app import rawcsv_to_geo
 from noname_app.helpers.topo_to_geo import convert_from_topo
 from noname_app.helpers.geo import check_projection
 #from selenium import webdriver
@@ -16,7 +16,7 @@ pytest_plugins = 'aiohttp.pytest_plugin'
 
 @pytest.fixture
 def read_topo():
-    with open("database/topojson/simplified_land_polygons.topojson", "r") as f:
+    with open("noname_app/static/data_sample/simplified_land_polygons.topojson", "r") as f:
         data = json.loads(f.read())
     return data
 

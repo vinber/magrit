@@ -49,7 +49,7 @@ RUN_DOCKER = os.environ.get('RUN_TESTS_DOCKER') == 'True'
 RUN_LOCAL = not RUN_DOCKER
 
 if RUN_LOCAL:
-    browsers = ['Chrome']
+    browsers = ['Firefox']
 elif RUN_DOCKER:
     browsers = [DesiredCapabilities.CHROME,
                 DesiredCapabilities.FIREFOX]
@@ -90,7 +90,7 @@ def get_port_available(port_nb):
 #    global p  # Could very likely be changed to avoid global variable
 #    global port
 #    port = get_port_available(7878)
-#    p = psutil.Popen(["noname_app", "--port", port], stdout=PIPE, stderr=PIPE)
+#    p = psutil.Popen(["magrit", "--port", port], stdout=PIPE, stderr=PIPE)
 #    time.sleep(5)
 #
 #
@@ -136,8 +136,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         chromeOptions = webdriver.ChromeOptions()
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory" : self.tmp_folder})
-        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
-        # self.driver = webdriver.Firefox(executable_path='/home/mz/code/geckodriver')
+        # self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
+        self.driver = webdriver.Firefox()
         self.driver.set_window_size(1600, 900)
         self.driver.implicitly_wait(5)
         self.base_url = "http://localhost:{}/modules".format(port)

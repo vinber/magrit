@@ -27,9 +27,12 @@ install:
   - ./misc/install_deps.sh
   - pip install -r requirements-dev.txt
   - python setup.py install
+before_script:
+  - magrit -p 9999
+  - sleep 10
 script:
-  - noname_app --help
-  - py.test tests/test.py
+  - magrit --help
+  - python3 tests/tests_web2.py
 addons:
   apt:
     sources:
@@ -44,6 +47,8 @@ addons:
       - libgdal-dev
       - libproj-dev
       - libspatialindex-dev
+      - libfreetype6
+      - libfreetype6-dev
       - libv8-3.14-dev
       - libffi-dev
       - redis-server
@@ -51,4 +56,6 @@ addons:
       - nodejs-dev
       - node-gyp
       - npm
-      - libfftw3-dev
+      - libxslt1-dev
+      - libxml2
+      - libxml2-dev
