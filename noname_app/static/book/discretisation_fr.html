@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html" class="active"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributors</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html" class="active"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -68,21 +68,28 @@
 
                 <div id="content" class="content">
                     <h1>Discrétisation</h1>
-<p>Plusieurs méthodes sont proposées afin de transformer une série continue de valeurs en une série discrète, c'est à dire en un nombre fini de classes. Le nombre de classes ainsi que les valeurs limites de ces classes doivent répondre à justification sémantique et/ou mathématique.</p>
+<p>Plusieurs méthodes sont proposées afin de transformer une série continue de valeurs en une série discrète, c'est à dire en un nombre fini de classes. Le nombre de classes ainsi que les valeurs limites de ces classes doivent être justifiées sémantiquement et/ou statistiquement.</p>
 <p>Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou bien comme des guides de lecture et d'analyse préalables à la saisie manuelle des limites de classes souhaitées.</p>
 <hr />
-<h2>Intervalles égaux</h2>
-<p>Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</p>
-<h2>Quantiles</h2>
-<p>Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le même nombre d'individus.</p>
-<h2>Q6</h2>
-<p>Cette méthode originale, notamment démocratisée par l'outil PhilCarto <a href="(Ref%20philcarto%20q6)">1</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</p>
-<h2>Seuils naturels (algorithme de Jenks)</h2>
-<p>Cette méthode permet de créer des classes homogènes. En effet l'algorithme vise à trouver le nombre de classe souhaitées en minimisant la variance intra-classe et en maximisant la variance inter-classe.</p>
-<h2>Progression arithmétique</h2>
-<p>Cette méthode ...</p>
-<h2>Progression géométrique</h2>
-<p>Cette méthode ...</p>
+<ul>
+<li>Intervalles égaux
+Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</li>
+</ul>
+<ul>
+<li>Quantiles
+Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le même nombre d'individus.</li>
+</ul>
+<ul>
+<li>Q6
+Cette méthode originale, notamment démocratisée par l'outil PhilCarto <a href="(http://philcarto.free.fr/)">1</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</li>
+</ul>
+<ul>
+<li>Seuils naturels (algorithme de Jenks <a href="(https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization)">2</a>)
+Cette méthode permet de créer des classes homogènes. En effet l'algorithme vise à trouver le nombre de classe souhaitées en minimisant la variance intra-classe et en maximisant la variance inter-classe.</li>
+</ul>
+<ul>
+<li>Il est également possible d'utiliser les discrétisations en progression arithmétique ou géométrique ou de saisir manuellement les bornes de classes.</li>
+</ul>
 
                 </div>
 
