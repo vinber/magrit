@@ -22,4 +22,4 @@
 
 
 -----------
-[Contributors](misc/contributors.md)
+[Contributeurs](misc/contributors.md)

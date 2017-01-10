@@ -18,5 +18,5 @@ Représentations adaptées à des données qualitatives :
 D'autres méthodes permettent de créer des représentations originales :
 * [carroyage](./carto/grid_fr.html)
 * [carte lissée](./carto/smooth_fr.html)
-* [carte des discontinuités](./carto/discont_fr.html)
-* [carte des liens](./carto/links_fr.html)
+* [carte de discontinuités](./carto/discont_fr.html)
+* [carte de liens](./carto/links_fr.html)

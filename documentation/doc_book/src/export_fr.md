@@ -22,7 +22,7 @@ Grâce à cette méthode il est possible d'exporter le rendu actuel selon les sp
 
 Export au format PNG
 -------------
-Cette méthde permet d'exporter la carte dans un format dit "matriciel", c'est à dire composé de points.
+Cette méthde permet d'exporter la carte dans un format dit "matriciel" ou "raster", c'est à dire composé de pixels.
 La résolution de ce type de fichier est fixe.  
 Ainsi dans Magrit il est proposé de choisir la résolution du fichier à exporter en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).
 
@@ -30,7 +30,7 @@ Export d'un fichier de couche géographique
 -------------
 
 Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
-C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissée, carte des liens et carte des discontinuités.
+C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissées, carte de liens et carte de discontinuités.
 Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :
 - GeoJSON
 - TopoJSON

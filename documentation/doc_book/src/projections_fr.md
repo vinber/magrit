@@ -4,8 +4,6 @@ De nombreuses projections cartographiques sont disponibles dans l'application.
 La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.
 
-Certaines projections peuvent être utilisée avec n'importe quel centrage (exemple exemple) quand d'autres ne sont pertinentes qu'avec certains centres... (exemple exemple)
-
 La projection appelée "orthographique" présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.
 
 Plusieurs attributs permettent de distinguer ces projections :
