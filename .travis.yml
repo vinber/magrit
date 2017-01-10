@@ -27,12 +27,12 @@ install:
   - ./misc/install_deps.sh
   - pip install -r requirements-dev.txt
   - python setup.py install
-before_script:
-  - magrit -p 9999
-  - sleep 10
+# before_script:
+#   - magrit -p 9999
+#   - sleep 10
 script:
   - magrit --help
-  - python3 tests/tests_web2.py
+  # - python3 tests/tests_web2.py
 addons:
   apt:
     sources:

@@ -149,7 +149,8 @@
             "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
             "export_load_pref": "Export / Load your map preferences",
             "load_project_file": "Load a project file",
-            "save_file": "Save project as a file"
+            "save_file": "Save project as a file",
+            "new_project": "Create a new empty project"
         },
         "func_description" : {
             "smooth": "Render a smoothed map (using stewart potentials algorythm)",
@@ -531,11 +532,6 @@
             "cartogram": {
                 "algo": "Algorythm to use ",
                 "field": "Field ",
-                "dorling_symbol": "Type de symbole ",
-                "dorling_symbol_circle": "Circle",
-                "dorling_symbol_square": "Square",
-                "dorling_fixed_size": "Fixed size ",
-                "dorling_on_value": "on value ...",
                 "dougenik_iterations": "N. iterations ",
                 "olson_scale_txt": "Scale reference size on :",
                 "olson_scale_max_scale": "Maximum size modification (%) ",

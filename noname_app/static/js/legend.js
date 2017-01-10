@@ -61,8 +61,7 @@ function createLegend(layer, title){
         createLegend_choro(layer, field2, title, field2, 4);
         createLegend_symbol(layer, field, title, field);
     }
-    else if(renderer.indexOf("PropSymbols") != -1
-            || renderer.indexOf("DorlingCarto") != -1)
+    else if(renderer.indexOf("PropSymbols") != -1)
         createLegend_symbol(layer, field, title, field);
 
     else if (renderer.indexOf("Links") != -1

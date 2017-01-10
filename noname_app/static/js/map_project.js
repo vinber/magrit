@@ -147,6 +147,9 @@ function get_map_template(){
                 color_by_id.push(rgb2hex(this.style.fill));
             });
             layers_style[i].color_by_id = color_by_id;
+            if(current_layers[layer_name].renderer == "Stewart"){
+                layers_style[i].current_palette = current_layers[layer_name].current_palette;
+            }
             if(current_layers[layer_name].renderer !== "Categorical") {
                 layers_style[i].options_disc = current_layers[layer_name].options_disc;
             } else {
@@ -435,30 +438,17 @@ function apply_user_preferences(json_pref){
     _zoom.k = map_config.zoom_scale;
     _zoom.x = map_config.zoom_translate[0];
     _zoom.y = map_config.zoom_translate[1];
-
+    let desired_order = layers.map( i => i.layer_name);
+    desired_order.reverse();
+    reorder_layers(desired_order);
 }
 
 function reorder_layers(desired_order){
-    let actual_order = [],
-        layers = svg_map.getElementsByClassName('layer'),
+    let layers = svg_map.getElementsByClassName('layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
     for(let i = 0; i < nb_layers; i++){
-        actual_order.push(layers[i].id);
-    }
-    for(let i = 0; i < nb_layers; i++){
-        let lyr1 = document.getElementById(desired_order[i]),
-            lyr2 = document.getElementById(actual_order[i]),
-            next2 = lyr2.nextSibling;
-        if(next2 === lyr1) {
-            parent.insertBefore(lyr1, lyr2);
-        } else {
-            parent.insertBefore(lyr2, lyr1);
-            if(next2 != null) {
-                parent.insertBefore(lyr1, next2);
-            } else {
-                parent.appendChild(lyr1);
-            }
-        }
+        if(document.getElementById(desired_order[i]))
+          parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
 }

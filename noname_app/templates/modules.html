@@ -677,6 +677,16 @@ function setUpInterface(resume_project)
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
     const_options.append('button')
+        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
+        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+        .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
+        .on('click', function(){
+            window.localStorage.removeItem("magrit_project");
+            window.removeEventListener("beforeunload", beforeUnloadWindow);
+            location.reload();
+        });
+
+    const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
@@ -685,7 +695,7 @@ function setUpInterface(resume_project)
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
-        .html('<img src="/static/img/Breezeicons-actions-22-document-save-as-blank.png" width="25" height="auto" alt="Save project to disk"/>')
+        .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
     const_options.append("button")
@@ -2329,17 +2339,18 @@ function fill_export_png_options(displayed_ratio){
     localize("#select_png_format > .i18n");
 }
 
-
-// Only ask for confirmation before leaving page if things have been done
-// (layer added, etc..)
-window.addEventListener("beforeunload", event => {
+let beforeUnloadWindow = (event) => {
     get_map_template().then(function(json_params){
         window.localStorage.removeItem("magrit_project");
         window.localStorage.setItem("magrit_project", json_params);
     });
     event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
                         ? "Confirm exit" : undefined;
-});
+};
+
+// Only ask for confirmation before leaving page if things have been done
+// (layer added, etc..)
+window.addEventListener("beforeunload", beforeUnloadWindow);
 
 // Remove some layers from the server when user leave the page
 // (ie. result layers are removed but targeted layer and layout layers stay

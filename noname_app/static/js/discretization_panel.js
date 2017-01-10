@@ -69,19 +69,25 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         col_div.selectAll('.central_color').remove();
         col_div.selectAll('#reverse_pal_btn').remove();
         var sequential_color_select = col_div.insert("p")
-                                                .attr("class", "color_txt")
-                                                .style("margin-left", "10px")
-                                                .html(i18next.t("disc_box.color_palette"))
-                                             .insert("select")
-                                                .attr("class", "color_params")
-                                                .on("change", function(){
-                                                    redisplay.draw() });
+            .attr("class", "color_txt")
+            .style("margin-left", "10px")
+            .html(i18next.t("disc_box.color_palette"))
+            .insert("select")
+            .attr("class", "color_params")
+            .styles({'background-image': 'url(/static/img/palettes/Blues.png)', 'width': '116px'})
+            .on("change", function(){
+                this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)'
+                redisplay.draw();
+              });
 
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
          'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
          'Greens', 'Greys', 'Oranges', 'Purples',
          'Reds'].forEach(function(name){
-            sequential_color_select.append("option").text(name).attr("value", name);
+            sequential_color_select.append("option")
+                .text(name)
+                .attrs({value: name, title: name})
+                .styles({'background-image': 'url(/static/img/palettes/' + name + '.png)'});
         });
         var button_reverse = d3.select(".color_txt").insert("button")
                                 .styles({"display": "inherit", "margin-top": "10px"})
@@ -115,17 +121,27 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                         .attr("class", "color_txt")
                         .style("display", "inline")
                         .html(i18next.t("disc_box.left_colramp"))
-                        .insert("select").attr("class", "color_params_left")
-                        .on("change", redisplay.draw);
+                        .insert("select")
+                        .style('width', '116px')
+                        .attr("class", "color_params_left")
+                        .on("change", function(){
+                            this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)'
+                            redisplay.draw();
+                        });
         var right_color_select = col_div.insert("p")
                         .styles({display: "inline", "margin-left": "70px"})
                         .attr("class", "color_txt2")
                         .html(i18next.t("disc_box.right_colramp"))
-                        .insert("select").attr("class", "color_params_right")
-                        .on("change", redisplay.draw);
+                        .insert("select")
+                        .style('width', '116px')
+                        .attr("class", "color_params_right")
+                        .on("change", function(){
+                            this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)'
+                            redisplay.draw();
+                        });
         pal_names.forEach(function(name){
-            left_color_select.append("option").text(name).attr("value", name);
-            right_color_select.append("option").text(name).attr("value", name)
+            left_color_select.append("option").text(name).attrs({value: name, title: name}).styles({'background-image': 'url(/static/img/palettes/' + name + '.png)'});
+            right_color_select.append("option").text(name).attrs({value: name, title: name}).styles({'background-image': 'url(/static/img/palettes/' + name + '.png)'});
         });
         document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
 
@@ -703,15 +719,18 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         make_diverg_button();
         document.getElementById("button_diverging").checked = true;
         let tmp = 0;
-        document.querySelector(".color_params_left").value = options.schema[0];
+        setSelected(document.querySelector(".color_params_left"), options.schema[0]);
+        // document.querySelector(".color_params_left").value = options.schema[0];
         if(options.schema.length > 2){
-            document.getElementById("central_color_val").value = options.schema[1];
+            setSelected(document.querySelector(".central_color_val"), options.schema[1]);
+            // document.getElementById("central_color_val").value = options.schema[1];
             tmp = 1;
             document.querySelector(".central_color").querySelector("input").checked = true;
         } else {
             document.querySelector(".central_color").querySelector("input").checked = false;
         }
-        document.querySelector(".color_params_right").value = options.schema[1 + tmp];
+        setSelected(document.querySelector(".color_params_right"), options.schema[1 + tmp]);
+        // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
     }
 
     redisplay.compute();

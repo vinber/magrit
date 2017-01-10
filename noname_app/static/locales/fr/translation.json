@@ -150,8 +150,9 @@
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
             "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
             "export_load_pref": "Exporter / Charger un fichier de préférence",
-            "load_project_file": "Load a project file",
-            "save_file": "Sauvegarde d'un fichier-projet"
+            "load_project_file": "Chargement d'un fichier projet",
+            "save_file": "Sauvegarde d'un fichier-projet",
+            "new_project": "Création d'un nouveau projet"
         },
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
@@ -528,11 +529,6 @@
             "cartogram": {
                 "algo": " Algorithme à utiliser ",
                 "field": "Champ ",
-                "dorling_symbol": "Type de symbole ",
-                "dorling_symbol_circle": "Cercle",
-                "dorling_symbol_square": "Carré",
-                "dorling_fixed_size": "Taille fixée ",
-                "dorling_on_value": "sur la valeur ...",
                 "dougenik_iterations": "Nombre d'itérations",
                 "olson_scale_txt": "Dimensionner la taille de référence sur :",
                 "olson_scale_max_scale": "Modification maximum de la taille des entités ",

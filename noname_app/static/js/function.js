@@ -1163,22 +1163,18 @@ var fields_Anamorphose = {
         let fields = getFieldsType('stock', layer),
             field_selec = section2.select("#Anamorph_field"),
             algo_selec = section2.select('#Anamorph_algo'),
-            ok_button = section2.select("#Anamorph_yes"),
-            fixed_size_dorling = section2.select('#Anamorph_dorling_fixed_size');
+            ok_button = section2.select("#Anamorph_yes");
 
         if(fields.length == 0){
             display_error_num_field();
             return;
         }
         algo_selec.on('change', function(){
-          if(this.value === "dorling"){
-            section2.selectAll('.opt_dougenik, .opt_olson').style('display', 'none');
-            section2.selectAll('.opt_dorling').style('display', undefined);
-          } else if (this.value === "olson") {
-            section2.selectAll('.opt_dougenik, .opt_dorling').style('display', 'none');
+          if (this.value === "olson") {
+            section2.selectAll('.opt_dougenik').style('display', 'none');
             section2.selectAll('.opt_olson').style('display', undefined);
           } else if (this.value === "dougenik") {
-            section2.selectAll('.opt_dorling, .opt_olson').style('display', 'none');
+            section2.selectAll('.opt_olson').style('display', 'none');
             section2.selectAll('.opt_dougenik').style('display', undefined);
           }
         })
@@ -1198,10 +1194,6 @@ var fields_Anamorphose = {
                 ref_value_field.setAttribute("max", max_val_field);
                 ref_value_field.value = max_val_field;
             }
-        });
-
-        fixed_size_dorling.on("change", function(){
-            document.getElementById("Anamorph_ref_size_txt").innerHTML = " " + this.value + " px";
         });
 
         ok_button.on("click", function(){
@@ -1348,35 +1340,7 @@ var fields_Anamorphose = {
                         display_error_during_computation();
                         console.log(error);
                     });
-            } else if (algo === "dorling"){
-                let fixed_value = +document.getElementById("Anamorph_dorling_onvalue").value,
-                    fixed_size = +document.getElementById("Anamorph_dorling_fixed_size").value,
-                    shape_symbol = document.getElementById("Anamorph_dorling_symbol").value;
-
-                let layer_to_add = check_layer_name(
-                        new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)
-                        ? new_user_layer_name : ["DorlingCarto", field_name, layer].join('_')
-                    );
-
-                let [features_order, animation] = make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add);
-                current_layers[layer_to_add] = {
-                    "renderer": "DorlingCarto",
-                    "type": "Point",
-                    "symbol": shape_symbol,
-                    "rendered_field": field_name,
-                    "size": [fixed_value, fixed_size],
-                    "stroke-width-const": 1,
-                    "is_result": true,
-                    "features_order": features_order,
-                    "ref_layer_name": layer,
-                    "fill_color": {"random": true},
-                    "animation": animation
-                    };
-                create_li_layer_elem(layer_to_add, current_layers[layer].n_features, ["Point", "cartogram"], "result");
-                up_legends();
-                zoom_without_redraw();
-                switch_accordion_section();
-                }
+            }
         });
         setSelected(field_selec.node(), field_selec.node().options[0].value);
 
@@ -1406,31 +1370,6 @@ function fillMenu_Anamorphose(){
     let field_selec = field_choice.insert('select')
       .attrs({class: 'params', id: 'Anamorph_field'});
 
-    // Options for Dorling mode :
-    let option1_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling');
-      // .attr('class', 'params_section2').attr("id", "Anamorph_opt_txt");
-    option1_section.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_symbol'})
-      .html(i18next.t("app_page.func_options.cartogram.dorling_symbol"));
-    let option1_val = option1_section.append("select")
-      .attrs({class: "params i18n", id: "Anamorph_dorling_symbol"});
-
-    let option2_section = dialog_content.append('p').attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt2");
-    option2_section.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_fixed_size'})
-      .html(i18next.t("app_page.func_options.cartogram.dorling_fixed_size"));
-    let option2_val = option2_section.insert("input")
-      .style("width", "50px")
-      .attrs({type: "range", min: 0, max: 60, step: 0.1, value: 20, id: "Anamorph_dorling_fixed_size", class: "params"});
-    option2_section.insert("span").attr("id", "Anamorph_ref_size_txt").html(" 10 px");
-
-    let option3_section = dialog_content.append("p").attr('class', 'params_section2 opt_dorling').attr("id", "Anamorph_opt_txt3");
-    option3_section.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dorling_on_value'})
-      .html(i18next.t("app_page.func_options.cartogram.dorling_on_value"));
-    let option2_val2 = option3_section.insert("input")
-      .attrs({class: "params", id: "Anamorph_dorling_onvalue", type: "number", min: 0, step: 0.1});
-
     // Options for Dougenik mode :
     let doug1 = dialog_content.append('p')
       .attr('class', 'params_section2 opt_dougenik');
@@ -1456,16 +1395,9 @@ function fillMenu_Anamorphose(){
       .style("width", "60px")
       .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
 
-    [['Pseudo-Dorling', 'dorling'],
-     ['Dougenik & al. (1985)', 'dougenik'],
+     [['Dougenik & al. (1985)', 'dougenik'],
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
-    });
-
-    [["app_page.func_options.common.symbol_circle", "circle"],
-     ["app_page.func_options.common.symbol_square", "rect"]
-    ].forEach(function(symb){
-        option1_val.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
     });
 
     [["app_page.func_options.cartogram.olson_scale_max", "max"],
@@ -1478,86 +1410,7 @@ function fillMenu_Anamorphose(){
     make_ok_button(dialog_content, 'Anamorph_yes', false);
 
     dialog_content.selectAll(".params").attr("disabled", true);
-    dialog_content.selectAll(".opt_olson, .opt_dougenik").style('display', 'none');
-}
-
-
-function make_dorling_demers(layer, field_name, fixed_value, fixed_size, shape_symbol, layer_to_add){
-    let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
-        nb_features = current_layers[layer].n_features,
-        d_values = [],
-        symbol_layer = undefined,
-        comp = (a,b) => b[1] - a[1],
-        tmp = [];
-
-    for(let i = 0; i < nb_features; ++i){
-        let val = +user_data[layer][i][field_name];
-        let pt = path.centroid(ref_layer_selection[i].__data__.geometry);
-        d_values.push([i, val, pt]);
-    }
-    d_values = prop_sizer3(d_values, fixed_value, fixed_size, shape_symbol);
-    d_values.sort(comp);
-    let min_value = +d_values[nb_features - 1][1],
-        max_value = +d_values[0][1];
-
-    let nodes = d_values.map(function(d, i){
-        let val = (+ref_layer_selection[d[0]].__data__.properties[field_name] - min_value) / (max_value - min_value);
-        return {x: d[2][0], y: d[2][1],
-                x0: d[2][0], y0: d[2][1],
-                r: d[1],
-                value: val,
-                ix: d[0]};
-        });
-
-    let animation = d3.forceSimulation(nodes)
-                .force("x", d3.forceX(d => d.x0).strength(0.5))
-                .force("y", d3.forceY(d => d.y0).strength(0.5))
-                .force("charge", d3.forceManyBody().distanceMin(0).distanceMax(0).strength(d => -0.1 * d.value))
-                .force("collide", d3.forceCollide().radius(d => d.r).strength(0.5).iterations(1))
-                .on("tick", tick);
-
-
-    let bg_color = Colors.random(),
-        stroke_color = "black";
-
-    if(shape_symbol == "circle") {
-        symbol_layer = map.append("g").attr("id", layer_to_add)
-                          .attr("class", "result_layer layer")
-                          .selectAll("circle")
-                          .data(nodes).enter()
-                          .append("circle")
-                            .attrs( (d,i) => ({
-                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
-                              "r": d.r
-                            }))
-                            .style("fill", () => Colors.random() )
-                            .style("stroke", "black");
-    } else {
-        symbol_layer = map.append("g").attr("id", layer_to_add)
-                          .attr("class", "result_layer layer")
-                          .selectAll("rect")
-                          .data(nodes).enter()
-                          .append("rect")
-                            .attrs( (d,i) => ({
-                              "id": ["PropSymbol_", i, " feature_", d.ix].join(''),
-                              "height": d.r * 2,
-                              "width": d.r * 2
-                            }))
-                            .style("fill", () => Colors.random() )
-                            .style("stroke", "black");
-    }
-
-    function tick(e){
-        if(shape_symbol == "circle")
-            symbol_layer.attrs(d => ({"cx": d.x, "cy": d.y}));
-                // .attr("cx", d => d.x)
-                // .attr("cy", d => d.y);
-        else
-            symbol_layer.attrs(d => ({"x": d.x - d.r, "y": d.y - d.r}));
-                // .attr("x", d => d.x - d.r)
-                // .attr("y", d => d.y - d.r)
-    }
-    return [d_values, animation];
+    dialog_content.selectAll(".opt_olson").style('display', 'none');
 }
 
 function getCentroids(ref_layer_selection){

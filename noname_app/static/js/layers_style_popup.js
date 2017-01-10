@@ -4,8 +4,7 @@ function handle_click_layer(layer_name){
     if(layer_name == "Graticule")
         createStyleBoxGraticule();
     else if(current_layers[layer_name].renderer
-        && (current_layers[layer_name].renderer.indexOf("PropSymbol") > -1
-            || current_layers[layer_name].renderer.indexOf("Dorling") > -1))
+        && current_layers[layer_name].renderer.indexOf("PropSymbol") > -1)
         createStyleBox_ProbSymbol(layer_name);
     else if (current_layers[layer_name].renderer
              && current_layers[layer_name].renderer == "Label")
@@ -662,25 +661,8 @@ function createStyleBox(layer_name){
                         });
                 });
 
-
-        // } else if (renderer != "Stewart"){
         } else if (renderer == "Gridded"){
             let field_to_discretize = "densitykm";
-            // else {
-            //     var fields = getFieldsType('ratio', undefined, fields_layer);
-            //     var field_selec_block = popup.append('p').attr("class", "line_elem");
-            //     field_selec_block.append("span").html(i18next.t("app_page.layer_style_popup.field"));
-            //     var field_selec = field_selec_block.insert('select')
-            //             .attr('class', 'params')
-            //             .style("float", "right")
-            //             .on("change", function(){
-            //                 field_to_discretize = this.value;
-            //             });
-            //     field_to_discretize = fields[0];
-            //     fields.forEach(function(field){ field_selec.append("option").text(field).attr("value", field); });
-            //     if(current_layers[layer_name].rendered_field && fields.indexOf(current_layers[layer_name].rendered_field) > -1)
-            //         setSelected(field_selec.node(), current_layers[layer_name].rendered_field)
-            // }
             popup.append('p').style("margin", "auto").style("text-align", "center")
                 .append("button")
                 .attr("class", "button_disc")
@@ -1409,20 +1391,6 @@ function make_style_box_indiv_label(label_node){
     });
     selec_fonts.node().value = label_node.style.fontFamily;
 };
-
-
-// Todo : find a "light" way to recompute the "force" on the node after changing their size
-//              if(type_method.indexOf('Dorling') > -1){
-//                let nodes = selection[0].map((d, i) => {
-//                    let pt = path.centroid(d.__data__.geometry);
-//                    return {x: pt[0], y: pt[1],
-//                            x0: pt[0], y0: pt[1],
-//                            r: +prop_values[i],
-//                            value: +d_values[i]};
-//                    });
-//                  current_layers[layer_name].force.nodes(nodes).start()
-//              }
-//}
 
 /**
 * Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
