@@ -131,6 +131,9 @@ function get_map_template(){
               type: "FeatureCollection",
               features: features
             };
+            if(current_layers[layer_name].renderer === "PropSymbolsTypo"){
+                layers_style[i].color_map = [...current_layers[layer_name].color_map];
+            }
         } else if (current_layers[layer_name].renderer == "Stewart"
                     || current_layers[layer_name].renderer == "Gridded"
                     || current_layers[layer_name].renderer == "Choropleth"
@@ -158,6 +161,7 @@ function get_map_template(){
         } else if (current_layers[layer_name].renderer == "Links"
                     || current_layers[layer_name].renderer == "DiscLayer"){
             selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].renderer = current_layers[layer_name].renderer;
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
@@ -191,8 +195,21 @@ function get_map_template(){
             layers_style[i].current_state = state_to_save;
         } else if(current_layers[layer_name].renderer == "Label") {
             selection = map.select("#" + layer_name).selectAll("text");
+            let selec = selection.node();
+            layers_style[i].renderer = current_layers[layer_name].renderer;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
-            layers_style[i].contents_pos = [];
+            layers_style[i].default_font = current_layers[layer_name].default_font;
+            layers_style[i].default_size = +current_layers[layer_name].default_size.slice(0,2);
+            layers_style[i].fill_color = current_layers[layer_name].fill_color;
+            let features = [],
+                current_position = [];
+            for(let j = selec.length - 1;  j > -1; j--) {
+                let s = selec[i];
+                features.push(s.__data__);
+                current_position.push([s.getAttribute('y'), s.getAttribute('y'), s.style.display]);
+            }
+            layers_style[i].data_labels = features;
+            layers_style[i].current_position = current_position
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
         }
@@ -246,9 +263,91 @@ function apply_user_preferences(json_pref){
     let preferences = JSON.parse(json_pref),
         map_config = preferences.map_config,
         layers = preferences.layers;
-    console.log(preferences);
+        let a = document.getElementById("overlay");
+        a.style.display = "";
+        a.querySelector("button").style.display = "none";
     let _l = svg_map.getElementsByClassName("layer"),  _ll = _l.length;
     for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+
+    let g_timeout;
+    let set_final_param = () => {
+        if(g_timeout) clearTimeout(g_timeout);
+        g_timeout = setTimeout(function(){
+            proj.scale(s).translate(t);
+            let _zoom = svg_map.__zoom;
+            _zoom.k = map_config.zoom_scale;
+            _zoom.x = map_config.zoom_translate[0];
+            _zoom.y = map_config.zoom_translate[1];
+            zoom_without_redraw();
+            let desired_order = layers.map( i => i.layer_name);
+            desired_order.reverse();
+            reorder_layers(desired_order);
+            apply_layout_lgd_elem();
+            let a = document.getElementById("overlay");
+            a.style.display = "none";
+            a.querySelector("button").style.display = "";
+        }, 1500);
+    };
+
+    function apply_layout_lgd_elem(){
+        if(map_config.title){
+            // Create the title object :
+            handle_title(map_config.title.content);
+            // Use its old properties :
+            let title = document.getElementById("map_title").getElementsByTagName('text')[0];
+            title.setAttribute('x', map_config.title.x);
+            title.setAttribute('y', map_config.title.y);
+            title.setAttribute('style', map_config.title.style);
+            // Also fill the input field on tje left menu :
+            document.querySelector("input#title.list_elem_section4").value
+        }
+        if(map_config.layout_features){
+            if(map_config.layout_features.scale_bar){
+                scaleBar.create();
+                scaleBar.bar_size = map_config.layout_features.scale_bar.bar_size;
+                scaleBar.displayed = map_config.layout_features.scale_bar.displayed;
+                scaleBar.dist = map_config.layout_features.scale_bar.dist;
+                scaleBar.dist_txt = map_config.layout_features.scale_bar.dist_txt;
+                scaleBar.fixed_size = map_config.layout_features.scale_bar.fixed_size;
+                scaleBar.precision = map_config.layout_features.scale_bar.precision;
+                scaleBar.x = map_config.layout_features.scale_bar.x;
+                scaleBar.y = map_config.layout_features.scale_bar.y;
+            }
+            if(map_config.layout_features.north_arrow){
+                northArrow.display();
+                northArrow.x_center = map_config.layout_features.north_arrow.x_center;
+                northArrow.y_center = map_config.layout_features.north_arrow.y_center;
+                northArrow.displayed = map_config.layout_features.north_arrow.displayed;
+            }
+            if(map_config.layout_features.arrow){
+                for(let i = 0; i < map_config.layout_features.arrow.length; i++){
+                    let ft = map_config.layout_features.arrow[i];
+                    new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+                }
+            }
+            if(map_config.layout_features.ellipse){
+                for(let i = 0; i < map_config.layout_features.ellipse.length; i++) {
+                    let ft = map_config.layout_features.ellipse[i];
+                    // new UserEllipse()
+                }
+            }
+            if(map_config.layout_features.text_annot){
+                for(let i = 0; i < map_config.layout_features.text_annot.length; i++) {
+                    let ft = map_config.layout_features.text_annot[i];
+                    let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
+                    let inner_p = new_txt_bow.text_annot.select("p").node();
+                    inner_p.innerHTML = ft.content;
+                    inner_p.style.fontFamily = ft.fontFamily;
+                    inner_p.style.fontSize = ft.fontSize;
+                }
+            }
+            // if(map_config.layout_features.single_symbol){
+            //     for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
+            //     }
+            // }
+        }
+        up_legends();
+    }
 
     var func_name_corresp = new Map([
         ["Links", "flow"], ["PropSymbolsChoro", "choroprop"],
@@ -283,6 +382,7 @@ function apply_user_preferences(json_pref){
             stroke_opacity = layers[i].stroke_opacity;
 
         if(layers[i].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
+            if(g_timeout) clearTimeout(g_timeout);
             let tmp = {skip_alert: true};
             if(layers[i].targeted){
                 tmp['target_layer_on_add'] = true;
@@ -337,7 +437,8 @@ function apply_user_preferences(json_pref){
                 }
                 layer_selec.selectAll(symbol)
                         .style("fill-opacity", fill_opacity)
-                        .style("stroke-opacity", stroke_opacity)
+                        .style("stroke-opacity", stroke_opacity);
+                set_final_param();
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
             add_layout_feature(layer_name.toLowerCase());
@@ -356,17 +457,26 @@ function apply_user_preferences(json_pref){
                 symbol: layers[i].symbol,
                 nb_features: geojson_pt_layer.features.length,
             };
-
-            make_prop_symbols(rendering_params, geojson_pt_layer)
+            // We should avoid this for something better (as we have already set that value before, but it may have been changed by another layer added) :
+            /// ////
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+            path = d3.geoPath().projection(proj).pointRadius(4);
+            // ////
+            make_prop_symbols(rendering_params, geojson_pt_layer);
+            if(layers[i].renderer == "PropSymbolsTypo"){
+                current_layers[layer_name].color_map = new Map(layers[i].color_map);
+            }
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
             null;
-            // let rendering_params = {
-            //     uo_layer_name: layer_name,
-            //     label_field: ,
-            //
-            // };
-            // render_label(null, rendering_params, layers[i].data_labels);
-          } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
+            let rendering_params = {
+                uo_layer_name: layer_name,
+                label_field: layers[i].rendered_field,
+                color: layers[i].fill_color,
+                ref_font_size: layers[i].default_size,
+                font: layers[i].default_font
+            };
+            render_label(null, rendering_params, {data: layers[i].data_labels});
+        } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
               let rendering_params = {
                   colorByFeature: layers[i].color_by_id,
                   color_map: new Map(layers[i].color_map),
@@ -391,56 +501,6 @@ function apply_user_preferences(json_pref){
             null;
         }
     }
-    if(map_config.title){
-        handle_title(map_config.title.content);
-        let title = document.getElementById("map_title").getElementsByTagName('text')[0];
-        title.setAttribute('x', map_config.title.x);
-        title.setAttribute('y', map_config.title.y);
-        title.setAttribute('style', map_config.title.style);
-    }
-    if(map_config.layout_features){
-        if(map_config.layout_features.scale_bar){
-            scaleBar.create();
-        }
-        if(map_config.layout_features.north_arrow){
-            northArrow.display();
-        }
-        if(map_config.layout_features.arrow){
-            for(let i = 0; i < map_config.layout_features.arrow.length; i++){
-                let ft = map_config.layout_features.arrow[i];
-                new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
-            }
-        }
-        if(map_config.layout_features.ellipse){
-            for(let i = 0; i < map_config.layout_features.ellipse.length; i++) {
-                let ft = map_config.layout_features.ellipse[i];
-                // new UserEllipse()
-            }
-        }
-        if(map_config.layout_features.text_annot){
-            for(let i = 0; i < map_config.layout_features.text_annot.length; i++) {
-                let ft = map_config.layout_features.text_annot[i];
-                let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
-                let inner_p = new_txt_bow.text_annot.select("p").node();
-                inner_p.innerHTML = ft.content;
-                inner_p.style.fontFamily = ft.fontFamily;
-                inner_p.style.fontSize = ft.fontSize;
-            }
-        }
-        // if(map_config.layout_features.single_symbol){
-        //     for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
-        //
-        //     }
-        // }
-    }
-
-    let _zoom = svg_map.__zoom;
-    _zoom.k = map_config.zoom_scale;
-    _zoom.x = map_config.zoom_translate[0];
-    _zoom.y = map_config.zoom_translate[1];
-    let desired_order = layers.map( i => i.layer_name);
-    desired_order.reverse();
-    reorder_layers(desired_order);
 }
 
 function reorder_layers(desired_order){

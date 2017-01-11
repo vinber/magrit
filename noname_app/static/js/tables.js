@@ -367,7 +367,7 @@ var boxExplore2 = {
             // and/or display scrollbar if its overflowing the size of the window minus a little margin :
         setTimeout(function(){
             let box = document.getElementById("browse_data_box");
-            box.querySelector(".dataTable-pagination").style.width = "80%";
+            // box.querySelector(".dataTable-pagination").style.width = "80%";
             let bbox = box.querySelector("#myTable").getBoundingClientRect(),
                 new_width = bbox.width,
                 new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
@@ -380,7 +380,7 @@ var boxExplore2 = {
             }
 
             if (new_height > 350 || new_height > window.innerHeight * 0.80 ) {
-                box.querySelector(".modal-body").style.height = (new_height + 150) + "px";
+                box.querySelector(".modal-body").style.height = (new_height + 175) + "px";
                 box.querySelector(".modal-body").style.overflow = "auto";
             }
             setSelected(document.querySelector(".dataTable-selector"), "10");
