@@ -301,8 +301,14 @@
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
         },
         "help_box": {
-            "title": "Emergency help!",
-            "tooltip_btn": "Help",
+            "title": "About",
+            "tooltip_btn": "Help / About",
+            "version": "Magrit version {{ version }}",
+            "useful_links": "Useful links:",
+            "doc": "User manual",
+            "contact": "Contact",
+            "gh_link": "GitHub project page",
+            "credits": "Realised by UMS RIATE",
             "message_invite": "Write something to be searched in the documentation :",
             "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
         },

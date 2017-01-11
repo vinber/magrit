@@ -2894,9 +2894,7 @@ var render_label = function(layer, rendering_params, options){
                                   document.querySelector("body"),
                                   getItems(this)); })
         .call(drag_elem_geo);
-    console.log("abcde");
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
-    console.log("abcde");
     current_layers[layer_to_add] = {
         "n_features": new_layer_data.length,
         "renderer": "Label",

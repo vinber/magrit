@@ -1076,12 +1076,12 @@ function add_layout_feature(selected_feature){
           let a = prepare_available_symbols();
           a.then(confirmed => {
               let a = box_choice_symbol(window.default_symbols).then( result => {
-                  if(result){ add_single_symbol(result); }
+                  if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
               });
           });
       } else {
           let a = box_choice_symbol(window.default_symbols).then( result => {
-              if(result){ add_single_symbol(result); }
+              if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
           });
       }
 
@@ -1143,18 +1143,19 @@ function handleCreateFreeDraw(){
     draw_calc.call(drag);
 }
 
-function add_single_symbol(symbol_dataurl){
+function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": "Edit style...", "action": () => { make_style_box_indiv_symbol(self_parent); }},
             {"name": "Delete", "action": () => {self_parent.style.display = "none"; }}
     ];
-
+    x = x || w / 2;
+    y = y || h / 2;
     map.append("g")
         .attrs({class: "legend_features legend single_symbol"})
         .insert("image")
-        .attrs({"x": w/2, "y": h/2, "width": "30px", "height": "30px",
-                "xlink:href": symbol_dataurl.split("url(")[1].substring(1).slice(0,-2)})
+        .attrs({"x": x, "y": y, "width": width, "height": width,
+                "xlink:href": symbol_dataurl})
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){

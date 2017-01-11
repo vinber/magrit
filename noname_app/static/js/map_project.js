@@ -78,6 +78,14 @@ function get_map_template(){
                 });
             } else if(ft.classList.contains('single_symbol')) {
                 if(!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
+                let img = ft.childNodes[0];
+                map_config.layout_features.single_symbol.push({
+                    x: img.getAttribute('x'),
+                    y: img.getAttribute('y'),
+                    width: img.getAttribute('width'),
+                    height: img.getAttribute('height'),
+                    href: img.getAttribute('href')
+                });
             }
         }
 
@@ -195,7 +203,7 @@ function get_map_template(){
             layers_style[i].current_state = state_to_save;
         } else if(current_layers[layer_name].renderer == "Label") {
             selection = map.select("#" + layer_name).selectAll("text");
-            let selec = selection.node();
+            let selec = document.getElementById(layer_name).getElementsByTagName('text');
             layers_style[i].renderer = current_layers[layer_name].renderer;
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].default_font = current_layers[layer_name].default_font;
@@ -204,7 +212,7 @@ function get_map_template(){
             let features = [],
                 current_position = [];
             for(let j = selec.length - 1;  j > -1; j--) {
-                let s = selec[i];
+                let s = selec[j];
                 features.push(s.__data__);
                 current_position.push([s.getAttribute('y'), s.getAttribute('y'), s.style.display]);
             }
@@ -274,14 +282,15 @@ function apply_user_preferences(json_pref){
         if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
             proj.scale(s).translate(t);
+            reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
-            zoom_without_redraw();
             let desired_order = layers.map( i => i.layer_name);
             desired_order.reverse();
             reorder_layers(desired_order);
+            reorder_elem_list_layer(desired_order);
             apply_layout_lgd_elem();
             let a = document.getElementById("overlay");
             a.style.display = "none";
@@ -341,10 +350,12 @@ function apply_user_preferences(json_pref){
                     inner_p.style.fontSize = ft.fontSize;
                 }
             }
-            // if(map_config.layout_features.single_symbol){
-            //     for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
-            //     }
-            // }
+            if(map_config.layout_features.single_symbol){
+                for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
+                    let ft = map_config.layout_features.single_symbol[i];
+                    add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
+                }
+            }
         }
         up_legends();
     }
@@ -392,7 +403,6 @@ function apply_user_preferences(json_pref){
             }
             tmp['choosed_name'] = layer_name;
             handle_reload_TopoJSON(layers[i].topo_geom, tmp).then(function(n_layer_name){
-                console.log([layer_name, n_layer_name])
                 layer_name = n_layer_name;
                 if(layers[i].renderer){
                     current_layers[layer_name].renderer = layers[i].renderer;
@@ -416,7 +426,6 @@ function apply_user_preferences(json_pref){
                     current_layers[layer_name].colors_breaks = JSON.parse(layers[i].colors_breaks);
                 if(layers[i].fill_color)
                     current_layers[layer_name].fill_color = layers[i].fill_color;
-                console.log(layers[i])
                 if(layers[i].renderer){
                     if(layers[i].renderer == "Choropleth"
                         || layers[i].renderer == "Stewart"
@@ -439,6 +448,11 @@ function apply_user_preferences(json_pref){
                         .style("fill-opacity", fill_opacity)
                         .style("stroke-opacity", stroke_opacity);
                 set_final_param();
+                proj.scale(s).translate(t);
+                let _zoom = svg_map.__zoom;
+                _zoom.k = map_config.zoom_scale;
+                _zoom.x = map_config.zoom_translate[0];
+                _zoom.y = map_config.zoom_translate[1];
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
             add_layout_feature(layer_name.toLowerCase());
@@ -457,11 +471,6 @@ function apply_user_preferences(json_pref){
                 symbol: layers[i].symbol,
                 nb_features: geojson_pt_layer.features.length,
             };
-            // We should avoid this for something better (as we have already set that value before, but it may have been changed by another layer added) :
-            /// ////
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-            path = d3.geoPath().projection(proj).pointRadius(4);
-            // ////
             make_prop_symbols(rendering_params, geojson_pt_layer);
             if(layers[i].renderer == "PropSymbolsTypo"){
                 current_layers[layer_name].color_map = new Map(layers[i].color_map);
@@ -511,4 +520,15 @@ function reorder_layers(desired_order){
         if(document.getElementById(desired_order[i]))
           parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
+}
+
+function reorder_elem_list_layer(desired_order){
+  let parent = document.getElementsByClassName('layer_list')[0],
+      layers = parent.childNodes,
+      nb_layers = desired_order.length;
+  for(let i = 0; i < nb_layers; i++){
+      let selec = "li." + desired_order[i];
+      if(parent.querySelector(selec))
+        parent.insertBefore(parent.querySelector(selec), parent.firstChild);
+  }
 }

@@ -1183,20 +1183,23 @@ function createStyleBox_ProbSymbol(layer_name){
             fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
 
         [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
-         [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
          [i18next.t("app_page.layer_style_popup.random_color"), "random"]]
             .forEach(function(d,i){
                 fill_method.append("option").text(d[0]).attr("value", d[1])
             });
         popup.append('div').attr("id", "fill_color_section")
         fill_method.on("change", function(){
-            d3.select("#fill_color_section").html("").on("click", null);
-            if (this.value == "single")
+            popup.select("#fill_color_section").html("").on("click", null);
+            if (this.value == "single"){
                 make_single_color_menu(layer_name, fill_prev, type_symbol);
-            else if (this.value == "categorical")
-                make_categorical_color_menu(fields, layer_name, fill_prev, type_symbol);
-            else if (this.value == "random")
+                map.select(g_lyr_name)
+                    .selectAll(symbol)
+                    .transition()
+                    .style("fill", fill_prev.single);
+                current_layers[layer].fill_color = cloneObj(fill_prev.single);
+            } else if (this.value == "random"){
                 make_random_color(layer_name, type_symbol);
+            }
         });
         setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
     }

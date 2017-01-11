@@ -293,8 +293,14 @@
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
         "help_box": {
-            "title": "Aide d'urgence!",
-            "tooltip_btn": "Aide",
+            "title": "À propos",
+            "tooltip_btn": "Aide / À propos",
+            "version": "Magrit version {{ version }}",
+            "useful_links": "Liens utiles:",
+            "doc": "Manuel utilisateur",
+            "contact": "Contact",
+            "gh_link": "Page GitHub du projet",
+            "credits": "Realised by UMS RIATE",
             "message_invite": "Saisir un terme à rechercher dans la documentation :",
             "list_placeholders": "Carte de ratios, Discrétisation, Anamorphose, Export, Projection"
         },

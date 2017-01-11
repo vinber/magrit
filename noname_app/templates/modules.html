@@ -709,10 +709,15 @@ function setUpInterface(resume_project)
                       document.getElementById("menu_lang").remove();
                   if(document.getElementById("menu_pref"))
                       document.getElementById("menu_pref").remove();
+                  let box_content = "<div>" +
+                      "<p><b>" + i18next.t('app_page.help_box.useful_links') + "</b></p>" +
+                      "<p><button>" + i18next.t('app_page.help_box.version') + "</button></p>" +
+                      "<p><button>" + i18next.t('app_page.help_box.doc') + "</button></p>" +
+                      "<p><button>" + i18next.t('app_page.help_box.contact') + "</button></p>" +
+                      "<p><button>" + i18next.t('app_page.help_box.gh_link') + "</button></p></div>";
                   swal({
                       title: i18next.t("app_page.help_box.title"),
-                      text: i18next.t("app_page.help_box.message_invite"),
-                      input: "text",
+                      html: box_content,
                       showCancelButton: true,
                       animation: "slide-from-top",
                       inputPlaceholder: i18next.t("app_page.help_box.list_placeholders")
