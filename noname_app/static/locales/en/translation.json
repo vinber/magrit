@@ -308,9 +308,7 @@
             "doc": "User manual",
             "contact": "Contact",
             "gh_link": "GitHub project page",
-            "credits": "Realised by UMS RIATE",
-            "message_invite": "Write something to be searched in the documentation :",
-            "list_placeholders": "Choropleth, Discretization, Cartogram, Export, Projection"
+            "credits": "Realized by <span id=\"credit_link\">UMS RIATE</span>"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",

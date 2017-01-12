@@ -300,9 +300,7 @@
             "doc": "Manuel utilisateur",
             "contact": "Contact",
             "gh_link": "Page GitHub du projet",
-            "credits": "Realised by UMS RIATE",
-            "message_invite": "Saisir un terme à rechercher dans la documentation :",
-            "list_placeholders": "Carte de ratios, Discrétisation, Anamorphose, Export, Projection"
+            "credits": "Réalisé par l'<span id=\"credit_link\">UMS RIATE</span>"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",

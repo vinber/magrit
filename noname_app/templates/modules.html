@@ -709,18 +709,43 @@ function setUpInterface(resume_project)
                       document.getElementById("menu_lang").remove();
                   if(document.getElementById("menu_pref"))
                       document.getElementById("menu_pref").remove();
-                  let box_content = "<div>" +
-                      "<p><b>" + i18next.t('app_page.help_box.useful_links') + "</b></p>" +
-                      "<p><button>" + i18next.t('app_page.help_box.version') + "</button></p>" +
-                      "<p><button>" + i18next.t('app_page.help_box.doc') + "</button></p>" +
-                      "<p><button>" + i18next.t('app_page.help_box.contact') + "</button></p>" +
-                      "<p><button>" + i18next.t('app_page.help_box.gh_link') + "</button></p></div>";
+                  let click_func = function(window_name, target_url){
+                          window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                  }
+                  let box_content = '<div class="about_content">' +
+                      '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
+                      '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' +
+                      '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+                      '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+                      '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
+                      '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
                   swal({
                       title: i18next.t("app_page.help_box.title"),
                       html: box_content,
                       showCancelButton: true,
+                      showConfirmButton: false,
+                      cancelButtonText: i18next.t('app_page.common.close'),
                       animation: "slide-from-top",
-                      inputPlaceholder: i18next.t("app_page.help_box.list_placeholders")
+                      inputPlaceholder: i18next.t("app_page.help_box.list_placeholders"),
+                      onOpen: function(){
+                          let content = document.getElementsByClassName('about_content')[0];
+                          let credit_link = content.querySelector('#credit_link');
+                          credit_link.style.fontWeight = "bold";
+                          credit_link.style.cursor = "pointer";
+                          credit_link.color = "#173a50";
+                          credit_link.onclick = function(){
+                              window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          };
+                          content.querySelector('.btn_doc').onclick = function(){
+                              window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          };
+                          content.querySelector('.btn_contact').onclick = function(){
+                              window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          };
+                          content.querySelector('.btn_gh').onclick = function(){
+                              window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          };
+                      }
                    }).then(inputValue => {
                           swal("Nice!", "You wrote: " + inputValue, "success");
                         }, dismissValue => { null; });
@@ -942,18 +967,22 @@ function make_ico_choice(){
             .on("click", function(){
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
+                    if(this.classList.contains('active')){
+                        switch_accordion_section('btn_s2b');
+                        return;
+                    }
                     fields_handler.unfill();
                     let previous_button = document.getElementById("button_" + current_functionnality.name);
                     previous_button.style.filter = "invert(0%) saturate(100%)";
                     // previous_button.style.boxShadow = "";
                     clean_menu_function();
-                    if(this.classList.contains('active')){
-                        this.classList.remove('active');
-                        window.fields_handler = undefined;
-                        return;
-                    } else {
+                    // if(this.classList.contains('active')){
+                    //     this.classList.remove('active');
+                    //     window.fields_handler = undefined;
+                    //     return;
+                    // } else {
                         previous_button.classList.remove('active');
-                    }
+                    // }
                 }
 
                 // Highlight the icon of the selected functionnality :

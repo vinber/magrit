@@ -750,3 +750,9 @@ img.layout_ft_ico:hover {
   -webkit-filter: grayscale(0);
   -webkit-transform: scale(1);
 }
+
+.swal2_blue {
+    background-color: rgb(48, 133, 214);
+    border-left-color: rgb(48, 133, 214);
+    border-right-color: rgb(48, 133, 214);
+}
