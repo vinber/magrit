@@ -73,7 +73,9 @@
             "no": "No",
             "warn_xls_sheet": "Only data is taken into account (formulas and styling properties are ignored).",
             "warn_multiple_sheets": "The provided file contains multiple sheets, only the first one (<i>{{ sheet_name }}</i>) was used.",
-            "resume_last_project": "Resume last project ?"
+            "resume_last_project": "Resume last project ?",
+            "new_project": "New project",
+            "resume_last": "Resume last project"
         },
         "section1": {
             "title": "Add your data",

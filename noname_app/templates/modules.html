@@ -655,17 +655,19 @@ function setUpInterface(resume_project)
             apply_user_preferences(json_params);
         } else if (last_project && last_project.length && last_project.length > 0) {
             swal({title: "",
-                  text: i18next.t("app_page.common.resume_last_project"),
+                  // text: i18next.t("app_page.common.resume_last_project"),
                   allowOutsideClick: false,
-                  allowEscapeKey: true,
+                  allowEscapeKey: false,
                   type: "question",
                   showConfirmButton: true,
                   showCancelButton: true,
-                  confirmButtonText: i18next.t("app_page.common.yes"),
-                  cancelButtonText: i18next.t("app_page.common.no"),
+                  confirmButtonText: i18next.t("app_page.common.new_project"),
+                  cancelButtonText: i18next.t("app_page.common.resume_last"),
                 }).then(() => {
-                    apply_user_preferences(last_project);
-                 }, dismiss => { null; })
+                    null;
+                 }, dismiss => {
+                   apply_user_preferences(last_project);
+                 })
         } else {
             // If we don't want to resume from the last project, we can
             // remove it :

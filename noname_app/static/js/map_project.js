@@ -47,9 +47,12 @@ function get_map_template(){
                     y: scaleBar.y
                 };
             } else if(ft.id === "north_arrow"){
+              let n_arr = northArrow.arrow_img._groups[0][0];
               map_config.layout_features.north_arrow = {
                   arrow_img: ft.getAttribute('href'),
                   displayed: northArrow.displayed,
+                  x_img: n_arr.getAttribute('x'),
+                  y_img: n_arr.getAttribute('y'),
                   x_center: northArrow.x_center,
                   y_center: northArrow.y_center
               };
@@ -281,16 +284,16 @@ function apply_user_preferences(json_pref){
     let set_final_param = () => {
         if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
-            proj.scale(s).translate(t);
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
             reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
             let desired_order = layers.map( i => i.layer_name);
+            reorder_elem_list_layer(desired_order);
             desired_order.reverse();
             reorder_layers(desired_order);
-            reorder_elem_list_layer(desired_order);
             apply_layout_lgd_elem();
             let a = document.getElementById("overlay");
             a.style.display = "none";
@@ -324,6 +327,10 @@ function apply_user_preferences(json_pref){
             }
             if(map_config.layout_features.north_arrow){
                 northArrow.display();
+                northArrow.arrow_img._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img);
+                northArrow.arrow_img._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
+                northArrow.under_rect._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img);
+                northArrow.under_rect._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
                 northArrow.x_center = map_config.layout_features.north_arrow.x_center;
                 northArrow.y_center = map_config.layout_features.north_arrow.y_center;
                 northArrow.displayed = map_config.layout_features.north_arrow.displayed;
@@ -385,6 +392,7 @@ function apply_user_preferences(json_pref){
     proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
 
     for(let i = map_config.n_layers - 1; i > -1; --i){
+        if(g_timeout) clearTimeout(g_timeout);
         let layer_name = layers[i].layer_name,
             symbol,
             layer_selec;
@@ -393,7 +401,6 @@ function apply_user_preferences(json_pref){
             stroke_opacity = layers[i].stroke_opacity;
 
         if(layers[i].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons"){
-            if(g_timeout) clearTimeout(g_timeout);
             let tmp = {skip_alert: true};
             if(layers[i].targeted){
                 tmp['target_layer_on_add'] = true;
@@ -448,7 +455,7 @@ function apply_user_preferences(json_pref){
                         .style("fill-opacity", fill_opacity)
                         .style("stroke-opacity", stroke_opacity);
                 set_final_param();
-                proj.scale(s).translate(t);
+                proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
                 let _zoom = svg_map.__zoom;
                 _zoom.k = map_config.zoom_scale;
                 _zoom.x = map_config.zoom_translate[0];
@@ -509,6 +516,7 @@ function apply_user_preferences(json_pref){
         } else {
             null;
         }
+        set_final_param();
     }
 }
 
