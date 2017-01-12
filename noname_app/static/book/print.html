@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une type de projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte des discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte des liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributors</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><ul class="section"><li><a href="./discretisation_fr.html"><strong>3.2.1.</strong> Discrétisation des données</a></li></ul></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./layout_fr.html"><strong>4.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>5.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>6.</strong> Jeux de données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -102,7 +102,7 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 <ul>
 <li><code>csv</code> (champs séparés par une virgule ou par un point virgule)</li>
 <li><code>tsv</code> (champs séparés par une tabulation)</li>
-<li><code>xls</code> et <code>xlsx</code> (à condition que le feuillet à utiliser contiennent seulement la table de données; cf. exemple).</li>
+<li><code>xls</code> et <code>xlsx</code> (à condition que la feuille à utiliser contiennent seulement la table de données).</li>
 </ul>
 <h2>Jointure des données</h2>
 <p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
@@ -113,12 +113,11 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
 <h2>Affichage et enrichissement des tables de données</h2>
-<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée dont est affublée chaque couche.</p>
+<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.</p>
 <h1>Projections</h1>
 <p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
 La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.</p>
-<p>Certaines projections peuvent être utilisée avec n'importe quel centrage (exemple exemple) quand d'autres ne sont pertinentes qu'avec certains centres... (exemple exemple)</p>
 <p>La projection appelée &quot;orthographique&quot; présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.</p>
 <p>Plusieurs attributs permettent de distinguer ces projections :</p>
 <ul>
@@ -143,54 +142,54 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
 <img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
 <h1>Choix de la représentation</h1>
-<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue de manière relative au type de données à représenter (données brutes, de rapport/ratio ou de catégories) et au type de fond de carte présent (points, polygones, etc.).</p>
-<p>Plusieurs type de représentations sont adaptés à des données de stocks :</p>
+<p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).</p>
+<p>Représentations adaptées à des données de stocks :</p>
 <ul>
 <li><a href="./carto/propsmbol_fr.html">carte de stocks</a></li>
 <li><a href="./carto/cartogram_fr.html">cartogramme</a></li>
 </ul>
-<p>Des types de représentations sont pour leur part adaptées à la représentation de données de ratios :</p>
+<p>Représentations adaptées à des données de ratios :</p>
 <ul>
 <li><a href="./carto/choro_fr.html">carte choroplèthe</a></li>
 <li><a href="./carto/propsmbolchoro_fr.html">carte de stocks et ratios</a></li>
 </ul>
-<p>Des représentations permettant de mettre en avant les catégories d'appartenance des entités :</p>
+<p>Représentations adaptées à des données qualitatives :</p>
 <ul>
 <li><a href="./carto/typo_fr.html">carte qualitative</a></li>
 <li><a href="./carto/typosymbol_fr.html">carte qualitative (pictogrammes)</a></li>
 <li><a href="./carto/propsmboltypo_fr.html">carte de stocks et qualitative</a></li>
 </ul>
-<p>Des représentations originales etc etc :</p>
+<p>D'autres méthodes permettent de créer des représentations originales :</p>
 <ul>
 <li><a href="./carto/grid_fr.html">carroyage</a></li>
-<li><a href="./carto/cartogram_fr.html">cartogramme</a></li>
 <li><a href="./carto/smooth_fr.html">carte lissée</a></li>
-<li><a href="./carto/discont_fr.html">carte des discontinuités</a></li>
-<li><a href="./carto/links_fr.html">carte des liens</a></li>
+<li><a href="./carto/discont_fr.html">carte de discontinuités</a></li>
+<li><a href="./carto/links_fr.html">carte de liens</a></li>
 </ul>
 <h1>Carte de stocks</h1>
-<p>Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).</p>
+<p>Les cartes de stocks permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues). Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. Les données de stocks peuvent être représentées par des <strong>figurés proportionnels</strong>.</p>
 <blockquote>
-<h3>Paramètres</h3>
+<h4>Paramètres</h4>
 <ul>
 <li>Le champ contenant les valeurs à utiliser.</li>
 <li>La taille (en pixels) à appliquer sur le valeur définie à la suite.</li>
 <li>Le type de symbole à utiliser (cercle ou carré).</li>
-<li>La ou les couleurs des symboles, selon qu'un seuil soit défini ou non.</li>
+<li>La couleur des symboles. Il est possible de choisir deux couleurs si un seuil est défini.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymbol.png" alt="img_propsymbol_map" style="width: 480px;"/>
 </p>
 <ul>
+<li>Données : Pays du monde</li>
 <li>Champ utilisé : <strong>jamesbond</strong></li>
-<li>Symbole <strong>cerle</strong></li>
-<li>Taille fixée de <strong>40px</strong> sur la valeur <strong>22</strong></li>
+<li>Symbole : <strong>cerle</strong></li>
+<li>Taille fixée à <strong>40px</strong> sur la valeur <strong>22</strong></li>
 </ul>
 <h1>Carte de ratios</h1>
-<p>Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total.
-Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).</p>
+<p>Les <strong>cartes choroplèthes</strong> permettent de représenter des <strong>données de ratios</strong> par plages de couleurs ou de niveaux de gris.
+Les données de rapports (de taux, d’intensités ou de ratios) sont des données quantitatives calculées à partir de données de stocks dont ont fait le rapport ou dont on calcule le taux à partir d’un total. Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -198,10 +197,37 @@ Elles expriment les caractéristiques des individus observés mais leur total n'
 <li>Choix d'une discrétisation adaptée pour la série de valeurs</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<p>Un click sur le bouton <img src="img/discr.png" alt="choro_map" style="width: 26px;"/> ouvre une boite dialogue permettant d'affiner la discrétisation et de choisir la palette de couleur.</p>
+<p style="text-align: center;">
+<img src="img/discr2.png" alt="choro_map" style="width: 480px;"/>
+</p>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/choropleth_map.png" alt="choro_map" style="width: 480px;"/>
 </p>
+<h1>Discrétisation</h1>
+<p>Plusieurs méthodes sont proposées afin de transformer une série continue de valeurs en une série discrète, c'est à dire en un nombre fini de classes. Le nombre de classes ainsi que les valeurs limites de ces classes doivent être justifiées sémantiquement et/ou statistiquement.</p>
+<p>Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou bien comme des guides de lecture et d'analyse préalables à la saisie manuelle des limites de classes souhaitées.</p>
+<hr />
+<ul>
+<li>Intervalles égaux
+Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</li>
+</ul>
+<ul>
+<li>Quantiles
+Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le même nombre d'individus.</li>
+</ul>
+<ul>
+<li>Q6
+Cette méthode originale, notamment démocratisée par l'outil PhilCarto <a href="(http://philcarto.free.fr/)">1</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</li>
+</ul>
+<ul>
+<li>Seuils naturels (algorithme de Jenks <a href="(https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization)">2</a>)
+Cette méthode permet de créer des classes homogènes. En effet l'algorithme vise à trouver le nombre de classe souhaitées en minimisant la variance intra-classe et en maximisant la variance inter-classe.</li>
+</ul>
+<ul>
+<li>Il est également possible d'utiliser les discrétisations en progression arithmétique ou géométrique ou de saisir manuellement les bornes de classes.</li>
+</ul>
 <h1>Carte qualitative</h1>
 <p>Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.</p>
 <blockquote>
@@ -211,15 +237,15 @@ Elles expriment les caractéristiques des individus observés mais leur total n'
 <li>Choix des couleurs correspondantes aux catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/typo.png" alt="img_typo_map" style="width: 480px;"/>
 <ul>
 <li>Champ utilisé : <strong>LIBEPT</strong></li>
 </ul>
 <h1>Carte de stocks et ratios</h1>
-<p>Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations.<br />
-Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte.</p>
+<p>Ce type de représentation permet de combiner la représentation de données de stocks et celles de ratios sur une même carte.<br />
+La donnée de ratiio est représentée à l’intérieur du figuré représentant le stock.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -230,12 +256,12 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Le nom du champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymbolschoro.png" alt="img_propsymbolchoro_map" style="width: 480px;"/>
 </p>
 <h1>Carte de stocks et qualitative</h1>
-<p>Ce type de représentation permet d'établir une correspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle).</p>
+<p>Ce type de représentation permet d'établir une correspondance entre des données de stock et une variable d'appartenance (variable catégorielle).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -247,7 +273,7 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Le choix des couleurs correspondantes aux catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/propsymboltypo_map.png" alt="img_propsymboltypo_map" style="width: 480px;"/>
 </p>
@@ -258,18 +284,18 @@ Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surfac
 <li>Champ utilisé pour l'aplat de couleur : <strong>Pays</strong></li>
 </ul>
 <h1>Carroyage</h1>
-<p>La méthode du carroyage est une des possibilités pour essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
+<p>La méthode du carroyage est une méthode permettant d'essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
 Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en <em>« carreaux égaux et repérés »</em> (Les mots de la géographie).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
-<li>Nom du champ à utiliser</li>
+<li>Nom du champ à utiliser (variable de stock)</li>
 <li>Taille des carreaux en kilomètres</li>
 <li>Forme des carreaux</li>
 <li>Palette de couleurs à utiliser</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/gridded.png" alt="gridded_map" style="width: 480px;"/>
 </p>
@@ -279,20 +305,18 @@ Elle met en évidence les grandes tendances de le répartition spatiale d'une do
 <li>Taille de référence : <strong>65km</strong></li>
 </ul>
 <h1>Cartogramme</h1>
-<p>De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique.<br />
-Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).</p>
+<p>Les anamorphoses sont utilisées en cartographie statistique pour montrer l'importance d'un phénomène donné : ce type de carte est couramment appelé un cartogramme.<br />
+Elles permettent de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br />
+Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et Olson (<strong>refs</strong>).</p>
 <blockquote>
-<h3>Paramètres</h3>
+<h3>Paramètres (méthode Dougenik)</h3>
 <ul>
 <li>Le nom du champ contenant les valeurs à utiliser</li>
-<li>Le type de symbole à utiliser (parmi 'cercle' et 'carré')</li>
-<li>La taille (px) à appliquer sur le valeur définie par la suite</li>
-<li>La valeur sur laquelle fixer la taille</li>
 <li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
-<li>La valeur statistique à utiliser comme référence pour la transformation</li>
+<li>Le nom de la couche produite</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/dougenik.png" alt="dougenik_map" style="width: 480px;"/>
 </p>
@@ -301,6 +325,14 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
+<blockquote>
+<h3>Paramètres (méthode Olson)</h3>
+<ul>
+<li>Le nom du champ contenant les valeurs à utiliser</li>
+<li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
+<li>Le nom de la couche produite</li>
+</ul>
+</blockquote>
 <h1>Carte lissée</h1>
 <p>Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.</p>
 <blockquote>
@@ -316,7 +348,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>(optionnel) Le nom de la couche de masquage</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;"> <img src="img/smoothed2.png" alt="smoothed_map" style="width: 480px;"/> </p>
 <h1>Carte des discontinuités</h1>
 <p>Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que <em>« l’espace géographique est fondamentalement discontinu »</em>.</p>
@@ -347,7 +379,7 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Le nombre de classes à créer lors de l'application de la méthode précédemment définie.</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/flows.png" alt="link_map" style="width: 480px;"/>
 </p>
@@ -360,41 +392,31 @@ Cela permet de déformer les unités territoriales (polygones) sur la base d'un 
 <li>Le choix de pictogrammes correspondants aux différentes catégories à représenter</li>
 </ul>
 </blockquote>
-<h4>Exemple de rendu à partir d'un jeu de données d'exemple :</h4>
+<h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
 </p>
-<h1>Discrétisation</h1>
-<p>Plusieurs méthodes sont proposées afin de transformer une série continue de valeurs en une série discrète, c'est à dire en un nombre fini de classes. Le nombre de classes ainsi que les valeurs limites de ces classes doivent répondre à justification sémantique et/ou mathématique.</p>
-<p>Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou bien comme des guides de lecture et d'analyse préalables à la saisie manuelle des limites de classes souhaitées.</p>
-<hr />
-<h2>Intervalles égaux</h2>
-<p>Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</p>
-<h2>Quantiles</h2>
-<p>Cette méthode, parfois également décrite par le terme de &quot;discrétisation en classes d'effectifs égaux&quot; permet de former des classes qui possèdent toutes le même nombre d'individus.</p>
-<h2>Q6</h2>
-<p>Cette méthode originale, notamment démocratisée par l'outil PhilCarto <a href="(Ref%20philcarto%20q6)">1</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</p>
-<h2>Seuils naturels (algorithme de Jenks)</h2>
-<p>Cette méthode permet de créer des classes homogènes. En effet l'algorithme vise à trouver le nombre de classe souhaitées en minimisant la variance intra-classe et en maximisant la variance inter-classe.</p>
-<h2>Progression arithmétique</h2>
-<p>Cette méthode ...</p>
-<h2>Progression géométrique</h2>
-<p>Cette méthode ...</p>
 <h1>Habillage de la carte</h1>
-<p>L'étape d'habillage de la carte, également parfois présenté comme sa &quot;mise en scène&quot; consiste en ...</p>
-<p>Magrit propose l'ajout de différentes couches géographiques permettant de contextualiser les données représentées :</p>
+<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
+<ul>
+<li>
+<p>Différentes couches géographiques permettant de contextualiser les données représentées :</p>
+</li>
+</ul>
 <ul>
 <li>Tracé des pays du monde</li>
 <li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
-</ul>
-<p>L'outil propose également d'ajouter des éléments se comportant comme des couches géographiques (ces éléments sont paramétrables via le <em>gestionnaire de couches</em>):</p>
-<ul>
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
 </ul>
-<p>D'autres éléments peuvent être ajoutés, ces derniers se comportent comme des éléments de légende (ils sont déplacables au curseur et paramétrables via un clic droit):</p>
+<ul>
+<li>
+<p>D'autres éléments peuvent être ajoutés, ils sont déplacables au curseur et paramétrables via un clic droit :</p>
+</li>
+</ul>
 <ul>
 <li>Flèche d'orientation</li>
+<li>Echelle</li>
 <li>Zone de texte</li>
 <li>Ellipse</li>
 <li>Flèche personnalisable</li>
@@ -415,12 +437,12 @@ Il est également possible, afin de partager son travail avec un collègue ou af
 </ul>
 </blockquote>
 <h2>Export au format PNG</h2>
-<p>Cette méthde permet d'exporter la carte dans un format dit &quot;matriciel&quot;, c'est à dire composé de points.
+<p>Cette méthde permet d'exporter la carte dans un format dit &quot;matriciel&quot; ou &quot;raster&quot;, c'est à dire composé de pixels.
 La résolution de ce type de fichier est fixe.<br />
 Ainsi dans Magrit il est proposé de choisir la résolution du fichier à exporter en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
 <h2>Export d'un fichier de couche géographique</h2>
 <p>Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
-C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissée, carte des liens et carte des discontinuités.
+C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissées, carte de liens et carte de discontinuités.
 Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
 <ul>
 <li>GeoJSON</li>
@@ -434,7 +456,24 @@ Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'i
 <p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format <em>JSON</em>.
 Le fichier &quot;projet&quot; ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
-<h1>Contributors</h1>
+<p># Jeux de données</p>
+<ul>
+<li>Localisations des hôpitaux de Paris (points)</li>
+<li>Communes de la métropole du Grand-Paris (polygones) :<br />
+- geométrie; communes du Grand-Paris; Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+- DEPCOM; code communal; INSEE 2016<br />
+- LIBCOM; nom de la commune; INSEE 2016<br />
+- EPT; code le l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
+- LIBEPT; nom de l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
+- DEP; code du département; INSEE 2016<br />
+- INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.<br />
+- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+</ul>
+<h1>Contributeurs</h1>
+<p>Matthieu Viry : Développement &amp; Conception</p>
+<p>Timothée Giraud &amp; Nicolas Lambert : Conception</p>
+<h2>Financement</h2>
+<p><a href="http://riate.cnrs.fr">UMS Riate</a></p>
 
                 </div>
 
@@ -461,6 +500,20 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

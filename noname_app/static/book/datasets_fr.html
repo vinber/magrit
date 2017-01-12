@@ -7,7 +7,7 @@
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <base href="../">
+        <base href="">
 
         <link rel="stylesheet" href="book.css">
         <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><ul class="section"><li><a href="./discretisation_fr.html"><strong>3.2.1.</strong> Discrétisation des données</a></li></ul></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./layout_fr.html"><strong>4.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>5.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>6.</strong> Jeux de données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html" class="active">Contributeurs</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><ul class="section"><li><a href="./discretisation_fr.html"><strong>3.2.1.</strong> Discrétisation des données</a></li></ul></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./layout_fr.html"><strong>4.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>5.</strong> Export des données</a></li><li><a href="./datasets_fr.html" class="active"><strong>6.</strong> Jeux de données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -67,31 +67,47 @@
                 </div>
 
                 <div id="content" class="content">
-                    <h1>Contributeurs</h1>
-<p>Matthieu Viry : Développement &amp; Conception</p>
-<p>Timothée Giraud &amp; Nicolas Lambert : Conception</p>
-<h2>Financement</h2>
-<p><a href="http://riate.cnrs.fr">UMS Riate</a></p>
+                    <p># Jeux de données</p>
+<ul>
+<li>Localisations des hôpitaux de Paris (points)</li>
+<li>Communes de la métropole du Grand-Paris (polygones) :<br />
+- geométrie; communes du Grand-Paris; Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+- DEPCOM; code communal; INSEE 2016<br />
+- LIBCOM; nom de la commune; INSEE 2016<br />
+- EPT; code le l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
+- LIBEPT; nom de l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
+- DEP; code du département; INSEE 2016<br />
+- INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.<br />
+- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+</ul>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./datasets_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./export_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
+                    <a href="misc/contributors.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
 
             </div>
 
             
-                <a href="./datasets_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                <a href="./export_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
                     <i class="fa fa-angle-left"></i>
                 </a>
             
 
+            
+                <a href="misc/contributors.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
             
 
         </div>
