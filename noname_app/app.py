@@ -970,11 +970,11 @@ async def on_shutdown(app):
         else:
             task.cancel()
 
-async def init(loop, port):
+async def init(loop, port=None):
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("magrit_app.main")
-    redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50)
-    redis_conn = await create_reconnecting_redis(('0.0.0.0', 6379), db=1)
+    redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
+    redis_conn = await create_reconnecting_redis(('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
         loop=loop,
         middlewares=[
@@ -1006,6 +1006,7 @@ async def init(loop, port):
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
     app['ProcessPool'] = ProcessPoolExecutor(4)
+    app['app_name'] = "Magrit"
     app['geo_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "carto_doug": carto_doug, "olson": compute_olson}
@@ -1019,6 +1020,13 @@ async def init(loop, port):
         srv = await loop.create_server(
             handler, '0.0.0.0', port)
         return srv, app, handler
+
+def _init(loop):
+    # Entry point to use with py.test unittest :
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if app_real_path != os.getcwd():
+        os.chdir(app_real_path)
+    return init(loop)
 
 def create_app(app_name="Magrit"):
     # Entry point when using Gunicorn to run the application with something like :

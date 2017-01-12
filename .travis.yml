@@ -32,7 +32,7 @@ install:
 #   - sleep 10
 script:
   - magrit --help
-  # - python3 tests/tests_web2.py
+  - py.test tests/test.py -p no:flaky
 addons:
   apt:
     sources:
