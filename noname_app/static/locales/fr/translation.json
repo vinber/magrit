@@ -106,8 +106,7 @@
             "map_scale_k": "Facteur de zoom",
             "map_title": "Titre de la carte",
             "background_color": "Couleur de l'arrière-plan",
-            "canvas_rotation": "Rotation de la carte",
-            "layout_features": "Ajout d'éléments d'habillage "
+            "canvas_rotation": "Rotation de la carte"
         },
         "section5b": {
             "title": "Export de la carte",
@@ -149,7 +148,6 @@
         "tooltips": {
             "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
             "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "export_load_pref": "Exporter / Charger un fichier de préférence",
             "load_project_file": "Chargement d'un fichier projet",
             "save_file": "Sauvegarde d'un fichier-projet",
             "new_project": "Création d'un nouveau projet"
@@ -165,7 +163,6 @@
             "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
             "typo": "Réalisation d'une carte qualitative",
-            "label": "Affichage et personnalisation du label des entités",
             "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "func_title" : {
@@ -179,7 +176,6 @@
             "flow": "Carte des liens",
             "discont": "Carte des discontinuités",
             "typo": "Carte qualitative",
-            "label": "Représentation des labels",
             "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
         "layout_features_box": {
@@ -221,9 +217,7 @@
             "us_states": "États des USA <i>(Polygones)</i>",
             "tabular_dataset": "<i>Jeu de données tabulaires</i>",
             "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
-            "gpm_dataset": "Revenus du \"Grand Paris\" <i>(À joindre avec les géometries du Grand Paris)</i>",
-            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>",
-            "bondcountries": "Pays visités par James Bond <i>(À joindre avec les pays du monde)</i>"
+            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>"
         },
         "export_box": {
             "geo": "Exporter vers un format compatible SIG",
@@ -265,7 +259,6 @@
         "explore_box": {
             "title": "Table de données",
             "button_add_field": "Ajout d'un champ...",
-            "available_table": "Données présentes ",
             "add_field_box": {
                 "new_name": "Nom du nouveau champ<br>",
                 "new_content": "Contenu du nouveau champ<br>",
@@ -312,7 +305,6 @@
             "fixed_size": "Taille fixée ",
             "precision": "Précision ",
             "unit": "Unité de mesure ",
-            "intermediate_markers": "Nombre de marqueurs intermédiaires ",
             "start_end_bar": "Délimiteurs de début/fin "
         },
         "text_box_edit_box": {
@@ -590,7 +582,6 @@
         "mean": "Moyenne",
         "median": "Médiane",
         "line_size": "<b>Taille des segments :</b>",
-        "apply": "Appliquer les modifications",
         "sequential": "Séquentiel",
         "diverging": "Divergent",
         "reverse_palette": "Inverser l'ordre des couleurs",
@@ -608,7 +599,6 @@
             "resume": "Continuer le projet en cours...",
             "overview": "Fonctionnalités",
             "examples": "Exemples",
-            "projections": "Projections",
             "doc": "Documentation",
             "dev": "Développement",
             "start_now": "Démarrer"
@@ -623,11 +613,9 @@
             "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
             "list_func2": "(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.).",
             "import1": "Accepte de nombreux formats d'entrée",
-            "import2": "(Shapefile, GeoJSON, kml, fichier tabulaire avec données géoréférencées ou avec données à joindre).",
             "customize1": "Personnalisez votre carte selon vos souhaits",
             "customize2": "(grâce notamment à des nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.).",
             "export1": "Exporte vos compositions facilement",
-            "export2": "(en sélectionnant un export en PNG ou en SVG)",
             "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
             "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
             "projection1": "Propose un large choix de projections cartographiques",

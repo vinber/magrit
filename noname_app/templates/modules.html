@@ -707,8 +707,6 @@ function setUpInterface(resume_project)
               .on("click", function(){
                   if(document.getElementById("menu_lang"))
                       document.getElementById("menu_lang").remove();
-                  if(document.getElementById("menu_pref"))
-                      document.getElementById("menu_pref").remove();
                   let click_func = function(window_name, target_url){
                           window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                   }
@@ -761,8 +759,6 @@ function setUpInterface(resume_project)
             if(document.getElementById("menu_lang"))
                 document.getElementById("menu_lang").remove();
             else {
-                if(document.getElementById("menu_pref"))
-                    document.getElementById("menu_pref").remove();
                 let current_lang = i18next.language;
                 let other_lang = current_lang == "en" ? "fr" : "en"
                 let actions = [
@@ -974,20 +970,12 @@ function make_ico_choice(){
                     fields_handler.unfill();
                     let previous_button = document.getElementById("button_" + current_functionnality.name);
                     previous_button.style.filter = "invert(0%) saturate(100%)";
-                    // previous_button.style.boxShadow = "";
                     clean_menu_function();
-                    // if(this.classList.contains('active')){
-                    //     this.classList.remove('active');
-                    //     window.fields_handler = undefined;
-                    //     return;
-                    // } else {
-                        previous_button.classList.remove('active');
-                    // }
+                    previous_button.classList.remove('active');
                 }
 
                 // Highlight the icon of the selected functionnality :
                 this.style.filter = "invert(100%) saturate(200%)";
-                // this.style.boxShadow = "-1px 1px 5px 2px #888888";
                 this.classList.add('active');
 
                 document.getElementById('accordion2b').style.display = '';
@@ -1036,8 +1024,6 @@ function make_ico_choice(){
                 switch_accordion_section('btn_s2b');
             });
     }
-    // section2.append("hr")
-    //         .styles({"clear": "both", "position": "relative"});
 }
 
 var w = Math.round(window.innerWidth - 361),

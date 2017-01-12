@@ -745,7 +745,7 @@ function createlegendEditBox(legend_id, layer_name){
     };
 
     var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
-    var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {};
+    var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {}, original_rect_fill_value;
 
     bind_selections();
     if(document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
@@ -756,12 +756,12 @@ function createlegendEditBox(legend_id, layer_name){
         no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
         }; //, source_content: source_content.textContent ? source_content.textContent : ""
 
-
     if(legend_node.getAttribute("visible_rect") == "true"){
         rect_fill_value = {
             color: legend_node.querySelector("#under_rect").style.fill,
             opacity: legend_node.querySelector("#under_rect").style.fillOpacity
         }
+        original_rect_fill_value = cloneObj(rect_fill_value);
     }
 
     make_confirm_dialog2(box_class, layer_name)
@@ -773,11 +773,12 @@ function createlegendEditBox(legend_id, layer_name){
                 if(no_data_txt){
                     no_data_txt.textContent = original_params.no_data_txt;
                 }
+                rect_fill_value = original_rect_fill_value;
             }
-            bind_selections();
             make_underlying_rect(legend_node_d3,
                                  legend_node_d3.select("#under_rect"),
                                  rect_fill_value);
+            bind_selections();
         });
     document.getElementsByClassName(box_class)[0].querySelector('.modal-dialog').style.width = '375px';
     var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
@@ -996,16 +997,16 @@ function createlegendEditBox(legend_id, layer_name){
     rectangle_options1.insert("input")
         .style('margin-left', '0px')
         .attrs({type: "checkbox",
-                value: rect_fill_value.color || "#ededed",
                 checked: rect_fill_value.color === undefined ? null : true,
                 id: "rect_lgd_checkbox"})
         .on("change", function(){
             if(this.checked){
                 rectangle_options2.style('display', "");
-                rect_fill_value = {color: "#ffffff", opacity: 1};
+                let a = document.getElementById("choice_color_under_rect");
+                rect_fill_value = a ? {color: a.value, opacity: 1} : {color: "#ffffff", opacity: 1};
             } else {
                 rectangle_options2.style("display", "none");
-                rect_fill_value = undefined;
+                rect_fill_value = {};
             }
             make_underlying_rect(legend_node_d3,
                                  legend_node_d3.select("#under_rect"),
@@ -1016,12 +1017,12 @@ function createlegendEditBox(legend_id, layer_name){
         .attrs({for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle'})
         .html(i18next.t("app_page.legend_style_box.under_rectangle"));
 
-    let rectangle_options2 = box_body.insert('p').style('display', 'none');
+    // let rectangle_options2 = box_body.insert('p').style('display', rect_fill_value.color === undefined ? "none" : "");
+    let rectangle_options2 = rectangle_options1.insert('span').styles({'float': 'right', 'display': rect_fill_value.color === undefined ? "none" : ""});
     rectangle_options2.insert("input")
         .attrs({id: "choice_color_under_rect",
                 type: "color",
-                value: rect_fill_value ? rgb2hex(rect_fill_value.color) : undefined,
-                disabled: rect_fill_value === undefined ? true : null})
+                value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color)})
         .on("change", function(){
             rect_fill_value = {color: this.value, opacity: 1};
             make_underlying_rect(legend_node_d3,

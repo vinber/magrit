@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 """
 Helpers to spot unused translation keys.
@@ -60,7 +61,7 @@ def scan_folder_code(paths, list_key):
 
     Return:
         unused_key: list,
-            A list of unused key (ie key(s) from `list_key` 
+            A list of unused key (ie key(s) from `list_key`
             which aren't in any file from `paths`)
     """
     for file_path in paths:
@@ -71,3 +72,7 @@ def scan_folder_code(paths, list_key):
             if key in content:\
                 list_key.remove(key)
     return list_key
+
+if __name__ == "__main__":
+    import pprint
+    pprint.pprint(run())

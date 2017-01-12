@@ -104,8 +104,7 @@
             "map_scale_k": "Zoom scale",
             "map_title": "Map title",
             "background_color": "Background color ",
-            "canvas_rotation": "Canvas rotation ",
-            "layout_features": "Add layout features... "
+            "canvas_rotation": "Canvas rotation "
         },
         "section5b": {
             "title": "Export options",
@@ -147,7 +146,6 @@
         "tooltips": {
             "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
             "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
-            "export_load_pref": "Export / Load your map preferences",
             "load_project_file": "Load a project file",
             "save_file": "Save project as a file",
             "new_project": "Create a new empty project"
@@ -163,7 +161,6 @@
             "flow": "Render a map displaying links between features with graduated sizes",
             "discont": "Render a map displaying discontinuities between polygons features",
             "typo": "Render a categorical map with an attribute field of your dataset",
-            "label": "Display and customize feature labels",
             "typosymbol": "Display pictograms on the features of the map"
         },
         "func_title" : {
@@ -177,7 +174,6 @@
             "flow": "Link/Flow map",
             "discont": "Discontinuities map",
             "typo": "Categorical map",
-            "label": "Label map",
             "typosymbol": "Pictogram map"
         },
         "layout_features_box": {
@@ -221,9 +217,7 @@
             "us_states": "U.S.A states <i>(Polygons)</i>",
             "tabular_dataset": "<i>Tabular dataset</i>",
             "twincities": "International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>",
-            "gpm_dataset": "\"Grand Paris\" incomes dataset <i>(To link with Grand Paris municipality geometries)</i>",
-            "martinique_data": "Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>",
-            "bondcountries": "James Bond visited countries <i>(To link with World countries geometries)</i>"
+            "martinique_data": "Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>"
         },
         "export_box": {
             "geo": "Export layers to a geographic format",
@@ -266,7 +260,6 @@
         "explore_box": {
             "title": "Explore dataset",
             "button_add_field": "Add a new field...",
-            "available_table": "Availables tables ",
             "add_field_box": {
                 "new_name": "New field name<br>",
                 "new_content": "New field content<br>",
@@ -320,7 +313,6 @@
             "fixed_size": "Fixed size ",
             "precision": "Precision ",
             "unit": "Displayed unit ",
-            "intermediate_markers": "Intermediate markers ",
             "start_end_bar": "Start/end markers "
         },
         "text_box_edit_box": {
@@ -592,7 +584,6 @@
         "mean": "Mean",
         "median": "Median",
         "line_size": "<b>Line size :</b>",
-        "apply": "Apply changes",
         "sequential": "Sequential",
         "diverging": "Diverging",
         "reverse_palette": "Reverse palette",
@@ -610,7 +601,6 @@
             "resume": "Resume last project...",
             "overview": "Overview",
             "examples": "Examples",
-            "projections": "Projections",
             "doc": "Documentation",
             "dev": "Developement",
             "start_now": "Start now"
@@ -625,11 +615,9 @@
             "list_func1": "Conventional cartographic methods coupled with innovative techniques",
             "list_func2": "(proportionnal symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)",
             "import1": "Allow to use a wide range of file format",
-            "import2": "(Shapefile, GeoJSON, kml, tabular file with coordinates or tabular data to be joinded with the geographic layer, etc.)",
             "customize1": "Customize your map as you wish",
             "customize2": "(thanks to a large choice of projection, coloramps, fonts, and more...!)",
             "export1": "Export your compositions with ease",
-            "export2": "(selecting between PNG and SVG exports)",
             "export_geo1": "Download your newly created geographic layers",
             "export_geo2":  "(file formats and projection available for export are too numerous to be listed)",
             "projection1": "Pick a cartographic projection between the large choice available",
