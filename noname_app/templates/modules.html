@@ -10,7 +10,7 @@
     <link href="static/css/style-slider.min.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style-zone-edit-text.css" rel="stylesheet"  type="text/css">
     <link href="static/css/style-fonts.css" rel="stylesheet"  type="text/css">
-    <link href="static/css/style.css" rel="stylesheet"  type="text/css">
+    <link href="static/css/style.min.css" rel="stylesheet"  type="text/css">
     <link href="static/css/vanilla-dataTables.min.css" rel="stylesheet" type="text/css">
     <link href="static/css/context-menu.css" rel="stylesheet" type="text/css">
     <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
@@ -31,9 +31,37 @@
     <script  src="static/js/lib/sweetalert2.min.js"></script>
     <script  src="static/js/lib/vanilla-dataTables.min.js"></script>
     <script  src="static/js/lib/Sortable.min.js"></script>
-
-    <!-- <script  src="/static/js/app.min.js"></script> -->
-
+	<script>
+	"use strict";
+	/*
+	* Memoization functions (naive LRU implementation)
+	*
+	*/
+	Function.prototype.memoized = function(max_size=25) {
+	  this._memo = this._memo || {values: new Map(), stack: [], max_size: max_size};
+	  var key = JSON.stringify(Array.prototype.slice.call(arguments));
+	  var cache_value = this._memo.values.get(key);
+	  if (cache_value !== undefined) {
+		return JSON.parse(cache_value);
+	  } else {
+		cache_value = this.apply(this, arguments);
+		this._memo.values.set(key, JSON.stringify(cache_value));
+		this._memo.stack.push(key)
+		if(this._memo.stack.length >= this._memo.max_size){
+		    let old_key = this._memo.stack.shift();
+		    this._memo.values.delete(old_key);
+		}
+		return cache_value;
+	  }
+	};
+	Function.prototype.memoize = function() {
+	  var fn = this;
+	  return function() {
+		return fn.memoized.apply(fn, arguments);
+	  };
+	};
+	</script>
+    <!-- 
     <script  src="static/js/context-menu.js"></script>
     <script  src="static/js/layout_features.js"></script>
     <script  src="static/js/tables.js"></script>
@@ -48,8 +76,8 @@
     <script  src="static/js/discretization_panel.js"></script>
     <script  src="static/js/function.js"></script>
     <script  src="static/js/legend.js"></script>
-    <script  src="static/js/symbols_picto.js"></script>
-
+    <script  src="static/js/symbols_picto.js"></script> -->
+	<script  src="/static/js/app.min.js"></script>	
     <script  src="https://d3js.org/d3-voronoi.v1.min.js"></script>
   </head>
   <body>
@@ -69,35 +97,6 @@
         </div>
       </noscript>
 <script>
-"use strict";
-/*
-* Memoization functions (naive LRU implementation)
-*
-*/
-Function.prototype.memoized = function(max_size=25) {
-  this._memo = this._memo || {values: new Map(), stack: [], max_size: max_size};
-  var key = JSON.stringify(Array.prototype.slice.call(arguments));
-  var cache_value = this._memo.values.get(key);
-  if (cache_value !== undefined) {
-    return JSON.parse(cache_value);
-  } else {
-    cache_value = this.apply(this, arguments);
-    this._memo.values.set(key, JSON.stringify(cache_value));
-    this._memo.stack.push(key)
-    if(this._memo.stack.length >= this._memo.max_size){
-        let old_key = this._memo.stack.shift();
-        this._memo.values.delete(old_key);
-    }
-    return cache_value;
-  }
-};
-Function.prototype.memoize = function() {
-  var fn = this;
-  return function() {
-    return fn.memoized.apply(fn, arguments);
-  };
-};
-
 /**
 * Function setting-up main elements of the interface
 *
