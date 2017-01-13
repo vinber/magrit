@@ -126,6 +126,10 @@ function get_map_template(){
             layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             layers_style[i].fill_color = current_layers[layer_name].fill_color;
             layers_style[i].fields_type = current_layers[layer_name].fields_type;
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
+            selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].fill_color = rgb2hex(selection.style("fill"));
+            layers_style[i].stroke_color = rgb2hex(selection.style("stroke"));
         } else if(!current_layers[layer_name].renderer){
             selection = map.select("#" + layer_name).selectAll("path");
         } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
@@ -222,10 +226,6 @@ function get_map_template(){
             }
             layers_style[i].data_labels = features;
             layers_style[i].current_position = current_position
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
-            selection = map.select("#" + layer_name).selectAll("path");
-            layers_style[i].fill_color = rgb2hex(selection.style("fill"));
-            layers_style[i].stroke_color = rgb2hex(selection.style("stroke"));
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
         }
@@ -304,6 +304,8 @@ function apply_user_preferences(json_pref){
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
             zoom_without_redraw();
+            path = d3.geoPath().projection(proj).pointRadius(4);
+            map.selectAll(".layer").selectAll("path").attr("d", path);
             let desired_order = layers.map( i => i.layer_name);
             reorder_elem_list_layer(desired_order);
             desired_order.reverse();
@@ -385,7 +387,7 @@ function apply_user_preferences(json_pref){
     }
 
     var func_name_corresp = new Map([
-        ["Links", "flow"], ["PropSymbolsChoro", "choroprop"],
+        ["Links", "flow"], ["PropSymbolsChoro", "choroprop"], ["Carto_doug", "cartogram"],
         ["PropSymbols", "prop"], ["Stewart", "smooth"], ["Gridded", "grid"],
         ["DiscLayer", "discont"], ["Choropleth", "choro"], ["Categorical", "typo"]
     ]);
@@ -402,6 +404,8 @@ function apply_user_preferences(json_pref){
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+    document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
+    document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
     map.style("background-color", map_config.background_color);
@@ -474,13 +478,12 @@ function apply_user_preferences(json_pref){
                 set_final_param();
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
-            add_layout_feature(layer_name.toLowerCase());
+            let options = {'fill': layer_name == "Graticule" ? "none" : layers[i].fill_color,
+                     'stroke': layers[i].stroke_color,
+                     'fill-opacity': fill_opacity,
+                     'stroke-opacity': stroke_opacity };
+            add_layout_feature(layer_name.toLowerCase(), options);
             layer_selec = map.select('#' + layer_name);
-            layer_selec.selectAll('path')
-                .styles({'fill': layer_name == "Graticule" ? "none" : layers[i].fill_color,
-                         'stroke': layers[i].stroke_color,
-                         'fill-opacity': fill_opacity,
-                         'stroke-opacity': stroke_opacity});
         } else if (layer_name == "Simplified_land_polygons"){
             add_simplified_land_layer({skip_rescale: true, 'fill': layers[i].fill_color, 'stroke': layers[i].stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity});
             layer_selec = map.select('#Simplified_land_polygons');

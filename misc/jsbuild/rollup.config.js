@@ -1,8 +1,7 @@
 import { rollup } from 'rollup';
 import babel from 'rollup-plugin-babel';
 import uglify from 'rollup-plugin-uglify';
-import stage-0 from 'babel-preset-stage-0';
-import es2015-rollup from 'babel-preset-es2015-rollup';
+import multiEntry from 'rollup-plugin-multi-entry';
 
 const babelOptions = {
   exclude: 'node_modules/**',
@@ -11,12 +10,12 @@ const babelOptions = {
 };
 
 export default {
-  entry: './index.js',
+  entry: ['src/**/*.js'],
   format: "iife",
   plugins: [
+	multiEntry(),
     babel(babelOptions),
-    uglify()
 	],
   moduleName: 'app',
-  dest: "dist/iife/bundle.min.js"
+  dest: "dist/iife/window.min.js"
 };

@@ -1006,7 +1006,7 @@ function setSphereBottom(){
  }
 
 
-function add_layout_feature(selected_feature){
+function add_layout_feature(selected_feature, options = {}){
     if(selected_feature == "text_annot"){
         let existing_annotation = document.getElementsByClassName("txt_annot"),
             existing_id = [],
@@ -1031,11 +1031,13 @@ function add_layout_feature(selected_feature){
 
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
-        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: "#add8e6"}};
+        options.fill = options.fill || "lightblue";
+        options.fill_opacity = options.fill_opacity || 0.2;
+        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: options.fill}};
         map.append("g").attrs({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
             .append("path")
             .datum({type: "Sphere"})
-            .styles({fill: "lightblue", "fill-opacity": 0.2})
+            .styles({fill: options.fill, "fill-opacity": options.fill_opacity, stroke: options.stroke, 'stroke-opacity': options.stroke_opacity})
             .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
@@ -1043,12 +1045,13 @@ function add_layout_feature(selected_feature){
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined)
             return;
+        options.stroke = options.stroke || 'grey';
         map.append("g").attrs({id: "Graticule", class: "layer"})
                .append("path")
                .datum(d3.geoGraticule())
                .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': 'grey'});
-        current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: "grey"}, opacity: 1, step: 10, dasharray: 5};
+               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': options.stroke});
+        current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: options.stroke}, opacity: 1, step: 10, dasharray: 5};
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
     } else if (selected_feature == "scale"){

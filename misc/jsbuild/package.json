@@ -1,0 +1,12 @@
+  {
+	"devDependencies": {
+		"babel-preset-es2015-rollup": "*",
+		"babel-preset-stage-0": "*",
+		"rollup": "*",
+		"rollup-plugin-babel": "*",
+		"rollup-plugin-json": "*",
+		"rollup-plugin-uglify": "*",
+		"rollup-plugin-multi-entry": "*",
+		"babel-preset-es2015-rollup": "*"
+	  }
+}

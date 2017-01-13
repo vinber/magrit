@@ -24,7 +24,6 @@ before_install:
 install:
   - npm -g install topojson
   - pip install --upgrade "setuptools>=25.1" pip
-  - ./misc/install_deps.sh
   - pip install -r requirements-dev.txt
   - python setup.py install
 # before_script:

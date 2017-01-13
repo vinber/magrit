@@ -1721,7 +1721,7 @@ function make_mini_summary(summary){
 //   ].join('');
 // }
 
-function fillMenu_PropSymbolTypo(layer){
+ function fillMenu_PropSymbolTypo(layer){
     var dv2 = make_template_functionnality(section2);
 
     let a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
