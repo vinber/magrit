@@ -742,7 +742,8 @@ function add_layer_topojson(text, options){
 
     var random_color1 = ColorsSelected.random(),
         lyr_name = layers_names[0],
-        lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name);
+        lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name),
+        skip_rescale = (options && options.skip_rescale) ? skip_rescale : false;
     let nb_ft = topoObj.objects[lyr_name].geometries.length,
         topoObj_objects = topoObj.objects[lyr_name],
         field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -850,14 +851,18 @@ function add_layer_topojson(text, options){
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
 
         window._target_layer_file = topoObj;
-        scale_to_lyr(lyr_name_to_add);
-        center_map(lyr_name_to_add);
+        if(!skip_rescale){
+            scale_to_lyr(lyr_name_to_add);
+            center_map(lyr_name_to_add);
+        }
         handle_click_hand("lock");
         if(current_functionnality)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
-        center_map(lyr_name_to_add);
+        if(!skip_rescale){
+            center_map(lyr_name_to_add);
+        }
         handle_click_hand("lock");
     } else {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
@@ -1283,7 +1288,12 @@ function add_sample_layer(){
     }
 }
 
-function add_simplified_land_layer(){
+function add_simplified_land_layer(options = {}){
+    options.skip_rescale = options.skip_rescale || false;
+    options.stroke = options.stroke || "rgb(0,0,0)";
+    options.fill = options.fill || "#d3d3d3";
+    options.stroke_opacity = options.stroke_opacity || 0.0;
+    options.fill_opacity = options.fill_opacity || 0.75;
     let background = map.append("g")
                         .attrs({id: "Simplified_land_polygons", class: "layer"})
                         .style("stroke-width", "0.3px");
@@ -1294,13 +1304,17 @@ function add_simplified_land_layer(){
                   .enter()
                   .append('path')
                   .attr("d", path)
-                  .styles({stroke: "rgb(0,0,0)", fill: "lightgrey", "stroke-opacity": 0.0, "fill-opacity": 0.75});
+                  .styles({stroke: options.stroke, fill: options.fill,
+                           "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         current_layers["Simplified_land_polygons"] = {
             "type": "Polygon", "n_features":125,
-            "stroke-width-const": 0.3, "fill_color": {single: "#d3d3d3"}
+            "stroke-width-const": 0.3, "fill_color": {single: options.fill}
         };
-        scale_to_lyr("Simplified_land_polygons");
-        center_map("Simplified_land_polygons");
+        create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
+        if(!options.skip_rescale){
+            scale_to_lyr("Simplified_land_polygons");
+            center_map("Simplified_land_polygons");
+        }
         zoom_without_redraw();
     });
 }

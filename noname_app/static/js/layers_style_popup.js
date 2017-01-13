@@ -1193,10 +1193,10 @@ function createStyleBox_ProbSymbol(layer_name){
             if (this.value == "single"){
                 make_single_color_menu(layer_name, fill_prev, type_symbol);
                 map.select(g_lyr_name)
-                    .selectAll(symbol)
+                    .selectAll(type_symbol)
                     .transition()
                     .style("fill", fill_prev.single);
-                current_layers[layer].fill_color = cloneObj(fill_prev.single);
+                current_layers[layer_name].fill_color = cloneObj(fill_prev.single);
             } else if (this.value == "random"){
                 make_random_color(layer_name, type_symbol);
             }

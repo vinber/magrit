@@ -837,7 +837,6 @@ function setUpInterface(resume_project)
                   .style("display", "none")
                   .html("");
 
-    create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
     prepare_drop_section();
     accordionize(".accordion");
     document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
@@ -1974,7 +1973,8 @@ function handle_title_properties(){
         .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "50px")
         .on("change", function(){  title.attr("y", h * +this.value / 100);  });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
-        .insert("input").attrs({type: "color", value: title_props.color})
+        .insert("input")
+        .attrs({type: "color", value: rgb2hex(title_props.color)})
         .on("change", function(){  title.style("fill", this.value);  });
     var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family"))
         .insert("select").attr("class", "params")

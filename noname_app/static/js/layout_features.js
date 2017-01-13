@@ -504,8 +504,9 @@ var scaleBar = {
                   this.style.cursor = "pointer";
                   self.under_rect.style("fill-opacity", 0)
                 })
-                .on("contextmenu", (d,i) => {
+                .on("contextmenu dblclick", (d,i) => {
                     d3.event.preventDefault();
+                    d3.event.stopPropagation();
                     return scale_context_menu
                        .showMenu(d3.event, document.querySelector("body"), getItems());
                 });

@@ -6,7 +6,6 @@ function get_map_template(){
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
         layout_features = document.querySelectorAll('.legend:not(.title):not(#legend_root2):not(#legend_root):not(#legend_root_links)'),
-        // displayed_legend = d3.selectAll(".legend_feature:not(.title)"),
         zoom_transform = d3.zoomTransform(svg_map);
 
     map_config.projection = current_proj_name;
@@ -19,7 +18,7 @@ function get_map_template(){
     map_config.div_width = +w;
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
-    // map_config.displayed_legend = displayed_legend.size() > 0 ? true : false;
+    map_config.background_color = map.style("background-color");
 
     if(map_title){
         map_config.title = {
@@ -44,7 +43,8 @@ function get_map_template(){
                     precision: scaleBar.precision,
                     unit: scaleBar.unit,
                     x: scaleBar.x,
-                    y: scaleBar.y
+                    y: scaleBar.y,
+                    transform: scaleBar.Scale._groups[0][0].getAttribute('transform') || ""
                 };
             } else if(ft.id === "north_arrow"){
               let n_arr = northArrow.arrow_img._groups[0][0];
@@ -54,7 +54,8 @@ function get_map_template(){
                   x_img: n_arr.getAttribute('x'),
                   y_img: n_arr.getAttribute('y'),
                   x_center: northArrow.x_center,
-                  y_center: northArrow.y_center
+                  y_center: northArrow.y_center,
+                  size: n_arr.getAttribute('width')
               };
             } else if(ft.classList.contains('user_ellipse')){
                 if(!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
@@ -221,6 +222,10 @@ function get_map_template(){
             }
             layers_style[i].data_labels = features;
             layers_style[i].current_position = current_position
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
+            selection = map.select("#" + layer_name).selectAll("path");
+            layers_style[i].fill_color = rgb2hex(selection.style("fill"));
+            layers_style[i].stroke_color = rgb2hex(selection.style("stroke"));
         } else {
             selection = map.select("#" + layer_name).selectAll("path");
         }
@@ -277,8 +282,16 @@ function apply_user_preferences(json_pref){
         let a = document.getElementById("overlay");
         a.style.display = "";
         a.querySelector("button").style.display = "none";
-    let _l = svg_map.getElementsByClassName("layer"),  _ll = _l.length;
-    for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+
+    {
+      let _l, _ll;
+      // Remove current layers and legedn/layout features from the map :
+      _l = svg_map.getElementsByTagName("g");  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+      // Remove them from the layer manager too :
+      _l = layer_list.node().childNodes;  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+    }
 
     let g_timeout;
     let set_final_param = () => {
@@ -290,6 +303,7 @@ function apply_user_preferences(json_pref){
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
+            zoom_without_redraw();
             let desired_order = layers.map( i => i.layer_name);
             reorder_elem_list_layer(desired_order);
             desired_order.reverse();
@@ -324,11 +338,14 @@ function apply_user_preferences(json_pref){
                 scaleBar.precision = map_config.layout_features.scale_bar.precision;
                 scaleBar.x = map_config.layout_features.scale_bar.x;
                 scaleBar.y = map_config.layout_features.scale_bar.y;
+                scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
             }
             if(map_config.layout_features.north_arrow){
                 northArrow.display();
                 northArrow.arrow_img._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img);
                 northArrow.arrow_img._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
+                northArrow.arrow_img._groups[0][0].setAttribute('width', map_config.layout_features.north_arrow.size);
+                northArrow.arrow_img._groups[0][0].setAttribute('height', map_config.layout_features.north_arrow.size);
                 northArrow.under_rect._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img);
                 northArrow.under_rect._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
                 northArrow.x_center = map_config.layout_features.north_arrow.x_center;
@@ -387,7 +404,7 @@ function apply_user_preferences(json_pref){
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
-
+    map.style("background-color", map_config.background_color);
     let proj_select = document.getElementById('form_projection');
     proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
 
@@ -409,6 +426,7 @@ function apply_user_preferences(json_pref){
                 tmp['result_layer_on_add'] = true;
             }
             tmp['choosed_name'] = layer_name;
+            tmp['skip_rescale'] = true;
             handle_reload_TopoJSON(layers[i].topo_geom, tmp).then(function(n_layer_name){
                 layer_name = n_layer_name;
                 if(layers[i].renderer){
@@ -416,7 +434,7 @@ function apply_user_preferences(json_pref){
                 }
                 if(layers[i].targeted && layers[i].fields_type){
                     current_layers[layer_name].fields_type = layers[i].fields_type;
-                    document.getElementById('btn_type_fields').removeAttribute('disabled')
+                    document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
 
                 symbol = "path";
@@ -452,19 +470,20 @@ function apply_user_preferences(json_pref){
                             .style("fill", () => Colors.names[Colors.random()]);
                 }
                 layer_selec.selectAll(symbol)
-                        .style("fill-opacity", fill_opacity)
-                        .style("stroke-opacity", stroke_opacity);
+                    .styles({"fill-opacity": fill_opacity, "stroke-opacity": stroke_opacity});
                 set_final_param();
-                proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-                let _zoom = svg_map.__zoom;
-                _zoom.k = map_config.zoom_scale;
-                _zoom.x = map_config.zoom_translate[0];
-                _zoom.y = map_config.zoom_translate[1];
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
             add_layout_feature(layer_name.toLowerCase());
+            layer_selec = map.select('#' + layer_name);
+            layer_selec.selectAll('path')
+                .styles({'fill': layer_name == "Graticule" ? "none" : layers[i].fill_color,
+                         'stroke': layers[i].stroke_color,
+                         'fill-opacity': fill_opacity,
+                         'stroke-opacity': stroke_opacity});
         } else if (layer_name == "Simplified_land_polygons"){
-            add_simplified_land_layer();
+            add_simplified_land_layer({skip_rescale: true, 'fill': layers[i].fill_color, 'stroke': layers[i].stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity});
+            layer_selec = map.select('#Simplified_land_polygons');
         } else if (layers[i].renderer && layers[i].renderer.startsWith("PropSymbol")){
             let geojson_pt_layer = layers[i].geo_pt;
 
