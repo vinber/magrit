@@ -856,7 +856,7 @@ function add_layer_topojson(text, options){
             center_map(lyr_name_to_add);
         }
         handle_click_hand("lock");
-        if(current_functionnality)
+        if(window.current_functionnality)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
@@ -868,7 +868,7 @@ function add_layer_topojson(text, options){
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
     }
 
-    if (!target_layer_on_add && current_functionnality && current_functionnality.name == "smooth"){
+    if (!target_layer_on_add && window.current_functionnality != undefined && current_functionnality.name == "smooth"){
         fields_handler.fill();
     }
 

@@ -108,6 +108,10 @@ function get_map_template(){
             layers_style[i].legend = undefined;
         } else if (lgd.length >= 1) {
             layers_style[i].legend = lgd[0].getAttribute("display") == "none" ? "not_display" : "display";
+            layers_style[i].legend_transform = [];
+            for(let i = 0; i < lgd.length; i++) {
+                layers_style[i].legend_transform.push(ldg[i].getAttribute("transform"));
+            }
         }
 
         if(current_layers[layer_name]["stroke-width-const"])
@@ -394,7 +398,7 @@ function apply_user_preferences(json_pref){
 
     var func_name_corresp = new Map([
         ["Links", "flow"], ["Carto_doug", "cartogram"],
-        ["Carto_olson", "cartogram"], ["Stewart", "smooth"],
+        ["OlsonCarto", "cartogram"], ["Stewart", "smooth"],
         ["Gridded", "grid"], ["DiscLayer", "discont"],
         ["Choropleth", "choro"], ["Categorical", "typo"]
       ]);
