@@ -127,6 +127,9 @@ def prepare_js_css_minify():
     if "app.min.js" in list_files:
         os.remove("app.min.js")
         list_files.remove("app.min.js")
+    if "app.js" in list_files:
+        os.remove("app.js")
+        list_files.remove("app.js")
     data_js = ['"use strict";']
     for file in list_files:
         if ".js" in file and not 'webworker' in file:

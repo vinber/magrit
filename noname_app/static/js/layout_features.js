@@ -833,16 +833,19 @@ var northArrow = {
 
 
 class UserEllipse {
-    constructor(id, origin_pt, parent=undefined){
+    constructor(id, origin_pt, parent=undefined, untransformed=false){
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
         this.id = id;
         this.strokeWeight = 4;
         this.stroke_color = "rgb(0, 0, 0)";
 
-        let zoom_param = svg_map.__zoom;
-        this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
-
+        if(!untransformed){
+            let zoom_param = svg_map.__zoom;
+            this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+        } else {
+            this.pt1 = origin_pt;
+        }
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
