@@ -670,7 +670,7 @@ var fields_Typo = {
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
                 cats = prepare_categories_array(layer, selected_field, col_map);
 
-            if(cats.size > 15){
+            if(cats.length > 15){
                 swal({title: "",
                       text: i18next.t("app_page.common.error_too_many_features_color"),
                       type: "warning",
@@ -1454,59 +1454,6 @@ function getCentroids(ref_layer_selection){
 }
 
 function make_prop_symbols(rendering_params, geojson_pt_layer){
-    function make_geojson_pt_layer(){
-      let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
-          result = [];
-      for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
-        let ft = ref_layer_selection[i].__data__,
-            value = +ft.properties[field],
-            new_obj = {
-                id: i,
-                type: "Feature",
-                properties: {},
-                geometry: { type: 'Point' }
-              };
-        if(ft.geometry.type.indexOf('Multi') < 0){
-          if(f_ix_len){
-              for(let f_ix=0; f_ix < f_ix_len; f_ix++){
-                  new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
-              }
-          }
-          new_obj.properties[field] = value;
-          new_obj.properties[t_field_name] = propSize.scale(value);
-          new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
-          new_obj.properties['color'] = get_color(value, i);
-          if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
-          result.push([value, new_obj])
-        } else {
-          let areas = [];
-          for(let j = 0; j < ft.geometry.coordinates.length; j++){
-            areas.push(path.area({
-              type: ft.geometry.type,
-              coordinates: [ft.geometry.coordinates[j]]
-            }));
-          }
-          let ix_max = areas.indexOf(max_fast(areas));
-          if(f_ix_len){
-              for(let f_ix=0; f_ix < f_ix_len; f_ix++){
-                  new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
-              }
-          }
-          new_obj.properties[field] = value;
-          new_obj.properties[t_field_name] = propSize.scale(value);
-          new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
-          new_obj.properties['color'] = get_color(value, i);
-          if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
-          result.push([value, new_obj]);
-        }
-      }
-      result.sort((a, b) => abs(b[0]) - abs(a[0]));
-      return {
-        type: "FeatureCollection",
-        features: result.map( d => d[1])
-      };
-    }
-
     let layer = rendering_params.ref_layer_name,
         field = rendering_params.field,
         color_field = rendering_params.color_field,
@@ -1518,23 +1465,78 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
         zs = d3.zoomTransform(svg_map).k,
-        propSize = new PropSizer(ref_value, ref_size, symbol_type),
-        get_color, col1, col2;
+        propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
-    let fields_id = getFieldsType('id', layer),
-        f_ix_len = fields_id ? fields_id.length : 0;
+    if(!geojson_pt_layer){
+        function make_geojson_pt_layer(){
+          let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+              result = [];
+          for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
+            let ft = ref_layer_selection[i].__data__,
+                value = +ft.properties[field],
+                new_obj = {
+                    id: i,
+                    type: "Feature",
+                    properties: {},
+                    geometry: { type: 'Point' }
+                  };
+            if(ft.geometry.type.indexOf('Multi') < 0){
+              if(f_ix_len){
+                  for(let f_ix=0; f_ix < f_ix_len; f_ix++){
+                      new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                  }
+              }
+              new_obj.properties[field] = value;
+              new_obj.properties[t_field_name] = propSize.scale(value);
+              new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+              new_obj.properties['color'] = get_color(value, i);
+              if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
+              result.push([value, new_obj])
+            } else {
+              let areas = [];
+              for(let j = 0; j < ft.geometry.coordinates.length; j++){
+                areas.push(path.area({
+                  type: ft.geometry.type,
+                  coordinates: [ft.geometry.coordinates[j]]
+                }));
+              }
+              let ix_max = areas.indexOf(max_fast(areas));
+              if(f_ix_len){
+                  for(let f_ix=0; f_ix < f_ix_len; f_ix++){
+                      new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                  }
+              }
+              new_obj.properties[field] = value;
+              new_obj.properties[t_field_name] = propSize.scale(value);
+              new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+              new_obj.properties['color'] = get_color(value, i);
+              if(color_field) new_obj.properties[color_field] = ft.properties[color_field];
+              result.push([value, new_obj]);
+            }
+          }
+          result.sort((a, b) => abs(b[0]) - abs(a[0]));
+          return {
+            type: "FeatureCollection",
+            features: result.map( d => d[1])
+          };
+        }
 
-    if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
-        col1 = rendering_params.fill_color.two[0],
-        col2 = rendering_params.fill_color.two[1];
-        get_color = (val, ix) => val > rendering_params.break_val ? col2 : col1;
-    } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features){
-        get_color = (val, ix) => rendering_params.fill_color[ix];
-    } else {
-        get_color = () => rendering_params.fill_color;
+        let get_color, col1, col2,
+            fields_id = getFieldsType('id', layer),
+            f_ix_len = fields_id ? fields_id.length : 0;
+
+        if(rendering_params.break_val != undefined && rendering_params.fill_color.two){
+            col1 = rendering_params.fill_color.two[0],
+            col2 = rendering_params.fill_color.two[1];
+            get_color = (val, ix) => val > rendering_params.break_val ? col2 : col1;
+        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features){
+            get_color = (val, ix) => rendering_params.fill_color[ix];
+        } else {
+            get_color = () => rendering_params.fill_color;
+        }
+
+        geojson_pt_layer = make_geojson_pt_layer();
     }
-
-    geojson_pt_layer = geojson_pt_layer || make_geojson_pt_layer();
     result_data[layer_to_add] = []
     if(symbol_type === 'circle'){
       map.append("g")
@@ -1854,6 +1856,7 @@ var fields_PropSymbolTypo = {
             ref_value_field.attrs({max: max_val_field, value: max_val_field});
             uo_layer_name.attr('value', ['Typo', field_name, field2_selec.node().value, layer].join('_'));
         });
+
         field2_selec.on("change", function(){
             let field_name = this.value;
             ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
@@ -1876,7 +1879,7 @@ var fields_PropSymbolTypo = {
                       confirmButtonText: i18next.t("app_page.common.valid") + "!",
                       cancelButtonText: i18next.t("app_page.common.cancel")
                     }).then(() => {
-                      display_categorical_box(user_data[layer], layer, selected_field)
+                      display_categorical_box(user_data[layer], layer, selected_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
                                 ok_button.attr("disabled", null);
@@ -1890,7 +1893,7 @@ var fields_PropSymbolTypo = {
                     return;
                   });
               } else {
-                display_categorical_box(user_data[layer], layer, selected_field)
+                display_categorical_box(user_data[layer], layer, selected_field, cats)
                   .then(function(confirmed){
                       if(confirmed){
                           ok_button.attr("disabled", null);
