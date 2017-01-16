@@ -59,6 +59,16 @@ function get_map_template(){
               };
             } else if(ft.classList.contains('user_ellipse')){
                 if(!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
+                let ellps = ft.childNodes[0];
+                map_config.layout_features.user_ellipse.push({
+                    rx: ellps.getAttribute('rx'),
+                    ry: ellps.getAttribute('ry'),
+                    cx: ellps.getAttribute('cx'),
+                    cy: ellps.getAttribute('cy'),
+                    stroke: ellps.style.stroke,
+                    stroke_width: ellps.style.strokeWidth,
+                    id: ft.id
+                });
             } else if(ft.classList.contains('arrow')){
                 if(!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
                 let line = ft.childNodes[0];
@@ -109,8 +119,8 @@ function get_map_template(){
         } else if (lgd.length >= 1) {
             layers_style[i].legend = lgd[0].getAttribute("display") == "none" ? "not_display" : "display";
             layers_style[i].legend_transform = [];
-            for(let i = 0; i < lgd.length; i++) {
-                layers_style[i].legend_transform.push(ldg[i].getAttribute("transform"));
+            for(let j = 0; j < lgd.length; j++) {
+                layers_style[i].legend_transform.push(lgd[j].getAttribute("transform"));
             }
         }
 
@@ -373,7 +383,7 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.ellipse){
                 for(let i = 0; i < map_config.layout_features.ellipse.length; i++) {
                     let ft = map_config.layout_features.ellipse[i];
-                    // new UserEllipse()
+                    new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map);
                 }
             }
             if(map_config.layout_features.text_annot){

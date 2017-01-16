@@ -11841,6 +11841,16 @@ function get_map_template() {
                 };
             } else if (ft.classList.contains('user_ellipse')) {
                 if (!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
+                var ellps = ft.childNodes[0];
+                map_config.layout_features.user_ellipse.push({
+                    rx: ellps.getAttribute('rx'),
+                    ry: ellps.getAttribute('ry'),
+                    cx: ellps.getAttribute('cx'),
+                    cy: ellps.getAttribute('cy'),
+                    stroke: ellps.style.stroke,
+                    stroke_width: ellps.style.strokeWidth,
+                    id: ft.id
+                });
             } else if (ft.classList.contains('arrow')) {
                 if (!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
                 var line = ft.childNodes[0];
@@ -11890,8 +11900,8 @@ function get_map_template() {
         } else if (lgd.length >= 1) {
             layers_style[_i].legend = lgd[0].getAttribute("display") == "none" ? "not_display" : "display";
             layers_style[_i].legend_transform = [];
-            for (var _i2 = 0; _i2 < lgd.length; _i2++) {
-                layers_style[_i2].legend_transform.push(ldg[_i2].getAttribute("transform"));
+            for (var j = 0; j < lgd.length; j++) {
+                layers_style[_i].legend_transform.push(lgd[j].getAttribute("transform"));
             }
         }
 
@@ -11984,8 +11994,8 @@ function get_map_template() {
 
             var state_to_save = [];
             var selec = selection._groups[0];
-            for (var _i3 = 0; _i3 < selec.length; _i3++) {
-                var _ft = selec[_i3];
+            for (var _i2 = 0; _i2 < selec.length; _i2++) {
+                var _ft = selec[_i2];
                 state_to_save.push({ display: _ft.style.display,
                     data: _ft.__data__,
                     pos: [_ft.getAttribute('x'), _ft.getAttribute('y')],
@@ -12003,8 +12013,8 @@ function get_map_template() {
             layers_style[_i].fill_color = current_layers[layer_name].fill_color;
             var _features = [],
                 current_position = [];
-            for (var j = _selec.length - 1; j > -1; j--) {
-                var _s = _selec[j];
+            for (var _j = _selec.length - 1; _j > -1; _j--) {
+                var _s = _selec[_j];
                 _features.push(_s.__data__);
                 current_position.push([_s.getAttribute('y'), _s.getAttribute('y'), _s.style.display]);
             }
@@ -12020,9 +12030,9 @@ function get_map_template() {
     return Q.all(layers_style.map(function (obj) {
         return obj.topo_geom ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null;
     })).then(function (result) {
-        for (var _i4 = 0; _i4 < layers_style.length; _i4++) {
-            if (result[_i4] && result[_i4].target) {
-                layers_style[_i4].topo_geom = result[_i4].target.responseText;
+        for (var _i3 = 0; _i3 < layers_style.length; _i3++) {
+            if (result[_i3] && result[_i3].target) {
+                layers_style[_i3].topo_geom = result[_i3].target.responseText;
             }
         }
         console.log(JSON.stringify({ "map_config": map_config, "layers": layers_style }));
@@ -12078,8 +12088,8 @@ function apply_user_preferences(json_pref) {
         }
         // Remove them from the layer manager too :
         _l = layer_list.node().childNodes;_ll = _l.length;
-        for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
-            _l[_i5].remove();
+        for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
+            _l[_i4].remove();
         }
     }
 
@@ -12147,20 +12157,20 @@ function apply_user_preferences(json_pref) {
                 northArrow.displayed = map_config.layout_features.north_arrow.displayed;
             }
             if (map_config.layout_features.arrow) {
-                for (var _i6 = 0; _i6 < map_config.layout_features.arrow.length; _i6++) {
-                    var ft = map_config.layout_features.arrow[_i6];
+                for (var _i5 = 0; _i5 < map_config.layout_features.arrow.length; _i5++) {
+                    var ft = map_config.layout_features.arrow[_i5];
                     new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
                 }
             }
             if (map_config.layout_features.ellipse) {
-                for (var _i7 = 0; _i7 < map_config.layout_features.ellipse.length; _i7++) {
-                    var _ft2 = map_config.layout_features.ellipse[_i7];
-                    // new UserEllipse()
+                for (var _i6 = 0; _i6 < map_config.layout_features.ellipse.length; _i6++) {
+                    var _ft2 = map_config.layout_features.ellipse[_i6];
+                    new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map);
                 }
             }
             if (map_config.layout_features.text_annot) {
-                for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
-                    var _ft3 = map_config.layout_features.text_annot[_i8];
+                for (var _i7 = 0; _i7 < map_config.layout_features.text_annot.length; _i7++) {
+                    var _ft3 = map_config.layout_features.text_annot[_i7];
                     var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
                     var inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
@@ -12169,8 +12179,8 @@ function apply_user_preferences(json_pref) {
                 }
             }
             if (map_config.layout_features.single_symbol) {
-                for (var _i9 = 0; _i9 < map_config.layout_features.single_symbol.length; _i9++) {
-                    var _ft4 = map_config.layout_features.single_symbol[_i9];
+                for (var _i8 = 0; _i8 < map_config.layout_features.single_symbol.length; _i8++) {
+                    var _ft4 = map_config.layout_features.single_symbol[_i8];
                     add_single_symbol(_ft4.href, _ft4.x, _ft4.y, _ft4.width, _ft4.height);
                 }
             }
@@ -12204,73 +12214,73 @@ function apply_user_preferences(json_pref) {
         }
     })[0].value;
 
-    var _loop = function _loop(_i10) {
+    var _loop = function _loop(_i9) {
         if (g_timeout) clearTimeout(g_timeout);
-        var layer_name = layers[_i10].layer_name,
+        var layer_name = layers[_i9].layer_name,
             symbol = void 0,
             layer_selec = void 0;
 
-        var fill_opacity = layers[_i10].fill_opacity,
-            stroke_opacity = layers[_i10].stroke_opacity;
+        var fill_opacity = layers[_i9].fill_opacity,
+            stroke_opacity = layers[_i9].stroke_opacity;
 
-        if (layers[_i10].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons") {
+        if (layers[_i9].topo_geom && layer_name != "Sphere" && layer_name != "Simplified_land_polygons") {
             var tmp = { skip_alert: true };
-            if (layers[_i10].targeted) {
+            if (layers[_i9].targeted) {
                 tmp['target_layer_on_add'] = true;
-            } else if (layers[_i10].renderer) {
-                tmp['func_name'] = func_name_corresp.get(layers[_i10].renderer);
+            } else if (layers[_i9].renderer) {
+                tmp['func_name'] = func_name_corresp.get(layers[_i9].renderer);
                 tmp['result_layer_on_add'] = true;
             }
             tmp['choosed_name'] = layer_name;
             tmp['skip_rescale'] = true;
-            handle_reload_TopoJSON(layers[_i10].topo_geom, tmp).then(function (n_layer_name) {
+            handle_reload_TopoJSON(layers[_i9].topo_geom, tmp).then(function (n_layer_name) {
                 layer_name = n_layer_name;
-                if (layers[_i10].renderer) {
-                    current_layers[layer_name].renderer = layers[_i10].renderer;
+                if (layers[_i9].renderer) {
+                    current_layers[layer_name].renderer = layers[_i9].renderer;
                 }
-                if (layers[_i10].targeted && layers[_i10].fields_type) {
-                    current_layers[layer_name].fields_type = layers[_i10].fields_type;
+                if (layers[_i9].targeted && layers[_i9].fields_type) {
+                    current_layers[layer_name].fields_type = layers[_i9].fields_type;
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
 
                 symbol = "path";
                 layer_selec = map.select("#" + layer_name);
 
-                current_layers[layer_name].rendered_field = layers[_i10].rendered_field;
-                current_layers[layer_name]['stroke-width-const'] = layers[_i10]['stroke-width-const'];
-                if (layers[_i10].fixed_stroke) current_layers[layer_name].fixed_stroke = layers[_i10].fixed_stroke;
-                if (layers[_i10].ref_layer_name) current_layers[layer_name].ref_layer_name = layers[_i10].ref_layer_name;
-                if (layers[_i10].size) current_layers[layer_name].size = layers[_i10].size;
-                if (layers[_i10].colors_breaks) current_layers[layer_name].colors_breaks = JSON.parse(layers[_i10].colors_breaks);
-                if (layers[_i10].fill_color) current_layers[layer_name].fill_color = layers[_i10].fill_color;
-                if (layers[_i10].renderer) {
-                    if (layers[_i10].renderer == "Choropleth" || layers[_i10].renderer == "Stewart" || layers[_i10].renderer == "Gridded") {
+                current_layers[layer_name].rendered_field = layers[_i9].rendered_field;
+                current_layers[layer_name]['stroke-width-const'] = layers[_i9]['stroke-width-const'];
+                if (layers[_i9].fixed_stroke) current_layers[layer_name].fixed_stroke = layers[_i9].fixed_stroke;
+                if (layers[_i9].ref_layer_name) current_layers[layer_name].ref_layer_name = layers[_i9].ref_layer_name;
+                if (layers[_i9].size) current_layers[layer_name].size = layers[_i9].size;
+                if (layers[_i9].colors_breaks) current_layers[layer_name].colors_breaks = JSON.parse(layers[_i9].colors_breaks);
+                if (layers[_i9].fill_color) current_layers[layer_name].fill_color = layers[_i9].fill_color;
+                if (layers[_i9].renderer) {
+                    if (layers[_i9].renderer == "Choropleth" || layers[_i9].renderer == "Stewart" || layers[_i9].renderer == "Gridded") {
                         layer_selec.selectAll("path").style("fill", function (d, j) {
-                            return layers[_i10].color_by_id[j];
+                            return layers[_i9].color_by_id[j];
                         });
-                    } else if (layers[_i10].renderer == "Links") {
-                        current_layers[layer_name].linksbyId = layers[_i10].linksbyId;
-                        current_layers[layer_name].min_display = layers[_i10].min_display;
-                        current_layers[layer_name].breaks = layers[_i10].breaks;
-                    } else if (layers[_i10].renderer == "DiscLayer") {
-                        current_layers[layer_name].min_display = layers[_i10].min_display;
-                        current_layers[layer_name].breaks = layers[_i10].breaks;
+                    } else if (layers[_i9].renderer == "Links") {
+                        current_layers[layer_name].linksbyId = layers[_i9].linksbyId;
+                        current_layers[layer_name].min_display = layers[_i9].min_display;
+                        current_layers[layer_name].breaks = layers[_i9].breaks;
+                    } else if (layers[_i9].renderer == "DiscLayer") {
+                        current_layers[layer_name].min_display = layers[_i9].min_display;
+                        current_layers[layer_name].breaks = layers[_i9].breaks;
                         layer_selec.selectAll("path").style("stroke-width", function (d, i) {
                             return current_layers[layer_name].result.get(d.id);
                         });
-                    } else if (layers[_i10].renderer && layers[_i10].renderer.startsWith("Categorical")) {
+                    } else if (layers[_i9].renderer && layers[_i9].renderer.startsWith("Categorical")) {
                         var rendering_params = {
-                            colorByFeature: layers[_i10].color_by_id,
-                            color_map: new Map(layers[_i10].color_map),
-                            rendered_field: layers[_i10].rendered_field,
+                            colorByFeature: layers[_i9].color_by_id,
+                            color_map: new Map(layers[_i9].color_map),
+                            rendered_field: layers[_i9].rendered_field,
                             renderer: "Categorical"
                         };
                         render_categorical(layer_name, rendering_params);
                     }
-                    if (layers[_i10].legend == "display") {
+                    if (layers[_i9].legend == "display") {
                         handle_legend(layer_name);
                     }
-                } else if (layers[_i10].fill_color.random) {
+                } else if (layers[_i9].fill_color.random) {
                     layer_selec.selectAll(symbol).style("fill", function () {
                         return Colors.names[Colors.random()];
                     });
@@ -12279,64 +12289,64 @@ function apply_user_preferences(json_pref) {
                 set_final_param();
             });
         } else if (layer_name == "Sphere" || layer_name == "Graticule") {
-            var options = { 'fill': layer_name == "Graticule" ? "none" : layers[_i10].fill_color,
-                'stroke': layers[_i10].stroke_color,
+            var options = { 'fill': layer_name == "Graticule" ? "none" : layers[_i9].fill_color,
+                'stroke': layers[_i9].stroke_color,
                 'fill-opacity': fill_opacity,
                 'stroke-opacity': stroke_opacity };
             add_layout_feature(layer_name.toLowerCase(), options);
             layer_selec = map.select('#' + layer_name);
         } else if (layer_name == "Simplified_land_polygons") {
-            add_simplified_land_layer({ skip_rescale: true, 'fill': layers[_i10].fill_color, 'stroke': layers[_i10].stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity });
+            add_simplified_land_layer({ skip_rescale: true, 'fill': layers[_i9].fill_color, 'stroke': layers[_i9].stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity });
             layer_selec = map.select('#Simplified_land_polygons');
-        } else if (layers[_i10].renderer && layers[_i10].renderer.startsWith("PropSymbol")) {
-            var geojson_pt_layer = layers[_i10].geo_pt;
+        } else if (layers[_i9].renderer && layers[_i9].renderer.startsWith("PropSymbol")) {
+            var geojson_pt_layer = layers[_i9].geo_pt;
 
             // let layer_to_append = map.append("g").attr("id", layer_name).attr("class", "result_layer layer");
-            var fill_color = layers[_i10].renderer == "PropSymbolsChoro" ? layers[_i10].fill_color.class : layers[_i10].fill_color;
+            var fill_color = layers[_i9].renderer == "PropSymbolsChoro" ? layers[_i9].fill_color.class : layers[_i9].fill_color;
             var rendering_params = {
                 new_name: layer_name,
-                field: layers[_i10].rendered_field,
+                field: layers[_i9].rendered_field,
                 fill_color: fill_color,
-                ref_value: layers[_i10].size[0],
-                ref_size: layers[_i10].size[1],
-                symbol: layers[_i10].symbol,
+                ref_value: layers[_i9].size[0],
+                ref_size: layers[_i9].size[1],
+                symbol: layers[_i9].symbol,
                 nb_features: geojson_pt_layer.features.length,
-                ref_layer_name: layers[_i10].ref_layer_name,
-                renderer: layers[_i10].renderer
+                ref_layer_name: layers[_i9].ref_layer_name,
+                renderer: layers[_i9].renderer
             };
             make_prop_symbols(rendering_params, geojson_pt_layer);
-            if (layers[_i10].renderer == "PropSymbolsTypo") {
-                current_layers[layer_name].color_map = new Map(layers[_i10].color_map);
+            if (layers[_i9].renderer == "PropSymbolsTypo") {
+                current_layers[layer_name].color_map = new Map(layers[_i9].color_map);
             }
-            if (layers[_i10].options_disc) {
-                current_layers[layer_name].options_disc = layers[_i10].options_disc;
+            if (layers[_i9].options_disc) {
+                current_layers[layer_name].options_disc = layers[_i9].options_disc;
             }
-            if (layers[_i10].rendered_field2) {
-                current_layers[layer_name].rendered_field2 = layers[_i10].rendered_field2;
+            if (layers[_i9].rendered_field2) {
+                current_layers[layer_name].rendered_field2 = layers[_i9].rendered_field2;
             }
-            if (layers[_i10].colors_breaks) {
-                current_layers[layer_name].colors_breaks = JSON.parse(layers[_i10].colors_breaks);
+            if (layers[_i9].colors_breaks) {
+                current_layers[layer_name].colors_breaks = JSON.parse(layers[_i9].colors_breaks);
             }
-            if (layers[_i10].legend == "display") {
+            if (layers[_i9].legend == "display") {
                 handle_legend(layer_name);
             }
-        } else if (layers[_i10].renderer && layers[_i10].renderer.startsWith("Label")) {
+        } else if (layers[_i9].renderer && layers[_i9].renderer.startsWith("Label")) {
             var _rendering_params = {
                 uo_layer_name: layer_name,
-                label_field: layers[_i10].rendered_field,
-                color: layers[_i10].fill_color,
-                ref_font_size: layers[_i10].default_size,
-                font: layers[_i10].default_font
+                label_field: layers[_i9].rendered_field,
+                color: layers[_i9].fill_color,
+                ref_font_size: layers[_i9].default_size,
+                font: layers[_i9].default_font
             };
-            render_label(null, _rendering_params, { data: layers[_i10].data_labels });
+            render_label(null, _rendering_params, { data: layers[_i9].data_labels });
         } else {
             null;
         }
         set_final_param();
     };
 
-    for (var _i10 = map_config.n_layers - 1; _i10 > -1; --_i10) {
-        _loop(_i10);
+    for (var _i9 = map_config.n_layers - 1; _i9 > -1; --_i9) {
+        _loop(_i9);
     }
 }
 
