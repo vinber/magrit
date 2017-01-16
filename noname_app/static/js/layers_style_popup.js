@@ -630,31 +630,21 @@ function createStyleBox(layer_name){
                 make_single_color_menu(layer_name, fill_prev);
             }
         } else if (renderer == "Categorical"){
-            let renderer_field = current_layers[layer_name].rendered_field,
-                ref_layer_name = current_layers[layer_name].ref_layer_name,
-                fields_name = getFieldsType('category', null, fields_layer),
-                field_to_render;
+            let renderer_field = current_layers[layer_name].rendered_field;
 
-            var field_selec = popup.append('p').html(i18next.t("app_page.layer_style_popup.field_to_render"))
-                                    .insert('select').attr('class', 'params')
-                                    .on("change", function(){ field_to_render = this.value; });
-
-            fields_name.forEach(f_name => {
-                field_selec.append("option").text(f_name).attr("value", f_name);
-            });
-            setSelected(field_selec.node(), current_layers[layer_name].rendered_field);
             popup.insert('p').style("margin", "auto").html("")
                 .append("button")
                 .attr("class", "button_disc")
                 .styles({"font-size": "0.8em", "text-align": "center"})
                 .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
-                    display_categorical_box(layer_name, field_selec.node().value)
+                    let cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
+                    display_categorical_box(layer_name, renderer_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
                                         nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: field_selec.node().value
+                                        renderer:"Categorical", rendered_field: rendered_field
                                     };
                                 render_categorical(layer_name, rendering_params);
                             }

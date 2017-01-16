@@ -104,10 +104,10 @@ function get_map_template(){
         layers_style[i].n_features = nb_ft;
 
         let lgd = document.getElementsByClassName('lgdf_' + layer_name);
-        if(lgd.size == 0){
+        if(lgd.length == 0){
             layers_style[i].legend = undefined;
-        } else if (lgd.size >= 1) {
-            layers_style[i].legend = lgd[0].display == "none" ? "not_display" : "display";
+        } else if (lgd.length >= 1) {
+            layers_style[i].legend = lgd[0].getAttribute("display") == "none" ? "not_display" : "display";
         }
 
         if(current_layers[layer_name]["stroke-width-const"])
@@ -467,7 +467,19 @@ function apply_user_preferences(json_pref){
                     } else if (layers[i].renderer == "DiscLayer"){
                         current_layers[layer_name].result = new Map(layers[i].result);
                         layer_selec.selectAll("path").style("stroke-width", (d,i) => { return current_layers[layer_name].result.get(d.id); });
-                    }
+                    } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
+                          let rendering_params = {
+                              colorByFeature: layers[i].color_by_id,
+                              color_map: new Map(layers[i].color_map),
+                              rendered_field: layers[i].rendered_field,
+                              renderer: "Categorical"
+                          };
+                          render_categorical(layer_name, rendering_params);
+                  }
+                  if(layers[i].legend == "display"){
+                      console.log("aa");
+                      handle_legend(layer_name);
+                  }
                 } else if(layers[i].fill_color.random) {
                         layer_selec
                             .selectAll(symbol)
@@ -504,6 +516,10 @@ function apply_user_preferences(json_pref){
             if(layers[i].renderer == "PropSymbolsTypo"){
                 current_layers[layer_name].color_map = new Map(layers[i].color_map);
             }
+            if(layers[i].legend == "display"){
+                console.log("aa");
+                handle_legend(layer_name);
+            }
         } else if (layers[i].renderer && layers[i].renderer.startsWith("Label")){
             null;
             let rendering_params = {
@@ -514,27 +530,19 @@ function apply_user_preferences(json_pref){
                 font: layers[i].default_font
             };
             render_label(null, rendering_params, {data: layers[i].data_labels});
-        } else if (layers[i].renderer && layers[i].renderer.startsWith("Categorical")){
-              let rendering_params = {
-                  colorByFeature: layers[i].color_by_id,
-                  color_map: new Map(layers[i].color_map),
-                  rendered_field: layers[i].rendered_field,
-                  renderer: "Categorical"
-              };
-              render_categorical(layers[i].ref_layer_name, rendering_params);
-        } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
-            let rendering_params = {
-                    "nb_class": "",
-                    "type":"",
-                    "schema": layers[i].options_disc.schema,
-                    "no_data": layers[i].options_disc.no_data,
-                    "colors": layers[i].options_disc.colors,
-                    "colorsByFeature": layers[i].color_by_id,
-                    "renderer": "Choropleth",
-                    "rendered_field": layers[i].rendered_field,
-                    // "new_name": layer_name
-                };
-            render_choro(layer_name, rendering_params);
+        // } else if (layers[i].renderer && layers[i].renderer.startsWith("Choropleth")){
+        //     let rendering_params = {
+        //             "nb_class": "",
+        //             "type":"",
+        //             "schema": layers[i].options_disc.schema,
+        //             "no_data": layers[i].options_disc.no_data,
+        //             "colors": layers[i].options_disc.colors,
+        //             "colorsByFeature": layers[i].color_by_id,
+        //             "renderer": "Choropleth",
+        //             "rendered_field": layers[i].rendered_field,
+        //             // "new_name": layer_name
+        //         };
+        //     render_choro(layer_name, rendering_params);
         } else {
             null;
         }

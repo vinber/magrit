@@ -797,30 +797,10 @@ function fetch_categorical_colors(){
     return color_map;
 }
 
-function display_categorical_box(data_layer, layer_name, field, categories){
+function display_categorical_box(data_layer, layer_name, field, cats){
     var nb_features = current_layers[layer_name].n_features,
-        cats = [];
+        nb_class = cats.size;
 
-    if(!categories){
-        categories = new Map();
-        for(let i = 0; i < nb_features; ++i){
-            let value = data_layer[i][field];
-            let ret_val = categories.get(value);
-            if(ret_val)
-                categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
-            else
-                categories.set(value, [1, [i]]);
-        }
-        categories.forEach( (v,k) => {
-            cats.push({name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
-        });
-    } else {
-        categories.forEach( (v,k) => {
-            cats.push({name: k, display_name: v[1], nb_elem: v[2], color: v[0]});
-      });
-    }
-
-    var nb_class = categories.size;
     var modal_box = make_dialog_container(
         "categorical_box",
         i18next.t("app_page.categorical_box.title", {layer: layer_name, nb_features: nb_features}),
