@@ -995,25 +995,42 @@ function add_layout_feature(selected_feature, options = {}){
         if(current_layers.Sphere) return;
         options.fill = options.fill || "lightblue";
         options.fill_opacity = options.fill_opacity || 0.2;
-        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": 0.5, "fill_color" : {single: options.fill}};
-        map.append("g").attrs({id: "Sphere", class: "layer", "stroke-width": "0.5px",  "stroke": "black"})
+        options.stroke_width = options.stroke_width || "0.5px";
+        options.stroke_opacity = options.stroke_opacity || 1;
+        options.stroke = options.stroke || "#ffffff";
+        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": +options.stroke_width.slice(0,-2), "fill_color" : {single: options.fill}};
+        map.append("g")
+            .attrs({id: "Sphere", class: "layer"})
+            .styles({'stroke-width': options.stroke_width})
             .append("path")
             .datum({type: "Sphere"})
-            .styles({fill: options.fill, "fill-opacity": options.fill_opacity, stroke: options.stroke, 'stroke-opacity': options.stroke_opacity})
+            .styles({fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke})
             .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
         setSphereBottom();
     } else if (selected_feature == "graticule"){
-        if(current_layers["Graticule"] != undefined)
-            return;
+        if(current_layers["Graticule"] != undefined) return;
         options.stroke = options.stroke || 'grey';
+        options.stroke_width = options.stroke_width || "1px";
+        options.stroke_opacity = options.stroke_opacity || 1;
+        options.stroke_dasharray = options.stroke_dasharray || 5;
+        options.step = options.step || 10;
         map.append("g").attrs({id: "Graticule", class: "layer"})
-               .append("path")
-               .datum(d3.geoGraticule())
-               .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-               .styles({'stroke-dasharray':  5, 'fill': 'none', 'stroke': options.stroke});
-        current_layers["Graticule"] = {"type": "Line", "n_features":1, "stroke-width-const": 1, "fill_color": {single: options.stroke}, opacity: 1, step: 10, dasharray: 5};
+                .styles({'stroke-width': options.stroke_width})
+                .append("path")
+                .datum(d3.geoGraticule().step([options.step, options.step]))
+                .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
+                .styles({'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke});
+        current_layers["Graticule"] = {
+            "type": "Line",
+            "n_features":1,
+            "stroke-width-const": +options.stroke_width.slice(0,-2),
+            "fill_color": {single: options.stroke},
+            opacity: options.stroke_opacity,
+            step: options.step,
+            dasharray: options.stroke_dasharray,
+            };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
@@ -1259,9 +1276,10 @@ function add_simplified_land_layer(options = {}){
     options.fill = options.fill || "#d3d3d3";
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
+    options.stroke_width = options.stroke_width || "0.3px";
     let background = map.append("g")
                         .attrs({id: "Simplified_land_polygons", class: "layer"})
-                        .style("stroke-width", "0.3px");
+                        .style("stroke-width", options.stroke_width);
 
     d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
         background.selectAll('.subunit')
@@ -1272,8 +1290,10 @@ function add_simplified_land_layer(options = {}){
                   .styles({stroke: options.stroke, fill: options.fill,
                            "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         current_layers["Simplified_land_polygons"] = {
-            "type": "Polygon", "n_features":125,
-            "stroke-width-const": 0.3, "fill_color": {single: options.fill}
+            "type": "Polygon",
+            "n_features":125,
+            "stroke-width-const": +options.stroke_width.slice(0,-2),
+            "fill_color": {single: options.fill}
         };
         create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
         if(!options.skip_rescale){

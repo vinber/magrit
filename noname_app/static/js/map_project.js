@@ -148,6 +148,10 @@ function get_map_template(){
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[i].fill_color = rgb2hex(selection.style("fill"));
             layers_style[i].stroke_color = rgb2hex(selection.style("stroke"));
+            if(layer_name == "Graticule"){
+                layers_style[i].stroke_dasharray = current_layers.Graticule.dasharray;
+                layers_style[i].step = current_layers.Graticule.step;
+            }
         } else if(!current_layers[layer_name].renderer){
             selection = map.select("#" + layer_name).selectAll("path");
         } else if(current_layers[layer_name].renderer.indexOf("PropSymbols") > -1){
@@ -414,13 +418,14 @@ function apply_user_preferences(json_pref){
         ["Choropleth", "choro"], ["Categorical", "typo"]
       ]);
 
-    // Update some global variables with the readed values in order to retrieve
-    // the same map size / orientation / zoom / etc ...
+    // Set the dimension of the map (width and height) :
     w = +map_config.div_width;
     h = +map_config.div_height;
     canvas_mod_size([w, h]);
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
+
+    // Set the variables/fields related to the projeciton :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
     s = map_config.projection_scale;
@@ -428,22 +433,28 @@ function apply_user_preferences(json_pref){
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    {
+      let proj_select = document.getElementById('form_projection');
+      proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
+    }
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
-    map.style("background-color", map_config.background_color);
-    let proj_select = document.getElementById('form_projection');
-    proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
 
+    // Set the background color of the map :
+    map.style("background-color", map_config.background_color);
+    document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
+
+    // Add each layer :
     for(let i = map_config.n_layers - 1; i > -1; --i){
         if(g_timeout) clearTimeout(g_timeout);
         let _layer = layers[i],
             layer_name = _layer.layer_name,
-            symbol,
-            layer_selec;
+            symbol;
 
         let fill_opacity = _layer.fill_opacity,
             stroke_opacity = _layer.stroke_opacity;
 
+        // This is a layer for which a geometries have been stocked as TopoJSON :
         if(_layer.topo_geom){
             let tmp = {
               skip_alert: true,
@@ -467,11 +478,11 @@ function apply_user_preferences(json_pref){
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
 
-                symbol = "path";
-                layer_selec = map.select("#" + layer_name);
+                let layer_selec = map.select("#" + layer_name);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
                 current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+                layer_selec.style('stroke-width', _layer['stroke-width-const']);
                 if(_layer.fixed_stroke)
                   current_layer_prop.fixed_stroke = _layer.fixed_stroke;
                 if(_layer.ref_layer_name)
@@ -511,31 +522,40 @@ function apply_user_preferences(json_pref){
                   }
                 } else if(_layer.fill_color.random) {
                         layer_selec
-                            .selectAll(symbol)
+                            .selectAll('path')
                             .style("fill", () => Colors.names[Colors.random()]);
                 }
-                layer_selec.selectAll(symbol)
-                    .styles({"fill-opacity": fill_opacity, "stroke-opacity": stroke_opacity});
+                layer_selec.selectAll('path')
+                    .styles({'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
                 set_final_param();
             });
+
+        // ... or this is a layer provided by the application :
         } else if (layer_name == "Sphere" || layer_name == "Graticule"){
-            let options = {'fill': layer_name == "Graticule" ? "none" : _layer.fill_color,
-                     'stroke': _layer.stroke_color,
-                     'fill-opacity': fill_opacity,
-                     'stroke-opacity': stroke_opacity };
+            let options = {
+                'stroke': _layer.stroke_color,
+                'fill_opacity': fill_opacity,
+                'stroke_opacity': stroke_opacity,
+                'stroke_width': _layer['stroke-width-const'] + 'px'
+                };
+            if(layer_name == "Graticule"){
+                options.fill = "none";
+                options.stroke_dasharray = _layer.stroke_dasharray;
+                options.step = _layer.step;
+            } else {
+                options.fill = _layer.fill_color;
+            }
             add_layout_feature(layer_name.toLowerCase(), options);
-            layer_selec = map.select('#' + layer_name);
         } else if (layer_name == "Simplified_land_polygons"){
-            add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity});
-            layer_selec = map.select('#Simplified_land_polygons');
+            add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px"});
+
+        // ... or this a layer of proportionnals symbols :
         } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")){
             let geojson_pt_layer = _layer.geo_pt;
-
-            let fill_color = _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color;
             let rendering_params = {
                 new_name: layer_name,
                 field: _layer.rendered_field,
-                fill_color: fill_color,
+                fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color,
                 ref_value:  _layer.size[0],
                 ref_size: _layer.size[1],
                 symbol: _layer.symbol,
@@ -559,6 +579,10 @@ function apply_user_preferences(json_pref){
             if(_layer.legend == "display"){
                 rehandle_legend(layer_name, _layer.legend_transform);
             }
+            current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
+            map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+
+        // ... or this is a layer of labels :
         } else if (_layer.renderer && _layer.renderer.startsWith("Label")){
             let rendering_params = {
                 uo_layer_name: layer_name,
@@ -571,6 +595,8 @@ function apply_user_preferences(json_pref){
         } else {
             null;
         }
+        // This function is called on each layer added
+        //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
         set_final_param();
     }
 }

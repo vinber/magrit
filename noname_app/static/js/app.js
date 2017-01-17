@@ -7999,16 +7999,31 @@ function add_layout_feature(selected_feature) {
         if (current_layers.Sphere) return;
         options.fill = options.fill || "lightblue";
         options.fill_opacity = options.fill_opacity || 0.2;
-        current_layers["Sphere"] = { "type": "Polygon", "n_features": 1, "stroke-width-const": 0.5, "fill_color": { single: options.fill } };
-        map.append("g").attrs({ id: "Sphere", class: "layer", "stroke-width": "0.5px", "stroke": "black" }).append("path").datum({ type: "Sphere" }).styles({ fill: options.fill, "fill-opacity": options.fill_opacity, stroke: options.stroke, 'stroke-opacity': options.stroke_opacity }).attrs({ id: 'sphere', d: path, 'clip-path': 'url(#clip)' });
+        options.stroke_width = options.stroke_width || "0.5px";
+        options.stroke_opacity = options.stroke_opacity || 1;
+        options.stroke = options.stroke || "#ffffff";
+        current_layers["Sphere"] = { "type": "Polygon", "n_features": 1, "stroke-width-const": +options.stroke_width.slice(0, -2), "fill_color": { single: options.fill } };
+        map.append("g").attrs({ id: "Sphere", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum({ type: "Sphere" }).styles({ fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke }).attrs({ id: 'sphere', d: path, 'clip-path': 'url(#clip)' });
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         zoom_without_redraw();
         setSphereBottom();
     } else if (selected_feature == "graticule") {
         if (current_layers["Graticule"] != undefined) return;
         options.stroke = options.stroke || 'grey';
-        map.append("g").attrs({ id: "Graticule", class: "layer" }).append("path").datum(d3.geoGraticule()).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': 5, 'fill': 'none', 'stroke': options.stroke });
-        current_layers["Graticule"] = { "type": "Line", "n_features": 1, "stroke-width-const": 1, "fill_color": { single: options.stroke }, opacity: 1, step: 10, dasharray: 5 };
+        options.stroke_width = options.stroke_width || "1px";
+        options.stroke_opacity = options.stroke_opacity || 1;
+        options.stroke_dasharray = options.stroke_dasharray || 5;
+        options.step = options.step || 10;
+        map.append("g").attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(d3.geoGraticule().step([options.step, options.step])).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
+        current_layers["Graticule"] = {
+            "type": "Line",
+            "n_features": 1,
+            "stroke-width-const": +options.stroke_width.slice(0, -2),
+            "fill_color": { single: options.stroke },
+            opacity: options.stroke_opacity,
+            step: options.step,
+            dasharray: options.stroke_dasharray
+        };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         zoom_without_redraw();
     } else if (selected_feature == "scale") {
@@ -8248,14 +8263,17 @@ function add_simplified_land_layer() {
     options.fill = options.fill || "#d3d3d3";
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
-    var background = map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", "0.3px");
+    options.stroke_width = options.stroke_width || "0.3px";
+    var background = map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", options.stroke_width);
 
     d3.json("/static/data_sample/simplified_land_polygons.topojson", function (error, json) {
         background.selectAll('.subunit').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
         current_layers["Simplified_land_polygons"] = {
-            "type": "Polygon", "n_features": 125,
-            "stroke-width-const": 0.3, "fill_color": { single: options.fill }
+            "type": "Polygon",
+            "n_features": 125,
+            "stroke-width-const": +options.stroke_width.slice(0, -2),
+            "fill_color": { single: options.fill }
         };
         create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
         if (!options.skip_rescale) {
@@ -11929,6 +11947,10 @@ function get_map_template() {
             selection = map.select("#" + layer_name).selectAll("path");
             layers_style[_i].fill_color = rgb2hex(selection.style("fill"));
             layers_style[_i].stroke_color = rgb2hex(selection.style("stroke"));
+            if (layer_name == "Graticule") {
+                layers_style[_i].stroke_dasharray = current_layers.Graticule.dasharray;
+                layers_style[_i].step = current_layers.Graticule.step;
+            }
         } else if (!current_layers[layer_name].renderer) {
             selection = map.select("#" + layer_name).selectAll("path");
         } else if (current_layers[layer_name].renderer.indexOf("PropSymbols") > -1) {
@@ -12195,13 +12217,14 @@ function apply_user_preferences(json_pref) {
 
     var func_name_corresp = new Map([["Links", "flow"], ["Carto_doug", "cartogram"], ["OlsonCarto", "cartogram"], ["Stewart", "smooth"], ["Gridded", "grid"], ["DiscLayer", "discont"], ["Choropleth", "choro"], ["Categorical", "typo"]]);
 
-    // Update some global variables with the readed values in order to retrieve
-    // the same map size / orientation / zoom / etc ...
+    // Set the dimension of the map (width and height) :
     w = +map_config.div_width;
     h = +map_config.div_height;
     canvas_mod_size([w, h]);
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
+
+    // Set the variables/fields related to the projeciton :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
     s = map_config.projection_scale;
@@ -12209,26 +12232,33 @@ function apply_user_preferences(json_pref) {
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    {
+        var proj_select = document.getElementById('form_projection');
+        proj_select.value = Array.prototype.filter.call(proj_select.options, function (d) {
+            if (d.text == current_proj_name) {
+                return d;
+            }
+        })[0].value;
+    }
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+
+    // Set the background color of the map :
     map.style("background-color", map_config.background_color);
-    var proj_select = document.getElementById('form_projection');
-    proj_select.value = Array.prototype.filter.call(proj_select.options, function (d) {
-        if (d.text == current_proj_name) {
-            return d;
-        }
-    })[0].value;
+    document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
+
+    // Add each layer :
 
     var _loop = function _loop(_i9) {
         if (g_timeout) clearTimeout(g_timeout);
         var _layer = layers[_i9],
             layer_name = _layer.layer_name,
-            symbol = void 0,
-            layer_selec = void 0;
+            symbol = void 0;
 
         var fill_opacity = _layer.fill_opacity,
             stroke_opacity = _layer.stroke_opacity;
 
+        // This is a layer for which a geometries have been stocked as TopoJSON :
         if (_layer.topo_geom) {
             var tmp = {
                 skip_alert: true,
@@ -12252,11 +12282,11 @@ function apply_user_preferences(json_pref) {
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
 
-                symbol = "path";
-                layer_selec = map.select("#" + layer_name);
+                var layer_selec = map.select("#" + layer_name);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
                 current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+                layer_selec.style('stroke-width', _layer['stroke-width-const']);
                 if (_layer.fixed_stroke) current_layer_prop.fixed_stroke = _layer.fixed_stroke;
                 if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
                 if (_layer.size) current_layer_prop.size = _layer.size;
@@ -12290,31 +12320,40 @@ function apply_user_preferences(json_pref) {
                         rehandle_legend(layer_name, _layer.legend_transform);
                     }
                 } else if (_layer.fill_color.random) {
-                    layer_selec.selectAll(symbol).style("fill", function () {
+                    layer_selec.selectAll('path').style("fill", function () {
                         return Colors.names[Colors.random()];
                     });
                 }
-                layer_selec.selectAll(symbol).styles({ "fill-opacity": fill_opacity, "stroke-opacity": stroke_opacity });
+                layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
                 set_final_param();
             });
+
+            // ... or this is a layer provided by the application :
         } else if (layer_name == "Sphere" || layer_name == "Graticule") {
-            var options = { 'fill': layer_name == "Graticule" ? "none" : _layer.fill_color,
+            var options = {
                 'stroke': _layer.stroke_color,
-                'fill-opacity': fill_opacity,
-                'stroke-opacity': stroke_opacity };
+                'fill_opacity': fill_opacity,
+                'stroke_opacity': stroke_opacity,
+                'stroke_width': _layer['stroke-width-const'] + 'px'
+            };
+            if (layer_name == "Graticule") {
+                options.fill = "none";
+                options.stroke_dasharray = _layer.stroke_dasharray;
+                options.step = _layer.step;
+            } else {
+                options.fill = _layer.fill_color;
+            }
             add_layout_feature(layer_name.toLowerCase(), options);
-            layer_selec = map.select('#' + layer_name);
         } else if (layer_name == "Simplified_land_polygons") {
-            add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity });
-            layer_selec = map.select('#Simplified_land_polygons');
+            add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
+
+            // ... or this a layer of proportionnals symbols :
         } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
             var geojson_pt_layer = _layer.geo_pt;
-
-            var fill_color = _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color;
             var rendering_params = {
                 new_name: layer_name,
                 field: _layer.rendered_field,
-                fill_color: fill_color,
+                fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color,
                 ref_value: _layer.size[0],
                 ref_size: _layer.size[1],
                 symbol: _layer.symbol,
@@ -12338,6 +12377,10 @@ function apply_user_preferences(json_pref) {
             if (_layer.legend == "display") {
                 rehandle_legend(layer_name, _layer.legend_transform);
             }
+            current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
+            map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+
+            // ... or this is a layer of labels :
         } else if (_layer.renderer && _layer.renderer.startsWith("Label")) {
             var _rendering_params = {
                 uo_layer_name: layer_name,
@@ -12350,6 +12393,8 @@ function apply_user_preferences(json_pref) {
         } else {
             null;
         }
+        // This function is called on each layer added
+        //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
         set_final_param();
     };
 
