@@ -301,6 +301,7 @@
             "version": "Magrit version {{ version }}",
             "useful_links": "Useful links:",
             "doc": "User manual",
+            "carnet_hypotheses": "<i>Hypothèses</i> blog",
             "contact": "Contact",
             "gh_link": "GitHub project page",
             "credits": "Realized by <span id=\"credit_link\">UMS RIATE</span>"
@@ -337,6 +338,11 @@
             "stroke_width": "Stroke width",
             "stroke_color": "Stroke color",
             "move_points": "Move ellipse control points"
+        },
+        "single_symbol_edit_box": {
+            "title": "Options",
+            "image_size": "Image size",
+            "scale_on_zoom": "Scale image on map zooming"
         },
         "title_box": {
             "title": "Title properties",
@@ -627,7 +633,7 @@
         },
         "documentation_section": {
             "user_manual": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>.",
-            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research notebook</a> containing detailed tutorials and news about changes in the application."
+            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application."
         },
         "source_section":{
             "box1_title": "Free and Open-Source",

@@ -293,6 +293,7 @@
             "version": "Magrit version {{ version }}",
             "useful_links": "Liens utiles:",
             "doc": "Manuel utilisateur",
+            "carnet_hypotheses": "Carnet <i>Hypothèses</i>",
             "contact": "Contact",
             "gh_link": "Page GitHub du projet",
             "credits": "Réalisé par l'<span id=\"credit_link\">UMS RIATE</span>"
@@ -329,6 +330,11 @@
             "stroke_width": "Épaisseur du trait",
             "stroke_color": "Couleur du trait",
             "move_points": "Déplacement des points de controle"
+        },
+        "single_symbol_edit_box": {
+            "title": "Options",
+            "image_size": "Taille de l'image",
+            "scale_on_zoom": "Mise à l'échelle lors du zoom"
         },
         "title_box": {
             "title": "Propriétés du titre",

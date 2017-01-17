@@ -98,8 +98,10 @@ function get_map_template(){
                     y: img.getAttribute('y'),
                     width: img.getAttribute('width'),
                     height: img.getAttribute('height'),
-                    href: img.getAttribute('href')
+                    href: img.getAttribute('href'),
+                    scalable: ft.classList.contains('scalable-legend')
                 });
+                console.log(map_config.layout_features.single_symbol);
             }
         }
 
@@ -215,7 +217,7 @@ function get_map_template(){
             layers_style[i].breaks = current_layers[layer_name].breaks;
             layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             if(current_layers[layer_name].renderer == "Links"){
-                layers_style[i].linksbyId = current_layers[layer_name].linksbyId.splice(0, nb_ft)
+                layers_style[i].linksbyId = current_layers[layer_name].linksbyId.slice(0, nb_ft)
             }
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
@@ -404,7 +406,12 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.single_symbol){
                 for(let i=0; i < map_config.layout_features.single_symbol.length; i++){
                     let ft = map_config.layout_features.single_symbol[i];
-                    add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
+                    let symb = add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
+                    if(ft.scalable){
+                        console.log(symb);
+                        symb.node().parentElement.classList.add('scalable-legend');
+                        symb.node().parentElement.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
+                    }
                 }
             }
         }
@@ -481,8 +488,10 @@ function apply_user_preferences(json_pref){
                 let layer_selec = map.select("#" + layer_name);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
-                current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
-                layer_selec.style('stroke-width', _layer['stroke-width-const']);
+                if( _layer['stroke-width-const']){
+                  current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+                  layer_selec.style('stroke-width', _layer['stroke-width-const']);
+                }
                 if(_layer.fixed_stroke)
                   current_layer_prop.fixed_stroke = _layer.fixed_stroke;
                 if(_layer.ref_layer_name)
@@ -503,11 +512,18 @@ function apply_user_preferences(json_pref){
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
+                        layer_selec.selectAll("path")
+                            .style('stroke', _layer.fill_color.single)
+                            .style("stroke-width", (d,i) => current_layer_prop.linksbyId[i][2]);
                     } else if (_layer.renderer == "DiscLayer"){
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
                         layer_selec.selectAll("path")
-                            .style("stroke-width", d => current_layer_prop.result.get(d.id));
+                            .styles(d => ({
+                                fill: "none",
+                                stroke: _layer.fill_color.single,
+                                'stroke-width': d.properties.prop_val
+                            }));
                     } else if (_layer.renderer && _layer.renderer.startsWith("Categorical")){
                           let rendering_params = {
                               colorByFeature: _layer.color_by_id,

@@ -214,29 +214,66 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
 };
 
 
-function make_style_box_indiv_symbol(label_node){
-    let current_options = {size: label_node.getAttribute("width")};
-    let ref_coords = {x: +label_node.getAttribute("x") + (+current_options.size.slice(0, -2) / 2),
-                      y: +label_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
+function make_style_box_indiv_symbol(symbol_node){
+    let parent = symbol_node.parentElement;
+    let type_obj =  parent.classList.contains("layer") ? 'layer' : 'layout';
+    let current_options = {
+        size: symbol_node.getAttribute("width"),
+        scalable: type_obj == 'layout' && parent.classList.contains('scalable-legend') ? true : false
+        };
+    let ref_coords = {x: +symbol_node.getAttribute("x") + (+current_options.size.slice(0, -2) / 2),
+                      y: +symbol_node.getAttribute("y") + (+current_options.size.slice(0, -2) / 2)};
     let new_params = {};
     let self = this;
-    make_confirm_dialog2("styleTextAnnotation", "Label options")
+    make_confirm_dialog2("styleTextAnnotation", i18next.t('app_page.single_symbol_edit_box.title'))
         .then(function(confirmed){
             if(!confirmed){
-                label_node.setAttribute("width", current_options.size);
-                label_node.setAttribute("height", current_options.size);
-                label_node.setAttribute("x", ref_coords.x - (+current_options.size.slice(0, -2) / 2));
-                label_node.setAttribute("y", ref_coords.y - (+current_options.size.slice(0, -2) / 2));
+                symbol_node.setAttribute("width", current_options.size);
+                symbol_node.setAttribute("height", current_options.size);
+                symbol_node.setAttribute("x", ref_coords.x - (+current_options.size.slice(0, -2) / 2));
+                symbol_node.setAttribute("y", ref_coords.y - (+current_options.size.slice(0, -2) / 2));
+                if(current_options.scalable){
+                    let zoom_scale = svg_map.__zoom;
+                    parent.setAttribute('transform', ['translate(', zoom_scale.x, ',', ') scale(', zoom_scale.k, ',', zoom_scale.k, ')'].join(''));
+                } else {
+                    parent.setAttribute('transform', undefined);
+                }
             }
         });
     let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    box_content.append("p").html("Image size ")
-            .append("input").attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +label_node.getAttribute("width").slice(0,-2)})
-            .on("change", function(){
-                let new_val = this.value + "px";
-                label_node.setAttribute("width", new_val);
-                label_node.setAttribute("height", new_val);
-                label_node.setAttribute("x", ref_coords.x - (+this.value / 2));
-                label_node.setAttribute("y", ref_coords.y - (+this.value / 2));
+    let a = box_content.append("p");
+    a.append('span').html(i18next.t('app_page.single_symbol_edit_box.image_size'));
+    a.append("input")
+        .attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0,-2)})
+        .on("change", function(){
+            let new_val = this.value + "px";
+            symbol_node.setAttribute("width", new_val);
+            symbol_node.setAttribute("height", new_val);
+            symbol_node.setAttribute("x", ref_coords.x - (+this.value / 2));
+            symbol_node.setAttribute("y", ref_coords.y - (+this.value / 2));
+        });
+    if(type_obj == 'layout'){
+        let current_state = parent.classList.contains('scalable-legend');
+        let b = box_content.append('p');
+        b.append('input')
+            .attrs({type: 'checkbox', id: 'checkbox_symbol_soom_scale'})
+            .on('change', function(){
+                let zoom_scale = svg_map.__zoom;
+                if(this.checked){
+                    symbol_node.setAttribute('x', (symbol_node.x.baseVal.value - zoom_scale.x) / zoom_scale.k);
+                    symbol_node.setAttribute('y', (symbol_node.y.baseVal.value - zoom_scale.y) / zoom_scale.k);
+                    parent.setAttribute('transform', ['translate(', zoom_scale.x, ', ', zoom_scale.y, ') scale(', zoom_scale.k, ',', zoom_scale.k, ')'].join(''));
+                    parent.classList.add('scalable-legend');
+                } else {
+                  symbol_node.setAttribute('x', (zoom_scale.x + symbol_node.x.baseVal.value) * zoom_scale.k);
+                  symbol_node.setAttribute('y', (zoom_scale.y + symbol_node.y.baseVal.value) * zoom_scale.k);
+                  parent.setAttribute('transform', undefined);
+                  parent.classList.remove('scalable-legend');
+                }
             });
+        b.append('label')
+            .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
+            .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+        document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
+    }
 };

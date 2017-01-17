@@ -132,21 +132,15 @@ function createStyleBoxTypoSymbols(layer_name){
 
     var selection = map.select("#" + layer_name).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
-        // ref_layer_selection = document.getElementById(ref_layer_name).getElementsByTagName("path"),
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field;
-        // ref_coords = [];
+
 
     var prev_settings = [],
-        prev_settings_defaults = {};
-
-    var zs = d3.zoomTransform(svg_map).k;
+        prev_settings_defaults = {},
+        zs = d3.zoomTransform(svg_map).k;
 
     get_prev_settings();
-
-    // for(let i = 0; i < ref_layer_selection.length; i++){
-    //     ref_coords.push(path.centroid(ref_layer_selection[i].__data__));
-    // }
 
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
@@ -172,8 +166,6 @@ function createStyleBoxTypoSymbols(layer_name){
                           size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2
                       return {x: centroid[0] - size_symbol, y: centroid[1] - size_symbol};
                     });
-                    // .attr("x", (d,i) => ref_coords[i][0] - symbols_map.get(d.Symbol_field)[1] / 2)
-                    // .attr("y", (d,i) => ref_coords[i][1] - symbols_map.get(d.Symbol_field)[1] / 2);
         });
 
     popup.append("p").style("text-align", "center")
@@ -294,8 +286,7 @@ function createStyleBoxLabel(layer_name){
             .text(i18next.t("app_page.layer_style_popup.reset_labels_location"))
             .on("click", function(){
                 selection.transition()
-                        .attr("x", (d,i) => d.coords[0])
-                        .attr("y", (d,i) => d.coords[1]);
+                    .attrs(d => ({x: d.coords[0], y: d.coords[1]}));
             });
 
     popup.append("p").style("text-align", "center")
@@ -486,8 +477,6 @@ function createStyleBox(layer_name){
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
-//                if(stroke_width != current_layers[layer_name]['stroke-width-const'])
-//                    current_layers[layer_name].fixed_stroke = true;
                 if(type === "Point" && !renderer) {
                     current_layers[layer_name].pointRadius = +current_pt_size;
                 }
@@ -525,7 +514,7 @@ function createStyleBox(layer_name){
 
                     if(_type_layer_links){
                         lgd.remove();
-                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle);
+                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision);
                     } else {
                         let no_data_txt = document.getElementById("no_data_txt");
                         no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
@@ -559,8 +548,7 @@ function createStyleBox(layer_name){
                     else if(fill_math == "class" && renderer == "Links")
                         selection.style('stroke-opacity', (d,i) => current_layers[layer_name].linksbyId[i][0])
                                .style("stroke", stroke_prev);
-                }
-                else {
+                } else {
                     if(current_layers[layer_name].renderer == "Stewart"){
                         recolor_stewart(prev_palette.name, prev_palette.reversed);
                     } else if(fill_meth == "single") {

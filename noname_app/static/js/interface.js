@@ -1138,7 +1138,7 @@ function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
     ];
     x = x || w / 2;
     y = y || h / 2;
-    map.append("g")
+    return map.append("g")
         .attrs({class: "legend_features legend single_symbol"})
         .insert("image")
         .attrs({"x": x, "y": y, "width": width, "height": width,
