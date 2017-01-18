@@ -570,6 +570,43 @@ function handle_dataset(f){
     }
 }
 
+function update_menu_dataset(){
+    let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+        nb_features = joined_dataset[0].length,
+        field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
+
+    d3.select("#img_data_ext")
+        .attrs({"id": "img_data_ext",
+               "class": "user_panel",
+               "src": "/static/img/b/tabular.svg",
+               "width": "26", "height": "26",
+               "alt": "Additional dataset"});
+
+    d3.select('#data_ext')
+        .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
+                                        nb_features, ' ',
+                                        i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
+        .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
+               nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
+               field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
+               '</i></span>'].join(''));
+    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+
+    document.getElementById("remove_dataset").onclick = () => {
+        remove_ext_dataset()
+    };
+    document.getElementById("remove_dataset").onmouseover = function(){
+        this.style.opacity = 1;
+    };
+    document.getElementById("remove_dataset").onmouseout = function(){
+        this.style.opacity = 0.5;
+    };
+    if(targeted_layer_added){
+        valid_join_check_display(false);
+        document.getElementById('sample_zone').style.display = "none";
+    }
+}
+
 
 /**
 *
@@ -607,42 +644,10 @@ function add_dataset(readed_dataset){
             }
         }
     }
-
     joined_dataset.push(readed_dataset);
-    let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-        nb_features = joined_dataset[0].length,
-        field_names = Object.getOwnPropertyNames(readed_dataset[0]);
 
-    d3.select("#img_data_ext")
-        .attrs({"id": "img_data_ext",
-               "class": "user_panel",
-               "src": "/static/img/b/tabular.svg",
-               "width": "26", "height": "26",
-               "alt": "Additional dataset"});
+    update_menu_dataset();
 
-    d3.select('#data_ext')
-        .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
-                                        nb_features, ' ',
-                                        i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
-        .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
-               nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
-               field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
-               '</i></span>'].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
-    document.getElementById("remove_dataset").onclick = () => {
-        remove_ext_dataset()
-    };
-    document.getElementById("remove_dataset").onmouseover = function(){
-        this.style.opacity = 1;
-    };
-    document.getElementById("remove_dataset").onmouseout = function(){
-        this.style.opacity = 0.5;
-    };
-    if(targeted_layer_added){
-        valid_join_check_display(false);
-//        document.getElementById("join_button").disabled = false;
-        document.getElementById('sample_zone').style.display = "none";
-    }
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
 
