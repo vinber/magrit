@@ -719,6 +719,8 @@ var northArrow = {
 
         let getItems = () => [
             {"name": i18next.t("app_page.common.options"), "action": () => { this.editStyle()}},
+            {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+            {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
             {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
         ];
 
@@ -753,6 +755,12 @@ var northArrow = {
                 return arrow_context_menu
                    .showMenu(d3.event, document.querySelector("body"), getItems());
             });
+    },
+    up_element: function(){
+            up_legend(this.svg_node.node());
+    },
+    down_element: function(){
+            down_legend(this.svg_node.node());
     },
     remove: function(){
         this.svg_node.remove();

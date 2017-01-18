@@ -1032,6 +1032,7 @@ function add_layout_feature(selected_feature, options = {}){
             dasharray: options.stroke_dasharray,
             };
         create_li_layer_elem("Graticule", null, "Line", "sample");
+        up_legends();
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
         if(!(scaleBar.displayed)){
@@ -1133,9 +1134,12 @@ function handleCreateFreeDraw(){
 function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
-            {"name": "Edit style...", "action": () => { make_style_box_indiv_symbol(self_parent); }},
-            {"name": "Delete", "action": () => {self_parent.style.display = "none"; }}
+            {"name": i18next.t("app_page.common.options"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
+            {"name": i18next.t("app_page.common.up_element"), "action": () => { up_legend(self_parent.parentElement); }},
+            {"name": i18next.t("app_page.common.down_element"), "action": () => { down_legend(self_parent.parentElement); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.parentElement.remove(); }}
     ];
+
     x = x || w / 2;
     y = y || h / 2;
     return map.append("g")

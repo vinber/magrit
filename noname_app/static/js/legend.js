@@ -201,7 +201,7 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' ');
 
     var legend_root = map.insert('g')
-        .attrs({id: 'legend_root_nothing', class: tmp_class_name})
+        .attrs({id: 'legend_root_nothing', class: tmp_class_name, layer_field: field})
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
 
     var rect_under_legend = legend_root.insert("rect");
@@ -238,7 +238,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
         nb_class = breaks.length;
 
     var legend_root = map.insert('g')
-        .attrs({id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision})
+        .attrs({id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field})
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'});
 
     var rect_under_legend = legend_root.insert("rect");
@@ -386,7 +386,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     var legend_root = map.insert('g')
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
         .attrs({id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)',
-                nested: nested, rounding_precision: rounding_precision});
+                nested: nested, rounding_precision: rounding_precision, layer_field: field});
 
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id","legendtitle")
@@ -577,7 +577,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
 
     var legend_root = map.insert('g')
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
-        .attrs({id: 'legend_root', class: tmp_class_name,
+        .attrs({id: 'legend_root', class: tmp_class_name, layer_field: field,
                 transform: 'translate(0,0)', 'boxgap': boxgap,
                 'rounding_precision': rounding_precision});
 

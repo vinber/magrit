@@ -8,6 +8,29 @@ function get_map_template(){
         layout_features = document.querySelectorAll('.legend:not(.title):not(#legend_root2):not(#legend_root):not(#legend_root_links)'),
         zoom_transform = d3.zoomTransform(svg_map);
 
+    function get_legend_info(lgd_node){
+        let type_lgd = lgd_node.id,
+            result = {
+                type: type_lgd,
+                display: lgd_node.getAttribute('display'),
+                transform: lgd_node.getAttribute('transform'),
+                field: lgd_node.getAttribute('layer_field'),
+                rounding_precision: lgd_node.getAttribute('rounding_precision'),
+                visible_rect: lgd_node.getAttribute('visible_rect'),
+                title: lgd_node.querySelector('#legendtitle').innerHTML,
+                subtitle: lgd_node.querySelector('#legendsubtitle').innerHTML,
+                bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML
+            }
+        if(type_lgd == 'legend_root'){
+            result['box_gap'] = lgd_node.getAttribute('box_gap');
+            // result['no_data_txt'] = lgd_node.getAttribute('no_data_txt');
+        } else if (type_lgd == 'legend_root2') {
+            result['nested_symbols'] = lgd_node.getAttribute('nested');
+        }
+        console.log(result);
+        return result;
+    }
+
     map_config.projection = current_proj_name;
     map_config.projection_scale = proj.scale();
     map_config.projection_translate = proj.translate();
@@ -118,13 +141,10 @@ function get_map_template(){
         let lgd = document.getElementsByClassName('lgdf_' + layer_name);
         if(lgd.length == 0){
             layers_style[i].legend = undefined;
-        } else if (lgd.length >= 1) {
-            layers_style[i].legend = lgd[0].getAttribute("display") == "none" ? "not_display" : "display";
-            if(current_layers[layer_name].renderer == "PropSymbolsTypo" || current_layers[layer_name].renderer == "PropSymbolsChoro"){
-                layers_style[i].legend_transform = lgd[0].id == "legend_root" ? [lgd[0].getAttribute("transform"), lgd[1].getAttribute("transform")] : [lgd[1].getAttribute("transform"), lgd[0].getAttribute("transform")];
-            } else {
-                layers_style[i].legend_transform = [lgd[0].getAttribute("transform")];
-            }
+        } else if (lgd.length == 1) {
+            layers_style[i].legend = [get_legend_info(lgd[0])];
+        } else if (lgd.length == 2){
+            layers_style[i].legend = lgd[0].id == "legend_root" ? [get_legend_info(lgd[0]), get_legend_info(lgd[1])] : [get_legend_info(lgd[1]), get_legend_info(lgd[0])];
         }
 
         if(current_layers[layer_name]["stroke-width-const"])
@@ -533,8 +553,8 @@ function apply_user_preferences(json_pref){
                           };
                           render_categorical(layer_name, rendering_params);
                   }
-                  if(_layer.legend == "display"){
-                      rehandle_legend(layer_name, _layer.legend_transform);
+                  if(_layer.legend){
+                      rehandle_legend(layer_name, _layer.legend);
                   }
                 } else if(_layer.fill_color.random) {
                         layer_selec
@@ -592,8 +612,8 @@ function apply_user_preferences(json_pref){
             if(_layer.colors_breaks){
                 current_layers[layer_name].colors_breaks = _layer.colors_breaks;
             }
-            if(_layer.legend == "display"){
-                rehandle_legend(layer_name, _layer.legend_transform);
+            if(_layer.legend){
+                rehandle_legend(layer_name, _layer.legend);
             }
             current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
             map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
@@ -639,17 +659,15 @@ function reorder_elem_list_layer(desired_order){
 }
 
 function rehandle_legend(layer_name, properties){
-    handle_legend(layer_name);
-    let lgd = svg_map.querySelectorAll('.lgdf_' + layer_name);
-    if(lgd.length == 1 && properties.length == 1){
-        lgd[0].setAttribute('transform', properties[0]);
-    } else if (lgd.length == 2 && properties.length == 2){
-        if(lgd[0].id == "legend_root"){
-            lgd[0].setAttribute('transform', properties[0]);
-            lgd[1].setAttribute('transform', properties[1]);
-        } else {
-            lgd[0].setAttribute('transform', properties[1]);
-            lgd[1].setAttribute('transform', properties[0]);
+    for(let i = 0; i < properties.length; i++){
+        let prop = properties[i];
+        if(prop.type == 'legend_root'){
+            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision);
+        } else if(prop.type == 'legend_root2') {
+            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision);
+        } else if(prop.type == 'legend_root_links'){
+            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision)
         }
+        svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name).setAttribute('transform', prop.transform);
     }
 }
