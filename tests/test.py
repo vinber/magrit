@@ -8,9 +8,9 @@ import pytest
 import ujson as json
 #import subprocess
 #import time
-from noname_app.app import rawcsv_to_geo, _init
-from noname_app.helpers.topo_to_geo import convert_from_topo
-from noname_app.helpers.geo import check_projection
+from magrit_app.app import rawcsv_to_geo, _init
+from magrit_app.helpers.topo_to_geo import convert_from_topo
+from magrit_app.helpers.geo import check_projection
 from aiohttp import FormData
 from aiohttp.test_utils import make_mocked_request
 #from selenium import webdriver
@@ -19,7 +19,7 @@ pytest_plugins = 'aiohttp.pytest_plugin'
 
 @pytest.fixture
 def read_topo():
-    with open("noname_app/static/data_sample/simplified_land_polygons.topojson", "r") as f:
+    with open("magrit_app/static/data_sample/simplified_land_polygons.topojson", "r") as f:
         data = json.loads(f.read())
     return data
 
@@ -111,7 +111,7 @@ async def test_get_pages(cli):
 #     data = FormData()
 #     data.add_field('action', 'submit_form')
 #     data.add_field('file[]',
-#                    open('../noname_app/static/data_sample/martinique_data.xlsx', 'rb'),
+#                    open('../magrit_app/static/data_sample/martinique_data.xlsx', 'rb'),
 #                    filename='martinique_data.xlsx',
 #                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 #     resp = await cli.post('/convert_tabular', data=data)

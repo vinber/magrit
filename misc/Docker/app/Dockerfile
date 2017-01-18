@@ -71,9 +71,9 @@ RUN  mkdir /home/app && cd /home/app \
 
 RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
         && cd smoomapy/ && python3 setup.py install && cd /home/app \
-        && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/noname_app/helpers/*.so /home/app/magrit/noname_app/helpers/
+        && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/magrit_app/helpers/*.so /home/app/magrit/magrit_app/helpers/
 
 EXPOSE 9999
 
 CMD service redis-server start \
-    && gunicorn "noname_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/magrit/
+    && gunicorn "magrit_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/magrit/

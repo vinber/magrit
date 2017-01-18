@@ -6,7 +6,7 @@ then
 	mkdir magritapp
 	git clone http://github.com/mthh/magrit
 	cp -r magrit/misc/Docker/ magritapp/
-	cp -r magrit/noname_app/static/ magritapp/Docker/nginx/
+	cp -r magrit/magrit_app/static/ magritapp/Docker/nginx/
 	cd magritapp/Docker
 	cd app/
 	docker build -t "magrit_app:$(date +%y%m%d)" --build-arg CACHEBUST=$(date +%s) .
@@ -22,7 +22,7 @@ then
 	rm -rf magrit
 	rm -rf magritapp/Docker/nginx/static
 	git clone http://github.com/mthh/magrit
-	cp -r magrit/noname_app/static/ magritapp/Docker/nginx/
+	cp -r magrit/magrit_app/static/ magritapp/Docker/nginx/
 	cd magritapp/Docker/nginx/
 	docker build -t "nginx:latest" .
 	cd ../app

@@ -49,7 +49,7 @@ git clone http://github.com/mthh/magrit
 # Copy the two Dockerfile :
 cp -r magrit/misc/Docker/ magritapp/
 # Copy the static files :
-cp -r magrit/noname_app/static/ magritapp/Docker/nginx/
+cp -r magrit/magrit_app/static/ magritapp/Docker/nginx/
 # Make some clean up :
 rm -rf magrit
 # Setting up the magrit image:

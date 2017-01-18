@@ -1,5 +1,5 @@
 {
     "title": "Les docs de Magrit",
     "description": "Documentation utilisateur de Magrit",
-	"dest": "../../noname_app/static/book/"
+	"dest": "../../magrit_app/static/book/"
 }
