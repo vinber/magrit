@@ -1,0 +1,662 @@
+{
+    "app_page": {
+        "common": {
+            "loading_results": "Chargement en cours",
+            "long_computation": "(le calcul peut nécessiter quelques secondes/minutes)",
+            "save_preferences": "Sauvegarder le projet",
+            "load_preferences": "Charger un projet",
+            "too_large_input": "Fichier d'entrée trop volumineux (8Mo maximum)",
+            "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
+            "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
+            "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
+            "layer_success": "Résultat ajouté à la carte!",
+            "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
+            "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
+            "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
+            "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
+            "error_only_one": "Seule une couche peut être ajoutée via cette fonctionnalité",
+            "error_existing_scalebar": "Seule une échelle peut être ajoutée - Remplacer l'échelle existante par une nouvelle ?",
+            "error_existing_north_arrow": "Seule une flêche nord peut être ajoutée - Remplacer celle existante par une nouvelle ?",
+            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
+            "error_no_title": "Aucun titre à mettre en forme",
+            "error_no_visible": "Erreur : pas de couche visible trouvée!",
+            "error_type_fields": "La couche cible ne semble pas contenir les champs appropriés pour ce type de représentation (ou ces derniers contiennent trop de valeurs nulles)",
+            "error_too_many_features": "Le nombres d'entités est très élevé pour ce type de représentation. Celà risque de ralentir considérablement la naviguation.",
+            "error_too_many_features_color": "Le nombres d'entités est très élevé pour ce type de représentation. Celà risque de nuire à la lisibilité de la carte.",
+            "error_too_low_resolution": "La résolution demandée est trop faible.",
+            "error_too_high_resolution": "La résolution demandée est trop importante.",
+            "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
+            "warning_multiple_layers": "Les couches provenant de TopoJSON doivent etre ajoutées une par une. Seule la 1ère va etre ajoutée",
+            "target_layer": "Couche cible",
+            "result_layer": "Couche de résultat",
+            "ext_dataset": "Jeu de données externe",
+            "success": "Validé",
+            "confirm": "Confirmation",
+            "remove_layer": "Enlever la couche {{layer}} ?",
+            "remove_tabular": "Enlever le jeu de données ajouté ?",
+            "cancel": "Annulation",
+            "delete": "Suppression",
+            "deleted": "Supprimée",
+            "done": "Fini!",
+            "valid": "Confirmation",
+            "close": "Fermer",
+            "edit_style": "Changer le style...",
+            "error": "Erreur",
+            "options": "Options",
+            "default": "Valeur par défaut",
+            "feature": "entité",
+            "feature_plural": "entités",
+            "field": "champ",
+            "field_plural": "champs",
+            "save_project_json": "Sauvegarder le projet (format JSON)",
+            "load_project_json": "Charger un projet au format JSON",
+            "equal_interval": "Intervalles égaux",
+            "quantiles": "Quantiles",
+            "std_dev": "Écart-type",
+            "Q6": "Q6",
+            "arithmetic_progression": "Progression arithmétique",
+            "jenks": "Jenks",
+            "geometric_progression": "Progression géométrique",
+            "user_defined": "Personnalisé",
+            "up_element": "Vers le haut",
+            "down_element": "Vers le bas",
+            "hide": "Masquer",
+            "smaller": "plus petit",
+            "larger": "plus grand",
+            "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
+            "details": "Détails",
+            "representation": "Représentation",
+            "ask_confirm": "Confirmation ?",
+            "layer_type_selection": "Sélection du type d'élément",
+            "target_l": "Fond de carte principal",
+            "layout_l": "Fond de carte d'habillage",
+            "no_value": "Pas de valeur selectionnée",
+            "yes": "Oui",
+            "no": "Non",
+            "warn_xls_sheet": "Seules les données du fichier sont chargées (les formules et les propriétés de style sont ignorées).",
+            "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé.",
+            "resume_last_project": "Reprendre le projet en cours ?",
+            "new_project": "Nouveau projet",
+            "resume_last": "Continuer le dernier projet..."
+        },
+        "section1": {
+            "title": "Import des données",
+            "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
+            "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
+            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
+        },
+        "section2": {
+            "title": "Choix de la représentation"
+        },
+        "section2_": {
+            "title_no_choice": "Pas de représentation selectionnée"
+        },
+        "section3": {
+            "title": "Gestion des couches"
+        },
+        "section4": {
+            "title": "Habillage et mise en page",
+            "map_width": "Largeur de la carte (px)",
+            "map_height": "Hauteur de la carte (px)",
+            "map_ratio": "Ratio d'affichage",
+            "ratio_user": "Personnalisé",
+            "ratio_landscape": "Paysage",
+            "ratio_portait": "Portrait",
+            "map_center_menu": "Centrage de la carte ...",
+            "map_center_x": "Centre de la carte (x)",
+            "map_center_y": "Centre de la carte (y)",
+            "map_scale_k": "Facteur de zoom",
+            "map_title": "Titre de la carte",
+            "background_color": "Couleur de l'arrière-plan",
+            "canvas_rotation": "Rotation de la carte"
+        },
+        "section5b": {
+            "title": "Export de la carte",
+            "type": "Type",
+            "filename": "Nom du fichier",
+            "format": "Format de sortie",
+            "height": "Hauteur",
+            "width": "Largeur",
+            "web": "Web",
+            "user_defined": "Personnalisé",
+            "A4_landscape": "A4 paysage",
+            "A4_portrait": "A4 portrait",
+            "A3_landscape": "A3 paysage",
+            "A3_portrait": "A3 portrait",
+            "A5_landscape": "A5 paysage",
+            "A5_portrait": "A5 portrait",
+            "export_button": "Exporter",
+            "next": "Paramètres..."
+        },
+        "section5": {
+            "title": "Options de projection",
+            "projection": "Projection",
+            "projection_center_lambda": "Centre de la projection (longitude)",
+            "projection_center_phi": "Centre de la projection (rotation de l'axe φ)",
+            "projection_center_gamma": "Centre de la projection (rotation de l'axe γ)",
+            "reset": "Réinitialiser la vue"
+        },
+        "stat_summary": {
+            "population": "Population",
+            "min": "Min",
+            "max": "Max",
+            "mean": "Moyenne",
+            "median": "Médiane",
+            "variance": "Variance",
+            "stddev": "Écart-type",
+            "cov": "Coefficient de variation",
+            "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}} | Médianne : {{median}}<br>Écart-type : {{stddev}}"
+        },
+        "tooltips": {
+            "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "load_project_file": "Chargement d'un fichier projet",
+            "save_file": "Sauvegarde d'un fichier-projet",
+            "new_project": "Création d'un nouveau projet"
+        },
+        "func_description" : {
+            "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
+            "prop": "Réalisation d'un carte de stocks",
+            "choroprop": "Réalisation d'une carte de stocks et ratios",
+            "proptypo": "Réalisation d'une carte de stocks et qualitative",
+            "choro": "Réalisation d'une carte de ratios",
+            "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
+            "grid": "Réalisation d'une grille de densité",
+            "flow": "Réalisation d'une carte des liens",
+            "discont": "Réalisation d'une carte de discontinuités",
+            "typo": "Réalisation d'une carte qualitative",
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
+        },
+        "func_title" : {
+            "smooth": "Carte lissée",
+            "prop": "Carte de stocks",
+            "choroprop": "Carte de stocks et ratios",
+            "proptypo": "Carte de stocks et qualitative",
+            "choro": "Carte de ratios",
+            "cartogram": "Cartogram",
+            "grid": "Carroyage",
+            "flow": "Carte des liens",
+            "discont": "Carte des discontinuités",
+            "typo": "Carte qualitative",
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
+        },
+        "layout_features_box": {
+            "title": "Élements d'habillage",
+            "subtitle": "Élement à ajouter",
+            "north_arrow": "Flèche nord",
+            "scale": "Échelle",
+            "sphere": "Fond de l'emprise du globe",
+            "graticule": "Graticule",
+            "text_annot": "Annotation de texte",
+            "arrow": "Flèche",
+            "symbol": "Insertion d'un symbole",
+            "ellipse": "Ellipse",
+            "free_draw": "Dessin libre"
+        },
+        "layout_layer_box": {
+            "title": "Couches d'habillage",
+            "msg_select_layer": "Selectionnez une ou plusieurs couches d'habillage : ",
+            "msg_select_multi": "<i>(plusieurs couches peuvent être selectionnées simultanément)</i>",
+            "nuts0": "Nuts 0* (2013) Pays européens <i>(Polygones)</i>",
+            "nuts1": "Nuts 1* (2013) Subdivisions européennes <i>(Polygones)</i>",
+            "nuts2": "Nuts 2* (2013) Subdivisions européennes <i>(Polygones)</i>",
+            "world_countries": "World countries simplified <i>(Polygones)</i>",
+            "world_capitals": "World country capitals <i>(Points)</i>",
+            "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
+        },
+        "sample_layer_box": {
+            "title": "Jeux de données d'exemple",
+            "subtitle1": "Choix d'une couche géographique à ajouter :",
+            "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :",
+            "target_layer": "<i>Couche cible</i>",
+            "paris_hospitals": "Localisation des hopitaux de Paris <i>(Points)</i>",
+            "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
+            "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
+            "nuts2_data": "Nuts 2 (2006) avec données <i>(Polygones)</i>",
+            "nuts3_data": "Nuts 3 (2006) avec données <i>(Polygones)</i>",
+            "world_countries": "Pays du monde <i>(Polygones)</i>",
+            "us_county": "Comtés des USA <i>(Polygones)</i>",
+            "us_states": "États des USA <i>(Polygones)</i>",
+            "tabular_dataset": "<i>Jeu de données tabulaires</i>",
+            "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
+            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>"
+        },
+        "export_box": {
+            "geo": "Exporter vers un format compatible SIG",
+            "geo_title_box": "Choix de la couche et du format...",
+            "options": "Options d'export",
+            "option_layer": "Couche à exporter ",
+            "option_datatype": "Format ",
+            "option_projection": "Projection "
+        },
+        "join_box": {
+            "title": "Option de jointure",
+            "ask_diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entités.<br>Continuer ?",
+            "ask_forget_join": "Une jointure a déjà été réalisée. Effacer et en faire une nouvelle ?",
+            "unable_join": "Impossible de joindre le jeu de données et la couche géographique.",
+            "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques.",
+            "state_not_joined": "Tables non jointes",
+            "ext_dataset_field": "Champ du jeu de données externe :",
+            "geom_layer_field": "Champ de la couche géographique :",
+            "ask_join": "Joindre les données ?",
+            "button_join": "Joindre",
+            "select_fields": "Selection des champs à joindre ",
+            "match": "correspondance",
+            "match_plural": "correspondances",
+            "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
+            "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?",
+            "change_field": "Changer les champs joints",
+            "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
+
+        },
+        "box_type_fields": {
+            "title": "Typage des données",
+            "message_invite": "Sélection/modification du type de données présent dans chacun des champs.",
+            "stock": "Stock",
+            "ratio": "Ratio",
+            "category": "Catégorie",
+            "unknown": "Inconnu",
+            "id": "Identifiant"
+        },
+        "explore_box": {
+            "title": "Table de données",
+            "button_add_field": "Ajout d'un champ...",
+            "add_field_box": {
+                "new_name": "Nom du nouveau champ<br>",
+                "new_content": "Contenu du nouveau champ<br>",
+                "between_numerical": "Calcul d'une valeur entre champs numériques",
+                "between_string": "Opération sur un champ de valeur non-numériques",
+                "truncate": "Tronquer",
+                "concatenate": "Concatener",
+                "join_char": "Charactère à insérer entre les deux valeurs (peut rester vide) :<br>",
+                "keep_char": "Nombre de charactère à conserver (en partant de la gauche) :<br>",
+                "invalid_name": "Nom de colonne invalide !",
+                "constant_value": "Valeur constante..."
+            }
+        },
+        "legend_style_box": {
+            "title": "Style de la couche - {{layer_name}}",
+            "subtitle": "Personnalisation de la légende",
+            "lgd_title": "Titre",
+            "var_name": "Sous-titre<br>",
+            "float_rounding": "Arrondi des nombres flottants<br> ",
+            "gap_boxes": "Pas d'espaces entre les boites",
+            "nested_symbols": "Symboles encastrés",
+            "no_data": "Catégorie \"absence de données\"",
+            "additionnal_notes": "Notes<br>",
+            "under_rectangle": "Afficher un rectangle sous la légende",
+            "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
+        },
+        "help_box": {
+            "title": "À propos",
+            "tooltip_btn": "Aide / À propos",
+            "version": "Magrit version {{ version }}",
+            "useful_links": "Liens utiles:",
+            "doc": "Manuel utilisateur",
+            "carnet_hypotheses": "Carnet <i>Hypothèses</i>",
+            "contact": "Contact",
+            "gh_link": "Page GitHub du projet",
+            "credits": "Réalisé par l'<span id=\"credit_link\">UMS RIATE</span>"
+        },
+        "north_arrow_edit_box": {
+            "title": "North arrow options",
+            "size": "Arrow size ",
+            "rotation": "Arrow rotation "
+        },
+        "scale_bar_edit_box": {
+            "title": "Options de l'échelle",
+            "fixed_size": "Taille fixée ",
+            "precision": "Précision ",
+            "unit": "Unité de mesure ",
+            "start_end_bar": "Délimiteurs de début/fin "
+        },
+        "text_box_edit_box": {
+            "constructor_default": "Saisir du texte...",
+            "title": "Options de la boite de texte",
+            "font_size": "Taille de la police ",
+            "default_font": "Police par défault ",
+            "content": "Contenu ",
+            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées."
+        },
+        "arrow_edit_box": {
+            "title": "Options de la flèche",
+            "arrowWeight": "Taille de la flèche",
+            "arrowColor": "Couleur de la flèche",
+            "arrowAngle": "Inclinaison de la flèche",
+            "move_points": "Déplacement des points (départ/arrivée) de la flèche"
+        },
+        "ellipse_edit_box": {
+            "title": "Options de l'ellipse",
+            "stroke_width": "Épaisseur du trait",
+            "stroke_color": "Couleur du trait",
+            "move_points": "Déplacement des points de controle"
+        },
+        "single_symbol_edit_box": {
+            "title": "Options",
+            "image_size": "Taille de l'image",
+            "scale_on_zoom": "Mise à l'échelle lors du zoom"
+        },
+        "title_box": {
+            "title": "Propriétés du titre",
+            "font_size": "Taille de police :<br>",
+            "font_color": "Couleur de police :<br>",
+            "font_family": "Famille de police :<br>",
+            "xpos": "Position en X (% depuis de la gauche) :<br>",
+            "ypos": "Position en Y (% depuis le haut) :<br>"
+        },
+        "symbol_typo_box": {
+            "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
+            "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
+            "count_feature": " <i> ({{ nb_features }} entité)</i>",
+            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>",
+            "title_click": "Cliquer pour choisir un symbole!"
+        },
+        "categorical_box": {
+            "title": "Choix des couleurs - {{ layer }} - {{ nb_features }} entités",
+            "new_random_colors": "Nouvelles couleurs aléatoires"
+        },
+        "layer_style_popup": {
+            "fill_color": "Couleur de remplissage",
+            "toggle_colors": "<b><i>Cliquer pour modifier les couleurs</b></i>",
+            "categorical_field": "Champ catégoriel :",
+            "rendered_field": "<i>Champ utilisé : <b>{{field}}</b></i><br>",
+            "reference_layer": "<i>Couche de référence : <b>{{ layer }}</b></i><br>",
+            "reset_symbols_location": "Remise à zéro de la localisation des symboles",
+            "redraw_symbols": "Redéssiner les symboles supprimés",
+            "modify_symbols": "Modification des symbols",
+            "reset_labels_location": "Remise à zéro de la localisation des labels",
+            "redraw_labels": "Redéssiner les labels supprimés",
+            "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles appaortées! </i></b>",
+            "labels_default_size": "Taille par défaut des labels",
+            "labels_default_color": "Couleur par défaut des labels",
+            "labels_default_font": "Police utilisée par défaut",
+            "single_color": "Couleur unique",
+            "categorical_color": "Couleur selon un champ catégoriel",
+            "random_color": "Couleur aléatoire pour chaque entité",
+            "field_to_render": "Champ à utiliser ",
+            "choose_colors": "Choix des couleurs",
+            "field": "Champ",
+            "choose_discretization": "Choix de la discrétisation",
+            "color_palette": "Palette de couleur",
+            "reverse_palette": "Inverser la palette",
+            "fill_opacity": "Opacité du remplissage<br>",
+            "display_flow_larger": "Afficher seulement les liens supérieurs à ...<br>",
+            "modify_size_class": "Modifier la taille par classe",
+            "discont_threshold": "Seuil de discontinuités ",
+            "border_color": "Couleur du contour<br>",
+            "color": "Couleur<br>",
+            "opacity": "Opacité<br>",
+            "border_color": "Couleur de la bordure<br>",
+            "border_opacity": "Opacité de la bordure<br>",
+            "width": "Épaisseur (px)<br>",
+            "border_width": "Épaisseur de la bordure<br>",
+            "field_symbol_color": "Champ utilisé pour les <strong>couleurs des symboles</strong> : <i>{{ field }}</i><br>",
+            "color_break": "Couleur selon une valeur limite",
+            "break_value": "<br>Valeur limite ",
+            "field_symbol_size": "Champ utilisé pour les <strong>valeurs proportionnelles</strong> : <i>{{ field }}</i><br><br>",
+            "symbol_fixed_size": "Taille du symbole fixée ",
+            "on_value": "sur la valeur ...",
+            "point_radius": "Taille du point<br>",
+            "graticule_steps": "Espacemment entre les lignes<br>",
+            "graticule_dasharray": "Taille des tirets<br>",
+            "generate_labels": "Génération de labels pour cette couche...",
+            "field_label": "Sélection du champ à utiliser"
+        },
+        "lm_buttons":{
+            "zoom+": "Zoom positif",
+            "zoom-": "Zoom négatif",
+            "i": "Information sur l'entité survolée",
+            "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
+            "zoom_rect": "Zoom sur une sélection rectangulaire"
+        },
+        "func_help": {
+            "common": {
+                "params": "Paramètres :"
+            },
+            "choro": {
+                "title": "<b>Carte de ratios</b>",
+                "block": "Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total. Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
+            },
+            "typo": {
+                "title": "<b>Carte qualitative</b>",
+                "block": "Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
+            },
+            "typosymbol": {
+                "title": "<b>Carte qualitative avec utilisation de symboles</b>",
+                "block": "Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
+            },
+            "smooth": {
+                "title": "<b>Carte lissée</b>",
+                "block": "Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit \"de Stewart\") et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.<br><br><b><i>Paramètres</i></b><br><b>Valeur:</b> Le nom du champ contenant les valeurs à utiliser.<br><b>Diviseur (optionnel):</b> Le nom du champ à utiliser pour calculer un ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution:</b><br><b>Type de fonction:</b><br><b>Nombre de classe:</b><br><b>Couche de masquage:</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
+            },
+            "prop": {
+                "title": "<b>Carte de stocks</b>",
+                "block": "Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).<br><br><b><i>Paramètres</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
+            },
+            "discont": {
+                "title": "<b>Carte de discontinuités</b>",
+                "block": "Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que « l’espace géographique est fondamentalement discontinu ».<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le champ contenant les valeurs à utiliser.<br><b>Champ d'ID :</b> Le champ contenant des identifiants uniques permettant d'identifier des tronçons<br><b>Type de discontinuité :</b> Le rapport entre la valeur des deux entités (parmis 'relatif' ou 'absolu').<br><b>Nombre de classes :</b> Le nombre de classe à créer.<br><b>Type de discrétisation :</b> La méthode utilisée pour discrétiser les valeurs.<br><b>Couleur :</b> La couleur utilisé pour représenter les discontinuités."
+            },
+            "grid": {
+                "title": "<b>Carroyage</b>",
+                "block": "La méthode du carroyage est une des possibilités pour essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif. Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en « carreaux égaux et repérés » (Les mots de la géographie).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ à utiliser.<br><b>Taille des carreaux :</b> La taille des carreaux en kilomètres.<br><b>Forme des carreaux :</b><br><b>Palette de couleurs :</b> La palette de couleur à utiliser lors de l'ajout du résultat."
+            },
+            "cartogram": {
+                "title": "<b>Anamorphose</b>",
+                "block": "De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique. Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser<br><Type de symbole :</b> Le type de symbole à utiliser (parmis 'cercle' et 'carré')<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Sur la valeur :</b> Valeur sur laquelle fixer la taille.<br><b>Itérations :</b> Le nombre d'itérations à effectuer avant d'obtenir le résultat.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
+            },
+            "choroprop": {
+                "title": "<b>Carte de stocks et ratios</b>",
+                "block": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).<br><br><b><i>Paramètres</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
+            },
+            "proptypo" :{
+                "title": "<b>Carte de stocks et qualitative/b>",
+                "block": "Ce type de représentation permet d'établir une corrspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle)."
+            },
+            "flow": {
+                "title": "<b>Carte de flux/liens</b>",
+                "block": "Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.<br><br><b><i>Paramètres</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
+            },
+            "label": {
+                "title": "<b>Carte de labels</b>",
+                "block": "Ce type de carte permet de représenter les intitulés correspondants aux entités d'une couche.<br><br><b><i>Paramètre</i></b>"
+            }
+        },
+        "func_options": {
+            "common": {
+                "field": "Champ ",
+                "color": "Couleur",
+                "symbol_circle": "Cercle",
+                "symbol_square": "Carré",
+                "output": "Nom du résultat<br>",
+                "render": "Dessiner le résultat",
+                "discretization_choice": "Choix de la discrétisation"
+            },
+            "smooth": {
+                "field": "Valeur ",
+                "divide_field": "Diviseur ",
+                "span": "Span ",
+                "beta": "Beta ",
+                "resolution": "Resolution (opt.) ",
+                "function": "Type de function ",
+                "func_exponential": "Exponentielle ",
+                "func_pareto": "Pareto ",
+                "nb_class": "Nombre de classes ",
+                "discretization": "Type de discrétisation ",
+                "break_values": "Limites de classes (opt.) ",
+                "mask": "Couche de masquaque (opt.) "
+            },
+            "prop": {
+                "field": "Valeur ",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ... ",
+                "symbol_type": "Type de symbole ",
+                "symbol_circle": "Cercle",
+                "symbol_square": "Carré",
+                "symbol_color": "Couleur du symbole ",
+                "options_one_color": "Une couleur",
+                "options_two_colors": "Deux couleurs",
+                "options_break_two_colors": "Valeur limite "
+            },
+            "typo": {
+                "field": "Champ",
+                "color_choice": "Choix des couleurs "
+            },
+            "choroprop": {
+                "field1": "Valeur 1<br>(taille du symbole) ",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ...",
+                "symbol_type": "Type de symbole ",
+                "field2": "Valeur 2<br>(couleur du symbole) ",
+                "discretization_choice": "Choix de la discrétisation ..."
+            },
+            "flow": {
+                "subtitle1": "Choix des champs à utiliser",
+                "discretization": "Type de discrétisation ",
+                "nb_class": "Nombre de classes ",
+                "nb_class": "Number of class ",
+                "origin_field": "Origin field",
+                "destination_field": "Destination field",
+                "intensity_field": "Intensity field",
+                "ref_layer_field": "Couche géographique de référence",
+                "join_field": "Champ de jointure"
+            },
+            "grid": {
+                "field": "Champ",
+                "cellsize": "Taille des carreaux <i>km</i> ",
+                "shape": "Forme des carreaux ",
+                "coloramp": "Palette de couleurs ",
+                "square": "Carré",
+                "diamond": "Diamant",
+                "hexagon": "Hexagone"
+            },
+            "cartogram": {
+                "algo": " Algorithme à utiliser ",
+                "field": "Champ ",
+                "dougenik_iterations": "Nombre d'itérations",
+                "olson_scale_txt": "Dimensionner la taille de référence sur :",
+                "olson_scale_max_scale": "Modification maximum de la taille des entités ",
+                "olson_scale_max": "Valeur maximum (pas de chevauchement)",
+                "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
+            },
+            "discont": {
+                "field": "Champ à utiliser ",
+                "id_field": "Champ d'ID à conserver ",
+                "type_discontinuity": "Type de discontinuité ",
+                "type_relative": "Relative",
+                "type_absolute": "Absolue",
+                "nb_class": "Nombre de classes ",
+                "discretization": "Type de discrétisation ",
+                "color": "Couleur "
+            },
+            "typosymbol": {
+                "field": "Champ à utiliser ",
+                "symbols_choice": "Choix des symboles"
+            },
+            "label": {
+                "field": "Champ de labels ",
+                "prop_labels": "Labels proportionnels",
+                "font_size": "Taille par défaut ",
+                "font_type": "Type de police ",
+                "color": "Couleur ",
+                "content": "Contenu ",
+                "title_box_indiv": "Option de l'intitulé"
+            },
+            "proptypo": {
+                "field1": "Champ à utiliser<br>(taille du symbole)",
+                "fixed_size": "Taille fixée ",
+                "on_value": "sur la valeur ... ",
+                "symbol_type": "Type de symbole ",
+                "field2": "Champ à utiliser<br>(couleur du symbole)"
+            }
+        }
+    },
+    "disc_box":{
+        "title": "Options de discrétisation",
+        "class": "{{count}} classe",
+        "class_plural": "{{count}} classes",
+        "disp_mean": "Moyenne",
+        "disp_median": "Médiane",
+        "disp_sd": "Écart-type",
+        "disp_rug_pop": "Population",
+        "hist_ref_title": "Distribution des effectifs : histogramme",
+        "hist_ref_title_boxplot": "Distribution des effectifs : Boite à moustaches",
+        "hist_ref_title_beeswarm": "Distribution des effectifs : Beeswarm",
+        "summary": "Résumé",
+        "title_color_scheme": "Choix de la progression de couleurs",
+        "title_break_values": "Choix manuel des limites de classes",
+        "left_colramp": "Palette coté gauche",
+        "right_colramp": "Palette coté droit",
+        "mean": "Moyenne",
+        "median": "Médiane",
+        "line_size": "<b>Taille des segments :</b>",
+        "sequential": "Séquentiel",
+        "diverging": "Divergent",
+        "reverse_palette": "Inverser l'ordre des couleurs",
+        "withnodata": "{{ count }} entité sans valeur",
+        "withnodata_plural": "{{ count }} entités sans valeur",
+        "colored_central_class": "classe centrale colorée",
+        "color_palette": "Palette de couleur ",
+        "break_on": "Rupture de couleur à la classe ",
+        "switch_ref_histo": "Autre représentation"
+    },
+    "index":{
+        "title": "Magrit - Cartographie thématique",
+        "buttons": {
+            "enter": "Démarrer",
+            "resume": "Continuer le projet en cours...",
+            "overview": "Fonctionnalités",
+            "examples": "Exemples",
+            "doc": "Documentation",
+            "dev": "Développement",
+            "start_now": "Démarrer"
+        },
+        "intro_section": {
+            "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
+            "arg2": "<strong>Utilisez votre propres données</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
+            "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
+            "arg4": "<strong>Exportez ou sauvegardez facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
+        },
+        "overview_section": {
+            "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
+            "list_func2": "(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.).",
+            "import1": "Accepte de nombreux formats d'entrée",
+            "customize1": "Personnalisez votre carte selon vos souhaits",
+            "customize2": "(grâce notamment à des nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.).",
+            "export1": "Exporte vos compositions facilement",
+            "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
+            "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
+            "projection1": "Propose un large choix de projections cartographiques",
+            "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
+        },
+        "documentation_section": {
+            "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
+            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application"
+        },
+        "source_section":{
+            "box1_title": "Libre et gratuit",
+            "box2_title": "Ouvert aux contributions",
+            "box3_title": "Contenus traduits/traduisibles",
+            "box4_title": "En developpement actif",
+            "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
+            "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via le <a href=\"/contact\">formulaire de contact</a> et via la plateforme <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
+            "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
+            "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
+        },
+        "cookie_div": {
+            "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",
+            "accept": "J'ai compris",
+            "more_info": "En savoir plus"
+        }
+    },
+    "contact_form": {
+        "send": "Envoyer",
+        "name": "Nom",
+        "email": "E-mail",
+        "subject": "Sujet",
+        "message": "Message",
+        "contact": "Contact",
+        "index": "Acceuil",
+        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">support [at] url [dot] com</span>"
+    }
+}

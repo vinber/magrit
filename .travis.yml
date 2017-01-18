@@ -16,20 +16,22 @@ env:
     - GDALBUILD=$HOME/gdalbuild
 before_install:
   - ./misc/install_gdal.sh
-  - export PATH=$GDALINST/gdal-2.1.0/bin:$PATH
-  - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.0/lib:$LD_LIBRARY_PATH
+  - export PATH=$GDALINST/gdal-2.1.2/bin:$PATH
+  - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.2/lib:$LD_LIBRARY_PATH
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
 install:
   - npm -g install topojson
   - pip install --upgrade "setuptools>=25.1" pip
-  - ./misc/install_deps.sh
   - pip install -r requirements-dev.txt
   - python setup.py install
+# before_script:
+#   - magrit -p 9999
+#   - sleep 10
 script:
-  - noname_app --help
-  - py.test tests/test.py
+  - magrit --help
+  - py.test tests/test.py -p no:flaky
 addons:
   apt:
     sources:
@@ -40,10 +42,12 @@ addons:
       - libopenblas-base
       - libopenblas-dev
       - gdal-bin
-      - libuv1-dev
+      - libuv-dev
       - libgdal-dev
       - libproj-dev
       - libspatialindex-dev
+      - libfreetype6
+      - libfreetype6-dev
       - libv8-3.14-dev
       - libffi-dev
       - redis-server
@@ -51,4 +55,6 @@ addons:
       - nodejs-dev
       - node-gyp
       - npm
-      - libfftw3-dev
+      - libxslt1-dev
+      - libxml2
+      - libxml2-dev

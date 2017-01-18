@@ -3,23 +3,25 @@
 """
 @author: mthh
 """
+import os
 import pytest
 import ujson as json
 #import subprocess
 #import time
-from noname_app.noname_aio import rawcsv_to_geo
-from noname_app.helpers.topo_to_geo import convert_from_topo
-from noname_app.helpers.geo import check_projection
+from magrit_app.app import rawcsv_to_geo, _init
+from magrit_app.helpers.topo_to_geo import convert_from_topo
+from magrit_app.helpers.geo import check_projection
+from aiohttp import FormData
+from aiohttp.test_utils import make_mocked_request
 #from selenium import webdriver
 pytest_plugins = 'aiohttp.pytest_plugin'
 
 
 @pytest.fixture
 def read_topo():
-    with open("database/topojson/simplified_land_polygons.topojson", "r") as f:
+    with open("magrit_app/static/data_sample/simplified_land_polygons.topojson", "r") as f:
         data = json.loads(f.read())
     return data
-
 
 @pytest.fixture
 def read_verif_topo():
@@ -33,69 +35,86 @@ def read_csv():
         data_csv = f.read()
     return data_csv
 
-async def test_convert_csv(read_csv):
+@pytest.fixture
+def cli(loop, test_client):
+    app = loop.run_until_complete(_init(loop))
+    app.on_shutdown.pop()
+    return loop.run_until_complete(test_client(app))
+
+async def test_convert_csv_to_geo(read_csv):
+    print("abc")
     res = await rawcsv_to_geo(read_csv)
     "FeatureCollection" in res
 
 def test_convert_from_topo(read_topo, read_verif_topo):
+    print("abc")
     assert json.loads(json.dumps(convert_from_topo(read_topo))) \
             == read_verif_topo
 
 def test_check_proj4_string():
+    print("abc")
     assert check_projection("foobar") is False
     assert check_projection("epsg:3035") == '+init=epsg:3035'
     assert check_projection("epsg:12345") is False
 
+async def test_calc_helper_float(cli):
+   data = {
+       "var1": "[1.32,2.36,3.36,4.78,5.45,6.98]",
+       "var2": "[6.1,5.2,4.3,3.4,2.5,1.6]",
+       "operator": "/"
+   }
+   resp = await cli.post('/helpers/calc', data=data)
+   assert resp.status == 200
+   assert await resp.text() \
+       == '[0.2163934426,0.4538461538,0.7813953488,1.4058823529,2.18,4.3625]'
 
-#@pytest.fixture
-#def cli(loop, test_client):
-#    return loop.run_until_complete(test_client(
-#        create_app, loop, "12345", 1))
-#
-#
-#async def test_get_pages(cli):
-#    resp = await cli.get('/')
-#    assert resp.status == 200
-#    content = await resp.text()
-#    assert "GeoPossum" in content
-#
-#    resp = await cli.get('/modules')
-#    assert resp.status == 200
-#    content = await resp.text()
-#    assert "Add your data" in content
-#
-#    resp = await cli.get('/about')
-#    assert resp.status == 200
-#    content = await resp.text()
-#    assert "<html>" in content
-#
-#
-#async def test_calc_helper_int(cli):
-#    data = {
-#        "var1": "[1, 2, 3, 4, 5, 6]",
-#        "var2": "[6, 5, 4, 3, 2, 1]",
-#        "operator": "+"
-#    }
-#    resp = await cli.post('/helpers/calc', data=data)
-#    assert resp.status == 200
-#    assert await resp.text() == '[7,7,7,7,7,7]'
-#
-#    data = {
-#        "var1": "[1, 2, 3, 4, 5, 6]",
-#        "var2": "[6, 5, 4, 3, 2, 1]",
-#        "operator": "^"
-#    }
-#    resp = await cli.post('/helpers/calc', data=data)
-#    assert resp.status == 200
-#    assert await resp.text() == '[1,32,81,64,25,6]'
-#
-#async def test_calc_helper_float(cli):
-#    data = {
-#        "var1": "[1.32,2.36,3.36,4.78,5.45,6.98]",
-#        "var2": "[6.1,5.2,4.3,3.4,2.5,1.6]",
-#        "operator": "/"
-#    }
-#    resp = await cli.post('/helpers/calc', data=data)
-#    assert resp.status == 200
-#    assert await resp.text() \
-#        == '[0.2163934426,0.4538461538,0.7813953488,1.4058823529,2.18,4.3625]'
+async def test_calc_helper_int(cli):
+   data = {
+       "var1": "[1, 2, 3, 4, 5, 6]",
+       "var2": "[6, 5, 4, 3, 2, 1]",
+       "operator": "+"
+   }
+   resp = await cli.post('/helpers/calc', data=data)
+   assert resp.status == 200
+   assert await resp.text() == '[7,7,7,7,7,7]'
+
+   data = {
+       "var1": "[1, 2, 3, 4, 5, 6]",
+       "var2": "[6, 5, 4, 3, 2, 1]",
+       "operator": "^"
+   }
+   resp = await cli.post('/helpers/calc', data=data)
+   assert resp.status == 200
+   assert await resp.text() == '[1,32,81,64,25,6]'
+
+async def test_get_pages(cli):
+   resp = await cli.get('/')
+   assert resp.status == 200
+   content = await resp.text()
+   assert "Magrit" in content
+
+   resp = await cli.get('/modules')
+   assert resp.status == 200
+   content = await resp.text()
+   assert "<html>" in content
+
+   resp = await cli.get('/contact')
+   assert resp.status == 200
+   content = await resp.text()
+   assert "<title>Magrit - Contact</title>" in content
+
+   resp = await cli.get('/abcde')
+   assert resp.status == 404
+   content = await resp.text()
+
+# async def test_convert_tabular(cli):
+#     data = FormData()
+#     data.add_field('action', 'submit_form')
+#     data.add_field('file[]',
+#                    open('../magrit_app/static/data_sample/martinique_data.xlsx', 'rb'),
+#                    filename='martinique_data.xlsx',
+#                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#     resp = await cli.post('/convert_tabular', data=data)
+#     resp = json.loads(resp)
+#     assert resp["name"] == "martinique_data"
+#     assert resp["message"] == None

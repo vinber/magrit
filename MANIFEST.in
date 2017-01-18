@@ -1,4 +1,4 @@
 include LICENCE
 include notes_readme.md
-recursive-include noname_app/static *
-recursive-include noname_app/templates *
+recursive-include magrit_app/static *
+recursive-include magrit_app/templates *

@@ -16,6 +16,9 @@ downloads/
 eggs/
 .eggs/
 
+# Virtual environnements
+venv/
+
 # lib/ dont exclude lib to grab JS libs
 lib64/
 parts/
