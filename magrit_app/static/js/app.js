@@ -7621,6 +7621,35 @@ function handle_dataset(f) {
     }
 }
 
+function update_menu_dataset() {
+    var d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
+        nb_features = joined_dataset[0].length,
+        field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
+
+    d3.select("#img_data_ext").attrs({ "id": "img_data_ext",
+        "class": "user_panel",
+        "src": "/static/img/b/tabular.svg",
+        "width": "26", "height": "26",
+        "alt": "Additional dataset" });
+
+    d3.select('#data_ext').attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features })].join('')).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
+    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+
+    document.getElementById("remove_dataset").onclick = function () {
+        remove_ext_dataset();
+    };
+    document.getElementById("remove_dataset").onmouseover = function () {
+        this.style.opacity = 1;
+    };
+    document.getElementById("remove_dataset").onmouseout = function () {
+        this.style.opacity = 0.5;
+    };
+    if (targeted_layer_added) {
+        valid_join_check_display(false);
+        document.getElementById('sample_zone').style.display = "none";
+    }
+}
+
 /**
 *
 *
@@ -7656,34 +7685,10 @@ function add_dataset(readed_dataset) {
             }
         }
     }
-
     joined_dataset.push(readed_dataset);
-    var d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
-        nb_features = joined_dataset[0].length,
-        field_names = Object.getOwnPropertyNames(readed_dataset[0]);
 
-    d3.select("#img_data_ext").attrs({ "id": "img_data_ext",
-        "class": "user_panel",
-        "src": "/static/img/b/tabular.svg",
-        "width": "26", "height": "26",
-        "alt": "Additional dataset" });
+    update_menu_dataset();
 
-    d3.select('#data_ext').attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features })].join('')).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
-    document.getElementById("remove_dataset").onclick = function () {
-        remove_ext_dataset();
-    };
-    document.getElementById("remove_dataset").onmouseover = function () {
-        this.style.opacity = 1;
-    };
-    document.getElementById("remove_dataset").onmouseout = function () {
-        this.style.opacity = 0.5;
-    };
-    if (targeted_layer_added) {
-        valid_join_check_display(false);
-        //        document.getElementById("join_button").disabled = false;
-        document.getElementById('sample_zone').style.display = "none";
-    }
     if (current_functionnality && current_functionnality.name == "flow") fields_handler.fill();
 
     if (targeted_layer_added) {
@@ -11782,7 +11787,6 @@ function get_map_template() {
         } else if (type_lgd == 'legend_root2') {
             result['nested_symbols'] = lgd_node.getAttribute('nested');
         }
-        console.log(result);
         return result;
     }
 
@@ -11805,6 +11809,12 @@ function get_map_template() {
             "y": map_title.getElementsByTagName('text')[0].getAttribute("y"),
             "style": map_title.getElementsByTagName('text')[0].getAttribute("style")
         };
+    }
+
+    // Save the provided dataset if it wasn't joined to the geo layer :
+    if (joined_dataset.length > 0 && field_join_map.length == 0) {
+        map_config.joined_dataset = joined_dataset[0];
+        map_config.dataset_name = dataset_name;
     }
 
     map_config.layout_features = {};
@@ -12202,7 +12212,7 @@ function apply_user_preferences(json_pref) {
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
-    // Set the variables/fields related to the projeciton :
+    // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
     s = map_config.projection_scale;
@@ -12224,6 +12234,14 @@ function apply_user_preferences(json_pref) {
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
     document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
+
+    // Reload the external (not-joined) dataset if there is one :
+    if (map_config.joined_dataset) {
+        field_join_map = [];
+        joined_dataset = [map_config.joined_dataset.slice()];
+        dataset_name = map_config.dataset_name;
+        update_menu_dataset();
+    }
 
     // Add each layer :
 
@@ -12281,19 +12299,27 @@ function apply_user_preferences(json_pref) {
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
-                        layer_selec.selectAll("path").style('stroke', _layer.fill_color.single).style("stroke-width", function (d, i) {
-                            return current_layer_prop.linksbyId[i][2];
-                        });
-                    } else if (_layer.renderer == "DiscLayer") {
-                        current_layer_prop.min_display = _layer.min_display;
-                        current_layer_prop.breaks = _layer.breaks;
-                        layer_selec.selectAll("path").styles(function (d) {
+                        layer_selec.selectAll("path").styles(function (d, i) {
                             return {
-                                fill: "none",
+                                display: +d.properties.fij > _layer.min_display ? null : "none",
                                 stroke: _layer.fill_color.single,
-                                'stroke-width': d.properties.prop_val
+                                'stroke-width': current_layer_prop.linksbyId[i][2]
                             };
                         });
+                    } else if (_layer.renderer == "DiscLayer") {
+                        (function () {
+                            current_layer_prop.min_display = _layer.min_display || 0;
+                            current_layer_prop.breaks = _layer.breaks;
+                            var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
+                            layer_selec.selectAll("path").styles(function (d) {
+                                return {
+                                    fill: "none",
+                                    stroke: _layer.fill_color.single,
+                                    display: _i9 <= lim ? null : 'none',
+                                    'stroke-width': d.properties.prop_val
+                                };
+                            });
+                        })();
                     } else if (_layer.renderer && _layer.renderer.startsWith("Categorical")) {
                         var rendering_params = {
                             colorByFeature: _layer.color_by_id,
@@ -12310,6 +12336,8 @@ function apply_user_preferences(json_pref) {
                     layer_selec.selectAll('path').style("fill", function () {
                         return Colors.names[Colors.random()];
                     });
+                } else if (_layer.fill_color.single) {
+                    layer_selec.selectAll('path').style("fill", _layer.fill_color.single);
                 }
                 layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
                 if (_layer.visible == 'hidden') {

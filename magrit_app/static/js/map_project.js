@@ -27,7 +27,6 @@ function get_map_template(){
         } else if (type_lgd == 'legend_root2') {
             result['nested_symbols'] = lgd_node.getAttribute('nested');
         }
-        console.log(result);
         return result;
     }
 
@@ -50,6 +49,12 @@ function get_map_template(){
             "y": map_title.getElementsByTagName('text')[0].getAttribute("y"),
             "style": map_title.getElementsByTagName('text')[0].getAttribute("style")
             };
+    }
+
+    // Save the provided dataset if it wasn't joined to the geo layer :
+    if(joined_dataset.length > 0 && field_join_map.length == 0){
+        map_config.joined_dataset = joined_dataset[0];
+        map_config.dataset_name = dataset_name;
     }
 
     map_config.layout_features = {};
@@ -237,7 +242,7 @@ function get_map_template(){
             layers_style[i].breaks = current_layers[layer_name].breaks;
             layers_style[i].topo_geom = String(current_layers[layer_name].key_name);
             if(current_layers[layer_name].renderer == "Links"){
-                layers_style[i].linksbyId = current_layers[layer_name].linksbyId.slice(0, nb_ft)
+                layers_style[i].linksbyId = current_layers[layer_name].linksbyId.slice(0, nb_ft);
             }
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
@@ -452,7 +457,7 @@ function apply_user_preferences(json_pref){
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
-    // Set the variables/fields related to the projeciton :
+    // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
     s = map_config.projection_scale;
@@ -470,6 +475,14 @@ function apply_user_preferences(json_pref){
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
     document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
+
+    // Reload the external (not-joined) dataset if there is one :
+    if(map_config.joined_dataset){
+        field_join_map = [];
+        joined_dataset = [map_config.joined_dataset.slice()];
+        dataset_name = map_config.dataset_name;
+        update_menu_dataset();
+    }
 
     // Add each layer :
     for(let i = map_config.n_layers - 1; i > -1; --i){
@@ -533,15 +546,20 @@ function apply_user_preferences(json_pref){
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
                         layer_selec.selectAll("path")
-                            .style('stroke', _layer.fill_color.single)
-                            .style("stroke-width", (d,i) => current_layer_prop.linksbyId[i][2]);
+                            .styles( (d,i) => ({
+                                display: (+d.properties.fij > _layer.min_display) ? null : "none",
+                                stroke: _layer.fill_color.single,
+                                'stroke-width': current_layer_prop.linksbyId[i][2]
+                            }));
                     } else if (_layer.renderer == "DiscLayer"){
-                        current_layer_prop.min_display = _layer.min_display;
+                        current_layer_prop.min_display = _layer.min_display || 0;
                         current_layer_prop.breaks = _layer.breaks;
+                        let lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
                         layer_selec.selectAll("path")
                             .styles(d => ({
                                 fill: "none",
                                 stroke: _layer.fill_color.single,
+                                display: i <= lim ? null : 'none',
                                 'stroke-width': d.properties.prop_val
                             }));
                     } else if (_layer.renderer && _layer.renderer.startsWith("Categorical")){
@@ -552,14 +570,18 @@ function apply_user_preferences(json_pref){
                               renderer: "Categorical"
                           };
                           render_categorical(layer_name, rendering_params);
-                  }
-                  if(_layer.legend){
-                      rehandle_legend(layer_name, _layer.legend);
-                  }
+                    }
+                    if(_layer.legend){
+                        rehandle_legend(layer_name, _layer.legend);
+                    }
                 } else if(_layer.fill_color.random) {
-                        layer_selec
-                            .selectAll('path')
-                            .style("fill", () => Colors.names[Colors.random()]);
+                      layer_selec
+                          .selectAll('path')
+                          .style("fill", () => Colors.names[Colors.random()]);
+                } else if(_layer.fill_color.single){
+                  layer_selec
+                      .selectAll('path')
+                      .style("fill", _layer.fill_color.single);
                 }
                 layer_selec.selectAll('path')
                     .styles({'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
