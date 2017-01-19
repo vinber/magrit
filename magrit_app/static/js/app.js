@@ -7909,8 +7909,10 @@ function add_layer_topojson(text, options) {
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
     up_legends();
     handleClipPath(current_proj_name);
-    zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
+    if (!skip_rescale) {
+        zoom_without_redraw();
+    }
 
     if (!skip_alert) {
         swal({ title: "",
@@ -8283,10 +8285,9 @@ function add_simplified_land_layer() {
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
-    var background = map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", options.stroke_width);
 
     d3.json("/static/data_sample/simplified_land_polygons.topojson", function (error, json) {
-        background.selectAll('.subunit').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
         current_layers["Simplified_land_polygons"] = {
             "type": "Polygon",
@@ -11884,6 +11885,7 @@ function get_map_template() {
                     content: inner_p.innerHTML,
                     fontFamily: inner_p.style.fontFamily,
                     fontSize: inner_p.style.fontSize,
+                    color: inner_p.style.color,
                     position_x: ft.x.baseVal.value,
                     position_y: ft.y.baseVal.value
                 });
@@ -12091,18 +12093,11 @@ function load_map_template() {
 }
 
 function apply_user_preferences(json_pref) {
-    var preferences = JSON.parse(json_pref),
-        map_config = preferences.map_config,
-        layers = preferences.layers;
-    var a = document.getElementById("overlay");
-    a.style.display = "";
-    a.querySelector("button").style.display = "none";
-
     {
         var _l = void 0,
             _ll = void 0;
         // Remove current layers and legedn/layout features from the map :
-        _l = svg_map.getElementsByTagName("g");_ll = _l.length;
+        _l = svg_map.childNodes;_ll = _l.length;
         for (var i = _ll - 1; i > -1; i--) {
             _l[i].remove();
         }
@@ -12111,7 +12106,15 @@ function apply_user_preferences(json_pref) {
         for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
             _l[_i4].remove();
         }
+        // Remove them from the object where we are storing the main properties :
     }
+
+    var preferences = JSON.parse(json_pref),
+        map_config = preferences.map_config,
+        layers = preferences.layers;
+    var a = document.getElementById("overlay");
+    a.style.display = "";
+    a.querySelector("button").style.display = "none";
 
     var g_timeout = void 0;
     var set_final_param = function set_final_param() {
@@ -12136,7 +12139,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 1250);
+        }, 1200);
     };
 
     function apply_layout_lgd_elem() {
@@ -12196,6 +12199,7 @@ function apply_user_preferences(json_pref) {
                     inner_p.innerHTML = _ft3.content;
                     inner_p.style.fontFamily = _ft3.fontFamily;
                     inner_p.style.fontSize = _ft3.fontSize;
+                    inner_p.style.color = _ft3.color;
                 }
             }
             if (map_config.layout_features.single_symbol) {
@@ -12310,11 +12314,11 @@ function apply_user_preferences(json_pref) {
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
-                        layer_selec.selectAll("path").styles(function (d, i) {
+                        layer_selec.selectAll("path").styles(function (d, j) {
                             return {
                                 display: +d.properties.fij > _layer.min_display ? null : "none",
                                 stroke: _layer.fill_color.single,
-                                'stroke-width': current_layer_prop.linksbyId[i][2]
+                                'stroke-width': current_layer_prop.linksbyId[j][2]
                             };
                         });
                     } else if (_layer.renderer == "DiscLayer") {
@@ -12322,11 +12326,11 @@ function apply_user_preferences(json_pref) {
                             current_layer_prop.min_display = _layer.min_display || 0;
                             current_layer_prop.breaks = _layer.breaks;
                             var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
-                            layer_selec.selectAll("path").styles(function (d) {
+                            layer_selec.selectAll("path").styles(function (d, j) {
                                 return {
                                     fill: "none",
                                     stroke: _layer.fill_color.single,
-                                    display: _i9 <= lim ? null : 'none',
+                                    display: j <= lim ? null : 'none',
                                     'stroke-width': d.properties.prop_val
                                 };
                             });
@@ -12443,9 +12447,9 @@ function apply_user_preferences(json_pref) {
                     };
 
                     // Add the features at there original positions :
-                    map.append("g").attrs({ id: layer_name, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, i) {
+                    map.append("g").attrs({ id: layer_name, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
                         var symb = symbols_map.get(d.properties.symbol_field),
-                            prop = prop = _layer.current_state[i],
+                            prop = prop = _layer.current_state[j],
                             coords = prop.pos;
                         return {
                             "x": coords[0] - symb[1] / 2,
@@ -12454,8 +12458,8 @@ function apply_user_preferences(json_pref) {
                             "height": prop.size,
                             "xlink:href": symb[0]
                         };
-                    }).style('display', function (d, i) {
-                        return _layer.current_state[i].display;
+                    }).style('display', function (d, j) {
+                        return _layer.current_state[j].display;
                     }).on("mouseover", function () {
                         this.style.cursor = "pointer";
                     }).on("mouseout", function () {
