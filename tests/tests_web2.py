@@ -136,8 +136,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         chromeOptions = webdriver.ChromeOptions()
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory" : self.tmp_folder})
-        # self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
-        self.driver = webdriver.Firefox()
+        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
+        #self.driver = webdriver.Firefox()
         self.driver.set_window_size(1600, 900)
         self.driver.implicitly_wait(5)
         self.base_url = "http://localhost:{}/modules".format(port)
@@ -435,7 +435,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.3)
         driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
         driver.find_element_by_css_selector(
-            "input[value=\"NewFieldName\"]").send_keys("Country")
+            "input[value=\"NewFieldName\"]").send_keys("Pays")
 
         # One categorical field (country) obtained by truncating ids of nuts2 features :
         Select(driver.find_element_by_css_selector(
@@ -456,10 +456,14 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.open_menu_section(2)
         self.clickWaitTransition("#button_typo")
         Select(driver.find_element_by_id("Typo_field_1")
-            ).select_by_value("Country")
+            ).select_by_value("Pays")
         time.sleep(0.1)
         self.click_element_with_retry("#Typo_class")
-        time.sleep(1)
+
+        # Confirm the fact that there is a lot of features for this kind of representation :
+        self.waitClickButtonSwal()
+
+        # Valid with the random colors selected for each category :
         self.click_element_with_retry(".btn_ok")
         driver.find_element_by_id("Typo_yes").click()
 

@@ -884,8 +884,10 @@ function add_layer_topojson(text, options){
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
     up_legends();
     handleClipPath(current_proj_name);
-    zoom_without_redraw();
     binds_layers_buttons(lyr_name_to_add);
+    if(!skip_rescale){
+      zoom_without_redraw();
+    }
 
     if(!skip_alert){
         swal({title: "",
@@ -1286,18 +1288,18 @@ function add_simplified_land_layer(options = {}){
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
-    let background = map.append("g")
-                        .attrs({id: "Simplified_land_polygons", class: "layer"})
-                        .style("stroke-width", options.stroke_width);
 
     d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
-        background.selectAll('.subunit')
-                  .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
-                  .enter()
-                  .append('path')
-                  .attr("d", path)
-                  .styles({stroke: options.stroke, fill: options.fill,
-                           "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
+        map.append("g")
+            .attrs({id: "Simplified_land_polygons", class: "layer"})
+            .style("stroke-width", options.stroke_width)
+            .selectAll('.subunit')
+            .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+            .enter()
+            .append('path')
+            .attr("d", path)
+            .styles({stroke: options.stroke, fill: options.fill,
+                     "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         current_layers["Simplified_land_polygons"] = {
             "type": "Polygon",
             "n_features":125,

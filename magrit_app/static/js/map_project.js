@@ -116,6 +116,7 @@ function get_map_template(){
                     content: inner_p.innerHTML,
                     fontFamily: inner_p.style.fontFamily,
                     fontSize: inner_p.style.fontSize,
+                    color: inner_p.style.color,
                     position_x: ft.x.baseVal.value,
                     position_y: ft.y.baseVal.value,
                 });
@@ -330,22 +331,23 @@ function load_map_template(){
 }
 
 function apply_user_preferences(json_pref){
+    {
+      let _l, _ll;
+      // Remove current layers and legedn/layout features from the map :
+      _l = svg_map.childNodes;  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+      // Remove them from the layer manager too :
+      _l = layer_list.node().childNodes;  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+      // Remove them from the object where we are storing the main properties :
+    }
+
     let preferences = JSON.parse(json_pref),
         map_config = preferences.map_config,
         layers = preferences.layers;
         let a = document.getElementById("overlay");
         a.style.display = "";
         a.querySelector("button").style.display = "none";
-
-    {
-      let _l, _ll;
-      // Remove current layers and legedn/layout features from the map :
-      _l = svg_map.getElementsByTagName("g");  _ll = _l.length;
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // Remove them from the layer manager too :
-      _l = layer_list.node().childNodes;  _ll = _l.length;
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-    }
 
     let g_timeout;
     let set_final_param = () => {
@@ -368,7 +370,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 1250);
+        }, 1200);
     };
 
     function apply_layout_lgd_elem(){
@@ -428,6 +430,7 @@ function apply_user_preferences(json_pref){
                     inner_p.innerHTML = ft.content;
                     inner_p.style.fontFamily = ft.fontFamily;
                     inner_p.style.fontSize = ft.fontSize;
+                    inner_p.style.color = ft.color;
                 }
             }
             if(map_config.layout_features.single_symbol){
@@ -550,20 +553,20 @@ function apply_user_preferences(json_pref){
                         current_layer_prop.min_display = _layer.min_display;
                         current_layer_prop.breaks = _layer.breaks;
                         layer_selec.selectAll("path")
-                            .styles( (d,i) => ({
+                            .styles( (d,j) => ({
                                 display: (+d.properties.fij > _layer.min_display) ? null : "none",
                                 stroke: _layer.fill_color.single,
-                                'stroke-width': current_layer_prop.linksbyId[i][2]
+                                'stroke-width': current_layer_prop.linksbyId[j][2]
                             }));
                     } else if (_layer.renderer == "DiscLayer"){
                         current_layer_prop.min_display = _layer.min_display || 0;
                         current_layer_prop.breaks = _layer.breaks;
                         let lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
                         layer_selec.selectAll("path")
-                            .styles(d => ({
+                            .styles( (d,j) => ({
                                 fill: "none",
                                 stroke: _layer.fill_color.single,
-                                display: i <= lim ? null : 'none',
+                                display: j <= lim ? null : 'none',
                                 'stroke-width': d.properties.prop_val
                             }));
                     } else if (_layer.renderer && _layer.renderer.startsWith("Categorical")){
@@ -679,9 +682,9 @@ function apply_user_preferences(json_pref){
                   .selectAll("image")
                   .data(new_layer_data.features).enter()
                   .insert("image")
-                  .attrs( (d,i) => {
+                  .attrs( (d,j) => {
                     let symb = symbols_map.get(d.properties.symbol_field),
-                        prop = prop = _layer.current_state[i],
+                        prop = prop = _layer.current_state[j],
                         coords = prop.pos;
                     return {
                       "x": coords[0] - symb[1] / 2,
@@ -690,7 +693,7 @@ function apply_user_preferences(json_pref){
                       "height": prop.size,
                       "xlink:href": symb[0]
                     };
-                  }).style('display', (d,i) => _layer.current_state[i].display)
+                  }).style('display', (d,j) => _layer.current_state[j].display)
                   .on("mouseover", function(){ this.style.cursor = "pointer";})
                   .on("mouseout", function(){ this.style.cursor = "initial";})
                   .on("contextmenu dblclick", function(){
