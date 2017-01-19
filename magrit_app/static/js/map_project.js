@@ -23,7 +23,8 @@ function get_map_template(){
             }
         if(type_lgd == 'legend_root'){
             result['box_gap'] = lgd_node.getAttribute('box_gap');
-            // result['no_data_txt'] = lgd_node.getAttribute('no_data_txt');
+            let no_data = lgd_node.querySelector('#no_data_txt');
+            if(no_data) result['no_data_txt'] = no_data.innerHTML;
         } else if (type_lgd == 'legend_root2') {
             result['nested_symbols'] = lgd_node.getAttribute('nested');
         }
@@ -246,7 +247,8 @@ function get_map_template(){
             }
         } else if (current_layers[layer_name].renderer == "TypoSymbols"){
             selection = map.select("#" + layer_name).selectAll("image")
-            layers_style[i].symbols_map = JSON.parse(JSON.stringify([...current_layers[layer_name].symbols_map]));
+            layers_style[i].renderer = current_layers[layer_name].renderer;
+            layers_style[i].symbols_map = [...current_layers[layer_name].symbols_map];
             layers_style[i].rendered_field = current_layers[layer_name].rendered_field;
             layers_style[i].ref_layer_name = current_layers[layer_name].ref_layer_name;
 
@@ -533,6 +535,8 @@ function apply_user_preferences(json_pref){
                     current_layer_prop.size = _layer.size;
                 if(_layer.colors_breaks)
                     current_layer_prop.colors_breaks = _layer.colors_breaks;
+                if(_layer.options_disc)
+                    current_layer_prop.options_disc = _layer.options_disc;
                 if(_layer.fill_color)
                     current_layer_prop.fill_color = _layer.fill_color;
                 if(_layer.renderer){
@@ -574,14 +578,16 @@ function apply_user_preferences(json_pref){
                     if(_layer.legend){
                         rehandle_legend(layer_name, _layer.legend);
                     }
+                }
+
+                if(_layer.fill_color.single){
+                  layer_selec
+                      .selectAll('path')
+                      .style("fill", _layer.fill_color.single);
                 } else if(_layer.fill_color.random) {
                       layer_selec
                           .selectAll('path')
                           .style("fill", () => Colors.names[Colors.random()]);
-                } else if(_layer.fill_color.single){
-                  layer_selec
-                      .selectAll('path')
-                      .style("fill", _layer.fill_color.single);
                 }
                 layer_selec.selectAll('path')
                     .styles({'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
@@ -654,6 +660,57 @@ function apply_user_preferences(json_pref){
                   font: _layer.default_font
               };
               render_label(null, rendering_params, {data: _layer.data_labels});
+          } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")){
+              let symbols_map = new Map(_layer.symbols_map);
+              let new_layer_data = {
+                 type: "FeatureCollection",
+                 features: _layer.current_state.map(d => d.data)
+              };
+
+              let nb_features = new_layer_data.features.length;
+              let context_menu = new ContextMenu(),
+                  getItems = (self_parent) => [
+                      {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
+                      {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
+              ];
+
+              // Add the features at there original positions :
+              map.append("g").attrs({id: layer_name, class: "layer"})
+                  .selectAll("image")
+                  .data(new_layer_data.features).enter()
+                  .insert("image")
+                  .attrs( (d,i) => {
+                    let symb = symbols_map.get(d.properties.symbol_field),
+                        prop = prop = _layer.current_state[i],
+                        coords = prop.pos;
+                    return {
+                      "x": coords[0] - symb[1] / 2,
+                      "y": coords[1] - symb[1] / 2,
+                      "width": prop.size,
+                      "height": prop.size,
+                      "xlink:href": symb[0]
+                    };
+                  }).style('display', (d,i) => _layer.current_state[i].display)
+                  .on("mouseover", function(){ this.style.cursor = "pointer";})
+                  .on("mouseout", function(){ this.style.cursor = "initial";})
+                  .on("contextmenu dblclick", function(){
+                      context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                      })
+                  .call(drag_elem_geo);
+
+              create_li_layer_elem(layer_name, nb_features, ["Point", "symbol"], "result");
+              current_layers[layer_name] = {
+                  "n_features": nb_features,
+                  "renderer": "TypoSymbols",
+                  "symbols_map": symbols_map,
+                  "rendered_field": _layer.rendered_field,
+                  "is_result": true,
+                  "symbol": "image",
+                  "ref_layer_name": _layer.ref_layer_name
+                  };
+              if(_layer.legend){
+                  rehandle_legend(layer_name, _layer.legend);
+              }
           } else {
               null;
           }
@@ -693,7 +750,7 @@ function rehandle_legend(layer_name, properties){
     for(let i = 0; i < properties.length; i++){
         let prop = properties[i];
         if(prop.type == 'legend_root'){
-            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision);
+            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision, prop.no_data_txt);
         } else if(prop.type == 'legend_root2') {
             createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision);
         } else if(prop.type == 'legend_root_links'){

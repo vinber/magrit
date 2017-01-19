@@ -456,7 +456,17 @@ var fields_PropSymbolChoro = {
                 vals = user_data[layer].map(a => +a[field_name]);
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_propsymbolchoro"));
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
-            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+            if(self.rendering_params[field_name] !== undefined){
+                ok_button.attr('disabled', null);
+                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                choro_mini_choice_disc.html(
+                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+            } else {
+                ok_button.attr('disabled', true);
+                img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                choro_mini_choice_disc.html('');
+            }
+
         });
 
         ico_jenks.on('click', function(){
