@@ -135,6 +135,10 @@ def reproj_layer(geojson, output_crs, input_crs="epsg:4326"):
 
 
 def check_projection(proj4string):
+    if not isinstance(proj4string, str):
+        return False
+    if proj4string[0] == '"' and proj4string[len(proj4string) - 1] == '"':
+        proj4string = proj4string[1:len(proj4string) - 1]
     if "epsg:" in proj4string[:5]:
         proj4string = "".join(["+init=", proj4string])
     try:

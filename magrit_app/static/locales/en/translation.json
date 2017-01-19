@@ -20,6 +20,7 @@
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
+            "error_proj4_string": "Error : unrecognized projection definition",
             "error_type_fields": "The targeted layer doesn't seems to the suitable fields for this representation (or they may contain too many empty values)",
             "error_too_many_features": "Very many features. Navigation ease might be degraded.",
             "error_too_many_features_color": "Very many features. The high number of colors may affect the readability of the map.",

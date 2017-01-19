@@ -10,6 +10,7 @@ from random import choice
 from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
 from mmh3 import hash as mmh3_hash
+from ujson import dumps as json_dumps
 
 try:
     from .cy_misc import get_name
@@ -20,6 +21,13 @@ LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
              113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
 
+def run_calc(val1, val2, operator):
+    result = {
+        "+": val1.__add__, "-": val1.__sub__,
+        "*": val1.__mul__, "/": val1.__truediv__,
+        "^": val1.__pow__
+        }[operator](val2).tolist()
+    return json_dumps(result)
 
 class TimedCall(ContextDecorator):
     def __init__(self, prefix=None):
