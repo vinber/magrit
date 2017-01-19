@@ -122,19 +122,19 @@ function add_field_table(table, layer_name, parent){
     function refresh_type_content(type){
         field1.node().remove(); operator.node().remove(); field2.node().remove();
         field1 = div1.append("select")
-                    .on("change", function(){ chooses_handler.field1 = this.value; });
+            .on("change", function(){ chooses_handler.field1 = this.value; });
         operator = div1.append("select")
-                    .on("change", function(){
-                        chooses_handler.operator=this.value;
-                        refresh_subtype_content(chooses_handler.type_operation, this.value);
-                        });
+            .on("change", function(){
+                chooses_handler.operator=this.value;
+                refresh_subtype_content(chooses_handler.type_operation, this.value);
+              });
         field2 = div1.append("select")
-                    .on("change", function(){
-                        chooses_handler.field2 = this.value;
-                        if(this.value == "user_const_value"){
-                            val_opt.style("display", null);
-                        }
-                    });
+            .on("change", function(){
+                chooses_handler.field2 = this.value;
+                if(this.value == "user_const_value"){
+                    val_opt.style("display", null);
+                }
+            });
         if(type == "math_compute"){
             math_operation.forEach(function(op){ operator.append("option").text(op).attr("value", op); })
             for(let k in fields_type){
@@ -224,14 +224,17 @@ function add_field_table(table, layer_name, parent){
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 
-    var new_name = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_name"))
-                            .insert("input").attr('value', 'NewFieldName')
-                            .on("keyup", check_name);
-    var type_content = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_content"))
-                            .insert("select").attr("id", "type_content_select")
-                            .on("change", function(){
-                                chooses_handler.type_operation = this.value;
-                                refresh_type_content(this.value); });
+    var new_name = div1.append("p")
+        .html(i18next.t("app_page.explore_box.add_field_box.new_name"))
+        .insert("input").attr('value', 'NewFieldName')
+        .on("keyup", check_name);
+    var type_content = div1.append("p")
+        .html(i18next.t("app_page.explore_box.add_field_box.new_content"))
+        .insert("select").attr("id", "type_content_select")
+        .on("change", function(){
+            chooses_handler.type_operation = this.value;
+            refresh_type_content(this.value);
+        });
 
     [[i18next.t("app_page.explore_box.add_field_box.between_numerical"), "math_compute"],
      [i18next.t("app_page.explore_box.add_field_box.between_string"), "string_field"]
@@ -340,10 +343,10 @@ var boxExplore2 = {
         // TODO : allow to add_field on all the layer instead of just targeted / result layers :
         if(this.tables.get(table_name)){
           this.top_buttons
-               .insert("button")
-               .attrs({id: "add_field_button", class: "button_st3"})
-               .html(i18next.t("app_page.explore_box.button_add_field"))
-               .on('click', () => {
+              .insert("button")
+              .attrs({id: "add_field_button", class: "button_st3"})
+              .html(i18next.t("app_page.explore_box.button_add_field"))
+              .on('click', () => {
                   add_field_table(the_table, table_name, this);
                });
         }
@@ -411,7 +414,7 @@ var boxExplore2 = {
         let self = this;
 
         this.top_buttons = this.box_table.append('p')
-                                    .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
+            .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
         let deferred = Q.defer(),
             container = document.getElementById("browse_data_box"),
