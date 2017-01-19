@@ -1901,7 +1901,8 @@ function _export_compo_png() {
 
 function make_export_layer_box() {
     var dialogBox = make_confirm_dialog2("dialogGeoExport", i18next.t("app_page.export_box.geo_title_box"), { text_ok: i18next.t("app_page.section5b.export_button") }),
-        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div");
+        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
+        button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
 
     var layer_names = Object.getOwnPropertyNames(current_layers).filter(function (name) {
         if (sample_no_values.has(name)) return 0;else if (current_layers[name].renderer && (current_layers[name].renderer.indexOf("PropSymbols") > -1 || current_layers[name].renderer.indexOf("Dorling") > -1)) return 0;
@@ -1916,7 +1917,13 @@ function make_export_layer_box() {
 
     var selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection")).insert("select").attrs({ id: "projection_to_use", disabled: true });
 
-    var proj4_input = box_content.append("input").attr("id", "proj4str").style("display", "none").style("width", "200px");
+    var proj4_input = box_content.append("input").attr("id", "proj4str").styles({ display: 'none', width: '200px' }).on('keyup', function () {
+        if (this.value.length == 0) {
+            button_ok.disabled = "true";
+        } else {
+            button_ok.disabled = "";
+        }
+    });
 
     layer_names.forEach(function (name) {
         selec_layer.append("option").attr("value", name).text(name);
@@ -1934,13 +1941,20 @@ function make_export_layer_box() {
         if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
             selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr("disabled", true);
+            button_ok.disabled = "";
         } else {
             selec_projection.attr("disabled", null);
         }
     });
 
     selec_projection.on("change", function () {
-        if (this.value == "proj4string") proj4_input.style("display", "initial");else proj4_input.style("display", "none");
+        if (this.value == "proj4string") {
+            proj4_input.style("display", "initial");
+            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) button_ok.disabled = "true";
+        } else {
+            proj4_input.style("display", "none");
+            button_ok.disabled = "";
+        }
     });
 
     // TODO : allow export to "geopackage" format ?
@@ -1959,9 +1973,16 @@ function make_export_layer_box() {
                 if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4_input.node().value }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
                 xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
-                    if (data.indexOf("Error:") == 0) {
+                    if (data.indexOf('{"Error"') == 0 || data.length == 0) {
+                        var error_message = void 0;
+                        if (data.indexOf('{"Error"') < 5) {
+                            data = JSON.parse(data);
+                            error_message = i18next.t(data.Error);
+                        } else {
+                            error_message = i18next.t('app_page.common.error_msg');
+                        }
                         swal({ title: "Oops...",
-                            text: i18next.t("app_page.common.error_msg", { msg: data.substring(6, data.length) }),
+                            text: error_message,
                             type: "error",
                             allowOutsideClick: false,
                             allowEscapeKey: false
@@ -6558,9 +6579,65 @@ function make_box_type_fields(layer_name) {
     // fields_type = current_layers[layer_name].fields_type,
     ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
 
-    if (f.length === 0) fields_type = tmp.slice();else if (tmp.length > fields_type.length) tmp.forEach(function (d) {
-        if (f.indexOf(d.name) === -1) fields_type.push(d);
-    });
+    var deferred = Q.defer(),
+        container = document.getElementById("box_type_fields");
+
+    if (f.length === 0) {
+        // If the user dont have already selected the type :
+        fields_type = tmp.slice();
+        container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+        var _onclose = function _onclose() {
+            // Or use the default values if he use the X  close button
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
+        container.querySelector("#xclose").onclick = _onclose;
+    } else if (tmp.length > fields_type.length) {
+        // There is already types selected but new fields where added :
+        tmp.forEach(function (d) {
+            if (f.indexOf(d.name) === -1) fields_type.push(d);
+        });
+        container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+        var _onclose2 = function _onclose2() {
+            // Or use the default values if he use the X  close button
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
+        container.querySelector("#xclose").onclick = _onclose2;
+    } else {
+        // There is already types selected and no new fields (so this is a modification) :
+        // Use the previous values if the user close the window without confirmation (cancel or X button)
+        var _onclose3 = function _onclose3() {
+            current_layers[layer_name].fields_type = fields_type;
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+        };
+        container.querySelector(".btn_cancel").onclick = _onclose3;
+        container.querySelector("#xclose").onclick = _onclose3;
+    }
+
+    // Fetch and store the selected values when 'Ok' button is clicked :
+    container.querySelector(".btn_ok").onclick = function () {
+        var r = [];
+        Array.prototype.forEach.call(document.getElementById('fields_select').getElementsByTagName('p'), function (elem) {
+            r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
+        });
+        // deferred.resolve(r);
+        deferred.resolve(true);
+        current_layers[layer_name].fields_type = r.slice();
+        getAvailablesFunctionnalities(layer_name);
+        if (window.fields_handler) {
+            fields_handler.unfill();
+            fields_handler.fill(layer_name);
+        }
+        modal_box.close();
+        container.remove();
+    };
 
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
@@ -6590,33 +6667,6 @@ function make_box_type_fields(layer_name) {
         }
     }
 
-    var deferred = Q.defer(),
-        container = document.getElementById("box_type_fields");
-
-    container.querySelector(".btn_ok").onclick = function () {
-        var r = [];
-        Array.prototype.forEach.call(document.getElementById('fields_select').getElementsByTagName('p'), function (elem) {
-            r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
-        });
-        // deferred.resolve(r);
-        deferred.resolve(true);
-        current_layers[layer_name].fields_type = r.slice();
-        getAvailablesFunctionnalities(layer_name);
-        if (window.fields_handler) {
-            fields_handler.unfill();
-            fields_handler.fill(layer_name);
-        }
-        modal_box.close();
-        container.remove();
-    };
-
-    var _onclose = function _onclose() {
-        deferred.resolve(false);
-        modal_box.close();
-        container.remove();
-    };
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
     return deferred.promise;
 };
 
@@ -6665,36 +6715,6 @@ function getAvailablesFunctionnalities(layer_name) {
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
     }
 }
-
-/*
-* Memoization functions (naive LRU implementation)
-*
-*/
-Function.prototype.memoized = function () {
-    var max_size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 25;
-
-    this._memo = this._memo || { values: new Map(), stack: [], max_size: max_size };
-    var key = JSON.stringify(Array.prototype.slice.call(arguments));
-    var cache_value = this._memo.values.get(key);
-    if (cache_value !== undefined) {
-        return JSON.parse(cache_value);
-    } else {
-        cache_value = this.apply(this, arguments);
-        this._memo.values.set(key, JSON.stringify(cache_value));
-        this._memo.stack.push(key);
-        if (this._memo.stack.length >= this._memo.max_size) {
-            var old_key = this._memo.stack.shift();
-            this._memo.values.delete(old_key);
-        }
-        return cache_value;
-    }
-};
-Function.prototype.memoize = function () {
-    var fn = this;
-    return function () {
-        return fn.memoized.apply(fn, arguments);
-    };
-};
 "use strict";
 
 /**
@@ -8319,7 +8339,8 @@ function send_remove_server(layer_name) {
     var formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
     xhrequest("POST", '/layers/delete', formToSend, true).then(function (data) {
-        console.log(JSON.parse(data));
+        data = JSON.parse(data);
+        if (!data.code || data.code != "Ok") console.log(data);
     }).catch(function (err) {
         console.log(err);
     });

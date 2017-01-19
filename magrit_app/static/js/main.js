@@ -8,22 +8,22 @@ Function.prototype.memoized = function(max_size=25) {
   var key = JSON.stringify(Array.prototype.slice.call(arguments));
   var cache_value = this._memo.values.get(key);
   if (cache_value !== undefined) {
-  return JSON.parse(cache_value);
+    return JSON.parse(cache_value);
   } else {
-  cache_value = this.apply(this, arguments);
-  this._memo.values.set(key, JSON.stringify(cache_value));
-  this._memo.stack.push(key)
-  if(this._memo.stack.length >= this._memo.max_size){
-      let old_key = this._memo.stack.shift();
-      this._memo.values.delete(old_key);
-  }
-  return cache_value;
+    cache_value = this.apply(this, arguments);
+    this._memo.values.set(key, JSON.stringify(cache_value));
+    this._memo.stack.push(key)
+    if(this._memo.stack.length >= this._memo.max_size){
+        let old_key = this._memo.stack.shift();
+        this._memo.values.delete(old_key);
+    }
+    return cache_value;
   }
 };
 Function.prototype.memoize = function() {
   var fn = this;
   return function() {
-  return fn.memoized.apply(fn, arguments);
+    return fn.memoized.apply(fn, arguments);
   };
 };
 
@@ -2187,7 +2187,8 @@ function make_export_layer_box(){
     let dialogBox = make_confirm_dialog2("dialogGeoExport",
                          i18next.t("app_page.export_box.geo_title_box"),
                          {text_ok: i18next.t("app_page.section5b.export_button")}),
-        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div");
+        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
+        button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
 
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
         if(sample_no_values.has(name))
@@ -2211,9 +2212,15 @@ function make_export_layer_box(){
              .insert("select").attrs({id: "projection_to_use", disabled: true});
 
     let proj4_input = box_content.append("input")
-                                .attr("id", "proj4str")
-                                .style("display", "none")
-                                .style("width", "200px");
+        .attr("id", "proj4str")
+        .styles({display: 'none', width: '200px'})
+        .on('keyup', function(){
+            if(this.value.length == 0){
+                button_ok.disabled = "true";
+            } else {
+                button_ok.disabled = ""
+            }
+        });
 
     layer_names.forEach( name => {
         selec_layer.append("option").attr("value", name).text(name);
@@ -2238,16 +2245,21 @@ function make_export_layer_box(){
         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
             selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr("disabled", true);
+            button_ok.disabled = "";
         } else {
             selec_projection.attr("disabled", null);
         }
     });
 
     selec_projection.on("change", function(){
-        if(this.value == "proj4string")
+        if(this.value == "proj4string"){
             proj4_input.style("display", "initial");
-        else
+            if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
+                button_ok.disabled = "true";
+        } else {
             proj4_input.style("display", "none");
+            button_ok.disabled = "";
+        }
     });
 
     // TODO : allow export to "geopackage" format ?
@@ -2273,9 +2285,16 @@ function make_export_layer_box(){
 
         xhrequest("POST", '/get_layer2', formToSend, true)
             .then( data => {
-                if(data.indexOf("Error:") == 0){
+                if(data.indexOf('{"Error"') == 0 || data.length == 0){
+                    let error_message;
+                    if(data.indexOf('{"Error"') < 5){
+                        data = JSON.parse(data);
+                        error_message = i18next.t(data.Error);
+                    } else {
+                        error_message = i18next.t('app_page.common.error_msg');
+                    }
                     swal({title: "Oops...",
-                         text: i18next.t("app_page.common.error_msg", {msg: data.substring(6, data.length)}),
+                         text: error_message,
                          type: "error",
                          allowOutsideClick: false,
                          allowEscapeKey: false

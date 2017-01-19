@@ -1331,8 +1331,13 @@ function send_remove_server(layer_name){
     let formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
     xhrequest("POST", '/layers/delete', formToSend, true)
-        .then(data => { console.log(JSON.parse(data)) })
-        .catch(err => { console.log(err); });
+        .then(data => {
+            data = JSON.parse(data);
+            if(!data.code || data.code != "Ok")
+                console.log(data);
+          }).catch(err => {
+              console.log(err);
+          });
 }
 
 function get_map_xy0(){
