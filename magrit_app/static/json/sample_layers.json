@@ -6,7 +6,6 @@
  "nuts1": "/static/data_sample/nuts1.geojson",
  "nuts2": "/static/data_sample/nuts2.geojson",
  "nuts2_data": "/static/data_sample/nuts2_data.geojson",
- "nuts3_data": "/static/data_sample/nuts3_data.geojson",
  "martinique": "/static/data_sample/martinique.geojson",
  "martinique_data": "/static/data_sample/martinique_data.csv",
  "twincities": "/static/data_sample/twincities.csv",

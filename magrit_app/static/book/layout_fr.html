@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><ul class="section"><li><a href="./discretisation_fr.html"><strong>3.2.1.</strong> Discrétisation des données</a></li></ul></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./layout_fr.html" class="active"><strong>4.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>5.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>6.</strong> Jeux de données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html" class="active"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -68,38 +68,41 @@
 
                 <div id="content" class="content">
                     <h1>Habillage de la carte</h1>
-<p><img src="./img/win_hab_fr.png" alt="Dialogue d'habillage" /></p>
+<p style="text-align: center;">
+<img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
+</p>
 <p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
-<ul>
-<li>
-<p>Différentes couches géographiques permettant de contextualiser les données représentées :</p>
-</li>
-</ul>
+<h3>Différentes couches géographiques permettant de contextualiser les données représentées :</h3>
 <ul>
 <li>Tracé des pays du monde</li>
 <li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
 </ul>
+<h3>Des couches géographiques d'habillage peuvent être ajoutée par l'utilisateur :</h3>
 <ul>
-<li>
-<p>D'autres éléments peuvent être ajoutés, ils sont déplacables au curseur et paramétrables via un clic droit :</p>
-</li>
+<li>Ces couches peuvent être ajoutées par le gestionnaire de couches</li>
+<li>Ces couches servent seulement à l'habillage de la carte et ne peuvent pas être utilisées avec les différents types de représentations proposées
+(elles peuvent toutefois faire l'objet d'un mise en forme de base: choix d'une couleur unique de remplissage, choix d'une couleur unique de bordure, réglage de l'opacité et de l'épaisseur de la bordure)</li>
 </ul>
+<h3>D'autres éléments peuvent être ajoutés, ils sont déplacables au curseur et paramétrables via un clic droit :</h3>
 <ul>
 <li>Flèche d'orientation</li>
-<li>Echelle</li>
+<li>Échelle</li>
 <li>Zone de texte</li>
 <li>Ellipse</li>
 <li>Flèche personnalisable</li>
 <li>Symbole</li>
 </ul>
+<p style="text-align: center;">
+<img src="img/example_mise_en_page.png" alt="Éléments de mise en page"/>
+</p>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./carto/typosymbol_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./discretisation_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
@@ -113,7 +116,7 @@
             </div>
 
             
-                <a href="./carto/typosymbol_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                <a href="./discretisation_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
                     <i class="fa fa-angle-left"></i>
                 </a>
             
@@ -136,20 +139,6 @@
 
         <!-- Livereload script (if served using the cli tool) -->
         
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3001");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload(true); // force reload from server (not from cache)
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
-    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

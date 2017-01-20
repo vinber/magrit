@@ -474,8 +474,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.clickWaitTransition("#sample_link")
 
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_value("nuts3_data")
-        Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
 
@@ -503,7 +501,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
         Select(driver.find_element_by_css_selector("select.sample_target")
-            ).select_by_value("nuts3_data")
+            ).select_by_value("nuts2_data")
         driver.find_element_by_css_selector(".btn_ok").click()
         self.waitClickButtonSwal()
 
@@ -511,7 +509,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.validTypefield()
 
         self.open_menu_section(3)
-        driver.find_element_by_css_selector("li.nuts3_data"
+        driver.find_element_by_css_selector("li.nuts2_data"
             ).find_elements_by_css_selector("#browse_data_button")[0].click()
         time.sleep(1)
 
