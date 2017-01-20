@@ -68,7 +68,7 @@
 
                 <div id="content" class="content">
                     <h1>Carte de stocks</h1>
-<p>Les cartes de stocks permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues). Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. Les données de stocks peuvent être représentées par des <strong>figurés proportionnels</strong>.</p>
+<p>Ces cartes permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues) par des <strong>figurés proportionnels</strong>. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens.</p>
 <blockquote>
 <h4>Paramètres</h4>
 <ul>
@@ -130,6 +130,20 @@
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

@@ -1,6 +1,7 @@
 # Carte de stocks
 
-Les cartes de stocks permettent de représenter des **données de stocks** (ou quantitatives absolues). Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. Les données de stocks peuvent être représentées par des **figurés proportionnels**.
+Ces cartes permettent de représenter des **données de stocks** (ou quantitatives absolues) par des **figurés proportionnels**. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. 
+
 
 
 

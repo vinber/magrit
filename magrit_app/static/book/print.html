@@ -70,13 +70,12 @@
                     <h1>Import et manipulation des données</h1>
 <p>Deux éléments fondamentaux servent de point de départ à la réalisation d'une carte dans Magrit : le fond de carte et les données qui y sont associées.
 De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces deux éléments.</p>
-<hr />
+<p><img src="./img/win_imp_fr.png" alt="Dialogue d'import" /></p>
 <h2>Import du fond de carte</h2>
 <p>L'import du fond de carte principal peut se faire de différentes manières :</p>
 <ul>
-<li>Par un click sur le bouton <em>'ajout d'un fond de carte'</em> <img src="img/addgeom.png" alt="image_ajout_couche" style="width: 35px;"/> puis par le choix du fichier.</li>
-<li>Par un glisser-déposer vers le centre de la carte.</li>
-<li>Par un glisser-déposer vers la section appropriée du menu.</li>
+<li>Par un click sur le bouton <em>Ajout d'un fond de carte</em>.</li>
+<li>Par un glisser-déposer dans la zone de la carte.</li>
 </ul>
 <p>Plusieurs formats sont supportés:</p>
 <ul>
@@ -85,7 +84,7 @@ De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces
 <li><code>TopoJSON</code></li>
 <li><code>kml</code></li>
 <li><code>gml</code></li>
-<li>Fichier <code>csv</code> avec colonnes x/y ou <em>geometry</em></li>
+<li><code>csv</code> (contenant des colonnes x/y ou <em>geometry</em>)</li>
 </ul>
 <blockquote>
 <p><strong>Note:</strong>
@@ -95,8 +94,8 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 <h2>Import d'un tableau de données</h2>
 <p>L'ajout d'un tableau de données peut être effectué de plusieurs manières :</p>
 <ul>
-<li>Par un glisser-déposer du fichier vers la section appropriée du menu</li>
-<li>Par un clic sur le bouton <em>'ajout d'un jeu de données'</em> <img src="img/addtabular.png" alt="image_ajout_tableau" style="width: 35px;"/></li>
+<li>Par un glisser-déposer du fichier dans la section appropriée du menu</li>
+<li>Par un clic sur le bouton <em>Ajout d'un jeu de données</em></li>
 </ul>
 <p>Plusieurs format sont pris en charge pour l'import des données :</p>
 <ul>
@@ -106,12 +105,23 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 </ul>
 <h2>Jointure des données</h2>
 <p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
-Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant la colonne de données....</p>
-<p><img src="img/data_join.png" alt="image_join" style="width: 480px;"/></p>
+Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant les colonnes d'identifiants dans le jeu de données et dans le fond de carte.</p>
+<p><img src="./img/win_jnt_fr.png" alt="Dialogue de jointure" /></p>
 <blockquote>
 <p><img src="img/joinfalse.png" alt="joinfalse" style="width: 35px;"/> Apparence de l'élément avant jointure<br />
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
+<h2>Typage des données</h2>
+<p>A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc importat de définir le type de chacune des variables à cartographier.</p>
+<p>5 types de données sont possibles :</p>
+<ul>
+<li><em>Stock</em></li>
+<li><em>Ratio</em></li>
+<li><em>Catégorie</em></li>
+<li><em>Inconnu</em> (champs non cartographiables)</li>
+<li><em>Identifiant</em> (champs utilisés pour joindre les données)</li>
+</ul>
+<p><img src="./img/win_typ_fr.png" alt="Dialogue de typage des données" /></p>
 <h2>Affichage et enrichissement des tables de données</h2>
 <p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.</p>
 <h1>Projections</h1>
@@ -143,6 +153,7 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
 <h1>Choix de la représentation</h1>
 <p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).</p>
+<p><img src="./img/win_rep_fr.png" alt="Dialogue de choix de représentation" /></p>
 <p>Représentations adaptées à des données de stocks :</p>
 <ul>
 <li><a href="./carto/propsmbol_fr.html">carte de stocks</a></li>
@@ -167,7 +178,7 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 <li><a href="./carto/links_fr.html">carte de liens</a></li>
 </ul>
 <h1>Carte de stocks</h1>
-<p>Les cartes de stocks permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues). Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. Les données de stocks peuvent être représentées par des <strong>figurés proportionnels</strong>.</p>
+<p>Ces cartes permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues) par des <strong>figurés proportionnels</strong>. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens.</p>
 <blockquote>
 <h4>Paramètres</h4>
 <ul>
@@ -397,6 +408,7 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <img src="img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
 </p>
 <h1>Habillage de la carte</h1>
+<p><img src="./img/win_hab_fr.png" alt="Dialogue d'habillage" /></p>
 <p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <ul>
 <li>
@@ -423,43 +435,49 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <li>Symbole</li>
 </ul>
 <h1>Export</h1>
-<p>L'outil offre la possibilité d'exporter aussi bien les cartes réalisées que les fichiers géographiques de couche sur lesquels elles reposent.
-Il est également possible, afin de partager son travail avec un collègue ou afin de le continuer plus tard, de sauvegarder l'état du projet en cours.</p>
-<hr />
+<p>Magrit offre plusieurs possibilités d'export :</p>
+<ul>
+<li>export de la carte réalisée (format vectoriel ou raster),</li>
+<li>export des couches géographiques utilisées ou crées par l'application;</li>
+<li>export du projet complet (données, fonds de cartes et cartes) pour le partager ou le réutiliser plus tard.</li>
+</ul>
+<p><img src="./img/win_exp_fr.png" alt="Dialogue d'export" /></p>
 <h2>Export au format SVG</h2>
+<p><img src="./img/win_svg_fr.png" alt="Dialogue d'export" /></p>
 <p>Grâce à cette méthode il est possible d'exporter le rendu actuel selon les spécifications <em>SVG 1.2</em>.</p>
 <blockquote>
 <p><strong>Note:</strong></p>
 <ul>
-<li>Les spécifications SVG ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.</li>
 <li>Les exports SVG fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme <a href="https://inkscape.org">Inkscape</a>, Adobe Illustrator ou <a href="https://github.com/SVG-Edit/svgedit">SVGEdit</a>.</li>
-<li>Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.</li>
 </ul>
 </blockquote>
 <h2>Export au format PNG</h2>
-<p>Cette méthde permet d'exporter la carte dans un format dit &quot;matriciel&quot; ou &quot;raster&quot;, c'est à dire composé de pixels.
-La résolution de ce type de fichier est fixe.<br />
-Ainsi dans Magrit il est proposé de choisir la résolution du fichier à exporter en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
+<p><img src="./img/win_exp_fr.png" alt="Dialogue d'export" /></p>
+<p>Cette méthode permet d'exporter la carte dans un format &quot;raster&quot;, c'est à dire composé de pixels.
+La résolution de ce type de fichier est fixe et il est proposé de choisir la résolution en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
 <h2>Export d'un fichier de couche géographique</h2>
-<p>Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
-C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissées, carte de liens et carte de discontinuités.
-Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
+<p><img src="./img/win_geo_fr.png" alt="Dialogue d'export" /></p>
+<p>Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
 <ul>
-<li>GeoJSON</li>
-<li>TopoJSON</li>
-<li>Shapefile</li>
-<li>Kml</li>
-<li>Gml</li>
+<li><code>GeoJSON</code></li>
+<li><code>TopoJSON</code></li>
+<li><code>Shapefile</code></li>
+<li><code>KML</code></li>
+<li><code>GML</code></li>
 </ul>
 <p>Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet <a href="https://github.com/OSGeo/proj.4/wiki">Proj.4</a>.</p>
 <h2>Sauvegarde du projet en cours</h2>
+<p><img src="./img/win_prj_fr.png" alt="Dialogue d'export" /></p>
 <p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format <em>JSON</em>.
-Le fichier &quot;projet&quot; ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
+Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 <p># Jeux de données</p>
 <ul>
-<li>Localisations des hôpitaux de Paris (points)</li>
-<li>Communes de la métropole du Grand-Paris (polygones) :<br />
+<li>
+<p>Localisations des hôpitaux de Paris (points)</p>
+</li>
+<li>
+<p>Communes de la métropole du Grand-Paris (polygones) :<br />
 - geométrie; communes du Grand-Paris; Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
 - DEPCOM; code communal; INSEE 2016<br />
 - LIBCOM; nom de la commune; INSEE 2016<br />
@@ -467,7 +485,29 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
 - LIBEPT; nom de l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
 - DEP; code du département; INSEE 2016<br />
 - INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.<br />
-- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</p>
+</li>
+<li>
+<p>Communes de Martinique (INSEE_COM, NOM_COM, STATUT, SUPERFICIE, POPT2013, POPH2013, POPF2013, DENSPOP, Nb logements, Nb logements vacants, taux d'occupation des logements)</p>
+</li>
+<li>
+<p>Nuts 2 (des données plus récentes et plus succintes)</p>
+</li>
+<li>
+<p>Nuts 3 (supprimer)</p>
+</li>
+<li>
+<p>Etats fédéraux brésiliens (réduire le nb de champs)</p>
+</li>
+<li>
+<p>Pays du Monde (ajouter les sources)</p>
+</li>
+<li>
+<p>Comtés des Etats-Unis (mouipff... trouver des données avec du sens)</p>
+</li>
+<li>
+<p>Etats des Etats-Unis (mouipff... trouver des données avec du sens)</p>
+</li>
 </ul>
 <h1>Contributeurs</h1>
 <p>Matthieu Viry : Développement &amp; Conception</p>
@@ -500,6 +540,20 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

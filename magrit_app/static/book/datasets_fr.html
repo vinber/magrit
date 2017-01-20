@@ -69,8 +69,11 @@
                 <div id="content" class="content">
                     <p># Jeux de données</p>
 <ul>
-<li>Localisations des hôpitaux de Paris (points)</li>
-<li>Communes de la métropole du Grand-Paris (polygones) :<br />
+<li>
+<p>Localisations des hôpitaux de Paris (points)</p>
+</li>
+<li>
+<p>Communes de la métropole du Grand-Paris (polygones) :<br />
 - geométrie; communes du Grand-Paris; Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
 - DEPCOM; code communal; INSEE 2016<br />
 - LIBCOM; nom de la commune; INSEE 2016<br />
@@ -78,7 +81,29 @@
 - LIBEPT; nom de l'Etablissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
 - DEP; code du département; INSEE 2016<br />
 - INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.<br />
-- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</p>
+</li>
+<li>
+<p>Communes de Martinique (INSEE_COM, NOM_COM, STATUT, SUPERFICIE, POPT2013, POPH2013, POPF2013, DENSPOP, Nb logements, Nb logements vacants, taux d'occupation des logements)</p>
+</li>
+<li>
+<p>Nuts 2 (des données plus récentes et plus succintes)</p>
+</li>
+<li>
+<p>Nuts 3 (supprimer)</p>
+</li>
+<li>
+<p>Etats fédéraux brésiliens (réduire le nb de champs)</p>
+</li>
+<li>
+<p>Pays du Monde (ajouter les sources)</p>
+</li>
+<li>
+<p>Comtés des Etats-Unis (mouipff... trouver des données avec du sens)</p>
+</li>
+<li>
+<p>Etats des Etats-Unis (mouipff... trouver des données avec du sens)</p>
+</li>
 </ul>
 
                 </div>
@@ -122,6 +147,20 @@
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

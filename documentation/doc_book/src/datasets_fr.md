@@ -11,4 +11,12 @@
 		- INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.   
 		- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.   
 
+- Communes de Martinique (INSEE_COM, NOM_COM, STATUT, SUPERFICIE, POPT2013, POPH2013, POPF2013, DENSPOP, Nb logements, Nb logements vacants, taux d'occupation des logements)
+- Nuts 2 (des données plus récentes et plus succintes)
+- Nuts 3 (supprimer)
+- Etats fédéraux brésiliens (réduire le nb de champs)
+- Pays du Monde (ajouter les sources)
+- Comtés des Etats-Unis (mouipff... trouver des données avec du sens)
+- Etats des Etats-Unis (mouipff... trouver des données avec du sens)
+
 

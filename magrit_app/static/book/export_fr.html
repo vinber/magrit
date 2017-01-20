@@ -68,38 +68,41 @@
 
                 <div id="content" class="content">
                     <h1>Export</h1>
-<p>L'outil offre la possibilité d'exporter aussi bien les cartes réalisées que les fichiers géographiques de couche sur lesquels elles reposent.
-Il est également possible, afin de partager son travail avec un collègue ou afin de le continuer plus tard, de sauvegarder l'état du projet en cours.</p>
-<hr />
+<p>Magrit offre plusieurs possibilités d'export :</p>
+<ul>
+<li>export de la carte réalisée (format vectoriel ou raster),</li>
+<li>export des couches géographiques utilisées ou crées par l'application;</li>
+<li>export du projet complet (données, fonds de cartes et cartes) pour le partager ou le réutiliser plus tard.</li>
+</ul>
+<p><img src="./img/win_exp_fr.png" alt="Dialogue d'export" /></p>
 <h2>Export au format SVG</h2>
+<p><img src="./img/win_svg_fr.png" alt="Dialogue d'export" /></p>
 <p>Grâce à cette méthode il est possible d'exporter le rendu actuel selon les spécifications <em>SVG 1.2</em>.</p>
 <blockquote>
 <p><strong>Note:</strong></p>
 <ul>
-<li>Les spécifications SVG ne sont pas implémentées de manière strictement similaire selon les outils de visualisation et d'édition.</li>
 <li>Les exports SVG fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme <a href="https://inkscape.org">Inkscape</a>, Adobe Illustrator ou <a href="https://github.com/SVG-Edit/svgedit">SVGEdit</a>.</li>
-<li>Des fonctionnalités fournissant des exports optimisés sont proposées, pour Inkscape d'une part et pour Adobe Illustrator d'autre part.</li>
 </ul>
 </blockquote>
 <h2>Export au format PNG</h2>
-<p>Cette méthde permet d'exporter la carte dans un format dit &quot;matriciel&quot; ou &quot;raster&quot;, c'est à dire composé de pixels.
-La résolution de ce type de fichier est fixe.<br />
-Ainsi dans Magrit il est proposé de choisir la résolution du fichier à exporter en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
+<p><img src="./img/win_exp_fr.png" alt="Dialogue d'export" /></p>
+<p>Cette méthode permet d'exporter la carte dans un format &quot;raster&quot;, c'est à dire composé de pixels.
+La résolution de ce type de fichier est fixe et il est proposé de choisir la résolution en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
 <h2>Export d'un fichier de couche géographique</h2>
-<p>Cette fonctionnalité n'est disponible que pour pour les types de représentation ayant généré un nouveau fichier géographique.
-C'est le cas des méthodes suivantes : carroyages, cartogramme (selon la méthode d'Olson et selon la méthode de Dougenik), cartes lissées, carte de liens et carte de discontinuités.
-Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
+<p><img src="./img/win_geo_fr.png" alt="Dialogue d'export" /></p>
+<p>Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'import :</p>
 <ul>
-<li>GeoJSON</li>
-<li>TopoJSON</li>
-<li>Shapefile</li>
-<li>Kml</li>
-<li>Gml</li>
+<li><code>GeoJSON</code></li>
+<li><code>TopoJSON</code></li>
+<li><code>Shapefile</code></li>
+<li><code>KML</code></li>
+<li><code>GML</code></li>
 </ul>
 <p>Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet <a href="https://github.com/OSGeo/proj.4/wiki">Proj.4</a>.</p>
 <h2>Sauvegarde du projet en cours</h2>
+<p><img src="./img/win_prj_fr.png" alt="Dialogue d'export" /></p>
 <p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format <em>JSON</em>.
-Le fichier &quot;projet&quot; ainsi exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste d'ordinateur, et permet de continuer la session de travail.
+Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 
                 </div>
@@ -143,6 +146,20 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

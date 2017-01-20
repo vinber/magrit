@@ -68,6 +68,7 @@
 
                 <div id="content" class="content">
                     <h1>Habillage de la carte</h1>
+<p><img src="./img/win_hab_fr.png" alt="Dialogue d'habillage" /></p>
 <p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <ul>
 <li>
@@ -135,6 +136,20 @@
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>
