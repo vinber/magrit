@@ -1384,8 +1384,13 @@ function zoom_without_redraw() {
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
     }
 
-    if (scaleBar.displayed) scaleBar.update();
-
+    if (scaleBar.displayed) {
+        if (proj.invert) {
+            scaleBar.update();
+        } else {
+            scaleBar.remove();
+        }
+    }
     if (window.legendRedrawTimeout) {
         clearTimeout(legendRedrawTimeout);
     }
@@ -1626,7 +1631,7 @@ function handle_title(txt) {
 
 function handle_title_properties() {
     var title = d3.select("#map_title").select("text");
-    if (!title.node()) {
+    if (!title.node() || title.text() == "") {
         swal({ title: "",
             text: i18next.t("app_page.common.error_no_title"),
             type: "error",
@@ -7956,9 +7961,9 @@ function add_layer_topojson(text, options) {
 * @param {string} name - The name of layer to scale on
 */
 function scale_to_lyr(name) {
-    name = current_layers[name].ref_layer_name || name;
-    var bbox_layer_path = undefined;
-    map.select("#" + name).selectAll('path').each(function (d, i) {
+    var symbol = current_layers[name].symbol || "path",
+        bbox_layer_path = undefined;
+    map.select("#" + name).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (bbox_layer_path === undefined) {
             bbox_layer_path = bbox_path;
@@ -7981,9 +7986,9 @@ function scale_to_lyr(name) {
 * @param {string} name - The name of layer to zoom on
 */
 function center_map(name) {
-    var bbox_layer_path = undefined;
-    name = current_layers[name].symbol && current_layers[name].ref_layer_name ? current_layers[name].ref_layer_name : name;
-    map.select("#" + name).selectAll('path').each(function (d, i) {
+    var symbol = current_layers[name].symbol || "path",
+        bbox_layer_path = undefined;
+    map.select("#" + name).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
             bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
@@ -10393,6 +10398,19 @@ var scaleBar = {
     create: function create() {
         var _this4 = this;
 
+        if (!proj.invert) {
+            swal({ title: "",
+                text: i18next.t("app_page.common.error_interrupted_projection_scalebar"),
+                type: "error",
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(function () {
+                null;
+            }, function () {
+                null;
+            });
+            return;
+        }
         var scale_gp = map.append("g").attr("id", "scale_bar").attr("class", "legend scale"),
             x_pos = 40,
             y_pos = h - 100,
@@ -10826,10 +10844,6 @@ var UserEllipse = function () {
                     self.stroke_color = ellipse_elem.style.stroke;
                 } else {
                     //Rollback on initials parameters :
-                    ellipse_elem.cx.baseVal.value = current_options.pt1[0];
-                    ellipse_elem.cy.baseVal.value = current_options.pt1[1];
-                    ellipse_elem.rx.baseVal.value = current_options.rx;
-                    ellipse_elem.ry.baseVal.value = current_options.ry;
                     self.pt1 = current_options.pt1.slice();
                     ellipse_elem.style.strokeWidth = self.strokeWeight;
                     ellipse_elem.style.stroke = self.stroke_color;
@@ -10863,6 +10877,8 @@ var UserEllipse = function () {
                     nx = _self$calcDestFromOAD4[0],
                     ny = _self$calcDestFromOAD4[1];
 
+                console.log(ellipse_elem.rx.baseVal.value, self.pt[0], nx);
+                console.log(ellipse_elem.ry.baseVal.value, self.pt[1], ny);
                 ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
                 ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
                 document.getElementById("ellipse_angle_text").value = +this.value;
@@ -10873,46 +10889,62 @@ var UserEllipse = function () {
                 elem.value = this.value;
                 elem.dispatchEvent(new Event('change'));
             });
-
             s2b.insert("span").html("°");
-
-            var s3 = box_content.append("p");
-
-            s3.append("button").attr("class", "button_st4").html(i18next.t("app_page.ellipse_edit_box.move_points")).on("click", function () {
-                d3.select(".styleBoxEllipse").styles({ 'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset' });
-                box_content.style('display', 'none');
-                var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y).attr("height", 6).attr("width", 6).style("fill", "red").style("cursor", "grab").call(d3.drag().on("drag", function () {
-                    var t = d3.select(this);
-                    t.attr("x", d3.event.x);
-                    var dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
-                    ellipse_elem.rx.baseVal.value = dist;
-                }));
-
-                var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-                    x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
-                    var t = d3.select(this);
-                    t.attr("y", d3.event.y);
-                    var dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
-                    ellipse_elem.ry.baseVal.value = dist;
-                }));
-
-                var el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:22px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function () {
-                    map.selectAll('.ctrl_pt').remove();
-                    el.remove();
-                    d3.select(".styleBoxEllipse").styles({ 'top': '', 'bottom': '', 'right': '', 'left': '' });
-                    box_content.style('display', 'none');
-                };
-                d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
-            });
         }
+    }, {
+        key: "handle_ctrl_pt",
+        value: function handle_ctrl_pt() {}
     }]);
 
     return UserEllipse;
 }();
+//  let s3 = box_content.append("p");
+//
+//  s3.append("button")
+//      .attr("class", "button_st4")
+//      .html(i18next.t("app_page.ellipse_edit_box.move_points"))
+//      .on("click", function(){
+//         d3.select(".styleBoxEllipse").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
+//         box_content.style('display', 'none');
+//         let tmp_start_point = map.append("rect")
+//              .attr("class", "ctrl_pt").attr('id', 'pt1')
+//              .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
+//              .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
+//              .attr("height", 6).attr("width", 6)
+//              .style("fill", "red")
+//              .style("cursor", "grab")
+//              .call(d3.drag().on("drag", function(){
+//                  let t = d3.select(this);
+//                  t.attr("x", d3.event.x);
+//                  let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
+//                  ellipse_elem.rx.baseVal.value = dist;
+//              }));
+//
+//          let tmp_end_point = map.append("rect")
+//              .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
+//                      x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
+//              .styles({fill: 'red', cursor: 'grab'})
+//              .call(d3.drag().on("drag", function(){
+//                  let t = d3.select(this);
+//                  t.attr("y", d3.event.y);
+//                  let dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
+//                  ellipse_elem.ry.baseVal.value = dist;
+//              }));
+//
+//          let el = document.createElement("button");
+//          el.className = "button_st3";
+//          el.style = "float:right;background:forestgreen;font-size:22px;";
+//          el.innerHTML = i18next.t("app_page.common.done");
+//          el.onclick = function(){
+//              map.selectAll('.ctrl_pt').remove();
+//              el.remove();
+//              d3.select(".styleBoxEllipse").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
+//              box_content.style('display', 'none');
+//          }
+//          d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
+//      });
+//     }
+// }
 "use strict";
 /**
 * Function called on clicking on the legend button of each layer
@@ -12117,19 +12149,25 @@ function load_map_template() {
 
 function apply_user_preferences(json_pref) {
     {
+        var layer_names = Object.getOwnPropertyNames(current_layers);
+        for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
+            remove_layer_cleanup(layer_names[i]);
+        }
         var _l = void 0,
             _ll = void 0;
-        // Remove current layers and legedn/layout features from the map :
+        // Make sure there is no layers and legend/layout features on the map :
         _l = svg_map.childNodes;_ll = _l.length;
-        for (var i = _ll - 1; i > -1; i--) {
-            _l[i].remove();
-        }
-        // Remove them from the layer manager too :
-        _l = layer_list.node().childNodes;_ll = _l.length;
+        console.log(_l);
         for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
             _l[_i4].remove();
         }
-        // Remove them from the object where we are storing the main properties :
+        // And in the layer manager :
+        _l = layer_list.node().childNodes;_ll = _l.length;
+        console.log(_l);
+        for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
+            _l[_i5].remove();
+        }
+        // Get a new object for where we are storing the main properties :
         current_layers = new Object();
     }
 
@@ -12144,8 +12182,9 @@ function apply_user_preferences(json_pref) {
     var set_final_param = function set_final_param() {
         if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            reproj_symbol_layer();
+            console.log("je suis passé par ici");
+            // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
+            // reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
@@ -12163,7 +12202,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 1200);
+        }, 750);
     };
 
     function apply_layout_lgd_elem() {
@@ -12204,20 +12243,20 @@ function apply_user_preferences(json_pref) {
                 northArrow.displayed = map_config.layout_features.north_arrow.displayed;
             }
             if (map_config.layout_features.arrow) {
-                for (var _i5 = 0; _i5 < map_config.layout_features.arrow.length; _i5++) {
-                    var ft = map_config.layout_features.arrow[_i5];
+                for (var _i6 = 0; _i6 < map_config.layout_features.arrow.length; _i6++) {
+                    var ft = map_config.layout_features.arrow[_i6];
                     new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
                 }
             }
             if (map_config.layout_features.user_ellipse) {
-                for (var _i6 = 0; _i6 < map_config.layout_features.user_ellipse.length; _i6++) {
-                    var _ft2 = map_config.layout_features.user_ellipse[_i6];
+                for (var _i7 = 0; _i7 < map_config.layout_features.user_ellipse.length; _i7++) {
+                    var _ft2 = map_config.layout_features.user_ellipse[_i7];
                     new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
                 }
             }
             if (map_config.layout_features.text_annot) {
-                for (var _i7 = 0; _i7 < map_config.layout_features.text_annot.length; _i7++) {
-                    var _ft3 = map_config.layout_features.text_annot[_i7];
+                for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
+                    var _ft3 = map_config.layout_features.text_annot[_i8];
                     var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
                     var inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
@@ -12227,8 +12266,8 @@ function apply_user_preferences(json_pref) {
                 }
             }
             if (map_config.layout_features.single_symbol) {
-                for (var _i8 = 0; _i8 < map_config.layout_features.single_symbol.length; _i8++) {
-                    var _ft4 = map_config.layout_features.single_symbol[_i8];
+                for (var _i9 = 0; _i9 < map_config.layout_features.single_symbol.length; _i9++) {
+                    var _ft4 = map_config.layout_features.single_symbol[_i9];
                     var symb = add_single_symbol(_ft4.href, _ft4.x, _ft4.y, _ft4.width, _ft4.height);
                     if (_ft4.scalable) {
                         console.log(symb);
@@ -12258,6 +12297,7 @@ function apply_user_preferences(json_pref) {
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    defs = map.append("defs");
     {
         var proj_select = document.getElementById('form_projection');
         proj_select.value = Array.prototype.filter.call(proj_select.options, function (d) {
@@ -12283,9 +12323,9 @@ function apply_user_preferences(json_pref) {
 
     // Add each layer :
 
-    var _loop = function _loop(_i9) {
+    var _loop = function _loop(_i10) {
         if (g_timeout) clearTimeout(g_timeout);
-        var _layer = layers[_i9],
+        var _layer = layers[_i10],
             layer_name = _layer.layer_name,
             symbol = void 0;
 
@@ -12519,8 +12559,8 @@ function apply_user_preferences(json_pref) {
         }
     };
 
-    for (var _i9 = map_config.n_layers - 1; _i9 > -1; --_i9) {
-        _loop(_i9);
+    for (var _i10 = map_config.n_layers - 1; _i10 > -1; --_i10) {
+        _loop(_i10);
     }
 }
 
