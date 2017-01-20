@@ -1633,9 +1633,13 @@ function zoom_without_redraw(){
           .attr("transform",  d3.event.transform + rot_val);
     }
 
-    if(scaleBar.displayed)
-        scaleBar.update();
-
+    if(scaleBar.displayed){
+        if(proj.invert) {
+            scaleBar.update();
+        } else {
+            scaleBar.remove()
+        }
+    }
     if(window.legendRedrawTimeout){
         clearTimeout(legendRedrawTimeout);
     }
@@ -1909,7 +1913,7 @@ function handle_title(txt){
 
 function handle_title_properties(){
     var title = d3.select("#map_title").select("text");
-    if(!title.node()){
+    if(!title.node() || title.text() == ""){
         swal({title: "",
               text: i18next.t("app_page.common.error_no_title"),
               type: "error",

@@ -16,6 +16,7 @@
             "error_only_layout": "Only layout layers can be added here",
             "error_only_one": "Only one layer can be added by this functionnality",
             "error_existing_scalebar": "Only one scale bar can be added - Replace the existing by a new one ?",
+            "error_interrupted_projection_scalebar": "The scale bar isn't currently available for 'interrupted' projection",
             "error_existing_north_arrow": "Only one north arrow can be added - Replace the existing by a new one ?",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
             "error_no_title": "No title to style",

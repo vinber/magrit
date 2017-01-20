@@ -917,9 +917,9 @@ function add_layer_topojson(text, options){
 * @param {string} name - The name of layer to scale on
 */
 function scale_to_lyr(name){
-    name = current_layers[name].ref_layer_name || name;
-    var bbox_layer_path = undefined;
-    map.select("#"+name).selectAll('path').each( (d,i) => {
+    var symbol = current_layers[name].symbol || "path",
+        bbox_layer_path = undefined;
+    map.select("#"+name).selectAll(symbol).each( (d,i) => {
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
             bbox_layer_path = bbox_path;
@@ -943,10 +943,9 @@ function scale_to_lyr(name){
 * @param {string} name - The name of layer to zoom on
 */
 function center_map(name){
-    var bbox_layer_path = undefined;
-    name = current_layers[name].symbol && current_layers[name].ref_layer_name
-            ? current_layers[name].ref_layer_name : name;
-    map.select("#"+name).selectAll('path').each(function(d, i){
+    var symbol = current_layers[name].symbol || "path",
+        bbox_layer_path = undefined;
+    map.select("#"+name).selectAll(symbol).each(function(d, i){
         let bbox_path = path.bounds(d);
         if(!bbox_layer_path)
             bbox_layer_path = bbox_path;

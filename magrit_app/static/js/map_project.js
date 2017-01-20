@@ -334,14 +334,20 @@ function load_map_template(){
 
 function apply_user_preferences(json_pref){
     {
+      let layer_names = Object.getOwnPropertyNames(current_layers);
+      for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
+          remove_layer_cleanup(layer_names[i]);
+      }
       let _l, _ll;
-      // Remove current layers and legedn/layout features from the map :
+      // Make sure there is no layers and legend/layout features on the map :
       _l = svg_map.childNodes;  _ll = _l.length;
+      console.log(_l);
       for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // Remove them from the layer manager too :
+      // And in the layer manager :
       _l = layer_list.node().childNodes;  _ll = _l.length;
+      console.log(_l);
       for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // Remove them from the object where we are storing the main properties :
+      // Get a new object for where we are storing the main properties :
       current_layers = new Object();
     }
 
@@ -356,8 +362,9 @@ function apply_user_preferences(json_pref){
     let set_final_param = () => {
         if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            reproj_symbol_layer();
+            console.log("je suis passé par ici")
+            // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
+            // reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
@@ -373,7 +380,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 1200);
+        }, 750);
     };
 
     function apply_layout_lgd_elem(){
@@ -473,6 +480,7 @@ function apply_user_preferences(json_pref){
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    defs = map.append("defs");
     {
       let proj_select = document.getElementById('form_projection');
       proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
