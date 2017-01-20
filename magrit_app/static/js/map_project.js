@@ -342,6 +342,7 @@ function apply_user_preferences(json_pref){
       _l = layer_list.node().childNodes;  _ll = _l.length;
       for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
       // Remove them from the object where we are storing the main properties :
+      current_layers = new Object();
     }
 
     let preferences = JSON.parse(json_pref),
