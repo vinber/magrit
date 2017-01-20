@@ -1290,6 +1290,12 @@ function add_simplified_land_layer(options = {}){
     options.stroke_width = options.stroke_width || "0.3px";
 
     d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
+        current_layers["Simplified_land_polygons"] = {
+            "type": "Polygon",
+            "n_features":125,
+            "stroke-width-const": +options.stroke_width.slice(0,-2),
+            "fill_color": {single: options.fill}
+        };
         map.append("g")
             .attrs({id: "Simplified_land_polygons", class: "layer"})
             .style("stroke-width", options.stroke_width)
@@ -1300,12 +1306,6 @@ function add_simplified_land_layer(options = {}){
             .attr("d", path)
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
-        current_layers["Simplified_land_polygons"] = {
-            "type": "Polygon",
-            "n_features":125,
-            "stroke-width-const": +options.stroke_width.slice(0,-2),
-            "fill_color": {single: options.fill}
-        };
         create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
         if(!options.skip_rescale){
             scale_to_lyr("Simplified_land_polygons");
