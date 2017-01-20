@@ -1223,7 +1223,6 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
          [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
-         [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"],
          [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
          [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
          [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
