@@ -24,5 +24,3 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 > * Le nom du champ contenant les valeurs à utiliser
 > * Le nombre d'itérations à effectuer avant d'obtenir le résultat
 > * Le nom de la couche produite
-
-

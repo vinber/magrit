@@ -4,8 +4,9 @@
 
 Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).
 
-![Dialogue de choix de représentation](./img/win_rep_fr.png)
-
+<p style="text-align: center;">
+<img src="img/win_rep_fr.png" alt="Dialogue de choix de représentation"/>
+</p>
 
 
 Représentations adaptées à des données de stocks :

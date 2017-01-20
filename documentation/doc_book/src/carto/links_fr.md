@@ -1,6 +1,9 @@
 # Carte des liens
 
 Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.
+Différents éléments, tels que la présence de chevauchements trop nombreux, peuvent nuire à la lisibilité de ce type de représentation,
+Ce type de carte requiert généralement d'effectuer une sélection après le premier rendu, consistant par exemple à ne pas représenter les flux les plus faibles.
+
 
 > ### Paramètres
 > * Le champ contenant les identifiants des entités 'origine'.

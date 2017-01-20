@@ -1206,11 +1206,7 @@ function binds_layers_buttons(layer_name){
         center_map(layer_name);
         zoom_without_redraw();
     });
-
-    //$("[layer-tooltip!='']").qtip({
-    //    content: { attr: "layer-tooltip" },
-    //    style: { classes: 'qtip-rounded qtip-light qtip_layer'}
-    //});
+    // TODO : re-add a tooltip when the mouse is over that sortable element ?
 }
 
 // Function to display information on the top layer (in the layer manager)

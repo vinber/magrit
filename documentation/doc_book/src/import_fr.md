@@ -4,7 +4,9 @@ Import et manipulation des données
 Deux éléments fondamentaux servent de point de départ à la réalisation d'une carte dans Magrit : le fond de carte et les données qui y sont associées.
 De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces deux éléments.
 
-![Dialogue d'import](./img/win_imp_fr.png)
+<p style="text-align: center;">
+<img src="img/win_imp_fr.png" alt="Dialogue d'import"/>
+</p>
 
 ## Import du fond de carte
 
@@ -45,8 +47,9 @@ Plusieurs format sont pris en charge pour l'import des données :
 Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
 Cette opération et appelée "jointure" (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant les colonnes d'identifiants dans le jeu de données et dans le fond de carte.
 
-![Dialogue de jointure](./img/win_jnt_fr.png)
-
+<p style="text-align: center;">
+<img src="img/win_jnt_fr.png" alt="Dialogue de jointure"/>
+</p>
 
 > <img src="img/joinfalse.png" alt="joinfalse" style="width: 35px;"/> Apparence de l'élément avant jointure  
 > <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs  
@@ -54,16 +57,18 @@ Cette opération et appelée "jointure" (c'est également le cas dans les logici
 
 ## Typage des données
 
-A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc importat de définir le type de chacune des variables à cartographier.
+A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.
 
-5 types de données sont possibles : 
+5 types de données sont possibles :
 - *Stock*
 - *Ratio*
 - *Catégorie*
 - *Inconnu* (champs non cartographiables)
 - *Identifiant* (champs utilisés pour joindre les données)
 
-![Dialogue de typage des données](./img/win_typ_fr.png)
+<p style="text-align: center;">
+<img src="img/win_typ_fr.png" alt="Dialogue de typage des données"/>
+</p>
 
 
 ## Affichage et enrichissement des tables de données

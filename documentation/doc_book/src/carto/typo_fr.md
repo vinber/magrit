@@ -10,5 +10,6 @@ Ce type de carte permet de représenter des entités surfaciques selon la valeur
 
 <p style="text-align: center;">
 <img src="img/typo.png" alt="img_typo_map" style="width: 480px;"/>
+</p>
 
 - Champ utilisé : **LIBEPT**  
