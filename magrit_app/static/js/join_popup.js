@@ -131,9 +131,9 @@ function valid_join_on(layer_name, field1, field2){
             }
         }
         valid_join_check_display(true, prop);
-        return true;
+        return Promise.resolve(true);
     } else if(hits > 0){
-        swal({title: i18next.t("app_page.common.confirm") + "!",
+        return swal({title: i18next.t("app_page.common.confirm") + "!",
               text: i18next.t("app_page.join_box.partial_join", {ratio: prop}),
               allowOutsideClick: false,
               allowEscapeKey: true,
@@ -158,15 +158,17 @@ function valid_join_on(layer_name, field1, field2){
                     }
                 }
                 valid_join_check_display(true, prop);
+                return Promise.resolve(true);
             }, dismiss => {
                 field_join_map = [];
+                return Promise.resolve(false);
             });
     } else {
         swal("",
              i18next.t("app_page.join_box.no_match", {field1: field1, field2: field2}),
              "error");
         field_join_map = [];
-        return false;
+        return Promise.resolve(false);
     }
 }
 
@@ -205,14 +207,8 @@ function createJoinBox(layer){
     make_confirm_dialog2("joinBox", i18next.t("app_page.join_box.title"), {html_content: inner_box, widthFitContent: true})
         .then(confirmed => {
             if(confirmed){
-                let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
-                make_box_type_fields(layer);
-                // if(join_res && window.fields_handler){
-                //     fields_handler.unfill();
-                //     fields_handler.fill(layer);
-                // }
-            } else {
-                make_box_type_fields(layer);
+                valid_join_on(layer, last_choice.field1, last_choice.field2)
+                    .then(valid => { if(valid) make_box_type_fields(layer); });
             }
         });
 
