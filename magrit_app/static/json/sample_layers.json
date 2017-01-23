@@ -7,14 +7,11 @@
  "nuts2": "/static/data_sample/nuts2.geojson",
  "nuts2_data": "/static/data_sample/nuts2_data.geojson",
  "martinique": "/static/data_sample/martinique.geojson",
- "martinique_data": "/static/data_sample/martinique_data.csv",
  "twincities": "/static/data_sample/twincities.csv",
- "paris_hospitals": "/static/data_sample/paris_hospitals.geojson",
  "paris_quartiers": "/static/data_sample/quartier_paris.geojson",
- "us_county": "/static/data_sample/cb_2015_us_county_20m.geojson",
- "us_states": "/static/data_sample/cb_2015_us_state_5m.geojson",
+ "us_states": "/static/data_sample/USA_states.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
- "world_country": "/static/data_sample/simplified_land_polygons.geojson",
+ "world_country": "/static/data_sample/world.geojson",
  "world_cities": "/static/data_sample/world_cities_extract5000.geojson"
  }
 ]

@@ -2176,6 +2176,7 @@ var render_discont = function(){
             "n_features": nb_ft
             };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+        d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();
         switch_accordion_section();

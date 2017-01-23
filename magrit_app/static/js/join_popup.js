@@ -206,12 +206,14 @@ function createJoinBox(layer){
         .then(confirmed => {
             if(confirmed){
                 let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
+                make_box_type_fields(layer);
                 // if(join_res && window.fields_handler){
                 //     fields_handler.unfill();
                 //     fields_handler.fill(layer);
                 // }
+            } else {
+                make_box_type_fields(layer);
             }
-            make_box_type_fields(layer);
         });
 
     d3.select(".joinBox").styles({"text-align": "center", "line-height": "0.9em"});

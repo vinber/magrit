@@ -264,15 +264,16 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
         for(let i=0; i < deepth_test; ++i){
             let val = table[i][field];
             if(h[val]) dups[field] = true;
-            else h[val] = true,
+            else h[val] = true;
             tmp_type = typeof val;
-            if(tmp_type === "string" && val.length == 0)
+            if(tmp_type === "object" && isFinite(val)){
+                tmp_type = "empty"
+            } else if(tmp_type === "string" && val.length == 0){
                 tmp_type = "empty";
-            else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
+            } else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
                 let _val = Number(table[i][field]);
                 tmp_type = (_val | 0) === val ? "stock" : "ratio";
-            } else if(tmp_type === "object" && isFinite(val))
-                tmp_type = "empty"
+            }
             tmp[fields[j]].push(tmp_type);
         }
     }
@@ -307,8 +308,7 @@ function make_box_type_fields(layer_name){
         tmp = type_col2(user_data[layer_name]),
         fields_type = current_layers[layer_name].fields_type,
         f = fields_type.map(v => v.name),
-        // fields_type = current_layers[layer_name].fields_type,
-        ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
+        ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
     let deferred = Q.defer(),
         container = document.getElementById("box_type_fields");

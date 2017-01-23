@@ -819,8 +819,9 @@ function add_layer_topojson(text, options){
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
     li.setAttribute("class", class_name);
-    li.setAttribute("layer_name", lyr_name_to_add)
-    li.setAttribute("layer-tooltip", layer_tooltip_content)
+    li.setAttribute("layer_name", lyr_name_to_add);
+    li.setAttribute("layer-tooltip", layer_tooltip_content);
+    d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
@@ -1219,20 +1220,12 @@ function add_sample_layer(){
 
     var target_layers = [
          [i18next.t("app_page.sample_layer_box.target_layer"),""],
-         [i18next.t("app_page.sample_layer_box.paris_hospitals"), "paris_hospitals"],
          [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
          [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
          [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
          [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
-         [i18next.t("app_page.sample_layer_box.us_county"), "us_county"],
          [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
-        ];
-
-    var tabular_datasets = [
-         [i18next.t("app_page.sample_layer_box.tabular_dataset"),""],
-         [i18next.t("app_page.sample_layer_box.twincities"), "twincities"],
-         [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data'],
         ];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
@@ -1242,40 +1235,20 @@ function add_sample_layer(){
                 if(selec.target){
                     add_sample_geojson(selec.target, {target_layer_on_add: true});
                 }
-                if(selec.dataset){
-                    url = sample_datasets[selec.dataset];
-                    d3.csv(url, function(error, data){
-                        dataset_name = selec.dataset;
-                        add_dataset(data);
-                    });
-                }
             }
         });
 
     var box_body = d3.select(".sampleDialogBox").select(".modal-body");
-//    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
     target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
     t_layer_selec.on("change", function(){selec.target = this.value;});
 
-    var title_tab_dataset = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
-
-    var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
-    tabular_datasets.forEach(layer_info => { dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
-    dataset_selec.on("change", function(){selec.dataset = this.value;});
-
     if(targeted_layer_added){
         title_tgt_layer.style("color", "grey")
                 .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
-    }
-
-    if(joined_dataset.length > 0){
-        title_tab_dataset.style("color", "grey")
-                .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle2") + "</i>");
-        dataset_selec.node().disabled = true;
     }
 }
 
@@ -1287,27 +1260,27 @@ function add_simplified_land_layer(options = {}){
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
 
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function(error, json) {
-        current_layers["Simplified_land_polygons"] = {
+    d3.json("/static/data_sample/world.topojson", function(error, json) {
+        current_layers["world"] = {
             "type": "Polygon",
             "n_features":125,
             "stroke-width-const": +options.stroke_width.slice(0,-2),
             "fill_color": {single: options.fill}
         };
         map.append("g")
-            .attrs({id: "Simplified_land_polygons", class: "layer"})
+            .attrs({id: "world", class: "layer"})
             .style("stroke-width", options.stroke_width)
             .selectAll('.subunit')
-            .data(topojson.feature(json, json.objects.simplified_land_polygons).features)
+            .data(topojson.feature(json, json.objects.world).features)
             .enter()
             .append('path')
             .attr("d", path)
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
-        create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
+        create_li_layer_elem("world", null, "Polygon", "sample");
         if(!options.skip_rescale){
-            scale_to_lyr("Simplified_land_polygons");
-            center_map("Simplified_land_polygons");
+            scale_to_lyr("world");
+            center_map("world");
         }
         zoom_without_redraw();
     });

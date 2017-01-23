@@ -369,22 +369,22 @@ function setUpInterface(resume_project) {
         var type = this.value,
             export_filename = document.getElementById("export_filename");
         if (type === "svg") {
+            document.getElementById('export_options_geo').style.display = 'none';
             document.getElementById("export_options_png").style.display = "none";
             export_filename.value = "export.svg";
             export_filename.style.display = "";
             export_filename.previousSibling.style.display = "";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
         } else if (type === "png") {
+            document.getElementById('export_options_geo').style.display = 'none';
             document.getElementById("export_options_png").style.display = "";
             export_filename.value = "export.png";
             export_filename.style.display = "";
             export_filename.previousSibling.style.display = "";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
         } else if (type === "geo") {
             document.getElementById("export_options_png").style.display = "none";
+            document.getElementById('export_options_geo').style.display = '';
             export_filename.style.display = "none";
             export_filename.previousSibling.style.display = "none";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
         }
     });
 
@@ -466,13 +466,63 @@ function setUpInterface(resume_project) {
 
     export_name.append("input").attrs({ "id": "export_filename", "class": "m_elem_right", "type": "text" });
 
-    dv5b.append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
+    var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
+
+    var geo_a = export_geo_options.append('p');
+    geo_a.append('span').html(i18next.t("app_page.export_box.option_layer"));
+    var selec_layer = geo_a.insert("select").attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
+
+    var geo_b = export_geo_options.append('p');
+    geo_b.append('span').html(i18next.t('app_page.export_box.option_datatype'));
+    var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' });
+
+    export_geo_options.append('p').style('margin', 'auto').append('span').html(i18next.t('app_page.export_box.option_projection'));
+    var geo_c = export_geo_options.append('p').style('margin', 'auto');
+    var selec_projection = geo_c.insert("select").attrs({ id: "projection_to_use", disabled: true, class: 'i18n m_elem_right' }).styles({ position: 'relative' });
+
+    var proj4_input = export_geo_options.append("input").attrs({ class: 'm_elem_right', id: 'proj4str' }).styles({ display: 'none', width: '280px', position: 'relative' }).on('keyup', function () {
+        ok_button.disabled = this.value.length == 0 ? 'true' : '';
+    });
+
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+        selec_type.append("option").attr("value", name).text(name);
+    });
+
+    [["app_page.section5b.wgs84", "epsg:4326"], ["app_page.section5b.web_mercator", "epsg:3857"], ["app_page.section5b.laea_europe", "epsg:3035"], ["app_page.section5b.usa_albers", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["app_page.section5b.british_national_grid", "epsg:27700"], ["app_page.section5b.lambert93", "epsg:2154"], ["app_page.section5b.eckert_4", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["app_page.section5b.proj4_prompt", "proj4string"]].forEach(function (projection) {
+        selec_projection.append("option").attrs({ class: 'i18n', value: projection[1], 'data-i18n': projection[0] }).text(i18next.t(projection[0]));
+    });
+
+    selec_type.on("change", function () {
+        if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
+            selec_projection.node().options.selectedIndex = 0;
+            selec_projection.attr("disabled", true);
+            ok_button.disabled = "";
+        } else {
+            selec_projection.attr("disabled", null);
+        }
+    });
+
+    selec_projection.on("change", function () {
+        if (this.value == "proj4string") {
+            proj4_input.style("display", "initial");
+            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) ok_button.disabled = "true";
+        } else {
+            proj4_input.style("display", "none");
+            ok_button.disabled = "";
+        }
+    });
+
+    var ok_button = dv5b.append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
         var type_export = document.getElementById("select_export_type").value,
             export_name = document.getElementById("export_filename").value;
         if (type_export === "svg") {
             export_compo_svg(export_name);
         } else if (type_export === "geo") {
-            make_export_layer_box();
+            var layer_name = document.getElementById('layer_to_export').value,
+                type = document.getElementById('datatype_to_use').value,
+                _proj = document.getElementById('projection_to_use').value;
+            export_layer_geo(layer_name, type, _proj);
+            //make_export_layer_box()
         } else if (type_export === "png") {
             var _type_export = document.getElementById("select_png_format").value,
                 ratio = void 0;
@@ -1294,6 +1344,10 @@ function remove_layer_cleanup(name) {
     map.select(g_lyr_name).remove();
     document.querySelector('#sortable .' + name).remove();
 
+    // Remove the layer from the "geo export" menu :
+    var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+    if (a) a.remove();
+
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if (current_layers[name].targeted) {
         // Updating the top of the menu (section 1) :
@@ -1900,118 +1954,193 @@ function _export_compo_png() {
     };
 }
 
-function make_export_layer_box() {
-    var dialogBox = make_confirm_dialog2("dialogGeoExport", i18next.t("app_page.export_box.geo_title_box"), { text_ok: i18next.t("app_page.section5b.export_button") }),
-        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-        button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+function export_layer_geo(layer, type, projec) {
+    var formToSend = new FormData();
+    formToSend.append("layer", layer);
+    formToSend.append("layer_name", current_layers[layer].key_name);
+    formToSend.append("format", type);
+    if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4_input.node().value }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var layer_names = Object.getOwnPropertyNames(current_layers).filter(function (name) {
-        if (sample_no_values.has(name)) return 0;else if (current_layers[name].renderer && (current_layers[name].renderer.indexOf("PropSymbols") > -1 || current_layers[name].renderer.indexOf("Dorling") > -1)) return 0;
-        return 1;
-    });
-
-    box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-
-    var selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer")).insert("select").attr("id", "layer_to_export");
-
-    var selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype")).insert("select").attr("id", "datatype_to_use");
-
-    var selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection")).insert("select").attrs({ id: "projection_to_use", disabled: true });
-
-    var proj4_input = box_content.append("input").attr("id", "proj4str").styles({ display: 'none', width: '200px' }).on('keyup', function () {
-        if (this.value.length == 0) {
-            button_ok.disabled = "true";
-        } else {
-            button_ok.disabled = "";
-        }
-    });
-
-    layer_names.forEach(function (name) {
-        selec_layer.append("option").attr("value", name).text(name);
-    });
-
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
-        selec_type.append("option").attr("value", name).text(name);
-    });
-
-    [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"], ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"], ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"], ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"], ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"], ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["Enter any valid Proj.4 string...", "proj4string"]].forEach(function (projection) {
-        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-    });
-
-    selec_type.on("change", function () {
-        if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
-            selec_projection.node().options.selectedIndex = 0;
-            selec_projection.attr("disabled", true);
-            button_ok.disabled = "";
-        } else {
-            selec_projection.attr("disabled", null);
-        }
-    });
-
-    selec_projection.on("change", function () {
-        if (this.value == "proj4string") {
-            proj4_input.style("display", "initial");
-            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) button_ok.disabled = "true";
-        } else {
-            proj4_input.style("display", "none");
-            button_ok.disabled = "";
-        }
-    });
-
-    // TODO : allow export to "geopackage" format ?
     var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
-    dialogBox.then(function (confirmed) {
-        if (confirmed) {
-            (function () {
-                var layer = selec_layer.node().value,
-                    type = selec_type.node().value,
-                    projec = selec_projection.node().value;
-                var formToSend = new FormData();
-                formToSend.append("layer", layer);
-                formToSend.append("layer_name", current_layers[layer].key_name);
-                formToSend.append("format", type);
-                if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4_input.node().value }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
-
-                xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
-                    if (data.indexOf('{"Error"') == 0 || data.length == 0) {
-                        var error_message = void 0;
-                        if (data.indexOf('{"Error"') < 5) {
-                            data = JSON.parse(data);
-                            error_message = i18next.t(data.Error);
-                        } else {
-                            error_message = i18next.t('app_page.common.error_msg');
-                        }
-                        swal({ title: "Oops...",
-                            text: error_message,
-                            type: "error",
-                            allowOutsideClick: false,
-                            allowEscapeKey: false
-                        }).then(function () {
-                            null;
-                        }, function () {
-                            null;
-                        });
-                        return;
-                    }
-                    var ext = extensions.get(type),
-                        dataStr = void 0;
-                    if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
-
-                    var dlAnchorElem = document.createElement('a');
-                    dlAnchorElem.setAttribute("href", dataStr);
-                    dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                    document.body.appendChild(dlAnchorElem);
-                    dlAnchorElem.click();
-                    dlAnchorElem.remove();
-                }, function (error) {
-                    console.log(error);
-                });
-                dialogBox.dialog("destroy").remove();
-            })();
+    xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
+        if (data.indexOf('{"Error"') == 0 || data.length == 0) {
+            var error_message = void 0;
+            if (data.indexOf('{"Error"') < 5) {
+                data = JSON.parse(data);
+                error_message = i18next.t(data.Error);
+            } else {
+                error_message = i18next.t('app_page.common.error_msg');
+            }
+            swal({ title: "Oops...",
+                text: error_message,
+                type: "error",
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(function () {
+                null;
+            }, function () {
+                null;
+            });
+            return;
         }
+        var ext = extensions.get(type),
+            dataStr = void 0;
+        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
+
+        var dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+    }, function (error) {
+        console.log(error);
     });
 }
+
+// function make_export_layer_box(){
+//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
+//                          i18next.t("app_page.export_box.geo_title_box"),
+//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
+//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
+//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+//
+//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+//         if(sample_no_values.has(name))
+//             return 0;
+//         else if(current_layers[name].renderer
+//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
+//             return 0;
+//         return 1;
+//     });
+//
+//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
+//
+//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
+//              .insert("select").attr("id", "layer_to_export");
+//
+//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
+//              .insert("select").attr("id", "datatype_to_use");
+//
+//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
+//              .insert("select").attrs({id: "projection_to_use", disabled: true});
+//
+//     let proj4_input = box_content.append("input")
+//         .attr("id", "proj4str")
+//         .styles({display: 'none', width: '200px'})
+//         .on('keyup', function(){
+//             if(this.value.length == 0){
+//                 button_ok.disabled = "true";
+//             } else {
+//                 button_ok.disabled = ""
+//             }
+//         });
+//
+//     layer_names.forEach( name => {
+//         selec_layer.append("option").attr("value", name).text(name);
+//     });
+//
+//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+//         selec_type.append("option").attr("value", name).text(name);
+//     });
+//
+//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
+//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
+//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
+//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
+//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
+//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
+//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
+//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
+//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
+//     });
+//
+//     selec_type.on("change", function(){
+//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
+//             selec_projection.node().options.selectedIndex = 0;
+//             selec_projection.attr("disabled", true);
+//             button_ok.disabled = "";
+//         } else {
+//             selec_projection.attr("disabled", null);
+//         }
+//     });
+//
+//     selec_projection.on("change", function(){
+//         if(this.value == "proj4string"){
+//             proj4_input.style("display", "initial");
+//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
+//                 button_ok.disabled = "true";
+//         } else {
+//             proj4_input.style("display", "none");
+//             button_ok.disabled = "";
+//         }
+//     });
+//
+//     // TODO : allow export to "geopackage" format ?
+//     let extensions = new Map([
+//         ["GeoJSON", "geojson"],
+//         ["TopoJSON", "topojson"],
+//         ["ESRI Shapefile", "zip"],
+//         ["GML", "zip"],
+//         ["KML", "kml"]]);
+//
+//     dialogBox.then( confirmed => { if(confirmed){
+//         let layer = selec_layer.node().value,
+//             type = selec_type.node().value,
+//             projec = selec_projection.node().value;
+//         let formToSend = new FormData();
+//         formToSend.append("layer", layer);
+//         formToSend.append("layer_name", current_layers[layer].key_name);
+//         formToSend.append("format", type);
+//         if(projec == "proj4string")
+//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+//         else
+//             formToSend.append("projection", JSON.stringify({"name" : projec}));
+//
+//         xhrequest("POST", '/get_layer2', formToSend, true)
+//             .then( data => {
+//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
+//                     let error_message;
+//                     if(data.indexOf('{"Error"') < 5){
+//                         data = JSON.parse(data);
+//                         error_message = i18next.t(data.Error);
+//                     } else {
+//                         error_message = i18next.t('app_page.common.error_msg');
+//                     }
+//                     swal({title: "Oops...",
+//                          text: error_message,
+//                          type: "error",
+//                          allowOutsideClick: false,
+//                          allowEscapeKey: false
+//                         }).then( () => { null; },
+//                                   () => { null; });
+//                     return;
+//                 }
+//                 let ext = extensions.get(type),
+//                     dataStr;
+//                 if(ext.indexOf("json") > -1)
+//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+//                 else if (ext.indexOf("kml") > -1)
+//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+//                 else
+//                     dataStr = "data:application/zip;base64," + data;
+//
+//                 let dlAnchorElem = document.createElement('a');
+//                 dlAnchorElem.setAttribute("href", dataStr);
+//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+//                 document.body.appendChild(dlAnchorElem);
+//                 dlAnchorElem.click();
+//                 dlAnchorElem.remove();
+//
+//             }, error => {
+//                 console.log(error);
+//             });
+//         dialogBox.dialog("destroy").remove();
+//     }});
+// }
+
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917
@@ -5579,6 +5708,7 @@ var render_discont = function render_discont() {
             "n_features": nb_ft
         };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+        d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();
         switch_accordion_section();
@@ -6535,11 +6665,16 @@ var type_col2 = function type_col2(table, field) {
         var h = {};
         for (var i = 0; i < deepth_test; ++i) {
             var val = table[i][field];
-            if (h[val]) dups[field] = true;else h[val] = true, tmp_type = typeof val === "undefined" ? "undefined" : _typeof(val);
-            if (tmp_type === "string" && val.length == 0) tmp_type = "empty";else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
+            if (h[val]) dups[field] = true;else h[val] = true;
+            tmp_type = typeof val === "undefined" ? "undefined" : _typeof(val);
+            if (tmp_type === "object" && isFinite(val)) {
+                tmp_type = "empty";
+            } else if (tmp_type === "string" && val.length == 0) {
+                tmp_type = "empty";
+            } else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
                 var _val = Number(table[i][field]);
                 tmp_type = (_val | 0) === val ? "stock" : "ratio";
-            } else if (tmp_type === "object" && isFinite(val)) tmp_type = "empty";
+            }
             tmp[fields[j]].push(tmp_type);
         }
     }
@@ -6576,9 +6711,7 @@ function make_box_type_fields(layer_name) {
         f = fields_type.map(function (v) {
         return v.name;
     }),
-
-    // fields_type = current_layers[layer_name].fields_type,
-    ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
+        ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
     var deferred = Q.defer(),
         container = document.getElementById("box_type_fields");
@@ -7869,6 +8002,7 @@ function add_layer_topojson(text, options) {
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
     li.setAttribute("layer-tooltip", layer_tooltip_content);
+    d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if (target_layer_on_add) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
@@ -8244,9 +8378,7 @@ function add_sample_layer() {
         if (error) throw error;else sample_datasets = json[0];
     });
 
-    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.paris_hospitals"), "paris_hospitals"], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"], [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_county"), "us_county"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
-
-    var tabular_datasets = [[i18next.t("app_page.sample_layer_box.tabular_dataset"), ""], [i18next.t("app_page.sample_layer_box.twincities"), "twincities"], [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data']];
+    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
@@ -8254,18 +8386,10 @@ function add_sample_layer() {
             if (selec.target) {
                 add_sample_geojson(selec.target, { target_layer_on_add: true });
             }
-            if (selec.dataset) {
-                url = sample_datasets[selec.dataset];
-                d3.csv(url, function (error, data) {
-                    dataset_name = selec.dataset;
-                    add_dataset(data);
-                });
-            }
         }
     });
 
     var box_body = d3.select(".sampleDialogBox").select(".modal-body");
-    //    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
@@ -8276,24 +8400,9 @@ function add_sample_layer() {
         selec.target = this.value;
     });
 
-    var title_tab_dataset = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
-
-    var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
-    tabular_datasets.forEach(function (layer_info) {
-        dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
-    });
-    dataset_selec.on("change", function () {
-        selec.dataset = this.value;
-    });
-
     if (targeted_layer_added) {
         title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
-    }
-
-    if (joined_dataset.length > 0) {
-        title_tab_dataset.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle2") + "</i>");
-        dataset_selec.node().disabled = true;
     }
 }
 
@@ -8307,19 +8416,19 @@ function add_simplified_land_layer() {
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
 
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function (error, json) {
-        current_layers["Simplified_land_polygons"] = {
+    d3.json("/static/data_sample/world.topojson", function (error, json) {
+        current_layers["world"] = {
             "type": "Polygon",
             "n_features": 125,
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "world", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.world).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
-        create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
+        create_li_layer_elem("world", null, "Polygon", "sample");
         if (!options.skip_rescale) {
-            scale_to_lyr("Simplified_land_polygons");
-            center_map("Simplified_land_polygons");
+            scale_to_lyr("world");
+            center_map("world");
         }
         zoom_without_redraw();
     });
@@ -8703,12 +8812,14 @@ function createJoinBox(layer) {
     make_confirm_dialog2("joinBox", i18next.t("app_page.join_box.title"), { html_content: inner_box, widthFitContent: true }).then(function (confirmed) {
         if (confirmed) {
             var join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
+            make_box_type_fields(layer);
             // if(join_res && window.fields_handler){
             //     fields_handler.unfill();
             //     fields_handler.fill(layer);
             // }
+        } else {
+            make_box_type_fields(layer);
         }
-        make_box_type_fields(layer);
     });
 
     d3.select(".joinBox").styles({ "text-align": "center", "line-height": "0.9em" });
@@ -10864,17 +10975,18 @@ var UserEllipse = function () {
             var s2b = box_content.append("p");
             s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
             s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
-                var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]];
-                var distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1]));
-                var angle = Math.abs(+this.value);
+                var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
+                    distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
+                    angle = Math.abs(+this.value);
 
                 var _self$calcDestFromOAD3 = self.calcDestFromOAD(self.pt1, angle, distance),
                     _self$calcDestFromOAD4 = _slicedToArray(_self$calcDestFromOAD3, 2),
                     nx = _self$calcDestFromOAD4[0],
                     ny = _self$calcDestFromOAD4[1];
 
-                console.log(ellipse_elem.rx.baseVal.value, self.pt[0], nx);
-                console.log(ellipse_elem.ry.baseVal.value, self.pt[1], ny);
+                console.log("angle :", angle);console.log("pt2 :", pt2);console.log("distance :", distance);
+                console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
+                console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
                 ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
                 ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
                 document.getElementById("ellipse_angle_text").value = +this.value;
@@ -10889,58 +11001,13 @@ var UserEllipse = function () {
         }
     }, {
         key: "handle_ctrl_pt",
-        value: function handle_ctrl_pt() {}
+        value: function handle_ctrl_pt() {
+            null;
+        }
     }]);
 
     return UserEllipse;
 }();
-//  let s3 = box_content.append("p");
-//
-//  s3.append("button")
-//      .attr("class", "button_st4")
-//      .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-//      .on("click", function(){
-//         d3.select(".styleBoxEllipse").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
-//         box_content.style('display', 'none');
-//         let tmp_start_point = map.append("rect")
-//              .attr("class", "ctrl_pt").attr('id', 'pt1')
-//              .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
-//              .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
-//              .attr("height", 6).attr("width", 6)
-//              .style("fill", "red")
-//              .style("cursor", "grab")
-//              .call(d3.drag().on("drag", function(){
-//                  let t = d3.select(this);
-//                  t.attr("x", d3.event.x);
-//                  let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
-//                  ellipse_elem.rx.baseVal.value = dist;
-//              }));
-//
-//          let tmp_end_point = map.append("rect")
-//              .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-//                      x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
-//              .styles({fill: 'red', cursor: 'grab'})
-//              .call(d3.drag().on("drag", function(){
-//                  let t = d3.select(this);
-//                  t.attr("y", d3.event.y);
-//                  let dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
-//                  ellipse_elem.ry.baseVal.value = dist;
-//              }));
-//
-//          let el = document.createElement("button");
-//          el.className = "button_st3";
-//          el.style = "float:right;background:forestgreen;font-size:22px;";
-//          el.innerHTML = i18next.t("app_page.common.done");
-//          el.onclick = function(){
-//              map.selectAll('.ctrl_pt').remove();
-//              el.remove();
-//              d3.select(".styleBoxEllipse").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
-//              box_content.style('display', 'none');
-//          }
-//          d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
-//      });
-//     }
-// }
 "use strict";
 /**
 * Function called on clicking on the legend button of each layer

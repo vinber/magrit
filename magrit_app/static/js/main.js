@@ -452,22 +452,22 @@ function setUpInterface(resume_project)
                 let type = this.value,
                     export_filename = document.getElementById("export_filename");
                 if(type === "svg"){
+                    document.getElementById('export_options_geo').style.display = 'none';
                     document.getElementById("export_options_png").style.display = "none";
                     export_filename.value = "export.svg";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "png"){
+                    document.getElementById('export_options_geo').style.display = 'none';
                     document.getElementById("export_options_png").style.display = "";
                     export_filename.value = "export.png";
                     export_filename.style.display = "";
                     export_filename.previousSibling.style.display = "";
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
                 } else if (type === "geo"){
                     document.getElementById("export_options_png").style.display = "none";
+                    document.getElementById('export_options_geo').style.display = '';
                     export_filename.style.display = "none";
                     export_filename.previousSibling.style.display = "none";
-                    document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
                 }
             });
 
@@ -567,27 +567,97 @@ function setUpInterface(resume_project)
     export_name.append("input")
             .attrs({"id": "export_filename", "class": "m_elem_right", "type": "text"});
 
-    dv5b.append("button")
-            .attrs({"id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button"})
-            .on("click", function(){
-                let type_export = document.getElementById("select_export_type").value,
-                    export_name = document.getElementById("export_filename").value;
-                if(type_export === "svg"){
-                    export_compo_svg(export_name);
-                } else if (type_export === "geo"){
-                    make_export_layer_box()
-                } else if (type_export === "png"){
-                    let type_export = document.getElementById("select_png_format").value,
-                        ratio;
-                    if(type_export === "web"){
-                        ratio = +document.getElementById("export_png_height").value / +h;
-                    } else {
-                        type_export = "paper";
-                        ratio = (+document.getElementById("export_png_height").value * 118.11) / +h;
-                    }
-                    _export_compo_png(type_export, ratio, export_name);
+    let export_geo_options = dv5b.append("p")
+        .attr("id", "export_options_geo")
+        .style("display", "none");
+
+    let geo_a = export_geo_options.append('p');
+    geo_a.append('span').html(i18next.t("app_page.export_box.option_layer"))
+    let selec_layer = geo_a.insert("select")
+        .attrs({id: "layer_to_export", class: 'i18n m_elem_right'});
+
+    let geo_b = export_geo_options.append('p');
+    geo_b.append('span').html(i18next.t('app_page.export_box.option_datatype'));
+    let selec_type = geo_b.insert("select")
+        .attrs({id: 'datatype_to_use', class: 'i18n m_elem_right'});
+
+    export_geo_options.append('p')
+        .style('margin', 'auto')
+        .append('span')
+        .html(i18next.t('app_page.export_box.option_projection'));
+    let geo_c = export_geo_options.append('p').style('margin', 'auto');
+    let selec_projection = geo_c.insert("select")
+        .attrs({id: "projection_to_use", disabled: true, class: 'i18n m_elem_right'})
+        .styles({position: 'relative'});
+
+    let proj4_input = export_geo_options.append("input")
+        .attrs({class: 'm_elem_right', id: 'proj4str'})
+        .styles({display: 'none', width: '280px', position: 'relative'})
+        .on('keyup', function(){
+            ok_button.disabled = this.value.length == 0 ? 'true' : '';
+        });
+
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+        selec_type.append("option").attr("value", name).text(name);
+    });
+
+    [["app_page.section5b.wgs84", "epsg:4326"],
+     ["app_page.section5b.web_mercator", "epsg:3857"],
+     ["app_page.section5b.laea_europe", "epsg:3035"],
+     ["app_page.section5b.usa_albers", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
+     ["app_page.section5b.british_national_grid", "epsg:27700"],
+     ["app_page.section5b.lambert93", "epsg:2154"],
+     ["app_page.section5b.eckert_4", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
+     ["app_page.section5b.proj4_prompt", "proj4string"]].forEach(projection => {
+        selec_projection.append("option").attrs({class: 'i18n', value: projection[1], 'data-i18n': projection[0]}).text(i18next.t(projection[0]));
+    });
+
+    selec_type.on("change", function(){
+        if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
+            selec_projection.node().options.selectedIndex = 0;
+            selec_projection.attr("disabled", true);
+            ok_button.disabled = "";
+        } else {
+            selec_projection.attr("disabled", null);
+        }
+    });
+
+    selec_projection.on("change", function(){
+        if(this.value == "proj4string"){
+            proj4_input.style("display", "initial");
+            if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
+                ok_button.disabled = "true";
+        } else {
+            proj4_input.style("display", "none");
+            ok_button.disabled = "";
+        }
+    });
+
+    let ok_button = dv5b.append("button")
+        .attrs({"id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button"})
+        .on("click", function(){
+            let type_export = document.getElementById("select_export_type").value,
+                export_name = document.getElementById("export_filename").value;
+            if(type_export === "svg"){
+                export_compo_svg(export_name);
+            } else if (type_export === "geo"){
+                let layer_name = document.getElementById('layer_to_export').value,
+                    type = document.getElementById('datatype_to_use').value,
+                    proj = document.getElementById('projection_to_use').value;
+                export_layer_geo(layer_name, type, proj);
+                //make_export_layer_box()
+            } else if (type_export === "png"){
+                let type_export = document.getElementById("select_png_format").value,
+                    ratio;
+                if(type_export === "web"){
+                    ratio = +document.getElementById("export_png_height").value / +h;
+                } else {
+                    type_export = "paper";
+                    ratio = (+document.getElementById("export_png_height").value * 118.11) / +h;
                 }
-            });
+                _export_compo_png(type_export, ratio, export_name);
+            }
+        });
 
     let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
 
@@ -1519,6 +1589,10 @@ function remove_layer_cleanup(name){
     map.select(g_lyr_name).remove();
     document.querySelector('#sortable .' + name).remove()
 
+    // Remove the layer from the "geo export" menu :
+    let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+    if(a) a.remove();
+
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :
@@ -2183,86 +2257,16 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
     }
 }
 
-function make_export_layer_box(){
-    let dialogBox = make_confirm_dialog2("dialogGeoExport",
-                         i18next.t("app_page.export_box.geo_title_box"),
-                         {text_ok: i18next.t("app_page.section5b.export_button")}),
-        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-        button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+function export_layer_geo(layer, type, projec){
+    let formToSend = new FormData();
+    formToSend.append("layer", layer);
+    formToSend.append("layer_name", current_layers[layer].key_name);
+    formToSend.append("format", type);
+    if(projec == "proj4string")
+        formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+    else
+        formToSend.append("projection", JSON.stringify({"name" : projec}));
 
-    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-        if(sample_no_values.has(name))
-            return 0;
-        else if(current_layers[name].renderer
-                && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-                    || current_layers[name].renderer.indexOf("Dorling") > -1))
-            return 0;
-        return 1;
-    });
-
-    box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-
-    let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
-             .insert("select").attr("id", "layer_to_export");
-
-    let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-             .insert("select").attr("id", "datatype_to_use");
-
-    let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
-             .insert("select").attrs({id: "projection_to_use", disabled: true});
-
-    let proj4_input = box_content.append("input")
-        .attr("id", "proj4str")
-        .styles({display: 'none', width: '200px'})
-        .on('keyup', function(){
-            if(this.value.length == 0){
-                button_ok.disabled = "true";
-            } else {
-                button_ok.disabled = ""
-            }
-        });
-
-    layer_names.forEach( name => {
-        selec_layer.append("option").attr("value", name).text(name);
-    });
-
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-        selec_type.append("option").attr("value", name).text(name);
-    });
-
-    [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-     ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-     ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-     ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-     ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-     ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-     ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-     ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-    });
-
-    selec_type.on("change", function(){
-        if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
-            selec_projection.node().options.selectedIndex = 0;
-            selec_projection.attr("disabled", true);
-            button_ok.disabled = "";
-        } else {
-            selec_projection.attr("disabled", null);
-        }
-    });
-
-    selec_projection.on("change", function(){
-        if(this.value == "proj4string"){
-            proj4_input.style("display", "initial");
-            if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
-                button_ok.disabled = "true";
-        } else {
-            proj4_input.style("display", "none");
-            button_ok.disabled = "";
-        }
-    });
-
-    // TODO : allow export to "geopackage" format ?
     let extensions = new Map([
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
@@ -2270,60 +2274,187 @@ function make_export_layer_box(){
         ["GML", "zip"],
         ["KML", "kml"]]);
 
-    dialogBox.then( confirmed => { if(confirmed){
-        let layer = selec_layer.node().value,
-            type = selec_type.node().value,
-            projec = selec_projection.node().value;
-        let formToSend = new FormData();
-        formToSend.append("layer", layer);
-        formToSend.append("layer_name", current_layers[layer].key_name);
-        formToSend.append("format", type);
-        if(projec == "proj4string")
-            formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
-        else
-            formToSend.append("projection", JSON.stringify({"name" : projec}));
-
-        xhrequest("POST", '/get_layer2', formToSend, true)
-            .then( data => {
-                if(data.indexOf('{"Error"') == 0 || data.length == 0){
-                    let error_message;
-                    if(data.indexOf('{"Error"') < 5){
-                        data = JSON.parse(data);
-                        error_message = i18next.t(data.Error);
-                    } else {
-                        error_message = i18next.t('app_page.common.error_msg');
-                    }
-                    swal({title: "Oops...",
-                         text: error_message,
-                         type: "error",
-                         allowOutsideClick: false,
-                         allowEscapeKey: false
-                        }).then( () => { null; },
-                                  () => { null; });
-                    return;
+    xhrequest("POST", '/get_layer2', formToSend, true)
+        .then( data => {
+            if(data.indexOf('{"Error"') == 0 || data.length == 0){
+                let error_message;
+                if(data.indexOf('{"Error"') < 5){
+                    data = JSON.parse(data);
+                    error_message = i18next.t(data.Error);
+                } else {
+                    error_message = i18next.t('app_page.common.error_msg');
                 }
-                let ext = extensions.get(type),
-                    dataStr;
-                if(ext.indexOf("json") > -1)
-                    dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-                else if (ext.indexOf("kml") > -1)
-                    dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-                else
-                    dataStr = "data:application/zip;base64," + data;
+                swal({title: "Oops...",
+                     text: error_message,
+                     type: "error",
+                     allowOutsideClick: false,
+                     allowEscapeKey: false
+                    }).then( () => { null; },
+                              () => { null; });
+                return;
+            }
+            let ext = extensions.get(type),
+                dataStr;
+            if(ext.indexOf("json") > -1)
+                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+            else if (ext.indexOf("kml") > -1)
+                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            else
+                dataStr = "data:application/zip;base64," + data;
 
-                let dlAnchorElem = document.createElement('a');
-                dlAnchorElem.setAttribute("href", dataStr);
-                dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                document.body.appendChild(dlAnchorElem);
-                dlAnchorElem.click();
-                dlAnchorElem.remove();
+            let dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
 
-            }, error => {
-                console.log(error);
-            });
-        dialogBox.dialog("destroy").remove();
-    }});
+        }, error => {
+            console.log(error);
+        });
 }
+
+// function make_export_layer_box(){
+//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
+//                          i18next.t("app_page.export_box.geo_title_box"),
+//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
+//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
+//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+//
+//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+//         if(sample_no_values.has(name))
+//             return 0;
+//         else if(current_layers[name].renderer
+//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
+//             return 0;
+//         return 1;
+//     });
+//
+//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
+//
+//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
+//              .insert("select").attr("id", "layer_to_export");
+//
+//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
+//              .insert("select").attr("id", "datatype_to_use");
+//
+//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
+//              .insert("select").attrs({id: "projection_to_use", disabled: true});
+//
+//     let proj4_input = box_content.append("input")
+//         .attr("id", "proj4str")
+//         .styles({display: 'none', width: '200px'})
+//         .on('keyup', function(){
+//             if(this.value.length == 0){
+//                 button_ok.disabled = "true";
+//             } else {
+//                 button_ok.disabled = ""
+//             }
+//         });
+//
+//     layer_names.forEach( name => {
+//         selec_layer.append("option").attr("value", name).text(name);
+//     });
+//
+//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+//         selec_type.append("option").attr("value", name).text(name);
+//     });
+//
+//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
+//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
+//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
+//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
+//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
+//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
+//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
+//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
+//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
+//     });
+//
+//     selec_type.on("change", function(){
+//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
+//             selec_projection.node().options.selectedIndex = 0;
+//             selec_projection.attr("disabled", true);
+//             button_ok.disabled = "";
+//         } else {
+//             selec_projection.attr("disabled", null);
+//         }
+//     });
+//
+//     selec_projection.on("change", function(){
+//         if(this.value == "proj4string"){
+//             proj4_input.style("display", "initial");
+//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
+//                 button_ok.disabled = "true";
+//         } else {
+//             proj4_input.style("display", "none");
+//             button_ok.disabled = "";
+//         }
+//     });
+//
+//     // TODO : allow export to "geopackage" format ?
+//     let extensions = new Map([
+//         ["GeoJSON", "geojson"],
+//         ["TopoJSON", "topojson"],
+//         ["ESRI Shapefile", "zip"],
+//         ["GML", "zip"],
+//         ["KML", "kml"]]);
+//
+//     dialogBox.then( confirmed => { if(confirmed){
+//         let layer = selec_layer.node().value,
+//             type = selec_type.node().value,
+//             projec = selec_projection.node().value;
+//         let formToSend = new FormData();
+//         formToSend.append("layer", layer);
+//         formToSend.append("layer_name", current_layers[layer].key_name);
+//         formToSend.append("format", type);
+//         if(projec == "proj4string")
+//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+//         else
+//             formToSend.append("projection", JSON.stringify({"name" : projec}));
+//
+//         xhrequest("POST", '/get_layer2', formToSend, true)
+//             .then( data => {
+//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
+//                     let error_message;
+//                     if(data.indexOf('{"Error"') < 5){
+//                         data = JSON.parse(data);
+//                         error_message = i18next.t(data.Error);
+//                     } else {
+//                         error_message = i18next.t('app_page.common.error_msg');
+//                     }
+//                     swal({title: "Oops...",
+//                          text: error_message,
+//                          type: "error",
+//                          allowOutsideClick: false,
+//                          allowEscapeKey: false
+//                         }).then( () => { null; },
+//                                   () => { null; });
+//                     return;
+//                 }
+//                 let ext = extensions.get(type),
+//                     dataStr;
+//                 if(ext.indexOf("json") > -1)
+//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+//                 else if (ext.indexOf("kml") > -1)
+//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+//                 else
+//                     dataStr = "data:application/zip;base64," + data;
+//
+//                 let dlAnchorElem = document.createElement('a');
+//                 dlAnchorElem.setAttribute("href", dataStr);
+//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+//                 document.body.appendChild(dlAnchorElem);
+//                 dlAnchorElem.click();
+//                 dlAnchorElem.remove();
+//
+//             }, error => {
+//                 console.log(error);
+//             });
+//         dialogBox.dialog("destroy").remove();
+//     }});
+// }
 
 
 /*
