@@ -520,8 +520,9 @@ function setUpInterface(resume_project) {
         } else if (type_export === "geo") {
             var layer_name = document.getElementById('layer_to_export').value,
                 type = document.getElementById('datatype_to_use').value,
-                _proj = document.getElementById('projection_to_use').value;
-            export_layer_geo(layer_name, type, _proj);
+                _proj = document.getElementById('projection_to_use').value,
+                proj4value = document.getElementById('proj4str').value;
+            export_layer_geo(layer_name, type, _proj, proj4value);
             //make_export_layer_box()
         } else if (type_export === "png") {
             var _type_export = document.getElementById("select_png_format").value,
@@ -1954,12 +1955,12 @@ function _export_compo_png() {
     };
 }
 
-function export_layer_geo(layer, type, projec) {
+function export_layer_geo(layer, type, projec, proj4str) {
     var formToSend = new FormData();
     formToSend.append("layer", layer);
     formToSend.append("layer_name", current_layers[layer].key_name);
     formToSend.append("format", type);
-    if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4_input.node().value }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
+    if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
     var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
