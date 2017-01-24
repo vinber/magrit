@@ -273,11 +273,13 @@ class Textbox {
         let drag_txt_annot = d3.drag()
              .subject(function() {
                     var t = d3.select(this.parentElement),
-                        prev_translate = t.attr("transform");
-                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                        xy0 = get_map_xy0(),
+                        bbox = this.getBoundingClientRect();
                     return {
-                        x: t.attr("x") - prev_translate[0],
-                        y: t.attr("y") - prev_translate[1],
+                        x: t.attr("x"),
+                        y: t.attr("y"),
+                        x_center: bbox.x - xy0.x + bbox.width / 2,
+                        y_center: bbox.y - xy0.y + bbox.height / 2,
                         map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
@@ -287,12 +289,18 @@ class Textbox {
               })
             .on("end", () => {
                 if(d3.event.subject && !d3.event.subject.map_locked)
-                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
+                    handle_click_hand("unlock");
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
-                d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
-              });
+                let x = d3.event.x,
+                    y = d3.event.y,
+                    t = d3.select(this.parentElement),
+                    transform_value = t.attr('rotate') != 0 && t.attr('rotate') != '0'
+                                      ? ['rotate(', t.attr('rotate'), ',', x - d3.event.subject.x_center, ',', y - d3.event.subject.y_center, ')'].join('')
+                                      : '';
+                t.attrs({x: x, y: y, transform: transform_value});
+            });
 
         let foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
         foreign_obj.setAttributeNS(null, "x", this.x);
@@ -300,6 +308,7 @@ class Textbox {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
+        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
 
@@ -335,26 +344,26 @@ class Textbox {
         inner_ft.on("dblclick", () => { d3.event.stopPropagation(); });
 
         inner_ft.on("mouseover", () => {
-                    inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
-                    inner_ft.style("background-color", "white");
-                    inner_ft.style("border", "1px solid red");
-                    inner_ft.on("keyup", () => {
-                        clearTimeout(current_timeout);
-                        current_timeout = setTimeout(end_edit_action, 7500);
-                        state = "keyup";
-                    })
-                    // toogle the size of the container to 100% while we are using it :
-                    foreign_obj.setAttributeNS(null, "width", "100%");
-                    foreign_obj.setAttributeNS(null, "height", "100%");
-                    d3.select("body").classed("noselect", true);
-                })
-                .on("mouseout", () => {
-                    // use a small delay after leaving the box before deactiving it :
-                    if(!state){
-                        clearTimeout(current_timeout);
-                        current_timeout = setTimeout(end_edit_action, 2500);
-                    }
-                });
+            inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
+            inner_ft.style("background-color", "white");
+            inner_ft.style("border", "1px solid red");
+            inner_ft.on("keyup", () => {
+                clearTimeout(current_timeout);
+                current_timeout = setTimeout(end_edit_action, 7500);
+                state = "keyup";
+            })
+            // toogle the size of the container to 100% while we are using it :
+            foreign_obj.setAttributeNS(null, "width", "100%");
+            foreign_obj.setAttributeNS(null, "height", "100%");
+            d3.select("body").classed("noselect", true);
+        });
+        inner_ft.on("mouseout", () => {
+            // use a small delay after leaving the box before deactiving it :
+            if(!state){
+                clearTimeout(current_timeout);
+                current_timeout = setTimeout(end_edit_action, 2500);
+            }
+        });
 
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
@@ -365,18 +374,60 @@ class Textbox {
             let current_options = {size: this.text_annot.select("p").style("font-size"),
                                    color: this.text_annot.select("p").style("color"),
                                    content: unescape(this.text_annot.select("p").html()),
+                                   rotate: this.text_annot.attr('rotate'),
+                                   transform_rotate: this.text_annot.attr('transform'),
                                    font: ""};
-            let self = this;
+            let map_xy0 = get_map_xy0();
+            let self = this,
+                inner_p = this.text_annot.select('p');
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
                 .then(function(confirmed){
                     if(!confirmed){
-                        self.text_annot.select("p").text(current_options.content);
+                        self.text_annot.select('p')
+                            .text(current_options.content)
+                            .styles({'color': current_options.color, 'font-size': current_options.size});
                         self.fontsize = current_options.size;
+                        self.rotate = current_options.rotate;
+                        self.text_annot.attr('transform', current_options.transform_rotate);
                     }
                 });
-            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation"),
-                options_font = box_content.append('p'),
-                font_select = options_font.insert("select").on("change", function(){ self.text_annot.select("p").style("font-family", this.value); });
+            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
+
+            let option_rotation = box_content.append('p');
+            option_rotation.append("span").style("margin-bottom", "0")
+                .html(i18next.t("app_page.text_box_edit_box.rotation"));
+
+            option_rotation.append('span').style('float', 'right').html('°');
+
+            option_rotation.append("input")
+                .attrs({type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+                        class: "without_spinner", id: "textbox_txt_rotate"})
+                .styles({'width': '40px', 'float': 'right'})
+                .on("change", function(){
+                  let rotate_value = +this.value,
+                      bbox = inner_p.node().getBoundingClientRect(),
+                      x_center = bbox.x - map_xy0.x + bbox.width / 2,
+                      y_center = bbox.y - map_xy0.y + bbox.height / 2;
+                    self.text_annot.attr("rotate", rotate_value);
+                    self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                    document.getElementById("textbox_range_rotate").value = rotate_value;
+                });
+
+            option_rotation.append("input")
+                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate})
+                .styles({"vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px"})
+                .on("change", function(){
+                    let rotate_value = +this.value,
+                        bbox = inner_p.node().getBoundingClientRect(),
+                        x_center = bbox.x - map_xy0.x + bbox.width / 2,
+                        y_center = bbox.y - map_xy0.y + bbox.height / 2;
+                    self.text_annot.attr("rotate", rotate_value);
+                    self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                    document.getElementById("textbox_txt_rotate").value = rotate_value;
+                });
+
+            let options_font = box_content.append('p'),
+                font_select = options_font.insert("select").on("change", function(){ inner_p.style("font-family", this.value); });
 
             available_fonts.forEach(function(font){
                 font_select.append("option").text(font[0]).attr("value", font[1])
@@ -388,14 +439,14 @@ class Textbox {
                 .style('width', '60px')
                 .on("change", function(){
                     self.fontsize = +this.value;
-                    self.text_annot.select("p").style("font-size", self.fontsize + "px");
+                    inner_p.style("font-size", self.fontsize + "px");
                 });
 
             options_font.append("input")
                 .attrs({type: "color", id: "font_color", value: current_options.color})
                 .style('width', '60px')
                 .on("change", function(){
-                    self.text_annot.select("p").style("color", this.value);
+                    inner_p.style("color", this.value);
                 });
 
             let options_format = box_content.append('p'),
@@ -416,7 +467,7 @@ class Textbox {
                     .attr("id", "annotation_content")
                     .style("margin", "5px 0px 0px")
                     .on("keyup", function(){
-                        self.text_annot.select("p").html(this.value)
+                        inner_p.html(this.value)
                     });
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
@@ -425,7 +476,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
 
@@ -434,7 +485,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
             btn_underline.on('click', function(){
@@ -442,7 +493,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
     }

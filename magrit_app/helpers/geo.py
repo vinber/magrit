@@ -143,6 +143,10 @@ def check_projection(proj4string):
         proj4string = "".join(["+init=", proj4string])
     try:
         pyproj_Proj(proj4string)
+        outSpRef = SpatialReference()
+        ret_val = outSpRef.ImportFromProj4(proj4string)
+        if not ret_val == 0:
+            return False
         return proj4string
     except:
         return False

@@ -362,7 +362,6 @@ function apply_user_preferences(json_pref){
     let set_final_param = () => {
         if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
-            console.log("je suis passé par ici")
             // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
             // reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
@@ -628,7 +627,7 @@ function apply_user_preferences(json_pref){
                   options.fill = _layer.fill_color;
               }
               add_layout_feature(layer_name.toLowerCase(), options);
-          } else if (layer_name == "Simplified_land_polygons"){
+          } else if (layer_name == "world"){
               add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px"});
 
           // ... or this is a layer of proportionnals symbols :
@@ -637,7 +636,7 @@ function apply_user_preferences(json_pref){
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
-                  fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color,
+                  fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,

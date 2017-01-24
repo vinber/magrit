@@ -324,7 +324,8 @@
             "font_size": "Taille de la police ",
             "default_font": "Police par défault ",
             "content": "Contenu ",
-            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées."
+            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées.",
+            "rotation": "Rotation"
         },
         "arrow_edit_box": {
             "title": "Options de la flèche",

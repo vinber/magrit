@@ -20,7 +20,7 @@ function handle_click_layer(layer_name){
 function make_single_color_menu(layer, fill_prev, symbol = "path"){
     var fill_color_section = d3.select("#fill_color_section"),
         g_lyr_name = "#" + layer,
-        last_color = (fill_prev && fill_prev.single) ? fill_prev.single : undefined;
+        last_color = (fill_prev && fill_prev.single) ? fill_prev.single : "#FFF";
     let block = fill_color_section.insert('p');
     block.insert("span")
           .html(i18next.t("app_page.layer_style_popup.fill_color"));
@@ -1174,7 +1174,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     .selectAll(type_symbol)
                     .transition()
                     .style("fill", fill_prev.single);
-                current_layers[layer_name].fill_color = cloneObj(fill_prev.single);
+                current_layers[layer_name].fill_color = cloneObj(fill_prev);
             } else if (this.value == "random"){
                 make_random_color(layer_name, type_symbol);
             }

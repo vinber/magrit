@@ -332,7 +332,8 @@
             "font_size": "Font size ",
             "default_font": "Default font family ",
             "content": "Content ",
-            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed."
+            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed.",
+            "rotation": "Rotation"
         },
         "arrow_edit_box": {
             "title": "Arrow options",

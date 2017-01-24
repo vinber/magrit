@@ -379,8 +379,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo")
-                        ? "#FFF" : (current_layers[layer].fill_color.two !== undefined)
+    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined)
                         ? "#FFF" : current_layers[layer].fill_color.single;
 
     var legend_root = map.insert('g')

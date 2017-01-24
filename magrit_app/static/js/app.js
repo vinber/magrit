@@ -8843,7 +8843,7 @@ function make_single_color_menu(layer, fill_prev) {
 
     var fill_color_section = d3.select("#fill_color_section"),
         g_lyr_name = "#" + layer,
-        last_color = fill_prev && fill_prev.single ? fill_prev.single : undefined;
+        last_color = fill_prev && fill_prev.single ? fill_prev.single : "#FFF";
     var block = fill_color_section.insert('p');
     block.insert("span").html(i18next.t("app_page.layer_style_popup.fill_color"));
     block.insert('input').style("float", "right").attrs({ type: 'color', "value": last_color }).on('change', function () {
@@ -9847,7 +9847,7 @@ function createStyleBox_ProbSymbol(layer_name) {
                 if (this.value == "single") {
                     make_single_color_menu(layer_name, fill_prev, type_symbol);
                     map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
-                    current_layers[layer_name].fill_color = cloneObj(fill_prev.single);
+                    current_layers[layer_name].fill_color = cloneObj(fill_prev);
                 } else if (this.value == "random") {
                     make_random_color(layer_name, type_symbol);
                 }
@@ -10315,23 +10315,27 @@ var Textbox = function () {
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement),
-                prev_translate = t.attr("transform");
-            prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
-                return +f;
-            }) : [0, 0];
+                xy0 = get_map_xy0(),
+                bbox = this.getBoundingClientRect();
             return {
-                x: t.attr("x") - prev_translate[0],
-                y: t.attr("y") - prev_translate[1],
+                x: t.attr("x"),
+                y: t.attr("y"),
+                x_center: bbox.x - xy0.x + bbox.width / 2,
+                y_center: bbox.y - xy0.y + bbox.height / 2,
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
-            if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
+            if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
-            d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
+            var x = d3.event.x,
+                y = d3.event.y,
+                t = d3.select(this.parentElement),
+                transform_value = t.attr('rotate') != 0 && t.attr('rotate') != '0' ? ['rotate(', t.attr('rotate'), ',', x - d3.event.subject.x_center, ',', y - d3.event.subject.y_center, ')'].join('') : '';
+            t.attrs({ x: x, y: y, transform: transform_value });
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -10340,6 +10344,7 @@ var Textbox = function () {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
+        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
 
@@ -10385,7 +10390,8 @@ var Textbox = function () {
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
             d3.select("body").classed("noselect", true);
-        }).on("mouseout", function () {
+        });
+        inner_ft.on("mouseout", function () {
             // use a small delay after leaving the box before deactiving it :
             if (!state) {
                 clearTimeout(current_timeout);
@@ -10407,18 +10413,51 @@ var Textbox = function () {
             var current_options = { size: this.text_annot.select("p").style("font-size"),
                 color: this.text_annot.select("p").style("color"),
                 content: unescape(this.text_annot.select("p").html()),
+                rotate: this.text_annot.attr('rotate'),
+                transform_rotate: this.text_annot.attr('transform'),
                 font: "" };
-            var self = this;
+            var map_xy0 = get_map_xy0();
+            var self = this,
+                inner_p = this.text_annot.select('p');
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
-                    self.text_annot.select("p").text(current_options.content);
+                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
                     self.fontsize = current_options.size;
+                    self.rotate = current_options.rotate;
+                    self.text_annot.attr('transform', current_options.transform_rotate);
                 }
             });
-            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation"),
-                options_font = box_content.append('p'),
+            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
+
+            var option_rotation = box_content.append('p');
+            option_rotation.append("span").style("margin-bottom", "0").html(i18next.t("app_page.text_box_edit_box.rotation"));
+
+            option_rotation.append('span').style('float', 'right').html('°');
+
+            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+                class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
+                var rotate_value = +this.value,
+                    bbox = inner_p.node().getBoundingClientRect(),
+                    x_center = bbox.x - map_xy0.x + bbox.width / 2,
+                    y_center = bbox.y - map_xy0.y + bbox.height / 2;
+                self.text_annot.attr("rotate", rotate_value);
+                self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                document.getElementById("textbox_range_rotate").value = rotate_value;
+            });
+
+            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
+                var rotate_value = +this.value,
+                    bbox = inner_p.node().getBoundingClientRect(),
+                    x_center = bbox.x - map_xy0.x + bbox.width / 2,
+                    y_center = bbox.y - map_xy0.y + bbox.height / 2;
+                self.text_annot.attr("rotate", rotate_value);
+                self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                document.getElementById("textbox_txt_rotate").value = rotate_value;
+            });
+
+            var options_font = box_content.append('p'),
                 font_select = options_font.insert("select").on("change", function () {
-                self.text_annot.select("p").style("font-family", this.value);
+                inner_p.style("font-family", this.value);
             });
 
             available_fonts.forEach(function (font) {
@@ -10430,11 +10469,11 @@ var Textbox = function () {
 
             options_font.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize }).style('width', '60px').on("change", function () {
                 self.fontsize = +this.value;
-                self.text_annot.select("p").style("font-size", self.fontsize + "px");
+                inner_p.style("font-size", self.fontsize + "px");
             });
 
             options_font.append("input").attrs({ type: "color", id: "font_color", value: current_options.color }).style('width', '60px').on("change", function () {
-                self.text_annot.select("p").style("color", this.value);
+                inner_p.style("color", this.value);
             });
 
             var options_format = box_content.append('p'),
@@ -10448,7 +10487,7 @@ var Textbox = function () {
                 class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip") }).styles({ "cursor": "pointer", "vertical-align": "bottom" });
             content_modif_zone.append("span").html("<br>");
             var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
-                self.text_annot.select("p").html(this.value);
+                inner_p.html(this.value);
             });
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
@@ -10457,7 +10496,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
 
@@ -10466,7 +10505,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
             btn_underline.on('click', function () {
@@ -10474,7 +10513,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
         }
@@ -11349,7 +11388,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" ? "#FFF" : current_layers[layer].fill_color.two !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
+    var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
     var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)',
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
@@ -11382,6 +11421,8 @@ function createLegend_symbol(layer, field, title, subtitle) {
     var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
         return "legend_feature lg legend_" + i;
     });
+
+    console.log("Symbol fill color: ", color_symb_lgd);
 
     var max_size = ref_symbols_params[0].size,
         last_size = 0,
@@ -12243,7 +12284,6 @@ function apply_user_preferences(json_pref) {
     var set_final_param = function set_final_param() {
         if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            console.log("je suis passé par ici");
             // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
             // reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
@@ -12505,7 +12545,7 @@ function apply_user_preferences(json_pref) {
                     options.fill = _layer.fill_color;
                 }
                 add_layout_feature(layer_name.toLowerCase(), options);
-            } else if (layer_name == "Simplified_land_polygons") {
+            } else if (layer_name == "world") {
                 add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
 
                 // ... or this is a layer of proportionnals symbols :
@@ -12514,7 +12554,7 @@ function apply_user_preferences(json_pref) {
                 var rendering_params = {
                     new_name: layer_name,
                     field: _layer.rendered_field,
-                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color,
+                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
                     ref_value: _layer.size[0],
                     ref_size: _layer.size[1],
                     symbol: _layer.symbol,

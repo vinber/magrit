@@ -441,7 +441,7 @@ async def carto_doug(posted_data, user_id, app):
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 
     result = await app.loop.run_in_executor(
-        app["ProcessPool"],
+        app["ThreadPool"],
         make_cartogram,
         GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
     os.remove(tmp_path)
@@ -798,7 +798,6 @@ async def handler_exists_layer2(request):
             out_proj = check_projection(projection["name"] if "name" in projection
                                         else projection["proj4string"])
             if not out_proj:
-                print("Wrong projection")
                 return web.Response(
                     text=json.dumps(
                         {'Error': 'app_page.common.error_proj4_string'}))
