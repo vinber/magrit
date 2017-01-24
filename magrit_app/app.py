@@ -440,10 +440,17 @@ async def carto_doug(posted_data, user_id, app):
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 
-    result = await app.loop.run_in_executor(
-        app["ThreadPool"],
-        make_cartogram,
-        GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+    try:
+        result = await app.loop.run_in_executor(
+            app["ThreadPool"],
+            make_cartogram,
+            GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+    except asyncio.CancelledError:
+        app['logger'].info(
+            'Cancelled after {:.4f}s : carto_doug'
+            .format(user_id, time.time()-st))
+        return
+
     os.remove(tmp_path)
     savefile(tmp_path, result.encode())
     res = await geojson_to_topojson(tmp_path, remove=True)
@@ -557,13 +564,19 @@ async def carto_gridded(posted_data, user_id, app):
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
-    result_geojson = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_grid_layer,
-        filenames['src_layer'],
-        posted_data["cellsize"],
-        n_field_name,
-        posted_data["grid_shape"].lower())
+    try:
+        result_geojson = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            get_grid_layer,
+            filenames['src_layer'],
+            posted_data["cellsize"],
+            n_field_name,
+            posted_data["grid_shape"].lower())
+    except asyncio.CancelledError:
+        app['logger'].info(
+            'Cancelled after {:.4f}s : get_grid_layer'
+            .format(user_id, time.time()-st))
+        return
 
     savefile(filenames['src_layer'], result_geojson.encode())
     res = await geojson_to_topojson(filenames['src_layer'], remove=True)
@@ -593,11 +606,17 @@ async def compute_olson(posted_data, user_id, app):
     scale_values = posted_data['scale_values']
     ref_layer_geojson = convert_from_topo(ref_layer)
 
-    await app.loop.run_in_executor(
-        app["ThreadPool"],
-        olson_transform,
-        ref_layer_geojson,
-        scale_values)
+    try:
+        await app.loop.run_in_executor(
+            app["ThreadPool"],
+            olson_transform,
+            ref_layer_geojson,
+            scale_values)
+    except asyncio.CancelledError:
+        app['logger'].info(
+            'Cancelled after {:.4f}s : olson_transform'
+            .format(user_id, time.time()-st))
+        return
 
     tmp_part = get_name()
     f_name = "".join(["/tmp/", tmp_part, ".geojson"])
@@ -690,35 +709,41 @@ async def call_stewart(posted_data, user_id, app):
 
     existing_obj = await app['redis_conn'].get(reusable_val)
 
-    if existing_obj:
-        res, breaks = await app.loop.run_in_executor(
-            app["ThreadPool"],
-            resume_stewart,
-            existing_obj,
-            int(posted_data['nb_class']),
-            discretization,
-            posted_data['user_breaks'],
-            filenames["mask_layer"])
+    try:
+        if existing_obj:
+            res, breaks = await app.loop.run_in_executor(
+                app["ThreadPool"],
+                resume_stewart,
+                existing_obj,
+                int(posted_data['nb_class']),
+                discretization,
+                posted_data['user_breaks'],
+                filenames["mask_layer"])
 
-    else:
-        res, breaks, dump_obj = await app.loop.run_in_executor(
-            app["ProcessPool"],
-            quick_stewart_mod,
-            filenames['point_layer'],
-            n_field_name1,
-            int(posted_data['span']),
-            float(posted_data['beta']),
-            posted_data['typefct'].lower(),
-            int(posted_data['nb_class']),
-            discretization,
-            posted_data['resolution'],
-            filenames["mask_layer"],
-            n_field_name2,
-            posted_data['user_breaks'])
+        else:
+            res, breaks, dump_obj = await app.loop.run_in_executor(
+                app["ProcessPool"],
+                quick_stewart_mod,
+                filenames['point_layer'],
+                n_field_name1,
+                int(posted_data['span']),
+                float(posted_data['beta']),
+                posted_data['typefct'].lower(),
+                int(posted_data['nb_class']),
+                discretization,
+                posted_data['resolution'],
+                filenames["mask_layer"],
+                n_field_name2,
+                posted_data['user_breaks'])
 
-        asyncio.ensure_future(
-            app['redis_conn'].set(
-                reusable_val, dump_obj, pexpire=86400000))
+            asyncio.ensure_future(
+                app['redis_conn'].set(
+                    reusable_val, dump_obj, pexpire=86400000))
+    except asyncio.CancelledError:
+        app['logger'].info(
+            'Cancelled after {:.4f}s : stewart'
+            .format(user_id, time.time()-st))
+        return
 
     os.remove(filenames['point_layer'])
     res = json.loads(res.decode())
@@ -877,11 +902,6 @@ async def calc_helper(request):
     result = await request.app.loop.run_in_executor(
         request.app['ThreadPool'],
         run_calc, val1, val2, posted_data['operator'])
-    # result = {
-    #             "+": val1.__add__, "-": val1.__sub__,
-    #             "*": val1.__mul__, "/": val1.__truediv__,
-    #             "^": val1.__pow__
-    #         }[posted_data['operator']](val2).tolist()
     return web.Response(text=result)
 
 

@@ -68,10 +68,27 @@ function setUpInterface(resume_project) {
     bg.style.textAlign = "center";
     bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' + '<span style="color: white; z-index: 2;">...<br></span>' + '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' + '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' + '<div class="line"></div><div class="line"></div></div></div>';
     var btn = document.createElement("button");
+    btn.style.fontSize = '13px';
+    btn.style.background = '#4b9cdb';
+    btn.style.border = '1px solid #298cda';
+    btn.style.fontWeight = 'bold';
     btn.className = "button_st3 i18n";
     btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
     bg.appendChild(btn);
     document.body.appendChild(bg);
+
+    btn.onclick = function () {
+        if (_app.xhr_to_cancel) {
+            _app.xhr_to_cancel.abort();
+            _app.xhr_to_cancel = undefined;
+        }
+        if (_app.webworker_to_cancel) {
+            _app.webworker_to_cancel.onmessage = null;
+            _app.webworker_to_cancel.terminate();
+            _app.webworker_to_cancel = undefined;
+        }
+        document.getElementById('overlay').style.display = 'none';
+    };
 
     var bg_drop = document.createElement('div');
     bg_drop.className = "overlay_drop";
@@ -942,6 +959,10 @@ map.on("contextmenu", function (event) {
 });
 
 var defs = map.append("defs");
+
+var _app = {
+    to_cancel: undefined
+};
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
@@ -5648,13 +5669,14 @@ var render_discont = function render_discont() {
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
     var discont_worker = new Worker('/static/js/webworker_discont.js');
+    _app.webworker_to_cancel = discont_worker;
     discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function (e) {
         var _e$data = _slicedToArray(e.data, 2),
             arr_tmp = _e$data[0],
             d_res = _e$data[1];
 
-        discont_worker.terminate();
+        _app.webworker_to_cancel = undefined;
         var nb_ft = arr_tmp.length,
             step = (max_size - min_size) / (nb_class - 1),
             class_size = Array(nb_class).fill(0).map(function (d, i) {
@@ -5666,7 +5688,6 @@ var render_discont = function render_discont() {
             breaks = _discretize_to_size2[2],
             serie = _discretize_to_size2[3];
 
-        console.log(serie, breaks);
         if (!serie || !breaks) {
             var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
             var w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
@@ -5715,6 +5736,9 @@ var render_discont = function render_discont() {
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
+        console.time('foo');
+        discont_worker.terminate();
+        console.timeEnd('foo');
     };
 };
 
@@ -6495,21 +6519,33 @@ function request_data(method, url, data) {
     });
 }
 
+/**
+* Perform an asynchronous request
+*
+* @param {String} method - the method like "GET" or "POST"
+* @param {String} url - the targeted url
+* @param {FormData} data - Optionnal, the data to be send
+* @param {Boolean} wainting_message - Optionnal, whether to display or not a waiting message while the request is proceeded
+* @return {Promise} response
+*/
 function xhrequest(method, url, data, waiting_message) {
     if (waiting_message) {
         document.getElementById("overlay").style.display = "";
     }
     return new Promise(function (resolve, reject) {
         var request = new XMLHttpRequest();
+        _app.xhr_to_cancel = request;
         request.open(method, url, true);
         request.onload = function (resp) {
             resolve(resp.target.responseText);
+            _app.xhr_to_cancel = undefined;
             if (waiting_message) {
                 document.getElementById("overlay").style.display = "none";
             }
         };
         request.onerror = function (err) {
             reject(err);
+            _app.xhr_to_cancel = undefined;
             if (waiting_message) {
                 document.getElementById("overlay").style.display = "none";
             }
@@ -6550,8 +6586,8 @@ function send_layer_server(layer_name, url) {
     var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
-    request_data("POST", url, formToSend).then(function (e) {
-        var key = JSON.parse(e.target.responseText).key;
+    xhrequest("POST", url, formToSend, false).then(function (e) {
+        var key = JSON.parse(e).key;
         current_layers[layer_name].key_name = key;
     }).catch(function (err) {
         display_error_during_computation();
@@ -7704,8 +7740,8 @@ function handle_reload_TopoJSON(text, param_add_func) {
     var f = new Blob([text], { type: "application/json" });
     ajaxData.append('file[]', f);
 
-    return request_data("POST", '/cache_topojson/user', ajaxData).then(function (response) {
-        var res = response.target.responseText,
+    return xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function (response) {
+        var res = response,
             key = JSON.parse(res).key,
             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
         var layer_name = add_layer_topojson(topoObjText, param_add_func);
@@ -8980,7 +9016,7 @@ function createStyleBoxTypoSymbols(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
 
     popup.append("p").style("text-align", "center").insert("button").attrs({ id: 'reset_symb_loc', class: 'button_st4' }).text(i18next.t("app_page.layer_style_popup.reset_symbols_location")).on("click", function () {
@@ -9086,7 +9122,7 @@ function createStyleBoxLabel(layer_name) {
             restore_prev_settings();
         }
     });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
         selection.transition().attrs(function (d) {
@@ -9315,7 +9351,7 @@ function createStyleBox(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
     if (type === "Point" && !renderer) {
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -9333,7 +9369,6 @@ function createStyleBox(layer_name) {
         var prev_palette;
         var recolor_stewart;
         var color_palette_section;
-        var button_reverse;
 
         (function () {
             if (current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical") {
@@ -9419,7 +9454,7 @@ function createStyleBox(layer_name) {
                     color_palette_section = popup.insert("p").attr("class", "line_elem");
 
                     color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-                    var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").on("change", function () {
+                    var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
                         recolor_stewart(this.value, false);
                     });
 
@@ -9427,8 +9462,7 @@ function createStyleBox(layer_name) {
                         seq_color_select.append("option").text(name).attr("value", name);
                     });
                     seq_color_select.node().value = prev_palette.name;
-
-                    button_reverse = popup.insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                    popup.insert('p').attr('class', 'line_elem').style('text-align', 'center').insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
                         var pal_name = document.getElementById("coloramp_params").value;
                         recolor_stewart(pal_name, true);
                     });
@@ -9482,7 +9516,6 @@ function createStyleBox(layer_name) {
                             for (var i = 0; i < nb_ft; ++i) {
                                 links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                             }
-                            console.log(links_byId);
                             selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
                                 return links_byId[i][2];
                             });
@@ -9763,7 +9796,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         zoom_without_redraw();
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
         (function () {
@@ -10198,18 +10231,25 @@ var UserArrow = function () {
                 map.select('#arrow_end_pt').remove();
                 if (!map_locked) handle_click_hand('unlock');
             });
-            var box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
-            var s1 = box_content.append("p");
-            s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
-            s1.append("input").attrs({ type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+
+            var box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
+            var s1 = box_content.append("p").attr('class', 'line_elem');
+            s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+            s1.append("input").attrs({ type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 line.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-            var txt_line_weight = s1.append("span").html(self.lineWeight + " px");
+            var txt_line_weight = s1.append("span").style('float', 'right').html(self.lineWeight + " px");
 
-            var s2 = box_content.append("p");
-            s2.append("p").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
-            s2.insert("input").attrs({ id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+            var s2 = box_content.append("p").attr('class', 'line_elem');
+            s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
+            s2.insert("span").style('float', 'right').html(" °");
+            s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
+                var elem = document.getElementById("arrow_angle");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
+            s2.insert("input").attrs({ id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 var distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
                 var angle = -+this.value;
 
@@ -10223,15 +10263,7 @@ var UserArrow = function () {
                 document.getElementById("arrow_angle_text").value = +this.value;
             });
 
-            s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px" }).on("input", function () {
-                var elem = document.getElementById("arrow_angle");
-                elem.value = this.value;
-                elem.dispatchEvent(new Event('change'));
-            });
-
-            s2.insert("span").html("°");
-
-            var s3 = box_content.append("p");
+            var s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
             s3.append("button").attr("class", "button_st4").html(i18next.t("app_page.arrow_edit_box.move_points")).on("click", function () {
                 d3.select(".styleBoxArrow").styles({ 'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset' });
                 box_content.style('display', 'none');
@@ -10253,7 +10285,7 @@ var UserArrow = function () {
                     line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
                 }));
 
-                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").append('div').attr('id', 'move_pt_content').node();
+                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
                 var el = document.createElement("button");
                 el.className = "button_st3";
                 el.style = "float:right;background:forestgreen;font-size:14px;";
@@ -10427,13 +10459,11 @@ var Textbox = function () {
                     self.text_annot.attr('transform', current_options.transform_rotate);
                 }
             });
-            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
+            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
 
-            var option_rotation = box_content.append('p');
-            option_rotation.append("span").style("margin-bottom", "0").html(i18next.t("app_page.text_box_edit_box.rotation"));
-
-            option_rotation.append('span').style('float', 'right').html('°');
-
+            var option_rotation = box_content.append('p').attr('class', 'line_elem');
+            option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
+            option_rotation.append('span').style('float', 'right').html(' °');
             option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
                 class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
                 var rotate_value = +this.value,
@@ -10673,11 +10703,16 @@ var scaleBar = {
                 redraw_now();
             }
         });
-        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body").style("width", "295px");
+        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3").html(i18next.t("app_page.scale_bar_edit_box.title"));
-        box_body.append("p").style("display", "inline").html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
-        box_body.append("input").attrs({ type: 'checkbox', "checked": self.fixed_size ? true : null }).on("change", function () {
+        var a = box_body.append("p").attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
+        a.append("input").style('float', 'right').attrs({ id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt }).on("change", function () {
+            new_val = +this.value;
+            redraw_now();
+        });
+        a.append("input").style('float', 'right').attrs({ type: 'checkbox', "checked": self.fixed_size ? true : null }).on("change", function () {
             if (box_body.select("#scale_fixed_field").attr("disabled")) {
                 box_body.select("#scale_fixed_field").attr("disabled", null);
                 new_val = +box_body.select("#scale_fixed_field").attr("value");
@@ -10687,21 +10722,17 @@ var scaleBar = {
             }
             redraw_now();
         });
-        box_body.append("input").attrs({ id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt }).on("change", function () {
-            new_val = +this.value;
-            redraw_now();
-        });
 
-        var b = box_body.append("p");
+        var b = box_body.append("p").attr('class', 'line_elem');
         b.insert("span").html(i18next.t("app_page.scale_bar_edit_box.precision"));
-        b.insert("input").attrs({ id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision }).style("width", "60px").on("change", function () {
+        b.insert("input").style('float', 'right').attrs({ id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision }).style("width", "60px").on("change", function () {
             self.precision = +this.value;
             redraw_now();
         });
 
-        var c = box_body.append("p");
+        var c = box_body.append("p").attr('class', 'line_elem');
         c.insert("span").html(i18next.t("app_page.scale_bar_edit_box.unit"));
-        var unit_select = c.insert("select").attr('id', "scale_unit").on("change", function () {
+        var unit_select = c.insert("select").style('float', 'right').attr('id', "scale_unit").on("change", function () {
             self.unit = this.value;
             redraw_now();
         });
@@ -10710,9 +10741,9 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        var e = box_body.append("p");
+        var e = box_body.append("p").attr('class', 'line_elem');
         e.append("span").html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
-        e.append("input").attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on("change", function (a) {
+        e.append("input").style('float', 'right').attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on("change", function (a) {
             self.start_end_bar = self.start_end_bar == true ? false : true;
             self.handle_start_end_bar();
         });
@@ -10820,12 +10851,20 @@ var northArrow = {
             }
         });
 
-        var box_body = d3.select(".arrowEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
+        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3").html(i18next.t("app_page.north_arrow_edit_box.title"));
-        box_body.append("p").style("margin-bottom", "0").html(i18next.t("app_page.north_arrow_edit_box.size"));
-        box_body.append("input").attrs({ type: "range", min: 1, max: 200, step: 1,
-            value: old_dim, id: "range_size_n_arrow" }).styles({ "vertical-align": "middle", "width": "140px" }).on("change", function () {
+        var a = box_body.append('p').attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
+        a.append("span").style('float', 'right').html(" px");
+        a.append("input").attrs({ type: "number", min: 0, max: 200, step: 1, value: old_dim,
+            class: "without_spinner", id: "txt_size_n_arrow" }).styles({ float: 'right', width: '40px' }).on("change", function () {
+            var elem = document.getElementById("range_size_n_arrow");
+            elem.value = +this.value;
+            elem.dispatchEvent(new Event("change"));
+        });
+        a.append("input").attrs({ type: "range", min: 1, max: 200, step: 1,
+            value: old_dim, id: "range_size_n_arrow" }).styles({ "vertical-align": "middle", "width": "140px", 'float': 'right' }).on("change", function () {
             var new_size = +this.value;
             self.arrow_img.attr("width", new_size);
             self.arrow_img.attr("height", new_size);
@@ -10835,29 +10874,23 @@ var northArrow = {
             self.y_center = y_pos + new_size / 2;
             document.getElementById("txt_size_n_arrow").value = new_size;
         });
-        box_body.append("input").attrs({ type: "number", min: 0, max: 200, step: 1, value: old_dim,
-            class: "without_spinner", id: "txt_size_n_arrow" }).style("width", "40px").on("change", function () {
-            var elem = document.getElementById("range_size_n_arrow");
-            elem.value = +this.value;
-            elem.dispatchEvent(new Event("change"));
-        });
-        box_body.append("span").html(" px");
 
-        box_body.append("p").style("margin-bottom", "0").html(i18next.t("app_page.north_arrow_edit_box.rotation"));
-        box_body.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow" }).attr("value", old_rotate).styles({ "vertical-align": "middle", "width": "140px" }).on("change", function () {
-            var rotate_value = +this.value;
-            self.svg_node.attr("rotate", rotate_value);
-            self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-            document.getElementById("txt_rotate_n_arrow").value = rotate_value;
-        });
-        box_body.append("input").attrs({ type: "number", min: 0, max: 360, step: "any",
-            class: "without_spinner", id: "txt_rotate_n_arrow" }).attr("value", old_rotate).style("width", "40px").on("change", function () {
+        var b = box_body.append("p").attr('class', 'line_elem');
+        b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
+        b.append("span").style('float', 'right').html(" °");
+        b.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: old_rotate,
+            class: "without_spinner", id: "txt_rotate_n_arrow" }).styles({ float: 'right', width: '40px' }).on("change", function () {
             var rotate_value = +this.value;
             self.svg_node.attr("rotate", rotate_value);
             self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
             document.getElementById("range_rotate_n_arrow").value = rotate_value;
         });
-        box_body.append("span").html("°");
+        b.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow", value: old_rotate }).styles({ "vertical-align": "middle", "width": "140px", 'float': 'right' }).on("change", function () {
+            var rotate_value = +this.value;
+            self.svg_node.attr("rotate", rotate_value);
+            self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+            document.getElementById("txt_rotate_n_arrow").value = rotate_value;
+        });
     },
     displayed: false
 };
@@ -11009,9 +11042,9 @@ var UserEllipse = function () {
                 ellipse_elem.style.stroke = this.value;
             });
 
-            var s2b = box_content.append("p");
-            s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
-            s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+            var s2b = box_content.append("p").attr('class', 'line_elem');
+            s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
+            s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
                     distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
                     angle = Math.abs(+this.value);
@@ -11029,12 +11062,12 @@ var UserEllipse = function () {
                 document.getElementById("ellipse_angle_text").value = +this.value;
             });
 
-            s2b.insert("input").attrs({ id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px" }).on("input", function () {
+            s2b.insert("input").attrs({ id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
                 var elem = document.getElementById("ellipse_angle");
                 elem.value = this.value;
                 elem.dispatchEvent(new Event('change'));
             });
-            s2b.insert("span").html("°");
+            s2b.insert("span").style('float', 'right').html(" °");
         }
     }, {
         key: "handle_ctrl_pt",
@@ -11421,8 +11454,6 @@ function createLegend_symbol(layer, field, title, subtitle) {
     var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
         return "legend_feature lg legend_" + i;
     });
-
-    console.log("Symbol fill color: ", color_symb_lgd);
 
     var max_size = ref_symbols_params[0].size,
         last_size = 0,
@@ -12094,7 +12125,7 @@ function get_map_template() {
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "world") {
             selection = map.select("#" + layer_name).selectAll("path");
             layer_style_i.fill_color = rgb2hex(selection.style("fill"));
             layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -12207,14 +12238,14 @@ function get_map_template() {
     }
 
     return Q.all(layers_style.map(function (obj) {
-        return obj.topo_geom && !obj.targeted ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null;
+        return obj.topo_geom && !obj.targeted ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null;
     })).then(function (result) {
         for (var _i3 = 0; _i3 < layers_style.length; _i3++) {
-            if (result[_i3] && result[_i3].target) {
-                layers_style[_i3].topo_geom = result[_i3].target.responseText;
+            if (result[_i3]) {
+                layers_style[_i3].topo_geom = result[_i3];
             }
         }
-        console.log(JSON.stringify({ "map_config": map_config, "layers": layers_style }));
+        // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
         return JSON.stringify({ "map_config": map_config, "layers": layers_style });;
     });
 }
@@ -12284,8 +12315,8 @@ function apply_user_preferences(json_pref) {
     var set_final_param = function set_final_param() {
         if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            // reproj_symbol_layer();
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
+            reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
@@ -12303,7 +12334,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 750);
+        }, 950);
     };
 
     function apply_layout_lgd_elem() {
@@ -12900,9 +12931,9 @@ function make_style_box_indiv_symbol(symbol_node) {
         }
     });
     var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    var a = box_content.append("p");
+    var a = box_content.append("p").attr('class', 'line_elem');
     a.append('span').html(i18next.t('app_page.single_symbol_edit_box.image_size'));
-    a.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0, -2) }).on("change", function () {
+    a.append("input").style('float', 'right').attrs({ type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0, -2) }).on("change", function () {
         var new_val = this.value + "px";
         symbol_node.setAttribute("width", new_val);
         symbol_node.setAttribute("height", new_val);
@@ -12911,8 +12942,9 @@ function make_style_box_indiv_symbol(symbol_node) {
     });
     if (type_obj == 'layout') {
         var current_state = parent.classList.contains('scalable-legend');
-        var b = box_content.append('p');
-        b.append('input').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
+        var b = box_content.append('p').attr('class', 'line_elem');
+        b.append('label').style('float', 'right').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+        b.append('input').style('float', 'right').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
             var zoom_scale = svg_map.__zoom;
             if (this.checked) {
                 symbol_node.setAttribute('x', (symbol_node.x.baseVal.value - zoom_scale.x) / zoom_scale.k);
@@ -12926,7 +12958,6 @@ function make_style_box_indiv_symbol(symbol_node) {
                 parent.classList.remove('scalable-legend');
             }
         });
-        b.append('label').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
     }
 };
@@ -13005,8 +13036,8 @@ function add_field_table(table, layer_name, parent) {
             formToSend.append('var1', JSON.stringify(var1));
             formToSend.append('var2', JSON.stringify(var2));
             formToSend.append('operator', operation);
-            return request_data("POST", "/helpers/calc", formToSend).then(function (e) {
-                var data = JSON.parse(e.target.responseText);
+            return xhrequest("POST", "/helpers/calc", formToSend, false).then(function (data) {
+                data = JSON.parse(data);
                 for (var _i2 = 0; _i2 < table.length; _i2++) {
                     table[_i2][new_name_field] = data[_i2];
                 }return true;

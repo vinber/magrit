@@ -492,8 +492,8 @@ function handle_reload_TopoJSON(text, param_add_func){
     var f = new Blob([text], {type: "application/json"});
     ajaxData.append('file[]', f);
 
-    return request_data("POST", '/cache_topojson/user', ajaxData).then(function(response){
-        let res = response.target.responseText,
+    return xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function(response){
+        let res = response,
             key = JSON.parse(res).key,
             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
         let layer_name = add_layer_topojson(topoObjText, param_add_func);

@@ -156,23 +156,34 @@ class UserArrow {
                 map.select('#arrow_end_pt').remove();
                 if(!map_locked) handle_click_hand('unlock');
             });
-        let box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
-        let s1 = box_content.append("p");
-        s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+
+        let box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
+        let s1 = box_content.append("p").attr('class', 'line_elem');
+        s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.append("input")
             .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
-            .styles({width: "80px", "vertical-align": "middle"})
+            .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 line.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-        let txt_line_weight = s1.append("span").html(self.lineWeight + " px");
+        let txt_line_weight = s1.append("span")
+            .style('float', 'right').html(self.lineWeight + " px");
 
-        let s2 = box_content.append("p");
-        s2.append("p").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
+        let s2 = box_content.append("p").attr('class', 'line_elem');
+        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
+        s2.insert("span").style('float', 'right').html(" °");
+        s2.insert("input")
+            .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+            .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
+            .on("input", function(){
+                let elem = document.getElementById("arrow_angle");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
         s2.insert("input")
             .attrs({id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1})
-            .styles({width: "80px", "vertical-align": "middle"})
+            .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 let distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
                 let angle = -(+this.value);
@@ -182,18 +193,7 @@ class UserArrow {
                 document.getElementById("arrow_angle_text").value = +this.value;
             });
 
-        s2.insert("input")
-            .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-            .styles({width: "30px", "margin-left": "10px"})
-            .on("input", function(){
-                let elem = document.getElementById("arrow_angle");
-                elem.value = this.value;
-                elem.dispatchEvent(new Event('change'));
-            });
-
-        s2.insert("span").html("°");
-
-       let s3 = box_content.append("p");
+       let s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
        s3.append("button")
            .attr("class", "button_st4")
            .html(i18next.t("app_page.arrow_edit_box.move_points"))
@@ -224,7 +224,7 @@ class UserArrow {
                       line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
                    }));
 
-              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").append('div').attr('id', 'move_pt_content').node();
+              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
               let el = document.createElement("button");
               el.className = "button_st3";
               el.style = "float:right;background:forestgreen;font-size:14px;";
@@ -391,14 +391,11 @@ class Textbox {
                         self.text_annot.attr('transform', current_options.transform_rotate);
                     }
                 });
-            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation");
+            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
 
-            let option_rotation = box_content.append('p');
-            option_rotation.append("span").style("margin-bottom", "0")
-                .html(i18next.t("app_page.text_box_edit_box.rotation"));
-
-            option_rotation.append('span').style('float', 'right').html('°');
-
+            let option_rotation = box_content.append('p').attr('class', 'line_elem');
+            option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
+            option_rotation.append('span').style('float', 'right').html(' °');
             option_rotation.append("input")
                 .attrs({type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
                         class: "without_spinner", id: "textbox_txt_rotate"})
@@ -658,13 +655,21 @@ var scaleBar = {
             .then(function(confirmed){
                 if(confirmed){ redraw_now(); }
             });
-        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body").style("width", "295px");
+        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
             .html(i18next.t("app_page.scale_bar_edit_box.title"));
-        box_body.append("p").style("display", "inline")
-            .html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
-        box_body.append("input")
+        let a = box_body.append("p").attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
+        a.append("input")
+            .style('float', 'right')
+            .attrs({id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt})
+            .on("change", function(){
+              new_val = +this.value;
+              redraw_now();
+            });
+        a.append("input")
+            .style('float', 'right')
             .attrs({type: 'checkbox', "checked": self.fixed_size ? true : null})
             .on("change", function(){
                 if(box_body.select("#scale_fixed_field").attr("disabled")){
@@ -676,17 +681,12 @@ var scaleBar = {
                 }
                 redraw_now();
               });
-        box_body.append("input")
-            .attrs({id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt})
-            .on("change", function(){
-              new_val = +this.value;
-              redraw_now();
-            });
 
-        let b = box_body.append("p");
+        let b = box_body.append("p").attr('class', 'line_elem');
         b.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input")
+            .style('float', 'right')
             .attrs({id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision})
             .style("width", "60px")
             .on("change", function(){
@@ -694,10 +694,11 @@ var scaleBar = {
               redraw_now();
             });
 
-        let c = box_body.append("p");
+        let c = box_body.append("p").attr('class', 'line_elem');
         c.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.unit"));
         let unit_select = c.insert("select")
+            .style('float', 'right')
             .attr('id', "scale_unit")
             .on("change", function(){
               self.unit = this.value;
@@ -708,10 +709,11 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        let e = box_body.append("p");
+        let e = box_body.append("p").attr('class', 'line_elem');
         e.append("span")
                 .html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
         e.append("input")
+            .style('float', 'right')
             .attrs({id: 'checkbox_start_end_bar', type: 'checkbox'})
             .on("change", function(a){
                 self.start_end_bar = self.start_end_bar == true ? false : true;
@@ -843,61 +845,63 @@ var northArrow = {
                 }
             });
 
-        var box_body = d3.select(".arrowEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
         box_body.append("h3")
                 .html(i18next.t("app_page.north_arrow_edit_box.title"));
-        box_body.append("p").style("margin-bottom", "0")
-                .html(i18next.t("app_page.north_arrow_edit_box.size"));
-        box_body.append("input")
-                .attrs({type: "range", min: 1, max: 200, step: 1,
-                        value: old_dim, id: "range_size_n_arrow"})
-                .styles({"vertical-align": "middle", "width": "140px"})
-                .on("change", function(){
-                    let new_size = +this.value;
-                    self.arrow_img.attr("width", new_size);
-                    self.arrow_img.attr("height", new_size);
-                    self.under_rect.attr("width", new_size);
-                    self.under_rect.attr("height", new_size);
-                    self.x_center = x_pos + new_size / 2;
-                    self.y_center = y_pos + new_size / 2;
-                    document.getElementById("txt_size_n_arrow").value = new_size;
-                });
-        box_body.append("input")
-                .attrs({type: "number", min: 0, max: 200, step: 1, value: old_dim,
-                        class: "without_spinner", id: "txt_size_n_arrow"})
-                .style("width", "40px")
-                .on("change", function(){
-                    let elem = document.getElementById("range_size_n_arrow");
-                    elem.value = +this.value;
-                    elem.dispatchEvent(new Event("change"));
-                });
-        box_body.append("span").html(" px");
+        let a = box_body.append('p').attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
+        a.append("span")
+            .style('float', 'right')
+            .html(" px");
+        a.append("input")
+            .attrs({type: "number", min: 0, max: 200, step: 1, value: old_dim,
+                    class: "without_spinner", id: "txt_size_n_arrow"})
+            .styles({float: 'right', width: '40px'})
+            .on("change", function(){
+                let elem = document.getElementById("range_size_n_arrow");
+                elem.value = +this.value;
+                elem.dispatchEvent(new Event("change"));
+            });
+        a.append("input")
+            .attrs({type: "range", min: 1, max: 200, step: 1,
+                    value: old_dim, id: "range_size_n_arrow"})
+            .styles({"vertical-align": "middle", "width": "140px", 'float': 'right'})
+            .on("change", function(){
+                let new_size = +this.value;
+                self.arrow_img.attr("width", new_size);
+                self.arrow_img.attr("height", new_size);
+                self.under_rect.attr("width", new_size);
+                self.under_rect.attr("height", new_size);
+                self.x_center = x_pos + new_size / 2;
+                self.y_center = y_pos + new_size / 2;
+                document.getElementById("txt_size_n_arrow").value = new_size;
+            });
 
-        box_body.append("p").style("margin-bottom", "0")
-                .html(i18next.t("app_page.north_arrow_edit_box.rotation"));
-        box_body.append("input")
-                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow"})
-                .attr("value", old_rotate)
-                .styles({"vertical-align": "middle", "width": "140px"})
-                .on("change", function(){
-                    let rotate_value = +this.value;
-                    self.svg_node.attr("rotate", rotate_value);
-                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-                    document.getElementById("txt_rotate_n_arrow").value = rotate_value;
-                });
-        box_body.append("input")
-                .attrs({type: "number", min: 0, max: 360, step: "any",
-                        class: "without_spinner", id: "txt_rotate_n_arrow"})
-                .attr("value", old_rotate)
-                .style("width", "40px")
-                .on("change", function(){
-                    let rotate_value = +this.value;
-                    self.svg_node.attr("rotate", rotate_value);
-                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-                    document.getElementById("range_rotate_n_arrow").value = rotate_value;
-                });
-        box_body.append("span").html("°");
+        let b = box_body.append("p").attr('class', 'line_elem');
+        b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
+        b.append("span")
+            .style('float', 'right')
+            .html(" °");
+        b.append("input")
+            .attrs({type: "number", min: 0, max: 360, step: "any", value: old_rotate,
+                    class: "without_spinner", id: "txt_rotate_n_arrow"})
+            .styles({float: 'right', width: '40px'})
+            .on("change", function(){
+                let rotate_value = +this.value;
+                self.svg_node.attr("rotate", rotate_value);
+                self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                document.getElementById("range_rotate_n_arrow").value = rotate_value;
+            });
+        b.append("input")
+            .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow", value: old_rotate})
+            .styles({"vertical-align": "middle", "width": "140px", 'float': 'right'})
+            .on("change", function(){
+                let rotate_value = +this.value;
+                self.svg_node.attr("rotate", rotate_value);
+                self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                document.getElementById("txt_rotate_n_arrow").value = rotate_value;
+            });
+
     },
     displayed: false
 }
@@ -1049,11 +1053,11 @@ class UserEllipse {
                 ellipse_elem.style.stroke = this.value;
             });
 
-       let s2b = box_content.append("p");
-       s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+       let s2b = box_content.append("p").attr('class', 'line_elem')
+       s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
        s2b.insert("input")
            .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
-           .styles({width: "80px", "vertical-align": "middle"})
+           .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
            .on("change", function(){
               let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
                   distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
@@ -1069,13 +1073,15 @@ class UserEllipse {
 
        s2b.insert("input")
            .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-           .styles({width: "30px", "margin-left": "10px"})
+           .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
            .on("input", function(){
                let elem = document.getElementById("ellipse_angle");
                elem.value = this.value;
                elem.dispatchEvent(new Event('change'));
            });
-       s2b.insert("span").html("°");
+       s2b.insert("span")
+          .style('float', 'right')
+          .html(" °");
      }
 
     handle_ctrl_pt(){

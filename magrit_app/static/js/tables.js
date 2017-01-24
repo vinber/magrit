@@ -70,8 +70,8 @@ function add_field_table(table, layer_name, parent){
             formToSend.append('var1', JSON.stringify(var1));
             formToSend.append('var2', JSON.stringify(var2));
             formToSend.append('operator', operation);
-            return request_data("POST", "/helpers/calc", formToSend).then(function(e){
-                let data = JSON.parse(e.target.responseText);
+            return xhrequest("POST", "/helpers/calc", formToSend, false).then(function(data){
+                data = JSON.parse(data);
                 for(let i=0; i<table.length; i++)
                     table[i][new_name_field] = data[i];
 

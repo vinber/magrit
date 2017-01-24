@@ -175,7 +175,7 @@ function get_map_template(){
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "world") {
             selection = map.select("#" + layer_name).selectAll("path");
             layer_style_i.fill_color = rgb2hex(selection.style("fill"));
             layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -290,14 +290,14 @@ function get_map_template(){
         layer_style_i.fill_opacity = selection.style("fill-opacity");
     }
 
-    return Q.all(layers_style.map( obj => {return (obj.topo_geom && !obj.targeted) ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null}))
+    return Q.all(layers_style.map( obj => {return (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null}))
         .then(function(result){
             for(let i = 0; i < layers_style.length; i++){
-                    if(result[i] && result[i].target){
-                        layers_style[i].topo_geom = result[i].target.responseText;
+                    if(result[i]){
+                        layers_style[i].topo_geom = result[i];
                     }
                 }
-            console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
+            // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
             return JSON.stringify({"map_config": map_config, "layers": layers_style});;
         });
 }
@@ -362,8 +362,8 @@ function apply_user_preferences(json_pref){
     let set_final_param = () => {
         if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
-            // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            // reproj_symbol_layer();
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
+            reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
@@ -379,7 +379,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 750);
+        }, 950);
     };
 
     function apply_layout_lgd_elem(){

@@ -1,7 +1,6 @@
 importScripts('/static/js/lib/topojson-client.2.1.0.min.js');
 onmessage = function(e) {
   let [topo_to_use, layer, field, discontinuity_type, discretization_type, id_field] = e.data;
-  console.log([topo_to_use, layer, field, discontinuity_type, discretization_type, id_field]);
   let result_value = new Map(),
       topo_mesh = topojson.mesh,
       math_max = Math.max;

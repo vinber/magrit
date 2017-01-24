@@ -75,10 +75,28 @@ function setUpInterface(resume_project)
                    '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
                    '<div class="line"></div><div class="line"></div></div></div>';
     let btn = document.createElement("button");
+    btn.style.fontSize = '13px';
+    btn.style.background = '#4b9cdb';
+    btn.style.border = '1px solid #298cda';
+    btn.style.fontWeight = 'bold';
     btn.className = "button_st3 i18n"
     btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
     bg.appendChild(btn)
     document.body.appendChild(bg);
+
+    btn.onclick = function(){
+        if(_app.xhr_to_cancel){
+          _app.xhr_to_cancel.abort();
+          _app.xhr_to_cancel = undefined;
+        }
+        if(_app.webworker_to_cancel){
+          _app.webworker_to_cancel.onmessage = null;
+          _app.webworker_to_cancel.terminate();
+          _app.webworker_to_cancel = undefined;
+        }
+        document.getElementById('overlay').style.display = 'none';
+    };
+
 
     let bg_drop = document.createElement('div');
     bg_drop.className = "overlay_drop";
@@ -930,7 +948,7 @@ function setUpInterface(resume_project)
         onEnd: event => {
             document.body.classList.remove("no-drop");
         },
-    })
+    });
 }
 
 function bindTooltips(dataAttr="tooltip-title"){
@@ -1134,6 +1152,9 @@ map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
 var defs = map.append("defs");
 
+var _app = {
+    to_cancel: undefined
+};
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :

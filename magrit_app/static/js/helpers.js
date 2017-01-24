@@ -81,17 +81,29 @@ function request_data(method, url, data){
     });
 }
 
+/**
+* Perform an asynchronous request
+*
+* @param {String} method - the method like "GET" or "POST"
+* @param {String} url - the targeted url
+* @param {FormData} data - Optionnal, the data to be send
+* @param {Boolean} wainting_message - Optionnal, whether to display or not a waiting message while the request is proceeded
+* @return {Promise} response
+*/
 function xhrequest(method, url, data, waiting_message){
     if(waiting_message){ document.getElementById("overlay").style.display = ""; }
     return new Promise(function(resolve, reject){
         var request = new XMLHttpRequest();
+        _app.xhr_to_cancel = request;
         request.open(method, url, true);
         request.onload = resp => {
             resolve(resp.target.responseText);
+            _app.xhr_to_cancel = undefined;
             if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
         };
         request.onerror = err => {
             reject(err);
+            _app.xhr_to_cancel = undefined;
             if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
         };
         request.send(data);
@@ -137,8 +149,8 @@ function send_layer_server(layer_name, url){
     var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
-    request_data("POST", url, formToSend).then(function(e){
-        let key = JSON.parse(e.target.responseText).key;
+    xhrequest("POST", url, formToSend, false).then(function(e){
+        let key = JSON.parse(e).key;
         current_layers[layer_name].key_name = key;
     }).catch(function(err){
         display_error_during_computation();

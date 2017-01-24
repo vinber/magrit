@@ -2123,16 +2123,16 @@ var render_discont = function(){
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
     let discont_worker = new Worker('/static/js/webworker_discont.js');
+    _app.webworker_to_cancel = discont_worker;
     discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function(e){
         let [arr_tmp, d_res] = e.data;
-        discont_worker.terminate();
+        _app.webworker_to_cancel = undefined;
         let nb_ft = arr_tmp.length,
             step = (max_size - min_size) / (nb_class - 1),
             class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
         let [ , , breaks, serie] = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
-        console.log(serie, breaks)
         if(!serie || !breaks){
             let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
             let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
@@ -2182,6 +2182,9 @@ var render_discont = function(){
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
+        console.time('foo');
+        discont_worker.terminate();
+        console.timeEnd('foo');
     };
 }
 

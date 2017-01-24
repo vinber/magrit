@@ -149,7 +149,7 @@ function createStyleBoxTypoSymbols(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: rendered_field}),
@@ -274,7 +274,7 @@ function createStyleBoxLabel(layer_name){
                 restore_prev_settings();
             }
         });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -573,7 +573,7 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
     if(type === "Point" && !renderer){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -690,6 +690,7 @@ function createStyleBox(layer_name){
             color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
             let seq_color_select = color_palette_section.insert("select")
                                         .attr("id", "coloramp_params")
+                                        .style('float', 'right')
                                         .on("change", function(){
                                             recolor_stewart(this.value, false);
                                          });
@@ -699,26 +700,28 @@ function createStyleBox(layer_name){
                 seq_color_select.append("option").text(name).attr("value", name);
             });
             seq_color_select.node().value = prev_palette.name;
-
-            var button_reverse = popup.insert("button")
-                                    .styles({"display": "inline", "margin-left": "10px"})
-                                    .attrs({"class": "button_st3", "id": "reverse_colramp"})
-                                    .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
-                                    .on("click", function(){
-                                        let pal_name = document.getElementById("coloramp_params").value;
-                                        recolor_stewart(pal_name, true);
-                                     });
-         }
-         let fill_opacity_section = popup.append('p').attr("class", "line_elem");
-         fill_opacity_section.append("span")
-                        .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
-         fill_opacity_section.insert('input')
-                        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-                        .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
-                        .on('change', function(){
-                          selection.style('fill-opacity', this.value)
-                          fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
-                        });
+            popup.insert('p')
+                .attr('class', 'line_elem')
+                .style('text-align', 'center')
+                .insert("button")
+                .styles({"display": "inline", "margin-left": "10px"})
+                .attrs({"class": "button_st3", "id": "reverse_colramp"})
+                .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
+                .on("click", function(){
+                    let pal_name = document.getElementById("coloramp_params").value;
+                    recolor_stewart(pal_name, true);
+                 });
+        }
+        let fill_opacity_section = popup.append('p').attr("class", "line_elem");
+        fill_opacity_section.append("span")
+            .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
+        fill_opacity_section.insert('input')
+            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
+            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+            .on('change', function(){
+              selection.style('fill-opacity', this.value)
+              fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
+            });
         fill_opacity_section.append("span")
                         .style("float", "right")
                         .attr("id", "fill_opacity_txt")
@@ -765,7 +768,6 @@ function createStyleBox(layer_name){
                                 for(let i = 0; i < nb_ft; ++i){
                                     links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                                 }
-                                console.log(links_byId);
                                 selection.style('fill-opacity', 0)
                                         .style("stroke-width", (d,i) => {return links_byId[i][2]});
                             }
@@ -1074,7 +1076,7 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
