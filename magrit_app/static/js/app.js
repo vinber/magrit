@@ -486,18 +486,18 @@ function setUpInterface(resume_project) {
     var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
 
     var geo_a = export_geo_options.append('p');
-    geo_a.append('span').html(i18next.t("app_page.export_box.option_layer"));
+    geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
     var selec_layer = geo_a.insert("select").attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
 
     var geo_b = export_geo_options.append('p');
-    geo_b.append('span').html(i18next.t('app_page.export_box.option_datatype'));
+    geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
     var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' });
 
-    export_geo_options.append('p').style('margin', 'auto').append('span').html(i18next.t('app_page.export_box.option_projection'));
+    export_geo_options.append('p').style('margin', 'auto').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
     var geo_c = export_geo_options.append('p').style('margin', 'auto');
-    var selec_projection = geo_c.insert("select").attrs({ id: "projection_to_use", disabled: true, class: 'i18n m_elem_right' }).styles({ position: 'relative' });
+    var selec_projection = geo_c.insert("select").styles({ position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).attrs({ id: "projection_to_use", disabled: true, class: 'i18n' });
 
-    var proj4_input = export_geo_options.append("input").attrs({ class: 'm_elem_right', id: 'proj4str' }).styles({ display: 'none', width: '280px', position: 'relative' }).on('keyup', function () {
+    var proj4_input = export_geo_options.append('p').style('margin', 'auto').insert("input").attrs({ id: 'proj4str' }).styles({ display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).on('keyup', function () {
         ok_button.disabled = this.value.length == 0 ? 'true' : '';
     });
 
@@ -528,8 +528,7 @@ function setUpInterface(resume_project) {
             ok_button.disabled = "";
         }
     });
-
-    var ok_button = dv5b.append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
+    var ok_button = dv5b.append('p').style('float', 'left').append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
         var type_export = document.getElementById("select_export_type").value,
             export_name = document.getElementById("export_filename").value;
         if (type_export === "svg") {
@@ -928,7 +927,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
+    sample_no_values = new Set(["Sphere", "Graticule", "world"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -4387,12 +4386,6 @@ function fillMenu_Choropleth() {
     var discr_section = dv2.insert('p').style("margin", "auto");
     discr_section.insert("span").attr("id", "container_sparkline_choro").styles({ "margin": "16px 50px 0px 4px", "float": "right" });
     make_discretization_icons(discr_section);
-    // dv2.insert('p').style("margin", "auto")
-    //   .append("button")
-    //   .attrs({id: "choro_class", class: "button_disc params i18n",
-    //           'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-    //   .styles({"font-size": "0.8em", "text-align": "center"})
-    //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name', "15px");
     make_ok_button(dv2, 'choro_yes');
@@ -5587,13 +5580,6 @@ function fillMenu_Discont() {
     f.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color' }).html(i18next.t('app_page.func_options.discont.color'));
     f.insert('input').attrs({ class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random() });
 
-    // let g = dv2.append('p').attr('class', 'params_section2');
-    // g.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
-    //   .html("quantization");
-    // g.insert('input')
-    //   .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
-
     make_layer_name_button(dv2, 'Discont_output_name');
     make_ok_button(dv2, 'yes_Discont', false);
 
@@ -5603,8 +5589,6 @@ function fillMenu_Discont() {
 var fields_Discont = {
     fill: function fill(layer) {
         if (!layer) return;
-        // let fields_num = type_col(layer, "number"),
-        //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         var fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
@@ -5736,9 +5720,7 @@ var render_discont = function render_discont() {
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
-        console.time('foo');
         discont_worker.terminate();
-        console.timeEnd('foo');
     };
 };
 
@@ -5997,7 +5979,6 @@ function render_TypoSymbols(rendering_params, new_name) {
     }
 
     var new_layer_data = make_geojson_pt_layer();
-    console.log(new_layer_data);
     var context_menu = new ContextMenu(),
         getItems = function getItems(self_parent) {
         return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -6603,7 +6584,7 @@ function get_other_layer_names() {
     tmp_idx = other_layers.indexOf("Graticule");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
+    tmp_idx = other_layers.indexOf("world");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
@@ -10852,7 +10833,6 @@ var northArrow = {
         });
 
         var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
-        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3").html(i18next.t("app_page.north_arrow_edit_box.title"));
         var a = box_body.append('p').attr('class', 'line_elem');
         a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
@@ -11093,9 +11073,9 @@ function handle_legend(layer) {
     var state = current_layers[layer].renderer;
     if (state != undefined) {
         var class_name = [".lgdf", layer].join('_');
-        if (d3.selectAll(class_name).node()) {
-            if (!d3.selectAll(class_name).attr("display")) d3.selectAll(class_name).attr("display", "none");else {
-                d3.selectAll(class_name).attr("display", null);
+        if (map.selectAll(class_name).node()) {
+            if (!map.selectAll(class_name).attr("display")) map.selectAll(class_name).attr("display", "none");else {
+                map.selectAll(class_name).attr("display", null);
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:

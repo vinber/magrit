@@ -10,11 +10,11 @@ function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
         let class_name = [".lgdf", layer].join('_');
-        if(d3.selectAll(class_name).node()){
-            if(!d3.selectAll(class_name).attr("display"))
-                d3.selectAll(class_name).attr("display", "none");
+        if(map.selectAll(class_name).node()){
+            if(!map.selectAll(class_name).attr("display"))
+                map.selectAll(class_name).attr("display", "none");
             else {
-                d3.selectAll(class_name).attr("display", null);
+                map.selectAll(class_name).attr("display", null);
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:

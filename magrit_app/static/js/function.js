@@ -764,12 +764,6 @@ function fillMenu_Choropleth(){
       .attr("id", "container_sparkline_choro")
       .styles({"margin": "16px 50px 0px 4px", "float": "right"});
     make_discretization_icons(discr_section);
-    // dv2.insert('p').style("margin", "auto")
-    //   .append("button")
-    //   .attrs({id: "choro_class", class: "button_disc params i18n",
-    //           'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-    //   .styles({"font-size": "0.8em", "text-align": "center"})
-    //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name', "15px");
     make_ok_button(dv2, 'choro_yes');
@@ -2040,13 +2034,6 @@ function fillMenu_Discont(){
     f.insert('input')
       .attrs({class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random()});
 
-    // let g = dv2.append('p').attr('class', 'params_section2');
-    // g.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
-    //   .html("quantization");
-    // g.insert('input')
-    //   .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
-
     make_layer_name_button(dv2, 'Discont_output_name');
     make_ok_button(dv2, 'yes_Discont', false);
 
@@ -2056,8 +2043,6 @@ function fillMenu_Discont(){
 var fields_Discont = {
     fill: function(layer){
         if(!layer) return;
-        // let fields_num = type_col(layer, "number"),
-        //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
@@ -2182,9 +2167,7 @@ var render_discont = function(){
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
-        console.time('foo');
         discont_worker.terminate();
-        console.timeEnd('foo');
     };
 }
 
@@ -2478,7 +2461,6 @@ function render_TypoSymbols(rendering_params, new_name){
     }
 
     var new_layer_data = make_geojson_pt_layer();
-    console.log(new_layer_data);
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},

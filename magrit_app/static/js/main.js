@@ -590,27 +590,29 @@ function setUpInterface(resume_project)
         .style("display", "none");
 
     let geo_a = export_geo_options.append('p');
-    geo_a.append('span').html(i18next.t("app_page.export_box.option_layer"))
+    geo_a.append('span')
+        .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer'});
     let selec_layer = geo_a.insert("select")
         .attrs({id: "layer_to_export", class: 'i18n m_elem_right'});
 
     let geo_b = export_geo_options.append('p');
-    geo_b.append('span').html(i18next.t('app_page.export_box.option_datatype'));
+    geo_b.append('span')
+        .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype'});
     let selec_type = geo_b.insert("select")
         .attrs({id: 'datatype_to_use', class: 'i18n m_elem_right'});
 
     export_geo_options.append('p')
         .style('margin', 'auto')
-        .append('span')
-        .html(i18next.t('app_page.export_box.option_projection'));
+        .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection'});
     let geo_c = export_geo_options.append('p').style('margin', 'auto');
     let selec_projection = geo_c.insert("select")
-        .attrs({id: "projection_to_use", disabled: true, class: 'i18n m_elem_right'})
-        .styles({position: 'relative'});
+        .styles({position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px'})
+        .attrs({id: "projection_to_use", disabled: true, class: 'i18n'});
 
-    let proj4_input = export_geo_options.append("input")
-        .attrs({class: 'm_elem_right', id: 'proj4str'})
-        .styles({display: 'none', width: '280px', position: 'relative'})
+    let proj4_input = export_geo_options.append('p').style('margin', 'auto')
+        .insert("input")
+        .attrs({id: 'proj4str'})
+        .styles({display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px'})
         .on('keyup', function(){
             ok_button.disabled = this.value.length == 0 ? 'true' : '';
         });
@@ -650,8 +652,8 @@ function setUpInterface(resume_project)
             ok_button.disabled = "";
         }
     });
-
-    let ok_button = dv5b.append("button")
+    let ok_button = dv5b.append('p').style('float', 'left')
+        .append("button")
         .attrs({"id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button"})
         .on("click", function(){
             let type_export = document.getElementById("select_export_type").value,
@@ -1116,7 +1118,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
+    sample_no_values = new Set(["Sphere", "Graticule", "world"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :
