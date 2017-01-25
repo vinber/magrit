@@ -107,7 +107,7 @@ function add_field_table(table, layer_name, parent){
                         table[i][new_name_field] = table[i][fi1].substring(0, opt_val);
                 } else {
                     for(let i=0; i < table.length; i++)
-                        table[i][new_name_field] = table[i][fil].substr(opt_val);
+                        table[i][new_name_field] = table[i][fi1].substr(opt_val);
                 }
             } else if (operation == "concatenate"){
                 for(let i=0; i < table.length; i++)

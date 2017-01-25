@@ -631,7 +631,8 @@ function add_dataset(readed_dataset){
             if((readed_dataset[j][cols[i]].replace && !isNaN(+readed_dataset[j][cols[i]].replace(",", ".")))
                     || !isNaN(+readed_dataset[j][cols[i]])) {
                 // Add the converted value to temporary field if its ok ...
-                tmp.push(+readed_dataset[j][cols[i]].replace(",", "."));
+                let t_val = readed_dataset[j][cols[i]].replace(",", ".");
+                tmp.push(isFinite(t_val) && t_val != "" && t_val != null ? +t_val : t_val);
             } else {
                 // Or break early if a value can't be coerced :
                 break; // So no value of this field will be converted
@@ -825,8 +826,7 @@ function add_layer_topojson(text, options){
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
-        if(joined_dataset.length != 0){
-            valid_join_check_display(false);
+        if(joined_dataset.length != 0){ valid_join_check_display(false);
             section1.select(".s1").html("").on("click", null);
             document.getElementById('sample_zone').style.display = "none";
         }

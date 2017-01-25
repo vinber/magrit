@@ -187,6 +187,9 @@ async def cache_input_topojson(request):
         f_nameQ = '_'.join([f_name, "Q"])
         f_nameNQ = '_'.join([f_name, "NQ"])
 
+        asyncio.ensure_future(
+            request.app['redis_conn'].incr('sample_layers'))
+
         result = await request.app['redis_conn'].get(f_nameQ)
         if result:
             result = result.decode()
@@ -232,6 +235,9 @@ async def cache_input_topojson(request):
         f_name = '_'.join([user_id, hash_val])
         f_nameQ = '_'.join([f_name, "Q"])
         f_nameNQ = '_'.join([f_name, "NQ"])
+
+        asyncio.ensure_future(
+            request.app['redis_conn'].incr('layers'))
 
         result = await request.app['redis_conn'].get(f_nameNQ)
         if result:
@@ -307,6 +313,9 @@ async def convert(request):
     f_name = '_'.join([user_id, str(hashed_input)])
     f_nameQ = '_'.join([f_name, "Q"])
     f_nameNQ = '_'.join([f_name, "NQ"])
+
+    asyncio.ensure_future(
+        request.app['redis_conn'].incr('layers'))
 
     results = await request.app['redis_conn'].keys(f_name)
     if results:
@@ -959,11 +968,14 @@ async def get_stats_json(request):
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
         ])
+    layers, sample_layers = await asyncio.gather(*[
+        redis_conn.get('layers'), redis_conn.get('sample_layers')])
     count = len(request.app['app_users'])
     return web.Response(text=json.dumps(
-        {"c": count , "t":
-            {"stewart": stewart, "dougenik": doug,
-             "gridded": gridded, "olson": olson, "links": links}
+        {"count": count ,
+         "layer": layers, "sample": sample_layers,
+         "t": {"stewart": stewart, "dougenik": doug,
+               "gridded": gridded, "olson": olson, "links": links}
              }))
 
 async def convert_tabular(request):

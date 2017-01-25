@@ -272,14 +272,14 @@ class Textbox {
 
         let drag_txt_annot = d3.drag()
              .subject(function() {
-                    var t = d3.select(this.parentElement),
-                        xy0 = get_map_xy0(),
-                        bbox = this.getBoundingClientRect();
+                    var t = d3.select(this.parentElement);
+                    //     xy0 = get_map_xy0(),
+                    //     bbox = this.getBoundingClientRect();
                     return {
                         x: t.attr("x"),
                         y: t.attr("y"),
-                        x_center: bbox.x - xy0.x + bbox.width / 2,
-                        y_center: bbox.y - xy0.y + bbox.height / 2,
+                    //     dim_x: bbox.width / 2,
+                    //     dim_y: bbox.height / 2,
                         map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
@@ -293,13 +293,10 @@ class Textbox {
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
-                let x = d3.event.x,
-                    y = d3.event.y,
-                    t = d3.select(this.parentElement),
-                    transform_value = t.attr('rotate') != 0 && t.attr('rotate') != '0'
-                                      ? ['rotate(', t.attr('rotate'), ',', x - d3.event.subject.x_center, ',', y - d3.event.subject.y_center, ')'].join('')
-                                      : '';
-                t.attrs({x: x, y: y, transform: transform_value});
+                let x = +d3.event.x,
+                    y = +d3.event.y,
+                    t = d3.select(this.parentElement);
+                t.attrs({x: x, y: y});
             });
 
         let foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -376,6 +373,7 @@ class Textbox {
                                    content: unescape(this.text_annot.select("p").html()),
                                    rotate: this.text_annot.attr('rotate'),
                                    transform_rotate: this.text_annot.attr('transform'),
+                                   x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
                                    font: ""};
             let map_xy0 = get_map_xy0();
             let self = this,
@@ -403,24 +401,30 @@ class Textbox {
                 .on("change", function(){
                   let rotate_value = +this.value,
                       bbox = inner_p.node().getBoundingClientRect(),
-                      x_center = bbox.x - map_xy0.x + bbox.width / 2,
-                      y_center = bbox.y - map_xy0.y + bbox.height / 2;
-                    self.text_annot.attr("rotate", rotate_value);
-                    self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
-                    document.getElementById("textbox_range_rotate").value = rotate_value;
+                      nx = bbox.x - map_xy0.x,
+                      ny = bbox.y - map_xy0.y,
+                      x_center = nx + bbox.width / 2,
+                      y_center = ny + bbox.height / 2;
+                  self.text_annot
+                      .attrs({'rotate': rotate_value, x: nx, y: ny,
+                              'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+                  document.getElementById("textbox_range_rotate").value = rotate_value;
                 });
 
             option_rotation.append("input")
                 .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate})
                 .styles({"vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px"})
                 .on("change", function(){
-                    let rotate_value = +this.value,
-                        bbox = inner_p.node().getBoundingClientRect(),
-                        x_center = bbox.x - map_xy0.x + bbox.width / 2,
-                        y_center = bbox.y - map_xy0.y + bbox.height / 2;
-                    self.text_annot.attr("rotate", rotate_value);
-                    self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
-                    document.getElementById("textbox_txt_rotate").value = rotate_value;
+                  let rotate_value = +this.value,
+                      bbox = inner_p.node().getBoundingClientRect(),
+                      nx = bbox.x - map_xy0.x,
+                      ny = bbox.y - map_xy0.y,
+                      x_center = nx + bbox.width / 2,
+                      y_center = ny + bbox.height / 2;
+                  self.text_annot
+                      .attrs({'rotate': rotate_value, x: nx, y: ny,
+                              'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+                  document.getElementById("textbox_txt_rotate").value = rotate_value;
                 });
 
             let options_font = box_content.append('p'),

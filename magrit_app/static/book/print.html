@@ -505,39 +505,88 @@ La résolution de ce type de fichier est fixe et il est proposé de choisir la r
 Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 <h1>Jeux de données</h1>
+<h3>Communes de la métropole du Grand-Paris (polygones) :</h3>
+<p>Fond de carte : Institut national de l’information géographique et forestière (IGN), <a href="url%7Bhttp://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+Variables :</p>
 <ul>
-<li>
-<p>Localisations des hôpitaux de Paris (points)</p>
-</li>
-<li>
-<p>Communes de la métropole du Grand-Paris (polygones) :<br />
-- geométrie; communes du Grand-Paris; Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
-- DEPCOM; code communal; INSEE 2016<br />
-- LIBCOM; nom de la commune; INSEE 2016<br />
-- EPT; code le l’Établissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
-- LIBEPT; nom de l’Établissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
-- DEP; code du département; INSEE 2016<br />
-- INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.<br />
-- TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</p>
-</li>
-<li>
-<p>Communes de Martinique (INSEE_COM, NOM_COM, STATUT, SUPERFICIE, POPT2013, POPH2013, POPF2013, DENSPOP, Nb logements, Nb logements vacants, taux d'occupation des logements)</p>
-</li>
-<li>
-<p>Nuts 2 (des données plus récentes et plus succintes)</p>
-</li>
-<li>
-<p>États fédéraux brésiliens (réduire le nb de champs)</p>
-</li>
-<li>
-<p>Pays du Monde (ajouter les sources)</p>
-</li>
-<li>
-<p>Comtés des Etats-Unis (à supprimer ?)</p>
-</li>
-<li>
-<p>États des Etats-Unis (POP2015_est, surface en eau, surface totale)</p>
-</li>
+<li>DEPCOM; code communal; INSEE 2016</li>
+<li>LIBCOM; nom de la commune; INSEE 2016</li>
+<li>EPT; code le l’Établissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016</li>
+<li>LIBEPT; nom de l’Établissement Public Territorial; <a href="url%7Bhttp://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016</li>
+<li>DEP; code du département; INSEE 2016</li>
+<li>INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+<li>TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+</ul>
+<h3>Pays du monde (polygones) :</h3>
+<p>Fond de carte : UMS RIATE, 2017<br />
+Variables :</p>
+<ul>
+<li>ISO2 : Code ISO 3166-1 alpha-2</li>
+<li>ISO3 : Code ISO 3166-1 alpha-3</li>
+<li>ISONUM : Code ISO 3166-1 numeric</li>
+<li>NAMEen : Nom du pays en anglais</li>
+<li>NAMEfr : Nom du pays en français</li>
+<li>UNRegion : Régions macrogéographiques (1)</li>
+<li>GrowthRate : Taux de croissance annuel moyen de la population en % (2)</li>
+<li>PopDensity : Densité de population en habitants par kilomètres carrés (2)</li>
+<li>PopTotal : Population totale (2)</li>
+<li>JamesBond : Nombre de fois ou James Bond s'est rendu dans le Pays (3)</li>
+</ul>
+<p>(1) : United Nations Statistics Division, http://unstats.un.org/unsd/methods/m49/m49regnf.htm
+(2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, http://esa.un.org/unpd/wpp/index.htm, July 2015, Variant : Medium, Année 2015)
+(3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015</p>
+<h3>États fédéraux brésiliens (polygones) :</h3>
+<p>Fond de carte :<br />
+Variables :</p>
+<ul>
+<li>ADMIN_NAME : Nom de l’État</li>
+<li>Abbreviation : Abbréviation du nom</li>
+<li>Capital : Nom de la capitale administrative de l’État</li>
+<li>GDP_per_capita_2012 : Produit intérieur brut (PIB) par habitant</li>
+<li>Life_expectancy_2014 : Espérance de vie à la naissance</li>
+<li>Pop2014 : Population de l’État (1)</li>
+<li>REGIONS : Nom de la région d'appartenance</li>
+<li>STATE2010 : Code de l’État</li>
+<li>popdensity2014 : Densité de population en habitants par kilomètres carrés</li>
+</ul>
+<p>(1) : '2014 IBGE Estimates - Estimates of Resident Population in Brazil, Federative Units and Municipalities&quot; (PDF) (en Portugais). ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf. Consulté le 25 janv. 2017.
+(2) : Wikipedia. Consulté le 25 janv. 2017.
+(3) : Wikipedia. Consulté le 25 janv. 2017.</p>
+<h3>Communes de Martinique (polygones) :</h3>
+<p>Fond de carte :<br />
+Variables :</p>
+<ul>
+<li>INSEE_COM : Code INSEE de la commune</li>
+<li>NOM_COM : Nom de la commune</li>
+<li>STATUT :</li>
+<li>POP2013 :</li>
+<li>DENSPOP : Densité de population en habitants par kilomètres carrés</li>
+<li>NbLogements : Nombre de logements</li>
+<li>NbLogementsVacants : Nombre de logements vacants</li>
+<li>PartLogementVacants : Taux d'occupations des logements</li>
+</ul>
+<h3>Nuts 2 (polygones) :</h3>
+<p>Fond de Carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017<br />
+Variable :</p>
+<ul>
+<li>ID : Code NUTS2</li>
+<li>NAME : Nom</li>
+<li>POP : Population au 1er janvier 2014(1)</li>
+<li>GDP : Produit intérieur brut régional en millions d'euros et en standards de pouvoir d'achat, en 2014(2)</li>
+<li>UNEMP : Taux de chômage en %, en 2014(3)</li>
+<li>COUNTRY : Code du pays d'appartenance
+(1) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:34:48 CET, http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00096
+(2) : Eurostat, Dernière mise à jour: 18.01.2017, Date d'extraction: 23 janv. 2017 16:38:34 CET, http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00004
+(3) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:56:02 CET, http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00010</li>
+</ul>
+<h3>États des Etats-Unis (polygones) :</h3>
+<p>Fond de carte :<br />
+Variables :</p>
+<ul>
+<li>STUSPS :</li>
+<li>Name :</li>
+<li>POP2015_est :</li>
+<li>POPDENS :</li>
 </ul>
 <h1>Contributeurs</h1>
 <p>Matthieu Viry : Développement &amp; Conception</p>

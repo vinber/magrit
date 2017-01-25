@@ -6693,7 +6693,8 @@ var type_col2 = function type_col2(table, field) {
                 tmp_type = "empty";
             } else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
                 var _val = Number(table[i][field]);
-                tmp_type = (_val | 0) === val ? "stock" : "ratio";
+                console.log(_val, val, (_val | 0) == val);
+                tmp_type = (_val | 0) == val ? "stock" : "ratio";
             }
             tmp[fields[j]].push(tmp_type);
         }
@@ -6709,6 +6710,8 @@ var type_col2 = function type_col2(table, field) {
             return ft === "ratio" || ft === "stock" || ft === "empty";
         }) && tmp[field].indexOf("ratio") > -1) result.push({ name: field, type: "ratio" });else result.push({ name: field, type: "unknown", has_duplicate: has_dup });
     }
+    console.log(tmp);
+    console.log(result);
     return result;
 };
 
@@ -7854,7 +7857,8 @@ function add_dataset(readed_dataset) {
         for (var j = 0; j < readed_dataset.length; j++) {
             if (readed_dataset[j][cols[_i]].replace && !isNaN(+readed_dataset[j][cols[_i]].replace(",", ".")) || !isNaN(+readed_dataset[j][cols[_i]])) {
                 // Add the converted value to temporary field if its ok ...
-                tmp.push(+readed_dataset[j][cols[_i]].replace(",", "."));
+                var t_val = readed_dataset[j][cols[_i]].replace(",", ".");
+                tmp.push(isFinite(t_val) && t_val != "" && t_val != null ? +t_val : t_val);
             } else {
                 // Or break early if a value can't be coerced :
                 break; // So no value of this field will be converted
@@ -8782,19 +8786,18 @@ function valid_join_on(layer_name, field1, field2) {
             confirmButtonText: i18next.t("app_page.common.yes"),
             cancelButtonText: i18next.t("app_page.common.no")
         }).then(function () {
+            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+            // ,i_id = fields_name_to_add.indexOf("id");
 
-            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                i_id = fields_name_to_add.indexOf("id");
-
-            if (i_id > -1) {
-                fields_name_to_add.splice(i_id, 1);
-            }
-            for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
+            // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
+            for (var _i6 = 0, _len6 = field_join_map.length; _i6 < _len6; _i6++) {
                 val = field_join_map[_i6];
                 for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
                     f_name = fields_name_to_add[_j];
                     if (f_name.length > 0) {
-                        user_data[layer_name][_i6][f_name] = val ? joined_dataset[0][val][f_name] : null;
+                        var t_val = void 0;
+                        if (val == undefined) t_val = null;else if (joined_dataset[0][val][f_name] == "") t_val = null;else t_val = joined_dataset[0][val][f_name];
+                        user_data[layer_name][_i6][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
                     }
                 }
             }
@@ -10329,14 +10332,14 @@ var Textbox = function () {
         };
 
         var drag_txt_annot = d3.drag().subject(function () {
-            var t = d3.select(this.parentElement),
-                xy0 = get_map_xy0(),
-                bbox = this.getBoundingClientRect();
+            var t = d3.select(this.parentElement);
+            //     xy0 = get_map_xy0(),
+            //     bbox = this.getBoundingClientRect();
             return {
                 x: t.attr("x"),
                 y: t.attr("y"),
-                x_center: bbox.x - xy0.x + bbox.width / 2,
-                y_center: bbox.y - xy0.y + bbox.height / 2,
+                //     dim_x: bbox.width / 2,
+                //     dim_y: bbox.height / 2,
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false
             };
         }).on("start", function () {
@@ -10346,11 +10349,10 @@ var Textbox = function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
-            var x = d3.event.x,
-                y = d3.event.y,
-                t = d3.select(this.parentElement),
-                transform_value = t.attr('rotate') != 0 && t.attr('rotate') != '0' ? ['rotate(', t.attr('rotate'), ',', x - d3.event.subject.x_center, ',', y - d3.event.subject.y_center, ')'].join('') : '';
-            t.attrs({ x: x, y: y, transform: transform_value });
+            var x = +d3.event.x,
+                y = +d3.event.y,
+                t = d3.select(this.parentElement);
+            t.attrs({ x: x, y: y });
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -10430,6 +10432,7 @@ var Textbox = function () {
                 content: unescape(this.text_annot.select("p").html()),
                 rotate: this.text_annot.attr('rotate'),
                 transform_rotate: this.text_annot.attr('transform'),
+                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
                 font: "" };
             var map_xy0 = get_map_xy0();
             var self = this,
@@ -10451,20 +10454,24 @@ var Textbox = function () {
                 class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
                 var rotate_value = +this.value,
                     bbox = inner_p.node().getBoundingClientRect(),
-                    x_center = bbox.x - map_xy0.x + bbox.width / 2,
-                    y_center = bbox.y - map_xy0.y + bbox.height / 2;
-                self.text_annot.attr("rotate", rotate_value);
-                self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                    nx = bbox.x - map_xy0.x,
+                    ny = bbox.y - map_xy0.y,
+                    x_center = nx + bbox.width / 2,
+                    y_center = ny + bbox.height / 2;
+                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
+                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_range_rotate").value = rotate_value;
             });
 
             option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
                 var rotate_value = +this.value,
                     bbox = inner_p.node().getBoundingClientRect(),
-                    x_center = bbox.x - map_xy0.x + bbox.width / 2,
-                    y_center = bbox.y - map_xy0.y + bbox.height / 2;
-                self.text_annot.attr("rotate", rotate_value);
-                self.text_annot.attr("transform", "rotate(" + [rotate_value, x_center, y_center] + ")");
+                    nx = bbox.x - map_xy0.x,
+                    ny = bbox.y - map_xy0.y,
+                    x_center = nx + bbox.width / 2,
+                    y_center = ny + bbox.height / 2;
+                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
+                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_txt_rotate").value = rotate_value;
             });
 
@@ -13054,7 +13061,7 @@ function add_field_table(table, layer_name, parent) {
                     }
                 } else {
                     for (var _i6 = 0; _i6 < table.length; _i6++) {
-                        table[_i6][new_name_field] = table[_i6][fil].substr(opt_val);
+                        table[_i6][new_name_field] = table[_i6][fi1].substr(opt_val);
                     }
                 }
             } else if (operation == "concatenate") {

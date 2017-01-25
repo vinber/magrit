@@ -143,17 +143,23 @@ function valid_join_on(layer_name, field1, field2){
               confirmButtonText: i18next.t("app_page.common.yes"),
               cancelButtonText: i18next.t("app_page.common.no"),
             }).then(() => {
+                let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0])
+                    // ,i_id = fields_name_to_add.indexOf("id");
 
-                let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                    i_id = fields_name_to_add.indexOf("id");
-
-                if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
-                for(let i=0, len=join_values1.length; i<len; i++){
+                // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
+                for(let i=0, len=field_join_map.length; i<len; i++){
                     val = field_join_map[i];
                     for(let j=0, leng=fields_name_to_add.length; j<leng; j++){
                         f_name = fields_name_to_add[j];
                         if(f_name.length > 0){
-                            user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
+                            let t_val;
+                            if(val == undefined)
+                              t_val = null;
+                            else if(joined_dataset[0][val][f_name] == "")
+                              t_val = null;
+                            else
+                              t_val = joined_dataset[0][val][f_name];
+                            user_data[layer_name][i][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null ;
                         }
                     }
                 }
