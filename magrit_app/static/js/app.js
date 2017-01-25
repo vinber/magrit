@@ -3676,6 +3676,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function get_menu_option(func) {
     var menu_option = {
         "smooth": {
@@ -4787,7 +4789,7 @@ function fillMenu_Stewart() {
 
     var d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span').styles({ "margin-right": "35px" }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta' }).html(i18next.t("app_page.func_options.smooth.beta"));
-    d.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any" });
+    d.insert('input').style("width", "60px").attrs(_defineProperty({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en' }, "lang", 'fr'));
 
     var p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution' }).text(i18next.t("app_page.func_options.smooth.resolution"));

@@ -33,3 +33,11 @@ Magrit propose une série d'éléments nécessaire à l'habillage de la carte :
 <p style="text-align: center;">
 <img src="img/example_mise_en_page.png" alt="Éléments de mise en page"/>
 </p>
+
+<p style="text-align: center;">
+<img src="img/contextmenu_northArrow.png" alt="Menu contextuel"/>
+</p>
+
+<p style="text-align: center;">
+<img src="img/contextmenu_legend.png" alt="Menu contextuel"/>
+</p>

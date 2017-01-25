@@ -1122,7 +1122,7 @@ function fillMenu_Stewart(){
       .html(i18next.t("app_page.func_options.smooth.beta"));
     d.insert('input')
       .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
+      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en', lang: 'fr'});
 
     let p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span')
