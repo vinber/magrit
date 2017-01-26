@@ -9393,6 +9393,28 @@ function createStyleBox(layer_name) {
                         });
                     });
                 })();
+            } else if (renderer == "Choropleth") {
+                popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                    display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, "user_defined", current_layers[layer_name].options_disc).then(function (confirmed) {
+                        if (confirmed) {
+                            rendering_params = {
+                                nb_class: confirmed[0],
+                                type: confirmed[1],
+                                breaks: confirmed[2],
+                                colors: confirmed[3],
+                                colorsByFeature: confirmed[4],
+                                schema: confirmed[5],
+                                no_data: confirmed[6],
+                                //  renderer:"Choropleth",
+                                field: current_layers[layer_name].rendered_field
+                            };
+                            var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+                            selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                                return rendering_params.colorsByFeature[i];
+                            });
+                        }
+                    });
+                });
             } else if (renderer == "Gridded") {
                 (function () {
                     var field_to_discretize = "densitykm";
@@ -9560,13 +9582,7 @@ function createStyleBox(layer_name) {
     opacity_section.insert("span").html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
     opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on('change', function () {
         opacity_section.select("#opacity_val_txt").html(" " + this.value);
-        //                        if(this.value !== "0" || type === 'Line'){
         selection.style('stroke-opacity', this.value);
-        //                        } else {
-        //                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-        //                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-        //                                     .style('stroke', function(){ return this.style.fill; });
-        //                        }
     });
 
     opacity_section.append("span").attr("id", "opacity_val_txt").style("display", "inline").style("float", "right").html(" " + border_opacity);
@@ -9576,15 +9592,9 @@ function createStyleBox(layer_name) {
         width_section.append("span").html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
         width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ "width": "60px", "float": "right" }).on('change', function () {
             var val = +this.value;
-            //                                if(val != 0 || type === 'Line'){
             var zoom_scale = +d3.zoomTransform(map.node()).k;
             map.select(g_lyr_name).style("stroke-width", val / zoom_scale + "px");
             current_layers[layer_name]['stroke-width-const'] = val;
-            //                                } else {
-            //                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-            //                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-            //                                             .style('stroke', function(){ return this.style.fill; });
-            //                                }
         });
     }
 
@@ -9672,11 +9682,6 @@ function createStyleBox_ProbSymbol(layer_name) {
     var d_values = result_data[layer_name].map(function (v) {
         return +v[field_used];
     });
-    //     abs = Math.abs,
-    //     comp = function(a, b){return abs(b)-abs(a)};
-    // for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-    //     d_values.push(+user_data[ref_layer_name][i][field_used]);
-    // d_values.sort(comp);
 
     var redraw_prop_val = function redraw_prop_val(prop_values) {
         var selec = selection._groups[0];

@@ -638,6 +638,37 @@ function createStyleBox(layer_name){
                             }
                         });
                 });
+        } else if (renderer == "Choropleth"){
+            popup.append('p').styles({margin: 'auto', 'text-align': 'center'})
+                .append("button")
+                .attr("class", "button_disc")
+                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
+                .on("click", function(){
+                    display_discretization(layer_name,
+                                           current_layers[layer_name].rendered_field,
+                                           current_layers[layer_name].colors_breaks.length,
+                                           "user_defined",
+                                           current_layers[layer_name].options_disc)
+                       .then(function(confirmed){
+                           if(confirmed){
+                               rendering_params = {
+                                   nb_class: confirmed[0],
+                                   type: confirmed[1],
+                                   breaks: confirmed[2],
+                                   colors:confirmed[3],
+                                   colorsByFeature: confirmed[4],
+                                   schema: confirmed[5],
+                                   no_data: confirmed[6],
+                                  //  renderer:"Choropleth",
+                                   field: current_layers[layer_name].rendered_field
+                               };
+                               let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                               selection.transition()
+                                   .style('fill-opacity', 0.9)
+                                   .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                           }
+                       });
+               });
 
         } else if (renderer == "Gridded"){
             let field_to_discretize = "densitykm";
@@ -666,8 +697,8 @@ function createStyleBox(layer_name){
                                 };
                                 let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
                                 selection.transition()
-                                        .style('fill-opacity', 0.9)
-                                        .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                                    .style('fill-opacity', 0.9)
+                                    .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                             }
                         });
                 });
@@ -736,15 +767,15 @@ function createStyleBox(layer_name){
         // The legend will be updated in order to start on the minimum value displayed instead of
         //   using the minimum value of the serie (skipping unused class if necessary)
         threshold_section.insert('input')
-                    .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-                    .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
-                    .on("change", function(){
-                        lgd_to_change = true;
-                        let val = +this.value;
-                        popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-                        selection.style("display", d => (+d.properties.fij > val) ? null : "none");
-                        current_layers[layer_name].min_display = val;
-                    });
+            .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
+            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+            .on("change", function(){
+                lgd_to_change = true;
+                let val = +this.value;
+                popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                selection.style("display", d => (+d.properties.fij > val) ? null : "none");
+                current_layers[layer_name].min_display = val;
+            });
         threshold_section.insert('label')
                 .attr("id", "larger_than")
                 .style("float", "right")
@@ -814,32 +845,26 @@ function createStyleBox(layer_name){
     }
     let c_section = popup.append('p').attr("class", "line_elem");
     c_section.insert("span")
-                .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"));
+        .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"));
     c_section.insert('input')
-                .attrs({type: "color", value: stroke_prev})
-                .style("float", "right")
-                .on('change', function(){
-                    lgd_to_change = true;
-                    selection.style("stroke", this.value);
-                    current_layers[layer_name].fill_color.single = this.value;
-                    });
+        .attrs({type: "color", value: stroke_prev})
+        .style("float", "right")
+        .on('change', function(){
+            lgd_to_change = true;
+            selection.style("stroke", this.value);
+            current_layers[layer_name].fill_color.single = this.value;
+        });
 
     let opacity_section = popup.append('p').attr("class", "line_elem");
     opacity_section.insert("span")
-            .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
+        .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
     opacity_section.insert('input')
-            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
-            .on('change', function(){
-                opacity_section.select("#opacity_val_txt").html(" " + this.value);
-//                        if(this.value !== "0" || type === 'Line'){
-                selection.style('stroke-opacity', this.value);
-//                        } else {
-//                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-//                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-//                                     .style('stroke', function(){ return this.style.fill; });
-//                        }
-            });
+        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+        .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
+        .on('change', function(){
+            opacity_section.select("#opacity_val_txt").html(" " + this.value);
+            selection.style('stroke-opacity', this.value);
+        });
 
     opacity_section.append("span").attr("id", "opacity_val_txt")
          .style("display", "inline").style("float", "right")
@@ -847,24 +872,17 @@ function createStyleBox(layer_name){
 
     if(renderer != "DiscLayer" && renderer != "Links"){
         let width_section = popup.append('p');
-         width_section.append("span")
-                .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
-         width_section
-              .insert('input')
-              .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
-              .styles({"width": "60px", "float": "right"})
-              .on('change', function(){
-                    let val = +this.value;
-//                                if(val != 0 || type === 'Line'){
-                    let zoom_scale = +d3.zoomTransform(map.node()).k;
-                    map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
-                    current_layers[layer_name]['stroke-width-const'] = val;
-//                                } else {
-//                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-//                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-//                                             .style('stroke', function(){ return this.style.fill; });
-//                                }
-                  });
+        width_section.append("span")
+            .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
+        width_section.insert('input')
+            .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
+            .styles({"width": "60px", "float": "right"})
+            .on('change', function(){
+                let val = +this.value;
+                let zoom_scale = +d3.zoomTransform(map.node()).k;
+                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+                current_layers[layer_name]['stroke-width-const'] = val;
+              });
     }
 
     let _fields = get_fields_name(layer_name);
@@ -955,11 +973,6 @@ function createStyleBox_ProbSymbol(layer_name){
         prev_col_breaks;
 
     var d_values = result_data[layer_name].map(v => +v[field_used]);
-    //     abs = Math.abs,
-    //     comp = function(a, b){return abs(b)-abs(a)};
-    // for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-    //     d_values.push(+user_data[ref_layer_name][i][field_used]);
-    // d_values.sort(comp);
 
     let redraw_prop_val = function(prop_values){
         let selec = selection._groups[0];
@@ -1187,70 +1200,69 @@ function createStyleBox_ProbSymbol(layer_name){
     let fill_opct_section = popup.append('p').attr("class", "line_elem")
     fill_opct_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
 
-    fill_opct_section
-          .insert('input')
-          .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-          .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
-          .on('change', function(){
+    fill_opct_section.insert('input')
+        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
+        .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
+        .on('change', function(){
             selection.style('fill-opacity', this.value);
             fill_opct_section.select("#fill_opacity_txt").html((+this.value * 100) + "%");
-          });
+        });
 
     fill_opct_section.append("span")
-          .attr("id", "fill_opacity_txt")
-          .style("float", "right")
-          .html((+opacity * 100) + "%");
+        .attr("id", "fill_opacity_txt")
+        .style("float", "right")
+        .html((+opacity * 100) + "%");
 
     let border_color_section = popup.append('p').attr("class", "line_elem");
     border_color_section.append("span").html(i18next.t("app_page.layer_style_popup.border_color"));
     border_color_section.insert('input')
-          .attrs({type: "color", "value": stroke_prev})
-          .style("float", "right")
-          .on('change', function(){
+        .attrs({type: "color", "value": stroke_prev})
+        .style("float", "right")
+        .on('change', function(){
             selection.transition().style("stroke", this.value);
-          });
+        });
 
     let border_opacity_section = popup.append('p')
     border_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.border_opacity"));
 
     border_opacity_section.insert('input')
-          .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
-          .styles({width: "58px", "vertical-align": "middle", "display": "inline", float: "right"})
-          .on('change', function(){
+        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+        .styles({width: "58px", "vertical-align": "middle", "display": "inline", float: "right"})
+        .on('change', function(){
             selection.style('stroke-opacity', this.value);
             border_opacity_section.select("#border_opacity_txt").html((+this.value * 100) + "%");
-          });
+        });
 
     border_opacity_section.append("span")
-          .attr("id", "border_opacity_txt")
-          .style("float", "right")
-          .html((+border_opacity * 100) + "%");
+        .attr("id", "border_opacity_txt")
+        .style("float", "right")
+        .html((+border_opacity * 100) + "%");
 
     let border_width_section = popup.append('p').attr("class", "line_elem");
     border_width_section.append("span").html(i18next.t("app_page.layer_style_popup.border_width"));
     border_width_section.insert('input')
-          .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
-          .styles({width: "60px", float: "right"})
-          .on('change', function(){
-                selection.style("stroke-width", this.value+"px");
-                current_layers[layer_name]['stroke-width-const'] = +this.value
-            });
+        .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
+        .styles({width: "60px", float: "right"})
+        .on('change', function(){
+            selection.style("stroke-width", this.value+"px");
+            current_layers[layer_name]['stroke-width-const'] = +this.value
+        });
 
     let prop_val_content = popup.append("p");
     prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", {field: field_used}));
     prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
     prop_val_content.insert('input')
-          .styles({width: "60px", float: "right"})
-          .attrs({type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1]})
-          .on("change", function(){
-              let f_size = +this.value,
-                  prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
-              current_layers[layer_name].size[1] = f_size;
-              redraw_prop_val(prop_values);
-          });
+        .styles({width: "60px", float: "right"})
+        .attrs({type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1]})
+        .on("change", function(){
+            let f_size = +this.value,
+                prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
+            current_layers[layer_name].size[1] = f_size;
+            redraw_prop_val(prop_values);
+        });
     prop_val_content.append("span")
-          .style("float", "right")
-          .html('(px)');
+        .style("float", "right")
+        .html('(px)');
 
     let prop_val_content2 = popup.append("p").attr("class", "line_elem");
     prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
@@ -1347,27 +1359,27 @@ function make_style_box_indiv_label(label_node){
         });
     let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
     box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-            .append("input")
-            .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
-            .style("width", "70px")
-            .on("change", function(){
-                label_node.style.fontSize = this.value + "px";
-            });
+        .append("input")
+        .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
+        .style("width", "70px")
+        .on("change", function(){
+            label_node.style.fontSize = this.value + "px";
+        });
     box_content.append("p").html(i18next.t("app_page.func_options.label.content"))
-            .append("input").attrs({"value": label_node.textContent, id: "label_content"})
-            .on("keyup", function(){
-                label_node.textContent = this.value;
-            });
+        .append("input").attrs({"value": label_node.textContent, id: "label_content"})
+        .on("keyup", function(){
+            label_node.textContent = this.value;
+        });
     box_content.append("p").html(i18next.t("app_page.func_options.common.color"))
-            .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
-            .on("change", function(){
-                label_node.style.fill = this.value;
-            });
+        .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+        .on("change", function(){
+            label_node.style.fill = this.value;
+        });
     box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
     let selec_fonts = box_content.append("select")
-            .on("change", function(){
-                label_node.style.fontFamily = this.value;
-            });
+        .on("change", function(){
+            label_node.style.fontFamily = this.value;
+        });
 
     available_fonts.forEach( name => {
         selec_fonts.append("option").attr("value", name[1]).text(name[0]);

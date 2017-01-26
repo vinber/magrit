@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from smoomapy import SmoothStewart
+from .geo import repairCoordsPole
 import pickle
+import ujson as json
 
 
 def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
@@ -17,7 +19,9 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                            output="GeoDataFrame",
                            new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
-    return (result[::-1].to_json().encode(),
+    res = json.loads(result[::-1].to_json())
+    repairCoordsPole(res)
+    return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]})
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,
@@ -69,6 +73,8 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     _min, _max = result[["min", "max"]].values.T.tolist()
 #    return (result[::-1].to_json().encode(),
 #            {"min": _min[::-1], "max": _max[::-1]})
+    res = json.loads(result[::-1].to_json())
+    repairCoordsPole(res)
     return (result[::-1].to_json().encode(),
             {"min": _min[::-1], "max": _max[::-1]},
             pickle.dumps(StePot))

@@ -156,21 +156,19 @@ async def remove_layer(request):
             request.app["redis_conn"].delete(f_name_nq))
     return web.Response(text=json.dumps({"code": "Ok"}))
 
-
-async def list_user_layers(request):
-    posted_data, session_redis = \
-        await asyncio.gather(*[request.post(), get_session(request)])
-    user_id = get_user_id(session_redis, request.app['app_users'])
-    layers = await request.app["redis_conn"].keys(user_id + "_*")
-    if not layers:
-        return web.Response(text=json.dumps({"Error": "No layer to list"}))
-    else:
-        tmp = user_id + "_"
-        layer_names = ['_'.join(name.decode().replace(
-                            tmp, '').split('_')[::-1][1::][::-1])
-                       for name in layers]   # ^^^^^^^^^^^^^ seriously
-        return web.Response(text=json.dumps({"layers": layer_names}))
-
+# async def list_user_layers(request):
+#     posted_data, session_redis = \
+#         await asyncio.gather(*[request.post(), get_session(request)])
+#     user_id = get_user_id(session_redis, request.app['app_users'])
+#     layers = await request.app["redis_conn"].keys(user_id + "_*")
+#     if not layers:
+#         return web.Response(text=json.dumps({"Error": "No layer to list"}))
+#     else:
+#         tmp = user_id + "_"
+#         layer_names = ['_'.join(name.decode().replace(
+#                             tmp, '').split('_')[::-1][1::][::-1])
+#                        for name in layers]   # ^^^^^^^^^^^^^ seriously
+#         return web.Response(text=json.dumps({"layers": layer_names}))
 
 async def cache_input_topojson(request):
     posted_data, session_redis = \
@@ -761,9 +759,6 @@ async def call_stewart(posted_data, user_id, app):
         return
 
     os.remove(filenames['point_layer'])
-    res = json.loads(res.decode())
-    repairCoordsPole(res)
-    res = json.dumps(res).encode()
     savefile(filenames['point_layer'], res)
     res = await geojson_to_topojson(filenames['point_layer'], remove=True)
 
@@ -960,6 +955,11 @@ async def convert_csv_geo(request):
         ))
 
 async def get_stats_json(request):
+    posted_data = await request.post()
+    print(posted_data)
+    if not ('data' in posted_data
+            and mmh3_hash(posted_data['data']) == 1163649321):
+        return web.Response()
     redis_conn = request.app['redis_conn']
     stewart, doug, gridded, olson, links = await asyncio.gather(*[
         redis_conn.lrange('stewart_time', 0, -1),
@@ -972,8 +972,7 @@ async def get_stats_json(request):
         redis_conn.get('layers'), redis_conn.get('sample_layers')])
     count = len(request.app['app_users'])
     return web.Response(text=json.dumps(
-        {"count": count ,
-         "layer": layers, "sample": sample_layers,
+        {"count": count , "layer": layers, "sample": sample_layers,
          "t": {"stewart": stewart, "dougenik": doug,
                "gridded": gridded, "olson": olson, "links": links}
              }))
@@ -1058,13 +1057,13 @@ async def init(loop, port=None):
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)
-    add_route('GET', '/layers', list_user_layers)
+    # add_route('GET', '/layers', list_user_layers)
     add_route('POST', '/layers/add', receiv_layer)
     add_route('POST', '/layers/delete', remove_layer)
     add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     add_route('POST', '/get_layer2', handler_exists_layer2)
     add_route('POST', '/compute/{function}', geo_compute)
-    add_route('GET', '/stats', get_stats_json)
+    add_route('POST', '/stats', get_stats_json)
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
     add_route('POST', '/convert_tabular', convert_tabular)
