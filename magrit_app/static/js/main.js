@@ -1118,7 +1118,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "world"]);
+    sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :

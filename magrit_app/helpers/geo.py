@@ -154,14 +154,14 @@ def check_projection(proj4string):
 def on_geom(geom):
     for pts in geom:
         for pt in pts:
-            if pt[0] > 179.9999:
-                pt[0] = 179.9999
-            elif pt[0] < -179.9999:
-                pt[0] =  179.9999
-            if pt[1] > 90:
-                pt[1] = 90
-            elif pt[1] < -90:
-                pt[1] = -90
+            if pt[0] > 179.999999:
+                pt[0] = 179.999999
+            elif pt[0] < -179.999999:
+                pt[0] =  -179.999999
+            if pt[1] > 89.999999:
+                pt[1] = 89.999999
+            elif pt[1] < -89.999999:
+                pt[1] = -89.999999
 
 def repairCoordsPole(geojson):
     for ft in geojson['features']:

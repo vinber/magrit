@@ -1222,7 +1222,7 @@ function add_sample_layer(){
          [i18next.t("app_page.sample_layer_box.target_layer"),""],
          [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
          [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
-         [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"],
+         [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
          [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
          [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
          [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
@@ -1260,27 +1260,27 @@ function add_simplified_land_layer(options = {}){
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
 
-    d3.json("/static/data_sample/world.topojson", function(error, json) {
-        current_layers["world"] = {
+    d3.json("/static/data_sample/World.topojson", function(error, json) {
+        current_layers["World"] = {
             "type": "Polygon",
             "n_features":125,
             "stroke-width-const": +options.stroke_width.slice(0,-2),
             "fill_color": {single: options.fill}
         };
         map.append("g")
-            .attrs({id: "world", class: "layer"})
+            .attrs({id: "World", class: "layer"})
             .style("stroke-width", options.stroke_width)
             .selectAll('.subunit')
-            .data(topojson.feature(json, json.objects.world).features)
+            .data(topojson.feature(json, json.objects.World).features)
             .enter()
             .append('path')
             .attr("d", path)
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
-        create_li_layer_elem("world", null, "Polygon", "sample");
+        create_li_layer_elem("World", null, "Polygon", "sample");
         if(!options.skip_rescale){
-            scale_to_lyr("world");
-            center_map("world");
+            scale_to_lyr("World");
+            center_map("World");
         }
         zoom_without_redraw();
     });

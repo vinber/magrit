@@ -7,6 +7,8 @@ from shapely.geometry import Polygon
 from math import ceil
 from shapely.ops import cascaded_union
 import rtree
+import numpy as np
+
 
 def idx_generator_func(bounds):
     for i, bound in enumerate(bounds):
@@ -25,7 +27,11 @@ def get_grid_layer(input_file, height, field_name,
 
     gdf = GeoDataFrame.from_file(input_file)
     gdf.to_crs(crs=proj4_eck4, inplace=True)
-    gdf[field_name] = gdf[field_name].astype(float)
+    if not gdf[field_name].dtype in (int, float):
+        gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
+        gdf.loc[:, field_name] = gdf[field_name].astype(float)
+        gdf = gdf[gdf[field_name].notnull()]
+        gdf.index = range(len(gdf))
 
     res_geoms = {
         "square": get_square_dens_grid2,

@@ -175,7 +175,7 @@ function get_map_template(){
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "world") {
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
             selection = map.select("#" + layer_name).selectAll("path");
             layer_style_i.fill_color = rgb2hex(selection.style("fill"));
             layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -627,7 +627,7 @@ function apply_user_preferences(json_pref){
                   options.fill = _layer.fill_color;
               }
               add_layout_feature(layer_name.toLowerCase(), options);
-          } else if (layer_name == "world"){
+          } else if (layer_name == "World"){
               add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px"});
 
           // ... or this is a layer of proportionnals symbols :

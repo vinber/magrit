@@ -96,7 +96,7 @@ async def test_get_pages(cli):
    resp = await cli.get('/modules')
    assert resp.status == 200
    content = await resp.text()
-   assert "<html>" in content
+   assert '<html lang="en">' in content
 
    resp = await cli.get('/contact')
    assert resp.status == 200

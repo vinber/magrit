@@ -5,7 +5,7 @@
  "nuts0": "/static/data_sample/nuts0.geojson",
  "nuts1": "/static/data_sample/nuts1.geojson",
  "nuts2": "/static/data_sample/nuts2.geojson",
- "nuts2_data": "/static/data_sample/nuts2_data.geojson",
+ "nuts2-2013-data": "/static/data_sample/nuts2-2013-data.geojson",
  "martinique": "/static/data_sample/martinique.geojson",
  "twincities": "/static/data_sample/twincities.csv",
  "paris_quartiers": "/static/data_sample/quartier_paris.geojson",

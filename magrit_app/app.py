@@ -115,7 +115,7 @@ async def geojson_to_topojson(
         filepath, quantization="--no-quantization", remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["geo2topo", quantization, "--bbox",
+    process = Popen(["geo2topo", "--spherical", quantization, "--bbox",
                      "-p", "--", filepath],
                     stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
@@ -430,6 +430,14 @@ async def serve_main_page(request):
 async def serve_contact_form(request):
     return {"app_name": request.app["app_name"]}
 
+def make_carto_doug(file_path, field_name, iterations):
+    gdf = GeoDataFrame.from_file(file_path)
+    if not gdf[field_name].dtype in (int, float):
+        gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
+        gdf.loc[:, field_name] = gdf[field_name].astype(float)
+        gdf = gdf[gdf[field_name].notnull()]
+        gdf.index = range(len(gdf))
+    return make_cartogram(gdf.copy(), field_name, iterations)
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
@@ -450,8 +458,8 @@ async def carto_doug(posted_data, user_id, app):
     try:
         result = await app.loop.run_in_executor(
             app["ThreadPool"],
-            make_cartogram,
-            GeoDataFrame.from_file(tmp_path), n_field_name, iterations)
+            make_carto_doug,
+            tmp_path, n_field_name, iterations)
     except asyncio.CancelledError:
         app['logger'].info(
             'Cancelled after {:.4f}s : carto_doug'

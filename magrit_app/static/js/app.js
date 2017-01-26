@@ -927,7 +927,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "world"]);
+    sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -2535,7 +2535,7 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
         colors_map = [];
 
     for (var j = 0; j < values.length; ++j) {
-        if (values[j] != null) {
+        if (values[j] != null && values[j] != "") {
             var idx = serie.getClass(values[j]);
             colors_map.push(color_array[idx]);
         } else {
@@ -2546,7 +2546,7 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
 }.memoize();
 
 // Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
-var display_discretization = function display_discretization(layer_name, field_name, nb_class, type, options) {
+var display_discretization = function display_discretization(layer_name, field_name, nb_class, options) {
     var make_no_data_section = function make_no_data_section() {
         var section = d3.select("#color_div").append("div").attr("id", "no_data_section").append("p").html(i18next.t("disc_box.withnodata", { count: +no_data }));
 
@@ -2569,7 +2569,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
             sequential_color_select.append("option").text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
         });
-        var button_reverse = d3.select(".color_txt").insert("button").styles({ "display": "inherit", "margin-top": "10px" }).attrs({ "class": "button_st3", "id": "reverse_pal_btn" }).html(i18next.t("disc_box.reverse_palette")).on("click", function () {
+        var button_reverse = d3.select(".color_txt").insert('p').style('text-align', 'center').insert("button").styles({ "margin-top": "10px" }).attrs({ "class": "button_st3", "id": "reverse_pal_btn" }).html(i18next.t("disc_box.reverse_palette")).on("click", function () {
             to_reverse = true;
             redisplay.draw();
         });
@@ -2850,8 +2850,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         values = [],
         no_data;
 
+    var type = options.type;
+
     for (var i = 0; i < nb_values; i++) {
-        if (db_data[i][field_name] != null) {
+        if (db_data[i][field_name] != null && db_data[i][field_name] != "") {
             values.push(+db_data[i][field_name]);
             indexes.push(i);
         }
@@ -3059,6 +3061,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
     }
 
+    if (options.type && options.type == "user_defined") {
+        user_break_list = options.breaks;
+    }
+
     redisplay.compute();
     redisplay.draw(options.colors);
 
@@ -3066,6 +3072,9 @@ var display_discretization = function display_discretization(layer_name, field_n
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function () {
+        breaks = breaks.map(function (i) {
+            return +i;
+        });
         var colors_map = [];
         var no_data_color = null;
         if (no_data > 0) {
@@ -3073,7 +3082,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         }
         for (var j = 0; j < db_data.length; ++j) {
             var value = db_data[j][field_name];
-            if (value !== null) {
+            if (value !== null && isFinite(value) && value != "") {
                 var idx = serie.getClass(+value);
                 colors_map.push(color_array[idx]);
             } else {
@@ -4187,9 +4196,11 @@ var fields_PropSymbolChoro = {
                 opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
                 conf_disc_box = void 0;
 
-            if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, self.rendering_params[selected_field].type, { schema: self.rendering_params[selected_field].schema,
+            if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
                 colors: self.rendering_params[selected_field].colors,
-                no_data: self.rendering_params[selected_field].no_data });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                no_data: self.rendering_params[selected_field].no_data,
+                type: self.rendering_params[selected_field].type,
+                breaks: self.rendering_params[selected_field].breaks });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
 
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
@@ -4235,7 +4246,9 @@ var fields_PropSymbolChoro = {
 
                 var options_disc = { schema: rendering_params[color_field].schema,
                     colors: rendering_params[color_field].colors,
-                    no_data: rendering_params[color_field].no_data };
+                    no_data: rendering_params[color_field].no_data,
+                    type: rendering_params[color_field].type,
+                    breaks: rendering_params[color_field].breaks };
 
                 Object.assign(current_layers[new_layer_name], {
                     renderer: "PropSymbolsChoro",
@@ -4553,11 +4566,13 @@ var fields_Choropleth = {
                 conf_disc_box = void 0;
 
             if (self.rendering_params[selected_field]) {
-                conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, self.rendering_params[selected_field].type, { schema: self.rendering_params[selected_field].schema,
+                conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
                     colors: self.rendering_params[selected_field].colors,
-                    no_data: self.rendering_params[selected_field].no_data });
+                    type: self.rendering_params[selected_field].type,
+                    no_data: self.rendering_params[selected_field].no_data,
+                    breaks: self.rendering_params[selected_field].breaks });
             } else {
-                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
             }
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
@@ -4958,12 +4973,10 @@ var fields_Anamorphose = {
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                if (contains_empty_val(user_data[layer].map(function (a) {
-                    return a[field_name];
-                }))) {
-                    discard_rendering_empty_val();
-                    return;
-                }
+                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 var_to_send[field_name] = [];
                 if (!current_layers[layer].original_fields.has(field_name)) {
@@ -5265,7 +5278,9 @@ function render_choro(layer, rendering_params) {
     var breaks = rendering_params["breaks"];
     var options_disc = { schema: rendering_params.schema,
         colors: rendering_params.colors,
-        no_data: rendering_params.no_data };
+        no_data: rendering_params.no_data,
+        type: rendering_params.type,
+        breaks: breaks };
     var layer_to_render = map.select("#" + layer).selectAll("path");
     map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
     layer_to_render.style('fill-opacity', 1).style("fill", function (d, i) {
@@ -6693,7 +6708,6 @@ var type_col2 = function type_col2(table, field) {
                 tmp_type = "empty";
             } else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
                 var _val = Number(table[i][field]);
-                console.log(_val, val, (_val | 0) == val);
                 tmp_type = (_val | 0) == val ? "stock" : "ratio";
             }
             tmp[fields[j]].push(tmp_type);
@@ -6710,8 +6724,6 @@ var type_col2 = function type_col2(table, field) {
             return ft === "ratio" || ft === "stock" || ft === "empty";
         }) && tmp[field].indexOf("ratio") > -1) result.push({ name: field, type: "ratio" });else result.push({ name: field, type: "unknown", has_duplicate: has_dup });
     }
-    console.log(tmp);
-    console.log(result);
     return result;
 };
 
@@ -7101,12 +7113,18 @@ function getBinsCount(_values) {
     };
 }
 
-function getBreaks_userDefined(serie, breaks_list) {
-    var separator = has_negative(serie) ? '- ' : '-',
-        break_values = breaks_list.split(separator).map(function (el) {
+function parseUserDefinedBreaks(serie, breaks_list) {
+    var separator = has_negative(serie) ? '- ' : '-';
+    return breaks_list.split(separator).map(function (el) {
         return +el.trim();
-    }),
-        len_serie = serie.length,
+    });
+}
+
+function getBreaks_userDefined(serie, break_values) {
+    if (typeof break_values === "string") {
+        break_values = parseUserDefinedBreaks(serie, break_values);
+    }
+    var len_serie = serie.length,
         j = 0,
         len_break_val = break_values.length,
         stock_class = new Array(len_break_val - 1);
@@ -8402,7 +8420,7 @@ function add_sample_layer() {
         if (error) throw error;else sample_datasets = json[0];
     });
 
-    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
+    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
@@ -8440,19 +8458,19 @@ function add_simplified_land_layer() {
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
 
-    d3.json("/static/data_sample/world.topojson", function (error, json) {
-        current_layers["world"] = {
+    d3.json("/static/data_sample/World.topojson", function (error, json) {
+        current_layers["World"] = {
             "type": "Polygon",
             "n_features": 125,
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "world", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.world).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "World", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
-        create_li_layer_elem("world", null, "Polygon", "sample");
+        create_li_layer_elem("World", null, "Polygon", "sample");
         if (!options.skip_rescale) {
-            scale_to_lyr("world");
-            center_map("world");
+            scale_to_lyr("World");
+            center_map("World");
         }
         zoom_without_redraw();
     });
@@ -9269,7 +9287,10 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].options_disc = {
                     schema: rendering_params.schema,
                     colors: rendering_params.colors,
-                    no_data: rendering_params.no_data };
+                    no_data: rendering_params.no_data,
+                    type: rendering_params.type,
+                    breaks: rendering_params.breaks
+                };
             } else if (renderer == "Stewart") {
                 current_layers[layer_name].colors_breaks = rendering_params.breaks;
                 current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
@@ -9395,7 +9416,9 @@ function createStyleBox(layer_name) {
                 })();
             } else if (renderer == "Choropleth") {
                 popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-                    display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, "user_defined", current_layers[layer_name].options_disc).then(function (confirmed) {
+                    display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
+                    //  "quantiles",
+                    current_layers[layer_name].options_disc).then(function (confirmed) {
                         if (confirmed) {
                             rendering_params = {
                                 nb_class: confirmed[0],
@@ -9419,7 +9442,9 @@ function createStyleBox(layer_name) {
                 (function () {
                     var field_to_discretize = "densitykm";
                     popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-                        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "quantiles", current_layers[layer_name].options_disc).then(function (confirmed) {
+                        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+                        //  "quantiles",
+                        current_layers[layer_name].options_disc).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
                                     nb_class: confirmed[0],
@@ -9793,7 +9818,9 @@ function createStyleBox_ProbSymbol(layer_name) {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length, "quantiles", current_layers[layer_name].options_disc).then(function (confirmed) {
+                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], type: confirmed[1],
@@ -12119,7 +12146,7 @@ function get_map_template() {
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "world") {
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
             selection = map.select("#" + layer_name).selectAll("path");
             layer_style_i.fill_color = rgb2hex(selection.style("fill"));
             layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -12570,7 +12597,7 @@ function apply_user_preferences(json_pref) {
                     options.fill = _layer.fill_color;
                 }
                 add_layout_feature(layer_name.toLowerCase(), options);
-            } else if (layer_name == "world") {
+            } else if (layer_name == "World") {
                 add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
 
                 // ... or this is a layer of proportionnals symbols :

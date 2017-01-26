@@ -541,12 +541,13 @@ var fields_PropSymbolChoro = {
                 conf_disc_box = display_discretization(layer,
                                                        selected_field,
                                                        self.rendering_params[selected_field].nb_class,
-                                                       self.rendering_params[selected_field].type,
                                                        {schema: self.rendering_params[selected_field].schema,
                                                         colors: self.rendering_params[selected_field].colors,
-                                                        no_data: self.rendering_params[selected_field].no_data});
+                                                        no_data: self.rendering_params[selected_field].no_data,
+                                                        type: self.rendering_params[selected_field].type,
+                                                        breaks: self.rendering_params[selected_field].breaks});
             else
-                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, {type: "quantiles"});
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
@@ -597,7 +598,9 @@ var fields_PropSymbolChoro = {
 
                 let options_disc = {schema: rendering_params[color_field].schema,
                                     colors: rendering_params[color_field].colors,
-                                    no_data: rendering_params[color_field].no_data}
+                                    no_data: rendering_params[color_field].no_data,
+                                    type: rendering_params[color_field].type,
+                                    breaks: rendering_params[color_field].breaks}
 
                 Object.assign(current_layers[new_layer_name],{
                     renderer: "PropSymbolsChoro",
@@ -883,19 +886,20 @@ var fields_Choropleth = {
                 conf_disc_box;
 
             if(self.rendering_params[selected_field]) {
-                conf_disc_box = display_discretization(layer, selected_field,
+                conf_disc_box = display_discretization(layer,
+                                                       selected_field,
                                                        self.rendering_params[selected_field].nb_class,
-                                                       self.rendering_params[selected_field].type,
                                                        {schema: self.rendering_params[selected_field].schema,
                                                         colors: self.rendering_params[selected_field].colors,
-                                                        no_data: self.rendering_params[selected_field].no_data});
+                                                        type: self.rendering_params[selected_field].type,
+                                                        no_data: self.rendering_params[selected_field].no_data,
+                                                        breaks: self.rendering_params[selected_field].breaks});
 
             } else {
                 conf_disc_box = display_discretization(layer,
                                                        selected_field,
                                                        opt_nb_class,
-                                                       "quantiles",
-                                                       {});
+                                                       {type: "quantiles"});
             }
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
@@ -1319,10 +1323,10 @@ var fields_Anamorphose = {
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
-                  discard_rendering_empty_val();
-                  return;
-                }
+                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 var_to_send[field_name] = [];
                 if(!current_layers[layer].original_fields.has(field_name)){
@@ -1653,7 +1657,9 @@ function render_choro(layer, rendering_params){
     let breaks = rendering_params["breaks"];
     let options_disc = {schema: rendering_params.schema,
                         colors: rendering_params.colors,
-                        no_data: rendering_params.no_data}
+                        no_data: rendering_params.no_data,
+                        type: rendering_params.type,
+                        breaks: breaks}
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)

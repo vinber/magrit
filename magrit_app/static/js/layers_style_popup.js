@@ -495,7 +495,10 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].options_disc = {
                             schema: rendering_params.schema,
                             colors: rendering_params.colors,
-                            no_data: rendering_params.no_data };
+                            no_data: rendering_params.no_data,
+                            type: rendering_params.type,
+                            breaks: rendering_params.breaks
+                          };
                 } else if (renderer == "Stewart"){
                     current_layers[layer_name].colors_breaks = rendering_params.breaks;
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
@@ -647,7 +650,7 @@ function createStyleBox(layer_name){
                     display_discretization(layer_name,
                                            current_layers[layer_name].rendered_field,
                                            current_layers[layer_name].colors_breaks.length,
-                                           "user_defined",
+                                          //  "quantiles",
                                            current_layers[layer_name].options_disc)
                        .then(function(confirmed){
                            if(confirmed){
@@ -680,7 +683,7 @@ function createStyleBox(layer_name){
                     display_discretization(layer_name,
                                            field_to_discretize,
                                            current_layers[layer_name].colors_breaks.length,
-                                           "quantiles",
+                                          //  "quantiles",
                                            current_layers[layer_name].options_disc)
                         .then(function(confirmed){
                             if(confirmed){
@@ -1102,7 +1105,7 @@ function createStyleBox_ProbSymbol(layer_name){
                 display_discretization(layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
-                                       "quantiles",
+                                      //  "quantiles",
                                        current_layers[layer_name].options_disc)
                   .then(function(confirmed){
                     if(confirmed){

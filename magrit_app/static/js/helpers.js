@@ -284,7 +284,6 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
                 tmp_type = "empty";
             } else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
                 let _val = Number(table[i][field]);
-                console.log(_val, val, (_val | 0) == val);
                 tmp_type = (_val | 0) == val ? "stock" : "ratio";
             }
             tmp[fields[j]].push(tmp_type);
@@ -302,8 +301,6 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
         else
             result.push({name: field, type: "unknown", has_duplicate: has_dup});
     }
-    console.log(tmp);
-    console.log(result);
     return result;
 }
 

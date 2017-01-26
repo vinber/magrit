@@ -37,7 +37,7 @@ var discretize_to_colors = (function discretize_to_colors(values, type, nb_class
         no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
         colors_map = [];
     for(let j=0; j<values.length; ++j){
-        if(values[j] != null){
+        if(values[j] != null && values[j] != ""){
           let idx = serie.getClass(values[j]);
           colors_map.push(color_array[idx]);
         } else {
@@ -48,7 +48,7 @@ var discretize_to_colors = (function discretize_to_colors(values, type, nb_class
 }).memoize();
 
 // Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
-var display_discretization = function(layer_name, field_name, nb_class, type, options){
+var display_discretization = function(layer_name, field_name, nb_class, options){
     var make_no_data_section = function(){
         var section = d3.select("#color_div")
                 .append("div").attr("id", "no_data_section")
@@ -89,8 +89,9 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
                 .attrs({value: name, title: name})
                 .styles({'background-image': 'url(/static/img/palettes/' + name + '.png)'});
         });
-        var button_reverse = d3.select(".color_txt").insert("button")
-                                .styles({"display": "inherit", "margin-top": "10px"})
+        var button_reverse = d3.select(".color_txt").insert('p').style('text-align', 'center')
+                                .insert("button")
+                                .styles({"margin-top": "10px"})
                                 .attrs({"class": "button_st3", "id": "reverse_pal_btn"})
                                 .html(i18next.t("disc_box.reverse_palette"))
                                 .on("click", function(){
@@ -478,8 +479,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         values = [],
         no_data;
 
+    var type = options.type;
+
     for(let i=0; i<nb_values; i++){
-        if(db_data[i][field_name] != null){
+        if(db_data[i][field_name] != null && db_data[i][field_name] != ""){
             values.push(+db_data[i][field_name]);
             indexes.push(i);
         }
@@ -733,6 +736,10 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
     }
 
+    if(options.type && options.type == "user_defined"){
+        user_break_list = options.breaks;
+    }
+
     redisplay.compute();
     redisplay.draw(options.colors);
 
@@ -740,6 +747,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function(){
+        breaks = breaks.map(i => +i);
         var colors_map = [];
         let no_data_color = null;
         if(no_data > 0){
@@ -747,7 +755,7 @@ var display_discretization = function(layer_name, field_name, nb_class, type, op
         }
         for(let j=0; j < db_data.length; ++j){
             let value = db_data[j][field_name];
-            if(value !== null){
+            if(value !== null && isFinite(value) && value != ""){
                 let idx = serie.getClass(+value);
                 colors_map.push(color_array[idx]);
             } else {
