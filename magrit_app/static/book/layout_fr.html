@@ -68,14 +68,20 @@
 
                 <div id="content" class="content">
                     <h1>Habillage de la carte</h1>
+<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <p style="text-align: center;">
 <img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
 </p>
-<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <h3>Différentes couches géographiques permettant de contextualiser les données représentées :</h3>
 <ul>
 <li>Tracé des pays du monde</li>
 <li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
+<li>...</li>
+</ul>
+<p style="text-align: center;">
+<img src="img/win_hablayer_fr.png" alt="Layer additionnels"/>
+</p>
+<ul>
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
 </ul>
@@ -100,6 +106,7 @@
 <p style="text-align: center;">
 <img src="img/contextmenu_northArrow.png" alt="Menu contextuel"/>
 </p>
+<p>Les légendes peuvent aussi être modifiées avec le double-click.</p>
 <p style="text-align: center;">
 <img src="img/contextmenu_legend.png" alt="Menu contextuel"/>
 </p>
@@ -145,6 +152,20 @@
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

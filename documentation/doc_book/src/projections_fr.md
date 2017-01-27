@@ -1,10 +1,14 @@
 # Projections
 
 De nombreuses projections cartographiques sont disponibles dans l'application.   
-La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
-Celui-ci est par défaut sur la longitude 0°.
+La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.
 
-La projection appelée "orthographique" présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.
+<p style="text-align: center;">
+<img src="img/win_prc_fr.png" alt="Changer la projection"/>
+</p>
+
+Le choix d'une projection est accompagné du choix de son centrage.
+Celui-ci est par défaut sur la longitude 0°.
 
 Plusieurs attributs permettent de distinguer ces projections :
 - la conservation locale des surfaces (ces projections sont dites **équivalentes**, c'est par exemple le cas de la *projection azimutale équivalente de Lambert*)
@@ -20,9 +24,15 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 > - Lors de la réalisation d'une carte d'une faible emprise spatiale, l'utilisation de certaines projection n'est pas pertinent et est désactivé par défaut.
 
 #### Exemple d'utilisation des graticules et du fond de l'emprise du globe avec des représentations originales :
-
-<img src="/img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/>
-<img src="/img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/>
-<img src="/img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/>
-<img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
-<img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/>
+<p style="text-align: center;">
+<img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/></br>
+projection Loximuthal</br></br>
+<img src="img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/></br>
+projection HEALPix</br></br>
+<img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/></br>
+projection Interrupted Homolosine</br></br>
+<img src="img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/></br>
+projection Peirce</br></br>
+<img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></br>
+projection Eisenlohr</br>
+</p>

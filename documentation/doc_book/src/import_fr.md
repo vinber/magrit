@@ -32,8 +32,9 @@ Plusieurs formats sont supportés:
 ## Import d'un tableau de données
 
 L'ajout d'un tableau de données peut être effectué de plusieurs manières :
-- Par un glisser-déposer du fichier dans la section appropriée du menu
 - Par un clic sur le bouton *Ajout d'un jeu de données*
+- Par un glisser-déposer du fichier dans le menu d'import des données
+
 
 
 Plusieurs format sont pris en charge pour l'import des données :
@@ -74,3 +75,6 @@ A chaque type de données est associé un certain nombre de modes représentatio
 ## Affichage et enrichissement des tables de données
 
 L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.
+<p style="text-align: center;">
+<img src="img/win_tab_fr.png" alt="Voir la table"/>
+</p>

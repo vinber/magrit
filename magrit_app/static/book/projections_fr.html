@@ -69,9 +69,12 @@
                 <div id="content" class="content">
                     <h1>Projections</h1>
 <p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
-La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
+La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.</p>
+<p style="text-align: center;">
+<img src="img/win_prc_fr.png" alt="Changer la projection"/>
+</p>
+<p>Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.</p>
-<p>La projection appelée &quot;orthographique&quot; présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.</p>
 <p>Plusieurs attributs permettent de distinguer ces projections :</p>
 <ul>
 <li>la conservation locale des surfaces (ces projections sont dites <strong>équivalentes</strong>, c'est par exemple le cas de la <em>projection azimutale équivalente de Lambert</em>)</li>
@@ -89,11 +92,18 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 </ul>
 </blockquote>
 <h4>Exemple d'utilisation des graticules et du fond de l'emprise du globe avec des représentations originales :</h4>
-<p><img src="/img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/>
-<img src="/img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/>
-<img src="/img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/>
-<img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
-<img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
+<p style="text-align: center;">
+<img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/></br>
+projection Loximuthal</br></br>
+<img src="img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/></br>
+projection HEALPix</br></br>
+<img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/></br>
+projection Interrupted Homolosine</br></br>
+<img src="img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/></br>
+projection Peirce</br></br>
+<img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></br>
+projection Eisenlohr</br>
+</p>
 
                 </div>
 
@@ -136,6 +146,20 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

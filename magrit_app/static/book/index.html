@@ -95,8 +95,8 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 <h2>Import d'un tableau de données</h2>
 <p>L'ajout d'un tableau de données peut être effectué de plusieurs manières :</p>
 <ul>
-<li>Par un glisser-déposer du fichier dans la section appropriée du menu</li>
 <li>Par un clic sur le bouton <em>Ajout d'un jeu de données</em></li>
+<li>Par un glisser-déposer du fichier dans le menu d'import des données</li>
 </ul>
 <p>Plusieurs format sont pris en charge pour l'import des données :</p>
 <ul>
@@ -129,6 +129,9 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 </p>
 <h2>Affichage et enrichissement des tables de données</h2>
 <p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.</p>
+<p style="text-align: center;">
+<img src="img/win_tab_fr.png" alt="Voir la table"/>
+</p>
 
                 </div>
 
@@ -163,6 +166,20 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

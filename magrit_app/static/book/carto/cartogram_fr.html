@@ -88,14 +88,6 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
-<blockquote>
-<h3>Paramètres (méthode Olson)</h3>
-<ul>
-<li>Le nom du champ contenant les valeurs à utiliser</li>
-<li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
-<li>Le nom de la couche produite</li>
-</ul>
-</blockquote>
 
                 </div>
 
@@ -138,6 +130,20 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

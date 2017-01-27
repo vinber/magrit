@@ -1,16 +1,24 @@
 # Habillage de la carte
 
+
+Magrit propose une série d'éléments nécessaire à l'habillage de la carte :
 <p style="text-align: center;">
 <img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
 </p>
 
-Magrit propose une série d'éléments nécessaire à l'habillage de la carte :
+
 
 
 ### Différentes couches géographiques permettant de contextualiser les données représentées :
 
 - Tracé des pays du monde
 - Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)
+- ...
+
+<p style="text-align: center;">
+<img src="img/win_hablayer_fr.png" alt="Layer additionnels"/>
+</p>
+
 - Graticule
 - Dessin de l'emprise du globe
 
@@ -37,6 +45,8 @@ Magrit propose une série d'éléments nécessaire à l'habillage de la carte :
 <p style="text-align: center;">
 <img src="img/contextmenu_northArrow.png" alt="Menu contextuel"/>
 </p>
+
+Les légendes peuvent aussi être modifiées avec le double-click.
 
 <p style="text-align: center;">
 <img src="img/contextmenu_legend.png" alt="Menu contextuel"/>

@@ -96,8 +96,8 @@ Si aucun système de coordonnées de référence n'est spécifié, l'application
 <h2>Import d'un tableau de données</h2>
 <p>L'ajout d'un tableau de données peut être effectué de plusieurs manières :</p>
 <ul>
-<li>Par un glisser-déposer du fichier dans la section appropriée du menu</li>
 <li>Par un clic sur le bouton <em>Ajout d'un jeu de données</em></li>
+<li>Par un glisser-déposer du fichier dans le menu d'import des données</li>
 </ul>
 <p>Plusieurs format sont pris en charge pour l'import des données :</p>
 <ul>
@@ -130,11 +130,17 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 </p>
 <h2>Affichage et enrichissement des tables de données</h2>
 <p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de donnée.</p>
+<p style="text-align: center;">
+<img src="img/win_tab_fr.png" alt="Voir la table"/>
+</p>
 <h1>Projections</h1>
 <p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
-La séléction d'une projection s'effectue dans la partie suérieure droite de la fenêtre. Le choix d'une projection est accompagné du choix de son centrage.
+La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.</p>
+<p style="text-align: center;">
+<img src="img/win_prc_fr.png" alt="Changer la projection"/>
+</p>
+<p>Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.</p>
-<p>La projection appelée &quot;orthographique&quot; présente la particularité d'offrir 3 paramètres de centrage (correspondants aux axes lambda, phi et gamma), permettant une rotation complète et personnalisée du globe.</p>
 <p>Plusieurs attributs permettent de distinguer ces projections :</p>
 <ul>
 <li>la conservation locale des surfaces (ces projections sont dites <strong>équivalentes</strong>, c'est par exemple le cas de la <em>projection azimutale équivalente de Lambert</em>)</li>
@@ -152,11 +158,18 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 </ul>
 </blockquote>
 <h4>Exemple d'utilisation des graticules et du fond de l'emprise du globe avec des représentations originales :</h4>
-<p><img src="/img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/>
-<img src="/img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/>
-<img src="/img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/>
-<img src="/img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/>
-<img src="/img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></p>
+<p style="text-align: center;">
+<img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/></br>
+projection Loximuthal</br></br>
+<img src="img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/></br>
+projection HEALPix</br></br>
+<img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/></br>
+projection Interrupted Homolosine</br></br>
+<img src="img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/></br>
+projection Peirce</br></br>
+<img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></br>
+projection Eisenlohr</br>
+</p>
 <h1>Choix de la représentation</h1>
 <p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).</p>
 <p style="text-align: center;">
@@ -282,7 +295,7 @@ La donnée de ratio est représentée à l’intérieur du figuré représentant
 </ul>
 <h1>Carroyage</h1>
 <p>La méthode du carroyage est une méthode permettant d'essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
-Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en <em>« carreaux égaux et repérés »</em> (Les mots de la géographie).
+Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en unités régulières.
 Les carreaux ainsi créés sont affectés de la valeur de la variable observée pour les entitées intersectées, au prorata des surfaces concernées.</p>
 <blockquote>
 <h3>Paramètres</h3>
@@ -323,14 +336,6 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
-<blockquote>
-<h3>Paramètres (méthode Olson)</h3>
-<ul>
-<li>Le nom du champ contenant les valeurs à utiliser</li>
-<li>Le nombre d'itérations à effectuer avant d'obtenir le résultat</li>
-<li>Le nom de la couche produite</li>
-</ul>
-</blockquote>
 <h1>Carte lissée</h1>
 <p>Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point. En fonction des paramètres utilisés, cette méthode permet <em>&quot;de voir aussi bien les spécificités locales d'un phénomène que ses tendances générales&quot;</em> (Lambert &amp; Zanin, 2016).</p>
 <blockquote>
@@ -422,14 +427,20 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 <li>Il est également possible d'utiliser les discrétisations en <strong>progression arithmétique</strong>, en <strong>progression géométrique</strong> ou de saisir manuellement les bornes de classes.</li>
 </ul>
 <h1>Habillage de la carte</h1>
+<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <p style="text-align: center;">
 <img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
 </p>
-<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
 <h3>Différentes couches géographiques permettant de contextualiser les données représentées :</h3>
 <ul>
 <li>Tracé des pays du monde</li>
 <li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
+<li>...</li>
+</ul>
+<p style="text-align: center;">
+<img src="img/win_hablayer_fr.png" alt="Layer additionnels"/>
+</p>
+<ul>
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
 </ul>
@@ -454,6 +465,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 <p style="text-align: center;">
 <img src="img/contextmenu_northArrow.png" alt="Menu contextuel"/>
 </p>
+<p>Les légendes peuvent aussi être modifiées avec le double-click.</p>
 <p style="text-align: center;">
 <img src="img/contextmenu_legend.png" alt="Menu contextuel"/>
 </p>
@@ -505,19 +517,23 @@ La résolution de ce type de fichier est fixe et il est proposé de choisir la r
 Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 <h1>Jeux de données</h1>
-<h3>Communes de la métropole du Grand-Paris (polygones) :</h3>
-<p>Fond de carte : Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+<h3>Communes de la métropole du Grand-Paris :</h3>
+<p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
 Variables :</p>
 <ul>
-<li>DEPCOM; code communal; INSEE 2016</li>
-<li>LIBCOM; nom de la commune; INSEE 2016</li>
-<li>EPT; code le l’Établissement Public Territorial; <a href="http://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016</li>
-<li>LIBEPT; nom de l’Établissement Public Territorial; <a href="http://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016</li>
-<li>DEP; code du département; INSEE 2016</li>
-<li>INC; somme des revenus déclarés par les ménages; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
-<li>TH; nombre de ménages fiscaux; Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013.</li>
+<li>DEPCOM : code communal (2)</li>
+<li>LIBCOM : nom de la commune (2)</li>
+<li>EPT : code le l’Établissement Public Territorial (3)</li>
+<li>LIBEPT : nom de l’Établissement Public Territorial (3)</li>
+<li>DEP : code du département (2)</li>
+<li>INC : somme des revenus déclarés par les ménages (4)</li>
+<li>TH : nombre de ménages fiscaux (4)</li>
 </ul>
-<h3>Pays du monde (polygones) :</h3>
+<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+(2) : INSEE, 2016<br />
+(3) : <a href="http://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
+(4) : Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013</p>
+<h3>Pays du monde :</h3>
 <p>Fond de carte : UMS RIATE, 2017<br />
 Variables :</p>
 <ul>
@@ -535,7 +551,7 @@ Variables :</p>
 <p>(1) : United Nations Statistics Division, <a href="http://unstats.un.org/unsd/methods/m49/m49regnf.htm">http://unstats.un.org/unsd/methods/m49/m49regnf.htm</a><br />
 (2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)<br />
 (3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015</p>
-<h3>États fédéraux brésiliens (polygones) :</h3>
+<h3>États fédéraux brésiliens :</h3>
 <p>Fond de carte :<br />
 Variables :</p>
 <ul>
@@ -552,43 +568,45 @@ Variables :</p>
 <p>(1) : '2014 IBGE Estimates - Estimates of Resident Population in Brazil, Federative Units and Municipalities&quot; (PDF) (en Portugais). <a href="ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf">ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf</a>. Consulté le 25 janv. 2017.<br />
 (2) : Wikipedia. Consulté le 25 janv. 2017.<br />
 (3) : Wikipedia. Consulté le 25 janv. 2017.</p>
-<h3>Communes de Martinique (polygones) :</h3>
-<p>Fond de carte : Institut national de l’information géographique et forestière (IGN), <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
-Variables :</p>
+<h3>Communes de Martinique :</h3>
+<p>Fond de carte : Institut national de l’information géographique et forestière (1)</p>
+<p>Variables :</p>
 <ul>
 <li>INSEE_COM : Code INSEE de la commune</li>
 <li>NOM_COM : Nom de la commune</li>
 <li>STATUT :</li>
-<li>POP2013 : Population de la commune</li>
-<li>DENSPOP : Densité de population en habitants par kilomètres carrés</li>
-<li>NbLogements : Nombre de logements</li>
-<li>NbLogementsVacants : Nombre de logements vacants</li>
-<li>PartLogementVacants : Taux d'occupations des logements</li>
+<li>POP2013 : Population de la commune (2)</li>
+<li>DENSPOP : Densité de population en habitants par kilomètres carrés (2)</li>
+<li>NbLogements : Nombre de logements (2)</li>
+<li>NbLogementsVacants : Nombre de logements vacants (2)</li>
+<li>PartLogementVacants : Taux d'occupations des logements (2)</li>
 </ul>
-<h3>Nuts 2 (polygones) :</h3>
+<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
+(2) : INSEE 2013</p>
+<h3>Régions européennes Nuts 2 :</h3>
 <p>Fond de Carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017<br />
 Variable :</p>
 <ul>
 <li>ID : Code NUTS2</li>
 <li>NAME : Nom</li>
-<li>POP : Population au 1er janvier 2014(1)</li>
-<li>GDP : Produit intérieur brut régional en millions d'euros et en standards de pouvoir d'achat, en 2014(2)</li>
-<li>UNEMP : Taux de chômage en %, en 2014(3)</li>
+<li>POP : Population au 1er janvier 2014 (1)</li>
+<li>GDP : Produit intérieur brut régional en millions d'euros et en standards de pouvoir d'achat, en 2014 (2)</li>
+<li>UNEMP : Taux de chômage en %, en 2014 (3)</li>
 <li>COUNTRY : Code du pays d'appartenance</li>
 </ul>
 <p>(1) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:34:48 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00096</a><br />
 (2) : Eurostat, Dernière mise à jour: 18.01.2017, Date d'extraction: 23 janv. 2017 16:38:34 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00004</a><br />
 (3) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:56:02 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00010</a></p>
-<h3>États des Etats-Unis (polygones) :</h3>
+<h3>États des Etats-Unis :</h3>
 <p>Fond de carte :<br />
 Variables :</p>
 <ul>
 <li>STUSPS : Identifiant/code de l'état</li>
 <li>Name : Nom de l'état</li>
 <li>POP2015_est : Estimation du nombre d'habitants en 2015 (1)</li>
-<li>POPDENS : Densité de population en nombre d'habitants par kilomètres carrés</li>
+<li>POPDENS : Densité de population en nombre d'habitants par kilomètres carrés (1)</li>
 </ul>
-<p>(1) 2015 Population Estimates. United States Census Bureau, Population Division. January 2016. &quot;Table 1. Annual Estimates of the Resident Population for the United States, Regions, States, and Puerto Rico: April 1, 2010 to July 1, 2015&quot; <a href="http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx">http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx</a>).</p>
+<p>(1) : 2015 Population Estimates. United States Census Bureau, Population Division. January 2016. &quot;Table 1. Annual Estimates of the Resident Population for the United States, Regions, States, and Puerto Rico: April 1, 2010 to July 1, 2015&quot; <a href="http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx">http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx</a>).</p>
 <h1>Contributeurs</h1>
 <p>Matthieu Viry : Développement &amp; Conception</p>
 <p>Timothée Giraud &amp; Nicolas Lambert : Conception</p>
@@ -620,6 +638,20 @@ Variables :</p>
 
         <!-- Livereload script (if served using the cli tool) -->
         
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3001");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload(true); // force reload from server (not from cache)
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>
