@@ -68,10 +68,27 @@ function setUpInterface(resume_project) {
     bg.style.textAlign = "center";
     bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' + '<span style="color: white; z-index: 2;">...<br></span>' + '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' + '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' + '<div class="line"></div><div class="line"></div></div></div>';
     var btn = document.createElement("button");
+    btn.style.fontSize = '13px';
+    btn.style.background = '#4b9cdb';
+    btn.style.border = '1px solid #298cda';
+    btn.style.fontWeight = 'bold';
     btn.className = "button_st3 i18n";
     btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
     bg.appendChild(btn);
     document.body.appendChild(bg);
+
+    btn.onclick = function () {
+        if (_app.xhr_to_cancel) {
+            _app.xhr_to_cancel.abort();
+            _app.xhr_to_cancel = undefined;
+        }
+        if (_app.webworker_to_cancel) {
+            _app.webworker_to_cancel.onmessage = null;
+            _app.webworker_to_cancel.terminate();
+            _app.webworker_to_cancel = undefined;
+        }
+        document.getElementById('overlay').style.display = 'none';
+    };
 
     var bg_drop = document.createElement('div');
     bg_drop.className = "overlay_drop";
@@ -369,22 +386,22 @@ function setUpInterface(resume_project) {
         var type = this.value,
             export_filename = document.getElementById("export_filename");
         if (type === "svg") {
+            document.getElementById('export_options_geo').style.display = 'none';
             document.getElementById("export_options_png").style.display = "none";
             export_filename.value = "export.svg";
             export_filename.style.display = "";
             export_filename.previousSibling.style.display = "";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
         } else if (type === "png") {
+            document.getElementById('export_options_geo').style.display = 'none';
             document.getElementById("export_options_png").style.display = "";
             export_filename.value = "export.png";
             export_filename.style.display = "";
             export_filename.previousSibling.style.display = "";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.export_button");
         } else if (type === "geo") {
             document.getElementById("export_options_png").style.display = "none";
+            document.getElementById('export_options_geo').style.display = '';
             export_filename.style.display = "none";
             export_filename.previousSibling.style.display = "none";
-            document.getElementById("export_button_section5b").innerHTML = i18next.t("app_page.section5b.next");
         }
     });
 
@@ -466,13 +483,63 @@ function setUpInterface(resume_project) {
 
     export_name.append("input").attrs({ "id": "export_filename", "class": "m_elem_right", "type": "text" });
 
-    dv5b.append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
+    var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
+
+    var geo_a = export_geo_options.append('p');
+    geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
+    var selec_layer = geo_a.insert("select").attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
+
+    var geo_b = export_geo_options.append('p');
+    geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
+    var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' });
+
+    export_geo_options.append('p').style('margin', 'auto').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
+    var geo_c = export_geo_options.append('p').style('margin', 'auto');
+    var selec_projection = geo_c.insert("select").styles({ position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).attrs({ id: "projection_to_use", disabled: true, class: 'i18n' });
+
+    var proj4_input = export_geo_options.append('p').style('margin', 'auto').insert("input").attrs({ id: 'proj4str' }).styles({ display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).on('keyup', function () {
+        ok_button.disabled = this.value.length == 0 ? 'true' : '';
+    });
+
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+        selec_type.append("option").attr("value", name).text(name);
+    });
+
+    [["app_page.section5b.wgs84", "epsg:4326"], ["app_page.section5b.web_mercator", "epsg:3857"], ["app_page.section5b.laea_europe", "epsg:3035"], ["app_page.section5b.usa_albers", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["app_page.section5b.british_national_grid", "epsg:27700"], ["app_page.section5b.lambert93", "epsg:2154"], ["app_page.section5b.eckert_4", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["app_page.section5b.proj4_prompt", "proj4string"]].forEach(function (projection) {
+        selec_projection.append("option").attrs({ class: 'i18n', value: projection[1], 'data-i18n': projection[0] }).text(i18next.t(projection[0]));
+    });
+
+    selec_type.on("change", function () {
+        if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
+            selec_projection.node().options.selectedIndex = 0;
+            selec_projection.attr("disabled", true);
+            ok_button.disabled = "";
+        } else {
+            selec_projection.attr("disabled", null);
+        }
+    });
+
+    selec_projection.on("change", function () {
+        if (this.value == "proj4string") {
+            proj4_input.style("display", "initial");
+            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) ok_button.disabled = "true";
+        } else {
+            proj4_input.style("display", "none");
+            ok_button.disabled = "";
+        }
+    });
+    var ok_button = dv5b.append('p').style('float', 'left').append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
         var type_export = document.getElementById("select_export_type").value,
             export_name = document.getElementById("export_filename").value;
         if (type_export === "svg") {
             export_compo_svg(export_name);
         } else if (type_export === "geo") {
-            make_export_layer_box();
+            var layer_name = document.getElementById('layer_to_export').value,
+                type = document.getElementById('datatype_to_use').value,
+                _proj = document.getElementById('projection_to_use').value,
+                proj4value = document.getElementById('proj4str').value;
+            export_layer_geo(layer_name, type, _proj, proj4value);
+            //make_export_layer_box()
         } else if (type_export === "png") {
             var _type_export = document.getElementById("select_png_format").value,
                 ratio = void 0;
@@ -860,7 +927,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     current_proj_name = "Natural Earth",
     available_projections = new Map(),
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "Simplified_land_polygons"]);
+    sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -891,6 +958,10 @@ map.on("contextmenu", function (event) {
 });
 
 var defs = map.append("defs");
+
+var _app = {
+    to_cancel: undefined
+};
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
@@ -1293,6 +1364,10 @@ function remove_layer_cleanup(name) {
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
     document.querySelector('#sortable .' + name).remove();
+
+    // Remove the layer from the "geo export" menu :
+    var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+    if (a) a.remove();
 
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if (current_layers[name].targeted) {
@@ -1900,118 +1975,193 @@ function _export_compo_png() {
     };
 }
 
-function make_export_layer_box() {
-    var dialogBox = make_confirm_dialog2("dialogGeoExport", i18next.t("app_page.export_box.geo_title_box"), { text_ok: i18next.t("app_page.section5b.export_button") }),
-        box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-        button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+function export_layer_geo(layer, type, projec, proj4str) {
+    var formToSend = new FormData();
+    formToSend.append("layer", layer);
+    formToSend.append("layer_name", current_layers[layer].key_name);
+    formToSend.append("format", type);
+    if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var layer_names = Object.getOwnPropertyNames(current_layers).filter(function (name) {
-        if (sample_no_values.has(name)) return 0;else if (current_layers[name].renderer && (current_layers[name].renderer.indexOf("PropSymbols") > -1 || current_layers[name].renderer.indexOf("Dorling") > -1)) return 0;
-        return 1;
-    });
-
-    box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-
-    var selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer")).insert("select").attr("id", "layer_to_export");
-
-    var selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype")).insert("select").attr("id", "datatype_to_use");
-
-    var selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection")).insert("select").attrs({ id: "projection_to_use", disabled: true });
-
-    var proj4_input = box_content.append("input").attr("id", "proj4str").styles({ display: 'none', width: '200px' }).on('keyup', function () {
-        if (this.value.length == 0) {
-            button_ok.disabled = "true";
-        } else {
-            button_ok.disabled = "";
-        }
-    });
-
-    layer_names.forEach(function (name) {
-        selec_layer.append("option").attr("value", name).text(name);
-    });
-
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
-        selec_type.append("option").attr("value", name).text(name);
-    });
-
-    [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"], ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"], ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"], ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"], ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"], ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["Enter any valid Proj.4 string...", "proj4string"]].forEach(function (projection) {
-        selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-    });
-
-    selec_type.on("change", function () {
-        if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
-            selec_projection.node().options.selectedIndex = 0;
-            selec_projection.attr("disabled", true);
-            button_ok.disabled = "";
-        } else {
-            selec_projection.attr("disabled", null);
-        }
-    });
-
-    selec_projection.on("change", function () {
-        if (this.value == "proj4string") {
-            proj4_input.style("display", "initial");
-            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) button_ok.disabled = "true";
-        } else {
-            proj4_input.style("display", "none");
-            button_ok.disabled = "";
-        }
-    });
-
-    // TODO : allow export to "geopackage" format ?
     var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
-    dialogBox.then(function (confirmed) {
-        if (confirmed) {
-            (function () {
-                var layer = selec_layer.node().value,
-                    type = selec_type.node().value,
-                    projec = selec_projection.node().value;
-                var formToSend = new FormData();
-                formToSend.append("layer", layer);
-                formToSend.append("layer_name", current_layers[layer].key_name);
-                formToSend.append("format", type);
-                if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4_input.node().value }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
-
-                xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
-                    if (data.indexOf('{"Error"') == 0 || data.length == 0) {
-                        var error_message = void 0;
-                        if (data.indexOf('{"Error"') < 5) {
-                            data = JSON.parse(data);
-                            error_message = i18next.t(data.Error);
-                        } else {
-                            error_message = i18next.t('app_page.common.error_msg');
-                        }
-                        swal({ title: "Oops...",
-                            text: error_message,
-                            type: "error",
-                            allowOutsideClick: false,
-                            allowEscapeKey: false
-                        }).then(function () {
-                            null;
-                        }, function () {
-                            null;
-                        });
-                        return;
-                    }
-                    var ext = extensions.get(type),
-                        dataStr = void 0;
-                    if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
-
-                    var dlAnchorElem = document.createElement('a');
-                    dlAnchorElem.setAttribute("href", dataStr);
-                    dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-                    document.body.appendChild(dlAnchorElem);
-                    dlAnchorElem.click();
-                    dlAnchorElem.remove();
-                }, function (error) {
-                    console.log(error);
-                });
-                dialogBox.dialog("destroy").remove();
-            })();
+    xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
+        if (data.indexOf('{"Error"') == 0 || data.length == 0) {
+            var error_message = void 0;
+            if (data.indexOf('{"Error"') < 5) {
+                data = JSON.parse(data);
+                error_message = i18next.t(data.Error);
+            } else {
+                error_message = i18next.t('app_page.common.error_msg');
+            }
+            swal({ title: "Oops...",
+                text: error_message,
+                type: "error",
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(function () {
+                null;
+            }, function () {
+                null;
+            });
+            return;
         }
+        var ext = extensions.get(type),
+            dataStr = void 0;
+        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
+
+        var dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+    }, function (error) {
+        console.log(error);
     });
 }
+
+// function make_export_layer_box(){
+//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
+//                          i18next.t("app_page.export_box.geo_title_box"),
+//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
+//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
+//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
+//
+//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+//         if(sample_no_values.has(name))
+//             return 0;
+//         else if(current_layers[name].renderer
+//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
+//             return 0;
+//         return 1;
+//     });
+//
+//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
+//
+//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
+//              .insert("select").attr("id", "layer_to_export");
+//
+//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
+//              .insert("select").attr("id", "datatype_to_use");
+//
+//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
+//              .insert("select").attrs({id: "projection_to_use", disabled: true});
+//
+//     let proj4_input = box_content.append("input")
+//         .attr("id", "proj4str")
+//         .styles({display: 'none', width: '200px'})
+//         .on('keyup', function(){
+//             if(this.value.length == 0){
+//                 button_ok.disabled = "true";
+//             } else {
+//                 button_ok.disabled = ""
+//             }
+//         });
+//
+//     layer_names.forEach( name => {
+//         selec_layer.append("option").attr("value", name).text(name);
+//     });
+//
+//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+//         selec_type.append("option").attr("value", name).text(name);
+//     });
+//
+//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
+//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
+//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
+//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
+//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
+//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
+//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
+//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
+//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
+//     });
+//
+//     selec_type.on("change", function(){
+//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
+//             selec_projection.node().options.selectedIndex = 0;
+//             selec_projection.attr("disabled", true);
+//             button_ok.disabled = "";
+//         } else {
+//             selec_projection.attr("disabled", null);
+//         }
+//     });
+//
+//     selec_projection.on("change", function(){
+//         if(this.value == "proj4string"){
+//             proj4_input.style("display", "initial");
+//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
+//                 button_ok.disabled = "true";
+//         } else {
+//             proj4_input.style("display", "none");
+//             button_ok.disabled = "";
+//         }
+//     });
+//
+//     // TODO : allow export to "geopackage" format ?
+//     let extensions = new Map([
+//         ["GeoJSON", "geojson"],
+//         ["TopoJSON", "topojson"],
+//         ["ESRI Shapefile", "zip"],
+//         ["GML", "zip"],
+//         ["KML", "kml"]]);
+//
+//     dialogBox.then( confirmed => { if(confirmed){
+//         let layer = selec_layer.node().value,
+//             type = selec_type.node().value,
+//             projec = selec_projection.node().value;
+//         let formToSend = new FormData();
+//         formToSend.append("layer", layer);
+//         formToSend.append("layer_name", current_layers[layer].key_name);
+//         formToSend.append("format", type);
+//         if(projec == "proj4string")
+//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
+//         else
+//             formToSend.append("projection", JSON.stringify({"name" : projec}));
+//
+//         xhrequest("POST", '/get_layer2', formToSend, true)
+//             .then( data => {
+//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
+//                     let error_message;
+//                     if(data.indexOf('{"Error"') < 5){
+//                         data = JSON.parse(data);
+//                         error_message = i18next.t(data.Error);
+//                     } else {
+//                         error_message = i18next.t('app_page.common.error_msg');
+//                     }
+//                     swal({title: "Oops...",
+//                          text: error_message,
+//                          type: "error",
+//                          allowOutsideClick: false,
+//                          allowEscapeKey: false
+//                         }).then( () => { null; },
+//                                   () => { null; });
+//                     return;
+//                 }
+//                 let ext = extensions.get(type),
+//                     dataStr;
+//                 if(ext.indexOf("json") > -1)
+//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+//                 else if (ext.indexOf("kml") > -1)
+//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+//                 else
+//                     dataStr = "data:application/zip;base64," + data;
+//
+//                 let dlAnchorElem = document.createElement('a');
+//                 dlAnchorElem.setAttribute("href", dataStr);
+//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
+//                 document.body.appendChild(dlAnchorElem);
+//                 dlAnchorElem.click();
+//                 dlAnchorElem.remove();
+//
+//             }, error => {
+//                 console.log(error);
+//             });
+//         dialogBox.dialog("destroy").remove();
+//     }});
+// }
+
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917
@@ -2385,7 +2535,7 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
         colors_map = [];
 
     for (var j = 0; j < values.length; ++j) {
-        if (values[j] != null) {
+        if (values[j] != null && values[j] != "") {
             var idx = serie.getClass(values[j]);
             colors_map.push(color_array[idx]);
         } else {
@@ -2396,7 +2546,7 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
 }.memoize();
 
 // Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
-var display_discretization = function display_discretization(layer_name, field_name, nb_class, type, options) {
+var display_discretization = function display_discretization(layer_name, field_name, nb_class, options) {
     var make_no_data_section = function make_no_data_section() {
         var section = d3.select("#color_div").append("div").attr("id", "no_data_section").append("p").html(i18next.t("disc_box.withnodata", { count: +no_data }));
 
@@ -2419,7 +2569,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
             sequential_color_select.append("option").text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
         });
-        var button_reverse = d3.select(".color_txt").insert("button").styles({ "display": "inherit", "margin-top": "10px" }).attrs({ "class": "button_st3", "id": "reverse_pal_btn" }).html(i18next.t("disc_box.reverse_palette")).on("click", function () {
+        var button_reverse = d3.select(".color_txt").insert('p').style('text-align', 'center').insert("button").styles({ "margin-top": "10px" }).attrs({ "class": "button_st3", "id": "reverse_pal_btn" }).html(i18next.t("disc_box.reverse_palette")).on("click", function () {
             to_reverse = true;
             redisplay.draw();
         });
@@ -2700,8 +2850,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         values = [],
         no_data;
 
+    var type = options.type;
+
     for (var i = 0; i < nb_values; i++) {
-        if (db_data[i][field_name] != null) {
+        if (db_data[i][field_name] != null && db_data[i][field_name] != "") {
             values.push(+db_data[i][field_name]);
             indexes.push(i);
         }
@@ -2909,6 +3061,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
     }
 
+    if (options.type && options.type == "user_defined") {
+        user_break_list = options.breaks;
+    }
+
     redisplay.compute();
     redisplay.draw(options.colors);
 
@@ -2916,6 +3072,9 @@ var display_discretization = function display_discretization(layer_name, field_n
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function () {
+        breaks = breaks.map(function (i) {
+            return +i;
+        });
         var colors_map = [];
         var no_data_color = null;
         if (no_data > 0) {
@@ -2923,7 +3082,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         }
         for (var j = 0; j < db_data.length; ++j) {
             var value = db_data[j][field_name];
-            if (value !== null) {
+            if (value !== null && isFinite(value) && value != "") {
                 var idx = serie.getClass(+value);
                 colors_map.push(color_array[idx]);
             } else {
@@ -3526,6 +3685,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function get_menu_option(func) {
     var menu_option = {
         "smooth": {
@@ -4035,9 +4196,11 @@ var fields_PropSymbolChoro = {
                 opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
                 conf_disc_box = void 0;
 
-            if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, self.rendering_params[selected_field].type, { schema: self.rendering_params[selected_field].schema,
+            if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
                 colors: self.rendering_params[selected_field].colors,
-                no_data: self.rendering_params[selected_field].no_data });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                no_data: self.rendering_params[selected_field].no_data,
+                type: self.rendering_params[selected_field].type,
+                breaks: self.rendering_params[selected_field].breaks });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
 
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
@@ -4083,7 +4246,9 @@ var fields_PropSymbolChoro = {
 
                 var options_disc = { schema: rendering_params[color_field].schema,
                     colors: rendering_params[color_field].colors,
-                    no_data: rendering_params[color_field].no_data };
+                    no_data: rendering_params[color_field].no_data,
+                    type: rendering_params[color_field].type,
+                    breaks: rendering_params[color_field].breaks };
 
                 Object.assign(current_layers[new_layer_name], {
                     renderer: "PropSymbolsChoro",
@@ -4236,12 +4401,6 @@ function fillMenu_Choropleth() {
     var discr_section = dv2.insert('p').style("margin", "auto");
     discr_section.insert("span").attr("id", "container_sparkline_choro").styles({ "margin": "16px 50px 0px 4px", "float": "right" });
     make_discretization_icons(discr_section);
-    // dv2.insert('p').style("margin", "auto")
-    //   .append("button")
-    //   .attrs({id: "choro_class", class: "button_disc params i18n",
-    //           'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-    //   .styles({"font-size": "0.8em", "text-align": "center"})
-    //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name', "15px");
     make_ok_button(dv2, 'choro_yes');
@@ -4407,11 +4566,13 @@ var fields_Choropleth = {
                 conf_disc_box = void 0;
 
             if (self.rendering_params[selected_field]) {
-                conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, self.rendering_params[selected_field].type, { schema: self.rendering_params[selected_field].schema,
+                conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
                     colors: self.rendering_params[selected_field].colors,
-                    no_data: self.rendering_params[selected_field].no_data });
+                    type: self.rendering_params[selected_field].type,
+                    no_data: self.rendering_params[selected_field].no_data,
+                    breaks: self.rendering_params[selected_field].breaks });
             } else {
-                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
             }
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
@@ -4643,7 +4804,7 @@ function fillMenu_Stewart() {
 
     var d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span').styles({ "margin-right": "35px" }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta' }).html(i18next.t("app_page.func_options.smooth.beta"));
-    d.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any" });
+    d.insert('input').style("width", "60px").attrs(_defineProperty({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en' }, "lang", 'fr'));
 
     var p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution' }).text(i18next.t("app_page.func_options.smooth.resolution"));
@@ -4725,20 +4886,16 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                var _ret4 = function () {
+                (function () {
                     var ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
                         scale_max = +document.getElementById("Anamorph_opt2").value / 100,
                         nb_ft = current_layers[layer].n_features,
                         dataset = user_data[layer];
 
-                    if (contains_empty_val(dataset.map(function (a) {
-                        return a[field_name];
-                    }))) {
-                        discard_rendering_empty_val();
-                        return {
-                            v: void 0
-                        };
-                    }
+                    // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
                     var layer_select = document.getElementById(layer).getElementsByTagName("path"),
                         sqrt = Math.sqrt,
@@ -4751,9 +4908,11 @@ var fields_Anamorphose = {
 
                     for (var i = 0; i < nb_ft; ++i) {
                         var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
                         if (val > max) max = val;else if (val < min) min = val;
                         sum += val;
-                        d_values.push(sqrt(val));
+                        d_values.push(val);
                         area_values.push(+path.area(layer_select[i].__data__.geometry));
                     }
 
@@ -4804,20 +4963,16 @@ var fields_Anamorphose = {
                         display_error_during_computation();
                         console.log(err);
                     });
-                }();
-
-                if ((typeof _ret4 === "undefined" ? "undefined" : _typeof(_ret4)) === "object") return _ret4.v;
+                })();
             } else if (algo === "dougenik") {
                 var formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                if (contains_empty_val(user_data[layer].map(function (a) {
-                    return a[field_name];
-                }))) {
-                    discard_rendering_empty_val();
-                    return;
-                }
+                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 var_to_send[field_name] = [];
                 if (!current_layers[layer].original_fields.has(field_name)) {
@@ -5119,7 +5274,9 @@ function render_choro(layer, rendering_params) {
     var breaks = rendering_params["breaks"];
     var options_disc = { schema: rendering_params.schema,
         colors: rendering_params.colors,
-        no_data: rendering_params.no_data };
+        no_data: rendering_params.no_data,
+        type: rendering_params.type,
+        breaks: breaks };
     var layer_to_render = map.select("#" + layer).selectAll("path");
     map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
     layer_to_render.style('fill-opacity', 1).style("fill", function (d, i) {
@@ -5408,9 +5565,12 @@ function fillMenu_Discont() {
     a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' }).html(i18next.t('app_page.func_options.discont.field'));
     a.insert('select').attrs({ class: 'params', id: 'field_Discont' });
 
-    var b = dv2.append('p').attr('class', 'params_section2');
-    b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field' }).html(i18next.t('app_page.func_options.discont.id_field'));
-    b.insert('select').attrs({ class: 'params', id: 'field_id_Discont' });
+    // let b = dv2.append('p').attr('class', 'params_section2');
+    // b.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+    //   .html(i18next.t('app_page.func_options.discont.id_field'));
+    // b.insert('select')
+    //   .attrs({class: 'params', id: 'field_id_Discont'});
 
     var c = dv2.append('p').attr('class', 'params_section2');
     c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity' }).html(i18next.t('app_page.func_options.discont.type_discontinuity'));
@@ -5420,9 +5580,13 @@ function fillMenu_Discont() {
         discontinuity_type.append('option').text(i18next.t(k[0])).attrs({ 'value': k[1], 'data-i18n': '[text]' + k[0] });
     });
 
-    var d = dv2.append('p').attr('class', 'params_section2');
-    d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class' }).html(i18next.t('app_page.func_options.discont.nb_class'));
-    d.insert('input').attrs({ type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4 }).style('width', '50px');
+    // let d = dv2.append('p').attr('class', 'params_section2');
+    // d.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+    //   .html(i18next.t('app_page.func_options.discont.nb_class'));
+    // d.insert('input')
+    //   .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
+    //   .style('width', '50px');
 
     var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization' }).html(i18next.t('app_page.func_options.discont.discretization'));
@@ -5436,13 +5600,6 @@ function fillMenu_Discont() {
     f.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color' }).html(i18next.t('app_page.func_options.discont.color'));
     f.insert('input').attrs({ class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random() });
 
-    // let g = dv2.append('p').attr('class', 'params_section2');
-    // g.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
-    //   .html("quantization");
-    // g.insert('input')
-    //   .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
-
     make_layer_name_button(dv2, 'Discont_output_name');
     make_ok_button(dv2, 'yes_Discont', false);
 
@@ -5452,13 +5609,12 @@ function fillMenu_Discont() {
 var fields_Discont = {
     fill: function fill(layer) {
         if (!layer) return;
-        // let fields_num = type_col(layer, "number"),
-        //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         var fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
-            field_id = section2.select("#field_id_Discont"),
-            ok_button = section2.select('#yes_Discont');
+
+        // field_id = section2.select("#field_id_Discont"),
+        ok_button = section2.select('#yes_Discont');
 
         if (fields_num.length == 0) {
             display_error_num_field();
@@ -5468,13 +5624,13 @@ var fields_Discont = {
         fields_num.forEach(function (field) {
             field_discont.append("option").text(field).attr("value", field);
         });
-        if (fields_id.length == 0) {
-            field_id.append("option").text(i18next.t("app_page.common.default")).attrs({ "value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default" });
-        } else {
-            fields_id.forEach(function (field) {
-                field_id.append("option").text(field).attr("value", field);
-            });
-        }
+        // if(fields_id.length == 0){
+        //     field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+        // } else {
+        //   fields_id.forEach(function(field){
+        //       field_id.append("option").text(field).attr("value", field);
+        //   });
+        // }
         field_discont.on("change", function () {
             var discontinuity_type = document.getElementById("kind_Discont").value;
             document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
@@ -5485,7 +5641,7 @@ var fields_Discont = {
     },
     unfill: function unfill() {
         unfillSelectInput(document.getElementById("field_Discont"));
-        unfillSelectInput(document.getElementById("field_id_Discont"));
+        // unfillSelectInput(document.getElementById("field_id_Discont"));
         section2.selectAll(".params").attr("disabled", true);
     }
 };
@@ -5493,19 +5649,20 @@ var fields_Discont = {
 var render_discont = function render_discont() {
     var layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
-        field_id = document.getElementById("field_id_Discont").value,
-        min_size = 1,
+
+    // field_id = document.getElementById("field_id_Discont").value,
+    min_size = 1,
         max_size = 10,
-        threshold = 1,
         discontinuity_type = document.getElementById("kind_Discont").value,
         discretization_type = document.getElementById('Discont_discKind').value,
-        nb_class = +document.getElementById("Discont_nbClass").value,
+        nb_class = 4,
         user_color = document.getElementById("color_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
     new_layer_name = new_layer_name.length > 0 && /^\w+$/.test(new_layer_name) ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
-    field_id = field_id == "__default__" ? undefined : field_id;
+    // field_id = field_id == "__default__" ? undefined : field_id;
+    var field_id = undefined;
 
     var result_value = new Map(),
         result_geom = {},
@@ -5518,13 +5675,14 @@ var render_discont = function render_discont() {
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
     var discont_worker = new Worker('/static/js/webworker_discont.js');
+    _app.webworker_to_cancel = discont_worker;
     discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function (e) {
         var _e$data = _slicedToArray(e.data, 2),
             arr_tmp = _e$data[0],
             d_res = _e$data[1];
 
-        discont_worker.terminate();
+        _app.webworker_to_cancel = undefined;
         var nb_ft = arr_tmp.length,
             step = (max_size - min_size) / (nb_class - 1),
             class_size = Array(nb_class).fill(0).map(function (d, i) {
@@ -5536,7 +5694,6 @@ var render_discont = function render_discont() {
             breaks = _discretize_to_size2[2],
             serie = _discretize_to_size2[3];
 
-        console.log(serie, breaks);
         if (!serie || !breaks) {
             var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
             var w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
@@ -5558,7 +5715,7 @@ var render_discont = function render_discont() {
         for (var i = 0; i < nb_ft; i++) {
             var val = d_res[i][0],
                 p_size = class_size[serie.getClass(val)],
-                elem = result_layer.append("path").datum(d_res[i][2]).attrs({ d: path, id: ["feature", i].join('_') }).styles({ stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0 });
+                elem = result_layer.append("path").datum(d_res[i][2]).attrs({ d: path, id: ["feature", i].join('_') }).styles({ stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": 1 });
             data_result.push(d_res[i][1]);
             elem.node().__data__.geometry = d_res[i][2];
             elem.node().__data__.properties = data_result[i];
@@ -5568,7 +5725,7 @@ var render_discont = function render_discont() {
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
-            "min_display": threshold,
+            "min_display": 0, // FIXME
             "type": "Line",
             "rendered_field": field,
             "size": [0.5, 10],
@@ -5579,11 +5736,26 @@ var render_discont = function render_discont() {
             "n_features": nb_ft
         };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+
+        {
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style("display", function (d, i) {
+                    return i <= lim ? null : "none";
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
+        }
+
+        d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
+        discont_worker.terminate();
     };
 };
 
@@ -5842,7 +6014,6 @@ function render_TypoSymbols(rendering_params, new_name) {
     }
 
     var new_layer_data = make_geojson_pt_layer();
-    console.log(new_layer_data);
     var context_menu = new ContextMenu(),
         getItems = function getItems(self_parent) {
         return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -6364,21 +6535,33 @@ function request_data(method, url, data) {
     });
 }
 
+/**
+* Perform an asynchronous request
+*
+* @param {String} method - the method like "GET" or "POST"
+* @param {String} url - the targeted url
+* @param {FormData} data - Optionnal, the data to be send
+* @param {Boolean} wainting_message - Optionnal, whether to display or not a waiting message while the request is proceeded
+* @return {Promise} response
+*/
 function xhrequest(method, url, data, waiting_message) {
     if (waiting_message) {
         document.getElementById("overlay").style.display = "";
     }
     return new Promise(function (resolve, reject) {
         var request = new XMLHttpRequest();
+        _app.xhr_to_cancel = request;
         request.open(method, url, true);
         request.onload = function (resp) {
             resolve(resp.target.responseText);
+            _app.xhr_to_cancel = undefined;
             if (waiting_message) {
                 document.getElementById("overlay").style.display = "none";
             }
         };
         request.onerror = function (err) {
             reject(err);
+            _app.xhr_to_cancel = undefined;
             if (waiting_message) {
                 document.getElementById("overlay").style.display = "none";
             }
@@ -6419,8 +6602,8 @@ function send_layer_server(layer_name, url) {
     var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
-    request_data("POST", url, formToSend).then(function (e) {
-        var key = JSON.parse(e.target.responseText).key;
+    xhrequest("POST", url, formToSend, false).then(function (e) {
+        var key = JSON.parse(e).key;
         current_layers[layer_name].key_name = key;
     }).catch(function (err) {
         display_error_during_computation();
@@ -6436,7 +6619,7 @@ function get_other_layer_names() {
     tmp_idx = other_layers.indexOf("Graticule");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
+    tmp_idx = other_layers.indexOf("world");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
@@ -6535,11 +6718,16 @@ var type_col2 = function type_col2(table, field) {
         var h = {};
         for (var i = 0; i < deepth_test; ++i) {
             var val = table[i][field];
-            if (h[val]) dups[field] = true;else h[val] = true, tmp_type = typeof val === "undefined" ? "undefined" : _typeof(val);
-            if (tmp_type === "string" && val.length == 0) tmp_type = "empty";else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
+            if (h[val]) dups[field] = true;else h[val] = true;
+            tmp_type = typeof val === "undefined" ? "undefined" : _typeof(val);
+            if (tmp_type === "object" && isFinite(val)) {
+                tmp_type = "empty";
+            } else if (tmp_type === "string" && val.length == 0) {
+                tmp_type = "empty";
+            } else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
                 var _val = Number(table[i][field]);
-                tmp_type = (_val | 0) === val ? "stock" : "ratio";
-            } else if (tmp_type === "object" && isFinite(val)) tmp_type = "empty";
+                tmp_type = (_val | 0) == val ? "stock" : "ratio";
+            }
             tmp[fields[j]].push(tmp_type);
         }
     }
@@ -6576,9 +6764,7 @@ function make_box_type_fields(layer_name) {
         f = fields_type.map(function (v) {
         return v.name;
     }),
-
-    // fields_type = current_layers[layer_name].fields_type,
-    ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
+        ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
     var deferred = Q.defer(),
         container = document.getElementById("box_type_fields");
@@ -6945,12 +7131,18 @@ function getBinsCount(_values) {
     };
 }
 
-function getBreaks_userDefined(serie, breaks_list) {
-    var separator = has_negative(serie) ? '- ' : '-',
-        break_values = breaks_list.split(separator).map(function (el) {
+function parseUserDefinedBreaks(serie, breaks_list) {
+    var separator = has_negative(serie) ? '- ' : '-';
+    return breaks_list.split(separator).map(function (el) {
         return +el.trim();
-    }),
-        len_serie = serie.length,
+    });
+}
+
+function getBreaks_userDefined(serie, break_values) {
+    if (typeof break_values === "string") {
+        break_values = parseUserDefinedBreaks(serie, break_values);
+    }
+    var len_serie = serie.length,
         j = 0,
         len_break_val = break_values.length,
         stock_class = new Array(len_break_val - 1);
@@ -7570,8 +7762,8 @@ function handle_reload_TopoJSON(text, param_add_func) {
     var f = new Blob([text], { type: "application/json" });
     ajaxData.append('file[]', f);
 
-    return request_data("POST", '/cache_topojson/user', ajaxData).then(function (response) {
-        var res = response.target.responseText,
+    return xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function (response) {
+        var res = response,
             key = JSON.parse(res).key,
             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
         var layer_name = add_layer_topojson(topoObjText, param_add_func);
@@ -7701,7 +7893,8 @@ function add_dataset(readed_dataset) {
         for (var j = 0; j < readed_dataset.length; j++) {
             if (readed_dataset[j][cols[_i]].replace && !isNaN(+readed_dataset[j][cols[_i]].replace(",", ".")) || !isNaN(+readed_dataset[j][cols[_i]])) {
                 // Add the converted value to temporary field if its ok ...
-                tmp.push(+readed_dataset[j][cols[_i]].replace(",", "."));
+                var t_val = readed_dataset[j][cols[_i]].replace(",", ".");
+                tmp.push(isFinite(t_val) && t_val != "" && t_val != null ? +t_val : t_val);
             } else {
                 // Or break early if a value can't be coerced :
                 break; // So no value of this field will be converted
@@ -7869,6 +8062,7 @@ function add_layer_topojson(text, options) {
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
     li.setAttribute("layer-tooltip", layer_tooltip_content);
+    d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if (target_layer_on_add) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
@@ -8244,9 +8438,7 @@ function add_sample_layer() {
         if (error) throw error;else sample_datasets = json[0];
     });
 
-    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.paris_hospitals"), "paris_hospitals"], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2_data"], [i18next.t("app_page.sample_layer_box.nuts3_data"), "nuts3_data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_county"), "us_county"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
-
-    var tabular_datasets = [[i18next.t("app_page.sample_layer_box.tabular_dataset"), ""], [i18next.t("app_page.sample_layer_box.twincities"), "twincities"], [i18next.t("app_page.sample_layer_box.martinique_data"), 'martinique_data']];
+    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
@@ -8254,18 +8446,10 @@ function add_sample_layer() {
             if (selec.target) {
                 add_sample_geojson(selec.target, { target_layer_on_add: true });
             }
-            if (selec.dataset) {
-                url = sample_datasets[selec.dataset];
-                d3.csv(url, function (error, data) {
-                    dataset_name = selec.dataset;
-                    add_dataset(data);
-                });
-            }
         }
     });
 
     var box_body = d3.select(".sampleDialogBox").select(".modal-body");
-    //    box_body.node().parentElement.style.width = "auto";
     var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
@@ -8276,24 +8460,9 @@ function add_sample_layer() {
         selec.target = this.value;
     });
 
-    var title_tab_dataset = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle2"));
-
-    var dataset_selec = box_body.append('p').html('').insert('select').attr("class", "sample_dataset");
-    tabular_datasets.forEach(function (layer_info) {
-        dataset_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
-    });
-    dataset_selec.on("change", function () {
-        selec.dataset = this.value;
-    });
-
     if (targeted_layer_added) {
         title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
-    }
-
-    if (joined_dataset.length > 0) {
-        title_tab_dataset.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle2") + "</i>");
-        dataset_selec.node().disabled = true;
     }
 }
 
@@ -8307,19 +8476,19 @@ function add_simplified_land_layer() {
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
 
-    d3.json("/static/data_sample/simplified_land_polygons.topojson", function (error, json) {
-        current_layers["Simplified_land_polygons"] = {
+    d3.json("/static/data_sample/World.topojson", function (error, json) {
+        current_layers["World"] = {
             "type": "Polygon",
             "n_features": 125,
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "Simplified_land_polygons", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.simplified_land_polygons).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "World", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
-        create_li_layer_elem("Simplified_land_polygons", null, "Polygon", "sample");
+        create_li_layer_elem("World", null, "Polygon", "sample");
         if (!options.skip_rescale) {
-            scale_to_lyr("Simplified_land_polygons");
-            center_map("Simplified_land_polygons");
+            scale_to_lyr("World");
+            center_map("World");
         }
         zoom_without_redraw();
     });
@@ -8641,9 +8810,9 @@ function valid_join_on(layer_name, field1, field2) {
             }
         }
         valid_join_check_display(true, prop);
-        return true;
+        return Promise.resolve(true);
     } else if (hits > 0) {
-        swal({ title: i18next.t("app_page.common.confirm") + "!",
+        return swal({ title: i18next.t("app_page.common.confirm") + "!",
             text: i18next.t("app_page.join_box.partial_join", { ratio: prop }),
             allowOutsideClick: false,
             allowEscapeKey: true,
@@ -8653,30 +8822,31 @@ function valid_join_on(layer_name, field1, field2) {
             confirmButtonText: i18next.t("app_page.common.yes"),
             cancelButtonText: i18next.t("app_page.common.no")
         }).then(function () {
+            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+            // ,i_id = fields_name_to_add.indexOf("id");
 
-            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                i_id = fields_name_to_add.indexOf("id");
-
-            if (i_id > -1) {
-                fields_name_to_add.splice(i_id, 1);
-            }
-            for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
+            // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
+            for (var _i6 = 0, _len6 = field_join_map.length; _i6 < _len6; _i6++) {
                 val = field_join_map[_i6];
                 for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
                     f_name = fields_name_to_add[_j];
                     if (f_name.length > 0) {
-                        user_data[layer_name][_i6][f_name] = val ? joined_dataset[0][val][f_name] : null;
+                        var t_val = void 0;
+                        if (val == undefined) t_val = null;else if (joined_dataset[0][val][f_name] == "") t_val = null;else t_val = joined_dataset[0][val][f_name];
+                        user_data[layer_name][_i6][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
                     }
                 }
             }
             valid_join_check_display(true, prop);
+            return Promise.resolve(true);
         }, function (dismiss) {
             field_join_map = [];
+            return Promise.resolve(false);
         });
     } else {
         swal("", i18next.t("app_page.join_box.no_match", { field1: field1, field2: field2 }), "error");
         field_join_map = [];
-        return false;
+        return Promise.resolve(false);
     }
 }
 
@@ -8702,13 +8872,10 @@ function createJoinBox(layer) {
 
     make_confirm_dialog2("joinBox", i18next.t("app_page.join_box.title"), { html_content: inner_box, widthFitContent: true }).then(function (confirmed) {
         if (confirmed) {
-            var join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
-            // if(join_res && window.fields_handler){
-            //     fields_handler.unfill();
-            //     fields_handler.fill(layer);
-            // }
+            valid_join_on(layer, last_choice.field1, last_choice.field2).then(function (valid) {
+                if (valid) make_box_type_fields(layer);
+            });
         }
-        make_box_type_fields(layer);
     });
 
     d3.select(".joinBox").styles({ "text-align": "center", "line-height": "0.9em" });
@@ -8734,7 +8901,7 @@ function make_single_color_menu(layer, fill_prev) {
 
     var fill_color_section = d3.select("#fill_color_section"),
         g_lyr_name = "#" + layer,
-        last_color = fill_prev && fill_prev.single ? fill_prev.single : undefined;
+        last_color = fill_prev && fill_prev.single ? fill_prev.single : "#FFF";
     var block = fill_color_section.insert('p');
     block.insert("span").html(i18next.t("app_page.layer_style_popup.fill_color"));
     block.insert('input').style("float", "right").attrs({ type: 'color', "value": last_color }).on('change', function () {
@@ -8871,7 +9038,7 @@ function createStyleBoxTypoSymbols(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
 
     popup.append("p").style("text-align", "center").insert("button").attrs({ id: 'reset_symb_loc', class: 'button_st4' }).text(i18next.t("app_page.layer_style_popup.reset_symbols_location")).on("click", function () {
@@ -8977,7 +9144,7 @@ function createStyleBoxLabel(layer_name) {
             restore_prev_settings();
         }
     });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
         selection.transition().attrs(function (d) {
@@ -9138,7 +9305,10 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].options_disc = {
                     schema: rendering_params.schema,
                     colors: rendering_params.colors,
-                    no_data: rendering_params.no_data };
+                    no_data: rendering_params.no_data,
+                    type: rendering_params.type,
+                    breaks: rendering_params.breaks
+                };
             } else if (renderer == "Stewart") {
                 current_layers[layer_name].colors_breaks = rendering_params.breaks;
                 current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
@@ -9206,7 +9376,7 @@ function createStyleBox(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
     if (type === "Point" && !renderer) {
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -9224,7 +9394,6 @@ function createStyleBox(layer_name) {
         var prev_palette;
         var recolor_stewart;
         var color_palette_section;
-        var button_reverse;
 
         (function () {
             if (current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical") {
@@ -9263,11 +9432,37 @@ function createStyleBox(layer_name) {
                         });
                     });
                 })();
+            } else if (renderer == "Choropleth") {
+                popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                    display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
+                    //  "quantiles",
+                    current_layers[layer_name].options_disc).then(function (confirmed) {
+                        if (confirmed) {
+                            rendering_params = {
+                                nb_class: confirmed[0],
+                                type: confirmed[1],
+                                breaks: confirmed[2],
+                                colors: confirmed[3],
+                                colorsByFeature: confirmed[4],
+                                schema: confirmed[5],
+                                no_data: confirmed[6],
+                                //  renderer:"Choropleth",
+                                field: current_layers[layer_name].rendered_field
+                            };
+                            var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+                            selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                                return rendering_params.colorsByFeature[i];
+                            });
+                        }
+                    });
+                });
             } else if (renderer == "Gridded") {
                 (function () {
                     var field_to_discretize = "densitykm";
                     popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-                        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length, "quantiles", current_layers[layer_name].options_disc).then(function (confirmed) {
+                        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+                        //  "quantiles",
+                        current_layers[layer_name].options_disc).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
                                     nb_class: confirmed[0],
@@ -9310,7 +9505,7 @@ function createStyleBox(layer_name) {
                     color_palette_section = popup.insert("p").attr("class", "line_elem");
 
                     color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-                    var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").on("change", function () {
+                    var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
                         recolor_stewart(this.value, false);
                     });
 
@@ -9318,8 +9513,7 @@ function createStyleBox(layer_name) {
                         seq_color_select.append("option").text(name).attr("value", name);
                     });
                     seq_color_select.node().value = prev_palette.name;
-
-                    button_reverse = popup.insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                    popup.insert('p').attr('class', 'line_elem').style('text-align', 'center').insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
                         var pal_name = document.getElementById("coloramp_params").value;
                         recolor_stewart(pal_name, true);
                     });
@@ -9358,7 +9552,7 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].min_display = val;
             });
             threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
-            popup.append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+            popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
                 display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                     if (result) {
                         (function () {
@@ -9373,7 +9567,6 @@ function createStyleBox(layer_name) {
                             for (var i = 0; i < nb_ft; ++i) {
                                 links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                             }
-                            console.log(links_byId);
                             selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
                                 return links_byId[i][2];
                             });
@@ -9393,14 +9586,14 @@ function createStyleBox(layer_name) {
             lgd_to_change = true;
             var val = +this.value;
             var lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-            popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
+            popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
             selection.style("display", function (d, i) {
                 return i <= lim ? null : "none";
             });
             current_layers[layer_name].min_display = val;
         });
-
-        popup.append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+        disc_part.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
+        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                 if (result) {
                     (function () {
@@ -9432,13 +9625,7 @@ function createStyleBox(layer_name) {
     opacity_section.insert("span").html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
     opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on('change', function () {
         opacity_section.select("#opacity_val_txt").html(" " + this.value);
-        //                        if(this.value !== "0" || type === 'Line'){
         selection.style('stroke-opacity', this.value);
-        //                        } else {
-        //                            map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-        //                            selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-        //                                     .style('stroke', function(){ return this.style.fill; });
-        //                        }
     });
 
     opacity_section.append("span").attr("id", "opacity_val_txt").style("display", "inline").style("float", "right").html(" " + border_opacity);
@@ -9448,15 +9635,9 @@ function createStyleBox(layer_name) {
         width_section.append("span").html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
         width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ "width": "60px", "float": "right" }).on('change', function () {
             var val = +this.value;
-            //                                if(val != 0 || type === 'Line'){
             var zoom_scale = +d3.zoomTransform(map.node()).k;
             map.select(g_lyr_name).style("stroke-width", val / zoom_scale + "px");
             current_layers[layer_name]['stroke-width-const'] = val;
-            //                                } else {
-            //                                    map.select(g_lyr_name).style("stroke-width", 0.2 + "px");
-            //                                    selection.style('stroke-opacity', function(){ return this.style.fillOpacity; })
-            //                                             .style('stroke', function(){ return this.style.fill; });
-            //                                }
         });
     }
 
@@ -9544,11 +9725,6 @@ function createStyleBox_ProbSymbol(layer_name) {
     var d_values = result_data[layer_name].map(function (v) {
         return +v[field_used];
     });
-    //     abs = Math.abs,
-    //     comp = function(a, b){return abs(b)-abs(a)};
-    // for(let i = 0, i_len = user_data[ref_layer_name].length; i < i_len; ++i)
-    //     d_values.push(+user_data[ref_layer_name][i][field_used]);
-    // d_values.sort(comp);
 
     var redraw_prop_val = function redraw_prop_val(prop_values) {
         var selec = selection._groups[0];
@@ -9654,13 +9830,15 @@ function createStyleBox_ProbSymbol(layer_name) {
         zoom_without_redraw();
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");;
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length, "quantiles", current_layers[layer_name].options_disc).then(function (confirmed) {
+                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], type: confirmed[1],
@@ -9738,7 +9916,7 @@ function createStyleBox_ProbSymbol(layer_name) {
                 if (this.value == "single") {
                     make_single_color_menu(layer_name, fill_prev, type_symbol);
                     map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
-                    current_layers[layer_name].fill_color = cloneObj(fill_prev.single);
+                    current_layers[layer_name].fill_color = cloneObj(fill_prev);
                 } else if (this.value == "random") {
                     make_random_color(layer_name, type_symbol);
                 }
@@ -10089,18 +10267,25 @@ var UserArrow = function () {
                 map.select('#arrow_end_pt').remove();
                 if (!map_locked) handle_click_hand('unlock');
             });
-            var box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
-            var s1 = box_content.append("p");
-            s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
-            s1.append("input").attrs({ type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+
+            var box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
+            var s1 = box_content.append("p").attr('class', 'line_elem');
+            s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+            s1.append("input").attrs({ type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 line.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-            var txt_line_weight = s1.append("span").html(self.lineWeight + " px");
+            var txt_line_weight = s1.append("span").style('float', 'right').html(self.lineWeight + " px");
 
-            var s2 = box_content.append("p");
-            s2.append("p").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
-            s2.insert("input").attrs({ id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+            var s2 = box_content.append("p").attr('class', 'line_elem');
+            s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
+            s2.insert("span").style('float', 'right').html(" °");
+            s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
+                var elem = document.getElementById("arrow_angle");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
+            s2.insert("input").attrs({ id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 var distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
                 var angle = -+this.value;
 
@@ -10114,15 +10299,7 @@ var UserArrow = function () {
                 document.getElementById("arrow_angle_text").value = +this.value;
             });
 
-            s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px" }).on("input", function () {
-                var elem = document.getElementById("arrow_angle");
-                elem.value = this.value;
-                elem.dispatchEvent(new Event('change'));
-            });
-
-            s2.insert("span").html("°");
-
-            var s3 = box_content.append("p");
+            var s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
             s3.append("button").attr("class", "button_st4").html(i18next.t("app_page.arrow_edit_box.move_points")).on("click", function () {
                 d3.select(".styleBoxArrow").styles({ 'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset' });
                 box_content.style('display', 'none');
@@ -10144,7 +10321,7 @@ var UserArrow = function () {
                     line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
                 }));
 
-                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").append('div').attr('id', 'move_pt_content').node();
+                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
                 var el = document.createElement("button");
                 el.className = "button_st3";
                 el.style = "float:right;background:forestgreen;font-size:14px;";
@@ -10205,24 +10382,27 @@ var Textbox = function () {
         };
 
         var drag_txt_annot = d3.drag().subject(function () {
-            var t = d3.select(this.parentElement),
-                prev_translate = t.attr("transform");
-            prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
-                return +f;
-            }) : [0, 0];
+            var t = d3.select(this.parentElement);
+            //     xy0 = get_map_xy0(),
+            //     bbox = this.getBoundingClientRect();
             return {
-                x: t.attr("x") - prev_translate[0],
-                y: t.attr("y") - prev_translate[1],
+                x: t.attr("x"),
+                y: t.attr("y"),
+                //     dim_x: bbox.width / 2,
+                //     dim_y: bbox.height / 2,
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
-            if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
+            if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
-            d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
+            var x = +d3.event.x,
+                y = +d3.event.y,
+                t = d3.select(this.parentElement);
+            t.attrs({ x: x, y: y });
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -10231,6 +10411,7 @@ var Textbox = function () {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
+        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
 
@@ -10276,7 +10457,8 @@ var Textbox = function () {
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
             d3.select("body").classed("noselect", true);
-        }).on("mouseout", function () {
+        });
+        inner_ft.on("mouseout", function () {
             // use a small delay after leaving the box before deactiving it :
             if (!state) {
                 clearTimeout(current_timeout);
@@ -10298,18 +10480,54 @@ var Textbox = function () {
             var current_options = { size: this.text_annot.select("p").style("font-size"),
                 color: this.text_annot.select("p").style("color"),
                 content: unescape(this.text_annot.select("p").html()),
+                rotate: this.text_annot.attr('rotate'),
+                transform_rotate: this.text_annot.attr('transform'),
+                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
                 font: "" };
-            var self = this;
+            var map_xy0 = get_map_xy0();
+            var self = this,
+                inner_p = this.text_annot.select('p');
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
-                    self.text_annot.select("p").text(current_options.content);
+                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
                     self.fontsize = current_options.size;
+                    self.rotate = current_options.rotate;
+                    self.text_annot.attr('transform', current_options.transform_rotate);
                 }
             });
-            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation"),
-                options_font = box_content.append('p'),
+            var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
+
+            var option_rotation = box_content.append('p').attr('class', 'line_elem');
+            option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
+            option_rotation.append('span').style('float', 'right').html(' °');
+            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+                class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
+                var rotate_value = +this.value,
+                    bbox = inner_p.node().getBoundingClientRect(),
+                    nx = bbox.x - map_xy0.x,
+                    ny = bbox.y - map_xy0.y,
+                    x_center = nx + bbox.width / 2,
+                    y_center = ny + bbox.height / 2;
+                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
+                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+                document.getElementById("textbox_range_rotate").value = rotate_value;
+            });
+
+            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
+                var rotate_value = +this.value,
+                    bbox = inner_p.node().getBoundingClientRect(),
+                    nx = bbox.x - map_xy0.x,
+                    ny = bbox.y - map_xy0.y,
+                    x_center = nx + bbox.width / 2,
+                    y_center = ny + bbox.height / 2;
+                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
+                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+                document.getElementById("textbox_txt_rotate").value = rotate_value;
+            });
+
+            var options_font = box_content.append('p'),
                 font_select = options_font.insert("select").on("change", function () {
-                self.text_annot.select("p").style("font-family", this.value);
+                inner_p.style("font-family", this.value);
             });
 
             available_fonts.forEach(function (font) {
@@ -10321,11 +10539,11 @@ var Textbox = function () {
 
             options_font.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize }).style('width', '60px').on("change", function () {
                 self.fontsize = +this.value;
-                self.text_annot.select("p").style("font-size", self.fontsize + "px");
+                inner_p.style("font-size", self.fontsize + "px");
             });
 
             options_font.append("input").attrs({ type: "color", id: "font_color", value: current_options.color }).style('width', '60px').on("change", function () {
-                self.text_annot.select("p").style("color", this.value);
+                inner_p.style("color", this.value);
             });
 
             var options_format = box_content.append('p'),
@@ -10339,7 +10557,7 @@ var Textbox = function () {
                 class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip") }).styles({ "cursor": "pointer", "vertical-align": "bottom" });
             content_modif_zone.append("span").html("<br>");
             var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
-                self.text_annot.select("p").html(this.value);
+                inner_p.html(this.value);
             });
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
@@ -10348,7 +10566,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
 
@@ -10357,7 +10575,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
             btn_underline.on('click', function () {
@@ -10365,7 +10583,7 @@ var Textbox = function () {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 var tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
         }
@@ -10525,11 +10743,16 @@ var scaleBar = {
                 redraw_now();
             }
         });
-        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body").style("width", "295px");
+        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3").html(i18next.t("app_page.scale_bar_edit_box.title"));
-        box_body.append("p").style("display", "inline").html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
-        box_body.append("input").attrs({ type: 'checkbox', "checked": self.fixed_size ? true : null }).on("change", function () {
+        var a = box_body.append("p").attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
+        a.append("input").style('float', 'right').attrs({ id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt }).on("change", function () {
+            new_val = +this.value;
+            redraw_now();
+        });
+        a.append("input").style('float', 'right').attrs({ type: 'checkbox', "checked": self.fixed_size ? true : null }).on("change", function () {
             if (box_body.select("#scale_fixed_field").attr("disabled")) {
                 box_body.select("#scale_fixed_field").attr("disabled", null);
                 new_val = +box_body.select("#scale_fixed_field").attr("value");
@@ -10539,21 +10762,17 @@ var scaleBar = {
             }
             redraw_now();
         });
-        box_body.append("input").attrs({ id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt }).on("change", function () {
-            new_val = +this.value;
-            redraw_now();
-        });
 
-        var b = box_body.append("p");
+        var b = box_body.append("p").attr('class', 'line_elem');
         b.insert("span").html(i18next.t("app_page.scale_bar_edit_box.precision"));
-        b.insert("input").attrs({ id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision }).style("width", "60px").on("change", function () {
+        b.insert("input").style('float', 'right').attrs({ id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision }).style("width", "60px").on("change", function () {
             self.precision = +this.value;
             redraw_now();
         });
 
-        var c = box_body.append("p");
+        var c = box_body.append("p").attr('class', 'line_elem');
         c.insert("span").html(i18next.t("app_page.scale_bar_edit_box.unit"));
-        var unit_select = c.insert("select").attr('id', "scale_unit").on("change", function () {
+        var unit_select = c.insert("select").style('float', 'right').attr('id', "scale_unit").on("change", function () {
             self.unit = this.value;
             redraw_now();
         });
@@ -10562,9 +10781,9 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        var e = box_body.append("p");
+        var e = box_body.append("p").attr('class', 'line_elem');
         e.append("span").html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
-        e.append("input").attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on("change", function (a) {
+        e.append("input").style('float', 'right').attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on("change", function (a) {
             self.start_end_bar = self.start_end_bar == true ? false : true;
             self.handle_start_end_bar();
         });
@@ -10672,12 +10891,19 @@ var northArrow = {
             }
         });
 
-        var box_body = d3.select(".arrowEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
         box_body.append("h3").html(i18next.t("app_page.north_arrow_edit_box.title"));
-        box_body.append("p").style("margin-bottom", "0").html(i18next.t("app_page.north_arrow_edit_box.size"));
-        box_body.append("input").attrs({ type: "range", min: 1, max: 200, step: 1,
-            value: old_dim, id: "range_size_n_arrow" }).styles({ "vertical-align": "middle", "width": "140px" }).on("change", function () {
+        var a = box_body.append('p').attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
+        a.append("span").style('float', 'right').html(" px");
+        a.append("input").attrs({ type: "number", min: 0, max: 200, step: 1, value: old_dim,
+            class: "without_spinner", id: "txt_size_n_arrow" }).styles({ float: 'right', width: '40px' }).on("change", function () {
+            var elem = document.getElementById("range_size_n_arrow");
+            elem.value = +this.value;
+            elem.dispatchEvent(new Event("change"));
+        });
+        a.append("input").attrs({ type: "range", min: 1, max: 200, step: 1,
+            value: old_dim, id: "range_size_n_arrow" }).styles({ "vertical-align": "middle", "width": "140px", 'float': 'right' }).on("change", function () {
             var new_size = +this.value;
             self.arrow_img.attr("width", new_size);
             self.arrow_img.attr("height", new_size);
@@ -10687,29 +10913,23 @@ var northArrow = {
             self.y_center = y_pos + new_size / 2;
             document.getElementById("txt_size_n_arrow").value = new_size;
         });
-        box_body.append("input").attrs({ type: "number", min: 0, max: 200, step: 1, value: old_dim,
-            class: "without_spinner", id: "txt_size_n_arrow" }).style("width", "40px").on("change", function () {
-            var elem = document.getElementById("range_size_n_arrow");
-            elem.value = +this.value;
-            elem.dispatchEvent(new Event("change"));
-        });
-        box_body.append("span").html(" px");
 
-        box_body.append("p").style("margin-bottom", "0").html(i18next.t("app_page.north_arrow_edit_box.rotation"));
-        box_body.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow" }).attr("value", old_rotate).styles({ "vertical-align": "middle", "width": "140px" }).on("change", function () {
-            var rotate_value = +this.value;
-            self.svg_node.attr("rotate", rotate_value);
-            self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-            document.getElementById("txt_rotate_n_arrow").value = rotate_value;
-        });
-        box_body.append("input").attrs({ type: "number", min: 0, max: 360, step: "any",
-            class: "without_spinner", id: "txt_rotate_n_arrow" }).attr("value", old_rotate).style("width", "40px").on("change", function () {
+        var b = box_body.append("p").attr('class', 'line_elem');
+        b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
+        b.append("span").style('float', 'right').html(" °");
+        b.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: old_rotate,
+            class: "without_spinner", id: "txt_rotate_n_arrow" }).styles({ float: 'right', width: '40px' }).on("change", function () {
             var rotate_value = +this.value;
             self.svg_node.attr("rotate", rotate_value);
             self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
             document.getElementById("range_rotate_n_arrow").value = rotate_value;
         });
-        box_body.append("span").html("°");
+        b.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow", value: old_rotate }).styles({ "vertical-align": "middle", "width": "140px", 'float': 'right' }).on("change", function () {
+            var rotate_value = +this.value;
+            self.svg_node.attr("rotate", rotate_value);
+            self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+            document.getElementById("txt_rotate_n_arrow").value = rotate_value;
+        });
     },
     displayed: false
 };
@@ -10861,86 +11081,42 @@ var UserEllipse = function () {
                 ellipse_elem.style.stroke = this.value;
             });
 
-            var s2b = box_content.append("p");
-            s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
-            s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
-                var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]];
-                var distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1]));
-                var angle = Math.abs(+this.value);
+            var s2b = box_content.append("p").attr('class', 'line_elem');
+            s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
+            s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
+                var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
+                    distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
+                    angle = Math.abs(+this.value);
 
                 var _self$calcDestFromOAD3 = self.calcDestFromOAD(self.pt1, angle, distance),
                     _self$calcDestFromOAD4 = _slicedToArray(_self$calcDestFromOAD3, 2),
                     nx = _self$calcDestFromOAD4[0],
                     ny = _self$calcDestFromOAD4[1];
 
-                console.log(ellipse_elem.rx.baseVal.value, self.pt[0], nx);
-                console.log(ellipse_elem.ry.baseVal.value, self.pt[1], ny);
+                console.log("angle :", angle);console.log("pt2 :", pt2);console.log("distance :", distance);
+                console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
+                console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
                 ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
                 ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
                 document.getElementById("ellipse_angle_text").value = +this.value;
             });
 
-            s2b.insert("input").attrs({ id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px" }).on("input", function () {
+            s2b.insert("input").attrs({ id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
                 var elem = document.getElementById("ellipse_angle");
                 elem.value = this.value;
                 elem.dispatchEvent(new Event('change'));
             });
-            s2b.insert("span").html("°");
+            s2b.insert("span").style('float', 'right').html(" °");
         }
     }, {
         key: "handle_ctrl_pt",
-        value: function handle_ctrl_pt() {}
+        value: function handle_ctrl_pt() {
+            null;
+        }
     }]);
 
     return UserEllipse;
 }();
-//  let s3 = box_content.append("p");
-//
-//  s3.append("button")
-//      .attr("class", "button_st4")
-//      .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-//      .on("click", function(){
-//         d3.select(".styleBoxEllipse").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
-//         box_content.style('display', 'none');
-//         let tmp_start_point = map.append("rect")
-//              .attr("class", "ctrl_pt").attr('id', 'pt1')
-//              .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
-//              .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
-//              .attr("height", 6).attr("width", 6)
-//              .style("fill", "red")
-//              .style("cursor", "grab")
-//              .call(d3.drag().on("drag", function(){
-//                  let t = d3.select(this);
-//                  t.attr("x", d3.event.x);
-//                  let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
-//                  ellipse_elem.rx.baseVal.value = dist;
-//              }));
-//
-//          let tmp_end_point = map.append("rect")
-//              .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-//                      x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
-//              .styles({fill: 'red', cursor: 'grab'})
-//              .call(d3.drag().on("drag", function(){
-//                  let t = d3.select(this);
-//                  t.attr("y", d3.event.y);
-//                  let dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
-//                  ellipse_elem.ry.baseVal.value = dist;
-//              }));
-//
-//          let el = document.createElement("button");
-//          el.className = "button_st3";
-//          el.style = "float:right;background:forestgreen;font-size:22px;";
-//          el.innerHTML = i18next.t("app_page.common.done");
-//          el.onclick = function(){
-//              map.selectAll('.ctrl_pt').remove();
-//              el.remove();
-//              d3.select(".styleBoxEllipse").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
-//              box_content.style('display', 'none');
-//          }
-//          d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
-//      });
-//     }
-// }
 "use strict";
 /**
 * Function called on clicking on the legend button of each layer
@@ -10956,9 +11132,9 @@ function handle_legend(layer) {
     var state = current_layers[layer].renderer;
     if (state != undefined) {
         var class_name = [".lgdf", layer].join('_');
-        if (d3.selectAll(class_name).node()) {
-            if (!d3.selectAll(class_name).attr("display")) d3.selectAll(class_name).attr("display", "none");else {
-                d3.selectAll(class_name).attr("display", null);
+        if (map.selectAll(class_name).node()) {
+            if (!map.selectAll(class_name).attr("display")) map.selectAll(class_name).attr("display", "none");else {
+                map.selectAll(class_name).attr("display", null);
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:
@@ -10978,6 +11154,7 @@ function handle_legend(layer) {
             }
         } else {
             createLegend(layer, "");
+            up_legends();
         }
     }
 }
@@ -11151,6 +11328,14 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     // Prepare symbols for the legend, taking care of not representing values
     // under the display threshold defined by the user (if any) :
     var current_min_value = +current_layers[layer].min_display;
+    if (current_layers[layer].renderer == "DiscLayer") {
+        // Todo use the same way to store the threshold for links and disclayer
+        // in order to avoid theses condition
+        var values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'), function (d) {
+            return +d.__data__.properties["disc_value"];
+        });
+        current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
+    }
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -11284,7 +11469,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" ? "#FFF" : current_layers[layer].fill_color.two !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
+    var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
     var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)',
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
@@ -11988,7 +12173,7 @@ function get_map_template() {
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "Simplified_land_polygons") {
+        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
             selection = map.select("#" + layer_name).selectAll("path");
             layer_style_i.fill_color = rgb2hex(selection.style("fill"));
             layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -12101,14 +12286,14 @@ function get_map_template() {
     }
 
     return Q.all(layers_style.map(function (obj) {
-        return obj.topo_geom && !obj.targeted ? request_data("GET", "/get_layer/" + obj.topo_geom, null) : null;
+        return obj.topo_geom && !obj.targeted ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null;
     })).then(function (result) {
         for (var _i3 = 0; _i3 < layers_style.length; _i3++) {
-            if (result[_i3] && result[_i3].target) {
-                layers_style[_i3].topo_geom = result[_i3].target.responseText;
+            if (result[_i3]) {
+                layers_style[_i3].topo_geom = result[_i3];
             }
         }
-        console.log(JSON.stringify({ "map_config": map_config, "layers": layers_style }));
+        // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
         return JSON.stringify({ "map_config": map_config, "layers": layers_style });;
     });
 }
@@ -12178,9 +12363,8 @@ function apply_user_preferences(json_pref) {
     var set_final_param = function set_final_param() {
         if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            console.log("je suis passé par ici");
-            // proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            // reproj_symbol_layer();
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
+            reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
@@ -12198,7 +12382,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 750);
+        }, 950);
     };
 
     function apply_layout_lgd_elem() {
@@ -12440,7 +12624,7 @@ function apply_user_preferences(json_pref) {
                     options.fill = _layer.fill_color;
                 }
                 add_layout_feature(layer_name.toLowerCase(), options);
-            } else if (layer_name == "Simplified_land_polygons") {
+            } else if (layer_name == "World") {
                 add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
 
                 // ... or this is a layer of proportionnals symbols :
@@ -12449,7 +12633,7 @@ function apply_user_preferences(json_pref) {
                 var rendering_params = {
                     new_name: layer_name,
                     field: _layer.rendered_field,
-                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color,
+                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
                     ref_value: _layer.size[0],
                     ref_size: _layer.size[1],
                     symbol: _layer.symbol,
@@ -12795,9 +12979,9 @@ function make_style_box_indiv_symbol(symbol_node) {
         }
     });
     var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    var a = box_content.append("p");
+    var a = box_content.append("p").attr('class', 'line_elem');
     a.append('span').html(i18next.t('app_page.single_symbol_edit_box.image_size'));
-    a.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0, -2) }).on("change", function () {
+    a.append("input").style('float', 'right').attrs({ type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0, -2) }).on("change", function () {
         var new_val = this.value + "px";
         symbol_node.setAttribute("width", new_val);
         symbol_node.setAttribute("height", new_val);
@@ -12806,8 +12990,9 @@ function make_style_box_indiv_symbol(symbol_node) {
     });
     if (type_obj == 'layout') {
         var current_state = parent.classList.contains('scalable-legend');
-        var b = box_content.append('p');
-        b.append('input').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
+        var b = box_content.append('p').attr('class', 'line_elem');
+        b.append('label').style('float', 'right').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+        b.append('input').style('float', 'right').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
             var zoom_scale = svg_map.__zoom;
             if (this.checked) {
                 symbol_node.setAttribute('x', (symbol_node.x.baseVal.value - zoom_scale.x) / zoom_scale.k);
@@ -12821,7 +13006,6 @@ function make_style_box_indiv_symbol(symbol_node) {
                 parent.classList.remove('scalable-legend');
             }
         });
-        b.append('label').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
     }
 };
@@ -12900,8 +13084,8 @@ function add_field_table(table, layer_name, parent) {
             formToSend.append('var1', JSON.stringify(var1));
             formToSend.append('var2', JSON.stringify(var2));
             formToSend.append('operator', operation);
-            return request_data("POST", "/helpers/calc", formToSend).then(function (e) {
-                var data = JSON.parse(e.target.responseText);
+            return xhrequest("POST", "/helpers/calc", formToSend, false).then(function (data) {
+                data = JSON.parse(data);
                 for (var _i2 = 0; _i2 < table.length; _i2++) {
                     table[_i2][new_name_field] = data[_i2];
                 }return true;
@@ -12936,7 +13120,7 @@ function add_field_table(table, layer_name, parent) {
                     }
                 } else {
                     for (var _i6 = 0; _i6 < table.length; _i6++) {
-                        table[_i6][new_name_field] = table[_i6][fil].substr(opt_val);
+                        table[_i6][new_name_field] = table[_i6][fi1].substr(opt_val);
                     }
                 }
             } else if (operation == "concatenate") {

@@ -10,11 +10,11 @@ function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
         let class_name = [".lgdf", layer].join('_');
-        if(d3.selectAll(class_name).node()){
-            if(!d3.selectAll(class_name).attr("display"))
-                d3.selectAll(class_name).attr("display", "none");
+        if(map.selectAll(class_name).node()){
+            if(!map.selectAll(class_name).attr("display"))
+                map.selectAll(class_name).attr("display", "none");
             else {
-                d3.selectAll(class_name).attr("display", null);
+                map.selectAll(class_name).attr("display", null);
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:
@@ -35,7 +35,8 @@ function handle_legend(layer){
                 }
             }
         } else {
-            createLegend(layer, "")
+            createLegend(layer, "");
+            up_legends();
         }
     }
 }
@@ -257,7 +258,16 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     // Prepare symbols for the legend, taking care of not representing values
     // under the display threshold defined by the user (if any) :
-    let current_min_value = +current_layers[layer].min_display;
+    var current_min_value = +current_layers[layer].min_display;
+    if(current_layers[layer].renderer == "DiscLayer") {
+    // Todo use the same way to store the threshold for links and disclayer
+    // in order to avoid theses condition
+        let values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'),
+            d => +d.__data__.properties["disc_value"]);
+        current_min_value = current_min_value != 1
+                    ? values[Math.round(current_min_value * current_layers[layer].n_features)]
+                    : values[values.length - 1];
+    }
     for(let b_val of breaks){
         if (b_val[1] != 0) {
             if(current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {
@@ -379,8 +389,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
         symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo")
-                        ? "#FFF" : (current_layers[layer].fill_color.two !== undefined)
+    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined)
                         ? "#FFF" : current_layers[layer].fill_color.single;
 
     var legend_root = map.insert('g')

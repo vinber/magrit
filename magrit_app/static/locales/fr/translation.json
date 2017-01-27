@@ -128,7 +128,15 @@
             "A5_landscape": "A5 paysage",
             "A5_portrait": "A5 portrait",
             "export_button": "Exporter",
-            "next": "Paramètres..."
+            "next": "Paramètres...",
+            "proj4_prompt": "Saisir une définition Proj.4 valide...",
+            "wgs84": "Coordonnées géographiques / WGS84 (EPSG:4326)",
+            "web_mercator": "Web-mercator / WGS84 (EPSG:3857)",
+            "laea_europe": "LAEA Europe / ETRS89 (EPSG:3035)",
+            "usa_albers": "USA Albers Equal Area / NAD83",
+            "british_national_grid": "British National Grid / OSGB36 (EPSG:27700)",
+            "lambert93": "Lambert-93 / RGF93-GRS80 (EPSG:2154)",
+            "eckert_4": "Eckert IV / WGS84"
         },
         "section5": {
             "title": "Options de projection",
@@ -216,7 +224,6 @@
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
             "nuts2_data": "Nuts 2 (2006) avec données <i>(Polygones)</i>",
             "world_countries": "Pays du monde <i>(Polygones)</i>",
-            "us_county": "Comtés des USA <i>(Polygones)</i>",
             "us_states": "États des USA <i>(Polygones)</i>",
             "tabular_dataset": "<i>Jeu de données tabulaires</i>",
             "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
@@ -317,7 +324,8 @@
             "font_size": "Taille de la police ",
             "default_font": "Police par défault ",
             "content": "Contenu ",
-            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées."
+            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées.",
+            "rotation": "Rotation"
         },
         "arrow_edit_box": {
             "title": "Options de la flèche",
@@ -658,6 +666,6 @@
         "message": "Message",
         "contact": "Contact",
         "index": "Acceuil",
-        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">support [at] url [dot] com</span>"
+        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">magrit [at] ums-riate [point] fr</span>"
     }
 }

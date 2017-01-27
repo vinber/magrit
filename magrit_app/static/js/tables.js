@@ -70,8 +70,8 @@ function add_field_table(table, layer_name, parent){
             formToSend.append('var1', JSON.stringify(var1));
             formToSend.append('var2', JSON.stringify(var2));
             formToSend.append('operator', operation);
-            return request_data("POST", "/helpers/calc", formToSend).then(function(e){
-                let data = JSON.parse(e.target.responseText);
+            return xhrequest("POST", "/helpers/calc", formToSend, false).then(function(data){
+                data = JSON.parse(data);
                 for(let i=0; i<table.length; i++)
                     table[i][new_name_field] = data[i];
 
@@ -107,7 +107,7 @@ function add_field_table(table, layer_name, parent){
                         table[i][new_name_field] = table[i][fi1].substring(0, opt_val);
                 } else {
                     for(let i=0; i < table.length; i++)
-                        table[i][new_name_field] = table[i][fil].substr(opt_val);
+                        table[i][new_name_field] = table[i][fi1].substr(opt_val);
                 }
             } else if (operation == "concatenate"){
                 for(let i=0; i < table.length; i++)

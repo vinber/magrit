@@ -219,10 +219,16 @@ function getBinsCount(_values, bins=16){
         };
 }
 
-function getBreaks_userDefined(serie, breaks_list){
-    var separator = has_negative(serie) ? '- ' : '-',
-        break_values = breaks_list.split(separator).map(el => +el.trim()),
-        len_serie = serie.length,
+function parseUserDefinedBreaks(serie, breaks_list){
+    var separator = has_negative(serie) ? '- ' : '-';
+    return breaks_list.split(separator).map(el => +el.trim());
+}
+
+function getBreaks_userDefined(serie, break_values){
+    if(typeof break_values === "string"){
+        break_values = parseUserDefinedBreaks(serie, break_values);
+    }
+    var len_serie = serie.length,
         j = 0,
         len_break_val = break_values.length,
         stock_class = new Array(len_break_val-1);

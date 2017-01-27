@@ -131,9 +131,9 @@ function valid_join_on(layer_name, field1, field2){
             }
         }
         valid_join_check_display(true, prop);
-        return true;
+        return Promise.resolve(true);
     } else if(hits > 0){
-        swal({title: i18next.t("app_page.common.confirm") + "!",
+        return swal({title: i18next.t("app_page.common.confirm") + "!",
               text: i18next.t("app_page.join_box.partial_join", {ratio: prop}),
               allowOutsideClick: false,
               allowEscapeKey: true,
@@ -143,30 +143,38 @@ function valid_join_on(layer_name, field1, field2){
               confirmButtonText: i18next.t("app_page.common.yes"),
               cancelButtonText: i18next.t("app_page.common.no"),
             }).then(() => {
+                let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0])
+                    // ,i_id = fields_name_to_add.indexOf("id");
 
-                let fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]),
-                    i_id = fields_name_to_add.indexOf("id");
-
-                if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
-                for(let i=0, len=join_values1.length; i<len; i++){
+                // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
+                for(let i=0, len=field_join_map.length; i<len; i++){
                     val = field_join_map[i];
                     for(let j=0, leng=fields_name_to_add.length; j<leng; j++){
                         f_name = fields_name_to_add[j];
                         if(f_name.length > 0){
-                            user_data[layer_name][i][f_name] = val ? joined_dataset[0][val][f_name] : null ;
+                            let t_val;
+                            if(val == undefined)
+                              t_val = null;
+                            else if(joined_dataset[0][val][f_name] == "")
+                              t_val = null;
+                            else
+                              t_val = joined_dataset[0][val][f_name];
+                            user_data[layer_name][i][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null ;
                         }
                     }
                 }
                 valid_join_check_display(true, prop);
+                return Promise.resolve(true);
             }, dismiss => {
                 field_join_map = [];
+                return Promise.resolve(false);
             });
     } else {
         swal("",
              i18next.t("app_page.join_box.no_match", {field1: field1, field2: field2}),
              "error");
         field_join_map = [];
-        return false;
+        return Promise.resolve(false);
     }
 }
 
@@ -205,13 +213,9 @@ function createJoinBox(layer){
     make_confirm_dialog2("joinBox", i18next.t("app_page.join_box.title"), {html_content: inner_box, widthFitContent: true})
         .then(confirmed => {
             if(confirmed){
-                let join_res = valid_join_on(layer, last_choice.field1, last_choice.field2);
-                // if(join_res && window.fields_handler){
-                //     fields_handler.unfill();
-                //     fields_handler.fill(layer);
-                // }
+                valid_join_on(layer, last_choice.field1, last_choice.field2)
+                    .then(valid => { if(valid) make_box_type_fields(layer); });
             }
-            make_box_type_fields(layer);
         });
 
     d3.select(".joinBox").styles({"text-align": "center", "line-height": "0.9em"});

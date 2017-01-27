@@ -21,7 +21,7 @@ pyproj >= 1.9.5.1
 Rtree >= 0.8.3
 scipy >= 0.18.0
 selenium == 2.53.6
-smoomapy >= 0.1.6
+smoomapy >= 0.1.8
 Shapely >= 1.5.15
 ujson >= 1.35
 uvloop >= 0.7.2

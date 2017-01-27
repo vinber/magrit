@@ -241,9 +241,11 @@ function make_style_box_indiv_symbol(symbol_node){
             }
         });
     let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    let a = box_content.append("p");
-    a.append('span').html(i18next.t('app_page.single_symbol_edit_box.image_size'));
+    let a = box_content.append("p").attr('class', 'line_elem');
+    a.append('span')
+        .html(i18next.t('app_page.single_symbol_edit_box.image_size'));
     a.append("input")
+        .style('float', 'right')
         .attrs({type: "number", id: "font_size", min: 0, max: 150, step: "any", value: +symbol_node.getAttribute("width").slice(0,-2)})
         .on("change", function(){
             let new_val = this.value + "px";
@@ -254,8 +256,13 @@ function make_style_box_indiv_symbol(symbol_node){
         });
     if(type_obj == 'layout'){
         let current_state = parent.classList.contains('scalable-legend');
-        let b = box_content.append('p');
+        let b = box_content.append('p').attr('class', 'line_elem');
+        b.append('label')
+            .style('float', 'right')
+            .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
+            .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         b.append('input')
+            .style('float', 'right')
             .attrs({type: 'checkbox', id: 'checkbox_symbol_soom_scale'})
             .on('change', function(){
                 let zoom_scale = svg_map.__zoom;
@@ -271,9 +278,6 @@ function make_style_box_indiv_symbol(symbol_node){
                   parent.classList.remove('scalable-legend');
                 }
             });
-        b.append('label')
-            .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
-            .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
     }
 };

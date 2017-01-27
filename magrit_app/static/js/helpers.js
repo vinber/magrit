@@ -81,17 +81,29 @@ function request_data(method, url, data){
     });
 }
 
+/**
+* Perform an asynchronous request
+*
+* @param {String} method - the method like "GET" or "POST"
+* @param {String} url - the targeted url
+* @param {FormData} data - Optionnal, the data to be send
+* @param {Boolean} wainting_message - Optionnal, whether to display or not a waiting message while the request is proceeded
+* @return {Promise} response
+*/
 function xhrequest(method, url, data, waiting_message){
     if(waiting_message){ document.getElementById("overlay").style.display = ""; }
     return new Promise(function(resolve, reject){
         var request = new XMLHttpRequest();
+        _app.xhr_to_cancel = request;
         request.open(method, url, true);
         request.onload = resp => {
             resolve(resp.target.responseText);
+            _app.xhr_to_cancel = undefined;
             if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
         };
         request.onerror = err => {
             reject(err);
+            _app.xhr_to_cancel = undefined;
             if(waiting_message){ document.getElementById("overlay").style.display = "none"; }
         };
         request.send(data);
@@ -137,8 +149,8 @@ function send_layer_server(layer_name, url){
     var JSON_layer = path_to_geojson(layer_name);
     formToSend.append("geojson", JSON_layer);
     formToSend.append("layer_name", layer_name);
-    request_data("POST", url, formToSend).then(function(e){
-        let key = JSON.parse(e.target.responseText).key;
+    xhrequest("POST", url, formToSend, false).then(function(e){
+        let key = JSON.parse(e).key;
         current_layers[layer_name].key_name = key;
     }).catch(function(err){
         display_error_during_computation();
@@ -154,7 +166,7 @@ function get_other_layer_names(){
     tmp_idx = other_layers.indexOf("Graticule");
     if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("Simplified_land_polygons");
+    tmp_idx = other_layers.indexOf("world");
     if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
@@ -264,15 +276,16 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
         for(let i=0; i < deepth_test; ++i){
             let val = table[i][field];
             if(h[val]) dups[field] = true;
-            else h[val] = true,
+            else h[val] = true;
             tmp_type = typeof val;
-            if(tmp_type === "string" && val.length == 0)
-                tmp_type = "empty";
-            else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
-                let _val = Number(table[i][field]);
-                tmp_type = (_val | 0) === val ? "stock" : "ratio";
-            } else if(tmp_type === "object" && isFinite(val))
+            if(tmp_type === "object" && isFinite(val)){
                 tmp_type = "empty"
+            } else if(tmp_type === "string" && val.length == 0){
+                tmp_type = "empty";
+            } else if( (tmp_type === "string" && !isNaN(Number(val))) || tmp_type === 'number'){
+                let _val = Number(table[i][field]);
+                tmp_type = (_val | 0) == val ? "stock" : "ratio";
+            }
             tmp[fields[j]].push(tmp_type);
         }
     }
@@ -307,8 +320,7 @@ function make_box_type_fields(layer_name){
         tmp = type_col2(user_data[layer_name]),
         fields_type = current_layers[layer_name].fields_type,
         f = fields_type.map(v => v.name),
-        // fields_type = current_layers[layer_name].fields_type,
-        ref_type = ['stock', 'ratio', 'category', 'unknown', 'id'];
+        ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
     let deferred = Q.defer(),
         container = document.getElementById("box_type_fields");

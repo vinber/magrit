@@ -1,7 +1,28 @@
 # -*- coding: utf-8 -*-
 from smoomapy import SmoothStewart
+from geopandas import GeoDataFrame
+from .geo import repairCoordsPole
+from .cy_misc import get_name
 import pickle
+import ujson as json
+import os
 
+
+def save_reload(result):
+    name = '/tmp/' + get_name(12) + '.shp'
+    try:
+        os.remove(name)
+    except:
+        None
+    result.to_file(name)
+    gdf = GeoDataFrame.from_file(name)
+    res = json.loads(gdf[::-1].to_json())
+    for ext in ('shp', 'shx', 'prj', 'dbf', 'cfg'):
+        try:
+            os.remove(name.replace('shp', ext))
+        except:
+            None
+    return res
 
 def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                    user_defined_breaks=None, mask=None):
@@ -17,7 +38,12 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                            output="GeoDataFrame",
                            new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
-    return (result[::-1].to_json().encode(),
+    if mask == None:
+        res = save_reload(result)
+    else:
+        res = json.loads(result[::-1].to_json())
+    repairCoordsPole(res)
+    return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]})
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,
@@ -69,6 +95,29 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     _min, _max = result[["min", "max"]].values.T.tolist()
 #    return (result[::-1].to_json().encode(),
 #            {"min": _min[::-1], "max": _max[::-1]})
-    return (result[::-1].to_json().encode(),
+    if mask == None:
+        # Woo silly me :
+        res = save_reload(result)
+        # name = '/tmp/' + get_name(12) + '.shp'
+        # try:
+        #     os.remove(name)
+        # except: None
+        # There seems to be something wrong in the geometry creation without mask
+        # ...and the shapefile driver handle it nicely for me...
+        # result.to_file(name)
+        # gdf = GeoDataFrame.from_file(name)
+        # res = json.loads(gdf[::-1].to_json())
+        # for ext in ('shp', 'shx', 'prj', 'dbf', 'cfg'):
+        #     try:
+        #         os.remove(name.replace('shp', ext))
+        #     except:
+        #         None
+    else:
+        res = json.loads(result[::-1].to_json())
+
+    repairCoordsPole(res)
+    with open('/tmp/result.geojson', 'wb') as f:
+        f.write(json.dumps(res).encode())
+    return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]},
             pickle.dumps(StePot))

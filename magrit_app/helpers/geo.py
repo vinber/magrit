@@ -143,6 +143,10 @@ def check_projection(proj4string):
         proj4string = "".join(["+init=", proj4string])
     try:
         pyproj_Proj(proj4string)
+        outSpRef = SpatialReference()
+        ret_val = outSpRef.ImportFromProj4(proj4string)
+        if not ret_val == 0:
+            return False
         return proj4string
     except:
         return False
@@ -150,14 +154,14 @@ def check_projection(proj4string):
 def on_geom(geom):
     for pts in geom:
         for pt in pts:
-            if pt[0] > 179:
-                pt[0] = 179
-            elif pt[0] < -179:
-                pt[0] =  179
-            if pt[1] > 89:
-                pt[1] = 89
-            elif pt[1] < -89:
-                pt[1] = -89
+            if pt[0] > 179.9999:
+                pt[0] = 179.9999
+            elif pt[0] < -179.9999:
+                pt[0] =  -179.9999
+            if pt[1] > 89.9999:
+                pt[1] = 89.9999
+            elif pt[1] < -89.9999:
+                pt[1] = -89.9999
 
 def repairCoordsPole(geojson):
     for ft in geojson['features']:
@@ -169,3 +173,10 @@ def repairCoordsPole(geojson):
                 if(len(poly) > 2):
                     # interiors  = poly[1:]
                     on_geom(poly[1:])
+        elif "Polygon" in geom["type"]:
+            # poly = geom['coordinates']
+            # exterior = poly[:1]
+            on_geom(geom['coordinates'][:1])
+            if(len(geom['coordinates']) > 2):
+                # interiors  = poly[1:]
+                on_geom(geom['coordinates'][1:])

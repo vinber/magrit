@@ -156,23 +156,34 @@ class UserArrow {
                 map.select('#arrow_end_pt').remove();
                 if(!map_locked) handle_click_hand('unlock');
             });
-        let box_content = d3.select(".styleBoxArrow").select(".modal-body").insert("div").attr("id", "styleBoxArrow");
-        let s1 = box_content.append("p");
-        s1.append("p").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+
+        let box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
+        let s1 = box_content.append("p").attr('class', 'line_elem');
+        s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.append("input")
             .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
-            .styles({width: "80px", "vertical-align": "middle"})
+            .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 line.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-        let txt_line_weight = s1.append("span").html(self.lineWeight + " px");
+        let txt_line_weight = s1.append("span")
+            .style('float', 'right').html(self.lineWeight + " px");
 
-        let s2 = box_content.append("p");
-        s2.append("p").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
+        let s2 = box_content.append("p").attr('class', 'line_elem');
+        s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
+        s2.insert("span").style('float', 'right').html(" °");
+        s2.insert("input")
+            .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+            .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
+            .on("input", function(){
+                let elem = document.getElementById("arrow_angle");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
         s2.insert("input")
             .attrs({id: "arrow_angle", type: "range", value: angle, min: 0, max: 360, step: 1})
-            .styles({width: "80px", "vertical-align": "middle"})
+            .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 let distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
                 let angle = -(+this.value);
@@ -182,18 +193,7 @@ class UserArrow {
                 document.getElementById("arrow_angle_text").value = +this.value;
             });
 
-        s2.insert("input")
-            .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-            .styles({width: "30px", "margin-left": "10px"})
-            .on("input", function(){
-                let elem = document.getElementById("arrow_angle");
-                elem.value = this.value;
-                elem.dispatchEvent(new Event('change'));
-            });
-
-        s2.insert("span").html("°");
-
-       let s3 = box_content.append("p");
+       let s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
        s3.append("button")
            .attr("class", "button_st4")
            .html(i18next.t("app_page.arrow_edit_box.move_points"))
@@ -224,7 +224,7 @@ class UserArrow {
                       line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
                    }));
 
-              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").append('div').attr('id', 'move_pt_content').node();
+              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
               let el = document.createElement("button");
               el.className = "button_st3";
               el.style = "float:right;background:forestgreen;font-size:14px;";
@@ -272,12 +272,14 @@ class Textbox {
 
         let drag_txt_annot = d3.drag()
              .subject(function() {
-                    var t = d3.select(this.parentElement),
-                        prev_translate = t.attr("transform");
-                    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+                    var t = d3.select(this.parentElement);
+                    //     xy0 = get_map_xy0(),
+                    //     bbox = this.getBoundingClientRect();
                     return {
-                        x: t.attr("x") - prev_translate[0],
-                        y: t.attr("y") - prev_translate[1],
+                        x: t.attr("x"),
+                        y: t.attr("y"),
+                    //     dim_x: bbox.width / 2,
+                    //     dim_y: bbox.height / 2,
                         map_locked: map_div.select("#hand_button").classed("locked") ? true : false
                     };
                 })
@@ -287,12 +289,15 @@ class Textbox {
               })
             .on("end", () => {
                 if(d3.event.subject && !d3.event.subject.map_locked)
-                    handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
+                    handle_click_hand("unlock");
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
-                d3.select(this.parentElement).attr("x", d3.event.x).attr("y", d3.event.y);
-              });
+                let x = +d3.event.x,
+                    y = +d3.event.y,
+                    t = d3.select(this.parentElement);
+                t.attrs({x: x, y: y});
+            });
 
         let foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
         foreign_obj.setAttributeNS(null, "x", this.x);
@@ -300,6 +305,7 @@ class Textbox {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
+        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
 
@@ -335,26 +341,26 @@ class Textbox {
         inner_ft.on("dblclick", () => { d3.event.stopPropagation(); });
 
         inner_ft.on("mouseover", () => {
-                    inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
-                    inner_ft.style("background-color", "white");
-                    inner_ft.style("border", "1px solid red");
-                    inner_ft.on("keyup", () => {
-                        clearTimeout(current_timeout);
-                        current_timeout = setTimeout(end_edit_action, 7500);
-                        state = "keyup";
-                    })
-                    // toogle the size of the container to 100% while we are using it :
-                    foreign_obj.setAttributeNS(null, "width", "100%");
-                    foreign_obj.setAttributeNS(null, "height", "100%");
-                    d3.select("body").classed("noselect", true);
-                })
-                .on("mouseout", () => {
-                    // use a small delay after leaving the box before deactiving it :
-                    if(!state){
-                        clearTimeout(current_timeout);
-                        current_timeout = setTimeout(end_edit_action, 2500);
-                    }
-                });
+            inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
+            inner_ft.style("background-color", "white");
+            inner_ft.style("border", "1px solid red");
+            inner_ft.on("keyup", () => {
+                clearTimeout(current_timeout);
+                current_timeout = setTimeout(end_edit_action, 7500);
+                state = "keyup";
+            })
+            // toogle the size of the container to 100% while we are using it :
+            foreign_obj.setAttributeNS(null, "width", "100%");
+            foreign_obj.setAttributeNS(null, "height", "100%");
+            d3.select("body").classed("noselect", true);
+        });
+        inner_ft.on("mouseout", () => {
+            // use a small delay after leaving the box before deactiving it :
+            if(!state){
+                clearTimeout(current_timeout);
+                current_timeout = setTimeout(end_edit_action, 2500);
+            }
+        });
 
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
@@ -365,18 +371,64 @@ class Textbox {
             let current_options = {size: this.text_annot.select("p").style("font-size"),
                                    color: this.text_annot.select("p").style("color"),
                                    content: unescape(this.text_annot.select("p").html()),
+                                   rotate: this.text_annot.attr('rotate'),
+                                   transform_rotate: this.text_annot.attr('transform'),
+                                   x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
                                    font: ""};
-            let self = this;
+            let map_xy0 = get_map_xy0();
+            let self = this,
+                inner_p = this.text_annot.select('p');
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
                 .then(function(confirmed){
                     if(!confirmed){
-                        self.text_annot.select("p").text(current_options.content);
+                        self.text_annot.select('p')
+                            .text(current_options.content)
+                            .styles({'color': current_options.color, 'font-size': current_options.size});
                         self.fontsize = current_options.size;
+                        self.rotate = current_options.rotate;
+                        self.text_annot.attr('transform', current_options.transform_rotate);
                     }
                 });
-            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div").attr("id", "styleTextAnnotation"),
-                options_font = box_content.append('p'),
-                font_select = options_font.insert("select").on("change", function(){ self.text_annot.select("p").style("font-family", this.value); });
+            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
+
+            let option_rotation = box_content.append('p').attr('class', 'line_elem');
+            option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
+            option_rotation.append('span').style('float', 'right').html(' °');
+            option_rotation.append("input")
+                .attrs({type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+                        class: "without_spinner", id: "textbox_txt_rotate"})
+                .styles({'width': '40px', 'float': 'right'})
+                .on("change", function(){
+                  let rotate_value = +this.value,
+                      bbox = inner_p.node().getBoundingClientRect(),
+                      nx = bbox.x - map_xy0.x,
+                      ny = bbox.y - map_xy0.y,
+                      x_center = nx + bbox.width / 2,
+                      y_center = ny + bbox.height / 2;
+                  self.text_annot
+                      .attrs({'rotate': rotate_value, x: nx, y: ny,
+                              'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+                  document.getElementById("textbox_range_rotate").value = rotate_value;
+                });
+
+            option_rotation.append("input")
+                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate})
+                .styles({"vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px"})
+                .on("change", function(){
+                  let rotate_value = +this.value,
+                      bbox = inner_p.node().getBoundingClientRect(),
+                      nx = bbox.x - map_xy0.x,
+                      ny = bbox.y - map_xy0.y,
+                      x_center = nx + bbox.width / 2,
+                      y_center = ny + bbox.height / 2;
+                  self.text_annot
+                      .attrs({'rotate': rotate_value, x: nx, y: ny,
+                              'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+                  document.getElementById("textbox_txt_rotate").value = rotate_value;
+                });
+
+            let options_font = box_content.append('p'),
+                font_select = options_font.insert("select").on("change", function(){ inner_p.style("font-family", this.value); });
 
             available_fonts.forEach(function(font){
                 font_select.append("option").text(font[0]).attr("value", font[1])
@@ -388,14 +440,14 @@ class Textbox {
                 .style('width', '60px')
                 .on("change", function(){
                     self.fontsize = +this.value;
-                    self.text_annot.select("p").style("font-size", self.fontsize + "px");
+                    inner_p.style("font-size", self.fontsize + "px");
                 });
 
             options_font.append("input")
                 .attrs({type: "color", id: "font_color", value: current_options.color})
                 .style('width', '60px')
                 .on("change", function(){
-                    self.text_annot.select("p").style("color", this.value);
+                    inner_p.style("color", this.value);
                 });
 
             let options_format = box_content.append('p'),
@@ -416,7 +468,7 @@ class Textbox {
                     .attr("id", "annotation_content")
                     .style("margin", "5px 0px 0px")
                     .on("keyup", function(){
-                        self.text_annot.select("p").html(this.value)
+                        inner_p.html(this.value)
                     });
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
@@ -425,7 +477,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
 
@@ -434,7 +486,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
             btn_underline.on('click', function(){
@@ -442,7 +494,7 @@ class Textbox {
                     endIdx = +textarea.selectionEnd,
                     current_text = textarea.value;
                 let tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                self.text_annot.select("p").html(tmp);
+                inner_p.html(tmp);
                 textarea.value = tmp;
             });
     }
@@ -607,13 +659,21 @@ var scaleBar = {
             .then(function(confirmed){
                 if(confirmed){ redraw_now(); }
             });
-        var box_body = d3.select(".scaleBarEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".scaleBarEditBox").select(".modal-body").style("width", "295px");
+        // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
             .html(i18next.t("app_page.scale_bar_edit_box.title"));
-        box_body.append("p").style("display", "inline")
-            .html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
-        box_body.append("input")
+        let a = box_body.append("p").attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
+        a.append("input")
+            .style('float', 'right')
+            .attrs({id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt})
+            .on("change", function(){
+              new_val = +this.value;
+              redraw_now();
+            });
+        a.append("input")
+            .style('float', 'right')
             .attrs({type: 'checkbox', "checked": self.fixed_size ? true : null})
             .on("change", function(){
                 if(box_body.select("#scale_fixed_field").attr("disabled")){
@@ -625,17 +685,12 @@ var scaleBar = {
                 }
                 redraw_now();
               });
-        box_body.append("input")
-            .attrs({id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt})
-            .on("change", function(){
-              new_val = +this.value;
-              redraw_now();
-            });
 
-        let b = box_body.append("p");
+        let b = box_body.append("p").attr('class', 'line_elem');
         b.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input")
+            .style('float', 'right')
             .attrs({id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision})
             .style("width", "60px")
             .on("change", function(){
@@ -643,10 +698,11 @@ var scaleBar = {
               redraw_now();
             });
 
-        let c = box_body.append("p");
+        let c = box_body.append("p").attr('class', 'line_elem');
         c.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.unit"));
         let unit_select = c.insert("select")
+            .style('float', 'right')
             .attr('id', "scale_unit")
             .on("change", function(){
               self.unit = this.value;
@@ -657,10 +713,11 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        let e = box_body.append("p");
+        let e = box_body.append("p").attr('class', 'line_elem');
         e.append("span")
                 .html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
         e.append("input")
+            .style('float', 'right')
             .attrs({id: 'checkbox_start_end_bar', type: 'checkbox'})
             .on("change", function(a){
                 self.start_end_bar = self.start_end_bar == true ? false : true;
@@ -792,61 +849,63 @@ var northArrow = {
                 }
             });
 
-        var box_body = d3.select(".arrowEditBox").select(".modal-body");
-        box_body.node().parentElement.style.width = "auto";
+        var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
         box_body.append("h3")
                 .html(i18next.t("app_page.north_arrow_edit_box.title"));
-        box_body.append("p").style("margin-bottom", "0")
-                .html(i18next.t("app_page.north_arrow_edit_box.size"));
-        box_body.append("input")
-                .attrs({type: "range", min: 1, max: 200, step: 1,
-                        value: old_dim, id: "range_size_n_arrow"})
-                .styles({"vertical-align": "middle", "width": "140px"})
-                .on("change", function(){
-                    let new_size = +this.value;
-                    self.arrow_img.attr("width", new_size);
-                    self.arrow_img.attr("height", new_size);
-                    self.under_rect.attr("width", new_size);
-                    self.under_rect.attr("height", new_size);
-                    self.x_center = x_pos + new_size / 2;
-                    self.y_center = y_pos + new_size / 2;
-                    document.getElementById("txt_size_n_arrow").value = new_size;
-                });
-        box_body.append("input")
-                .attrs({type: "number", min: 0, max: 200, step: 1, value: old_dim,
-                        class: "without_spinner", id: "txt_size_n_arrow"})
-                .style("width", "40px")
-                .on("change", function(){
-                    let elem = document.getElementById("range_size_n_arrow");
-                    elem.value = +this.value;
-                    elem.dispatchEvent(new Event("change"));
-                });
-        box_body.append("span").html(" px");
+        let a = box_body.append('p').attr('class', 'line_elem');
+        a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
+        a.append("span")
+            .style('float', 'right')
+            .html(" px");
+        a.append("input")
+            .attrs({type: "number", min: 0, max: 200, step: 1, value: old_dim,
+                    class: "without_spinner", id: "txt_size_n_arrow"})
+            .styles({float: 'right', width: '40px'})
+            .on("change", function(){
+                let elem = document.getElementById("range_size_n_arrow");
+                elem.value = +this.value;
+                elem.dispatchEvent(new Event("change"));
+            });
+        a.append("input")
+            .attrs({type: "range", min: 1, max: 200, step: 1,
+                    value: old_dim, id: "range_size_n_arrow"})
+            .styles({"vertical-align": "middle", "width": "140px", 'float': 'right'})
+            .on("change", function(){
+                let new_size = +this.value;
+                self.arrow_img.attr("width", new_size);
+                self.arrow_img.attr("height", new_size);
+                self.under_rect.attr("width", new_size);
+                self.under_rect.attr("height", new_size);
+                self.x_center = x_pos + new_size / 2;
+                self.y_center = y_pos + new_size / 2;
+                document.getElementById("txt_size_n_arrow").value = new_size;
+            });
 
-        box_body.append("p").style("margin-bottom", "0")
-                .html(i18next.t("app_page.north_arrow_edit_box.rotation"));
-        box_body.append("input")
-                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow"})
-                .attr("value", old_rotate)
-                .styles({"vertical-align": "middle", "width": "140px"})
-                .on("change", function(){
-                    let rotate_value = +this.value;
-                    self.svg_node.attr("rotate", rotate_value);
-                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-                    document.getElementById("txt_rotate_n_arrow").value = rotate_value;
-                });
-        box_body.append("input")
-                .attrs({type: "number", min: 0, max: 360, step: "any",
-                        class: "without_spinner", id: "txt_rotate_n_arrow"})
-                .attr("value", old_rotate)
-                .style("width", "40px")
-                .on("change", function(){
-                    let rotate_value = +this.value;
-                    self.svg_node.attr("rotate", rotate_value);
-                    self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
-                    document.getElementById("range_rotate_n_arrow").value = rotate_value;
-                });
-        box_body.append("span").html("°");
+        let b = box_body.append("p").attr('class', 'line_elem');
+        b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
+        b.append("span")
+            .style('float', 'right')
+            .html(" °");
+        b.append("input")
+            .attrs({type: "number", min: 0, max: 360, step: "any", value: old_rotate,
+                    class: "without_spinner", id: "txt_rotate_n_arrow"})
+            .styles({float: 'right', width: '40px'})
+            .on("change", function(){
+                let rotate_value = +this.value;
+                self.svg_node.attr("rotate", rotate_value);
+                self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                document.getElementById("range_rotate_n_arrow").value = rotate_value;
+            });
+        b.append("input")
+            .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "range_rotate_n_arrow", value: old_rotate})
+            .styles({"vertical-align": "middle", "width": "140px", 'float': 'right'})
+            .on("change", function(){
+                let rotate_value = +this.value;
+                self.svg_node.attr("rotate", rotate_value);
+                self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
+                document.getElementById("txt_rotate_n_arrow").value = rotate_value;
+            });
+
     },
     displayed: false
 }
@@ -998,18 +1057,19 @@ class UserEllipse {
                 ellipse_elem.style.stroke = this.value;
             });
 
-       let s2b = box_content.append("p");
-       s2b.append("p").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+       let s2b = box_content.append("p").attr('class', 'line_elem')
+       s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
        s2b.insert("input")
            .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
-           .styles({width: "80px", "vertical-align": "middle"})
+           .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
            .on("change", function(){
-               let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]];
-               let distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1]));
-               let angle = Math.abs(+this.value);
+              let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
+                  distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
+                  angle = Math.abs(+this.value);
                let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
-               console.log(ellipse_elem.rx.baseVal.value, self.pt[0], nx);
-               console.log(ellipse_elem.ry.baseVal.value, self.pt[1], ny);
+               console.log("angle :", angle); console.log("pt2 :", pt2); console.log("distance :", distance);
+               console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
+               console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
                ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
                ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
                document.getElementById("ellipse_angle_text").value = +this.value;
@@ -1017,63 +1077,18 @@ class UserEllipse {
 
        s2b.insert("input")
            .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-           .styles({width: "30px", "margin-left": "10px"})
+           .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
            .on("input", function(){
                let elem = document.getElementById("ellipse_angle");
                elem.value = this.value;
                elem.dispatchEvent(new Event('change'));
            });
-       s2b.insert("span").html("°");
+       s2b.insert("span")
+          .style('float', 'right')
+          .html(" °");
      }
 
-     handle_ctrl_pt(){
-       
-     }
+    handle_ctrl_pt(){
+        null;
+    }
  }
-      //  let s3 = box_content.append("p");
-      //
-      //  s3.append("button")
-      //      .attr("class", "button_st4")
-      //      .html(i18next.t("app_page.ellipse_edit_box.move_points"))
-      //      .on("click", function(){
-      //         d3.select(".styleBoxEllipse").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
-      //         box_content.style('display', 'none');
-      //         let tmp_start_point = map.append("rect")
-      //              .attr("class", "ctrl_pt").attr('id', 'pt1')
-      //              .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
-      //              .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
-      //              .attr("height", 6).attr("width", 6)
-      //              .style("fill", "red")
-      //              .style("cursor", "grab")
-      //              .call(d3.drag().on("drag", function(){
-      //                  let t = d3.select(this);
-      //                  t.attr("x", d3.event.x);
-      //                  let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
-      //                  ellipse_elem.rx.baseVal.value = dist;
-      //              }));
-      //
-      //          let tmp_end_point = map.append("rect")
-      //              .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-      //                      x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
-      //              .styles({fill: 'red', cursor: 'grab'})
-      //              .call(d3.drag().on("drag", function(){
-      //                  let t = d3.select(this);
-      //                  t.attr("y", d3.event.y);
-      //                  let dist = self.pt1[1] - (d3.event.y / zoom_param.k - zoom_param.y);
-      //                  ellipse_elem.ry.baseVal.value = dist;
-      //              }));
-      //
-      //          let el = document.createElement("button");
-      //          el.className = "button_st3";
-      //          el.style = "float:right;background:forestgreen;font-size:22px;";
-      //          el.innerHTML = i18next.t("app_page.common.done");
-      //          el.onclick = function(){
-      //              map.selectAll('.ctrl_pt').remove();
-      //              el.remove();
-      //              d3.select(".styleBoxEllipse").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
-      //              box_content.style('display', 'none');
-      //          }
-      //          d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "move_pt_content").node().appendChild(el);
-      //      });
-//     }
-// }

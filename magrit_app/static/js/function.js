@@ -541,12 +541,13 @@ var fields_PropSymbolChoro = {
                 conf_disc_box = display_discretization(layer,
                                                        selected_field,
                                                        self.rendering_params[selected_field].nb_class,
-                                                       self.rendering_params[selected_field].type,
                                                        {schema: self.rendering_params[selected_field].schema,
                                                         colors: self.rendering_params[selected_field].colors,
-                                                        no_data: self.rendering_params[selected_field].no_data});
+                                                        no_data: self.rendering_params[selected_field].no_data,
+                                                        type: self.rendering_params[selected_field].type,
+                                                        breaks: self.rendering_params[selected_field].breaks});
             else
-                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, "quantiles", {});
+                conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, {type: "quantiles"});
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
@@ -597,7 +598,9 @@ var fields_PropSymbolChoro = {
 
                 let options_disc = {schema: rendering_params[color_field].schema,
                                     colors: rendering_params[color_field].colors,
-                                    no_data: rendering_params[color_field].no_data}
+                                    no_data: rendering_params[color_field].no_data,
+                                    type: rendering_params[color_field].type,
+                                    breaks: rendering_params[color_field].breaks}
 
                 Object.assign(current_layers[new_layer_name],{
                     renderer: "PropSymbolsChoro",
@@ -764,12 +767,6 @@ function fillMenu_Choropleth(){
       .attr("id", "container_sparkline_choro")
       .styles({"margin": "16px 50px 0px 4px", "float": "right"});
     make_discretization_icons(discr_section);
-    // dv2.insert('p').style("margin", "auto")
-    //   .append("button")
-    //   .attrs({id: "choro_class", class: "button_disc params i18n",
-    //           'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
-    //   .styles({"font-size": "0.8em", "text-align": "center"})
-    //   .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
     make_layer_name_button(dv2, 'Choro_output_name', "15px");
     make_ok_button(dv2, 'choro_yes');
@@ -889,19 +886,20 @@ var fields_Choropleth = {
                 conf_disc_box;
 
             if(self.rendering_params[selected_field]) {
-                conf_disc_box = display_discretization(layer, selected_field,
+                conf_disc_box = display_discretization(layer,
+                                                       selected_field,
                                                        self.rendering_params[selected_field].nb_class,
-                                                       self.rendering_params[selected_field].type,
                                                        {schema: self.rendering_params[selected_field].schema,
                                                         colors: self.rendering_params[selected_field].colors,
-                                                        no_data: self.rendering_params[selected_field].no_data});
+                                                        type: self.rendering_params[selected_field].type,
+                                                        no_data: self.rendering_params[selected_field].no_data,
+                                                        breaks: self.rendering_params[selected_field].breaks});
 
             } else {
                 conf_disc_box = display_discretization(layer,
                                                        selected_field,
                                                        opt_nb_class,
-                                                       "quantiles",
-                                                       {});
+                                                       {type: "quantiles"});
             }
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
@@ -1128,7 +1126,7 @@ function fillMenu_Stewart(){
       .html(i18next.t("app_page.func_options.smooth.beta"));
     d.insert('input')
       .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
+      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en', lang: 'fr'});
 
     let p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span')
@@ -1234,10 +1232,10 @@ var fields_Anamorphose = {
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
-                if(contains_empty_val(dataset.map(a => a[field_name]))){
-                  discard_rendering_empty_val();
-                  return;
-                }
+                // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 let layer_select = document.getElementById(layer).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
@@ -1250,10 +1248,12 @@ var fields_Anamorphose = {
 
                 for(let i = 0; i < nb_ft; ++i){
                     let val = +dataset[i][field_name];
+                    // We deliberatly use 0 if this is a missing value :
+                    if(isNaN(val) || !isFinite(val)) val = 0
                     if(val > max) max = val;
                     else if (val < min) min = val;
                     sum += val;
-                    d_values.push(sqrt(val));
+                    d_values.push(val);
                     area_values.push(+path.area(layer_select[i].__data__.geometry));
                 }
 
@@ -1325,10 +1325,10 @@ var fields_Anamorphose = {
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
-                  discard_rendering_empty_val();
-                  return;
-                }
+                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 var_to_send[field_name] = [];
                 if(!current_layers[layer].original_fields.has(field_name)){
@@ -1659,7 +1659,9 @@ function render_choro(layer, rendering_params){
     let breaks = rendering_params["breaks"];
     let options_disc = {schema: rendering_params.schema,
                         colors: rendering_params.colors,
-                        no_data: rendering_params.no_data}
+                        no_data: rendering_params.no_data,
+                        type: rendering_params.type,
+                        breaks: breaks}
     var layer_to_render = map.select("#"+layer).selectAll("path");
     map.select("#"+layer)
             .style("opacity", 1)
@@ -1988,12 +1990,12 @@ function fillMenu_Discont(){
     a.insert('select')
       .attrs({class: 'params', id: 'field_Discont'});
 
-    let b = dv2.append('p').attr('class', 'params_section2');
-    b.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
-      .html(i18next.t('app_page.func_options.discont.id_field'));
-    b.insert('select')
-      .attrs({class: 'params', id: 'field_id_Discont'});
+    // let b = dv2.append('p').attr('class', 'params_section2');
+    // b.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+    //   .html(i18next.t('app_page.func_options.discont.id_field'));
+    // b.insert('select')
+    //   .attrs({class: 'params', id: 'field_id_Discont'});
 
     let c = dv2.append('p').attr('class', 'params_section2');
     c.append('span')
@@ -2008,13 +2010,13 @@ function fillMenu_Discont(){
         discontinuity_type.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
     });
 
-    let d = dv2.append('p').attr('class', 'params_section2');
-    d.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
-      .html(i18next.t('app_page.func_options.discont.nb_class'));
-    d.insert('input')
-      .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
-      .style('width', '50px');
+    // let d = dv2.append('p').attr('class', 'params_section2');
+    // d.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+    //   .html(i18next.t('app_page.func_options.discont.nb_class'));
+    // d.insert('input')
+    //   .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
+    //   .style('width', '50px');
 
     let e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
@@ -2040,13 +2042,6 @@ function fillMenu_Discont(){
     f.insert('input')
       .attrs({class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random()});
 
-    // let g = dv2.append('p').attr('class', 'params_section2');
-    // g.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.quantization'})
-    //   .html("quantization");
-    // g.insert('input')
-    //   .attrs({type: 'number', id: 'quantiz_discont', value: 7, min: 0, max: 10, step: 1});
-
     make_layer_name_button(dv2, 'Discont_output_name');
     make_ok_button(dv2, 'yes_Discont', false);
 
@@ -2056,12 +2051,10 @@ function fillMenu_Discont(){
 var fields_Discont = {
     fill: function(layer){
         if(!layer) return;
-        // let fields_num = type_col(layer, "number"),
-        //     fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
         let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
-            field_id = section2.select("#field_id_Discont"),
+            // field_id = section2.select("#field_id_Discont"),
             ok_button = section2.select('#yes_Discont');
 
         if(fields_num.length == 0){
@@ -2072,13 +2065,13 @@ var fields_Discont = {
         fields_num.forEach(function(field){
             field_discont.append("option").text(field).attr("value", field);
         });
-        if(fields_id.length == 0){
-            field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
-        } else {
-          fields_id.forEach(function(field){
-              field_id.append("option").text(field).attr("value", field);
-          });
-        }
+        // if(fields_id.length == 0){
+        //     field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+        // } else {
+        //   fields_id.forEach(function(field){
+        //       field_id.append("option").text(field).attr("value", field);
+        //   });
+        // }
         field_discont.on("change", function(){
           let discontinuity_type = document.getElementById("kind_Discont").value;
           document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
@@ -2089,7 +2082,7 @@ var fields_Discont = {
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Discont"));
-        unfillSelectInput(document.getElementById("field_id_Discont"));
+        // unfillSelectInput(document.getElementById("field_id_Discont"));
         section2.selectAll(".params").attr("disabled", true);
     }
 }
@@ -2097,20 +2090,20 @@ var fields_Discont = {
 var render_discont = function(){
     let layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
-        field_id = document.getElementById("field_id_Discont").value,
+        // field_id = document.getElementById("field_id_Discont").value,
         min_size = 1,
         max_size = 10,
-        threshold = 1,
         discontinuity_type = document.getElementById("kind_Discont").value,
         discretization_type = document.getElementById('Discont_discKind').value,
-        nb_class = +document.getElementById("Discont_nbClass").value,
+        nb_class = 4,
         user_color = document.getElementById("color_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
                     ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
-    field_id = field_id == "__default__" ? undefined : field_id;
+    // field_id = field_id == "__default__" ? undefined : field_id;
+    let field_id = undefined;
 
     let result_value = new Map(),
         result_geom = {},
@@ -2123,16 +2116,16 @@ var render_discont = function(){
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
     let discont_worker = new Worker('/static/js/webworker_discont.js');
+    _app.webworker_to_cancel = discont_worker;
     discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function(e){
         let [arr_tmp, d_res] = e.data;
-        discont_worker.terminate();
+        _app.webworker_to_cancel = undefined;
         let nb_ft = arr_tmp.length,
             step = (max_size - min_size) / (nb_class - 1),
             class_size = Array(nb_class).fill(0).map((d,i) => min_size + (i * step));
 
         let [ , , breaks, serie] = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
-        console.log(serie, breaks)
         if(!serie || !breaks){
             let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
             let w = nb_class > opt_nb_class ? i18next.t("app_page.common.smaller") : i18next.t("app_page.common.larger");
@@ -2155,7 +2148,7 @@ var render_discont = function(){
                 elem = result_layer.append("path")
                         .datum(d_res[i][2])
                         .attrs({d: path, id: ["feature", i].join('_')})
-                        .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
+                        .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": 1});
             data_result.push(d_res[i][1]);
             elem.node().__data__.geometry = d_res[i][2];
             elem.node().__data__.properties = data_result[i];
@@ -2165,7 +2158,7 @@ var render_discont = function(){
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
-            "min_display": threshold,
+            "min_display": 0, // FIXME
             "type": "Line",
             "rendered_field": field,
             "size": [0.5, 10],
@@ -2176,11 +2169,22 @@ var render_discont = function(){
             "n_features": nb_ft
             };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+
+
+        { // Only display the 50% most important values :
+          // TODO : reintegrate this upstream in the layer creation :
+          let lim = 0.5 * current_layers[new_layer_name].n_features;
+          result_layer.selectAll('path').style("display", (d,i) => i <= lim ? null : "none" );
+          current_layers[new_layer_name].min_display = 0.5;
+        }
+
+        d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();
         switch_accordion_section();
         handle_legend(new_layer_name);
         send_layer_server(new_layer_name, "/layers/add");
+        discont_worker.terminate();
     };
 }
 
@@ -2474,7 +2478,6 @@ function render_TypoSymbols(rendering_params, new_name){
     }
 
     var new_layer_data = make_geojson_pt_layer();
-    console.log(new_layer_data);
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},

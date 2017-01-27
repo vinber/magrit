@@ -1,7 +1,6 @@
 importScripts('/static/js/lib/topojson-client.2.1.0.min.js');
 onmessage = function(e) {
   let [topo_to_use, layer, field, discontinuity_type, discretization_type, id_field] = e.data;
-  console.log([topo_to_use, layer, field, discontinuity_type, discretization_type, id_field]);
   let result_value = new Map(),
       topo_mesh = topojson.mesh,
       math_max = Math.max;
@@ -13,10 +12,13 @@ onmessage = function(e) {
   if(discontinuity_type == "rel") {
       topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
           if(a !== b){
-              let [new_id, new_id_rev] = getId(a, b);
+              let [new_id, new_id_rev] = getId(a, b),
+                  val_a = a.properties[field],
+                  val_b = b.properties[field];
+              if(val_a == "" || val_a == null || isNaN(+val_a) || val_b == "" || val_b == null || isNaN(+val_b))
+                  return;
               if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                  let value = math_max(a.properties[field] / b.properties[field],
-                                       b.properties[field] / a.properties[field]);
+                  let value = math_max(+val_a / +val_b, +val_b / +val_a);
                   result_value.set(new_id, value);
               }
           }
@@ -25,10 +27,13 @@ onmessage = function(e) {
   } else {
       topo_mesh(topo_to_use, topo_to_use.objects[layer], function(a, b){
           if(a !== b){
-              let [new_id, new_id_rev] = getId(a, b);
+              let [new_id, new_id_rev] = getId(a, b),
+                  val_a = a.properties[field],
+                  val_b = b.properties[field];
+              if(val_a == "" || val_a == null || isNaN(+val_a) || val_b == "" || val_b == null || isNaN(+val_b))
+                  return;
               if(!(result_value.get(new_id) || result_value.get(new_id_rev))){
-                  let value = math_max(a.properties[field] - b.properties[field],
-                                       b.properties[field] - a.properties[field]);
+                  let value = math_max(+val_a - +val_b, +val_b - +val_a);
                   result_value.set(new_id, value);
               }
           }

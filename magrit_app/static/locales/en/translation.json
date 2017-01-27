@@ -126,7 +126,15 @@
             "A5_landscape": "A5 landscape",
             "A5_portrait": "A5 portrait",
             "export_button": "Export",
-            "next": "Next..."
+            "next": "Next...",
+            "proj4_prompt": "Enter any valid Proj.4 string...",
+            "wgs84": "Geographic coordinates / WGS84 (EPSG:4326)",
+            "web_mercator": "Web-mercator / WGS84 (EPSG:3857)",
+            "laea_europe": "LAEA Europe / ETRS89 (EPSG:3035)",
+            "usa_albers": "USA Albers Equal Area / NAD83",
+            "british_national_grid": "British National Grid / OSGB36 (EPSG:27700)",
+            "lambert93": "Lambert-93 / RGF93-GRS80 (EPSG:2154)",
+            "eckert_4": "Eckert IV / WGS84"
         },
         "section5": {
             "title": "Projection options",
@@ -216,7 +224,6 @@
             "nuts2_data": "Nuts 2 (2006) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states",
             "world_countries": "World countries <i>(Polygons)</i>",
-            "us_county": "U.S.A counties <i>(Polygons)</i>",
             "us_states": "U.S.A states <i>(Polygons)</i>",
             "tabular_dataset": "<i>Tabular dataset</i>",
             "twincities": "International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>",
@@ -325,7 +332,8 @@
             "font_size": "Font size ",
             "default_font": "Default font family ",
             "content": "Content ",
-            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed."
+            "info_tooltip": "HTML tags like &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (bold, italic, underline) are allowed.",
+            "rotation": "Rotation"
         },
         "arrow_edit_box": {
             "title": "Arrow options",
@@ -660,6 +668,6 @@
         "message": "Message",
         "contact": "Contact",
         "index": "Index page",
-        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">support [at] url [dot] com</span>"
+        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">magrit [at] ums-riate [dot] fr</span>"
     }
 }
