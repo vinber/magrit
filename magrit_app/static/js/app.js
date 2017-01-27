@@ -4886,20 +4886,16 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                var _ret4 = function () {
+                (function () {
                     var ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
                         scale_max = +document.getElementById("Anamorph_opt2").value / 100,
                         nb_ft = current_layers[layer].n_features,
                         dataset = user_data[layer];
 
-                    if (contains_empty_val(dataset.map(function (a) {
-                        return a[field_name];
-                    }))) {
-                        discard_rendering_empty_val();
-                        return {
-                            v: void 0
-                        };
-                    }
+                    // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
                     var layer_select = document.getElementById(layer).getElementsByTagName("path"),
                         sqrt = Math.sqrt,
@@ -4912,9 +4908,11 @@ var fields_Anamorphose = {
 
                     for (var i = 0; i < nb_ft; ++i) {
                         var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
                         if (val > max) max = val;else if (val < min) min = val;
                         sum += val;
-                        d_values.push(sqrt(val));
+                        d_values.push(val);
                         area_values.push(+path.area(layer_select[i].__data__.geometry));
                     }
 
@@ -4965,9 +4963,7 @@ var fields_Anamorphose = {
                         display_error_during_computation();
                         console.log(err);
                     });
-                }();
-
-                if ((typeof _ret4 === "undefined" ? "undefined" : _typeof(_ret4)) === "object") return _ret4.v;
+                })();
             } else if (algo === "dougenik") {
                 var formToSend = new FormData(),
                     var_to_send = {},
@@ -5569,9 +5565,12 @@ function fillMenu_Discont() {
     a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' }).html(i18next.t('app_page.func_options.discont.field'));
     a.insert('select').attrs({ class: 'params', id: 'field_Discont' });
 
-    var b = dv2.append('p').attr('class', 'params_section2');
-    b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field' }).html(i18next.t('app_page.func_options.discont.id_field'));
-    b.insert('select').attrs({ class: 'params', id: 'field_id_Discont' });
+    // let b = dv2.append('p').attr('class', 'params_section2');
+    // b.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+    //   .html(i18next.t('app_page.func_options.discont.id_field'));
+    // b.insert('select')
+    //   .attrs({class: 'params', id: 'field_id_Discont'});
 
     var c = dv2.append('p').attr('class', 'params_section2');
     c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity' }).html(i18next.t('app_page.func_options.discont.type_discontinuity'));
@@ -5581,9 +5580,13 @@ function fillMenu_Discont() {
         discontinuity_type.append('option').text(i18next.t(k[0])).attrs({ 'value': k[1], 'data-i18n': '[text]' + k[0] });
     });
 
-    var d = dv2.append('p').attr('class', 'params_section2');
-    d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class' }).html(i18next.t('app_page.func_options.discont.nb_class'));
-    d.insert('input').attrs({ type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4 }).style('width', '50px');
+    // let d = dv2.append('p').attr('class', 'params_section2');
+    // d.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+    //   .html(i18next.t('app_page.func_options.discont.nb_class'));
+    // d.insert('input')
+    //   .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
+    //   .style('width', '50px');
 
     var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization' }).html(i18next.t('app_page.func_options.discont.discretization'));
@@ -5609,8 +5612,9 @@ var fields_Discont = {
         var fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
-            field_id = section2.select("#field_id_Discont"),
-            ok_button = section2.select('#yes_Discont');
+
+        // field_id = section2.select("#field_id_Discont"),
+        ok_button = section2.select('#yes_Discont');
 
         if (fields_num.length == 0) {
             display_error_num_field();
@@ -5620,13 +5624,13 @@ var fields_Discont = {
         fields_num.forEach(function (field) {
             field_discont.append("option").text(field).attr("value", field);
         });
-        if (fields_id.length == 0) {
-            field_id.append("option").text(i18next.t("app_page.common.default")).attrs({ "value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default" });
-        } else {
-            fields_id.forEach(function (field) {
-                field_id.append("option").text(field).attr("value", field);
-            });
-        }
+        // if(fields_id.length == 0){
+        //     field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+        // } else {
+        //   fields_id.forEach(function(field){
+        //       field_id.append("option").text(field).attr("value", field);
+        //   });
+        // }
         field_discont.on("change", function () {
             var discontinuity_type = document.getElementById("kind_Discont").value;
             document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
@@ -5637,7 +5641,7 @@ var fields_Discont = {
     },
     unfill: function unfill() {
         unfillSelectInput(document.getElementById("field_Discont"));
-        unfillSelectInput(document.getElementById("field_id_Discont"));
+        // unfillSelectInput(document.getElementById("field_id_Discont"));
         section2.selectAll(".params").attr("disabled", true);
     }
 };
@@ -5645,19 +5649,20 @@ var fields_Discont = {
 var render_discont = function render_discont() {
     var layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
-        field_id = document.getElementById("field_id_Discont").value,
-        min_size = 1,
+
+    // field_id = document.getElementById("field_id_Discont").value,
+    min_size = 1,
         max_size = 10,
-        threshold = 1,
         discontinuity_type = document.getElementById("kind_Discont").value,
         discretization_type = document.getElementById('Discont_discKind').value,
-        nb_class = +document.getElementById("Discont_nbClass").value,
+        nb_class = 4,
         user_color = document.getElementById("color_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
     new_layer_name = new_layer_name.length > 0 && /^\w+$/.test(new_layer_name) ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
-    field_id = field_id == "__default__" ? undefined : field_id;
+    // field_id = field_id == "__default__" ? undefined : field_id;
+    var field_id = undefined;
 
     var result_value = new Map(),
         result_geom = {},
@@ -5710,7 +5715,7 @@ var render_discont = function render_discont() {
         for (var i = 0; i < nb_ft; i++) {
             var val = d_res[i][0],
                 p_size = class_size[serie.getClass(val)],
-                elem = result_layer.append("path").datum(d_res[i][2]).attrs({ d: path, id: ["feature", i].join('_') }).styles({ stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0 });
+                elem = result_layer.append("path").datum(d_res[i][2]).attrs({ d: path, id: ["feature", i].join('_') }).styles({ stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": 1 });
             data_result.push(d_res[i][1]);
             elem.node().__data__.geometry = d_res[i][2];
             elem.node().__data__.properties = data_result[i];
@@ -5720,7 +5725,7 @@ var render_discont = function render_discont() {
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
-            "min_display": threshold,
+            "min_display": 0, // FIXME
             "type": "Line",
             "rendered_field": field,
             "size": [0.5, 10],
@@ -5731,6 +5736,19 @@ var render_discont = function render_discont() {
             "n_features": nb_ft
         };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+
+        {
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style("display", function (d, i) {
+                    return i <= lim ? null : "none";
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
+        }
+
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();
@@ -9534,7 +9552,7 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].min_display = val;
             });
             threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
-            popup.append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+            popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
                 display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                     if (result) {
                         (function () {
@@ -9568,14 +9586,14 @@ function createStyleBox(layer_name) {
             lgd_to_change = true;
             var val = +this.value;
             var lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-            popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
+            popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
             selection.style("display", function (d, i) {
                 return i <= lim ? null : "none";
             });
             current_layers[layer_name].min_display = val;
         });
-
-        popup.append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+        disc_part.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
+        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                 if (result) {
                     (function () {
@@ -11136,6 +11154,7 @@ function handle_legend(layer) {
             }
         } else {
             createLegend(layer, "");
+            up_legends();
         }
     }
 }
@@ -11309,6 +11328,14 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     // Prepare symbols for the legend, taking care of not representing values
     // under the display threshold defined by the user (if any) :
     var current_min_value = +current_layers[layer].min_display;
+    if (current_layers[layer].renderer == "DiscLayer") {
+        // Todo use the same way to store the threshold for links and disclayer
+        // in order to avoid theses condition
+        var values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'), function (d) {
+            return +d.__data__.properties["disc_value"];
+        });
+        current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
+    }
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;

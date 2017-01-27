@@ -35,7 +35,8 @@ function handle_legend(layer){
                 }
             }
         } else {
-            createLegend(layer, "")
+            createLegend(layer, "");
+            up_legends();
         }
     }
 }
@@ -257,7 +258,16 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     // Prepare symbols for the legend, taking care of not representing values
     // under the display threshold defined by the user (if any) :
-    let current_min_value = +current_layers[layer].min_display;
+    var current_min_value = +current_layers[layer].min_display;
+    if(current_layers[layer].renderer == "DiscLayer") {
+    // Todo use the same way to store the threshold for links and disclayer
+    // in order to avoid theses condition
+        let values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'),
+            d => +d.__data__.properties["disc_value"]);
+        current_min_value = current_min_value != 1
+                    ? values[Math.round(current_min_value * current_layers[layer].n_features)]
+                    : values[values.length - 1];
+    }
     for(let b_val of breaks){
         if (b_val[1] != 0) {
             if(current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {

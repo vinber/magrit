@@ -1232,10 +1232,10 @@ var fields_Anamorphose = {
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
-                if(contains_empty_val(dataset.map(a => a[field_name]))){
-                  discard_rendering_empty_val();
-                  return;
-                }
+                // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                //   discard_rendering_empty_val();
+                //   return;
+                // }
 
                 let layer_select = document.getElementById(layer).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
@@ -1248,10 +1248,12 @@ var fields_Anamorphose = {
 
                 for(let i = 0; i < nb_ft; ++i){
                     let val = +dataset[i][field_name];
+                    // We deliberatly use 0 if this is a missing value :
+                    if(isNaN(val) || !isFinite(val)) val = 0
                     if(val > max) max = val;
                     else if (val < min) min = val;
                     sum += val;
-                    d_values.push(sqrt(val));
+                    d_values.push(val);
                     area_values.push(+path.area(layer_select[i].__data__.geometry));
                 }
 
@@ -1988,12 +1990,12 @@ function fillMenu_Discont(){
     a.insert('select')
       .attrs({class: 'params', id: 'field_Discont'});
 
-    let b = dv2.append('p').attr('class', 'params_section2');
-    b.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
-      .html(i18next.t('app_page.func_options.discont.id_field'));
-    b.insert('select')
-      .attrs({class: 'params', id: 'field_id_Discont'});
+    // let b = dv2.append('p').attr('class', 'params_section2');
+    // b.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
+    //   .html(i18next.t('app_page.func_options.discont.id_field'));
+    // b.insert('select')
+    //   .attrs({class: 'params', id: 'field_id_Discont'});
 
     let c = dv2.append('p').attr('class', 'params_section2');
     c.append('span')
@@ -2008,13 +2010,13 @@ function fillMenu_Discont(){
         discontinuity_type.append('option').text(i18next.t(k[0])).attrs({'value': k[1], 'data-i18n': '[text]' + k[0]});
     });
 
-    let d = dv2.append('p').attr('class', 'params_section2');
-    d.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
-      .html(i18next.t('app_page.func_options.discont.nb_class'));
-    d.insert('input')
-      .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
-      .style('width', '50px');
+    // let d = dv2.append('p').attr('class', 'params_section2');
+    // d.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
+    //   .html(i18next.t('app_page.func_options.discont.nb_class'));
+    // d.insert('input')
+    //   .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
+    //   .style('width', '50px');
 
     let e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
@@ -2052,7 +2054,7 @@ var fields_Discont = {
         let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
             field_discont = section2.select("#field_Discont"),
-            field_id = section2.select("#field_id_Discont"),
+            // field_id = section2.select("#field_id_Discont"),
             ok_button = section2.select('#yes_Discont');
 
         if(fields_num.length == 0){
@@ -2063,13 +2065,13 @@ var fields_Discont = {
         fields_num.forEach(function(field){
             field_discont.append("option").text(field).attr("value", field);
         });
-        if(fields_id.length == 0){
-            field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
-        } else {
-          fields_id.forEach(function(field){
-              field_id.append("option").text(field).attr("value", field);
-          });
-        }
+        // if(fields_id.length == 0){
+        //     field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+        // } else {
+        //   fields_id.forEach(function(field){
+        //       field_id.append("option").text(field).attr("value", field);
+        //   });
+        // }
         field_discont.on("change", function(){
           let discontinuity_type = document.getElementById("kind_Discont").value;
           document.getElementById("Discont_output_name").value = ["Disc", this.value, discontinuity_type, layer].join('_');
@@ -2080,7 +2082,7 @@ var fields_Discont = {
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Discont"));
-        unfillSelectInput(document.getElementById("field_id_Discont"));
+        // unfillSelectInput(document.getElementById("field_id_Discont"));
         section2.selectAll(".params").attr("disabled", true);
     }
 }
@@ -2088,20 +2090,20 @@ var fields_Discont = {
 var render_discont = function(){
     let layer = Object.getOwnPropertyNames(user_data)[0],
         field = document.getElementById("field_Discont").value,
-        field_id = document.getElementById("field_id_Discont").value,
+        // field_id = document.getElementById("field_id_Discont").value,
         min_size = 1,
         max_size = 10,
-        threshold = 1,
         discontinuity_type = document.getElementById("kind_Discont").value,
         discretization_type = document.getElementById('Discont_discKind').value,
-        nb_class = +document.getElementById("Discont_nbClass").value,
+        nb_class = 4,
         user_color = document.getElementById("color_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
                     ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
-    field_id = field_id == "__default__" ? undefined : field_id;
+    // field_id = field_id == "__default__" ? undefined : field_id;
+    let field_id = undefined;
 
     let result_value = new Map(),
         result_geom = {},
@@ -2146,7 +2148,7 @@ var render_discont = function(){
                 elem = result_layer.append("path")
                         .datum(d_res[i][2])
                         .attrs({d: path, id: ["feature", i].join('_')})
-                        .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": val >= threshold ? 1 : 0});
+                        .styles({stroke: user_color, "stroke-width": p_size, "fill": "transparent", "stroke-opacity": 1});
             data_result.push(d_res[i][1]);
             elem.node().__data__.geometry = d_res[i][2];
             elem.node().__data__.properties = data_result[i];
@@ -2156,7 +2158,7 @@ var render_discont = function(){
         current_layers[new_layer_name] = {
             "renderer": "DiscLayer",
             "breaks": breaks,
-            "min_display": threshold,
+            "min_display": 0, // FIXME
             "type": "Line",
             "rendered_field": field,
             "size": [0.5, 10],
@@ -2167,6 +2169,15 @@ var render_discont = function(){
             "n_features": nb_ft
             };
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
+
+
+        { // Only display the 50% most important values :
+          // TODO : reintegrate this upstream in the layer creation :
+          let lim = 0.5 * current_layers[new_layer_name].n_features;
+          result_layer.selectAll('path').style("display", (d,i) => i <= lim ? null : "none" );
+          current_layers[new_layer_name].min_display = 0.5;
+        }
+
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
         up_legends();
         zoom_without_redraw();

@@ -780,10 +780,11 @@ function createStyleBox(layer_name){
                 current_layers[layer_name].min_display = val;
             });
         threshold_section.insert('label')
-                .attr("id", "larger_than")
-                .style("float", "right")
-                .html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append("button")
+            .attr("id", "larger_than")
+            .style("float", "right")
+            .html(["<i> ", prev_min_display, " </i>"].join(''));
+        popup.append('p').style('text-align', 'center')
+            .append("button")
                 .attr("class", "button_disc")
                 .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
                 .on("click", function(){
@@ -813,38 +814,42 @@ function createStyleBox(layer_name){
         let disc_part = popup.append("p").attr("class", "line_elem");
         disc_part.append("span").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
         disc_part.insert("input")
-                .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
-                .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
-                .on("change", function(){
-                    lgd_to_change = true;
-                    let val = +this.value;
-                    let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-                    popup.select("#discont_threshold").html(["<i> ", val, " </i>"].join(''));
-                    selection.style("display", (d,i) => i <= lim ? null : "none" );
-                    current_layers[layer_name].min_display = val;
-                });
-
-        popup.append("button")
-                .attr("class", "button_disc")
-                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
-                .on("click", function(){
-                    display_discretization_links_discont(layer_name,
-                                                         "disc_value",
-                                                         current_layers[layer_name].breaks.length,
-                                                         "user_defined")
-                        .then(function(result){
-                            if(result){
-                                lgd_to_change = true;
-                                let serie = result[0];
-                                serie.setClassManually(result[2]);
-                                let sizes = result[1].map(ft => ft[1]);
-                                current_layers[layer_name].breaks = result[1];
-                                current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                                selection.style('fill-opacity', 0)
-                                        .style("stroke-width", (d,i) => sizes[serie.getClass(+d.properties.disc_value)]);
-                            }
-                        });
-                });
+            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
+            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
+            .on("change", function(){
+                lgd_to_change = true;
+                let val = +this.value;
+                let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
+                popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
+                selection.style("display", (d,i) => i <= lim ? null : "none" );
+                current_layers[layer_name].min_display = val;
+            });
+        disc_part.insert('label')
+            .attr("id", "larger_than")
+            .style("float", "right")
+            .html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
+        popup.append('p').style('text-align', 'center')
+            .append("button")
+            .attr("class", "button_disc")
+            .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
+            .on("click", function(){
+                display_discretization_links_discont(layer_name,
+                                                     "disc_value",
+                                                     current_layers[layer_name].breaks.length,
+                                                     "user_defined")
+                    .then(function(result){
+                        if(result){
+                            lgd_to_change = true;
+                            let serie = result[0];
+                            serie.setClassManually(result[2]);
+                            let sizes = result[1].map(ft => ft[1]);
+                            current_layers[layer_name].breaks = result[1];
+                            current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+                            selection.style('fill-opacity', 0)
+                                    .style("stroke-width", (d,i) => sizes[serie.getClass(+d.properties.disc_value)]);
+                        }
+                    });
+            });
     }
     let c_section = popup.append('p').attr("class", "line_elem");
     c_section.insert("span")

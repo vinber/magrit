@@ -8,6 +8,8 @@ from math import ceil
 from shapely.ops import cascaded_union
 import rtree
 import numpy as np
+import ujson as json
+from .geo import repairCoordsPole
 
 
 def idx_generator_func(bounds):
@@ -50,10 +52,23 @@ def get_grid_layer(input_file, height, field_name,
         crs=gdf.crs
         )
     grid["densitykm"] = grid[n_field_name] * 1000000
+    grid = grid.to_crs({"init": "epsg:4326"})
+    # return grid.to_crs({"init": "epsg:4326"}) \
+    #     if output.lower() == "geodataframe" \
+    #     else grid.to_crs({"init": "epsg:4326"}).to_json()
 
-    return grid.to_crs({"init": "epsg:4326"}) \
-        if output.lower() == "geodataframe" \
-        else grid.to_crs({"init": "epsg:4326"}).to_json()
+    # TODO: simplify the end of the function
+    if output.lower() == "geodataframe":
+        return grid
+    else:
+        bounds = gdf.total_bounds
+        if bounds[0] < -179.9999 or bounds[1] < -89.9999 \
+                or bounds[2] > 179.9999 or bounds[3] > 89.9999:
+            result = json.loads(grid.to_json())
+            repairCoordsPole(result)
+            return json.dumps(result)
+        else:
+            return grid.to_json()
 
 def get_diams_dens_grid2(gdf, height, field_name):
     xmin, ymin, xmax, ymax = gdf.total_bounds
