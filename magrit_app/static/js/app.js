@@ -457,26 +457,26 @@ function setUpInterface(resume_project) {
     });
 
     var exp_a = export_png_options.append("p");
-    exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
+    exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
 
-    exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
-        var ratio = h / w,
-            export_png_width = document.getElementById("export_png_width");
-        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-    });
-
-    exp_a.append("span").attr("id", "export_png_height_txt").html(" (px)");
-
-    var exp_b = export_png_options.append("p");
-    exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
-
-    exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
+    exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
         var ratio = h / w,
             export_png_height = document.getElementById("export_png_height");
         export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
     });
 
-    exp_b.append("span").attr("id", "export_png_width_txt").html(" (px)");
+    exp_a.append("span").attr("id", "export_png_width_txt").html(" (px)");
+
+    var exp_b = export_png_options.append("p");
+    exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
+
+    exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
+        var ratio = h / w,
+            export_png_width = document.getElementById("export_png_width");
+        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+    });
+
+    exp_b.append("span").attr("id", "export_png_height_txt").html(" (px)");
 
     var export_name = dv5b.append("p");
     export_name.append("span").attrs({ class: "i18n", "data-i18n": "[html]app_page.section5b.filename" });
@@ -7385,6 +7385,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                 allowOutsideClick: false });
         } else if (files_to_send.length == 4) {
             handle_shapefile(files_to_send, target_layer_on_add);
+            elem.style.border = '';
         } else {
             elem.style.border = '3px dashed red';
             swal({ title: i18next.t("app_page.common.error") + "!",
@@ -7423,7 +7424,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             type: "error",
             allowOutsideClick: false });
     } else {
-        elem.style.border = '3px dashed red';
+        elem.style.border = '';
         var shp_part = void 0;
         Array.prototype.forEach.call(files, function (f) {
             return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? shp_part = true : null;
@@ -7439,7 +7440,6 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                 type: "error",
                 allowOutsideClick: false });
         }
-        elem.style.border = '';
     }
 }
 
@@ -7488,6 +7488,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
             var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
             handle_shapefile(file_list, target_layer_on_add);
         } else {
+
+            var opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
             swal({
                 title: "",
                 text: i18next.t("app_page.common.layer_type_selection"),
@@ -7500,10 +7502,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
                 confirmButtonText: i18next.t("app_page.common.confirm"),
                 input: 'select',
                 inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                inputOptions: {
-                    'target': i18next.t("app_page.common.target_l"),
-                    'layout': i18next.t("app_page.common.layout_l")
-                },
+                inputOptions: opts,
                 inputValidator: function inputValidator(value) {
                     return new Promise(function (resolve, reject) {
                         if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
@@ -7606,6 +7605,7 @@ function prepare_drop_section() {
                 });
                 handleOneByOneShp(files);
             } else {
+                var opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -7618,10 +7618,7 @@ function prepare_drop_section() {
                     confirmButtonText: i18next.t("app_page.common.confirm"),
                     input: 'select',
                     inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                    inputOptions: {
-                        'target': i18next.t("app_page.common.target_l"),
-                        'layout': i18next.t("app_page.common.layout_l")
-                    },
+                    inputOptions: opts,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
                             if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
@@ -7665,7 +7662,10 @@ function prepare_drop_section() {
         elem.addEventListener("drop", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (!e.dataTransfer.files.length) return;
+            if (!e.dataTransfer.files.length) {
+                return;
+                elem.style.border = '';
+            }
             var files = e.dataTransfer.files,
                 target_layer_on_add = elem.id === "section1" ? true : false;
             if (files.length == 1 && (files[0].name.indexOf(".shp") > -1 || files[0].name.indexOf(".shx") > -1 || files[0].name.indexOf(".dbf") > -1 || files[0].name.indexOf(".prj") > -1)) {
@@ -9421,7 +9421,7 @@ function createStyleBox(layer_name) {
 
                     popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
                         var cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
-                        display_categorical_box(layer_name, renderer_field, cats).then(function (confirmed) {
+                        display_categorical_box(result_data[layer_name], layer_name, renderer_field, cats).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
                                     nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2],

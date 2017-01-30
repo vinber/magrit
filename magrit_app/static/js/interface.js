@@ -63,6 +63,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                       allowOutsideClick: false});
         } else if(files_to_send.length == 4){
             handle_shapefile(files_to_send, target_layer_on_add);
+            elem.style.border = '';
         } else {
             elem.style.border = '3px dashed red';
             swal({title: i18next.t("app_page.common.error") + "!",
@@ -118,7 +119,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   allowOutsideClick: false});
    }
   else {
-        elem.style.border = '3px dashed red';
+        elem.style.border = '';
         let shp_part;
         Array.prototype.forEach.call(files, f =>
             f.name.indexOf('.shp') > -1
@@ -137,7 +138,6 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   type: "error",
                   allowOutsideClick: false});
         }
-        elem.style.border = '';
     }
 }
 
@@ -190,6 +190,10 @@ function handleOneByOneShp(files, target_layer_on_add){
                 let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
                 handle_shapefile(file_list, target_layer_on_add);
             } else {
+
+                let opts = targeted_layer_added
+                          ? {'layout': i18next.t("app_page.common.layout_l") }
+                          : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -202,10 +206,7 @@ function handleOneByOneShp(files, target_layer_on_add){
                     confirmButtonText: i18next.t("app_page.common.confirm"),
                     input: 'select',
                     inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                    inputOptions: {
-                        'target': i18next.t("app_page.common.target_l"),
-                        'layout': i18next.t("app_page.common.layout_l"),
-                      },
+                    inputOptions: opts,
                     inputValidator: function(value) {
                         return new Promise(function(resolve, reject){
                             if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
@@ -321,6 +322,9 @@ function prepare_drop_section(){
                     });
                     handleOneByOneShp(files);
                 } else {
+                    let opts = targeted_layer_added
+                              ? {'layout': i18next.t("app_page.common.layout_l") }
+                              : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                     swal({
                         title: "",
                         text: i18next.t("app_page.common.layer_type_selection"),
@@ -333,10 +337,7 @@ function prepare_drop_section(){
                         confirmButtonText: i18next.t("app_page.common.confirm"),
                         input: 'select',
                         inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                        inputOptions: {
-                          'target': i18next.t("app_page.common.target_l"),
-                          'layout': i18next.t("app_page.common.layout_l"),
-                          },
+                        inputOptions: opts,
                         inputValidator: function(value) {
                             return new Promise(function(resolve, reject){
                                 if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
@@ -388,8 +389,10 @@ function prepare_drop_section(){
             elem.addEventListener("drop", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if(!e.dataTransfer.files.length)
+                if(!e.dataTransfer.files.length){
                     return;
+                    elem.style.border = '';
+                }
                 let files = e.dataTransfer.files,
                     target_layer_on_add = elem.id === "section1" ? true : false;
                 if(files.length == 1

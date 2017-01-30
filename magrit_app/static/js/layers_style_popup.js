@@ -630,7 +630,7 @@ function createStyleBox(layer_name){
                 .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
                     let cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
-                    display_categorical_box(layer_name, renderer_field, cats)
+                    display_categorical_box(result_data[layer_name], layer_name, renderer_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {

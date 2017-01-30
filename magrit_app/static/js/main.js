@@ -546,26 +546,9 @@ function setUpInterface(resume_project)
 
     let exp_a = export_png_options.append("p");
     exp_a.append("span")
-            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.height"});
-
-    exp_a.append("input")
-            .style("width", "60px")
-            .attrs({"id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h})
-            .on("change", function(){
-                let ratio = h / w,
-                    export_png_width = document.getElementById("export_png_width");
-                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-            });
-
-    exp_a.append("span")
-            .attr("id", "export_png_height_txt")
-            .html(" (px)");
-
-    let exp_b = export_png_options.append("p");
-    exp_b.append("span")
             .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.width"});
 
-    exp_b.append("input")
+    exp_a.append("input")
             .style("width", "60px")
             .attrs({"id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w})
             .on("change", function(){
@@ -574,8 +557,25 @@ function setUpInterface(resume_project)
                 export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
             });
 
-    exp_b.append("span")
+    exp_a.append("span")
             .attr("id", "export_png_width_txt")
+            .html(" (px)");
+
+    let exp_b = export_png_options.append("p");
+    exp_b.append("span")
+            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.height"});
+
+    exp_b.append("input")
+            .style("width", "60px")
+            .attrs({"id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h})
+            .on("change", function(){
+                let ratio = h / w,
+                    export_png_width = document.getElementById("export_png_width");
+                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+            });
+
+    exp_b.append("span")
+            .attr("id", "export_png_height_txt")
             .html(" (px)");
 
     let export_name = dv5b.append("p");
