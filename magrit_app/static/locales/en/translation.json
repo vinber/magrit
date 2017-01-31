@@ -654,7 +654,9 @@
             "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
             "box2_text": "Bug reports and contributions are welcome. Please use the <a href=\"/contact\">contact page</a> or the project page on <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
-            "box4_text": "Project is still under developpement. More features to come, hang tight!"
+            "box4_text": "Project is still under developpement. More features to come, hang tight!",
+            "box_doc_title": "Documented",
+            "box_hypotheses_title": "Alive"
         },
         "cookie_div": {
             "message": "We do NOT use cookies to profile or track users.",

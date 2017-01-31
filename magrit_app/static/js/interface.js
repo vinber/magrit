@@ -2,8 +2,8 @@
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
-const MAX_INPUT_SIZE = 8704000; // max allowed input size in bytes
-
+const MAX_INPUT_SIZE = 12800000; // max allowed input size in bytes
+// const ALERT_INPUT_SIZE = 870400; // If the input is larger than this size, the user will receive an alert
 /**
 * Function triggered when some images of the interface are clicked
 * in order to create an <input> element, simulate a click on it, let the user
