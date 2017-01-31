@@ -130,10 +130,13 @@ function copy_layer(ref_layer, new_name, type_result){
     current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
                              type: current_layers[ref_layer].type,
                              ref_layer_name: ref_layer};
+    result_data[new_name] = [];
     let selec_src = document.getElementById(ref_layer).getElementsByTagName("path");
     let selec_dest = document.getElementById(new_name).getElementsByTagName("path");
-    for(let i = 0; i < selec_src.length; i++)
+    for(let i = 0; i < selec_src.length; i++){
         selec_dest[i].__data__ = selec_src[i].__data__;
+        result_data[new_name].push(selec_dest[i].__data__.properties);
+    }
     up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }

@@ -193,6 +193,8 @@ async def cache_input_topojson(request):
             result = result.decode()
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
+            request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+            request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
@@ -242,6 +244,8 @@ async def cache_input_topojson(request):
             result = result.decode()
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
+            request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+            request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(hash_val, name), '}'
@@ -320,6 +324,8 @@ async def convert(request):
         result = await request.app['redis_conn'].get(f_nameQ)
         request.app['logger'].info(
             '{} - Used result from redis'.format(user_id))
+        request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+        request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
             ))
