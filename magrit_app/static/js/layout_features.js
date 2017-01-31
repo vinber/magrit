@@ -206,19 +206,27 @@ class UserArrow {
         let box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
         let s1 = box_content.append("p").attr('class', 'line_elem');
         s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+        s1.insert("span").styles({'float': 'right', 'width': '13px'}).html("px");
+        s1.insert("input")
+            .attrs({id: "arrow_weight_text", class: "without_spinner", value: self.lineWeight, min: 0, max: 34, step: 0.1,})
+            .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
+            .on("input", function(){
+                let elem = document.getElementById("arrow_lineWeight");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
+
         s1.append("input")
             .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
             .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 line.style.strokeWidth = this.value;
-                txt_line_weight.html(this.value + "px");
+                document.getElementById("arrow_weight_text").value = +this.value;
             });
-        let txt_line_weight = s1.append("span")
-            .style('float', 'right').html(self.lineWeight + " px");
 
         let s2 = box_content.append("p").attr('class', 'line_elem');
         s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
-        s2.insert("span").style('float', 'right').html(" °");
+        s2.insert("span").styles({'float': 'right', 'width': '13px'}).html("&nbsp;°");
         s2.insert("input")
             .attrs({id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
             .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
@@ -1059,36 +1067,32 @@ class UserEllipse {
             .on("change", function(){
                 ellipse_elem.style.stroke = this.value;
             });
-
-       let s2b = box_content.append("p").attr('class', 'line_elem')
-       s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
-       s2b.insert("input")
-           .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
-           .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
-           .on("change", function(){
-              let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
-                  distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
-                  angle = Math.abs(+this.value);
-               let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
-               console.log("angle :", angle); console.log("pt2 :", pt2); console.log("distance :", distance);
-               console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
-               console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
-               ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
-               ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
-               document.getElementById("ellipse_angle_text").value = +this.value;
-           });
-
-       s2b.insert("input")
-           .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
-           .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
-           .on("input", function(){
-               let elem = document.getElementById("ellipse_angle");
-               elem.value = this.value;
-               elem.dispatchEvent(new Event('change'));
-           });
-       s2b.insert("span")
-          .style('float', 'right')
-          .html(" °");
+      //  let s2b = box_content.append("p").attr('class', 'line_elem')
+      //  s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+      //  s2b.insert("span").styles({float: 'right', 'width': '12px'}).html("&nbsp;°");
+      //  s2b.insert("input")
+      //      .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+      //      .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
+      //      .on("input", function(){
+      //          let elem = document.getElementById("ellipse_angle");
+      //          elem.value = this.value;
+      //          elem.dispatchEvent(new Event('change'));
+      //      });
+      //  s2b.insert("input")
+      //      .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
+      //      .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
+      //      .on("change", function(){
+      //         let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
+      //             distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
+      //             angle = Math.abs(+this.value);
+      //          let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+      //          console.log("angle :", angle); console.log("pt2 :", pt2); console.log("distance :", distance);
+      //          console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
+      //          console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
+      //          ellipse_elem.rx.baseVal.value = nx;
+      //          ellipse_elem.ry.baseVal.value = ny;
+      //          document.getElementById("ellipse_angle_text").value = +this.value;
+      //      });
      }
 
     handle_ctrl_pt(){

@@ -258,7 +258,6 @@ function make_style_box_indiv_symbol(symbol_node){
         let current_state = parent.classList.contains('scalable-legend');
         let b = box_content.append('p').attr('class', 'line_elem');
         b.append('label')
-            .style('float', 'right')
             .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
             .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         b.append('input')
