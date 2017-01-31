@@ -7595,9 +7595,12 @@ function prepare_drop_section() {
 
         elem.addEventListener("drop", function _drop_func(e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
             if (timeout) {
                 clearTimeout(timeout);
+            }
+            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1 || !e.dataTransfer.files.length) {
+                document.getElementById("overlay_drop").style.display = "none";
+                return;
             }
             var overlay_drop = document.getElementById("overlay_drop");
             overlay_drop.style.display = "";
@@ -7666,8 +7669,8 @@ function prepare_drop_section() {
             e.preventDefault();
             e.stopPropagation();
             if (!e.dataTransfer.files.length) {
-                return;
                 elem.style.border = '';
+                return;
             }
             var files = e.dataTransfer.files,
                 target_layer_on_add = elem.id === "section1" ? true : false;
