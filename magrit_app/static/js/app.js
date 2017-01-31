@@ -11048,6 +11048,7 @@ var UserEllipse = function () {
         });
 
         this.draw();
+        return this;
     }
 
     _createClass(UserEllipse, [{
@@ -12529,7 +12530,10 @@ function apply_user_preferences(json_pref) {
             if (map_config.layout_features.user_ellipse) {
                 for (var _i7 = 0; _i7 < map_config.layout_features.user_ellipse.length; _i7++) {
                     var _ft2 = map_config.layout_features.user_ellipse[_i7];
-                    new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
+                    var ellps = new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
+                    var ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.style.stroke = _ft2.stroke;
+                    ellps_node.style.strokeWidth = _ft2.stroke_width;
                 }
             }
             if (map_config.layout_features.text_annot) {

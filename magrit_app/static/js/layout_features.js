@@ -960,7 +960,8 @@ class UserEllipse {
                 _t.cy.baseVal.value = self.pt1[1];
               });
 
-        this.draw()
+        this.draw();
+        return this;
     }
 
     draw(){

@@ -426,7 +426,10 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.user_ellipse){
                 for(let i = 0; i < map_config.layout_features.user_ellipse.length; i++) {
                     let ft = map_config.layout_features.user_ellipse[i];
-                    new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map, true);
+                    let ellps = new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map, true);
+                    let ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.style.stroke = ft.stroke;
+                    ellps_node.style.strokeWidth = ft.stroke_width;
                 }
             }
             if(map_config.layout_features.text_annot){
