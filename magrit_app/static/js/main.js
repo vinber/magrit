@@ -2211,10 +2211,33 @@ function check_output_name(name, extension){
     }
 }
 
+function patchSvgForForeignObj(){
+    let elems = document.getElementsByTagName("foreignObject");
+    let originals = [];
+    for(let i = 0; i < elems.length; i++){
+        let el = elems[i];
+        originals.push([el.getAttribute('width'), el.getAttribute('height')]);
+        el.setAttribute('width', '100%');
+        el.setAttribute('height', '100%')
+    }
+    return originals;
+}
+
+function unpatchSvgForForeignObj(originals){
+    let elems = document.getElementsByTagName("foreignObject");
+    for(let i = 0; i < originals.length; i++){
+        let el = elems[i];
+        el.setAttribute('width', originals[i][0]);
+        el.setAttribute('height', originals[i][1]);
+    }
+}
+
+
 function export_compo_svg(output_name){
     output_name = check_output_name(output_name, "svg");
     //patchSvgForInkscape();
     patchSvgForFonts();
+    let dimensions_foreign_obj = patchSvgForForeignObj();
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
@@ -2238,11 +2261,13 @@ function export_compo_svg(output_name){
     dl_link.click();
     dl_link.remove();
     unpatchSvgForFonts();
+    unpatchSvgForForeignObj(dimensions_foreign_obj);
     //unpatchSvgForInkscape();
 }
 
 function _export_compo_png(type="web", scalefactor=1, output_name){
     output_name = check_output_name(output_name, "png");
+    let dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
@@ -2278,6 +2303,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         dl_link.remove();
         targetCanvas.remove();
         unpatchSvgForFonts();
+        unpatchSvgForForeignObj(dimensions_foreign_obj);
     }
 }
 
