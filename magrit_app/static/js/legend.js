@@ -181,11 +181,11 @@ var drag_legend_func = function(legend_group){
                     map_offset = d3.event.subject.map_offset,
                     val_x = d3.event.x, val_y = d3.event.y, change;
 
-                if(bbox_elem.x < map_offset.x || bbox_elem.x + bbox_elem.width > map_offset.x + w){
+                if(bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w){
                     val_x = prev_value[0];
                     change = true;
                 }
-                if(bbox_elem.y < map_offset.y || bbox_elem.y + bbox_elem.height > map_offset.y + h){
+                if(bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h){
                     val_y = prev_value[1];
                     change = true;
                 }
@@ -998,17 +998,17 @@ function move_legends(){
         let legends_type = legends[j];
         for(let i=0, i_len = legends_type.length; i < i_len; ++i){
             let legend_bbox = legends_type[i].getBoundingClientRect();
-            if((legend_bbox.x + legend_bbox.width) > dim_width){
+            if((legend_bbox.left + legend_bbox.width) > dim_width){
                 let current_transform = legends_type[i].getAttribute("transform");
                 let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_x = legend_bbox.x + legend_bbox.width - dim_width;
+                let trans_x = legend_bbox.left + legend_bbox.width - dim_width;
                 legends_type[i].setAttribute("transform",
                     ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
             }
-            if((legend_bbox.y + legend_bbox.height) > dim_heght){
+            if((legend_bbox.top + legend_bbox.height) > dim_heght){
                 let current_transform = legends_type[i].getAttribute("transform");
                 let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_y = legend_bbox.y +legend_bbox.height - dim_heght;
+                let trans_y = legend_bbox.top +legend_bbox.height - dim_heght;
                 legends_type[i].setAttribute("transform",
                     ["translate(", [val_x, +val_y - trans_y], ")"].join(''));
             }

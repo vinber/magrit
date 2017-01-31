@@ -618,7 +618,7 @@ function setUpInterface(resume_project) {
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
         window.localStorage.removeItem("magrit_project");
         window.removeEventListener("beforeunload", beforeUnloadWindow);
         location.reload();
@@ -628,6 +628,10 @@ function setUpInterface(resume_project) {
 
     const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    });
+
     const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
         "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
         "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
@@ -635,7 +639,9 @@ function setUpInterface(resume_project) {
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.0.0 (unreleased)" }) + '</span></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' + '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
+        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.0.0 (unreleased)" }) + '</span></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
         swal({
             title: i18next.t("app_page.help_box.title"),
             html: box_content,
@@ -653,9 +659,9 @@ function setUpInterface(resume_project) {
                 credit_link.onclick = function () {
                     window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                 };
-                content.querySelector('.btn_doc').onclick = function () {
-                    window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
+                // content.querySelector('.btn_doc').onclick = function(){
+                //     window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                // };
                 content.querySelector('.btn_contact').onclick = function () {
                     window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                 };
@@ -3710,8 +3716,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function get_menu_option(func) {
     var menu_option = {
         "smooth": {
@@ -4741,6 +4745,12 @@ function render_stewart() {
         mask_name = doc.getElementById('stewart_mask').value,
         new_user_layer_name = document.getElementById("stewart_output_name").value;
 
+    if (nb_class != (nb_class | 0)) {
+        nb_class = nb_class | 0;
+        doc.getElementById('stewart_nb_class').value = nb_class;
+    }
+    console.log(beta);console.log(span);
+
     if (reso && reso > 0) {
         var res_test = test_maxmin_resolution(reso);
         if (res_test) {
@@ -4829,7 +4839,7 @@ function fillMenu_Stewart() {
 
     var d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span').styles({ "margin-right": "35px" }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta' }).html(i18next.t("app_page.func_options.smooth.beta"));
-    d.insert('input').style("width", "60px").attrs(_defineProperty({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en' }, "lang", 'fr'));
+    d.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any" });
 
     var p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution' }).text(i18next.t("app_page.func_options.smooth.resolution"));
@@ -7335,8 +7345,8 @@ function getMaximalAvailableRectangle(legend_nodes) {
     }
     for (var _i3 = 0; _i3 < legend_nodes.length; _i3++) {
         var bbox = legend_nodes[_i3].getBoundingClientRect(),
-            bx = Math.floor(bbox.x - x0),
-            by = Math.floor(bbox.y - y0);
+            bx = Math.floor(bbox.left - x0),
+            by = Math.floor(bbox.top - y0);
         fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
     }
     return getMaxRect(mat);
@@ -10255,8 +10265,13 @@ var UserArrow = function () {
 
             this.arrow.call(this.drag_behavior);
 
-            this.arrow.on("contextmenu dblclick", function () {
+            this.arrow.on("contextmenu", function () {
                 context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
+            });
+            this.arrow.on("dblclick", function () {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                _this.handle_ctrl_pt();
             });
         }
     }, {
@@ -10268,6 +10283,43 @@ var UserArrow = function () {
         key: "down_element",
         value: function down_element() {
             down_legend(this.arrow.node());
+        }
+    }, {
+        key: "handle_ctrl_pt",
+        value: function handle_ctrl_pt() {
+            var self = this,
+                line = self.arrow.node().querySelector("line"),
+                zoom_params = svg_map.__zoom;
+            map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this),
+                    nx = d3.event.x,
+                    ny = d3.event.y;
+                t.attrs({ x: nx - 3, y: ny - 3 });
+                line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+                line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+            }));
+
+            map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this),
+                    nx = d3.event.x,
+                    ny = d3.event.y;
+                t.attrs({ x: nx - 3, y: ny - 3 });
+                line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+                line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+            }));
+            this.arrow.on("dblclick", function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+                map.select('#arrow_start_pt').remove();
+                map.select('#arrow_end_pt').remove();
+                self.arrow.on("dblclick", function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+            });
         }
     }, {
         key: "calcAngle",
@@ -10292,7 +10344,6 @@ var UserArrow = function () {
             var self = this,
                 line = self.arrow.node().querySelector("line"),
                 angle = (-this.calcAngle()).toFixed(0),
-                zoom_params = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
             if (!map_locked) handle_click_hand('lock');
@@ -10349,45 +10400,6 @@ var UserArrow = function () {
                 line.x2.baseVal.value = nx;
                 line.y2.baseVal.value = ny;
                 document.getElementById("arrow_angle_text").value = +this.value;
-            });
-
-            var s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
-            s3.append("button").attr("class", "button_st4").html(i18next.t("app_page.arrow_edit_box.move_points")).on("click", function () {
-                d3.select(".styleBoxArrow").styles({ 'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset' });
-                box_content.style('display', 'none');
-                map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
-                    var t = d3.select(this),
-                        nx = d3.event.x,
-                        ny = d3.event.y;
-                    t.attrs({ x: nx - 3, y: ny - 3 });
-                    line.x1.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                    line.y1.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                }));
-
-                map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
-                    var t = d3.select(this),
-                        nx = d3.event.x,
-                        ny = d3.event.y;
-                    t.attrs({ x: nx - 3, y: ny - 3 });
-                    line.x2.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                    line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                }));
-
-                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
-                var el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:14px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function () {
-                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                    map.select('#arrow_start_pt').remove();
-                    map.select('#arrow_end_pt').remove();
-                    el.remove();
-                    box_content.style('display', '');
-                    d3.select(".styleBoxArrow").styles({ 'top': '', 'bottom': '', 'right': '', 'left': '' });
-                };
-                move_pt_content.appendChild(el);
             });
         }
     }]);
@@ -10556,8 +10568,8 @@ var Textbox = function () {
                 class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
                 var rotate_value = +this.value,
                     bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.x - map_xy0.x,
-                    ny = bbox.y - map_xy0.y,
+                    nx = bbox.left - map_xy0.x,
+                    ny = bbox.top - map_xy0.y,
                     x_center = nx + bbox.width / 2,
                     y_center = ny + bbox.height / 2;
                 self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
@@ -10568,8 +10580,8 @@ var Textbox = function () {
             option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
                 var rotate_value = +this.value,
                     bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.x - map_xy0.x,
-                    ny = bbox.y - map_xy0.y,
+                    nx = bbox.left - map_xy0.x,
+                    ny = bbox.top - map_xy0.y,
                     x_center = nx + bbox.width / 2,
                     y_center = ny + bbox.height / 2;
                 self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
@@ -11059,8 +11071,13 @@ var UserEllipse = function () {
 
             this.ellipse.call(this.drag_behavior);
 
-            this.ellipse.on("contextmenu dblclick", function () {
+            this.ellipse.on("contextmenu", function () {
                 context_menu.showMenu(d3.event, document.body, getItems());
+            });
+            this.ellipse.on('dblclick', function () {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                _this6.handle_ctrl_pt();
             });
         }
     }, {
@@ -11163,7 +11180,33 @@ var UserEllipse = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
-            null;
+            var self = this,
+                ellipse_elem = self.ellipse.node().querySelector("ellipse"),
+                zoom_param = svg_map.__zoom;
+            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y).attr("height", 6).attr("width", 6).style("fill", "red").style("cursor", "grab").call(d3.drag().on("drag", function () {
+                var t = d3.select(this);
+                t.attr("x", d3.event.x);
+                var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+                // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
+                ellipse_elem.rx.baseVal.value = dist;
+            }));
+            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
+                x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this);
+                t.attr("y", d3.event.y);
+                var dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+                ellipse_elem.ry.baseVal.value = dist;
+            }));
+            self.ellipse.on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                map.selectAll('.ctrl_pt').remove();
+                self.ellipse.on('dblclick', function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+            });
         }
     }]);
 
@@ -11321,11 +11364,11 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = d3.event.y,
             change = void 0;
 
-        if (bbox_elem.x < map_offset.x || bbox_elem.x + bbox_elem.width > map_offset.x + w) {
+        if (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w) {
             val_x = prev_value[0];
             change = true;
         }
-        if (bbox_elem.y < map_offset.y || bbox_elem.y + bbox_elem.height > map_offset.y + h) {
+        if (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h) {
             val_y = prev_value[1];
             change = true;
         }
@@ -11994,7 +12037,7 @@ function move_legends() {
         var legends_type = legends[j];
         for (var i = 0, i_len = legends_type.length; i < i_len; ++i) {
             var legend_bbox = legends_type[i].getBoundingClientRect();
-            if (legend_bbox.x + legend_bbox.width > dim_width) {
+            if (legend_bbox.left + legend_bbox.width > dim_width) {
                 var current_transform = legends_type[i].getAttribute("transform");
 
                 var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(","),
@@ -12002,10 +12045,10 @@ function move_legends() {
                     val_x = _$exec$1$split2[0],
                     val_y = _$exec$1$split2[1];
 
-                var trans_x = legend_bbox.x + legend_bbox.width - dim_width;
+                var trans_x = legend_bbox.left + legend_bbox.width - dim_width;
                 legends_type[i].setAttribute("transform", ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
             }
-            if (legend_bbox.y + legend_bbox.height > dim_heght) {
+            if (legend_bbox.top + legend_bbox.height > dim_heght) {
                 var _current_transform = legends_type[i].getAttribute("transform");
 
                 var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(","),
@@ -12013,7 +12056,7 @@ function move_legends() {
                     _val_x = _$exec$1$split4[0],
                     _val_y = _$exec$1$split4[1];
 
-                var trans_y = legend_bbox.y + legend_bbox.height - dim_heght;
+                var trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
                 legends_type[i].setAttribute("transform", ["translate(", [_val_x, +_val_y - trans_y], ")"].join(''));
             }
         }
@@ -12390,13 +12433,11 @@ function apply_user_preferences(json_pref) {
             _ll = void 0;
         // Make sure there is no layers and legend/layout features on the map :
         _l = svg_map.childNodes;_ll = _l.length;
-        console.log(_l);
         for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
             _l[_i4].remove();
         }
         // And in the layer manager :
         _l = layer_list.node().childNodes;_ll = _l.length;
-        console.log(_l);
         for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
             _l[_i5].remove();
         }

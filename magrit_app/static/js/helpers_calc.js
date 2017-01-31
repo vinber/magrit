@@ -397,8 +397,8 @@ function getMaximalAvailableRectangle(legend_nodes){
   }
   for(let i = 0; i < legend_nodes.length; i++){
       let bbox = legend_nodes[i].getBoundingClientRect(),
-          bx = Math.floor(bbox.x - x0),
-          by = Math.floor(bbox.y - y0);
+          bx = Math.floor(bbox.left - x0),
+          by = Math.floor(bbox.top - y0);
       fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
   }
   return getMaxRect(mat);

@@ -341,11 +341,9 @@ function apply_user_preferences(json_pref){
       let _l, _ll;
       // Make sure there is no layers and legend/layout features on the map :
       _l = svg_map.childNodes;  _ll = _l.length;
-      console.log(_l);
       for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
       // And in the layer manager :
       _l = layer_list.node().childNodes;  _ll = _l.length;
-      console.log(_l);
       for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
       // Get a new object for where we are storing the main properties :
       current_layers = new Object();

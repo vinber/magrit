@@ -756,7 +756,7 @@ function setUpInterface(resume_project)
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', function(){
@@ -777,6 +777,14 @@ function setUpInterface(resume_project)
         .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
+    const_options.append('button')
+        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom'})
+        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+        .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>')
+        .on('click', function(){
+            window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        });
+
     const_options.append("button")
               .attrs({id: "help_btn", class: "const_buttons i18n",
                       "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
@@ -793,7 +801,7 @@ function setUpInterface(resume_project)
                       '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
                       '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' +
                       '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+                      // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
                       '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
                       '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
                       '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
@@ -814,9 +822,9 @@ function setUpInterface(resume_project)
                           credit_link.onclick = function(){
                               window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                           };
-                          content.querySelector('.btn_doc').onclick = function(){
-                              window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
+                          // content.querySelector('.btn_doc').onclick = function(){
+                          //     window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          // };
                           content.querySelector('.btn_contact').onclick = function(){
                               window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                           };

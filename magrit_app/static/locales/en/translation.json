@@ -160,7 +160,8 @@
             "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
             "load_project_file": "Load a project file",
             "save_file": "Save project as a file",
-            "new_project": "Create a new empty project"
+            "new_project": "Create a new empty project",
+            "documentation": "Documentation"
         },
         "func_description" : {
             "smooth": "Render a smoothed map (using stewart potentials algorythm)",
@@ -346,7 +347,8 @@
             "title": "Ellipse options",
             "stroke_width": "Stroke width",
             "stroke_color": "Stroke color",
-            "move_points": "Move ellipse control points"
+            "move_points": "Move ellipse control points",
+            "ellispeAngle": "Ellipse slope"
         },
         "single_symbol_edit_box": {
             "title": "Options",

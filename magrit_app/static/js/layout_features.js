@@ -94,11 +94,16 @@ class UserArrow {
 
         this.arrow.call(this.drag_behavior);
 
-        this.arrow.on("contextmenu dblclick", () => {
+        this.arrow.on("contextmenu", () => {
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
                                   getItems());
             });
+        this.arrow.on("dblclick", () => {
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            this.handle_ctrl_pt()
+        });
     }
 
     up_element(){
@@ -107,6 +112,48 @@ class UserArrow {
 
     down_element(){
         down_legend(this.arrow.node());
+    }
+
+    handle_ctrl_pt(){
+      let self = this,
+          line = self.arrow.node().querySelector("line"),
+          zoom_params = svg_map.__zoom;
+        map.append("rect")
+           .attrs({x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1]  * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_start_pt'})
+           .styles({fill: 'red', cursor: 'grab'})
+           .call(d3.drag().on("drag", function(){
+               let t = d3.select(this),
+                   nx = d3.event.x,
+                   ny = d3.event.y;
+               t.attrs({x: nx - 3, y: ny - 3});
+               line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+               line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+           }));
+
+        map.append("rect")
+           .attrs({x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_end_pt'})
+           .styles({fill: 'red', cursor: 'grab'})
+           .call(d3.drag().on("drag", function(){
+               let t = d3.select(this),
+                   nx = d3.event.x,
+                   ny = d3.event.y;
+               t.attrs({x: nx - 3, y: ny - 3});
+               line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+               line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+            }));
+        this.arrow.on("dblclick", function(){
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+            self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+            self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+            map.select('#arrow_start_pt').remove();
+            map.select('#arrow_end_pt').remove();
+            self.arrow.on("dblclick", () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                self.handle_ctrl_pt()
+            });
+        });
     }
 
     calcAngle(){
@@ -128,7 +175,6 @@ class UserArrow {
         let self = this,
             line = self.arrow.node().querySelector("line"),
             angle = (-this.calcAngle()).toFixed(0),
-            zoom_params = svg_map.__zoom,
             map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
         if(!map_locked) handle_click_hand('lock');
@@ -192,54 +238,6 @@ class UserArrow {
                 line.y2.baseVal.value = ny;
                 document.getElementById("arrow_angle_text").value = +this.value;
             });
-
-       let s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
-       s3.append("button")
-           .attr("class", "button_st4")
-           .html(i18next.t("app_page.arrow_edit_box.move_points"))
-           .on("click", function(){
-              d3.select(".styleBoxArrow").styles({'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset'});
-              box_content.style('display', 'none');
-              map.append("rect")
-                  .attrs({x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1]  * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_start_pt'})
-                  .styles({fill: 'red', cursor: 'grab'})
-                  .call(d3.drag().on("drag", function(){
-                      let t = d3.select(this),
-                          nx = d3.event.x,
-                          ny = d3.event.y;
-                      t.attrs({x: nx - 3, y: ny - 3});
-                      line.x1.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                      line.y1.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                  }));
-
-              map.append("rect")
-                  .attrs({x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_end_pt'})
-                  .styles({fill: 'red', cursor: 'grab'})
-                  .call(d3.drag().on("drag", function(){
-                      let t = d3.select(this),
-                          nx = d3.event.x,
-                          ny = d3.event.y;
-                      t.attrs({x: nx - 3, y: ny - 3});
-                      line.x2.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                      line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                   }));
-
-              let move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
-              let el = document.createElement("button");
-              el.className = "button_st3";
-              el.style = "float:right;background:forestgreen;font-size:14px;";
-              el.innerHTML = i18next.t("app_page.common.done");
-              el.onclick = function(){
-                   self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                   self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                   map.select('#arrow_start_pt').remove();
-                   map.select('#arrow_end_pt').remove();
-                   el.remove();
-                   box_content.style('display', '');
-                   d3.select(".styleBoxArrow").styles({'top': '', 'bottom': '', 'right': '', 'left': ''});
-               }
-               move_pt_content.appendChild(el);
-           });
     }
 }
 
@@ -401,8 +399,8 @@ class Textbox {
                 .on("change", function(){
                   let rotate_value = +this.value,
                       bbox = inner_p.node().getBoundingClientRect(),
-                      nx = bbox.x - map_xy0.x,
-                      ny = bbox.y - map_xy0.y,
+                      nx = bbox.left - map_xy0.x,
+                      ny = bbox.top - map_xy0.y,
                       x_center = nx + bbox.width / 2,
                       y_center = ny + bbox.height / 2;
                   self.text_annot
@@ -417,8 +415,8 @@ class Textbox {
                 .on("change", function(){
                   let rotate_value = +this.value,
                       bbox = inner_p.node().getBoundingClientRect(),
-                      nx = bbox.x - map_xy0.x,
-                      ny = bbox.y - map_xy0.y,
+                      nx = bbox.left - map_xy0.x,
+                      ny = bbox.top - map_xy0.y,
                       x_center = nx + bbox.width / 2,
                       y_center = ny + bbox.height / 2;
                   self.text_annot
@@ -978,8 +976,13 @@ class UserEllipse {
 
         this.ellipse.call(this.drag_behavior);
 
-        this.ellipse.on("contextmenu dblclick", () => {
+        this.ellipse.on("contextmenu", () => {
             context_menu.showMenu(d3.event, document.body, getItems());
+        });
+        this.ellipse.on('dblclick', () => {
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            this.handle_ctrl_pt();
         });
     }
 
@@ -1089,6 +1092,42 @@ class UserEllipse {
      }
 
     handle_ctrl_pt(){
-        null;
+        let self = this,
+            ellipse_elem = self.ellipse.node().querySelector("ellipse"),
+            zoom_param = svg_map.__zoom;
+        let tmp_start_point = map.append("rect")
+            .attr("class", "ctrl_pt").attr('id', 'pt1')
+            .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
+            .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
+            .attr("height", 6).attr("width", 6)
+            .style("fill", "red")
+            .style("cursor", "grab")
+            .call(d3.drag().on("drag", function(){
+                let t = d3.select(this);
+                t.attr("x", d3.event.x);
+                let dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+                // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
+                ellipse_elem.rx.baseVal.value = dist;
+            }));
+        let tmp_end_point = map.append("rect")
+            .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
+                    x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
+            .styles({fill: 'red', cursor: 'grab'})
+            .call(d3.drag().on("drag", function(){
+                let t = d3.select(this);
+                t.attr("y", d3.event.y);
+                let dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+                ellipse_elem.ry.baseVal.value = dist;
+            }));
+        self.ellipse.on('dblclick', function(){
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+            map.selectAll('.ctrl_pt').remove();
+            self.ellipse.on('dblclick', () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                self.handle_ctrl_pt();
+            });
+        });
     }
  }

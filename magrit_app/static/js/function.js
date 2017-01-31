@@ -1004,6 +1004,7 @@ var fields_Stewart = {
     }
 };
 
+
 function render_stewart(){
   let formToSend = new FormData(),
       doc = document,
@@ -1021,6 +1022,12 @@ function render_stewart(){
       mask_name = doc.getElementById('stewart_mask').value,
       new_user_layer_name = document.getElementById("stewart_output_name").value;
 
+  if(nb_class != (nb_class | 0)){
+      nb_class = (nb_class | 0);
+      doc.getElementById('stewart_nb_class').value = nb_class;
+  }
+  console.log(beta); console.log(span);
+
   if(reso && reso > 0){
       let res_test = test_maxmin_resolution(reso);
       if(res_test){
@@ -1033,7 +1040,6 @@ function render_stewart(){
       reso = null;
   }
   bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
-
 
   var1_to_send[field1_n] = current_layers[layer].original_fields.has(field1_n) ? [] : user_data[layer].map(i => +i[field1_n]);
   if(field2_n != "None"){
@@ -1126,7 +1132,7 @@ function fillMenu_Stewart(){
       .html(i18next.t("app_page.func_options.smooth.beta"));
     d.insert('input')
       .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en', lang: 'fr'});
+      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
     let p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span')
