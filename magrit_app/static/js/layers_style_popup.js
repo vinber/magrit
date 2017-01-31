@@ -502,6 +502,9 @@ function createStyleBox(layer_name){
                 } else if (renderer == "Stewart"){
                     current_layers[layer_name].colors_breaks = rendering_params.breaks;
                     current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
+                } else if (renderer == "Categorical"){
+                    current_layers[layer_name].color_map = rendering_params.color_map;
+                    current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
                 }
                 // Also change the legend if there is one displayed :
                 let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
@@ -621,7 +624,7 @@ function createStyleBox(layer_name){
                 make_single_color_menu(layer_name, fill_prev);
             }
         } else if (renderer == "Categorical"){
-            let renderer_field = current_layers[layer_name].rendered_field;
+            let rendered_field = current_layers[layer_name].rendered_field;
 
             popup.insert('p').style("margin", "auto").html("")
                 .append("button")
@@ -629,15 +632,17 @@ function createStyleBox(layer_name){
                 .styles({"font-size": "0.8em", "text-align": "center"})
                 .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
-                    let cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
-                    display_categorical_box(result_data[layer_name], layer_name, renderer_field, cats)
+                    let cats = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                    display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
                                 rendering_params = {
-                                        nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                        nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
                                         renderer:"Categorical", rendered_field: rendered_field
                                     };
-                                render_categorical(layer_name, rendering_params);
+                                selection.transition()
+                                    .style('fill', (d,i) => rendering_params.colorsByFeature[i]);
+                                lgd_to_change = true;
                             }
                         });
                 });
@@ -667,7 +672,6 @@ function createStyleBox(layer_name){
                                };
                                let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
                                selection.transition()
-                                   .style('fill-opacity', 0.9)
                                    .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                            }
                        });
@@ -700,7 +704,6 @@ function createStyleBox(layer_name){
                                 };
                                 let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
                                 selection.transition()
-                                    .style('fill-opacity', 0.9)
                                     .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                             }
                         });
@@ -927,7 +930,6 @@ function createStyleBox(layer_name){
                   inputOptions: input_fields,
                   inputValidator: function(value) {
                       return new Promise(function(resolve, reject){
-                          console.log(value)
                           if(_fields.indexOf(value) < 0){
                               reject(i18next.t("app_page.common.no_value"));
                           } else {
@@ -1027,16 +1029,27 @@ function createStyleBox_ProbSymbol(layer_name){
                         });
                     }
                 }
+                if(type_method == "PropSymbolsChoro" || type_method == "PropSymbolsTypo"){
+                    if(type_method == "PropSymbolsChoro"){
+                        current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
+                        current_layers[layer_name].colors_breaks = [];
+                        for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+                            current_layers[layer_name].colors_breaks.push([
+                                [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                                rendering_params['colors'][i-1]
+                                ]);
+                        }
+                        current_layers[layer_name].options_disc = {
+                                schema: rendering_params.schema,
+                                colors: rendering_params.colors,
+                                no_data: rendering_params.no_data,
+                                type: rendering_params.type,
+                                breaks: rendering_params.breaks
+                              };
 
-                if(type_method == "PropSymbolsChoro"){
-                    console.log(rendering_params.breaks)
-                    current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
-                    current_layers[layer_name].colors_breaks = [];
-                    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
-                        current_layers[layer_name].colors_breaks.push([
-                            [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
-                            rendering_params['colors'][i-1]
-                            ]);
+                    } else if (type_method == "PropSymbolsTypo"){
+                        current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature) };
+                        current_layers[layer_name].color_map = rendering_params.color_map;
                     }
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
@@ -1115,14 +1128,17 @@ function createStyleBox_ProbSymbol(layer_name){
                   .then(function(confirmed){
                     if(confirmed){
                         rendering_params = {
-                            nb_class: confirmed[0], type: confirmed[1],
-                            breaks: confirmed[2], colors:confirmed[3],
-                            colorsByFeature: confirmed[4],
-                            renderer:"PropSymbolsChoro",
-                            field: field_color
-                            };
-                        selection.style('fill-opacity', 0.9)
-                                 .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                          nb_class: confirmed[0],
+                          type: confirmed[1],
+                          breaks: confirmed[2],
+                          colors:confirmed[3],
+                          colorsByFeature: confirmed[4],
+                          schema: confirmed[5],
+                          no_data: confirmed[6],
+                          renderer:"PropSymbolsChoro",
+                          field: field_color
+                          };
+                        selection.style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                     }
                 });
         });
@@ -1163,17 +1179,20 @@ function createStyleBox_ProbSymbol(layer_name){
       popup.append('p')
           .style("margin", "auto")
           .html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}));
-      popup.append('p').insert('button')
+      popup.append('p').style('text-align', 'center')
+          .insert('button')
           .attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors"))
           .on("click", function(){
-            display_categorical_box(result_data[layer_name], layer_name, field_color, current_layers[layer_name].color_map)
+            let cats = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+            display_categorical_box(result_data[layer_name], layer_name, field_color, cats)
                 .then(function(confirmed){
                     if(confirmed){
                         rendering_params = {
-                                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                                nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
+                                renderer:"Categorical", rendered_field: field_color
                             }
-                        selection.style('fill-opacity', 0.9)
-                                 .style("fill", (d,i) => rendering_params.colorByFeature[i]);
+                        selection.style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                        lgd_to_change = true;
                     }
                 });
       });
@@ -1318,7 +1337,6 @@ function createStyleBox_ProbSymbol(layer_name){
                 inputOptions: input_fields,
                 inputValidator: function(value) {
                     return new Promise(function(resolve, reject){
-                        console.log(value)
                         if(_fields.indexOf(value) < 0){
                             reject(i18next.t("app_page.common.no_value"));
                         } else {

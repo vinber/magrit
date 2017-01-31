@@ -636,7 +636,7 @@ function apply_user_preferences(json_pref){
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
-                  fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
+                  fill_color: (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")? _layer.fill_color.class : _layer.fill_color.single,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,

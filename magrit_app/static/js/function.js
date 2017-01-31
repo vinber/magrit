@@ -2692,14 +2692,14 @@ function fillMenu_FlowMap(){
     let destination_section = dv2.append('p').attr('class', 'params_section2');
     destination_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field'})
-      .html(i18next.t('app_page.func_options.flow.origin_field'));
+      .html(i18next.t('app_page.func_options.flow.destination_field'));
     destination_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_j'});
 
     let intensity_section = dv2.append('p').attr('class', 'params_section2');
     intensity_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field'})
-      .html(i18next.t('app_page.func_options.flow.destination_field'));
+      .html(i18next.t('app_page.func_options.flow.intensity_field'));
     intensity_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_fij'});
 

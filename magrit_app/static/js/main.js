@@ -121,7 +121,7 @@ function setUpInterface(resume_project)
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").attr('data-i18n', 'app_page.section2_.title_no_choice').style('display', 'none'),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
         accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
         b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
         accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),

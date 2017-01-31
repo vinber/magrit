@@ -112,7 +112,7 @@ function setUpInterface(resume_project) {
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").attr('data-i18n', 'app_page.section2_.title_no_choice').style('display', 'none'),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
         accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
         b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
         accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
@@ -3132,7 +3132,7 @@ function fetch_categorical_colors() {
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
     var nb_features = current_layers[layer_name].n_features,
-        nb_class = cats.size;
+        nb_class = cats.length;
 
     var modal_box = make_dialog_container("categorical_box", i18next.t("app_page.categorical_box.title", { layer: layer_name, nb_features: nb_features }), "dialog");
 
@@ -6194,11 +6194,11 @@ function fillMenu_FlowMap() {
     origin_section.insert('select').attrs({ id: 'FlowMap_field_i', class: 'params' });
 
     var destination_section = dv2.append('p').attr('class', 'params_section2');
-    destination_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.origin_field'));
+    destination_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
     destination_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_j' });
 
     var intensity_section = dv2.append('p').attr('class', 'params_section2');
-    intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
+    intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.intensity_field'));
     intensity_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_fij' });
 
     var discretization_section = dv2.append('p').attr('class', 'params_section2');
@@ -9317,6 +9317,9 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
                     return obj[1];
                 });
+            } else if (renderer == "Categorical") {
+                current_layers[layer_name].color_map = rendering_params.color_map;
+                current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
             }
             // Also change the legend if there is one displayed :
             var _type_layer_links = renderer == "DiscLayer" || renderer == "Links";
@@ -9420,17 +9423,20 @@ function createStyleBox(layer_name) {
                 }
             } else if (renderer == "Categorical") {
                 (function () {
-                    var renderer_field = current_layers[layer_name].rendered_field;
+                    var rendered_field = current_layers[layer_name].rendered_field;
 
                     popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                        var cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
-                        display_categorical_box(result_data[layer_name], layer_name, renderer_field, cats).then(function (confirmed) {
+                        var cats = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                        display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
-                                    nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2],
+                                    nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
                                     renderer: "Categorical", rendered_field: rendered_field
                                 };
-                                render_categorical(layer_name, rendering_params);
+                                selection.transition().style('fill', function (d, i) {
+                                    return rendering_params.colorsByFeature[i];
+                                });
+                                lgd_to_change = true;
                             }
                         });
                     });
@@ -9453,7 +9459,7 @@ function createStyleBox(layer_name) {
                                 field: current_layers[layer_name].rendered_field
                             };
                             var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                            selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                            selection.transition().style("fill", function (d, i) {
                                 return rendering_params.colorsByFeature[i];
                             });
                         }
@@ -9479,7 +9485,7 @@ function createStyleBox(layer_name) {
                                     field: field_to_discretize
                                 };
                                 var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                                selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                                selection.transition().style("fill", function (d, i) {
                                     return rendering_params.colorsByFeature[i];
                                 });
                             }
@@ -9672,7 +9678,6 @@ function createStyleBox(layer_name) {
                     inputOptions: input_fields,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
-                            console.log(value);
                             if (_fields.indexOf(value) < 0) {
                                 reject(i18next.t("app_page.common.no_value"));
                             } else {
@@ -9771,13 +9776,23 @@ function createStyleBox_ProbSymbol(layer_name) {
                     });
                 }
             }
-
-            if (type_method == "PropSymbolsChoro") {
-                console.log(rendering_params.breaks);
-                current_layers[layer_name].fill_color = { "class": [].concat(rendering_params.colorsByFeature) };
-                current_layers[layer_name].colors_breaks = [];
-                for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-                    current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+            if (type_method == "PropSymbolsChoro" || type_method == "PropSymbolsTypo") {
+                if (type_method == "PropSymbolsChoro") {
+                    current_layers[layer_name].fill_color = { "class": [].concat(rendering_params.colorsByFeature) };
+                    current_layers[layer_name].colors_breaks = [];
+                    for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
+                        current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+                    }
+                    current_layers[layer_name].options_disc = {
+                        schema: rendering_params.schema,
+                        colors: rendering_params.colors,
+                        no_data: rendering_params.no_data,
+                        type: rendering_params.type,
+                        breaks: rendering_params.breaks
+                    };
+                } else if (type_method == "PropSymbolsTypo") {
+                    current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
+                    current_layers[layer_name].color_map = rendering_params.color_map;
                 }
                 current_layers[layer_name].rendered_field2 = rendering_params.field;
                 // Also change the legend if there is one displayed :
@@ -9844,13 +9859,17 @@ function createStyleBox_ProbSymbol(layer_name) {
                 current_layers[layer_name].options_disc).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
-                            nb_class: confirmed[0], type: confirmed[1],
-                            breaks: confirmed[2], colors: confirmed[3],
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
                             colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
                             renderer: "PropSymbolsChoro",
                             field: field_color
                         };
-                        selection.style('fill-opacity', 0.9).style("fill", function (d, i) {
+                        selection.style("fill", function (d, i) {
                             return rendering_params.colorsByFeature[i];
                         });
                     }
@@ -9891,15 +9910,18 @@ function createStyleBox_ProbSymbol(layer_name) {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color }));
-            popup.append('p').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                display_categorical_box(result_data[layer_name], layer_name, field_color, current_layers[layer_name].color_map).then(function (confirmed) {
+            popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var cats = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+                display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
-                            nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2]
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: field_color
                         };
-                        selection.style('fill-opacity', 0.9).style("fill", function (d, i) {
-                            return rendering_params.colorByFeature[i];
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
                         });
+                        lgd_to_change = true;
                     }
                 });
             });
@@ -10009,7 +10031,6 @@ function createStyleBox_ProbSymbol(layer_name) {
                     inputOptions: input_fields,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
-                            console.log(value);
                             if (_fields.indexOf(value) < 0) {
                                 reject(i18next.t("app_page.common.no_value"));
                             } else {
@@ -12636,7 +12657,7 @@ function apply_user_preferences(json_pref) {
                 var rendering_params = {
                     new_name: layer_name,
                     field: _layer.rendered_field,
-                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
+                    fill_color: _layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo" ? _layer.fill_color.class : _layer.fill_color.single,
                     ref_value: _layer.size[0],
                     ref_size: _layer.size[1],
                     symbol: _layer.symbol,

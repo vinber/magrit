@@ -523,10 +523,9 @@
                 "subtitle1": "Choix des champs à utiliser",
                 "discretization": "Type de discrétisation ",
                 "nb_class": "Nombre de classes ",
-                "nb_class": "Number of class ",
-                "origin_field": "Origin field",
-                "destination_field": "Destination field",
-                "intensity_field": "Intensity field",
+                "origin_field": "Champ Origine",
+                "destination_field": "Champ Destination",
+                "intensity_field": "Champ Intensité",
                 "ref_layer_field": "Couche géographique de référence",
                 "join_field": "Champ de jointure"
             },
