@@ -12519,6 +12519,7 @@ function apply_user_preferences(json_pref) {
                 scaleBar.x = map_config.layout_features.scale_bar.x;
                 scaleBar.y = map_config.layout_features.scale_bar.y;
                 scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
+                scaleBar.resize();
             }
             if (map_config.layout_features.north_arrow) {
                 northArrow.display();
@@ -12886,7 +12887,9 @@ function rehandle_legend(layer_name, properties) {
         } else if (prop.type == 'legend_root_links') {
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision);
         }
-        svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name).setAttribute('transform', prop.transform);
+        var lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name);
+        lgd.setAttribute('transform', prop.transform);
+        lgd.setAttribute('display', prop.display);
     }
 }
 "use strict";
