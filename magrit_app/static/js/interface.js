@@ -63,7 +63,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.prj') > -1
                 ? files_to_send.push(f) : null)
         elem.style.border = '';
-        if(target_layer_on_add && targeted_layer_added){
+        if(target_layer_on_add && _app.targeted_layer_added){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common'),
                       type: "error",
@@ -82,7 +82,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
     }
     else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
            elem.style.border = '';
-           if(target_layer_on_add && targeted_layer_added)
+           if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
@@ -95,7 +95,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
         files[0].name.toLowerCase().indexOf('kml') > -1){
            elem.style.border = '';
 
-           if(target_layer_on_add && targeted_layer_added)
+           if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
@@ -197,7 +197,7 @@ function handleOneByOneShp(files, target_layer_on_add){
                 let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
                 handle_shapefile(file_list, target_layer_on_add);
             } else {
-                let opts = targeted_layer_added
+                let opts = _app.targeted_layer_added
                           ? {'layout': i18next.t("app_page.common.layout_layer") }
                           : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
                 swal({
@@ -334,7 +334,7 @@ function prepare_drop_section(){
                             || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1 ){
                         opts = { 'target': i18next.t("app_page.common.ext_dataset")}
                     } else {
-                        opts = targeted_layer_added
+                        opts = _app.targeted_layer_added
                               ? {'layout': i18next.t("app_page.common.layout_layer") }
                               : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
                     }
@@ -621,7 +621,7 @@ function update_menu_dataset(){
     document.getElementById("remove_dataset").onmouseout = function(){
         this.style.opacity = 0.5;
     };
-    if(targeted_layer_added){
+    if(_app.targeted_layer_added){
         valid_join_check_display(false);
         document.getElementById('sample_zone').style.display = "none";
     }
@@ -672,7 +672,7 @@ function add_dataset(readed_dataset){
     if(current_functionnality && current_functionnality.name == "flow")
         fields_handler.fill();
 
-    if(targeted_layer_added){
+    if(_app.targeted_layer_added){
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
         ask_join_now(layer_name);
     }
@@ -872,7 +872,7 @@ function add_layer_topojson(text, options){
         remove_target.onclick = () => { remove_layer(lyr_name_to_add); };
         remove_target.onmouseover = function(){ this.style.opacity = 1; };
         remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
-        targeted_layer_added = true;
+        _app.targeted_layer_added = true;
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
 
         window._target_layer_file = topoObj;
@@ -1264,7 +1264,7 @@ function add_sample_layer(){
     target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
     t_layer_selec.on("change", function(){selec.target = this.value;});
 
-    if(targeted_layer_added){
+    if(_app.targeted_layer_added){
         title_tgt_layer.style("color", "grey")
                 .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;

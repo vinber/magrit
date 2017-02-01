@@ -1095,7 +1095,7 @@ function make_ico_choice(){
 
                 // Fill the field of the functionnality with the field
                 // of the targeted layer if already uploaded by the user :
-                if(targeted_layer_added){
+                if(_app.targeted_layer_added){
                     let target_layer = Object.getOwnPropertyNames(user_data)[0];
                     fields_handler.fill(target_layer);
                 }
@@ -1140,7 +1140,7 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
-    targeted_layer_added = false,
+    // targeted_layer_added = false,
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
@@ -1161,7 +1161,8 @@ map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 var defs = map.append("defs");
 
 var _app = {
-    to_cancel: undefined
+    to_cancel: undefined,
+    targeted_layer_added: false
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1644,7 +1645,7 @@ function remove_layer_cleanup(name){
         // Update some global variables :
         field_join_map = [];
         user_data = new Object();
-        targeted_layer_added = false;
+        _app.targeted_layer_added = false;
 
         // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
         document.getElementById('sample_zone').style.display = null;
@@ -2558,6 +2559,6 @@ let beforeUnloadWindow = (event) => {
         window.localStorage.removeItem("magrit_project");
         window.localStorage.setItem("magrit_project", json_params);
     });
-    event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
+    event.returnValue = (_app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
                         ? "Confirm exit" : undefined;
 };
