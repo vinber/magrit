@@ -164,7 +164,7 @@ function setUpInterface(resume_project) {
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
     dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attr("src", "/static/img/b/addgeom_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom' }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
     var section4 = d3.select("#section4");
     var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
@@ -7385,12 +7385,22 @@ function click_button_add_layer() {
         self = this,
         input = document.createElement('input');
 
+    var target_layer_on_add = false;
+
+    if (self.id == "img_data_ext" || self.id == "data_ext") {
+        input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
+        target_layer_on_add = true;
+    } else if (self.id === "input_geom" || self.id === "input_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        target_layer_on_add = true;
+    } else if (self.id == "input_layout_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+    }
     input.setAttribute('type', 'file');
     input.setAttribute('multiple', '');
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function (event) {
-        var target_layer_on_add = self.id === "input_geom" ? true : self.id === "img_in_geom" ? true : self.id === "img_data_ext" ? true : self.id === "data_ext" ? true : false;
 
         var files = event.target.files;
 
@@ -7486,8 +7496,6 @@ function handle_upload_files(files, target_layer_on_add, elem) {
 }
 
 function handleOneByOneShp(files, target_layer_on_add) {
-    var _this = this;
-
     function populate_shp_slot(slots, file) {
         if (file.name.indexOf(".shp") > -1) {
             slots.set(".shp", file);
@@ -7569,7 +7577,6 @@ function handleOneByOneShp(files, target_layer_on_add) {
     var shp_slots = new Map();
     populate_shp_slot(shp_slots, files[0]);
     document.getElementById("dv_drop_shp").addEventListener("drop", function (event) {
-        console.log("file dropped");
         event.preventDefault();event.stopPropagation();
         var next_files = event.dataTransfer.files;
         for (var f_ix = 0; f_ix < next_files.length; f_ix++) {
@@ -7581,11 +7588,11 @@ function handleOneByOneShp(files, target_layer_on_add) {
         }
     });
     document.getElementById("dv_drop_shp").addEventListener("dragover", function (event) {
-        _this.style.border = "dashed 2.5px green";
+        this.style.border = "dashed 2.5px green";
         event.preventDefault();event.stopPropagation();
     });
     document.getElementById("dv_drop_shp").addEventListener("dragleave", function (event) {
-        _this.style.border = "dashed 1px green";
+        this.style.border = "dashed 1px green";
         event.preventDefault();event.stopPropagation();
     });
 }
@@ -7649,7 +7656,12 @@ function prepare_drop_section() {
                 });
                 handleOneByOneShp(files);
             } else {
-                var opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                var opts = void 0;
+                if (files[0].name.indexOf(".csv") > -1 || files[0].name.indexOf(".tsv") > -1 || files[0].name.indexOf(".txt") > -1 || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1) {
+                    opts = { 'target': i18next.t("app_page.common.ext_dataset") };
+                } else {
+                    opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                }
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -8699,7 +8711,7 @@ function accordionize() {
     var css_selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ".accordion";
     var parent = arguments[1];
 
-    parent = parent && (typeof parent === 'undefined' ? 'undefined' : _typeof(parent)) === "object" ? parent : parent && typeof parent === "string" ? document.querySelector(parent) : document;
+    parent = parent && (typeof parent === "undefined" ? "undefined" : _typeof(parent)) === "object" ? parent : parent && typeof parent === "string" ? document.querySelector(parent) : document;
     var acc = parent.querySelectorAll(css_selector),
         opened_css_selector = css_selector + ".active";
     for (var i = 0; i < acc.length; i++) {
@@ -12425,7 +12437,9 @@ function save_map_template() {
 }
 
 function load_map_template() {
-    var input_button = d3.select(document.createElement('input')).attr("type", "file").attr("name", "file").attr("enctype", "text/json").on('change', function () {
+    var input_button = d3.select(document.createElement('input')).attr("type", "file").attr("name", "file").attr("accept", ".json")
+    // .attr("enctype", "text/json")
+    .on('change', function () {
         prepareReading(d3.event);
     });
 
@@ -12441,7 +12455,28 @@ function load_map_template() {
     input_button.node().dispatchEvent(new MouseEvent("click"));
 }
 
+function display_error_loading_project(error) {
+    error = error || "Unknown";
+    swal({ title: i18next.t("app_page.common.error") + "!",
+        text: i18next.t("app_page.common.error_map_project") + error,
+        type: "error",
+        allowOutsideClick: false });
+}
+
 function apply_user_preferences(json_pref) {
+    var preferences = void 0;
+    try {
+        preferences = JSON.parse(json_pref);
+    } catch (err) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project") + err);
+        return;
+    }
+    var map_config = preferences.map_config,
+        layers = preferences.layers;
+    if (!layers || !map_config) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
+        return;
+    }
     {
         var layer_names = Object.getOwnPropertyNames(current_layers);
         for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
@@ -12463,9 +12498,6 @@ function apply_user_preferences(json_pref) {
         current_layers = new Object();
     }
 
-    var preferences = JSON.parse(json_pref),
-        map_config = preferences.map_config,
-        layers = preferences.layers;
     var a = document.getElementById("overlay");
     a.style.display = "";
     a.querySelector("button").style.display = "none";

@@ -214,7 +214,7 @@ function setUpInterface(resume_project)
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attr("src", "/static/img/b/addgeom_t.png")
+        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom'})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 

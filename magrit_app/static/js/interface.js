@@ -15,15 +15,22 @@ function click_button_add_layer(){
         self = this,
         input = document.createElement('input');
 
+    let target_layer_on_add = false;
+
+    if(self.id == "img_data_ext" || self.id == "data_ext"){
+        input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
+        target_layer_on_add = true;
+    } else if (self.id === "input_geom" || self.id === "input_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        target_layer_on_add = true;
+    } else if (self.id == "input_layout_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+    }
     input.setAttribute('type', 'file');
     input.setAttribute('multiple', '');
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function(event){
-        let target_layer_on_add = (self.id === "input_geom") ? true :
-                              (self.id === "img_in_geom") ? true :
-                              (self.id === "img_data_ext") ? true :
-                              (self.id === "data_ext") ? true : false;
 
         let files = event.target.files;
 
@@ -231,7 +238,6 @@ function handleOneByOneShp(files, target_layer_on_add){
     let shp_slots = new Map();
     populate_shp_slot(shp_slots, files[0]);
     document.getElementById("dv_drop_shp").addEventListener("drop", function(event){
-        console.log("file dropped")
         event.preventDefault(); event.stopPropagation();
         let next_files = event.dataTransfer.files;
         for(let f_ix=0; f_ix < next_files.length; f_ix++){
@@ -242,11 +248,11 @@ function handleOneByOneShp(files, target_layer_on_add){
             document.getElementById("dv_drop_shp").innerHTML = document.getElementById("dv_drop_shp").innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
         }
     })
-    document.getElementById("dv_drop_shp").addEventListener("dragover", event => {
+    document.getElementById("dv_drop_shp").addEventListener("dragover", function(event){
         this.style.border = "dashed 2.5px green";
         event.preventDefault(); event.stopPropagation();
     });
-    document.getElementById("dv_drop_shp").addEventListener("dragleave", event => {
+    document.getElementById("dv_drop_shp").addEventListener("dragleave", function(event){
         this.style.border = "dashed 1px green";
         event.preventDefault(); event.stopPropagation();
     });
@@ -323,9 +329,15 @@ function prepare_drop_section(){
                     });
                     handleOneByOneShp(files);
                 } else {
-                    let opts = targeted_layer_added
+                    let opts;
+                    if(files[0].name.indexOf(".csv") > -1 || files[0].name.indexOf(".tsv") > -1 || files[0].name.indexOf(".txt") > -1
+                            || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1 ){
+                        opts = { 'target': i18next.t("app_page.common.ext_dataset")}
+                    } else {
+                        opts = targeted_layer_added
                               ? {'layout': i18next.t("app_page.common.layout_layer") }
                               : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                    }
                     swal({
                         title: "",
                         text: i18next.t("app_page.common.layer_type_selection"),

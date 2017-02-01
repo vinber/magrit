@@ -319,7 +319,8 @@ function save_map_template(){
 function load_map_template(){
     let input_button = d3.select(document.createElement('input'))
                     .attr("type", "file").attr("name", "file")
-                    .attr("enctype", "text/json")
+                    .attr("accept", ".json")
+                    // .attr("enctype", "text/json")
                     .on('change', function(){ prepareReading(d3.event) });
 
     let prepareReading = function(event){
@@ -332,27 +333,45 @@ function load_map_template(){
     input_button.node().dispatchEvent(new MouseEvent("click"))
 }
 
+function display_error_loading_project(error){
+    error = error || "Unknown";
+    swal({title: i18next.t("app_page.common.error") + "!",
+          text: i18next.t("app_page.common.error_map_project") + error,
+          type: "error",
+          allowOutsideClick: false});
+}
+
 function apply_user_preferences(json_pref){
+    let preferences;
+    try {
+        preferences = JSON.parse(json_pref);
+    } catch(err) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project") + err);
+        return;
+    }
+    let map_config = preferences.map_config,
+        layers = preferences.layers;
+    if(!layers || !map_config){
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
+        return;
+    }
     {
-      let layer_names = Object.getOwnPropertyNames(current_layers);
-      for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
-          remove_layer_cleanup(layer_names[i]);
-      }
-      let _l, _ll;
-      // Make sure there is no layers and legend/layout features on the map :
-      _l = svg_map.childNodes;  _ll = _l.length;
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // And in the layer manager :
-      _l = layer_list.node().childNodes;  _ll = _l.length;
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // Get a new object for where we are storing the main properties :
-      current_layers = new Object();
+        let layer_names = Object.getOwnPropertyNames(current_layers);
+        for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
+            remove_layer_cleanup(layer_names[i]);
+        }
+        let _l, _ll;
+        // Make sure there is no layers and legend/layout features on the map :
+        _l = svg_map.childNodes;  _ll = _l.length;
+        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+        // And in the layer manager :
+        _l = layer_list.node().childNodes;  _ll = _l.length;
+        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+        // Get a new object for where we are storing the main properties :
+        current_layers = new Object();
     }
 
-    let preferences = JSON.parse(json_pref),
-        map_config = preferences.map_config,
-        layers = preferences.layers;
-        let a = document.getElementById("overlay");
+    let a = document.getElementById("overlay");
         a.style.display = "";
         a.querySelector("button").style.display = "none";
 
