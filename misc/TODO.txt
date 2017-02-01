@@ -1,7 +1,0 @@
-TODO list:
-- /!\ Choose some nice icons related to the fields data type (ratio, stock, category, unknown, id ?)
-- /!\ re-allow the user to browse its imported (csv etc.) dataset ? (as the functionnalities was squizzed when moving the "browse table" button on each layer)
-			or allow a preview (as the dataset aims to be joined to the targeted layer)
-- Make a short documentation about how the project is structured in order to facilitate potential contributions
-- Add support for GML and geopackage format (input/output ? why ? why not ?!)
-

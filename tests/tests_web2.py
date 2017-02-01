@@ -211,12 +211,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     #
     #     Select(driver.find_element_by_css_selector("select.sample_target")
     #         ).select_by_value("nuts2-2013-data")
-    #     Select(driver.find_element_by_css_selector("select.sample_dataset")
-    #         ).select_by_value("twincities")
     #     driver.find_element_by_css_selector(".btn_ok").click()
-    #     self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
     #
+    #     self.waitClickButtonSwal()
     #     # Valid the type of each field :
+    #     self.validTypefield()
+    #     time.sleep(1)
+    #     driver.find_element_by_id("data_ext").send_keys("/home/mz/code/magrit/magrit_app/static/data_sample/twincities.csv")
+    #     time.sleep(1)
+    #     self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
     #     self.validTypefield()
     #
     #     self.open_menu_section(2)
@@ -290,14 +293,147 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertIsInstance(labels, list)
         self.assertGreater(len(labels), 0)
 
-    # def test_change_projection(self):
+    def test_change_projection(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2-2013-data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+        # Valid the type of each field :
+        self.validTypefield()
+
+        # Open the section of the menu with the layer manager :
+        self.open_menu_section(3)
+
+        # Change the projection for an interrupted one :
+        Select(driver.find_element_by_id("form_projection")
+            ).select_by_value("d3.geoInterruptedSinusoidal().scale(400)")
+        time.sleep(2)
+
+        # Global value was updated :
+        proj_name = driver.execute_script('value = window.current_proj_name; return value;');
+        self.assertEqual(proj_name, "Interrupted Sinusoidal")
+        # Layer have a clip-path (as this projection is interrupted) :
+        clip_path_value1 = driver.execute_script(
+            '''val = document.getElementById("World").getAttribute("clip-path");
+            return val;''');
+        clip_path_value2 = driver.execute_script(
+            '''val = document.getElementById("nuts2-2013-data").getAttribute("clip-path");
+            return val;''');
+        self.assertEqual("url(#clip)", clip_path_value1)
+        self.assertEqual("url(#clip)", clip_path_value2)
+
+        # Change for a non-interrupted projection :
+        Select(driver.find_element_by_id("form_projection")
+            ).select_by_value("d3.geoBaker().scale(400)")
+        time.sleep(2)
+        # Global value was updated :
+        proj_name = driver.execute_script('value = window.current_proj_name; return value;');
+        self.assertEqual(proj_name, "Baker")
+        # Layer don't have a clip-path anymore :
+        clip_path_value1 = driver.execute_script(
+            '''val = document.getElementById("World").getAttribute("clip-path");
+            return val;''');
+        clip_path_value2 = driver.execute_script(
+            '''val = document.getElementById("nuts2-2013-data").getAttribute("clip-path");
+            return val;''');
+        self.assertEqual(None, clip_path_value1)
+        self.assertEqual(None, clip_path_value2)
+
+        # Test that after reprojecting, the map is still centered on the targeted layer :
+        # Fetch the current zoom value :
+        zoom_val = driver.execute_script(
+            '''val = svg_map.__zoom.toString(); return val;''');
+
+        # Click on the "fit-zoom" button of the targeted layer :
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.nuts2-2013-data > div > #zoom_fit_button"))
+
+        # Fetch again the current zoom value :
+        zoom_val2 = driver.execute_script(
+            '''val = svg_map.__zoom.toString(); return val;''');
+        # Nothing should have change :
+        self.assertEqual(zoom_val, zoom_val2)
+
+        # Click on the "fit-zoom" button of an other layer and fetch the new zoom value :
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.World > div > #zoom_fit_button"))
+        zoom_val3 = driver.execute_script(
+            '''val = svg_map.__zoom.toString(); return val;''');
+        # This time it should have changed :
+        self.assertNotEqual(zoom_val, zoom_val3)
+
+    def test_reload_project_localStorage(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        # First render a grid layer :
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2-2013-data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_grid")
+
+        Select(driver.find_element_by_id("Gridded_field")).select_by_visible_text("GDP")
+        driver.find_element_by_id("Gridded_cellsize").clear()
+        driver.find_element_by_id("Gridded_cellsize").send_keys("200")
+        Select(driver.find_element_by_id("Gridded_shape")).select_by_value("Square")
+        driver.find_element_by_id("Gridded_yes").click()
+
+        self.waitClickButtonSwal()
+
+        self.assertEqual(True, self.try_element_present(By.ID, "legend_root", 5))
+        self.open_menu_section(4)
+
+        # Then add some layout features :
+        driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
+        if not self.try_element_present(By.ID, "scale_bar"):
+            self.fail("Scale bar won't display")
+
+        driver.find_element_by_id('btn_graticule').click()
+        time.sleep(0.2)
+        if not self.try_element_present(By.ID, "Graticule"):
+            self.fail("Graticule won't display")
+
+        driver.find_element_by_id('btn_sphere').click()
+        time.sleep(0.2)
+        if not self.try_element_present(By.ID, "Sphere"):
+            self.fail("Sphere background won't display")
+
+        # Reload the page :
+        driver.get(self.base_url)
+
+        # Close the alert asking confirmation for closing the page
+        # (this is when the last state of the current project is saved)
+        self.close_alert_and_get_its_text()
+
+        # Click on the button to reload the last project :
+        self.waitClickButtonSwal("button.swal2-cancel")
+        time.sleep(2)
+
+    # def test_reload_project_localStorage(self):
     #     driver = self.driver
     #     driver.get(self.base_url)
-    #     self.clickWaitTransition("#sample_link")
-    #     Select(driver.find_element_by_css_selector("select.sample_target")
-    #         ).select_by_value("nuts2-2013-data")
-    #     driver.find_element_by_css_selector(".btn_ok").click()
+    #     with open('tests/example_project.json', 'r') as f:
+    #         magrit_project = f.read()
+    #     # Put a project in the localStorage before opening the page :
+    #     js_code="localStorage.setItem('magrit_project', '{}');".format(magrit_project)
+    #     result = driver.execute_script(js_code)
+    #     driver.get(self.base_url)
+    #     # If there is something in the localStorage, a swal alert should open
+    #     # ... and ask if we want to reload this project :
     #     self.waitClickButtonSwal()
+    #     time.sleep(2)
 
     @unittest.skipIf(RUN_LOCAL is not True, 'Skip download test')
     def test_downloads(self):
@@ -638,7 +774,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root", 5):
             self.fail("Legend not displayed on choropleth")
 
-    def test_discont_joined_field(self):
+    def test_discont_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
