@@ -371,7 +371,8 @@ async def convert(request):
         os.removedirs(dir_path)
 
     elif ('octet-stream' in datatype
-            or 'text/json' in datatype) and "geojson" in name.lower():
+            or 'text/json' in datatype or 'application/geo+json' in datatype) \
+            and "geojson" in name.lower():
         # if '"crs"' in data and ('"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data or "4326" not in data):
         with open(filepath, 'wb') as f:
             f.write(data)

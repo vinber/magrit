@@ -2,7 +2,7 @@
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
-const MAX_INPUT_SIZE = 12800000; // max allowed input size in bytes
+const MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
 // const ALERT_INPUT_SIZE = 870400; // If the input is larger than this size, the user will receive an alert
 /**
 * Function triggered when some images of the interface are clicked
@@ -190,10 +190,9 @@ function handleOneByOneShp(files, target_layer_on_add){
                 let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
                 handle_shapefile(file_list, target_layer_on_add);
             } else {
-
                 let opts = targeted_layer_added
-                          ? {'layout': i18next.t("app_page.common.layout_l") }
-                          : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
+                          ? {'layout': i18next.t("app_page.common.layout_layer") }
+                          : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -325,8 +324,8 @@ function prepare_drop_section(){
                     handleOneByOneShp(files);
                 } else {
                     let opts = targeted_layer_added
-                              ? {'layout': i18next.t("app_page.common.layout_l") }
-                              : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
+                              ? {'layout': i18next.t("app_page.common.layout_layer") }
+                              : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
                     swal({
                         title: "",
                         text: i18next.t("app_page.common.layer_type_selection"),
@@ -580,22 +579,26 @@ function update_menu_dataset(){
         nb_features = joined_dataset[0].length,
         field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
 
-    d3.select("#img_data_ext")
+    let data_ext = document.getElementById("data_ext");
+
+    d3.select(data_ext.parentElement.firstChild)
         .attrs({"id": "img_data_ext",
                "class": "user_panel",
                "src": "/static/img/b/tabular.svg",
                "width": "26", "height": "26",
                "alt": "Additional dataset"});
 
-    d3.select('#data_ext')
-        .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
-                                        nb_features, ' ',
-                                        i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
+    data_ext.classList.remove('i18n');
+    data_ext.removeAttribute('data-i18n');
+    d3.select(data_ext)
+        // .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
+        //                                 nb_features, ' ',
+        //                                 i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
         .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
                nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
                field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
                '</i></span>'].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
     document.getElementById("remove_dataset").onclick = () => {
         remove_ext_dataset()
@@ -842,18 +845,17 @@ function add_layer_topojson(text, options){
             _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
 
         _button = _button.substring(10, _button.indexOf("class") - 2);
-        d3.select("#img_in_geom")
-            .attrs({"src": _button, "width": "26", "height": "26"})
-            .on("click", null);
-        d3.select('#input_geom')
-            .attr("layer-target-tooltip", layer_tooltip_content)
+        let _input_geom = document.getElementById("input_geom");
+        _input_geom.classList.remove('i18n');
+        _input_geom.removeAttribute('data-i18n');
+        d3.select(_input_geom)
+            .attrs({"src": _button, "width": "26", "height": "26"}) // , "layer-target-tooltip": layer_tooltip_content})
             .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
                    nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
                    nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
                    '</i></span>'].join(''))
-
-        let input_geom = document.getElementById("input_geom").parentElement;
-        input_geom.innerHTML = input_geom.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
+            .on("click", null);
+        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
         let remove_target = document.getElementById("remove_target");
         remove_target.onclick = () => { remove_layer(lyr_name_to_add); };
         remove_target.onmouseover = function(){ this.style.opacity = 1; };

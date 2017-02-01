@@ -446,7 +446,7 @@ function setUpInterface(resume_project)
 
     let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
     _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
-    _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
     _i.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
     _i.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
@@ -697,7 +697,7 @@ function setUpInterface(resume_project)
             .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                     min: -180.0, max: 180.0, value: 0, step: "any"})
             .styles({width: "38px", "margin": "0 10px",
-                     "color": " white", "background-color": "#173a50",
+                     "color": " white", "background-color": "#000",
                      "vertical-align": "calc(20%)"})
             .on("change", function(){
                 let val = +this.value,
@@ -717,7 +717,7 @@ function setUpInterface(resume_project)
 
     let proj_select = proj_options.append("select")
             .attr("id","form_projection")
-            .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
+            .styles({"align": "center", "color": " white", "background-color": "#000", "border": "none"})
             .on("change", function(){
                 current_proj_name = this.selectedOptions[0].textContent;
                 change_projection(this.value);
@@ -799,12 +799,12 @@ function setUpInterface(resume_project)
                   }
                   let box_content = '<div class="about_content">' +
                       '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
-                      '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' +
                       '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
                       // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
                       '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
                       '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
+                      '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
+                      '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
                   swal({
                       title: i18next.t("app_page.help_box.title"),
                       html: box_content,
@@ -812,19 +812,18 @@ function setUpInterface(resume_project)
                       showConfirmButton: false,
                       cancelButtonText: i18next.t('app_page.common.close'),
                       animation: "slide-from-top",
-                      inputPlaceholder: i18next.t("app_page.help_box.list_placeholders"),
                       onOpen: function(){
                           let content = document.getElementsByClassName('about_content')[0];
                           let credit_link = content.querySelector('#credit_link');
                           credit_link.style.fontWeight = "bold";
                           credit_link.style.cursor = "pointer";
-                          credit_link.color = "#173a50";
+                          credit_link.color = "#000";
                           credit_link.onclick = function(){
                               window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                           };
-                          // content.querySelector('.btn_doc').onclick = function(){
-                          //     window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          // };
+                          content.querySelector('.btn_doc').onclick = function(){
+                              window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                          };
                           content.querySelector('.btn_contact').onclick = function(){
                               window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                           };
@@ -832,9 +831,8 @@ function setUpInterface(resume_project)
                               window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                           };
                       }
-                   }).then(inputValue => {
-                          swal("Nice!", "You wrote: " + inputValue, "success");
-                        }, dismissValue => { null; });
+                   }).then(inputValue => { null; },
+                           dismissValue => { null; });
                 });
 
     const_options.append("button")
@@ -860,7 +858,7 @@ function setUpInterface(resume_project)
                 menu.id = "menu_lang";
                 menu.style.minWidth = "30px";
                 menu.style.width = "50px";
-                menu.style.background = "#173a50";
+                menu.style.background = "#000";
                 let list_elems = document.createElement("ul");
                 menu.appendChild(list_elems);
                 for (let i = 0; i < actions.length; i++) {
@@ -1593,8 +1591,10 @@ function remove_ext_dataset_cleanup(){
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
     let data_ext_txt = document.getElementById("data_ext");
-    data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
+    data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
     data_ext_txt.onclick = click_button_add_layer;
+    data_ext_txt.classList.add('i18n');
+    data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
     document.getElementById('sample_zone').style.display = null;
@@ -1629,13 +1629,14 @@ function remove_layer_cleanup(name){
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :
         //$("#input_geom").qtip("destroy");
+        document.getElementById("remove_target").remove();
         d3.select("#img_in_geom")
             .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
         d3.select("#input_geom")
+            .attrs({'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom'})
             .html(i18next.t("app_page.section1.add_geom"))
             .on('click', click_button_add_layer);
-        document.getElementById("remove_target").remove();
         // Unfiling the fields related to the targeted functionnality:
         if(current_functionnality)
             fields_handler.unfill()

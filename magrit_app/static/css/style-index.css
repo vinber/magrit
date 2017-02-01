@@ -28,8 +28,8 @@ body, html {
 }
 
 .navbar-default {
-    background: #173a50;
-    background-color: #173a50;
+    background: #000;
+    background-color: #000;
 }
 
 .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover {
@@ -42,7 +42,7 @@ body, html {
 }
 
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover {
-    color: #173a50;
+    color: #000;
     background-color: #eee;
 }
 
@@ -56,21 +56,29 @@ body, html {
     font-size: 13px;
 }
 
-.carousel-inner > .item > img, .carousel-inner > .item > a > img {
-    width: 55%;
-    margin: auto;
-  }
-
 /* Gradient transparent - color - transparent, from https://css-tricks.com/examples/hrs/ */
 hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); }
 
 img.hover_scale {
-  margin: 2px;
-  -webkit-transform: scale(0.9);
-  -webkit-transition: all .2s;
+    margin: 2px;
+    -webkit-transform: scale(0.9);
+    -webkit-transition: all .2s;
 }
 
 img.hover_scale:hover {
-  filter: none;
-  -webkit-transform: scale(1);
+    filter: none;
+    -webkit-transform: scale(1);
+}
+
+.grey_img {
+    margin: 1.5px;
+    -webkit-filter: grayscale(1);
+    -webkit-transform: scale(0.9);
+    -webkit-transition: all .2s;
+}
+
+.grey_img:hover {
+    -webkit-filter: grayscale(0);
+    -webkit-transform: scale(1);
+    -webkit-transition: all .2s;
 }

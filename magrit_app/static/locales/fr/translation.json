@@ -305,7 +305,7 @@
             "carnet_hypotheses": "Carnet <i>Hypothèses</i>",
             "contact": "Contact",
             "gh_link": "Page GitHub du projet",
-            "credits": "Réalisé par l'<span id=\"credit_link\">UMS RIATE</span>"
+            "credits": "Réalisé par Matthieu Viry, Timothée Giraud et Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -614,46 +614,29 @@
         "title": "Magrit - Cartographie thématique",
         "buttons": {
             "enter": "Démarrer",
-            "resume": "Continuer le projet en cours...",
-            "overview": "Fonctionnalités",
-            "examples": "Exemples",
-            "doc": "Documentation",
-            "dev": "Développement",
             "start_now": "Démarrer"
         },
-        "intro_section": {
-            "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
-            "arg2": "<strong>Utilisez votre propres données</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
-            "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
-            "arg4": "<strong>Exportez ou sauvegardez facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
-        },
-        "overview_section": {
-            "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
-            "list_func2": "(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.).",
-            "import1": "Accepte de nombreux formats d'entrée",
-            "customize1": "Personnalisez votre carte selon vos souhaits",
-            "customize2": "(grâce notamment à des nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.).",
-            "export1": "Exporte vos compositions facilement",
-            "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
-            "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
-            "projection1": "Propose un large choix de projections cartographiques",
-            "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
-        },
-        "documentation_section": {
-            "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
-            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application"
-        },
-        "source_section":{
+        "bloc":{
+            "carto_thematic1": "Une solution de cartographie thématique",
+            "carto_thematic2": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes <i>(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.)</i>.",
+            "interop1": "Interopérable",
+            "interop2": "L'application accepte de nombreux formats en entrée. Elle permet d'exporter la carte réalisée dans plusieurs formats ainsi que sauvegarder un \"fichier-projet\".",
+            "customizable1": "Personnalisable",
+            "customizable2": "Les cartes sont personnalisables grâce notamment à de nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.",
+            "realized_by1": "Réalisé par l'UMS RIATE",
+            "realized_by2": "Le projet est développé et maintenu par des membres de l'<a href=\"http://riate.cnrs.fr\">UMS RIATE</a>.",
+            "user_manual1": "Documenté",
+            "user_manual2": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
             "box1_title": "Libre et gratuit",
             "box2_title": "Ouvert aux contributions",
-            "box3_title": "Contenus traduits/traduisibles",
+            "box3_title": "Multilingue",
             "box4_title": "En developpement actif",
             "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
             "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via le <a href=\"/contact\">formulaire de contact</a> et via la plateforme <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!",
-            "box_doc_title": "Documenté",
-            "box_hypotheses_title": "Vivant"
+            "hypotheses1": "Vivant",
+            "hypotheses2": "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application."
         },
         "cookie_div": {
             "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",

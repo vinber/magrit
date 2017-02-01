@@ -313,7 +313,7 @@
             "carnet_hypotheses": "<i>Hypothèses</i> blog",
             "contact": "Contact",
             "gh_link": "GitHub project page",
-            "credits": "Realized by <span id=\"credit_link\">UMS RIATE</span>"
+            "credits": "Realized by Matthieu Viry, Timothée Giraud and Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -624,39 +624,27 @@
             "dev": "Developement",
             "start_now": "Start now"
         },
-        "intro_section": {
-            "arg1": "<strong>Hassle-free thematic mapping</strong>",
-            "arg2": "<strong>Use your own data</strong> (Shapefile, GeoJSON, kml, tabular data, etc.)",
-            "arg3": "<strong>Custom your map as you wish</strong>",
-            "arg4": "<strong>Export or save your composition with ease!</strong> (SVG and PNG exports, project saving in human-readable fashion)"
-        },
-        "overview_section": {
-            "list_func1": "Conventional cartographic methods coupled with innovative techniques",
-            "list_func2": "(proportionnal symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)",
-            "import1": "Allow to use a wide range of file format",
-            "customize1": "Customize your map as you wish",
-            "customize2": "(thanks to a large choice of projection, coloramps, fonts, and more...!)",
-            "export1": "Export your compositions with ease",
-            "export_geo1": "Download your newly created geographic layers",
-            "export_geo2":  "(file formats and projection available for export are too numerous to be listed)",
-            "projection1": "Pick a cartographic projection between the large choice available",
-            "conclusion": "You might not need your favorite vector editing software !"
-        },
-        "documentation_section": {
-            "user_manual": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>.",
-            "carnet_hypotheses":  "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application."
-        },
-        "source_section":{
+        "bloc": {
+            "carto_thematic1": "Thematic cartography software",
+            "carto_thematic2": "Conventional cartographic methods coupled with innovative techniques <i>(proportionnal symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)</i>.",
+            "interop1": "Interoperable",
+            "interop2": "The application accepts many input formats. It allows to export the map realized in several formats as well as to save a \"project-file\".",
+            "customizable1": "Customizable",
+            "customizable2": "Produced maps are customizable thanks to a large choice of projection, coloramps, fonts, and more...!",
+            "realized_by1": "Made by UMS RIATE",
+            "realized_by2": "Magrit is developped and maintained by members of <a href=\"http://riate.cnrs.fr\">UMS RIATE</a>.",
+            "user_manual1": "Documented",
+            "user_manual2": "A full description of each of the methods is available on the <a href=\"/docs/index.html\">user manual</a>.",
             "box1_title": "Free and Open-Source",
             "box2_title": "Open to contributions",
-            "box3_title": "Translated/translatable content",
+            "box3_title": "Multilingual",
             "box4_title": "Under active developpement",
             "box1_text": "The project is fully free and open-sourced (licenced under CeCILL, compatible with GNU GPL).<br> It's backed against a solid and modern suite of Free and Open-Source libraries (like GDAL and Python asyncio on server-side and d3.js v4 on front-end).",
             "box2_text": "Bug reports and contributions are welcome. Please use the <a href=\"/contact\">contact page</a> or the project page on <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!",
-            "box_doc_title": "Documented",
-            "box_hypotheses_title": "Alive"
+            "hypotheses1": "Alive",
+            "hypotheses2": "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application."
         },
         "cookie_div": {
             "message": "We do NOT use cookies to profile or track users.",

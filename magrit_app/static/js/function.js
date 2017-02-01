@@ -108,21 +108,25 @@ function unfillSelectInput(select_node){
 *        one to avoid collision or unwanted characters)
 */
 function check_layer_name(name){
+    if(name.match(/^\d+/)){
+        name = "_" + name;
+    }
     if(!(current_layers.hasOwnProperty(name)))
         return name;
     else {
         let i = 1;
-        if(name.match(/_\d+$/)){
-            i = name.match(/_\d+$/);
+        let match = name.match(/_\d+$/);
+        if(match){
+            i = match[0];
             name = name.substring(name, name.indexOf(i));
             return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
         }
         else {
-            name = [name, i].join('_');
-            return check_layer_name(name);
+            return check_layer_name([name, i].join('_'));
         }
     }
 }
+
 /**
 * Display a message when switching between functionnalitiesif the layer to render
 * doesn't have any interesting field to use.
