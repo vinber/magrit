@@ -137,6 +137,7 @@ function copy_layer(ref_layer, new_name, type_result){
         selec_dest[i].__data__ = selec_src[i].__data__;
         result_data[new_name].push(selec_dest[i].__data__.properties);
     }
+    document.getElementById(new_name).style.visibility = "";
     up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
