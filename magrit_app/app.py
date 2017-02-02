@@ -443,7 +443,8 @@ def make_carto_doug(file_path, field_name, iterations):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
         gdf = gdf[gdf[field_name].notnull()]
-        gdf.index = range(len(gdf))
+    gdf = gdf.iloc[gdf[field_name].nonzero()]
+    gdf.index = range(len(gdf))
     return make_cartogram(gdf.copy(), field_name, iterations)
 
 async def carto_doug(posted_data, user_id, app):

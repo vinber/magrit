@@ -42,6 +42,7 @@
             "delete": "Suppression",
             "deleted": "Supprimée",
             "done": "Fini!",
+            "ok": "Ok",
             "valid": "Confirmation",
             "close": "Fermer",
             "edit_style": "Changer le style...",
@@ -85,8 +86,8 @@
         },
         "section1": {
             "title": "Import des données",
-            "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
-            "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
+            "add_geom": "Ajout d'un fond de carte",
+            "add_ext_dataset": "Ajout d'un jeu de données",
             "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
         },
         "section2": {
@@ -111,6 +112,7 @@
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
             "map_title": "Titre de la carte",
+            "resize_fit": "Réadapter la carte à la taille de l'écran",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte"
         },

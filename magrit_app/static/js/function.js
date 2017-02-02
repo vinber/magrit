@@ -174,15 +174,8 @@ function test_maxmin_resolution(cell_value){
     return;
 }
 
-
 function make_template_functionnality(parent_node){
-    let dialog_content = parent_node.append("div").attr("class", "form-rendering");
-    dialog_content.append("p").attr("class", "container_img_help")
-        .append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer"});
-    return dialog_content;
+    return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top){

@@ -389,9 +389,9 @@ function make_box_type_fields(layer_name){
     }
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+            evt.preventDefault();
             current_layers[layer_name].fields_type = tmp.slice();
             deferred.resolve(false);
             modal_box.close();

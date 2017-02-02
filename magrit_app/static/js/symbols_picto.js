@@ -111,9 +111,9 @@ var display_box_symbol_typo = function(layer, field, categories){
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+              evt.preventDefault();
               _onclose();
           }
     }

@@ -399,13 +399,13 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id","legendtitle")
-            .text(title).style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem)
-            .attr("y", ypos)
+        .text(title)
+        .style("font", "bold 12px 'Enriqueta', arial, serif")
+        .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
     legend_root.insert('text').attr("id","legendsubtitle")
-            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attr("x", xpos + space_elem)
-            .attr("y", ypos + 15);
+        .text(subtitle)
+        .style("font", "italic 12px 'Enriqueta', arial, serif")
+        .attrs({x: xpos + space_elem, y: ypos + 15});
 
     let ref_symbols = document.getElementById(layer).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
@@ -784,7 +784,16 @@ function createlegendEditBox(legend_id, layer_name){
             .attr("value", subtitle_content.textContent)
             .styles({float: "right"})
             .on("keyup", function(){
+                // Move up the title to its original position if the subtitle isn't empty :
+                if(subtitle_content.textContent == "" && this.value != ""){
+                    title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+                }
+                // Change the displayed content :
                 subtitle_content.textContent = this.value;
+                // Move down the title if the new subtitle is empty :
+                if(subtitle_content.textContent == ""){
+                    title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+                }
             });
 
     let c = box_body.insert('p');

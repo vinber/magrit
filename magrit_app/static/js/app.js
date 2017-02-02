@@ -315,6 +315,18 @@ function setUpInterface(resume_project) {
         zoom_without_redraw();
     });
 
+    var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+    d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "input-height", type: "number", "value": h,
+        class: "m_elem_right list_elem_section4 button_st4 i18n",
+        'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
+        document.getElementById('btn_s4').click();
+        window.scrollTo(0, 0);
+        w = Math.round(window.innerWidth - 361);
+        h = window.innerHeight - 55;
+        canvas_mod_size([w, h]);
+    });
+
     var g = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     g.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.canvas_rotation");
 
@@ -883,17 +895,18 @@ function make_ico_choice() {
             var selec_title = document.getElementById("btn_s2b");
             selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
             selec_title.style.display = '';
-            // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-            var btn_info = document.getElementById("btn_info");
-            btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-            btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-            new Popover(btn_info, {
-                container: document.getElementById("twbs"),
-                customClass: "help-popover",
-                dismiss: "true",
-                dismissOutsideClick: true,
-                placement: "right"
-            });
+
+            // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
+            // let btn_info = document.getElementById("btn_info");
+            // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
+            // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
+            // new Popover(btn_info,{
+            //     container: document.getElementById("twbs"),
+            //     customClass: "help-popover",
+            //     dismiss: "true",
+            //     dismissOutsideClick: true,
+            //     placement: "right"
+            // });
 
             // Fill the field of the functionnality with the field
             // of the targeted layer if already uploaded by the user :
@@ -1734,6 +1747,9 @@ function handle_title_properties() {
     }
     var title_props = {
         size: title.style("font-size"),
+        font_weight: title.style('font-weight'),
+        font_style: title.style('font-style'),
+        text_decoration: title.style('text-decoration'),
         color: title.style("fill"),
         position_x: title.attr("x"),
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
@@ -1741,20 +1757,25 @@ function handle_title_properties() {
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
         font_family: title.style("font-family")
     };
+    title_props.font_weight = title_props.font_weight == "400" || title_props.font_weight == "" ? "" : "bold";
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
     make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true }).then(function (confirmed) {
-        if (!confirmed) title.style("font-size", title_props.size).style("fill", title_props.color).style("font-family", title_props.font_family).attrs({ x: title_props.position_x, y: title_props.position_y });
+        if (!confirmed) title.attrs({ x: title_props.position_x, y: title_props.position_y }).styles({
+            "font-size": title_props.size, "fill": title_props.color,
+            "font-family": title_props.font_family, 'font-style': title_props.font_style,
+            'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+        });
     });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
-    box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "65px").on("change", function () {
         title.style("font-size", this.value + "px");
     });
-    box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "65px").on("change", function () {
         title.attr("x", w * +this.value / 100);
     });
-    box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "65px").on("change", function () {
         title.attr("y", h * +this.value / 100);
     });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color")).insert("input").attrs({ type: "color", value: rgb2hex(title_props.color) }).on("change", function () {
@@ -1769,7 +1790,39 @@ function handle_title_properties() {
     font_select.node().selectedIndex = available_fonts.map(function (d) {
         return d[1] == title_props.font_family ? "1" : "0";
     }).indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title + allow to move the title with the mouse
+    // TODO : Allow the display a rectangle (resizable + selection color) under the title
+    var options_format = box_content.append('p'),
+        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+    btn_bold.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('font-weight', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-weight', 'bold');
+        }
+    });
+    btn_italic.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('font-style', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-style', 'italic');
+        }
+    });
+    btn_underline.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('text-decoration', '');
+        } else {
+            this.classList.add('active');
+            title.style('text-decoration', 'underline');
+        }
+    });
     return;
 }
 
@@ -3924,10 +3977,7 @@ function test_maxmin_resolution(cell_value) {
 }
 
 function make_template_functionnality(parent_node) {
-    var dialog_content = parent_node.append("div").attr("class", "form-rendering");
-    dialog_content.append("p").attr("class", "container_img_help").append("img").attrs({ id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-        class: "help_tooltip", "data-tooltip_help": " " }).styles({ "cursor": "pointer" });
-    return dialog_content;
+    return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top) {
@@ -6917,9 +6967,9 @@ function make_box_type_fields(layer_name) {
     };
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
+            evt.preventDefault();
             current_layers[layer_name].fields_type = tmp.slice();
             deferred.resolve(false);
             modal_box.close();
@@ -10373,7 +10423,14 @@ var UserArrow = function () {
         value: function handle_ctrl_pt() {
             var self = this,
                 line = self.arrow.node().querySelector("line"),
-                zoom_params = svg_map.__zoom;
+                zoom_params = svg_map.__zoom,
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+            // Desactive the ability to drag the arrow :
+            self.arrow.on('.drag', null);
+            // Desactive the ability to zoom/move on the map ;
+            handle_click_hand('lock');
+
+            // Append two red squares for the start point and the end point of the arrow :
             map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this),
                     nx = d3.event.x,
@@ -10382,7 +10439,6 @@ var UserArrow = function () {
                 line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
                 line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
             }));
-
             map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this),
                     nx = d3.event.x,
@@ -10391,6 +10447,8 @@ var UserArrow = function () {
                 line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
                 line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
             }));
+
+            // Exit the "edit" state by double clicking again on the arrow :
             this.arrow.on("dblclick", function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
@@ -10398,6 +10456,13 @@ var UserArrow = function () {
                 self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
                 map.select('#arrow_start_pt').remove();
                 map.select('#arrow_end_pt').remove();
+                // Unlock the zoom on the map according to the previous behaviour :
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
+                // Reactive the ability to move the arrow :
+                self.arrow.call(self.drag_behavior);
+                // Restore the ability to edit the control points on dblclick on the arrow :
                 self.arrow.on("dblclick", function () {
                     d3.event.preventDefault();
                     d3.event.stopPropagation();
@@ -10509,19 +10574,19 @@ var Textbox = function () {
         this.y = position[1];
         this.fontsize = 14;
 
-        function end_edit_action() {
-            inner_ft.attr("contentEditable", "false");
-            inner_ft.style("background-color", "transparent");
-            inner_ft.style("border", "");
-            // Recompute the size of the p inside the foreignObj
-            var inner_bbox = inner_p.getBoundingClientRect();
-            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
-            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
-            d3.select("body").classed("noselect", false);
-            state = null;
-        };
+        // function end_edit_action(){
+        //     inner_ft.attr("contentEditable", "false");
+        //     inner_ft.style("background-color", "transparent");
+        //     inner_ft.style("border", "");
+        //     // Recompute the size of the p inside the foreignObj
+        //     let inner_bbox = inner_p.getBoundingClientRect();
+        //     foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+        //     foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
+        //     d3.select("body").classed("noselect", false);
+        //     state = null;
+        // };
 
-        var current_timeout, state;
+        var current_timeout;
         var context_menu = new ContextMenu(),
             getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -10537,13 +10602,8 @@ var Textbox = function () {
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement);
-            //     xy0 = get_map_xy0(),
-            //     bbox = this.getBoundingClientRect();
             return {
-                x: t.attr("x"),
-                y: t.attr("y"),
-                //     dim_x: bbox.width / 2,
-                //     dim_y: bbox.height / 2,
+                x: t.attr("x"), y: t.attr("y"),
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false
             };
         }).on("start", function () {
@@ -10553,10 +10613,11 @@ var Textbox = function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
-            var x = +d3.event.x,
-                y = +d3.event.y,
-                t = d3.select(this.parentElement);
-            t.attrs({ x: x, y: y });
+            d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
+            // let x = +d3.event.x,
+            //     y = +d3.event.y,
+            //     t = d3.select(this.parentElement);
+            // t.attrs({x: x, y: y});
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -10565,9 +10626,9 @@ var Textbox = function () {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
-        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
+        foreign_obj.style.cursor = "pointer";
 
         var inner_p = document.createElement("p");
         inner_p.setAttribute("id", "in_" + new_id_txt_annot);
@@ -10594,30 +10655,25 @@ var Textbox = function () {
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
         });
 
-        inner_ft.on("dblclick", function () {
+        inner_ft.on('dblclick', function () {
+            d3.event.preventDefault();
             d3.event.stopPropagation();
+            _this2.editStyle();
         });
 
         inner_ft.on("mouseover", function () {
-            inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
-            inner_ft.style("background-color", "white");
-            inner_ft.style("border", "1px solid red");
-            inner_ft.on("keyup", function () {
-                clearTimeout(current_timeout);
-                current_timeout = setTimeout(end_edit_action, 7500);
-                state = "keyup";
-            });
+            inner_ft.style("background-color", "#0080001a");
             // toogle the size of the container to 100% while we are using it :
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
-            d3.select("body").classed("noselect", true);
         });
+
         inner_ft.on("mouseout", function () {
-            // use a small delay after leaving the box before deactiving it :
-            if (!state) {
-                clearTimeout(current_timeout);
-                current_timeout = setTimeout(end_edit_action, 2500);
-            }
+            inner_ft.style("background-color", null);
+            // Recompute the size of the p inside the foreignObj
+            var inner_bbox = inner_p.getBoundingClientRect();
+            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
         });
 
         this.text_annot = frgn_obj;
@@ -10631,51 +10687,58 @@ var Textbox = function () {
         value: function editStyle() {
             var _this3 = this;
 
-            var current_options = { size: this.text_annot.select("p").style("font-size"),
-                color: this.text_annot.select("p").style("color"),
-                content: unescape(this.text_annot.select("p").html()),
-                rotate: this.text_annot.attr('rotate'),
-                transform_rotate: this.text_annot.attr('transform'),
-                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-                font: "" };
             var map_xy0 = get_map_xy0();
             var self = this,
                 inner_p = this.text_annot.select('p');
+
+            var current_options = {
+                size: inner_p.style("font-size"),
+                color: inner_p.style("color"),
+                content: unescape(inner_p.html()),
+                transform_rotate: this.text_annot.attr('transform'),
+                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
+                font: "",
+                font_weight: inner_p.style('font-weight'),
+                font_style: inner_p.style('font-style'),
+                text_decoration: inner_p.style('text-decoration')
+            };
+            current_options.font_weight = current_options.font_weight == "400" || current_options.font_weight == "" ? '' : 'bold';
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
                     self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
                     self.fontsize = current_options.size;
-                    self.rotate = current_options.rotate;
+                    // self.rotate = current_options.rotate;
                     self.text_annot.attr('transform', current_options.transform_rotate);
                 }
             });
             var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
 
+            var current_rotate = typeof current_options.transform_rotate == "string" ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
+            if (current_rotate && current_rotate.length == 3) {
+                current_rotate = +current_rotate[0];
+            } else {
+                current_rotate = 0;
+            }
+
+            var bbox = inner_p.node().getBoundingClientRect(),
+                nx = bbox.left - map_xy0.x,
+                ny = bbox.top - map_xy0.y,
+                x_center = nx + bbox.width / 2,
+                y_center = ny + bbox.height / 2;
+
             var option_rotation = box_content.append('p').attr('class', 'line_elem');
             option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
             option_rotation.append('span').style('float', 'right').html(' °');
-            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_rotate,
                 class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
-                var rotate_value = +this.value,
-                    bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.left - map_xy0.x,
-                    ny = bbox.top - map_xy0.y,
-                    x_center = nx + bbox.width / 2,
-                    y_center = ny + bbox.height / 2;
-                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
-                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+                var rotate_value = +this.value;
+                self.text_annot.attrs({ x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_range_rotate").value = rotate_value;
             });
 
-            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
-                var rotate_value = +this.value,
-                    bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.left - map_xy0.x,
-                    ny = bbox.top - map_xy0.y,
-                    x_center = nx + bbox.width / 2,
-                    y_center = ny + bbox.height / 2;
-                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
-                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
+                var rotate_value = +this.value;
+                self.text_annot.attrs({ x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_txt_rotate").value = rotate_value;
             });
 
@@ -10701,14 +10764,12 @@ var Textbox = function () {
             });
 
             var options_format = box_content.append('p'),
-                btn_bold = options_format.insert('img').attrs({ title: 'Bold', src: 'data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=' }),
-                btn_italic = options_format.insert('img').attrs({ title: 'Italic', src: 'data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==' }),
-                btn_underline = options_format.insert('img').attrs({ title: 'Underline', src: 'data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7' });
+                btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+                btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+                btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
 
             var content_modif_zone = box_content.append("p");
             content_modif_zone.append("span").html(i18next.t("app_page.text_box_edit_box.content"));
-            content_modif_zone.append("img").attrs({ "id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17", "alt": "Information",
-                class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip") }).styles({ "cursor": "pointer", "vertical-align": "bottom" });
             content_modif_zone.append("span").html("<br>");
             var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
                 inner_p.html(this.value);
@@ -10716,29 +10777,32 @@ var Textbox = function () {
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
             btn_bold.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('font-weight', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('font-weight', 'bold');
+                }
             });
 
             btn_italic.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('font-style', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('font-style', 'italic');
+                }
             });
             btn_underline.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('text-decoration', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('text-decoration', 'underline');
+                }
             });
         }
     }, {
@@ -11272,7 +11336,13 @@ var UserEllipse = function () {
         value: function handle_ctrl_pt() {
             var self = this,
                 ellipse_elem = self.ellipse.node().querySelector("ellipse"),
-                zoom_param = svg_map.__zoom;
+                zoom_param = svg_map.__zoom,
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+            // Desactive the ability to drag the ellipse :
+            self.ellipse.on('.drag', null);
+            // Desactive the ability to zoom/move on the map ;
+            handle_click_hand('lock');
+
             var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y).attr("height", 6).attr("width", 6).style("fill", "red").style("cursor", "grab").call(d3.drag().on("drag", function () {
                 var t = d3.select(this);
                 t.attr("x", d3.event.x);
@@ -11291,6 +11361,10 @@ var UserEllipse = function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
                 map.selectAll('.ctrl_pt').remove();
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
+                self.ellipse.call(self.drag_behavior);
                 self.ellipse.on('dblclick', function () {
                     d3.event.preventDefault();
                     d3.event.stopPropagation();
@@ -11660,8 +11734,8 @@ function createLegend_symbol(layer, field, title, subtitle) {
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
 
     var rect_under_legend = legend_root.insert("rect");
-    legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos);
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
     var ref_symbols = document.getElementById(layer).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
@@ -11957,7 +12031,16 @@ function createlegendEditBox(legend_id, layer_name) {
     var b = box_body.append('p');
     b.insert('span').html(i18next.t("app_page.legend_style_box.var_name"));
     b.insert('input').attr("value", subtitle_content.textContent).styles({ float: "right" }).on("keyup", function () {
+        // Move up the title to its original position if the subtitle isn't empty :
+        if (subtitle_content.textContent == "" && this.value != "") {
+            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+        }
+        // Change the displayed content :
         subtitle_content.textContent = this.value;
+        // Move down the title if the new subtitle is empty :
+        if (subtitle_content.textContent == "") {
+            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+        }
     });
 
     var c = box_body.insert('p');
@@ -12230,6 +12313,7 @@ function get_map_template() {
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
     map_config.background_color = map.style("background-color");
+    map_config.canvas_rotation = typeof canvas_rotation_value == "string" ? canvas_rotation_value.match(/\d+/) : undefined;
 
     if (map_title) {
         map_config.title = {
@@ -12302,11 +12386,10 @@ function get_map_template() {
                 map_config.layout_features.text_annot.push({
                     id: ft.id,
                     content: inner_p.innerHTML,
-                    fontFamily: inner_p.style.fontFamily,
-                    fontSize: inner_p.style.fontSize,
-                    color: inner_p.style.color,
+                    style: inner_p.getAttribute('style'),
                     position_x: ft.x.baseVal.value,
-                    position_y: ft.y.baseVal.value
+                    position_y: ft.y.baseVal.value,
+                    transform: ft.getAttribute('transform')
                 });
             } else if (ft.classList.contains('single_symbol')) {
                 if (!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
@@ -12319,7 +12402,7 @@ function get_map_template() {
                     href: img.getAttribute('href'),
                     scalable: ft.classList.contains('scalable-legend')
                 });
-                console.log(map_config.layout_features.single_symbol);
+                // console.log(map_config.layout_features.single_symbol);
             }
         }
     }
@@ -12582,6 +12665,11 @@ function apply_user_preferences(json_pref) {
             desired_order.reverse();
             reorder_layers(desired_order);
             apply_layout_lgd_elem();
+            if (map_config.canvas_rotation) {
+                document.getElementById("form_rotate").value = map_config.canvas_rotation;
+                document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
+                rotate_global(map_config.canvas_rotation);
+            }
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
@@ -12637,6 +12725,8 @@ function apply_user_preferences(json_pref) {
                     var _ft2 = map_config.layout_features.user_ellipse[_i7];
                     var ellps = new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
                     var ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.setAttribute('rx', _ft2.rx);
+                    ellps_node.setAttribute('ry', _ft2.ry);
                     ellps_node.style.stroke = _ft2.stroke;
                     ellps_node.style.strokeWidth = _ft2.stroke_width;
                 }
@@ -12647,9 +12737,8 @@ function apply_user_preferences(json_pref) {
                     var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
                     var inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
-                    inner_p.style.fontFamily = _ft3.fontFamily;
-                    inner_p.style.fontSize = _ft3.fontSize;
-                    inner_p.style.color = _ft3.color;
+                    inner_p.style = _ft3.style;
+                    new_txt_bow.text_annot.attr('transform', _ft3.transform);
                 }
             }
             if (map_config.layout_features.single_symbol) {
@@ -12657,9 +12746,9 @@ function apply_user_preferences(json_pref) {
                     var _ft4 = map_config.layout_features.single_symbol[_i9];
                     var symb = add_single_symbol(_ft4.href, _ft4.x, _ft4.y, _ft4.width, _ft4.height);
                     if (_ft4.scalable) {
-                        console.log(symb);
-                        symb.node().parentElement.classList.add('scalable-legend');
-                        symb.node().parentElement.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
+                        var parent_symb = symb.node().parentElement;
+                        parent_symb.classList.add('scalable-legend');
+                        parent_symb.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
                     }
                 }
             }
@@ -13078,9 +13167,9 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
+            evt.preventDefault();
             _onclose();
         }
     }

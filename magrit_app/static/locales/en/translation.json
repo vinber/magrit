@@ -42,6 +42,7 @@
             "delete": "Delete",
             "deleted": "Deleted",
             "done": "Done!",
+            "ok": "Ok",
             "valid": "Valid",
             "close": "Close",
             "edit_style": "Edit style...",
@@ -83,8 +84,8 @@
         },
         "section1": {
             "title": "Add your data",
-            "add_geom": "Add a basemap <i>(or drop it)</i>",
-            "add_ext_dataset": "Add additional dataset <i>(or drop it)</i>",
+            "add_geom": "Add a basemap",
+            "add_ext_dataset": "Add additional dataset",
             "add_sample_data": "Select available sample basemap / dataset"
         },
         "section2": {
@@ -109,6 +110,7 @@
             "map_center_y": "Map center (y)",
             "map_scale_k": "Zoom scale",
             "map_title": "Map title",
+            "resize_fit": "Resize map on screen size",
             "background_color": "Background color ",
             "canvas_rotation": "Canvas rotation "
         },

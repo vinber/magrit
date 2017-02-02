@@ -42,6 +42,7 @@ function get_map_template(){
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
     map_config.background_color = map.style("background-color");
+    map_config.canvas_rotation = typeof canvas_rotation_value == "string" ? canvas_rotation_value.match(/\d+/) : undefined;
 
     if(map_title){
         map_config.title = {
@@ -114,11 +115,10 @@ function get_map_template(){
                 map_config.layout_features.text_annot.push({
                     id: ft.id,
                     content: inner_p.innerHTML,
-                    fontFamily: inner_p.style.fontFamily,
-                    fontSize: inner_p.style.fontSize,
-                    color: inner_p.style.color,
+                    style: inner_p.getAttribute('style'),
                     position_x: ft.x.baseVal.value,
                     position_y: ft.y.baseVal.value,
+                    transform: ft.getAttribute('transform')
                 });
             } else if(ft.classList.contains('single_symbol')) {
                 if(!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
@@ -131,7 +131,7 @@ function get_map_template(){
                     href: img.getAttribute('href'),
                     scalable: ft.classList.contains('scalable-legend')
                 });
-                console.log(map_config.layout_features.single_symbol);
+                // console.log(map_config.layout_features.single_symbol);
             }
         }
 
@@ -393,6 +393,11 @@ function apply_user_preferences(json_pref){
             desired_order.reverse();
             reorder_layers(desired_order);
             apply_layout_lgd_elem();
+            if(map_config.canvas_rotation){
+                document.getElementById("form_rotate").value = map_config.canvas_rotation;
+                document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
+                rotate_global(map_config.canvas_rotation);
+            }
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
@@ -448,6 +453,8 @@ function apply_user_preferences(json_pref){
                     let ft = map_config.layout_features.user_ellipse[i];
                     let ellps = new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map, true);
                     let ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.setAttribute('rx', ft.rx);
+                    ellps_node.setAttribute('ry', ft.ry);
                     ellps_node.style.stroke = ft.stroke;
                     ellps_node.style.strokeWidth = ft.stroke_width;
                 }
@@ -458,9 +465,8 @@ function apply_user_preferences(json_pref){
                     let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
                     let inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = ft.content;
-                    inner_p.style.fontFamily = ft.fontFamily;
-                    inner_p.style.fontSize = ft.fontSize;
-                    inner_p.style.color = ft.color;
+                    inner_p.style = ft.style;
+                    new_txt_bow.text_annot.attr('transform', ft.transform);
                 }
             }
             if(map_config.layout_features.single_symbol){
@@ -468,9 +474,9 @@ function apply_user_preferences(json_pref){
                     let ft = map_config.layout_features.single_symbol[i];
                     let symb = add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
                     if(ft.scalable){
-                        console.log(symb);
-                        symb.node().parentElement.classList.add('scalable-legend');
-                        symb.node().parentElement.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
+                        let parent_symb = symb.node().parentElement;
+                        parent_symb.classList.add('scalable-legend');
+                        parent_symb.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
                     }
                 }
             }

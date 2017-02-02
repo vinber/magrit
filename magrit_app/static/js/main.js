@@ -405,6 +405,22 @@ function setUpInterface(resume_project)
                 zoom_without_redraw();
             });
 
+    let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    d2.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button")
+            .styles({margin: 0, padding: 0})
+            .attrs({id: "input-height", type: "number", "value": h,
+                    class: "m_elem_right list_elem_section4 button_st4 i18n",
+                    'data-i18n': '[html]app_page.common.ok'})
+            .on('click', function(){
+                document.getElementById('btn_s4').click();
+                window.scrollTo(0, 0);
+                w = Math.round(window.innerWidth - 361);
+                h = window.innerHeight - 55;
+                canvas_mod_size([w, h]);
+            });
+
     let g = dv4.append("li").styles({margin: "1px", padding: "4px"});
     g.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
@@ -1081,17 +1097,18 @@ function make_ico_choice(){
                                         i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
                                         '</span>';
                 selec_title.style.display = '';
-                // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-                let btn_info = document.getElementById("btn_info");
-                btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-                btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-                new Popover(btn_info,{
-                    container: document.getElementById("twbs"),
-                    customClass: "help-popover",
-                    dismiss: "true",
-                    dismissOutsideClick: true,
-                    placement: "right"
-                });
+
+                // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
+                // let btn_info = document.getElementById("btn_info");
+                // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
+                // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
+                // new Popover(btn_info,{
+                //     container: document.getElementById("twbs"),
+                //     customClass: "help-popover",
+                //     dismiss: "true",
+                //     dismissOutsideClick: true,
+                //     placement: "right"
+                // });
 
                 // Fill the field of the functionnality with the field
                 // of the targeted layer if already uploaded by the user :
@@ -2039,6 +2056,9 @@ function handle_title_properties(){
     }
     var title_props = {
         size: title.style("font-size"),
+        font_weight: title.style('font-weight'),
+        font_style: title.style('font-style'),
+        text_decoration: title.style('text-decoration'),
         color: title.style("fill"),
         position_x: title.attr("x"),
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
@@ -2046,32 +2066,35 @@ function handle_title_properties(){
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
         font_family: title.style("font-family")
         };
+    title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
     make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
         .then(function(confirmed){
             if(!confirmed)
-                title.style("font-size", title_props.size)
-                    .style("fill", title_props.color)
-                    .style("font-family", title_props.font_family)
-                    .attrs({x: title_props.position_x, y: title_props.position_y});
+                title.attrs({x: title_props.position_x, y: title_props.position_y})
+                    .styles({
+                        "font-size": title_props.size, "fill": title_props.color,
+                        "font-family": title_props.font_family, 'font-style': title_props.font_style,
+                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+                        });
             });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
     box_content.append("p")
         .html(i18next.t("app_page.title_box.font_size"))
         .insert("input")
-        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
+        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "65px")
         .on("change", function(){  title.style("font-size", this.value + "px");  });
     box_content.append("p")
         .html(i18next.t("app_page.title_box.xpos"))
         .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "50px")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "65px")
         .on("change", function(){  title.attr("x", w * +this.value / 100);  });
     box_content.append("p")
         .html(i18next.t("app_page.title_box.ypos"))
         .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "50px")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "65px")
         .on("change", function(){  title.attr("y", h * +this.value / 100);  });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
         .insert("input")
@@ -2084,7 +2107,39 @@ function handle_title_properties(){
         font_select.append("option").text(font[0]).attr("value", font[1])
     });
     font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title + allow to move the title with the mouse
+    // TODO : Allow the display a rectangle (resizable + selection color) under the title
+    let options_format = box_content.append('p'),
+        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+    btn_bold.on('click', function(){
+        if(this.classList.contains('active')){
+            this.classList.remove('active');
+            title.style('font-weight', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-weight', 'bold');
+        }
+    });
+    btn_italic.on('click', function(){
+        if(this.classList.contains('active')){
+            this.classList.remove('active');
+            title.style('font-style', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-style', 'italic');
+        }
+    });
+    btn_underline.on('click', function(){
+      if(this.classList.contains('active')){
+          this.classList.remove('active');
+          title.style('text-decoration', '');
+      } else {
+          this.classList.add('active');
+          title.style('text-decoration', 'underline');
+      }
+  });
     return;
 }
 
