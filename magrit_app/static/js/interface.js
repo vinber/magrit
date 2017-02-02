@@ -65,7 +65,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
         elem.style.border = '';
         if(target_layer_on_add && _app.targeted_layer_added){
                 swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common'),
+                      text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
                       allowOutsideClick: false});
         } else if(files_to_send.length == 4){
@@ -138,12 +138,14 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_shp'),
                   type: "error",
-                  allowOutsideClick: false});
+                  allowOutsideClick: false,
+                  allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
         } else {
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_invalid'),
                   type: "error",
-                  allowOutsideClick: false});
+                  allowOutsideClick: false,
+                  allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
         }
     }
 }
@@ -198,8 +200,8 @@ function handleOneByOneShp(files, target_layer_on_add){
                 handle_shapefile(file_list, target_layer_on_add);
             } else {
                 let opts = _app.targeted_layer_added
-                          ? {'layout': i18next.t("app_page.common.layout_layer") }
-                          : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                          ? {'layout': i18next.t("app_page.common.layout_l") }
+                          : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -335,8 +337,8 @@ function prepare_drop_section(){
                         opts = { 'target': i18next.t("app_page.common.ext_dataset")}
                     } else {
                         opts = _app.targeted_layer_added
-                              ? {'layout': i18next.t("app_page.common.layout_layer") }
-                              : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                              ? {'layout': i18next.t("app_page.common.layout_l") }
+                              : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                     }
                     swal({
                         title: "",
@@ -1341,7 +1343,7 @@ function handleClickAddEllipse(){
         if(!ellipses){
             return 0;
         } else if (ellipses.length > 30){
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             let ids = [];
@@ -1367,7 +1369,7 @@ function handleClickAddEllipse(){
         ellipse_id = getId();
 
     if(ellipse_id === null){
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error").catch(swal.noop);
         return;
     } else {
         ellipse_id = "user_ellipse_" + ellipse_id;
@@ -1396,7 +1398,7 @@ function handleClickAddArrow(){
         if(!arrows){
             return 0;
         } else if (arrows.length > 30){
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             let ids = [];
@@ -1424,7 +1426,7 @@ function handleClickAddArrow(){
         arrow_id = getId();
 
     if(arrow_id === null){
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error").catch(swal.noop);
         return;
     } else {
         arrow_id = "arrow_" + arrow_id;

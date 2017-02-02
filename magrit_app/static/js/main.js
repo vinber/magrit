@@ -1548,13 +1548,13 @@ var make_confirm_dialog2 = (function(class_box, title, options){
 
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         }
         let _onclose = () => {
             deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
@@ -1570,7 +1570,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                   document.removeEventListener('keydown', helper_esc_key_twbs);
               }
         }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 })();

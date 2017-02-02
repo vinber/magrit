@@ -73,6 +73,8 @@
             "representation": "Representation",
             "ask_confirm": "Confirm ?",
             "layer_type_selection": "Select layer type",
+            "target_l": "Target layer",
+            "layout_l": "Layout layer",
             "no_value": "No value selected",
             "yes": "Yes",
             "no": "No",

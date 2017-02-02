@@ -1295,13 +1295,13 @@ var make_confirm_dialog2 = function (class_box, title, options) {
 
         container.querySelector(".btn_ok").onclick = function () {
             deferred.resolve(true);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         };
         var _onclose = function _onclose() {
             deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
@@ -1317,7 +1317,7 @@ var make_confirm_dialog2 = function (class_box, title, options) {
                 document.removeEventListener('keydown', helper_esc_key_twbs);
             }
         }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 }();
@@ -3289,7 +3289,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         container = document.getElementById("categorical_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3301,7 +3301,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             return color_map.get(ft[field])[0];
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3317,7 +3317,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             _onclose();
         }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -7542,7 +7542,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         elem.style.border = '';
         if (target_layer_on_add && _app.targeted_layer_added) {
             swal({ title: i18next.t("app_page.common.error") + "!",
-                text: i18next.t('app_page.common'),
+                text: i18next.t('app_page.common.error_only_one'),
                 type: "error",
                 allowOutsideClick: false });
         } else if (files_to_send.length == 4) {
@@ -7595,12 +7595,22 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_shp'),
                 type: "error",
-                allowOutsideClick: false });
+                allowOutsideClick: false,
+                allowEscapeKey: false }).then(function (valid) {
+                null;
+            }, function (dismiss) {
+                null;
+            });
         } else {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_invalid'),
                 type: "error",
-                allowOutsideClick: false });
+                allowOutsideClick: false,
+                allowEscapeKey: false }).then(function (valid) {
+                null;
+            }, function (dismiss) {
+                null;
+            });
         }
     }
 }
@@ -7648,7 +7658,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
             var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
             handle_shapefile(file_list, target_layer_on_add);
         } else {
-            var opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+            var opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
             swal({
                 title: "",
                 text: i18next.t("app_page.common.layer_type_selection"),
@@ -7770,7 +7780,7 @@ function prepare_drop_section() {
                 if (files[0].name.indexOf(".csv") > -1 || files[0].name.indexOf(".tsv") > -1 || files[0].name.indexOf(".txt") > -1 || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1) {
                     opts = { 'target': i18next.t("app_page.common.ext_dataset") };
                 } else {
-                    opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                    opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
                 }
                 swal({
                     title: "",
@@ -8702,7 +8712,7 @@ function handleClickAddEllipse() {
         if (!ellipses) {
             return 0;
         } else if (ellipses.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             var ids = [];
@@ -8728,7 +8738,7 @@ function handleClickAddEllipse() {
         ellipse_id = getId();
 
     if (ellipse_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
     } else {
         ellipse_id = "user_ellipse_" + ellipse_id;
@@ -8751,7 +8761,7 @@ function handleClickAddArrow() {
         if (!arrows) {
             return 0;
         } else if (arrows.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             var ids = [];
@@ -8779,7 +8789,7 @@ function handleClickAddArrow() {
         arrow_id = getId();
 
     if (arrow_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
     } else {
         arrow_id = "arrow_" + arrow_id;

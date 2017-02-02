@@ -884,7 +884,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         container = document.getElementById("categorical_box"),
         _onclose = () => {
             deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             container.remove();
             reOpenParent();
@@ -894,7 +894,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         let color_map = fetch_categorical_colors();
         let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
         deferred.resolve([nb_class, color_map, colorByFeature]);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -910,7 +910,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
               _onclose();
           }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
