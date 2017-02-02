@@ -320,8 +320,8 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 
 function fetch_min_max_table_value(parent_id){
     var parent_node = parent_id ? document.getElementById(parent_id)
-                        : current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
-                        : current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
+                        : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
+                        : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
                         : null;
 
     if(!parent_node) return;

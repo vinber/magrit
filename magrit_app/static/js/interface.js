@@ -669,7 +669,7 @@ function add_dataset(readed_dataset){
 
     update_menu_dataset();
 
-    if(current_functionnality && current_functionnality.name == "flow")
+    if(_app.current_functionnality && _app.current_functionnality.name == "flow")
         fields_handler.fill();
 
     if(_app.targeted_layer_added){
@@ -881,10 +881,10 @@ function add_layer_topojson(text, options){
             center_map(lyr_name_to_add);
         }
         handle_click_hand("lock");
-        if(window.current_functionnality)
+        if(_app.current_functionnality != undefined)
             fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), "</div>"].join('');
         if(!skip_rescale){
             center_map(lyr_name_to_add);
         }
@@ -893,7 +893,7 @@ function add_layer_topojson(text, options){
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
     }
 
-    if (!target_layer_on_add && window.current_functionnality != undefined && current_functionnality.name == "smooth"){
+    if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name == "smooth"){
         fields_handler.fill();
     }
 

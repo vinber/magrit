@@ -1053,7 +1053,7 @@ function make_ico_choice(){
                         return;
                     }
                     fields_handler.unfill();
-                    let previous_button = document.getElementById("button_" + current_functionnality.name);
+                    let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
                     previous_button.style.filter = "invert(0%) saturate(100%)";
                     clean_menu_function();
                     previous_button.classList.remove('active');
@@ -1066,9 +1066,9 @@ function make_ico_choice(){
                 document.getElementById('accordion2b').style.display = '';
 
                 // Get the function to fill the menu with the appropriate options (and do it):
-                current_functionnality = get_menu_option(func_name);
-                let make_menu = eval(current_functionnality.menu_factory);
-                window.fields_handler = eval(current_functionnality.fields_handler);
+                _app.current_functionnality = get_menu_option(func_name);
+                let make_menu = eval(_app.current_functionnality.menu_factory);
+                window.fields_handler = eval(_app.current_functionnality.fields_handler);
                 make_menu();
 
                 // Replace the title of the section:
@@ -1076,9 +1076,9 @@ function make_ico_choice(){
                 selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
                                         i18next.t("app_page.common.representation") +
                                         '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
-                                        current_functionnality.name +
+                                        _app.current_functionnality.name +
                                         '">' +
-                                        i18next.t("app_page.func_title."+ current_functionnality.name) +
+                                        i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
                                         '</span>';
                 selec_title.style.display = '';
                 // Bind the help tooltip (displayed when mouse over the 'i' icon) :
@@ -1140,29 +1140,27 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
-    // targeted_layer_added = false,
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map"),
-    current_functionnality = undefined;
+    map_div = d3.select("#map");
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
             .append("svg")
-                .attr("id", "svg_map")
-                .attr("width", w)
-                .attr("height", h)
-                .style("position", "absolute")
-                .call(zoom);
+            .attrs({'id': 'svg_map', 'width': w, 'height': h})
+            .style("position", "absolute")
+            .on("contextmenu", function(event){ d3.event.preventDefault(); })
+            .call(zoom);
 
-map.on("contextmenu", function(event){ d3.event.preventDefault(); });
+// map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
 var defs = map.append("defs");
 
 var _app = {
     to_cancel: undefined,
-    targeted_layer_added: false
+    targeted_layer_added: false,
+    current_functionnality: undefined
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1533,17 +1531,29 @@ var make_confirm_dialog2 = (function(class_box, title, options){
 
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         }
         let _onclose = () => {
             deferred.resolve(false);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
+        function helper_esc_key_twbs(evt){
+              evt = evt || window.event;
+              // evt.preventDefault();
+              let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+              if (isEscape) {
+                  _onclose();
+                  document.removeEventListener('keydown', helper_esc_key_twbs);
+              }
+        }
+        document.addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 })();
@@ -1639,7 +1649,7 @@ function remove_layer_cleanup(name){
             .html(i18next.t("app_page.section1.add_geom"))
             .on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
-        if(current_functionnality)
+        if(_app.current_functionnality)
             fields_handler.unfill()
 
         // Update some global variables :

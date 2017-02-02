@@ -861,7 +861,7 @@ function make_ico_choice() {
                     return;
                 }
                 fields_handler.unfill();
-                var previous_button = document.getElementById("button_" + current_functionnality.name);
+                var previous_button = document.getElementById("button_" + _app.current_functionnality.name);
                 previous_button.style.filter = "invert(0%) saturate(100%)";
                 clean_menu_function();
                 previous_button.classList.remove('active');
@@ -874,14 +874,14 @@ function make_ico_choice() {
             document.getElementById('accordion2b').style.display = '';
 
             // Get the function to fill the menu with the appropriate options (and do it):
-            current_functionnality = get_menu_option(func_name);
-            var make_menu = eval(current_functionnality.menu_factory);
-            window.fields_handler = eval(current_functionnality.fields_handler);
+            _app.current_functionnality = get_menu_option(func_name);
+            var make_menu = eval(_app.current_functionnality.menu_factory);
+            window.fields_handler = eval(_app.current_functionnality.fields_handler);
             make_menu();
 
             // Replace the title of the section:
             var selec_title = document.getElementById("btn_s2b");
-            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + current_functionnality.name + '">' + i18next.t("app_page.func_title." + current_functionnality.name) + '</span>';
+            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
             selec_title.style.display = '';
             // Bind the help tooltip (displayed when mouse over the 'i' icon) :
             var btn_info = document.getElementById("btn_info");
@@ -897,7 +897,7 @@ function make_ico_choice() {
 
             // Fill the field of the functionnality with the field
             // of the targeted layer if already uploaded by the user :
-            if (targeted_layer_added) {
+            if (_app.targeted_layer_added) {
                 var target_layer = Object.getOwnPropertyNames(user_data)[0];
                 fields_handler.fill(target_layer);
             }
@@ -946,24 +946,24 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map = [],
-    targeted_layer_added = false,
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map"),
-    current_functionnality = undefined;
+    map_div = d3.select("#map");
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
-var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attr("id", "svg_map").attr("width", w).attr("height", h).style("position", "absolute").call(zoom);
-
-map.on("contextmenu", function (event) {
+var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attrs({ 'id': 'svg_map', 'width': w, 'height': h }).style("position", "absolute").on("contextmenu", function (event) {
     d3.event.preventDefault();
-});
+}).call(zoom);
+
+// map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
 var defs = map.append("defs");
 
 var _app = {
-    to_cancel: undefined
+    to_cancel: undefined,
+    targeted_layer_added: false,
+    current_functionnality: undefined
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1282,17 +1282,29 @@ var make_confirm_dialog2 = function (class_box, title, options) {
 
         container.querySelector(".btn_ok").onclick = function () {
             deferred.resolve(true);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         };
         var _onclose = function _onclose() {
             deferred.resolve(false);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
+        function helper_esc_key_twbs(evt) {
+            evt = evt || window.event;
+            // evt.preventDefault();
+            var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+            if (isEscape) {
+                _onclose();
+                document.removeEventListener('keydown', helper_esc_key_twbs);
+            }
+        }
+        document.addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 }();
@@ -1382,12 +1394,12 @@ function remove_layer_cleanup(name) {
         d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
         d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
-        if (current_functionnality) fields_handler.unfill();
+        if (_app.current_functionnality) fields_handler.unfill();
 
         // Update some global variables :
         field_join_map = [];
         user_data = new Object();
-        targeted_layer_added = false;
+        _app.targeted_layer_added = false;
 
         // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
         document.getElementById('sample_zone').style.display = null;
@@ -2232,7 +2244,7 @@ var beforeUnloadWindow = function beforeUnloadWindow(event) {
         window.localStorage.removeItem("magrit_project");
         window.localStorage.setItem("magrit_project", json_params);
     });
-    event.returnValue = targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
+    event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
 };
 "use strict";
 // Helper function in order to have a colorbrewer color ramp with
@@ -3131,7 +3143,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             col_schema.push(document.querySelector(".color_params_right").value);
         }
         deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
-
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3139,12 +3151,22 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -3214,6 +3236,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         container = document.getElementById("categorical_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3225,6 +3248,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             return color_map.get(ft[field])[0];
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3232,6 +3256,15 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -3695,18 +3728,29 @@ var display_discretization_links_discont = function display_discretization_links
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     };
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 "use strict";
@@ -3981,7 +4025,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 }
 
 function fetch_min_max_table_value(parent_id) {
-    var parent_node = parent_id ? document.getElementById(parent_id) : current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable") : current_functionnality.name == "discont" ? document.getElementById("Discont_discTable") : null;
+    var parent_node = parent_id ? document.getElementById(parent_id) : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable") : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable") : null;
 
     if (!parent_node) return;
 
@@ -6821,6 +6865,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if (tmp.length > fields_type.length) {
@@ -6835,6 +6880,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose2;
     } else {
@@ -6845,6 +6891,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose3;
         container.querySelector("#xclose").onclick = _onclose3;
@@ -6866,8 +6913,21 @@ function make_box_type_fields(layer_name) {
         }
         modal_box.close();
         container.remove();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     };
-
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
@@ -7430,7 +7490,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? files_to_send.push(f) : null;
         });
         elem.style.border = '';
-        if (target_layer_on_add && targeted_layer_added) {
+        if (target_layer_on_add && _app.targeted_layer_added) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common'),
                 type: "error",
@@ -7448,7 +7508,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         }
     } else if (files[0].name.toLowerCase().indexOf('topojson') > -1) {
         elem.style.border = '';
-        if (target_layer_on_add && targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
+        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
             allowOutsideClick: false });
@@ -7457,7 +7517,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     } else if (files[0].name.toLowerCase().indexOf('geojson') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
 
-        if (target_layer_on_add && targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
+        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
             allowOutsideClick: false });
@@ -7538,7 +7598,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
             var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
             handle_shapefile(file_list, target_layer_on_add);
         } else {
-            var opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+            var opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
             swal({
                 title: "",
                 text: i18next.t("app_page.common.layer_type_selection"),
@@ -7660,7 +7720,7 @@ function prepare_drop_section() {
                 if (files[0].name.indexOf(".csv") > -1 || files[0].name.indexOf(".tsv") > -1 || files[0].name.indexOf(".txt") > -1 || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1) {
                     opts = { 'target': i18next.t("app_page.common.ext_dataset") };
                 } else {
-                    opts = targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
+                    opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_layer") } : { 'target': i18next.t("app_page.common.target_layer"), 'layout': i18next.t("app_page.common.layout_layer") };
                 }
                 swal({
                     title: "",
@@ -7929,7 +7989,7 @@ function update_menu_dataset() {
     document.getElementById("remove_dataset").onmouseout = function () {
         this.style.opacity = 0.5;
     };
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         valid_join_check_display(false);
         document.getElementById('sample_zone').style.display = "none";
     }
@@ -7975,9 +8035,9 @@ function add_dataset(readed_dataset) {
 
     update_menu_dataset();
 
-    if (current_functionnality && current_functionnality.name == "flow") fields_handler.fill();
+    if (_app.current_functionnality && _app.current_functionnality.name == "flow") fields_handler.fill();
 
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         var layer_name = Object.getOwnPropertyNames(user_data)[0];
         ask_join_now(layer_name);
     }
@@ -8158,7 +8218,7 @@ function add_layer_topojson(text, options) {
         remove_target.onmouseout = function () {
             this.style.opacity = 0.5;
         };
-        targeted_layer_added = true;
+        _app.targeted_layer_added = true;
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
 
         window._target_layer_file = topoObj;
@@ -8167,9 +8227,9 @@ function add_layer_topojson(text, options) {
             center_map(lyr_name_to_add);
         }
         handle_click_hand("lock");
-        if (window.current_functionnality) fields_handler.fill(lyr_name_to_add);
+        if (_app.current_functionnality != undefined) fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), "</div>"].join('');
         if (!skip_rescale) {
             center_map(lyr_name_to_add);
         }
@@ -8178,7 +8238,7 @@ function add_layer_topojson(text, options) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
     }
 
-    if (!target_layer_on_add && window.current_functionnality != undefined && current_functionnality.name == "smooth") {
+    if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name == "smooth") {
         fields_handler.fill();
     }
 
@@ -8525,7 +8585,7 @@ function add_sample_layer() {
         selec.target = this.value;
     });
 
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
     }
@@ -13010,16 +13070,27 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         container = document.getElementById("symbol_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     };
     return deferred.promise;
 };
@@ -13086,6 +13157,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     container.querySelector(".btn_ok").onclick = function () {
         var res_url = newbox.select("#current_symb").style("background-image");
         deferred.resolve(res_url);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if (parent_css_selector) reOpenParent(parent_css_selector);
@@ -13093,12 +13165,22 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
 
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if (parent_css_selector) reOpenParent(parent_css_selector);
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 

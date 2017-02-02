@@ -337,6 +337,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if(tmp.length > fields_type.length){  // There is already types selected but new fields where added :
@@ -350,6 +351,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else { // There is already types selected and no new fields (so this is a modification) :
@@ -359,6 +361,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -382,8 +385,21 @@ function make_box_type_fields(layer_name){
         }
         modal_box.close();
         container.remove();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     }
-
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          evt.preventDefault();
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
+          }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
