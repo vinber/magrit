@@ -286,7 +286,10 @@ function createStyleBoxLabel(layer_name){
             .text(i18next.t("app_page.layer_style_popup.reset_labels_location"))
             .on("click", function(){
                 selection.transition()
-                    .attrs(d => ({x: d.coords[0], y: d.coords[1]}));
+                    .attrs(d => {
+                      let coords = path.centroid(d.geometry);
+                      return {x: coords[0], y: coords[1]}
+                    });
             });
 
     popup.append("p").style("text-align", "center")

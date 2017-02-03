@@ -977,7 +977,7 @@ function setUpInterface(resume_project)
 
 function encodeId(s) {
     if (s==='') return '_';
-    return s.replace(/[^a-zA-Z0-9.-]/g, function(match) {
+    return s.replace(/[^a-zA-Z0-9_-]/g, function(match) {
         return '_'+match[0].charCodeAt(0).toString(16)+'_';
     });
 }
@@ -1425,14 +1425,13 @@ function reproj_symbol_layer(){
         && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
             || current_layers[lyr_name].renderer.indexOf('TypoSymbols')  > -1
             || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )){
-      let ref_layer_name = current_layers[lyr_name].ref_layer_name,
-          symbol = current_layers[lyr_name].symbol;
+      let symbol = current_layers[lyr_name].symbol;
 
       if (symbol == "text") { // Reproject the labels :
           map.select('#' + _app.layer_to_id.get(lyr_name))
                 .selectAll(symbol)
                 .attrs( d => {
-                  let pt = path.centroid({'type': 'Point', 'coordinates': d.coords});
+                  let pt = path.centroid(d.geometry);
                   return {'x': pt[0], 'y': pt[1]};
                 });
       } else if (symbol == "image"){ // Reproject pictograms :
@@ -1642,7 +1641,7 @@ function remove_ext_dataset_cleanup(){
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
-     let g_lyr_name = "#"+name;
+     let g_lyr_name = "#" + _app.layer_to_id.get(name);
 
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
@@ -1977,7 +1976,7 @@ function change_projection(proj_name) {
                 || null;
     if(!layer_name){
         let layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
+        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
     }
     if(layer_name){
         scale_to_lyr(layer_name);
@@ -2006,7 +2005,7 @@ function handle_active_layer(name){
         parent_div = selec.parentElement;
         name = parent_div.parentElement.getAttribute("layer_name");
     } else {
-        selec = document.querySelector("#sortable ." + name + " .active_button");
+        selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
         parent_div = selec.parentElement;
     }
     let func = function() { handle_active_layer(name); };
@@ -2449,149 +2448,6 @@ function export_layer_geo(layer, type, projec, proj4str){
             console.log(error);
         });
 }
-
-// function make_export_layer_box(){
-//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
-//                          i18next.t("app_page.export_box.geo_title_box"),
-//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
-//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
-//
-//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-//         if(sample_no_values.has(name))
-//             return 0;
-//         else if(current_layers[name].renderer
-//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
-//             return 0;
-//         return 1;
-//     });
-//
-//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-//
-//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
-//              .insert("select").attr("id", "layer_to_export");
-//
-//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-//              .insert("select").attr("id", "datatype_to_use");
-//
-//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
-//              .insert("select").attrs({id: "projection_to_use", disabled: true});
-//
-//     let proj4_input = box_content.append("input")
-//         .attr("id", "proj4str")
-//         .styles({display: 'none', width: '200px'})
-//         .on('keyup', function(){
-//             if(this.value.length == 0){
-//                 button_ok.disabled = "true";
-//             } else {
-//                 button_ok.disabled = ""
-//             }
-//         });
-//
-//     layer_names.forEach( name => {
-//         selec_layer.append("option").attr("value", name).text(name);
-//     });
-//
-//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-//         selec_type.append("option").attr("value", name).text(name);
-//     });
-//
-//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-//     });
-//
-//     selec_type.on("change", function(){
-//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
-//             selec_projection.node().options.selectedIndex = 0;
-//             selec_projection.attr("disabled", true);
-//             button_ok.disabled = "";
-//         } else {
-//             selec_projection.attr("disabled", null);
-//         }
-//     });
-//
-//     selec_projection.on("change", function(){
-//         if(this.value == "proj4string"){
-//             proj4_input.style("display", "initial");
-//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
-//                 button_ok.disabled = "true";
-//         } else {
-//             proj4_input.style("display", "none");
-//             button_ok.disabled = "";
-//         }
-//     });
-//
-//     // TODO : allow export to "geopackage" format ?
-//     let extensions = new Map([
-//         ["GeoJSON", "geojson"],
-//         ["TopoJSON", "topojson"],
-//         ["ESRI Shapefile", "zip"],
-//         ["GML", "zip"],
-//         ["KML", "kml"]]);
-//
-//     dialogBox.then( confirmed => { if(confirmed){
-//         let layer = selec_layer.node().value,
-//             type = selec_type.node().value,
-//             projec = selec_projection.node().value;
-//         let formToSend = new FormData();
-//         formToSend.append("layer", layer);
-//         formToSend.append("layer_name", current_layers[layer].key_name);
-//         formToSend.append("format", type);
-//         if(projec == "proj4string")
-//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
-//         else
-//             formToSend.append("projection", JSON.stringify({"name" : projec}));
-//
-//         xhrequest("POST", '/get_layer2', formToSend, true)
-//             .then( data => {
-//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
-//                     let error_message;
-//                     if(data.indexOf('{"Error"') < 5){
-//                         data = JSON.parse(data);
-//                         error_message = i18next.t(data.Error);
-//                     } else {
-//                         error_message = i18next.t('app_page.common.error_msg');
-//                     }
-//                     swal({title: "Oops...",
-//                          text: error_message,
-//                          type: "error",
-//                          allowOutsideClick: false,
-//                          allowEscapeKey: false
-//                         }).then( () => { null; },
-//                                   () => { null; });
-//                     return;
-//                 }
-//                 let ext = extensions.get(type),
-//                     dataStr;
-//                 if(ext.indexOf("json") > -1)
-//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-//                 else if (ext.indexOf("kml") > -1)
-//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-//                 else
-//                     dataStr = "data:application/zip;base64," + data;
-//
-//                 let dlAnchorElem = document.createElement('a');
-//                 dlAnchorElem.setAttribute("href", dataStr);
-//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-//                 document.body.appendChild(dlAnchorElem);
-//                 dlAnchorElem.click();
-//                 dlAnchorElem.remove();
-//
-//             }, error => {
-//                 console.log(error);
-//             });
-//         dialogBox.dialog("destroy").remove();
-//     }});
-// }
-
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917

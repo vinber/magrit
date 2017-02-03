@@ -189,21 +189,22 @@ function get_other_layer_names(){
 */
 function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
     let _list_display_name = get_display_name_on_layer_list(layer_name),
+        layer_id = encodeId(layer_name),
         layers_listed = layer_list.node(),
         li = document.createElement("li");
 
     li.setAttribute("layer_name", layer_name);
     if(type_layer == "result"){
-        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
+        li.setAttribute("class", ["sortable_result ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
                         button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
                         button_result_type.get(type_geom[1]), "</div> "].join('');
     } else if(type_layer == "sample"){
-        li.setAttribute("class", ["sortable ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.setAttribute("class", ["sortable ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
                         button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
                         button_type.get(type_geom), "</div> "].join('');
@@ -389,7 +390,7 @@ function make_box_type_fields(layer_name){
         }
         modal_box.close();
         container.remove();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     }
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
@@ -403,7 +404,7 @@ function make_box_type_fields(layer_name){
             document.removeEventListener('keydown', helper_esc_key_twbs);
           }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));

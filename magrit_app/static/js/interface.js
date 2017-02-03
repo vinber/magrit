@@ -833,21 +833,22 @@ function add_layer_topojson(text, options){
 
     let class_name = [
         target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
-        lyr_name_to_add
+        lyr_id
         ].join('');
 
     let layers_listed = layer_list.node(),
         li = document.createElement("li"),
         nb_fields = field_names.length,
-        layer_tooltip_content =  [
-            "<b>", lyr_name_to_add, "</b> - ", type, " - ",
-            nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
-            nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
+        // layer_tooltip_content =  [
+        //     "<b>", lyr_name_to_add, "</b> - ", type, " - ",
+        //     nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
+        //     nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
+        //
 
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
-    li.setAttribute("layer-tooltip", layer_tooltip_content);
+    // li.setAttribute("layer-tooltip", layer_tooltip_content);
     d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));

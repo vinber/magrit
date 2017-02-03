@@ -796,7 +796,7 @@ function setUpInterface(resume_project) {
 
 function encodeId(s) {
     if (s === '') return '_';
-    return s.replace(/[^a-zA-Z0-9.-]/g, function (match) {
+    return s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
         return '_' + match[0].charCodeAt(0).toString(16) + '_';
     });
 }
@@ -1196,13 +1196,12 @@ function reproj_lgd_elem(){
 function reproj_symbol_layer() {
     for (var lyr_name in current_layers) {
         if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
-            var ref_layer_name = current_layers[lyr_name].ref_layer_name,
-                symbol = current_layers[lyr_name].symbol;
+            var symbol = current_layers[lyr_name].symbol;
 
             if (symbol == "text") {
                 // Reproject the labels :
                 map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d) {
-                    var pt = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
+                    var pt = path.centroid(d.geometry);
                     return { 'x': pt[0], 'y': pt[1] };
                 });
             } else if (symbol == "image") {
@@ -1392,7 +1391,7 @@ function remove_ext_dataset_cleanup() {
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name) {
-    var g_lyr_name = "#" + name;
+    var g_lyr_name = "#" + _app.layer_to_id.get(name);
 
     // Making some clean-up regarding the result layer :
     if (current_layers[name].is_result) {
@@ -1672,7 +1671,7 @@ function change_projection(proj_name) {
     var layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
     if (!layer_name) {
         var layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
+        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
     }
     if (layer_name) {
         scale_to_lyr(layer_name);
@@ -1700,7 +1699,7 @@ function handle_active_layer(name) {
         parent_div = selec.parentElement;
         name = parent_div.parentElement.getAttribute("layer_name");
     } else {
-        selec = document.querySelector("#sortable ." + name + " .active_button");
+        selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
         parent_div = selec.parentElement;
     }
     var func = function func() {
@@ -2125,149 +2124,6 @@ function export_layer_geo(layer, type, projec, proj4str) {
         console.log(error);
     });
 }
-
-// function make_export_layer_box(){
-//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
-//                          i18next.t("app_page.export_box.geo_title_box"),
-//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
-//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
-//
-//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-//         if(sample_no_values.has(name))
-//             return 0;
-//         else if(current_layers[name].renderer
-//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
-//             return 0;
-//         return 1;
-//     });
-//
-//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-//
-//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
-//              .insert("select").attr("id", "layer_to_export");
-//
-//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-//              .insert("select").attr("id", "datatype_to_use");
-//
-//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
-//              .insert("select").attrs({id: "projection_to_use", disabled: true});
-//
-//     let proj4_input = box_content.append("input")
-//         .attr("id", "proj4str")
-//         .styles({display: 'none', width: '200px'})
-//         .on('keyup', function(){
-//             if(this.value.length == 0){
-//                 button_ok.disabled = "true";
-//             } else {
-//                 button_ok.disabled = ""
-//             }
-//         });
-//
-//     layer_names.forEach( name => {
-//         selec_layer.append("option").attr("value", name).text(name);
-//     });
-//
-//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-//         selec_type.append("option").attr("value", name).text(name);
-//     });
-//
-//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-//     });
-//
-//     selec_type.on("change", function(){
-//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
-//             selec_projection.node().options.selectedIndex = 0;
-//             selec_projection.attr("disabled", true);
-//             button_ok.disabled = "";
-//         } else {
-//             selec_projection.attr("disabled", null);
-//         }
-//     });
-//
-//     selec_projection.on("change", function(){
-//         if(this.value == "proj4string"){
-//             proj4_input.style("display", "initial");
-//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
-//                 button_ok.disabled = "true";
-//         } else {
-//             proj4_input.style("display", "none");
-//             button_ok.disabled = "";
-//         }
-//     });
-//
-//     // TODO : allow export to "geopackage" format ?
-//     let extensions = new Map([
-//         ["GeoJSON", "geojson"],
-//         ["TopoJSON", "topojson"],
-//         ["ESRI Shapefile", "zip"],
-//         ["GML", "zip"],
-//         ["KML", "kml"]]);
-//
-//     dialogBox.then( confirmed => { if(confirmed){
-//         let layer = selec_layer.node().value,
-//             type = selec_type.node().value,
-//             projec = selec_projection.node().value;
-//         let formToSend = new FormData();
-//         formToSend.append("layer", layer);
-//         formToSend.append("layer_name", current_layers[layer].key_name);
-//         formToSend.append("format", type);
-//         if(projec == "proj4string")
-//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
-//         else
-//             formToSend.append("projection", JSON.stringify({"name" : projec}));
-//
-//         xhrequest("POST", '/get_layer2', formToSend, true)
-//             .then( data => {
-//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
-//                     let error_message;
-//                     if(data.indexOf('{"Error"') < 5){
-//                         data = JSON.parse(data);
-//                         error_message = i18next.t(data.Error);
-//                     } else {
-//                         error_message = i18next.t('app_page.common.error_msg');
-//                     }
-//                     swal({title: "Oops...",
-//                          text: error_message,
-//                          type: "error",
-//                          allowOutsideClick: false,
-//                          allowEscapeKey: false
-//                         }).then( () => { null; },
-//                                   () => { null; });
-//                     return;
-//                 }
-//                 let ext = extensions.get(type),
-//                     dataStr;
-//                 if(ext.indexOf("json") > -1)
-//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-//                 else if (ext.indexOf("kml") > -1)
-//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-//                 else
-//                     dataStr = "data:application/zip;base64," + data;
-//
-//                 let dlAnchorElem = document.createElement('a');
-//                 dlAnchorElem.setAttribute("href", dataStr);
-//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-//                 document.body.appendChild(dlAnchorElem);
-//                 dlAnchorElem.click();
-//                 dlAnchorElem.remove();
-//
-//             }, error => {
-//                 console.log(error);
-//             });
-//         dialogBox.dialog("destroy").remove();
-//     }});
-// }
-
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917
@@ -5040,7 +4896,7 @@ var fields_Anamorphose = {
                     //   return;
                     // }
 
-                    var layer_select = document.getElementById(layer).getElementsByTagName("path"),
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                         sqrt = Math.sqrt,
                         abs = Math.abs,
                         d_values = [],
@@ -6123,7 +5979,7 @@ function render_TypoSymbols(rendering_params, new_name) {
     var ref_layer_id = _app.layer_to_id.get(layer_name);
     var field = rendering_params.field;
     var layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    var ref_selection = document.getElementById(ref_layer_id).getElementsByTagName("path");
+    var ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName("path");
     var nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer() {
@@ -6569,7 +6425,14 @@ var render_label = function render_label(layer, rendering_params, options) {
         nb_ft = ref_selection.length;
         for (var i = 0; i < nb_ft; i++) {
             var ft = ref_selection[i].__data__;
-            new_layer_data.push({ label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry) });
+            var coords = d3.geoCentroid(ft.geometry);
+            new_layer_data.push({
+                id: i,
+                type: "Feature",
+                properties: { label: ft.properties[label_field], x: coords[0], y: coords[1] },
+                geometry: { type: "Point", coordinates: coords }
+            });
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
         }
     }
     var context_menu = new ContextMenu(),
@@ -6582,7 +6445,7 @@ var render_label = function render_label(layer, rendering_params, options) {
     };
 
     map.append("g").attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var centroid = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
+        var centroid = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
             "x": centroid[0],
@@ -6591,7 +6454,7 @@ var render_label = function render_label(layer, rendering_params, options) {
             "text-anchor": "middle"
         };
     }).styles({ "font-size": font_size, "font-family": selected_font, fill: txt_color }).text(function (d) {
-        return d.label;
+        return d.properties.label;
     }).on("mouseover", function () {
         this.style.cursor = "pointer";
     }).on("mouseout", function () {
@@ -6798,17 +6661,20 @@ function get_other_layer_names() {
 */
 function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer) {
     var _list_display_name = get_display_name_on_layer_list(layer_name),
+        layer_id = encodeId(layer_name),
         layers_listed = layer_list.node(),
         li = document.createElement("li");
 
     li.setAttribute("layer_name", layer_name);
     if (type_layer == "result") {
-        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - ", type_geom[0], " - ", nb_ft, " features"].join(''));
+        li.setAttribute("class", ["sortable_result ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(type_geom[1]), "</div> "].join('');
     } else if (type_layer == "sample") {
-        li.setAttribute("class", ["sortable ", layer_name].join(''));
-        li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.setAttribute("class", ["sortable ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type_geom), "</div> "].join('');
     }
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
@@ -6991,7 +6857,7 @@ function make_box_type_fields(layer_name) {
         }
         modal_box.close();
         container.remove();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     };
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
@@ -7005,7 +6871,7 @@ function make_box_type_fields(layer_name) {
             document.removeEventListener('keydown', helper_esc_key_twbs);
         }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
@@ -8268,17 +8134,21 @@ function add_layer_topojson(text, options) {
         "fill": type != 'Line' ? random_color1 : null,
         "fill-opacity": type != 'Line' ? 0.90 : 0 });
 
-    var class_name = [target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null, lyr_name_to_add].join('');
+    var class_name = [target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null, lyr_id].join('');
 
     var layers_listed = layer_list.node(),
         li = document.createElement("li"),
         nb_fields = field_names.length,
-        layer_tooltip_content = ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " ", i18next.t("app_page.common.feature", { count: +nb_ft }), " - ", nb_fields, " ", i18next.t("app_page.common.field", { count: +nb_fields })].join(''),
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
+    // layer_tooltip_content =  [
+    //     "<b>", lyr_name_to_add, "</b> - ", type, " - ",
+    //     nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
+    //     nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
+    //
 
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
-    li.setAttribute("layer-tooltip", layer_tooltip_content);
+    // li.setAttribute("layer-tooltip", layer_tooltip_content);
     d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if (target_layer_on_add) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
@@ -9366,7 +9236,8 @@ function createStyleBoxLabel(layer_name) {
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
         selection.transition().attrs(function (d) {
-            return { x: d.coords[0], y: d.coords[1] };
+            var coords = path.centroid(d.geometry);
+            return { x: coords[0], y: coords[1] };
         });
     });
 
@@ -13683,7 +13554,7 @@ function createTableDOM(data, options) {
 }
 
 function make_table(layer_name) {
-    var features = svg_map.querySelector("#" + _app.idLayer.get(layer_name)).childNodes,
+    var features = svg_map.querySelector("#" + _app.layer_to_id.get(layer_name)).childNodes,
         table = [];
     if (!features[0].__data__.properties || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0) {
         for (var i = 0, nb_ft = features.length; i < nb_ft; i++) {

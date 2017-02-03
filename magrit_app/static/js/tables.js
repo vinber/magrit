@@ -308,7 +308,7 @@ function createTableDOM(data, options){
 }
 
 function make_table(layer_name){
-    let features = svg_map.querySelector("#" + _app.idLayer.get(layer_name)).childNodes,
+    let features = svg_map.querySelector("#" + _app.layer_to_id.get(layer_name)).childNodes,
         table = [];
     if(!features[0].__data__.properties
             || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0){

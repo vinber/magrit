@@ -1240,7 +1240,7 @@ var fields_Anamorphose = {
                 //   return;
                 // }
 
-                let layer_select = document.getElementById(layer).getElementsByTagName("path"),
+                let layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
@@ -2447,7 +2447,7 @@ function render_TypoSymbols(rendering_params, new_name){
     let ref_layer_id = _app.layer_to_id.get(layer_name);
     let field = rendering_params.field;
     let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    let ref_selection = document.getElementById(ref_layer_id).getElementsByTagName("path");
+    let ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer(){
@@ -2960,7 +2960,14 @@ var render_label = function(layer, rendering_params, options){
         nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
             let ft = ref_selection[i].__data__;
-            new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
+            let coords = d3.geoCentroid(ft.geometry);
+            new_layer_data.push({
+                id: i,
+                type: "Feature",
+                properties: {label: ft.properties[label_field], x: coords[0], y: coords[1]},
+                geometry: {type: "Point", coordinates: coords}
+            });
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
         }
     }
     var context_menu = new ContextMenu(),
@@ -2974,7 +2981,7 @@ var render_label = function(layer, rendering_params, options){
         .data(new_layer_data).enter()
         .insert("text")
         .attrs( (d,i) => {
-          let centroid = path.centroid({'type': 'Point', 'coordinates': d.coords});
+          let centroid = path.centroid(d.geometry);
           return {
             "id": "Feature_" + i,
             "x": centroid[0],
@@ -2984,7 +2991,7 @@ var render_label = function(layer, rendering_params, options){
             };
         })
         .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
-        .text(d => d.label)
+        .text(d => d.properties.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){
