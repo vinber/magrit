@@ -45,60 +45,6 @@ def retry(ExceptionToCheck, tries=4, delay=2):
     return deco_retry
 
 
-# if RUN_LOCAL:
-#     browsers = ['Firefox']
-# elif RUN_DOCKER:
-#     browsers = [DesiredCapabilities.CHROME,
-#                 DesiredCapabilities.FIREFOX]
-
-
-# def on_platforms(platforms, local):
-#     if local:
-#         def decorator(base_class):
-#             module = sys.modules[base_class.__module__].__dict__
-#             for i, platform in enumerate(platforms):
-#                 d = dict(base_class.__dict__)
-#                 d['browser'] = platform
-#                 name = "%s_%s" % (base_class.__name__, i + 1)
-#                 module[name] = type(name, (base_class,), d)
-#             pass
-#         return decorator
-#
-#     def decorator(base_class):
-#         module = sys.modules[base_class.__module__].__dict__
-#         for i, platform in enumerate(platforms):
-#             d = dict(base_class.__dict__)
-#             d['desired_capabilities'] = platform
-#             name = "%s_%s" % (base_class.__name__, i + 1)
-#             module[name] = type(name, (base_class,), d)
-#     return decorator
-
-# def get_port_available(port_nb):
-#     for available_port in range(port_nb, port_nb + 1000):
-#         with closing(socket(AF_INET, SOCK_STREAM)) as sock:
-#             if sock.connect_ex(("0.0.0.0", available_port)) == 0:
-#                 continue
-#             else:
-#                 return str(available_port)
-
-#def setUpModule():
-#    global p  # Could very likely be changed to avoid global variable
-#    global port
-#    port = get_port_available(7878)
-#    p = psutil.Popen(["magrit", "--port", port], stdout=PIPE, stderr=PIPE)
-#    time.sleep(5)
-#
-#
-#def tearDownModule():
-#    pass
-#    p.send_signal(SIGINT)
-#    p.wait(5)
-#    try:
-#        p.kill()
-#    except:
-#        pass
-# port = 9999
-
 @flaky
 class MainFunctionnalitiesTest(unittest.TestCase):
     """
@@ -784,6 +730,75 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root_links", 5):
             self.fail("Legend won't display")
 
+    def test_propSymbolsTypo(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value('brazil')
+
+        driver.find_element_by_css_selector('.btn_ok').click()
+        self.waitClickButtonSwal()
+        self.validTypefield()
+        self.open_menu_section(2)
+        self.clickWaitTransition('#button_proptypo')
+        Select(driver.find_element_by_id('PropSymbolTypo_field_1')
+                ).select_by_visible_text('Pop2014')
+        Select(driver.find_element_by_id('PropSymbolTypo_field_2')
+                ).select_by_visible_text('REGIONS')
+        driver.find_element_by_id("Typo_class").click()
+        time.sleep(0.2)
+        self.waitClickButtonSwal()
+        self.click_elem_retry(
+            driver.find_element_by_id(
+                "categorical_box").find_elements_by_css_selector(
+                ".btn_ok")[0])
+
+        driver.find_element_by_id('propTypo_yes').click()
+        time.sleep(1.5)
+        if not self.try_element_present(By.ID, "legend_root2", 5) \
+                or not self.try_element_present(By.ID, 'legend_root'):
+            self.fail("Legend won't display on Prop Symbol Choro")
+
+    def test_propSymbolsChoro(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value('brazil')
+
+        driver.find_element_by_css_selector('.btn_ok').click()
+        self.waitClickButtonSwal()
+        self.validTypefield()
+        self.open_menu_section(2)
+        self.clickWaitTransition('#button_choroprop')
+        Select(driver.find_element_by_id('PropSymbolChoro_field_1')
+                ).select_by_visible_text('Pop2014')
+        Select(driver.find_element_by_id('PropSymbolChoro_field_2')
+                ).select_by_visible_text('popdensity2014')
+        driver.find_element_by_id("ico_jenks").click()
+
+        if not self.is_element_present(By.CSS_SELECTOR, "#container_sparkline_propsymbolchoro > canvas"):
+            self.fail("Missing mini sparkline canvas in the interface")
+
+        driver.find_element_by_id('propChoro_yes').click()
+        time.sleep(1.5)
+        if not self.try_element_present(By.ID, "legend_root2", 5) \
+                or not self.try_element_present(By.ID, 'legend_root'):
+            self.fail("Legend won't display on Prop Symbol Choro")
+
+        # Try to remove a layer from the map (the 'World' layer, here by default):
+        driver.find_element_by_css_selector('.sortable.World > div > #trash_button').click()
+        # Valid the confirmation :
+        self.waitClickButtonSwal()
+        nb_layer_t1 = driver.execute_script(
+            '''a = Object.getOwnPropertyNames(current_layers).length; return a;''')
+        self.assertEqual(nb_layer_t1, 2)
+        nb_layer_t2 = driver.execute_script(
+            '''a = document.querySelector('.layer_list').childNodes.length; return a;''')
+        self.assertEqual(nb_layer_t2, 2)
+
+
     def test_propSymbols(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -839,10 +854,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         #     ".styleBox").find_elements_by_css_selector(
         #     ".btn_ok")[0].click()
         # driver.find_element_by_id("legend_button").click()
-
-    # def test_propSymbolsChoro(self):
-    #     # TODO
-    #     pass
 
     def validTypefield(self):
         self.click_elem_retry(

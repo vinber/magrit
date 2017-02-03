@@ -12586,15 +12586,17 @@ function apply_user_preferences(json_pref) {
     var set_final_param = function set_final_param() {
         if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
             zoom_without_redraw();
+            s = map_config.projection_scale;
+            t = map_config.projection_translate;
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
+            reproj_symbol_layer();
             var desired_order = layers.map(function (i) {
                 return i.layer_name;
             });
@@ -12768,8 +12770,8 @@ function apply_user_preferences(json_pref) {
                     current_layer_prop.fields_type = _layer.fields_type;
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
-
-                var layer_selec = map.select("#" + layer_name);
+                var layer_id = _app.layer_to_id.get(layer_name);
+                var layer_selec = map.select("#" + layer_id);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
                 if (_layer['stroke-width-const']) {
