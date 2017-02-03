@@ -1318,7 +1318,8 @@ function binds_layers_buttons(layer_name){
         alert("This shouldn't happend");
         return;
     }
-    let sortable_elem = d3.select("#sortable").select("." + layer_name);
+    let layer_id = _app.layer_to_id.get(layer_name);
+    let sortable_elem = d3.select("#sortable").select("." + layer_id);
     sortable_elem.on("dblclick", () => { handle_click_layer(layer_name); });
     sortable_elem.on("contextmenu", () => { d3.event.preventDefault(); return; });
     sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
@@ -1353,7 +1354,7 @@ function displayInfoOnMove(){
 
         for(let i = nb_layer-1; i > -1; i--){
             if(layers[i].style.visibility != "hidden"){
-                top_visible_layer = layers[i].id
+                top_visible_layer = _app.id_to_layer(layers[i].id);
                 break;
             }
         }

@@ -1072,7 +1072,8 @@ function binds_layers_buttons(layer_name) {
         alert("This shouldn't happend");
         return;
     }
-    var sortable_elem = d3.select("#sortable").select("." + layer_name);
+    var layer_id = _app.layer_to_id.get(layer_name);
+    var sortable_elem = d3.select("#sortable").select("." + layer_id);
     sortable_elem.on("dblclick", function () {
         handle_click_layer(layer_name);
     });
@@ -1124,7 +1125,7 @@ function displayInfoOnMove() {
 
             for (var i = nb_layer - 1; i > -1; i--) {
                 if (layers[i].style.visibility != "hidden") {
-                    top_visible_layer = layers[i].id;
+                    top_visible_layer = _app.id_to_layer(layers[i].id);
                     break;
                 }
             }
@@ -5240,7 +5241,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
     if (!geojson_pt_layer) {
         (function () {
             var make_geojson_pt_layer = function make_geojson_pt_layer() {
-                var ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     result = [];
                 for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
                     var ft = ref_layer_selection[i].__data__,
@@ -5337,7 +5338,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             return d.properties.color;
         }).style("stroke", "black").style("stroke-width", 1 / zs);
     } else if (symbol_type === "rect") {
-        map.append("g").attr("id", layer_to_add).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
+        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
             var size = d.properties[t_field_name];
             result_data[layer_to_add].push(d.properties);
             return {
@@ -6119,9 +6120,10 @@ var fields_TypoSymbol = {
 
 function render_TypoSymbols(rendering_params, new_name) {
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
+    var ref_layer_id = _app.layer_to_id.get(layer_name);
     var field = rendering_params.field;
     var layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    var ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
+    var ref_selection = document.getElementById(ref_layer_id).getElementsByTagName("path");
     var nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer() {
@@ -6162,6 +6164,9 @@ function render_TypoSymbols(rendering_params, new_name) {
     }
 
     var new_layer_data = make_geojson_pt_layer();
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     var context_menu = new ContextMenu(),
         getItems = function getItems(self_parent) {
         return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -6171,7 +6176,7 @@ function render_TypoSymbols(rendering_params, new_name) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_to_add, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
+    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
         var symb = rendering_params.symbols_map.get(d.properties.symbol_field),
             coords = path.centroid(d.geometry);
         return {
@@ -6550,13 +6555,16 @@ var render_label = function render_label(layer, rendering_params, options) {
     var font_size = rendering_params.ref_font_size + "px";
     var new_layer_data = [];
     var layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0 ? check_layer_name(rendering_params.uo_layer_name) : check_layer_name("Labels_" + layer);
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     var nb_ft = void 0;
     if (options && options.data) {
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer) {
         var type_ft_ref = rendering_params.symbol || "path";
-        var ref_selection = document.getElementById(layer).getElementsByTagName(type_ft_ref);
+        var ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
         for (var i = 0; i < nb_ft; i++) {
@@ -6573,7 +6581,7 @@ var render_label = function render_label(layer, rendering_params, options) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_to_add, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+    map.append("g").attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
         var centroid = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
         return {
             "id": "Feature_" + i,
@@ -11425,7 +11433,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function handle_legend(layer) {
     var state = current_layers[layer].renderer;
     if (state != undefined) {
-        var class_name = [".lgdf", layer].join('_');
+        var class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
         if (map.selectAll(class_name).node()) {
             if (!map.selectAll(class_name).attr("display")) map.selectAll(class_name).attr("display", "none");else {
                 map.selectAll(class_name).attr("display", null);

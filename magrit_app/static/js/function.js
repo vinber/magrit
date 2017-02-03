@@ -1482,7 +1482,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
     if(!geojson_pt_layer){
         function make_geojson_pt_layer(){
-          let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+          let ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
               result = [];
           for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
             let ft = ref_layer_selection[i].__data__,
@@ -1576,7 +1576,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         .style("stroke-width", 1 / zs);
     } else if(symbol_type === "rect"){
       map.append("g")
-        .attr("id", layer_to_add)
+        .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
         .data(geojson_pt_layer.features)
@@ -2444,9 +2444,10 @@ var fields_TypoSymbol = {
 
 function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
+    let ref_layer_id = _app.layer_to_id.get(layer_name);
     let field = rendering_params.field;
     let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    let ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
+    let ref_selection = document.getElementById(ref_layer_id).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer(){
@@ -2487,13 +2488,16 @@ function render_TypoSymbols(rendering_params, new_name){
     }
 
     var new_layer_data = make_geojson_pt_layer();
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
             {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
     ];
 
-    map.append("g").attrs({id: layer_to_add, class: "layer"})
+    map.append("g").attrs({id: layer_id, class: "layer"})
         .selectAll("image")
         .data(new_layer_data.features).enter()
         .insert("image")
@@ -2942,13 +2946,16 @@ var render_label = function(layer, rendering_params, options){
     let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);
+    let layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     let nb_ft;
     if(options && options.data){
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer){
         let type_ft_ref = rendering_params.symbol || "path";
-        let ref_selection = document.getElementById(layer).getElementsByTagName(type_ft_ref);
+        let ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
@@ -2962,7 +2969,7 @@ var render_label = function(layer, rendering_params, options){
             {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
         ];
 
-    map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
+    map.append("g").attrs({id: layer_id, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")

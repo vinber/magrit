@@ -9,7 +9,7 @@
 function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
-        let class_name = [".lgdf", layer].join('_');
+        let class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
         if(map.selectAll(class_name).node()){
             if(!map.selectAll(class_name).attr("display"))
                 map.selectAll(class_name).attr("display", "none");
