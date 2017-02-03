@@ -956,7 +956,7 @@ function setUpInterface(resume_project)
 
           for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
               let n = a.target.childNodes[i].getAttribute("layer_name");
-              desired_order[i] = n;
+              desired_order[i] = _app.layer_to_id.get(n);
               actual_order[i] = layers[i].id;
           }
           for(let i = 0, len = desired_order.length; i < len; i++){
@@ -972,6 +972,13 @@ function setUpInterface(resume_project)
         onEnd: event => {
             document.body.classList.remove("no-drop");
         },
+    });
+}
+
+function encodeId(s) {
+    if (s==='') return '_';
+    return s.replace(/[^a-zA-Z0-9.-]/g, function(match) {
+        return '_'+match[0].charCodeAt(0).toString(16)+'_';
     });
 }
 
@@ -1177,7 +1184,9 @@ var defs = map.append("defs");
 var _app = {
     to_cancel: undefined,
     targeted_layer_added: false,
-    current_functionnality: undefined
+    current_functionnality: undefined,
+    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1354,7 +1363,7 @@ function displayInfoOnMove(){
             return;
         }
 
-        let id_top_layer = "#" + top_visible_layer,
+        let id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
             symbol = current_layers[top_visible_layer].symbol;
 
         d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
@@ -1419,14 +1428,14 @@ function reproj_symbol_layer(){
           symbol = current_layers[lyr_name].symbol;
 
       if (symbol == "text") { // Reproject the labels :
-          map.select('#' + lyr_name)
+          map.select('#' + _app.layer_to_id.get(lyr_name))
                 .selectAll(symbol)
                 .attrs( d => {
                   let pt = path.centroid({'type': 'Point', 'coordinates': d.coords});
                   return {'x': pt[0], 'y': pt[1]};
                 });
       } else if (symbol == "image"){ // Reproject pictograms :
-          map.select('#' + lyr_name)
+          map.select('#' + _app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .attrs(function(d,i){
                 let coords = path.centroid(d.geometry),
@@ -1434,7 +1443,7 @@ function reproj_symbol_layer(){
                 return { 'x': coords[0] - size, 'y': coords[1] - size };
               });
       } else if(symbol == "circle"){ // Reproject Prop Symbol :
-          map.select("#"+lyr_name)
+          map.select("#"+_app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
@@ -1446,7 +1455,7 @@ function reproj_symbol_layer(){
                 };
               });
       } else if (symbol == "rect") { // Reproject Prop Symbol :
-          map.select("#"+lyr_name)
+          map.select("#"+_app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
@@ -1737,7 +1746,7 @@ function zoom_without_redraw(){
           .transition()
           .duration(50)
           .style("stroke-width", function(){
-                let lyr_name = this.id;
+                let lyr_name = _app.id_to_layer.get(this.id);
                 return current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
@@ -1752,7 +1761,7 @@ function zoom_without_redraw(){
           .transition()
           .duration(50)
           .style("stroke-width", function(){
-                let lyr_name = this.id;
+                let lyr_name = _app.id_to_layer.get(this.id);
                 return current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
@@ -1788,7 +1797,8 @@ function redraw_legends_symbols(targeted_node){
         var legend_nodes = [targeted_node];
 
     for(let i=0; i<legend_nodes.length; ++i){
-        let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
+        let layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+            layer_name = _app.id_to_layer.get(layer_id),
             rendered_field = current_layers[layer_name].rendered_field,
             nested = legend_nodes[i].getAttribute("nested"),
             display_value = legend_nodes[i].getAttribute("display"),
@@ -1806,7 +1816,7 @@ function redraw_legends_symbols(targeted_node){
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
-        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
         if(transform_param)
@@ -2010,8 +2020,8 @@ function handle_active_layer(name){
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    map.select("#"+name).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.select("#"+_app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
     if(at_end){
         displayInfoOnMove();

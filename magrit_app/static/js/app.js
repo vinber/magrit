@@ -775,7 +775,7 @@ function setUpInterface(resume_project) {
 
             for (var i = 0, len_i = a.target.childNodes.length; i < len_i; i++) {
                 var n = a.target.childNodes[i].getAttribute("layer_name");
-                desired_order[i] = n;
+                desired_order[i] = _app.layer_to_id.get(n);
                 actual_order[i] = layers[i].id;
             }
             for (var _i2 = 0, len = desired_order.length; _i2 < len; _i2++) {
@@ -791,6 +791,13 @@ function setUpInterface(resume_project) {
         onEnd: function onEnd(event) {
             document.body.classList.remove("no-drop");
         }
+    });
+}
+
+function encodeId(s) {
+    if (s === '') return '_';
+    return s.replace(/[^a-zA-Z0-9.-]/g, function (match) {
+        return '_' + match[0].charCodeAt(0).toString(16) + '_';
     });
 }
 
@@ -976,7 +983,9 @@ var defs = map.append("defs");
 var _app = {
     to_cancel: undefined,
     targeted_layer_added: false,
-    current_functionnality: undefined
+    current_functionnality: undefined,
+    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1127,7 +1136,7 @@ function displayInfoOnMove() {
                 };
             }
 
-            var id_top_layer = "#" + top_visible_layer,
+            var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
                 symbol = current_layers[top_visible_layer].symbol;
 
             d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
@@ -1191,20 +1200,20 @@ function reproj_symbol_layer() {
 
             if (symbol == "text") {
                 // Reproject the labels :
-                map.select('#' + lyr_name).selectAll(symbol).attrs(function (d) {
+                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d) {
                     var pt = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
                     return { 'x': pt[0], 'y': pt[1] };
                 });
             } else if (symbol == "image") {
                 // Reproject pictograms :
-                map.select('#' + lyr_name).selectAll(symbol).attrs(function (d, i) {
+                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d, i) {
                     var coords = path.centroid(d.geometry),
                         size = +this.getAttribute('width').slice(0, -2) / 2;
                     return { 'x': coords[0] - size, 'y': coords[1] - size };
                 });
             } else if (symbol == "circle") {
                 // Reproject Prop Symbol :
-                map.select("#" + lyr_name).selectAll(symbol).style('display', function (d) {
+                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
                     return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
                 }).attrs(function (d) {
                     var centroid = path.centroid(d);
@@ -1216,7 +1225,7 @@ function reproj_symbol_layer() {
                 });
             } else if (symbol == "rect") {
                 // Reproject Prop Symbol :
-                map.select("#" + lyr_name).selectAll(symbol).style('display', function (d) {
+                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
                     return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
                 }).attrs(function (d) {
                     var centroid = path.centroid(d),
@@ -1473,13 +1482,13 @@ function zoom_without_redraw() {
     if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
         transform = d3.zoomTransform(svg_map);
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = this.id;
+            var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / transform.k + "px";
         }).attr("transform", transform.toString() + rot_val);
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", transform.toString() + rot_val);
     } else {
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = this.id;
+            var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k + "px";
         }).attr("transform", d3.event.transform + rot_val);
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
@@ -1506,7 +1515,8 @@ function redraw_legends_symbols(targeted_node) {
     if (!targeted_node) var legend_nodes = document.querySelectorAll("#legend_root2");else var legend_nodes = [targeted_node];
 
     for (var i = 0; i < legend_nodes.length; ++i) {
-        var layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
+        var layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+            layer_name = _app.id_to_layer.get(layer_id),
             rendered_field = current_layers[layer_name].rendered_field,
             nested = legend_nodes[i].getAttribute("nested"),
             display_value = legend_nodes[i].getAttribute("display"),
@@ -1524,7 +1534,7 @@ function redraw_legends_symbols(targeted_node) {
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
-        var new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+        var new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
         if (transform_param) new_lgd.setAttribute("transform", transform_param);
@@ -1706,8 +1716,8 @@ function handle_active_layer(name) {
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    map.select("#" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.select("#" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
     if (at_end) {
         displayInfoOnMove();
@@ -2934,7 +2944,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
 
     if (result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];else if (user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];else {
-        var layer = svg_map.querySelector('#' + layer_name);
+        var layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
         var db_data = Array.prototype.map.call(layer.children, function (d) {
             return d.__data__.properties;
         });
@@ -4906,7 +4916,7 @@ function render_stewart() {
         current_layers[n_layer_name].colors_breaks = colors_breaks;
         current_layers[n_layer_name].rendered_field = field1_n;
         current_layers[n_layer_name].color_palette = { name: "Oranges", reversed: true };
-        map.select("#" + n_layer_name).selectAll("path").styles(function (d, i) {
+        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").styles(function (d, i) {
             return { 'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0 };
         });
         handle_legend(n_layer_name);
@@ -5089,7 +5099,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
-                        map.select("#" + n_layer_name).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
+                        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
                         switch_accordion_section();
                     }, function (err) {
                         display_error_during_computation();
@@ -5130,7 +5140,7 @@ var fields_Anamorphose = {
                     current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                     current_layers[n_layer_name].renderer = "Carto_doug";
                     current_layers[n_layer_name].rendered_field = field_name;
-                    map.select("#" + n_layer_name).selectAll("path").style("fill", function () {
+                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill", function () {
                         return Colors.random();
                     }).style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
                     switch_accordion_section();
@@ -5310,9 +5320,12 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             geojson_pt_layer = make_geojson_pt_layer();
         })();
     }
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = [];
     if (symbol_type === 'circle') {
-        map.append("g").attr("id", layer_to_add).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
+        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
             result_data[layer_to_add].push(d.properties);
             return {
                 'id': ['PropSymbol_', i, ' feature_', d.id].join(''),
@@ -5373,16 +5386,15 @@ function render_categorical(layer, rendering_params) {
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
-    map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
-        field = rendering_params.rendered_field,
-        layer_to_render = map.select("#" + layer).selectAll("path");
-
-    layer_to_render.style("fill", function (d, i) {
+        field = rendering_params.rendered_field;
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render.style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k + "px");
+    layer_to_render.selectAll("path").style("fill", function (d, i) {
         return colorsByFeature[i];
-    }).style("fill-opacity", 0.9).style("stroke-opacity", 0.9).style("stroke", "black");
+    }).styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000' });
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = field;
     current_layers[layer].fill_color = { "class": rendering_params['colorByFeature'] };
@@ -5409,11 +5421,11 @@ function render_choro(layer, rendering_params) {
         no_data: rendering_params.no_data,
         type: rendering_params.type,
         breaks: breaks };
-    var layer_to_render = map.select("#" + layer).selectAll("path");
-    map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
-    layer_to_render.style('fill-opacity', 1).style("fill", function (d, i) {
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render.style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
+    layer_to_render.selectAll("path").styles({ 'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000' }).style("fill", function (d, i) {
         return rendering_params['colorsByFeature'][i];
-    }).style('stroke-opacity', 1).style("stroke", "black");
+    });
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = { "class": rendering_params['colorsByFeature'] };
@@ -5793,6 +5805,10 @@ var render_discont = function render_discont() {
 
     new_layer_name = new_layer_name.length > 0 && /^\w+$/.test(new_layer_name) ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
+    var id_layer = encodeId(new_layer_name);
+    _app.layer_to_id.set(new_layer_name, id_layer);
+    _app.id_to_layer.set(id_layer, new_layer_name);
+
     // field_id = field_id == "__default__" ? undefined : field_id;
     var field_id = undefined;
 
@@ -5838,7 +5854,7 @@ var render_discont = function render_discont() {
         }).filter(function (d) {
             return d[1] !== undefined;
         });
-        var result_layer = map.append("g").attr("id", new_layer_name).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
+        var result_layer = map.append("g").attr("id", id_layer).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
 
         result_data[new_layer_name] = [];
         var data_result = result_data[new_layer_name],
@@ -6484,7 +6500,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
 
         var new_layer_name = add_layer_topojson(data, options);
         if (!new_layer_name) return;
-        var layer_to_render = map.select("#" + new_layer_name).selectAll("path"),
+        var layer_to_render = map.select("#" + _app.layer_to_id.get(new_layer_name)).selectAll("path"),
             fij_field_name = field_fij,
             fij_values = result_data[new_layer_name].map(function (obj) {
             return +obj[fij_field_name];
@@ -6709,20 +6725,24 @@ function make_content_summary(serie) {
 }
 
 function copy_layer(ref_layer, new_name, type_result) {
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + ref_layer).cloneNode(true));
-    svg_map.lastChild.setAttribute("id", new_name);
+    var id_new_layer = encodeId(new_name);
+    var id_ref_layer = _app.layer_to_id.get(ref_layer);
+    _app.layer_to_id.set(new_name, id_new_layer);
+    _app.id_to_layer.set(id_new_layer, new_name);
+    svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + id_ref_layer).cloneNode(true));
+    svg_map.lastChild.setAttribute("id", id_new_layer);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
     current_layers[new_name] = { n_features: current_layers[ref_layer].n_features,
         type: current_layers[ref_layer].type,
         ref_layer_name: ref_layer };
     result_data[new_name] = [];
-    var selec_src = document.getElementById(ref_layer).getElementsByTagName("path");
-    var selec_dest = document.getElementById(new_name).getElementsByTagName("path");
+    var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
+    var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
     for (var i = 0; i < selec_src.length; i++) {
         selec_dest[i].__data__ = selec_src[i].__data__;
         result_data[new_name].push(selec_dest[i].__data__.properties);
     }
-    document.getElementById(new_name).style.visibility = "";
+    document.getElementById(id_new_layer).style.visibility = "";
     up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
@@ -8191,7 +8211,12 @@ function add_layer_topojson(text, options) {
     var random_color1 = ColorsSelected.random(),
         lyr_name = layers_names[0],
         lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name),
+        lyr_id = encodeId(lyr_name_to_add),
         skip_rescale = options && options.skip_rescale ? skip_rescale : false;
+
+    _app.layer_to_id.set(lyr_name_to_add, lyr_id);
+    _app.id_to_layer.set(lyr_id, lyr_name_to_add);
+
     var nb_ft = topoObj.objects[lyr_name].geometries.length,
         topoObj_objects = topoObj.objects[lyr_name],
         field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -8216,7 +8241,7 @@ function add_layer_topojson(text, options) {
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    map.append("g").attr("id", lyr_name_to_add).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attr("d", path).attr("id", function (d, ix) {
+    map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
             if (field_names.length > 0) {
                 if (d.id != undefined && d.id != ix) {
@@ -8233,7 +8258,7 @@ function add_layer_topojson(text, options) {
     }).styles({ "stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
         "stroke-opacity": .4,
         "fill": type != 'Line' ? random_color1 : null,
-        "fill-opacity": type != 'Line' ? 0.90 : 0 }).attrs({ "height": "100%", "width": "100%" });
+        "fill-opacity": type != 'Line' ? 0.90 : 0 });
 
     var class_name = [target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null, lyr_name_to_add].join('');
 
@@ -8338,7 +8363,7 @@ function add_layer_topojson(text, options) {
 function scale_to_lyr(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#" + name).selectAll(symbol).each(function (d, i) {
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (bbox_layer_path === undefined) {
             bbox_layer_path = bbox_path;
@@ -8363,7 +8388,7 @@ function scale_to_lyr(name) {
 function center_map(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#" + name).selectAll(symbol).each(function (d, i) {
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
             bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
@@ -9085,7 +9110,7 @@ function make_single_color_menu(layer, fill_prev) {
     var symbol = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "path";
 
     var fill_color_section = d3.select("#fill_color_section"),
-        g_lyr_name = "#" + layer,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer),
         last_color = fill_prev && fill_prev.single ? fill_prev.single : "#FFF";
     var block = fill_color_section.insert('p');
     block.insert("span").html(i18next.t("app_page.layer_style_popup.fill_color"));
@@ -9101,7 +9126,7 @@ function make_random_color(layer) {
     var block = d3.select("#fill_color_section");
     block.selectAll('span').remove();
     block.insert("span").styles({ "cursor": "pointer", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.toggle_colors")).on("click", function (d, i) {
-        map.select("#" + layer).selectAll(symbol).transition().style("fill", function () {
+        map.select("#" + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style("fill", function () {
             return Colors.names[Colors.random()];
         });
         current_layers[layer].fill_color = { "random": true };
@@ -9110,7 +9135,7 @@ function make_random_color(layer) {
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map) {
-    map.select("#" + layer).selectAll(symbol).transition().style("fill", function (d) {
+    map.select("#" + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style("fill", function (d) {
         return color_cat_map.get(d.properties[field_name]);
     });
 }
@@ -9206,7 +9231,7 @@ function createStyleBoxTypoSymbols(layer_name) {
     var existing_box = document.querySelector(".styleBox");
     if (existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("image"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field;
@@ -9315,7 +9340,7 @@ function createStyleBoxLabel(layer_name) {
     var existing_box = document.querySelector(".styleBox");
     if (existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("text"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name;
 
     var prev_settings = [],
@@ -9449,7 +9474,7 @@ function createStyleBox(layer_name) {
     var type = current_layers[layer_name].type,
         rendering_params = null,
         renderer = current_layers[layer_name].renderer,
-        g_lyr_name = "#" + layer_name,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
@@ -9886,7 +9911,7 @@ function createStyleBox(layer_name) {
 }
 
 function get_fields_name(layer_name) {
-    var elem = document.getElementById(layer_name).childNodes[0];
+    var elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
     if (!elem.__data__ || !elem.__data__.properties) {
         return null;
     } else {
@@ -9895,7 +9920,7 @@ function get_fields_name(layer_name) {
 }
 
 function createStyleBox_ProbSymbol(layer_name) {
-    var g_lyr_name = "#" + layer_name,
+    var g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         type_method = current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,
@@ -11556,9 +11581,9 @@ function createLegend_nothing(layer, field, title, subtitle, rect_fill_value) {
         boxgap = 12,
         xpos = 30,
         ypos = h / 2,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' ');
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
 
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_nothing', class: tmp_class_name, layer_field: field }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+    var legend_root = map.insert('g').attrs({ id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
     var rect_under_legend = legend_root.insert("rect");
 
@@ -11580,11 +11605,11 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
         xpos = 30,
         ypos = 30,
         y_pos2 = ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         breaks = current_layers[layer].breaks,
         nb_class = breaks.length;
 
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+    var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
     var rect_under_legend = legend_root.insert("rect");
 
@@ -11600,7 +11625,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     if (current_layers[layer].renderer == "DiscLayer") {
         // Todo use the same way to store the threshold for links and disclayer
         // in order to avoid theses condition
-        var values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'), function (d) {
+        var values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'), function (d) {
             return +d.__data__.properties["disc_value"];
         });
         current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
@@ -11735,19 +11760,19 @@ function createLegend_symbol(layer, field, title, subtitle) {
         ypos = 30,
         y_pos2 = ypos + space_elem * 1.5,
         nb_features = current_layers[layer].n_features,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         symbol_type = current_layers[layer].symbol;
 
     var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)',
+    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
 
     var rect_under_legend = legend_root.insert("rect");
     legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
     legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
-    var ref_symbols = document.getElementById(layer).getElementsByTagName(symbol_type),
+    var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
         sqrt = Math.sqrt;
 
@@ -11884,7 +11909,7 @@ function createLegend_choro(layer, field, title, subtitle) {
         ypos = 30,
         last_pos = null,
         y_pos2 = ypos + boxheight * 1.8,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         nb_class,
         data_colors_label;
 
@@ -11892,7 +11917,7 @@ function createLegend_choro(layer, field, title, subtitle) {
 
     var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root', class: tmp_class_name, layer_field: field,
         transform: 'translate(0,0)', 'boxgap': boxgap,
-        'rounding_precision': rounding_precision });
+        'rounding_precision': rounding_precision, layer_name: layer });
 
     var rect_under_legend = legend_root.insert("rect");
 
@@ -11979,7 +12004,7 @@ function createLegend_choro(layer, field, title, subtitle) {
 function createlegendEditBox(legend_id, layer_name) {
     function bind_selections() {
         box_class = [layer_name, "_legend_popup"].join('');
-        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_name].join(''));
+        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", _app.layer_to_id.get(layer_name)].join(''));
         title_content = legend_node.querySelector("#legendtitle");
         subtitle_content = legend_node.querySelector("#legendsubtitle");
         note_content = legend_node.querySelector("#legend_bottom_note");
@@ -12041,14 +12066,15 @@ function createlegendEditBox(legend_id, layer_name) {
     var b = box_body.append('p');
     b.insert('span').html(i18next.t("app_page.legend_style_box.var_name"));
     b.insert('input').attr("value", subtitle_content.textContent).styles({ float: "right" }).on("keyup", function () {
+        var empty = subtitle_content.textContent == "";
         // Move up the title to its original position if the subtitle isn't empty :
-        if (subtitle_content.textContent == "" && this.value != "") {
+        if (empty && this.value != "") {
             title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
         }
         // Change the displayed content :
         subtitle_content.textContent = this.value;
-        // Move down the title if the new subtitle is empty :
-        if (subtitle_content.textContent == "") {
+        // Move down the title (if it wasn't already moved down), if the new subtitle is empty
+        if (!empty && subtitle_content.textContent == "") {
             title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
         }
     });
@@ -12141,7 +12167,7 @@ function createlegendEditBox(legend_id, layer_name) {
         var gap_section = box_body.insert("p");
         gap_section.append("input").style('margin-left', '0px').attrs({ "type": "checkbox", id: 'style_lgd' }).on("change", function () {
             var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-            legend_node = svg_map.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+            legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
             var boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
             var rounding_precision = legend_node.getAttribute("rounding_precision");
             var transform_param = legend_node.getAttribute("transform"),
@@ -12151,7 +12177,7 @@ function createlegendEditBox(legend_id, layer_name) {
             legend_node.remove();
             createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision);
             bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
+            if (transform_param) svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
         });
         gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
 
@@ -12160,7 +12186,7 @@ function createlegendEditBox(legend_id, layer_name) {
         var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         var _gap_section = box_body.insert("p");
         _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
-            legend_node = svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+            legend_node = svg_map.querySelector(["#legend_root2.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
             var rendered_field = current_layers[layer_name].rendered_field;
             var nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
             var rounding_precision = legend_node.getAttribute("rounding_precision");
@@ -12171,7 +12197,7 @@ function createlegendEditBox(legend_id, layer_name) {
             legend_node.remove();
             createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
             bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
+            if (transform_param) svg_map.querySelector(["#legend_root2.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
         });
         _gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t("app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = _current_state;
@@ -12419,7 +12445,8 @@ function get_map_template() {
     for (var _i = map_config.n_layers - 1; _i > -1; --_i) {
         layers_style[_i] = new Object();
         var layer_style_i = layers_style[_i],
-            layer_name = layers._groups[0][_i].id,
+            layer_id = layers._groups[0][_i].id,
+            layer_name = _app.id_to_layer.get(layer_id),
             current_layer_prop = current_layers[layer_name],
             nb_ft = current_layer_prop.n_features,
             selection = void 0;
@@ -12427,7 +12454,7 @@ function get_map_template() {
         layer_style_i.layer_name = layer_name;
         layer_style_i.n_features = nb_ft;
         layer_style_i.visible = layers._groups[0][_i].style.visibility;
-        var lgd = document.getElementsByClassName('lgdf_' + layer_name);
+        var lgd = document.getElementsByClassName('lgdf_' + layer_id);
         if (lgd.length == 0) {
             layer_style_i.legend = undefined;
         } else if (lgd.length == 1) {
@@ -12445,7 +12472,7 @@ function get_map_template() {
         if (current_layer_prop.options_disc !== undefined) layer_style_i.options_disc = current_layer_prop.options_disc;
 
         if (current_layer_prop.targeted) {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
             layer_style_i.targeted = true;
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
@@ -12460,11 +12487,11 @@ function get_map_template() {
                 layer_style_i.step = current_layers.Graticule.step;
             }
         } else if (!current_layer_prop.renderer) {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1) {
             var type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_name).selectAll(type_symbol);
-            var features = Array.prototype.map.call(svg_map.querySelector("#" + layer_name).getElementsByTagName(type_symbol), function (d) {
+            selection = map.select("#" + layer_id).selectAll(type_symbol);
+            var features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function (d) {
                 return d.__data__;
             });
             layer_style_i.symbol = type_symbol;
@@ -12483,7 +12510,7 @@ function get_map_template() {
             }
         } else if (current_layer_prop.renderer == "Stewart" || current_layer_prop.renderer == "Gridded" || current_layer_prop.renderer == "Choropleth" || current_layer_prop.renderer == "Categorical" || current_layer_prop.renderer == "Carto_doug" || current_layer_prop.renderer == "OlsonCarto") {
             (function () {
-                selection = map.select("#" + layer_name).selectAll("path");
+                selection = map.select("#" + layer_id).selectAll("path");
                 layer_style_i.renderer = current_layer_prop.renderer;
                 layer_style_i.topo_geom = String(current_layer_prop.key_name);
                 layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -12508,7 +12535,7 @@ function get_map_template() {
                 }
             })();
         } else if (current_layer_prop.renderer == "Links" || current_layer_prop.renderer == "DiscLayer") {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
@@ -12522,7 +12549,7 @@ function get_map_template() {
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
         } else if (current_layer_prop.renderer == "TypoSymbols") {
-            selection = map.select("#" + layer_name).selectAll("image");
+            selection = map.select("#" + layer_id).selectAll("image");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.symbols_map = [].concat(_toConsumableArray(current_layer_prop.symbols_map));
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
@@ -12540,8 +12567,8 @@ function get_map_template() {
             }
             layer_style_i.current_state = state_to_save;
         } else if (current_layer_prop.renderer == "Label") {
-            selection = map.select("#" + layer_name).selectAll("text");
-            var _selec = document.getElementById(layer_name).getElementsByTagName('text');
+            selection = map.select("#" + layer_id).selectAll("text");
+            var _selec = document.getElementById(layer_id).getElementsByTagName('text');
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             layer_style_i.default_font = current_layer_prop.default_font;
@@ -12557,7 +12584,7 @@ function get_map_template() {
             layer_style_i.data_labels = _features;
             layer_style_i.current_position = current_position;
         } else {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         }
         layer_style_i.stroke_opacity = selection.style("stroke-opacity");
         layer_style_i.fill_opacity = selection.style("fill-opacity");
@@ -12995,9 +13022,11 @@ function apply_user_preferences(json_pref) {
                                 self_parent.style.display = "none";
                             } }];
                     };
-
+                    var layer_id = encodeId(layer_name);
+                    _app.layer_to_id.set(layer_name, layer_id);
+                    _app.id_to_layer.set(layer_id, layer_name);
                     // Add the features at there original positions :
-                    map.append("g").attrs({ id: layer_name, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
+                    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
                         var symb = symbols_map.get(d.properties.symbol_field),
                             prop = prop = _layer.current_state[j],
                             coords = prop.pos;
@@ -13054,6 +13083,9 @@ function reorder_layers(desired_order) {
     var layers = svg_map.getElementsByClassName('layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
+    desired_order = desired_order.map(function (el) {
+        return _app.layer_to_id.get(el);
+    });
     for (var i = 0; i < nb_layers; i++) {
         if (document.getElementById(desired_order[i])) parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
@@ -13079,7 +13111,7 @@ function rehandle_legend(layer_name, properties) {
         } else if (prop.type == 'legend_root_links') {
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision);
         }
-        var lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name);
+        var lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);
         lgd.setAttribute('display', prop.display);
     }
@@ -13643,7 +13675,7 @@ function createTableDOM(data, options) {
 }
 
 function make_table(layer_name) {
-    var features = svg_map.getElementById(layer_name).childNodes,
+    var features = svg_map.querySelector("#" + _app.idLayer.get(layer_name)).childNodes,
         table = [];
     if (!features[0].__data__.properties || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0) {
         for (var i = 0, nb_ft = features.length; i < nb_ft; i++) {

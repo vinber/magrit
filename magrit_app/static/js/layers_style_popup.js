@@ -19,7 +19,7 @@ function handle_click_layer(layer_name){
 
 function make_single_color_menu(layer, fill_prev, symbol = "path"){
     var fill_color_section = d3.select("#fill_color_section"),
-        g_lyr_name = "#" + layer,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer),
         last_color = (fill_prev && fill_prev.single) ? fill_prev.single : "#FFF";
     let block = fill_color_section.insert('p');
     block.insert("span")
@@ -43,7 +43,7 @@ function make_random_color(layer, symbol = "path"){
         .styles({"cursor": "pointer", "text-align": "center"})
         .html(i18next.t("app_page.layer_style_popup.toggle_colors"))
         .on("click", function(d,i){
-            map.select("#" + layer)
+            map.select("#" + _app.layer_to_id.get(layer))
                 .selectAll(symbol)
                 .transition()
                 .style("fill", () => Colors.names[Colors.random()]);
@@ -53,7 +53,7 @@ function make_random_color(layer, symbol = "path"){
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map){
-    map.select("#"+layer)
+    map.select("#"+_app.layer_to_id.get(layer))
         .selectAll(symbol)
         .transition()
         .style("fill", d => color_cat_map.get(d.properties[field_name]));
@@ -130,7 +130,7 @@ function createStyleBoxTypoSymbols(layer_name){
     let existing_box = document.querySelector(".styleBox");
     if(existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("image"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field;
@@ -259,7 +259,7 @@ function createStyleBoxLabel(layer_name){
     let existing_box = document.querySelector(".styleBox");
     if(existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("text"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name;
 
     var prev_settings = [],
@@ -444,7 +444,7 @@ function createStyleBox(layer_name){
     var type = current_layers[layer_name].type,
         rendering_params = null,
         renderer = current_layers[layer_name].renderer,
-        g_lyr_name = "#" + layer_name,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
@@ -955,7 +955,7 @@ function createStyleBox(layer_name){
 }
 
 function get_fields_name(layer_name){
-  let elem = document.getElementById(layer_name).childNodes[0];
+  let elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
   if(!elem.__data__ || !elem.__data__.properties){
     return null;
   } else {
@@ -964,7 +964,7 @@ function get_fields_name(layer_name){
 }
 
 function createStyleBox_ProbSymbol(layer_name){
-    var g_lyr_name = "#" + layer_name,
+    var g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         type_method = current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,

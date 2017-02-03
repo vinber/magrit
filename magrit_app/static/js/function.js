@@ -1079,7 +1079,7 @@ function render_stewart(){
           current_layers[n_layer_name].colors_breaks = colors_breaks;
           current_layers[n_layer_name].rendered_field = field1_n;
           current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
-          map.select("#"+n_layer_name)
+          map.select("#" + _app.layer_to_id.get(n_layer_name))
                   .selectAll("path")
                   .styles( (d,i) => ({'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0}));
           handle_legend(n_layer_name);
@@ -1313,7 +1313,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
-                        map.select("#" + n_layer_name)
+                        map.select("#" + _app.layer_to_id.get(n_layer_name))
                                 .selectAll("path")
                                 .style("fill-opacity", 0.8)
                                 .style("stroke", "black")
@@ -1358,7 +1358,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                         current_layers[n_layer_name].renderer = "Carto_doug";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        map.select("#" + n_layer_name)
+                        map.select("#" + _app.layer_to_id.get(n_layer_name))
                             .selectAll("path")
                             .style("fill", function(){ return Colors.random(); })
                             .style("fill-opacity", 0.8)
@@ -1550,10 +1550,13 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
         geojson_pt_layer = make_geojson_pt_layer();
     }
+    let layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = []
     if(symbol_type === 'circle'){
       map.append("g")
-        .attr("id", layer_to_add)
+        .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
         .data(geojson_pt_layer.features)
@@ -1627,18 +1630,17 @@ function render_categorical(layer, rendering_params){
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
-    map.select("#" + layer).style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
-        field = rendering_params.rendered_field,
-        layer_to_render = map.select("#" + layer).selectAll("path");
-
-    layer_to_render.style("fill", (d,i) => colorsByFeature[i])
-                    .style("fill-opacity", 0.9)
-                    .style("stroke-opacity", 0.9)
-                    .style("stroke", "black");
+        field = rendering_params.rendered_field;
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render
+        .style("opacity", 1)
+        .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
+    layer_to_render.selectAll("path")
+        .style("fill", (d,i) => colorsByFeature[i])
+        .styles({'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000'});
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = field;
     current_layers[layer].fill_color = {"class": rendering_params['colorByFeature']};
@@ -1665,14 +1667,14 @@ function render_choro(layer, rendering_params){
                         no_data: rendering_params.no_data,
                         type: rendering_params.type,
                         breaks: breaks}
-    var layer_to_render = map.select("#"+layer).selectAll("path");
-    map.select("#"+layer)
-            .style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
-    layer_to_render.style('fill-opacity', 1)
-                   .style("fill", (d,i) => rendering_params['colorsByFeature'][i] )
-                   .style('stroke-opacity', 1)
-                   .style("stroke", "black");
+    var layer_to_render = map.select("#"+_app.layer_to_id.get(layer));
+    layer_to_render
+        .style("opacity", 1)
+        .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
+    layer_to_render
+        .selectAll("path")
+        .styles({'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000'})
+        .style("fill", (d,i) => rendering_params['colorsByFeature'][i] );
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
@@ -2105,6 +2107,10 @@ var render_discont = function(){
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
                     ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
+    let id_layer = encodeId(new_layer_name);
+    _app.layer_to_id.set(new_layer_name, id_layer);
+    _app.id_to_layer.set(id_layer, new_layer_name);
+
     // field_id = field_id == "__default__" ? undefined : field_id;
     let field_id = undefined;
 
@@ -2137,7 +2143,7 @@ var render_discont = function(){
         }
 
         breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
-        let result_layer = map.append("g").attr("id", new_layer_name)
+        let result_layer = map.append("g").attr("id", id_layer)
                 .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
@@ -2883,7 +2889,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
 
               let new_layer_name = add_layer_topojson(data, options);
               if(!new_layer_name) return;
-              let layer_to_render = map.select("#" + new_layer_name).selectAll("path"),
+              let layer_to_render = map.select("#" + _app.layer_to_id.get(new_layer_name)).selectAll("path"),
                   fij_field_name = field_fij,
                   fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
                   nb_ft = fij_values.length,

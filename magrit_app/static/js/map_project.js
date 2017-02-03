@@ -139,7 +139,8 @@ function get_map_template(){
     for(let i=map_config.n_layers-1; i > -1; --i){
         layers_style[i] = new Object();
         let layer_style_i = layers_style[i],
-            layer_name = layers._groups[0][i].id,
+            layer_id = layers._groups[0][i].id,
+            layer_name = _app.id_to_layer.get(layer_id),
             current_layer_prop = current_layers[layer_name],
             nb_ft = current_layer_prop.n_features,
             selection;
@@ -147,7 +148,7 @@ function get_map_template(){
         layer_style_i.layer_name = layer_name;
         layer_style_i.n_features = nb_ft;
         layer_style_i.visible = layers._groups[0][i].style.visibility;
-        let lgd = document.getElementsByClassName('lgdf_' + layer_name);
+        let lgd = document.getElementsByClassName('lgdf_' + layer_id);
         if(lgd.length == 0){
             layer_style_i.legend = undefined;
         } else if (lgd.length == 1) {
@@ -169,7 +170,7 @@ function get_map_template(){
             layer_style_i.options_disc = current_layer_prop.options_disc;
 
         if (current_layer_prop.targeted){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
             layer_style_i.targeted = true;
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
@@ -184,11 +185,11 @@ function get_map_template(){
                 layer_style_i.step = current_layers.Graticule.step;
             }
         } else if(!current_layer_prop.renderer){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_name).selectAll(type_symbol);
-            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_name).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
+            selection = map.select("#" + layer_id).selectAll(type_symbol);
+            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
             layer_style_i.symbol = type_symbol;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             if(current_layer_prop.rendered_field2)
@@ -210,7 +211,7 @@ function get_map_template(){
                     || current_layer_prop.renderer == "Categorical"
                     || current_layer_prop.renderer == "Carto_doug"
                     || current_layer_prop.renderer == "OlsonCarto"){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
             layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -235,7 +236,7 @@ function get_map_template(){
             }
         } else if (current_layer_prop.renderer == "Links"
                     || current_layer_prop.renderer == "DiscLayer"){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
@@ -249,7 +250,7 @@ function get_map_template(){
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
         } else if (current_layer_prop.renderer == "TypoSymbols"){
-            selection = map.select("#" + layer_name).selectAll("image")
+            selection = map.select("#" + layer_id).selectAll("image")
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.symbols_map = [...current_layer_prop.symbols_map];
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
@@ -267,8 +268,8 @@ function get_map_template(){
             }
             layer_style_i.current_state = state_to_save;
         } else if(current_layer_prop.renderer == "Label") {
-            selection = map.select("#" + layer_name).selectAll("text");
-            let selec = document.getElementById(layer_name).getElementsByTagName('text');
+            selection = map.select("#" + layer_id).selectAll("text");
+            let selec = document.getElementById(layer_id).getElementsByTagName('text');
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             layer_style_i.default_font = current_layer_prop.default_font;
@@ -284,7 +285,7 @@ function get_map_template(){
             layer_style_i.data_labels = features;
             layer_style_i.current_position = current_position
         } else {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         }
         layer_style_i.stroke_opacity = selection.style("stroke-opacity");
         layer_style_i.fill_opacity = selection.style("fill-opacity");
@@ -713,9 +714,11 @@ function apply_user_preferences(json_pref){
                       {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
                       {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
               ];
-
+              let layer_id = encodeId(layer_name);
+              _app.layer_to_id.set(layer_name, layer_id);
+              _app.id_to_layer.set(layer_id, layer_name);
               // Add the features at there original positions :
-              map.append("g").attrs({id: layer_name, class: "layer"})
+              map.append("g").attrs({id: layer_id, class: "layer"})
                   .selectAll("image")
                   .data(new_layer_data.features).enter()
                   .insert("image")
@@ -769,6 +772,7 @@ function reorder_layers(desired_order){
     let layers = svg_map.getElementsByClassName('layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
+    desired_order = desired_order.map(el => _app.layer_to_id.get(el))
     for(let i = 0; i < nb_layers; i++){
         if(document.getElementById(desired_order[i]))
           parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
@@ -796,7 +800,7 @@ function rehandle_legend(layer_name, properties){
         } else if(prop.type == 'legend_root_links'){
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision)
         }
-        let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name);
+        let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);
         lgd.setAttribute('display', prop.display);
     }

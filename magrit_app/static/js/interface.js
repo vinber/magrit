@@ -771,7 +771,12 @@ function add_layer_topojson(text, options){
     var random_color1 = ColorsSelected.random(),
         lyr_name = layers_names[0],
         lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name),
+        lyr_id = encodeId(lyr_name_to_add),
         skip_rescale = (options && options.skip_rescale) ? skip_rescale : false;
+
+    _app.layer_to_id.set(lyr_name_to_add, lyr_id);
+    _app.id_to_layer.set(lyr_id, lyr_name_to_add);
+
     let nb_ft = topoObj.objects[lyr_name].geometries.length,
         topoObj_objects = topoObj.objects[lyr_name],
         field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -798,34 +803,33 @@ function add_layer_topojson(text, options){
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    map.append("g").attr("id", lyr_name_to_add)
-          .attr("class", data_to_load ? "targeted_layer layer" : "layer")
-          .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
-          .selectAll(".subunit")
-          .data(topojson.feature(topoObj, topoObj_objects).features)
-          .enter().append("path")
-          .attr("d", path)
-          .attr("id", function(d, ix) {
-                if(data_to_load){
-                    if(field_names.length > 0){
-                        if(d.id != undefined && d.id != ix){
-                            d.properties["_uid"] = d.id;
-                            d.id = +ix;
-                        }
-                        user_data[lyr_name_to_add].push(d.properties);
-                    } else {
-                        user_data[lyr_name_to_add].push({"id": d.id || ix});
-                    }
-                } else if(result_layer_on_add)
-                    result_data[lyr_name_to_add].push(d.properties);
+    map.append("g").attr("id", lyr_id)
+        .attr("class", data_to_load ? "targeted_layer layer" : "layer")
+        .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
+        .selectAll(".subunit")
+        .data(topojson.feature(topoObj, topoObj_objects).features)
+        .enter().append("path")
+        .attrs({"d": path, "height": "100%", "width": "100%"})
+        .attr("id", function(d, ix) {
+              if(data_to_load){
+                  if(field_names.length > 0){
+                      if(d.id != undefined && d.id != ix){
+                          d.properties["_uid"] = d.id;
+                          d.id = +ix;
+                      }
+                      user_data[lyr_name_to_add].push(d.properties);
+                  } else {
+                      user_data[lyr_name_to_add].push({"id": d.id || ix});
+                  }
+              } else if(result_layer_on_add)
+                  result_data[lyr_name_to_add].push(d.properties);
 
-                return "feature_" + ix;
-            })
-          .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
-                   "stroke-opacity": .4,
-                   "fill": type != 'Line' ? random_color1 : null,
-                   "fill-opacity": type != 'Line' ? 0.90 : 0})
-          .attrs({"height": "100%", "width": "100%"});
+              return "feature_" + ix;
+          })
+        .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
+                 "stroke-opacity": .4,
+                 "fill": type != 'Line' ? random_color1 : null,
+                 "fill-opacity": type != 'Line' ? 0.90 : 0});
 
     let class_name = [
         target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null,
@@ -941,7 +945,7 @@ function add_layer_topojson(text, options){
 function scale_to_lyr(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#"+name).selectAll(symbol).each( (d,i) => {
+    map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
         var bbox_path = path.bounds(d);
         if(bbox_layer_path === undefined){
             bbox_layer_path = bbox_path;
@@ -967,7 +971,7 @@ function scale_to_lyr(name){
 function center_map(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#"+name).selectAll(symbol).each(function(d, i){
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
         let bbox_path = path.bounds(d);
         if(!bbox_layer_path)
             bbox_layer_path = bbox_path;

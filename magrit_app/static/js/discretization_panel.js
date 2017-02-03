@@ -470,7 +470,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
     else {
-      let layer = svg_map.querySelector('#' + layer_name);
+      let layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
       var db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
     }
     var color_array = [],
