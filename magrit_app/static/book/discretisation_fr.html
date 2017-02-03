@@ -90,6 +90,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 <ul>
 <li>Il est également possible d'utiliser les discrétisations en <strong>progression arithmétique</strong>, en <strong>progression géométrique</strong> ou de saisir manuellement les bornes de classes.</li>
 </ul>
+<p>Vous pouvez consulter l'article <a href="http://mappemonde.mgm.fr/119geov1/">Géovisualisation des discrétisations : une petite application pédagogique</a>, dans la revue <em>MappeMonde</em> n°119, qui met en avant l'importance du choix d'une discrétisation adaptée en cartographie.</p>
 
                 </div>
 
@@ -132,20 +133,6 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 
         <!-- Livereload script (if served using the cli tool) -->
         
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3001");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload(true); // force reload from server (not from cache)
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
-    
 
         <script src="highlight.js"></script>
         <script src="book.js"></script>

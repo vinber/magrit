@@ -317,7 +317,7 @@ function setUpInterface(resume_project) {
 
     var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "input-height", type: "number", "value": h,
+    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit", type: "number", "value": h,
         class: "m_elem_right list_elem_section4 button_st4 i18n",
         'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
         document.getElementById('btn_s4').click();
@@ -325,6 +325,7 @@ function setUpInterface(resume_project) {
         w = Math.round(window.innerWidth - 361);
         h = window.innerHeight - 55;
         canvas_mod_size([w, h]);
+        document.getElementById('map_ratio_select').value = "ratio_user";
     });
 
     var g = dv4.append("li").styles({ margin: "1px", padding: "4px" });
