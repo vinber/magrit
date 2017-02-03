@@ -878,12 +878,9 @@ function make_ico_choice() {
                 if (this.classList.contains('active')) {
                     switch_accordion_section('btn_s2b');
                     return;
+                } else {
+                    clean_menu_function();
                 }
-                fields_handler.unfill();
-                var previous_button = document.getElementById("button_" + _app.current_functionnality.name);
-                previous_button.style.filter = "invert(0%) saturate(100%)";
-                clean_menu_function();
-                previous_button.classList.remove('active');
             }
 
             // Highlight the icon of the selected functionnality :
@@ -1416,7 +1413,9 @@ function remove_layer_cleanup(name) {
         d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
         d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
-        if (_app.current_functionnality) fields_handler.unfill();
+        if (_app.current_functionnality) {
+            clean_menu_function();
+        }
 
         // Update some global variables :
         field_join_map = [];
@@ -1432,14 +1431,7 @@ function remove_layer_cleanup(name) {
         // Disabled the button allowing the user to choose type for its layer :
         document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
-        // Also reset the user choosen values, remembered for its ease :
-        fields_TypoSymbol.box_typo = undefined;
-        fields_TypoSymbol.rendering_params = {};
-        fields_TypoSymbol.cats = {};
-        fields_PropSymbolChoro.rendering_params = {};
-        fields_Typo.rendering_params = {};
-        fields_Choropleth.rendering_params = {};
-        fields_PropSymbolTypo.rendering_params = {};
+        reset_user_values();
     }
 
     // There is probably better ways in JS to delete the object,
@@ -3759,6 +3751,15 @@ function get_menu_option(func) {
 *
 */
 function clean_menu_function() {
+    if (fields_handler && fields_handler.unfill) {
+        fields_handler.unfill();
+        fields_handler = undefined;
+    }
+    if (_app.current_functionnality && _app.current_functionnality.name) {
+        var previous_button = document.getElementById("button_" + _app.current_functionnality.name);
+        previous_button.style.filter = "invert(0%) saturate(100%)";
+        previous_button.classList.remove('active');
+    }
     section2.select(".form-rendering").remove();
     document.getElementById('accordion2b').style.display = 'none';
     var btn_s2b = document.getElementById('btn_s2b');
@@ -3767,6 +3768,22 @@ function clean_menu_function() {
     btn_s2b.style.display = 'none';
 }
 
+/**
+*  Reset the user choosen values remembered for its ease
+*  (like discretization choice, symbols, etc. which are redisplayed as they
+*   were selected by the user)
+*
+*/
+function reset_user_values() {
+    //
+    fields_TypoSymbol.box_typo = undefined;
+    fields_TypoSymbol.rendering_params = {};
+    fields_TypoSymbol.cats = {};
+    fields_PropSymbolChoro.rendering_params = {};
+    fields_Typo.rendering_params = {};
+    fields_Choropleth.rendering_params = {};
+    fields_PropSymbolTypo.rendering_params = {};
+}
 /**
 * Function to remove each node (each <option>) of a <select> HTML element :
 *
@@ -8301,7 +8318,7 @@ function add_layout_feature(selected_feature) {
         if (existing_annotation) existing_id = Array.prototype.map.call(existing_annotation, function (elem) {
             return +elem.childNodes[0].id.split('text_annotation_')[1];
         });
-        for (var i = 0; i < 25; i++) {
+        for (var i = 0; i < 50; i++) {
             if (existing_id.indexOf(i) == -1) {
                 existing_id.push(i);
                 new_id = ["text_annotation_", i].join('');
@@ -8309,7 +8326,7 @@ function add_layout_feature(selected_feature) {
             } else continue;
         }
         if (!new_id) {
-            swal(i18next.t("app_page.common.error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
+            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_max_text_annot"), "error");
             return;
         }
         var txt_box = new Textbox(svg_map, new_id);
@@ -8389,64 +8406,61 @@ function add_layout_feature(selected_feature) {
                 }
             });
         }
-
-        //    } else if (selected_feature == "free_draw"){
-        //        handleCreateFreeDraw();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
 }
 
-function handleCreateFreeDraw() {
-    var start_point = void 0,
-        tmp_start_point = void 0,
-        active_line = void 0,
-        drawing_data = { "lines": [] };
-
-    var render_line = d3.line().x(function (d) {
-        return d[0];
-    }).y(function (d) {
-        return d[1];
-    });
-    var draw_calc = map.append("g").append("rect").attrs({ class: "draw_calc", x: 0, y: 0, width: w, height: h }).style("opacity", 0.1).style("fill", "grey");
-
-    function redraw() {
-        var lines;
-        lines = draw_calc.selectAll('.line').data(drawing_data.lines);
-        lines.enter().append('path').attrs({
-            "class": 'line',
-            stroke: function stroke(d) {
-                return d.color;
-            }
-        });
-        lines.attr("d", function (d) {
-            return render_line(d.points);
-        });
-        return lines.exit();
-    };
-
-    var drag = d3.drag().on('start', function () {
-        active_line = {
-            points: [],
-            color: "black"
-        };
-        drawing_data.lines.push(active_line);
-        return redraw();
-    }).on('drag', function () {
-        active_line.points.push([d3.event.x, d3.event.y]);
-        console.log(drawing_data);
-        return redraw();
-    }).on('end', function () {
-        if (active_line.points.length === 0) {
-            drawing_data.lines.pop();
-        }
-        active_line = null;
-        console.log(drawing_data);
-        return;
-    });
-    zoom.on("zoom", null);
-    draw_calc.call(drag);
-}
+// function handleCreateFreeDraw(){
+//     let start_point,
+//         tmp_start_point,
+//         active_line,
+//         drawing_data = { "lines": [] };
+//
+//     let render_line = d3.line().x(d => d[0]).y(d => d[1]);
+//     let draw_calc = map.append("g")
+//                         .append("rect")
+//                         .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
+//                         .style("opacity", 0.1).style("fill", "grey");
+//
+//     function redraw() {
+//       var lines;
+//       lines = draw_calc.selectAll('.line').data(drawing_data.lines);
+//       lines.enter().append('path').attrs({
+//         "class": 'line',
+//         stroke: function(d) {
+//           return d.color;
+//         }
+//       });
+//       lines.attr("d", function(d) { return render_line(d.points);});
+//       return lines.exit();
+//     };
+//
+//     let drag = d3.drag()
+//            .on('start', function() {
+//               active_line = {
+//                 points: [],
+//                 color: "black"
+//               };
+//               drawing_data.lines.push(active_line);
+//               return redraw();
+//             })
+//             .on('drag', function() {
+//               active_line.points.push([d3.event.x, d3.event.y]);
+//               console.log(drawing_data);
+//               return redraw();
+//             })
+//             .on('end', function() {
+//               if (active_line.points.length === 0) {
+//                 drawing_data.lines.pop();
+//               }
+//               active_line = null;
+//               console.log(drawing_data);
+//               return;
+//             });
+//     zoom.on("zoom", null);
+//     draw_calc.call(drag);
+// }
 
 function add_single_symbol(symbol_dataurl, x, y) {
     var width = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30px";
@@ -9608,7 +9622,7 @@ function createStyleBox(layer_name) {
                         seq_color_select.append("option").text(name).attr("value", name);
                     });
                     seq_color_select.node().value = prev_palette.name;
-                    popup.insert('p').attr('class', 'line_elem').style('text-align', 'center').insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                    popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
                         var pal_name = document.getElementById("coloramp_params").value;
                         recolor_stewart(pal_name, true);
                     });
@@ -11933,7 +11947,7 @@ function createlegendEditBox(legend_id, layer_name) {
     var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
         current_nb_dec;
 
-    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+    box_body.append('p').style('text-align', 'center').insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
 
     var a = box_body.append('p');
     a.append('span').html(i18next.t("app_page.legend_style_box.lgd_title"));
@@ -12488,7 +12502,7 @@ function save_map_template() {
         var dlAnchorElem = document.createElement('a');
         dlAnchorElem.style.display = "none";
         dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
-        dlAnchorElem.setAttribute("download", "magrit_project_properties.json");
+        dlAnchorElem.setAttribute("download", "magrit_project.json");
         document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
         dlAnchorElem.remove();
@@ -12536,6 +12550,12 @@ function apply_user_preferences(json_pref) {
         display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
         return;
     }
+    // Restore the state of the page (without open functionnality)
+    if (window.fields_handler) {
+        clean_menu_function();
+    }
+    // Clean the values remembered for the user from the previous rendering if any :
+    reset_user_values();
     {
         var layer_names = Object.getOwnPropertyNames(current_layers);
         for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
@@ -12805,7 +12825,7 @@ function apply_user_preferences(json_pref) {
                     }
                 }
 
-                if (_layer.fill_color.single) {
+                if (_layer.fill_color.single && _layer.renderer != "DiscLayer") {
                     layer_selec.selectAll('path').style("fill", _layer.fill_color.single);
                 } else if (_layer.fill_color.random) {
                     layer_selec.selectAll('path').style("fill", function () {

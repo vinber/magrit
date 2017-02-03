@@ -80,6 +80,15 @@ function get_menu_option(func){
 *
 */
 function clean_menu_function(){
+    if(fields_handler && fields_handler.unfill) {
+        fields_handler.unfill();
+        fields_handler = undefined;
+    }
+    if(_app.current_functionnality && _app.current_functionnality.name){
+        let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
+        previous_button.style.filter = "invert(0%) saturate(100%)";
+        previous_button.classList.remove('active');
+    }
     section2.select(".form-rendering").remove();
     document.getElementById('accordion2b').style.display = 'none';
     let btn_s2b = document.getElementById('btn_s2b');
@@ -88,6 +97,22 @@ function clean_menu_function(){
     btn_s2b.style.display = 'none';
 }
 
+/**
+*  Reset the user choosen values remembered for its ease
+*  (like discretization choice, symbols, etc. which are redisplayed as they
+*   were selected by the user)
+*
+*/
+function reset_user_values(){
+    //
+    fields_TypoSymbol.box_typo = undefined;
+    fields_TypoSymbol.rendering_params = {};
+    fields_TypoSymbol.cats = {};
+    fields_PropSymbolChoro.rendering_params = {};
+    fields_Typo.rendering_params = {};
+    fields_Choropleth.rendering_params = {};
+    fields_PropSymbolTypo.rendering_params = {};
+}
 /**
 * Function to remove each node (each <option>) of a <select> HTML element :
 *

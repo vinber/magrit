@@ -19,6 +19,7 @@
             "error_interrupted_projection_scalebar": "The scale bar isn't currently available for 'interrupted' projection",
             "error_existing_north_arrow": "Only one north arrow can be added - Replace the existing by a new one ?",
             "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
+            "error_max_text_annot": "Maximum number of text annotations has been reached",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
             "error_proj4_string": "Error : unrecognized projection definition",
@@ -225,16 +226,12 @@
             "subtitle1": "Choose a layer to be rendered :",
             "subtitle2": "Choose a dataset to link with geometries :",
             "target_layer": "<i>Target layer</i>",
-            "paris_hospitals": "Paris hospital locations <i>(Points)</i>",
             "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
             "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
-            "nuts2_data": "Nuts 2 (2006) European subdivisions <i>(Polygons)</i>",
+            "nuts2_data": "Nuts 2 (2013) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states",
             "world_countries": "World countries <i>(Polygons)</i>",
-            "us_states": "U.S.A states <i>(Polygons)</i>",
-            "tabular_dataset": "<i>Tabular dataset</i>",
-            "twincities": "International Twinning Agreements Between Cities <i>(To link with nuts2 geometries)</i>",
-            "martinique_data": "Martinique INSEE census dataset <i>(To link with martinique communes geometries)</i>"
+            "us_states": "U.S.A states <i>(Polygons)</i>"
         },
         "export_box": {
             "geo": "Export layers to a geographic format",
@@ -623,11 +620,6 @@
         "title": "Magrit - Thematic cartography",
         "buttons": {
             "enter": "Enter!",
-            "resume": "Resume last project...",
-            "overview": "Overview",
-            "examples": "Examples",
-            "doc": "Documentation",
-            "dev": "Developement",
             "start_now": "Start now"
         },
         "bloc": {
@@ -656,6 +648,9 @@
             "message": "We do NOT use cookies to profile or track users.",
             "accept": "I understand",
             "more_info": "More information"
+        },
+        "footer": {
+            "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Visit the gallery</a>"
         }
     },
     "contact_form": {

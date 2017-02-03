@@ -1011,7 +1011,7 @@ function add_layout_feature(selected_feature, options = {}){
                             existing_annotation,
                             elem => +elem.childNodes[0].id.split('text_annotation_')[1]
                             );
-        for(let i=0; i < 25; i++){
+        for(let i=0; i < 50; i++){
             if(existing_id.indexOf(i) == -1){
                 existing_id.push(i);
                 new_id = ["text_annotation_", i].join('');
@@ -1019,7 +1019,7 @@ function add_layout_feature(selected_feature, options = {}){
             } else continue;
         }
         if(!(new_id)){
-            swal(i18next.t("app_page.common.error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
+            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_max_text_annot"), "error");
             return;
         }
         let txt_box = new Textbox(svg_map, new_id);
@@ -1078,91 +1078,88 @@ function add_layout_feature(selected_feature, options = {}){
                 }, dismiss => { null; });
         }
     } else if (selected_feature == "north_arrow"){
-      if(!(northArrow.displayed)){
-          northArrow.display();
-      } else {
-          ask_existing_feature('north_arrow')
-            .then( _ => {
-              northArrow.remove();
-              northArrow.display();
-            }, dismiss => { null; });
-      }
+        if(!(northArrow.displayed)){
+            northArrow.display();
+        } else {
+            ask_existing_feature('north_arrow')
+              .then( _ => {
+                northArrow.remove();
+                northArrow.display();
+              }, dismiss => { null; });
+        }
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
     } else if (selected_feature == "ellipse"){
         handleClickAddEllipse();
     } else if (selected_feature == "symbol"){
-      if(!window.default_symbols){
-          window.default_symbols = [];
-          let a = prepare_available_symbols();
-          a.then(confirmed => {
-              let a = box_choice_symbol(window.default_symbols).then( result => {
-                  if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
-              });
-          });
-      } else {
-          let a = box_choice_symbol(window.default_symbols).then( result => {
-              if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
-          });
-      }
-
-//    } else if (selected_feature == "free_draw"){
-//        handleCreateFreeDraw();
+        if(!window.default_symbols){
+            window.default_symbols = [];
+            let a = prepare_available_symbols();
+            a.then(confirmed => {
+                let a = box_choice_symbol(window.default_symbols).then( result => {
+                    if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
+                });
+            });
+        } else {
+            let a = box_choice_symbol(window.default_symbols).then( result => {
+                if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
+            });
+        }
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
 }
 
-function handleCreateFreeDraw(){
-    let start_point,
-        tmp_start_point,
-        active_line,
-        drawing_data = { "lines": [] };
-
-    let render_line = d3.line().x(d => d[0]).y(d => d[1]);
-    let draw_calc = map.append("g")
-                        .append("rect")
-                        .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
-                        .style("opacity", 0.1).style("fill", "grey");
-
-    function redraw() {
-      var lines;
-      lines = draw_calc.selectAll('.line').data(drawing_data.lines);
-      lines.enter().append('path').attrs({
-        "class": 'line',
-        stroke: function(d) {
-          return d.color;
-        }
-      });
-      lines.attr("d", function(d) { return render_line(d.points);});
-      return lines.exit();
-    };
-
-    let drag = d3.drag()
-           .on('start', function() {
-              active_line = {
-                points: [],
-                color: "black"
-              };
-              drawing_data.lines.push(active_line);
-              return redraw();
-            })
-            .on('drag', function() {
-              active_line.points.push([d3.event.x, d3.event.y]);
-              console.log(drawing_data);
-              return redraw();
-            })
-            .on('end', function() {
-              if (active_line.points.length === 0) {
-                drawing_data.lines.pop();
-              }
-              active_line = null;
-              console.log(drawing_data);
-              return;
-            });
-    zoom.on("zoom", null);
-    draw_calc.call(drag);
-}
+// function handleCreateFreeDraw(){
+//     let start_point,
+//         tmp_start_point,
+//         active_line,
+//         drawing_data = { "lines": [] };
+//
+//     let render_line = d3.line().x(d => d[0]).y(d => d[1]);
+//     let draw_calc = map.append("g")
+//                         .append("rect")
+//                         .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
+//                         .style("opacity", 0.1).style("fill", "grey");
+//
+//     function redraw() {
+//       var lines;
+//       lines = draw_calc.selectAll('.line').data(drawing_data.lines);
+//       lines.enter().append('path').attrs({
+//         "class": 'line',
+//         stroke: function(d) {
+//           return d.color;
+//         }
+//       });
+//       lines.attr("d", function(d) { return render_line(d.points);});
+//       return lines.exit();
+//     };
+//
+//     let drag = d3.drag()
+//            .on('start', function() {
+//               active_line = {
+//                 points: [],
+//                 color: "black"
+//               };
+//               drawing_data.lines.push(active_line);
+//               return redraw();
+//             })
+//             .on('drag', function() {
+//               active_line.points.push([d3.event.x, d3.event.y]);
+//               console.log(drawing_data);
+//               return redraw();
+//             })
+//             .on('end', function() {
+//               if (active_line.points.length === 0) {
+//                 drawing_data.lines.pop();
+//               }
+//               active_line = null;
+//               console.log(drawing_data);
+//               return;
+//             });
+//     zoom.on("zoom", null);
+//     draw_calc.call(drag);
+// }
 
 function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
     let context_menu = new ContextMenu(),

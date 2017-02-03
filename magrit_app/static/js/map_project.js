@@ -310,7 +310,7 @@ function save_map_template(){
             let dlAnchorElem = document.createElement('a');
             dlAnchorElem.style.display = "none";
             dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
-            dlAnchorElem.setAttribute("download", "magrit_project_properties.json");
+            dlAnchorElem.setAttribute("download", "magrit_project.json");
             document.body.appendChild(dlAnchorElem);
             dlAnchorElem.click();
             dlAnchorElem.remove();
@@ -356,6 +356,12 @@ function apply_user_preferences(json_pref){
         display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
         return;
     }
+    // Restore the state of the page (without open functionnality)
+    if(window.fields_handler){
+        clean_menu_function();
+    }
+    // Clean the values remembered for the user from the previous rendering if any :
+    reset_user_values();
     {
         let layer_names = Object.getOwnPropertyNames(current_layers);
         for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
@@ -621,7 +627,7 @@ function apply_user_preferences(json_pref){
                     }
                 }
 
-                if(_layer.fill_color.single){
+                if(_layer.fill_color.single && _layer.renderer != "DiscLayer"){
                   layer_selec
                       .selectAll('path')
                       .style("fill", _layer.fill_color.single);

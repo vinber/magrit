@@ -18,7 +18,8 @@
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Remplacer l'échelle existante par une nouvelle ?",
             "error_interrupted_projection_scalebar": "L'échelle ne peut actuellement pas être affichée pour les projection \"interrompues\".",
             "error_existing_north_arrow": "Seule une flêche nord peut être ajoutée - Remplacer celle existante par une nouvelle ?",
-            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
+            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionalité.",
+            "error_max_text_annot": "Le nombre maximum d'annotations de texte a été atteint.",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
             "error_proj4_string": "Erreur : la projection saisie n'a pas été reconnue",
@@ -224,15 +225,12 @@
             "subtitle1": "Choix d'une couche géographique à ajouter :",
             "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :",
             "target_layer": "<i>Couche cible</i>",
-            "paris_hospitals": "Localisation des hopitaux de Paris <i>(Points)</i>",
             "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
-            "nuts2_data": "Nuts 2 (2006) avec données <i>(Polygones)</i>",
+            "nuts2_data": "Nuts 2 (2013) avec données <i>(Polygones)</i>",
+            "brazil": "États fédéraux du Brésil",
             "world_countries": "Pays du monde <i>(Polygones)</i>",
-            "us_states": "États des USA <i>(Polygones)</i>",
-            "tabular_dataset": "<i>Jeu de données tabulaires</i>",
-            "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
-            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>"
+            "us_states": "États des USA <i>(Polygones)</i>"
         },
         "export_box": {
             "geo": "Exporter vers un format compatible SIG",
@@ -646,6 +644,9 @@
             "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",
             "accept": "J'ai compris",
             "more_info": "En savoir plus"
+        },
+        "footer": {
+            "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Visiter la galerie</a>"
         }
     },
     "contact_form": {

@@ -1074,12 +1074,9 @@ function make_ico_choice(){
                     if(this.classList.contains('active')){
                         switch_accordion_section('btn_s2b');
                         return;
+                    } else {
+                        clean_menu_function();
                     }
-                    fields_handler.unfill();
-                    let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
-                    previous_button.style.filter = "invert(0%) saturate(100%)";
-                    clean_menu_function();
-                    previous_button.classList.remove('active');
                 }
 
                 // Highlight the icon of the selected functionnality :
@@ -1675,8 +1672,9 @@ function remove_layer_cleanup(name){
             .html(i18next.t("app_page.section1.add_geom"))
             .on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
-        if(_app.current_functionnality)
-            fields_handler.unfill()
+        if(_app.current_functionnality){
+            clean_menu_function();
+        }
 
         // Update some global variables :
         field_join_map = [];
@@ -1692,14 +1690,7 @@ function remove_layer_cleanup(name){
         // Disabled the button allowing the user to choose type for its layer :
         document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
-        // Also reset the user choosen values, remembered for its ease :
-        fields_TypoSymbol.box_typo = undefined;
-        fields_TypoSymbol.rendering_params = {};
-        fields_TypoSymbol.cats = {};
-        fields_PropSymbolChoro.rendering_params = {};
-        fields_Typo.rendering_params = {};
-        fields_Choropleth.rendering_params = {};
-        fields_PropSymbolTypo.rendering_params = {};
+        reset_user_values();
     }
 
     // There is probably better ways in JS to delete the object,

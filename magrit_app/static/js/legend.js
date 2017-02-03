@@ -764,7 +764,8 @@ function createlegendEditBox(legend_id, layer_name){
     var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
         current_nb_dec;
 
-    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+    box_body.append('p').style('text-align', 'center')
+        .insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
 
     let a = box_body.append('p');
     a.append('span')

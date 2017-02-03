@@ -742,9 +742,8 @@ function createStyleBox(layer_name){
             seq_color_select.node().value = prev_palette.name;
             popup.insert('p')
                 .attr('class', 'line_elem')
-                .style('text-align', 'center')
+                .styles({'text-align': 'center', 'margin': '0 !important'})
                 .insert("button")
-                .styles({"display": "inline", "margin-left": "10px"})
                 .attrs({"class": "button_st3", "id": "reverse_colramp"})
                 .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
                 .on("click", function(){
