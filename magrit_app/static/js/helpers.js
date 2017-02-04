@@ -34,9 +34,8 @@ function switch_accordion_section(id_elem){
     document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
-function path_to_geojson(id_layer){
-    if(id_layer.indexOf('#') != 0)
-        id_layer = ["#", id_layer].join('');
+function path_to_geojson(layer_name){
+    let id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
     var result_geojson = [];
     d3.select(id_layer)
         .selectAll("path")

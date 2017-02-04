@@ -103,7 +103,7 @@ var display_box_symbol_typo = function(layer, field, categories){
         container = document.getElementById("symbol_box"),
         _onclose = () => {
             deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             container.remove();
           }
@@ -117,13 +117,13 @@ var display_box_symbol_typo = function(layer, field, categories){
               _onclose();
           }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function(){
         let symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     }
     return deferred.promise;
 };

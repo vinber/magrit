@@ -136,7 +136,8 @@ function check_layer_name(name){
     if(name.match(/^\d+/)){
         name = "_" + name;
     }
-    if(!(current_layers.hasOwnProperty(name)))
+    // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
+    if(!current_layers.hasOwnProperty(name) && ["Graticule", "Sphere", "World"].indexOf(name) < 0)
         return name;
     else {
         let i = 1;
@@ -1048,7 +1049,6 @@ function render_stewart(){
       nb_class = (nb_class | 0);
       doc.getElementById('stewart_nb_class').value = nb_class;
   }
-  console.log(beta); console.log(span);
 
   if(reso && reso > 0){
       let res_test = test_maxmin_resolution(reso);
@@ -1113,7 +1113,10 @@ function render_stewart(){
       }, error => {
           display_error_during_computation();
           console.log(error);
-      });
+      }).catch(function(err){
+          display_error_during_computation();
+          console.log(err);
+      });;
 }
 
 

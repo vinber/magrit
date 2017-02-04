@@ -1400,7 +1400,7 @@ function remove_layer_cleanup(name) {
 
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
-    document.querySelector('#sortable .' + name).remove();
+    document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove();
 
     // Remove the layer from the "geo export" menu :
     var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
@@ -2027,6 +2027,8 @@ function export_compo_svg(output_name) {
     //unpatchSvgForInkscape();
 }
 
+// Maybe PNGs should be rendered on server side in order to avoid limitations that
+//   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png() {
     var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "web";
     var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
@@ -2037,17 +2039,24 @@ function _export_compo_png() {
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({ id: "canvas_map_export", height: h, width: w }).node(),
         targetSVG = document.querySelector("#svg_map"),
-        svg_xml = new XMLSerializer().serializeToString(targetSVG),
-        ctx = targetCanvas.getContext('2d'),
         mime_type = "image/png",
-        img = new Image();
+        svg_xml,
+        ctx,
+        img;
 
+    // At this point it might be better to wrap the whole function in a try catch ?
+    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+    try {
+        svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
+    } catch (err) {
+        display_error_during_computation(String(err));
+        return;
+    }
     if (scalefactor != 1) {
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            console.log(err);
-            display_error_during_computation("Too high resolution selected : " + String(err));
+            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
     }
@@ -3808,7 +3817,8 @@ function check_layer_name(name) {
     if (name.match(/^\d+/)) {
         name = "_" + name;
     }
-    if (!current_layers.hasOwnProperty(name)) return name;else {
+    // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
+    if (!current_layers.hasOwnProperty(name) && ["Graticule", "Sphere", "World"].indexOf(name) < 0) return name;else {
         var i = 1;
         var match = name.match(/_\d+$/);
         if (match) {
@@ -4731,7 +4741,6 @@ function render_stewart() {
         nb_class = nb_class | 0;
         doc.getElementById('stewart_nb_class').value = nb_class;
     }
-    console.log(beta);console.log(span);
 
     if (reso && reso > 0) {
         var res_test = test_maxmin_resolution(reso);
@@ -4800,7 +4809,10 @@ function render_stewart() {
     }, function (error) {
         display_error_during_computation();
         console.log(error);
-    });
+    }).catch(function (err) {
+        display_error_during_computation();
+        console.log(err);
+    });;
 }
 
 function fillMenu_Stewart() {
@@ -6528,8 +6540,8 @@ function switch_accordion_section(id_elem) {
     document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
-function path_to_geojson(id_layer) {
-    if (id_layer.indexOf('#') != 0) id_layer = ["#", id_layer].join('');
+function path_to_geojson(layer_name) {
+    var id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
     var result_geojson = [];
     d3.select(id_layer).selectAll("path").each(function (d, i) {
         result_geojson.push({
@@ -7945,11 +7957,7 @@ function update_menu_dataset() {
 
     data_ext.classList.remove('i18n');
     data_ext.removeAttribute('data-i18n');
-    d3.select(data_ext)
-    // .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
-    //                                 nb_features, ' ',
-    //                                 i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
-    .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
+    d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
     data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
     document.getElementById("remove_dataset").onclick = function () {
@@ -8158,15 +8166,9 @@ function add_layer_topojson(text, options) {
         li = document.createElement("li"),
         nb_fields = field_names.length,
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
-    // layer_tooltip_content =  [
-    //     "<b>", lyr_name_to_add, "</b> - ", type, " - ",
-    //     nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
-    //     nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
-    //
 
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
-    // li.setAttribute("layer-tooltip", layer_tooltip_content);
     d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if (target_layer_on_add) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
@@ -8186,8 +8188,7 @@ function add_layer_topojson(text, options) {
         var _input_geom = document.getElementById("input_geom");
         _input_geom.classList.remove('i18n');
         _input_geom.removeAttribute('data-i18n');
-        d3.select(_input_geom).attrs({ "src": _button, "width": "26", "height": "26" }) // , "layer-target-tooltip": layer_tooltip_content})
-        .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">', nb_ft, ' ', i18next.t("app_page.common.feature", { count: +nb_ft }), ' - ', _nb_fields, ' ', i18next.t("app_page.common.field", { count: +_nb_fields }), '</i></span>'].join('')).on("click", null);
+        d3.select(_input_geom).attrs({ "src": _button, "width": "26", "height": "26" }).html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">', nb_ft, ' ', i18next.t("app_page.common.feature", { count: +nb_ft }), ' - ', _nb_fields, ' ', i18next.t("app_page.common.field", { count: +_nb_fields }), '</i></span>'].join('')).on("click", null);
         _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
         var remove_target = document.getElementById("remove_target");
         remove_target.onclick = function () {
@@ -8534,20 +8535,13 @@ function add_sample_layer() {
     if (existing_dialog) existing_dialog.remove();
 
     var dialog_res = [],
-        selec = { layout: null, target: null },
-        sample_datasets = undefined;
-
-    d3.json('/static/json/sample_layers.json', function (error, json) {
-        if (error) throw error;else sample_datasets = json[0];
-    });
-
-    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
+        selec,
+        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
-            var url = undefined;
-            if (selec.target) {
-                add_sample_geojson(selec.target, { target_layer_on_add: true });
+            if (selec) {
+                add_sample_geojson(selec, { target_layer_on_add: true });
             }
         }
     });
@@ -8560,7 +8554,7 @@ function add_sample_layer() {
         t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
     });
     t_layer_selec.on("change", function () {
-        selec.target = this.value;
+        selec = this.value;
     });
 
     if (_app.targeted_layer_added) {
@@ -8578,8 +8572,11 @@ function add_simplified_land_layer() {
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
+    options.visible = options.visible || true;
 
     d3.json("/static/data_sample/World.topojson", function (error, json) {
+        _app.layer_to_id.set('World', 'World');
+        _app.id_to_layer.set('World', 'World');
         current_layers["World"] = {
             "type": "Polygon",
             "n_features": 125,
@@ -8592,6 +8589,9 @@ function add_simplified_land_layer() {
         if (!options.skip_rescale) {
             scale_to_lyr("World");
             center_map("World");
+        }
+        if (!options.visible == 'hidden') {
+            handle_active_layer('World');
         }
         zoom_without_redraw();
     });
@@ -12584,7 +12584,6 @@ function apply_user_preferences(json_pref) {
 
     var g_timeout = void 0;
     var set_final_param = function set_final_param() {
-        if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
@@ -12612,7 +12611,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 950);
+        }, 250);
     };
 
     function apply_layout_lgd_elem() {
@@ -12695,6 +12694,7 @@ function apply_user_preferences(json_pref) {
         up_legends();
     }
 
+    var done = 0;
     var func_name_corresp = new Map([["Links", "flow"], ["Carto_doug", "cartogram"], ["OlsonCarto", "cartogram"], ["Stewart", "smooth"], ["Gridded", "grid"], ["DiscLayer", "discont"], ["Choropleth", "choro"], ["Categorical", "typo"]]);
 
     // Set the dimension of the map (width and height) :
@@ -12739,7 +12739,6 @@ function apply_user_preferences(json_pref) {
     // Add each layer :
 
     var _loop = function _loop(_i10) {
-        if (g_timeout) clearTimeout(g_timeout);
         var _layer = layers[_i10],
             layer_name = _layer.layer_name,
             symbol = void 0;
@@ -12839,9 +12838,13 @@ function apply_user_preferences(json_pref) {
                 if (_layer.visible == 'hidden') {
                     handle_active_layer(layer_name);
                 }
-                set_final_param();
+                done += 1;
+                if (done == map_config.n_layers) set_final_param();
             });
-
+        } else if (layer_name == "World") {
+            add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible != 'hidden' });
+            done += 1;
+            if (done == map_config.n_layers) set_final_param();
             // ... or this is a layer provided by the application :
         } else {
             if (layer_name == "Sphere" || layer_name == "Graticule") {
@@ -12859,9 +12862,6 @@ function apply_user_preferences(json_pref) {
                     options.fill = _layer.fill_color;
                 }
                 add_layout_feature(layer_name.toLowerCase(), options);
-            } else if (layer_name == "World") {
-                add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
-
                 // ... or this is a layer of proportionnals symbols :
             } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
                 var geojson_pt_layer = _layer.geo_pt;
@@ -12893,7 +12893,9 @@ function apply_user_preferences(json_pref) {
                     rehandle_legend(layer_name, _layer.legend);
                 }
                 current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
-                map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+                map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).styles({ 'stroke-width': _layer['stroke-width-const'] + "px",
+                    'fill-opacity': fill_opacity,
+                    'stroke-opacity': stroke_opacity });
 
                 // ... or this is a layer of labels :
             } else if (_layer.renderer && _layer.renderer.startsWith("Label")) {
@@ -12930,7 +12932,7 @@ function apply_user_preferences(json_pref) {
                     // Add the features at there original positions :
                     map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
                         var symb = symbols_map.get(d.properties.symbol_field),
-                            prop = prop = _layer.current_state[j],
+                            prop = _layer.current_state[j],
                             coords = prop.pos;
                         return {
                             "x": coords[0] - symb[1] / 2,
@@ -12972,7 +12974,8 @@ function apply_user_preferences(json_pref) {
             }
             // This function is called on each layer added
             //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
-            set_final_param();
+            done += 1;
+            if (done == map_config.n_layers) set_final_param();
         }
     };
 
@@ -13103,7 +13106,7 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         container = document.getElementById("symbol_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
     };
@@ -13117,13 +13120,13 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
             _onclose();
         }
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     };
     return deferred.promise;
 };

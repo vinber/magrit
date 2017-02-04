@@ -384,7 +384,6 @@ function apply_user_preferences(json_pref){
 
     let g_timeout;
     let set_final_param = () => {
-        if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
@@ -410,7 +409,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 950);
+        }, 250);
     };
 
     function apply_layout_lgd_elem(){
@@ -493,6 +492,7 @@ function apply_user_preferences(json_pref){
         up_legends();
     }
 
+    var done = 0;
     var func_name_corresp = new Map([
         ["Links", "flow"], ["Carto_doug", "cartogram"],
         ["OlsonCarto", "cartogram"], ["Stewart", "smooth"],
@@ -537,7 +537,6 @@ function apply_user_preferences(json_pref){
 
     // Add each layer :
     for(let i = map_config.n_layers - 1; i > -1; --i){
-        if(g_timeout) clearTimeout(g_timeout);
         let _layer = layers[i],
             layer_name = _layer.layer_name,
             symbol;
@@ -643,9 +642,13 @@ function apply_user_preferences(json_pref){
                 if(_layer.visible == 'hidden'){
                     handle_active_layer(layer_name);
                 }
-                set_final_param();
+                done += 1;
+                if(done == map_config.n_layers) set_final_param();
             });
-
+      } else if (layer_name == "World"){
+          add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible != 'hidden'});
+          done += 1;
+          if(done == map_config.n_layers) set_final_param();
       // ... or this is a layer provided by the application :
       } else {
           if (layer_name == "Sphere" || layer_name == "Graticule"){
@@ -663,9 +666,6 @@ function apply_user_preferences(json_pref){
                   options.fill = _layer.fill_color;
               }
               add_layout_feature(layer_name.toLowerCase(), options);
-          } else if (layer_name == "World"){
-              add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px"});
-
           // ... or this is a layer of proportionnals symbols :
           } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")){
               let geojson_pt_layer = _layer.geo_pt;
@@ -697,7 +697,11 @@ function apply_user_preferences(json_pref){
                   rehandle_legend(layer_name, _layer.legend);
               }
               current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
-              map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+              map.select('#' + _app.layer_to_id.get(layer_name))
+                  .selectAll(_layer.symbol)
+                  .styles({'stroke-width': _layer['stroke-width-const'] + "px",
+                           'fill-opacity': fill_opacity,
+                           'stroke-opacity': stroke_opacity});
 
           // ... or this is a layer of labels :
           } else if (_layer.renderer && _layer.renderer.startsWith("Label")){
@@ -732,7 +736,7 @@ function apply_user_preferences(json_pref){
                   .insert("image")
                   .attrs( (d,j) => {
                     let symb = symbols_map.get(d.properties.symbol_field),
-                        prop = prop = _layer.current_state[j],
+                        prop = _layer.current_state[j],
                         coords = prop.pos;
                     return {
                       "x": coords[0] - symb[1] / 2,
@@ -771,7 +775,8 @@ function apply_user_preferences(json_pref){
           }
           // This function is called on each layer added
           //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
-          set_final_param();
+          done += 1;
+          if(done == map_config.n_layers) set_final_param();
       }
     }
 }

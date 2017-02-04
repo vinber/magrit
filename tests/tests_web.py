@@ -748,7 +748,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 ).select_by_visible_text('REGIONS')
         driver.find_element_by_id("Typo_class").click()
         time.sleep(0.2)
-        self.waitClickButtonSwal()
+        # self.waitClickButtonSwal()
         self.click_elem_retry(
             driver.find_element_by_id(
                 "categorical_box").find_elements_by_css_selector(

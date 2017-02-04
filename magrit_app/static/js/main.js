@@ -803,54 +803,54 @@ function setUpInterface(resume_project)
         });
 
     const_options.append("button")
-              .attrs({id: "help_btn", class: "const_buttons i18n",
-                      "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-                      "data-tooltip-position": "bottom"})
-              .styles({cursor: "pointer", background: "transparent"})
-              .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
-              .on("click", function(){
-                  if(document.getElementById("menu_lang"))
-                      document.getElementById("menu_lang").remove();
-                  let click_func = function(window_name, target_url){
-                          window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                  }
-                  let box_content = '<div class="about_content">' +
-                      '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
-                      '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-                      // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
-                      '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
-                  swal({
-                      title: i18next.t("app_page.help_box.title"),
-                      html: box_content,
-                      showCancelButton: true,
-                      showConfirmButton: false,
-                      cancelButtonText: i18next.t('app_page.common.close'),
-                      animation: "slide-from-top",
-                      onOpen: function(){
-                          let content = document.getElementsByClassName('about_content')[0];
-                          let credit_link = content.querySelector('#credit_link');
-                          credit_link.style.fontWeight = "bold";
-                          credit_link.style.cursor = "pointer";
-                          credit_link.color = "#000";
-                          credit_link.onclick = function(){
-                              window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_doc').onclick = function(){
-                              window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_contact').onclick = function(){
-                              window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_gh').onclick = function(){
-                              window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                      }
-                   }).then(inputValue => { null; },
-                           dismissValue => { null; });
-                });
+        .attrs({id: "help_btn", class: "const_buttons i18n",
+                "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+                "data-tooltip-position": "bottom"})
+        .styles({cursor: "pointer", background: "transparent"})
+        .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
+        .on("click", function(){
+            if(document.getElementById("menu_lang"))
+                document.getElementById("menu_lang").remove();
+            let click_func = function(window_name, target_url){
+                    window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            }
+            let box_content = '<div class="about_content">' +
+                '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
+                '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+                // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
+                '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+            swal({
+                title: i18next.t("app_page.help_box.title"),
+                html: box_content,
+                showCancelButton: true,
+                showConfirmButton: false,
+                cancelButtonText: i18next.t('app_page.common.close'),
+                animation: "slide-from-top",
+                onOpen: function(){
+                    let content = document.getElementsByClassName('about_content')[0];
+                    let credit_link = content.querySelector('#credit_link');
+                    credit_link.style.fontWeight = "bold";
+                    credit_link.style.cursor = "pointer";
+                    credit_link.color = "#000";
+                    credit_link.onclick = function(){
+                        window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_doc').onclick = function(){
+                        window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_contact').onclick = function(){
+                        window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_gh').onclick = function(){
+                        window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                }
+             }).then(inputValue => { null; },
+                     dismissValue => { null; });
+        });
 
     const_options.append("button")
         .attrs({id: "current_app_lang", class: "const_buttons"})
@@ -1654,7 +1654,7 @@ function remove_layer_cleanup(name){
 
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
-    document.querySelector('#sortable .' + name).remove()
+    document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove()
 
     // Remove the layer from the "geo export" menu :
     let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
@@ -2342,23 +2342,34 @@ function export_compo_svg(output_name){
     //unpatchSvgForInkscape();
 }
 
+// Maybe PNGs should be rendered on server side in order to avoid limitations that
+//   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png(type="web", scalefactor=1, output_name){
     output_name = check_output_name(output_name, "png");
     let dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
+        mime_type = "image/png",
+        svg_xml,
+        ctx,
+        img;
+
+    // At this point it might be better to wrap the whole function in a try catch ?
+    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+    try {
         svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
         ctx = targetCanvas.getContext('2d'),
-        mime_type = "image/png",
         img = new Image();
-
+    } catch(err) {
+        display_error_during_computation(String(err));
+        return;
+    }
     if(scalefactor != 1){
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            console.log(err);
-            display_error_during_computation("Too high resolution selected : " + String(err));
+            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
     }

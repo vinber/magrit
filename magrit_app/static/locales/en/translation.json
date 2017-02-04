@@ -662,5 +662,11 @@
         "contact": "Contact",
         "index": "Index page",
         "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">magrit [at] ums-riate [dot] fr</span>"
+    },
+    "page404": {
+        "message1": "Error 404 - Page not found",
+        "message2": "",
+        "back_application": "Back to the application",
+        "back_documentation": "Back to the documentation"
     }
 }

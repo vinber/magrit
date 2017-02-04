@@ -605,9 +605,6 @@ function update_menu_dataset(){
     data_ext.classList.remove('i18n');
     data_ext.removeAttribute('data-i18n');
     d3.select(data_ext)
-        // .attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ',
-        //                                 nb_features, ' ',
-        //                                 i18next.t("app_page.common.feature", {count: +nb_features})].join(''))
         .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
                nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
                field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
@@ -840,15 +837,9 @@ function add_layer_topojson(text, options){
         li = document.createElement("li"),
         nb_fields = field_names.length,
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
-        // layer_tooltip_content =  [
-        //     "<b>", lyr_name_to_add, "</b> - ", type, " - ",
-        //     nb_ft, " ", i18next.t("app_page.common.feature", {count: +nb_ft}), " - ",
-        //     nb_fields, " ", i18next.t("app_page.common.field", {count: +nb_fields})].join(''),
-        //
 
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
-    // li.setAttribute("layer-tooltip", layer_tooltip_content);
     d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
@@ -868,7 +859,7 @@ function add_layer_topojson(text, options){
         _input_geom.classList.remove('i18n');
         _input_geom.removeAttribute('data-i18n');
         d3.select(_input_geom)
-            .attrs({"src": _button, "width": "26", "height": "26"}) // , "layer-target-tooltip": layer_tooltip_content})
+            .attrs({"src": _button, "width": "26", "height": "26"})
             .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
                    nb_ft, ' ', i18next.t("app_page.common.feature", {count: +nb_ft}), ' - ',
                    nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
@@ -1233,30 +1224,22 @@ function add_sample_layer(){
     if(existing_dialog) existing_dialog.remove();
 
     var dialog_res = [],
-        selec = {layout: null, target: null},
-        sample_datasets = undefined;
-
-    d3.json('/static/json/sample_layers.json', function(error, json){
-        if(error) throw error;
-        else sample_datasets = json[0];
-        });
-
-    var target_layers = [
-         [i18next.t("app_page.sample_layer_box.target_layer"),""],
-         [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
-         [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
-         [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
-         [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
-         [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
-         [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
+        selec,
+        target_layers = [
+           [i18next.t("app_page.sample_layer_box.target_layer"),""],
+           [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
+           [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
+           [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
+           [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
+           [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
+           [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
         ];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
-                let url = undefined;
-                if(selec.target){
-                    add_sample_geojson(selec.target, {target_layer_on_add: true});
+                if(selec){
+                    add_sample_geojson(selec, {target_layer_on_add: true});
                 }
             }
         });
@@ -1266,7 +1249,7 @@ function add_sample_layer(){
 
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
     target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
-    t_layer_selec.on("change", function(){selec.target = this.value;});
+    t_layer_selec.on("change", function(){selec = this.value;});
 
     if(_app.targeted_layer_added){
         title_tgt_layer.style("color", "grey")
@@ -1282,8 +1265,11 @@ function add_simplified_land_layer(options = {}){
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
+    options.visible = options.visible || true;
 
     d3.json("/static/data_sample/World.topojson", function(error, json) {
+        _app.layer_to_id.set('World', 'World');
+        _app.id_to_layer.set('World', 'World');
         current_layers["World"] = {
             "type": "Polygon",
             "n_features":125,
@@ -1304,6 +1290,9 @@ function add_simplified_land_layer(options = {}){
         if(!options.skip_rescale){
             scale_to_lyr("World");
             center_map("World");
+        }
+        if(!options.visible == 'hidden'){
+            handle_active_layer('World');
         }
         zoom_without_redraw();
     });
