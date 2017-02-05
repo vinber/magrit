@@ -60,6 +60,7 @@ try:
         make_geojson_links, repairCoordsPole)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
+    from helpers.error_middleware404 import error_middleware
 
 except:
     from .helpers.misc import (
@@ -73,6 +74,7 @@ except:
         make_geojson_links, repairCoordsPole)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
+    from .helpers.error_middleware404 import error_middleware
 
 pp = '(aiohttp_app) '
 
@@ -395,7 +397,6 @@ async def convert(request):
             request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
 
     elif 'octet-stream' in datatype and "kml" in name.lower():
-        print(datatype, name)
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
@@ -972,7 +973,6 @@ async def convert_csv_geo(request):
 
 async def get_stats_json(request):
     posted_data = await request.post()
-    print(posted_data)
     if not ('data' in posted_data
             and mmh3_hash(posted_data['data']) == 1163649321):
         return web.Response()
@@ -1040,20 +1040,18 @@ def check_port_available(port_nb):
 
 
 async def on_shutdown(app):
-    app["redis_conn"].quit()
+    await app["redis_conn"].quit()
     app["ProcessPool"].shutdown()
     app["ThreadPool"].shutdown()
     for task in asyncio.Task.all_tasks():
         await asyncio.sleep(0)
         info = task._repr_info()
-#        if "RedisConnection" in info[1]:
-#            task.cancel()
         if "RedisPool" in info[1] and "pending" in info[0]:
             try:
-                await asyncio.wait_for(task, 1)
+                await asyncio.wait_for(task, 2)
             except asyncio.TimeoutError:
                 task.cancel()
-        else:
+        elif not "Application.shutdown()" in info[1]:
             task.cancel()
 
 async def init(loop, port=None):
@@ -1064,6 +1062,7 @@ async def init(loop, port=None):
     app = web.Application(
         loop=loop,
         middlewares=[
+            error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
