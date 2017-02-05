@@ -634,7 +634,8 @@ function setUpInterface(resume_project)
             ok_button.disabled = this.value.length == 0 ? 'true' : '';
         });
 
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -2409,8 +2410,8 @@ function export_layer_geo(layer, type, projec, proj4str){
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
         ["ESRI Shapefile", "zip"],
-        ["GML", "zip"],
-        ["KML", "kml"]]);
+        ["GML", "zip"]]);
+        // ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true)
         .then( data => {
@@ -2435,8 +2436,8 @@ function export_layer_geo(layer, type, projec, proj4str){
                 dataStr;
             if(ext.indexOf("json") > -1)
                 dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-            else if (ext.indexOf("kml") > -1)
-                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            // else if (ext.indexOf("kml") > -1)
+            //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
             else
                 dataStr = "data:application/zip;base64," + data;
 

@@ -100,7 +100,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
     def test_layout_features(self):
         driver = self.driver
-        driver.get("http://localhost:9999/modules")
+        driver.get(self.base_url)
         self.open_menu_section(4)
 
         driver.find_element_by_id('btn_text_annot').click()
@@ -349,20 +349,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.waitClickButtonSwal("button.swal2-cancel")
         time.sleep(2)
 
-    # def test_reload_project_localStorage(self):
-    #     driver = self.driver
-    #     driver.get(self.base_url)
-    #     with open('tests/example_project.json', 'r') as f:
-    #         magrit_project = f.read()
-    #     # Put a project in the localStorage before opening the page :
-    #     js_code="localStorage.setItem('magrit_project', '{}');".format(magrit_project)
-    #     result = driver.execute_script(js_code)
-    #     driver.get(self.base_url)
-    #     # If there is something in the localStorage, a swal alert should open
-    #     # ... and ask if we want to reload this project :
-    #     self.waitClickButtonSwal()
-    #     time.sleep(2)
-
     def test_downloads(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -420,48 +406,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertIn("type", parsed_geojson)
         self.assertEqual(len(parsed_geojson["features"]), 323)
         os.remove(self.tmp_folder + "nuts2-2013-data.geojson")
-
-        # # Test export on result layer this time
-        # # First coompute a result from smoothed map functionnality :
-        # driver.find_element_by_id("btn_s2").click()
-        # time.sleep(0.5)
-        # driver.find_element_by_css_selector("#button_smooth").click()
-        # time.sleep(0.2)
-        # driver.find_element_by_id("stewart_nb_class").clear()
-        # driver.find_element_by_id("stewart_nb_class").send_keys("7")
-        # driver.find_element_by_id("stewart_span").clear()
-        # driver.find_element_by_id("stewart_span").send_keys("60")
-        # Select(driver.find_element_by_id("stewart_mask")
-        #     ).select_by_visible_text("nuts2-2013-data")
-        # # Set a custom name for this result layer :
-        # driver.find_element_by_id("stewart_output_name").clear()
-        # driver.find_element_by_id("stewart_output_name").send_keys("NewLayerName")
-        # driver.find_element_by_id("stewart_yes").click()
-        # button_ok = self.get_button_ok_displayed()
-        # button_ok.click()
-        # time.sleep(1)  # Delay for the sweet alert to close
-        #
-        # # Open the appropriate menu:
-        # menu_options = self.get_menu_options()
-        #
-        # # Test export to geographic layer (from a result layer):
-        # menu_options[4].click()
-        # time.sleep(0.2)
-        # Select(driver.find_element_by_id("layer_to_export")
-        #     ).select_by_visible_text("NewLayerName")
-        # Select(driver.find_element_by_id("datatype_to_use")
-        #     ).select_by_value("GeoJSON")
-        #
-        # driver.find_element_by_id("dialogGeoExport"
-        #     ).find_element_by_css_selector("button.button_st4").click()
-        # time.sleep(0.5)
-        # with open(self.tmp_folder + "NewLayerName.geojson", "r") as f:
-        #     raw_geojson = f.read()
-        # parsed_geojson = json.loads(raw_geojson)
-        # self.assertIn("features", parsed_geojson)
-        # self.assertIn("type", parsed_geojson)
-        # self.assertIn("crs", parsed_geojson)
-        # os.remove(self.tmp_folder + "NewLayerName.geojson")
 
     def test_Typo(self):
         driver = self.driver

@@ -512,7 +512,8 @@ function setUpInterface(resume_project) {
         ok_button.disabled = this.value.length == 0 ? 'true' : '';
     });
 
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach(function (name) {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -2089,7 +2090,8 @@ function export_layer_geo(layer, type, projec, proj4str) {
     formToSend.append("format", type);
     if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
+    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"]]);
+    // ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
         if (data.indexOf('{"Error"') == 0 || data.length == 0) {
@@ -2114,7 +2116,10 @@ function export_layer_geo(layer, type, projec, proj4str) {
         }
         var ext = extensions.get(type),
             dataStr = void 0;
-        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
+        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        // else if (ext.indexOf("kml") > -1)
+        //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+        else dataStr = "data:application/zip;base64," + data;
 
         var dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);

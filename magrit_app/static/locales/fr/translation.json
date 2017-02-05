@@ -216,8 +216,9 @@
             "nuts0": "Nuts 0* (2013) Pays européens <i>(Polygones)</i>",
             "nuts1": "Nuts 1* (2013) Subdivisions européennes <i>(Polygones)</i>",
             "nuts2": "Nuts 2* (2013) Subdivisions européennes <i>(Polygones)</i>",
-            "world_countries": "World countries simplified <i>(Polygones)</i>",
-            "world_capitals": "World country capitals <i>(Points)</i>",
+            "brazil": "États fédéraux du Brésil <i>(Polygones)</i>",
+            "world_countries": "Emprise des terres émergées<i>(Polygones)</i>",
+            "world_capitals": "Villes les plus peuplées du monde<i>(Points)</i>",
             "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
         },
         "sample_layer_box": {

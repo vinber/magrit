@@ -11,7 +11,7 @@
  "paris_quartiers": "/static/data_sample/quartier_paris.geojson",
  "us_states": "/static/data_sample/USA_states.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
- "world_country": "/static/data_sample/world.geojson",
+ "world_country": "/static/data_sample/World.geojson",
  "world_cities": "/static/data_sample/world_cities_extract5000.geojson"
  }
 ]
