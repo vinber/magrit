@@ -5,7 +5,7 @@
             "long_computation": "(le calcul peut nécessiter quelques secondes/minutes)",
             "save_preferences": "Sauvegarder le projet",
             "load_preferences": "Charger un projet",
-            "too_large_input": "Fichier d'entrée trop volumineux (8Mo maximum)",
+            "too_large_input": "Fichier d'entrée trop volumineux (16Mo maximum)",
             "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
@@ -18,7 +18,8 @@
             "error_existing_scalebar": "Seule une échelle peut être ajoutée - Remplacer l'échelle existante par une nouvelle ?",
             "error_interrupted_projection_scalebar": "L'échelle ne peut actuellement pas être affichée pour les projection \"interrompues\".",
             "error_existing_north_arrow": "Seule une flêche nord peut être ajoutée - Remplacer celle existante par une nouvelle ?",
-            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionallité",
+            "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionalité.",
+            "error_max_text_annot": "Le nombre maximum d'annotations de texte a été atteint.",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
             "error_proj4_string": "Erreur : la projection saisie n'a pas été reconnue",
@@ -28,6 +29,8 @@
             "error_too_low_resolution": "La résolution demandée est trop faible.",
             "error_too_high_resolution": "La résolution demandée est trop importante.",
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
+            "error_map_project": "Impossible de charger le fichier projet. Erreur : ",
+            "error_invalid_map_project": "Fichier-projet corrompu/invalide.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
@@ -40,6 +43,7 @@
             "delete": "Suppression",
             "deleted": "Supprimée",
             "done": "Fini!",
+            "ok": "Ok",
             "valid": "Confirmation",
             "close": "Fermer",
             "edit_style": "Changer le style...",
@@ -83,8 +87,8 @@
         },
         "section1": {
             "title": "Import des données",
-            "add_geom": "Ajout d'un fond de carte <i>(ou glisser-déposer)</i>",
-            "add_ext_dataset": "Ajout d'un jeu de données <i>(ou glisser-déposer)</i>",
+            "add_geom": "Ajout d'un fond de carte",
+            "add_ext_dataset": "Ajout d'un jeu de données",
             "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
         },
         "section2": {
@@ -109,6 +113,7 @@
             "map_center_y": "Centre de la carte (y)",
             "map_scale_k": "Facteur de zoom",
             "map_title": "Titre de la carte",
+            "resize_fit": "Réadapter la carte à la taille de l'écran",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte"
         },
@@ -162,7 +167,8 @@
             "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
             "load_project_file": "Chargement d'un fichier projet",
             "save_file": "Sauvegarde d'un fichier-projet",
-            "new_project": "Création d'un nouveau projet"
+            "new_project": "Création d'un nouveau projet",
+            "documentation": "Documentation"
         },
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
@@ -210,24 +216,21 @@
             "nuts0": "Nuts 0* (2013) Pays européens <i>(Polygones)</i>",
             "nuts1": "Nuts 1* (2013) Subdivisions européennes <i>(Polygones)</i>",
             "nuts2": "Nuts 2* (2013) Subdivisions européennes <i>(Polygones)</i>",
-            "world_countries": "World countries simplified <i>(Polygones)</i>",
-            "world_capitals": "World country capitals <i>(Points)</i>",
+            "brazil": "États fédéraux du Brésil <i>(Polygones)</i>",
+            "world_countries": "Emprise des terres émergées<i>(Polygones)</i>",
+            "world_capitals": "Villes les plus peuplées du monde<i>(Points)</i>",
             "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choix d'une couche géographique à ajouter :",
-            "subtitle2": "Choix d'un jeu de données tabulaires à ajouter :",
             "target_layer": "<i>Couche cible</i>",
-            "paris_hospitals": "Localisation des hopitaux de Paris <i>(Points)</i>",
             "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
-            "nuts2_data": "Nuts 2 (2006) avec données <i>(Polygones)</i>",
+            "nuts2_data": "Nuts 2 (2013) avec données <i>(Polygones)</i>",
+            "brazil": "États fédéraux du Brésil",
             "world_countries": "Pays du monde <i>(Polygones)</i>",
-            "us_states": "États des USA <i>(Polygones)</i>",
-            "tabular_dataset": "<i>Jeu de données tabulaires</i>",
-            "twincities": "Conventions de jumelage international entres villes <i>(À joindre avec les NUTS 2)</i>",
-            "martinique_data": "Données du recensemment en Martinique <i>(À joindre avec les géometries de la Martinique)</i>"
+            "us_states": "États des USA <i>(Polygones)</i>"
         },
         "export_box": {
             "geo": "Exporter vers un format compatible SIG",
@@ -304,7 +307,7 @@
             "carnet_hypotheses": "Carnet <i>Hypothèses</i>",
             "contact": "Contact",
             "gh_link": "Page GitHub du projet",
-            "credits": "Réalisé par l'<span id=\"credit_link\">UMS RIATE</span>"
+            "credits": "Réalisé par Matthieu Viry, Timothée Giraud et Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -338,7 +341,8 @@
             "title": "Options de l'ellipse",
             "stroke_width": "Épaisseur du trait",
             "stroke_color": "Couleur du trait",
-            "move_points": "Déplacement des points de controle"
+            "move_points": "Déplacement des points de controle",
+            "ellispeAngle": "Angle de l'ellipse"
         },
         "single_symbol_edit_box": {
             "title": "Options",
@@ -418,59 +422,6 @@
             "hand_button": "Utiliser le curseur pour bouger la carte (comportement par défaut)",
             "zoom_rect": "Zoom sur une sélection rectangulaire"
         },
-        "func_help": {
-            "common": {
-                "params": "Paramètres :"
-            },
-            "choro": {
-                "title": "<b>Carte de ratios</b>",
-                "block": "Les données de rapport (ou de taux ou d’intensité) sont des données quantitatives calculées à partir de données brutes dont ont fait le rapport ou dont on calcule le taux à partir d’un total. Elles expriment les caractéristiques des individus observés mais leur total n'a pas de signification concrète (ex : la densité de population est un caractère de rapport car la somme de plusieurs densités de population n'a aucun sens).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
-            },
-            "typo": {
-                "title": "<b>Carte qualitative</b>",
-                "block": "Ce type de carte permet de représenter des entités surfaciques selon la valeur prise un par un champ dont les valeurs sont regroupées en catégories.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
-            },
-            "typosymbol": {
-                "title": "<b>Carte qualitative avec utilisation de symboles</b>",
-                "block": "Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser."
-            },
-            "smooth": {
-                "title": "<b>Carte lissée</b>",
-                "block": "Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit \"de Stewart\") et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point.<br><br><b><i>Paramètres</i></b><br><b>Valeur:</b> Le nom du champ contenant les valeurs à utiliser.<br><b>Diviseur (optionnel):</b> Le nom du champ à utiliser pour calculer un ratio.<br><b>Span:</b><br><b>Beta:</b><br><b>Resolution:</b><br><b>Type de fonction:</b><br><b>Nombre de classe:</b><br><b>Couche de masquage:</b><br><br><a href=\"/documentation\"><i>Plus d'informations...</i></a>"
-            },
-            "prop": {
-                "title": "<b>Carte de stocks</b>",
-                "block": "Les cartes de stock permettent de représenter des données de stocks. Ces données sont de nature quantitative brute ou absolue. Une donnée est dite « quantitative » si ses modalités s'expriment par des nombres et si la moyenne de ces nombres a un sens. Elles expriment des quantités concrètes : la somme des modalités des éléments a un sens (ex : la population est une donnée de stock car la somme de plusieurs populations a un sens).<br><br><b><i>Paramètres</i></b><br><b>Valeur :</b> Le champ contenant les valeurs à utiliser.<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Type de symbole : </b> Le type de symbole à utiliser (cercle ou carré)<br><b>Couleur du symbole :</b> La ou les couleurs des symboles, selon qu'un seuil soit défini.<br>"
-            },
-            "discont": {
-                "title": "<b>Carte de discontinuités</b>",
-                "block": "Combinée à la représentation par aplats de couleurs (Cf. cartes de ratio), la visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que « l’espace géographique est fondamentalement discontinu ».<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le champ contenant les valeurs à utiliser.<br><b>Champ d'ID :</b> Le champ contenant des identifiants uniques permettant d'identifier des tronçons<br><b>Type de discontinuité :</b> Le rapport entre la valeur des deux entités (parmis 'relatif' ou 'absolu').<br><b>Nombre de classes :</b> Le nombre de classe à créer.<br><b>Type de discrétisation :</b> La méthode utilisée pour discrétiser les valeurs.<br><b>Couleur :</b> La couleur utilisé pour représenter les discontinuités."
-            },
-            "grid": {
-                "title": "<b>Carroyage</b>",
-                "block": "La méthode du carroyage est une des possibilités pour essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif. Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en « carreaux égaux et repérés » (Les mots de la géographie).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ à utiliser.<br><b>Taille des carreaux :</b> La taille des carreaux en kilomètres.<br><b>Forme des carreaux :</b><br><b>Palette de couleurs :</b> La palette de couleur à utiliser lors de l'ajout du résultat."
-            },
-            "cartogram": {
-                "title": "<b>Anamorphose</b>",
-                "block": "De façon générale, une anamorphose est une image déformée, une déformation réversible d'une image à l'aide d'un système optique ou d’un procédé mathématique. Cela permet de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br><br><b><i>Paramètres</i></b><br><b>Champ :</b> Le nom du champ contenant les valeurs à utiliser<br><Type de symbole :</b> Le type de symbole à utiliser (parmis 'cercle' et 'carré')<br><b>Taille fixée :</b> Taille (px) à appliquer sur le valeur définie à la suite.<br><b>Sur la valeur :</b> Valeur sur laquelle fixer la taille.<br><b>Itérations :</b> Le nombre d'itérations à effectuer avant d'obtenir le résultat.<br><b>Dimensionner la taille de référence :</b> La valeur statistique à utiliser comme référence pour la transformation."
-            },
-            "choroprop": {
-                "title": "<b>Carte de stocks et ratios</b>",
-                "block": "Ce type de représentation permet de marier, sur une même carte, la représentation des données brutes et celles de rapport. L’observateur n’a plus besoin de passer d’une carte à l’autre mais voit d’un seul « coup d’œil » le phénomène appréhendé selon les deux types de d'informations. Ici, nous avons choisi d’inscrire la donnée de rapport non plus sur la surface de la région mais à l’intérieur du figuré représentant le stock. Cette méthode permet de donner un poids variable au stock (et donc de le relativiser) en fonction de la valeur du rapport sans gêner la lecture de l’une ou l’autre information prise en compte. Ici, le stock utilisé pour la représentation de la taille est le plus souvent celui du dénominateur du rapport (sauf pour la densté où le numérateur, qui donne la population totale de la maille, est utilisé).<br><br><b><i>Paramètres</i></b><br>Valeur 1 (taille du symbole):</b> Champ contenant les valeurs à utiliser pour définir la taille des symboles.<br><b>Taille fixée :</b> Taille (px) à appliquer à la valeur définie à la suite.<br><b>Sur la valeur... :</b> Valeur sur laquelle fixer la taille.<br><b>Type de symbole :</b> Le type de symbole à utiliser (cercle ou carré).<br><b>Valeur 2 (couleur du symbole) :</b> Champ contenant les valeurs à utiliser (après discrétisation) pour colorer les symboles."
-            },
-            "proptypo" :{
-                "title": "<b>Carte de stocks et qualitative/b>",
-                "block": "Ce type de représentation permet d'établir une corrspondance entre des données brutes (données de stock) et une variable d'appartenance (variable catégorielle)."
-            },
-            "flow": {
-                "title": "<b>Carte de flux/liens</b>",
-                "block": "Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.<br><br><b><i>Paramètres</i></b><br><b>Champ i :</b> Le champ contenant les identifiants des entités 'origine'.<br><b>Champ j :</b> Le champ contenant les identifiants des entités 'destination'.<br><b>Champ fij :</b> Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.<br><b>Type de discrétisation :</b> Le type de méthode à utiliser pour discrétiser les valeurs.<br><b>Nombre de classes :</b> Le nombre de classes à créer lors de l'application de la méthode précédemment définie."
-            },
-            "label": {
-                "title": "<b>Carte de labels</b>",
-                "block": "Ce type de carte permet de représenter les intitulés correspondants aux entités d'une couche.<br><br><b><i>Paramètre</i></b>"
-            }
-        },
         "func_options": {
             "common": {
                 "field": "Champ ",
@@ -523,10 +474,9 @@
                 "subtitle1": "Choix des champs à utiliser",
                 "discretization": "Type de discrétisation ",
                 "nb_class": "Nombre de classes ",
-                "nb_class": "Number of class ",
-                "origin_field": "Origin field",
-                "destination_field": "Destination field",
-                "intensity_field": "Intensity field",
+                "origin_field": "Champ Origine",
+                "destination_field": "Champ Destination",
+                "intensity_field": "Champ Intensité",
                 "ref_layer_field": "Couche géographique de référence",
                 "join_field": "Champ de jointure"
             },
@@ -564,7 +514,6 @@
             },
             "label": {
                 "field": "Champ de labels ",
-                "prop_labels": "Labels proportionnels",
                 "font_size": "Taille par défaut ",
                 "font_type": "Type de police ",
                 "color": "Couleur ",
@@ -613,49 +562,37 @@
         "title": "Magrit - Cartographie thématique",
         "buttons": {
             "enter": "Démarrer",
-            "resume": "Continuer le projet en cours...",
-            "overview": "Fonctionnalités",
-            "examples": "Exemples",
-            "doc": "Documentation",
-            "dev": "Développement",
             "start_now": "Démarrer"
         },
-        "intro_section": {
-            "arg1": "<strong>Réalisez facilement des cartes thématiques</strong>",
-            "arg2": "<strong>Utilisez votre propres données</strong> (Shapefile, GeoJSON, kml, fichier de données tabulaire, etc.)",
-            "arg3": "<strong>Personnalisez votre carte selon vos souhaits</strong>",
-            "arg4": "<strong>Exportez ou sauvegardez facilement votre composition!</strong> (exports PNG et SVG, sauvegarde de projet)"
-        },
-        "overview_section": {
-            "list_func1": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes",
-            "list_func2": "(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.).",
-            "import1": "Accepte de nombreux formats d'entrée",
-            "customize1": "Personnalisez votre carte selon vos souhaits",
-            "customize2": "(grâce notamment à des nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.).",
-            "export1": "Exporte vos compositions facilement",
-            "export_geo1": "Téléchargez vos couches géographiques nouvellement créées",
-            "export_geo2":  "(les formats et les projections disponibles sont trop nombreux pour être listés ici!)",
-            "projection1": "Propose un large choix de projections cartographiques",
-            "conclusion": "Vous risquez de ne pas avoir besoin de votre logiciel de dessin vectoriel !"
-        },
-        "documentation_section": {
-            "user_manual": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
-            "carnet_hypotheses":  "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application"
-        },
-        "source_section":{
+        "bloc":{
+            "carto_thematic1": "Une solution de cartographie thématique",
+            "carto_thematic2": "Les fonctionnalités classiques de cartographie thématique couplées à des méthodes innonvantes <i>(symboles proportionnels, cartes choroplèthes, cartes des discontinuités, cartes lissées, carroyages, anamorphose, etc.)</i>.",
+            "interop1": "Interopérable",
+            "interop2": "L'application accepte de nombreux formats en entrée. Elle permet d'exporter la carte réalisée dans plusieurs formats ainsi que sauvegarder un \"fichier-projet\".",
+            "customizable1": "Personnalisable",
+            "customizable2": "Les cartes sont personnalisables grâce notamment à de nombreuses projections, palettes de couleurs et polices d'écriture ainsi qu'à l'ajout de divers éléments: annotation de texte, échelle, etc.",
+            "realized_by1": "Réalisé par l'UMS RIATE",
+            "realized_by2": "Le projet est développé et maintenu par des membres de l'<a href=\"http://www.ums-riate.fr\">UMS RIATE</a>.",
+            "user_manual1": "Documenté",
+            "user_manual2": "Une description complète de chacune des méthodes utilisées est disponible dans le <a href=\"/docs/index.html\">manuel de l'utilisateur</a>.",
             "box1_title": "Libre et gratuit",
             "box2_title": "Ouvert aux contributions",
-            "box3_title": "Contenus traduits/traduisibles",
+            "box3_title": "Multilingue",
             "box4_title": "En developpement actif",
-            "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source (telles que GDAL et Python asyncio coté serveur et d3.js v4 coté client).",
+            "box1_text": "Le projet est entièrement libre (code sous licence CeCILL, compatible avec la GNU GPL).<br>Il repose sur une suite moderne de technologies libres et open-source et il est possible de déployer sa propre instance de l'application.",
             "box2_text": "Les rapports d'erreurs et contributions sont les bienvenues. Ils sont possibles via le <a href=\"/contact\">formulaire de contact</a> et via la plateforme <a href=\"https://github.com/riatelab/magrit\">GitHub</a>.",
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
-            "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!"
+            "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!",
+            "hypotheses1": "Vivant",
+            "hypotheses2": "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application."
         },
         "cookie_div": {
             "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",
             "accept": "J'ai compris",
             "more_info": "En savoir plus"
+        },
+        "footer": {
+            "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Visiter la galerie</a>"
         }
     },
     "contact_form": {
@@ -667,5 +604,11 @@
         "contact": "Contact",
         "index": "Acceuil",
         "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">magrit [at] ums-riate [point] fr</span>"
+    },
+    "page404": {
+        "message1": "Erreur 404 - Page introuvable",
+        "message2": "",
+        "back_application": "Retour à l'application",
+        "back_documentation": "Retour à la documentation"
     }
 }

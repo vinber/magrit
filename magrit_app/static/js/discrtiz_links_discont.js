@@ -446,17 +446,28 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     }
     let _onclose = () => {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          // evt.preventDefault();
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+              _onclose();
+          }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };

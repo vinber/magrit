@@ -42,6 +42,7 @@ function get_map_template(){
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
     map_config.background_color = map.style("background-color");
+    map_config.canvas_rotation = typeof canvas_rotation_value == "string" ? canvas_rotation_value.match(/\d+/) : undefined;
 
     if(map_title){
         map_config.title = {
@@ -114,11 +115,10 @@ function get_map_template(){
                 map_config.layout_features.text_annot.push({
                     id: ft.id,
                     content: inner_p.innerHTML,
-                    fontFamily: inner_p.style.fontFamily,
-                    fontSize: inner_p.style.fontSize,
-                    color: inner_p.style.color,
+                    style: inner_p.getAttribute('style'),
                     position_x: ft.x.baseVal.value,
                     position_y: ft.y.baseVal.value,
+                    transform: ft.getAttribute('transform')
                 });
             } else if(ft.classList.contains('single_symbol')) {
                 if(!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
@@ -131,7 +131,7 @@ function get_map_template(){
                     href: img.getAttribute('href'),
                     scalable: ft.classList.contains('scalable-legend')
                 });
-                console.log(map_config.layout_features.single_symbol);
+                // console.log(map_config.layout_features.single_symbol);
             }
         }
 
@@ -139,7 +139,8 @@ function get_map_template(){
     for(let i=map_config.n_layers-1; i > -1; --i){
         layers_style[i] = new Object();
         let layer_style_i = layers_style[i],
-            layer_name = layers._groups[0][i].id,
+            layer_id = layers._groups[0][i].id,
+            layer_name = _app.id_to_layer.get(layer_id),
             current_layer_prop = current_layers[layer_name],
             nb_ft = current_layer_prop.n_features,
             selection;
@@ -147,7 +148,7 @@ function get_map_template(){
         layer_style_i.layer_name = layer_name;
         layer_style_i.n_features = nb_ft;
         layer_style_i.visible = layers._groups[0][i].style.visibility;
-        let lgd = document.getElementsByClassName('lgdf_' + layer_name);
+        let lgd = document.getElementsByClassName('lgdf_' + layer_id);
         if(lgd.length == 0){
             layer_style_i.legend = undefined;
         } else if (lgd.length == 1) {
@@ -169,7 +170,7 @@ function get_map_template(){
             layer_style_i.options_disc = current_layer_prop.options_disc;
 
         if (current_layer_prop.targeted){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
             layer_style_i.targeted = true;
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
@@ -184,11 +185,11 @@ function get_map_template(){
                 layer_style_i.step = current_layers.Graticule.step;
             }
         } else if(!current_layer_prop.renderer){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_name).selectAll(type_symbol);
-            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_name).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
+            selection = map.select("#" + layer_id).selectAll(type_symbol);
+            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
             layer_style_i.symbol = type_symbol;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             if(current_layer_prop.rendered_field2)
@@ -210,7 +211,7 @@ function get_map_template(){
                     || current_layer_prop.renderer == "Categorical"
                     || current_layer_prop.renderer == "Carto_doug"
                     || current_layer_prop.renderer == "OlsonCarto"){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
             layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -235,7 +236,7 @@ function get_map_template(){
             }
         } else if (current_layer_prop.renderer == "Links"
                     || current_layer_prop.renderer == "DiscLayer"){
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
@@ -249,7 +250,7 @@ function get_map_template(){
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
         } else if (current_layer_prop.renderer == "TypoSymbols"){
-            selection = map.select("#" + layer_name).selectAll("image")
+            selection = map.select("#" + layer_id).selectAll("image")
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.symbols_map = [...current_layer_prop.symbols_map];
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
@@ -267,8 +268,8 @@ function get_map_template(){
             }
             layer_style_i.current_state = state_to_save;
         } else if(current_layer_prop.renderer == "Label") {
-            selection = map.select("#" + layer_name).selectAll("text");
-            let selec = document.getElementById(layer_name).getElementsByTagName('text');
+            selection = map.select("#" + layer_id).selectAll("text");
+            let selec = document.getElementById(layer_id).getElementsByTagName('text');
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             layer_style_i.default_font = current_layer_prop.default_font;
@@ -284,7 +285,7 @@ function get_map_template(){
             layer_style_i.data_labels = features;
             layer_style_i.current_position = current_position
         } else {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         }
         layer_style_i.stroke_opacity = selection.style("stroke-opacity");
         layer_style_i.fill_opacity = selection.style("fill-opacity");
@@ -309,7 +310,7 @@ function save_map_template(){
             let dlAnchorElem = document.createElement('a');
             dlAnchorElem.style.display = "none";
             dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
-            dlAnchorElem.setAttribute("download", "magrit_project_properties.json");
+            dlAnchorElem.setAttribute("download", "magrit_project.json");
             document.body.appendChild(dlAnchorElem);
             dlAnchorElem.click();
             dlAnchorElem.remove();
@@ -319,7 +320,8 @@ function save_map_template(){
 function load_map_template(){
     let input_button = d3.select(document.createElement('input'))
                     .attr("type", "file").attr("name", "file")
-                    .attr("enctype", "text/json")
+                    .attr("accept", ".json")
+                    // .attr("enctype", "text/json")
                     .on('change', function(){ prepareReading(d3.event) });
 
     let prepareReading = function(event){
@@ -332,54 +334,82 @@ function load_map_template(){
     input_button.node().dispatchEvent(new MouseEvent("click"))
 }
 
+function display_error_loading_project(error){
+    error = error || "Unknown";
+    swal({title: i18next.t("app_page.common.error") + "!",
+          text: i18next.t("app_page.common.error_map_project") + error,
+          type: "error",
+          allowOutsideClick: false});
+}
+
 function apply_user_preferences(json_pref){
+    let preferences;
+    try {
+        preferences = JSON.parse(json_pref);
+    } catch(err) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project") + err);
+        return;
+    }
+    let map_config = preferences.map_config,
+        layers = preferences.layers;
+    if(!layers || !map_config){
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
+        return;
+    }
+    // Restore the state of the page (without open functionnality)
+    if(window.fields_handler){
+        clean_menu_function();
+    }
+    // Clean the values remembered for the user from the previous rendering if any :
+    reset_user_values();
     {
-      let layer_names = Object.getOwnPropertyNames(current_layers);
-      for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
-          remove_layer_cleanup(layer_names[i]);
-      }
-      let _l, _ll;
-      // Make sure there is no layers and legend/layout features on the map :
-      _l = svg_map.childNodes;  _ll = _l.length;
-      console.log(_l);
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // And in the layer manager :
-      _l = layer_list.node().childNodes;  _ll = _l.length;
-      console.log(_l);
-      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-      // Get a new object for where we are storing the main properties :
-      current_layers = new Object();
+        let layer_names = Object.getOwnPropertyNames(current_layers);
+        for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
+            remove_layer_cleanup(layer_names[i]);
+        }
+        let _l, _ll;
+        // Make sure there is no layers and legend/layout features on the map :
+        _l = svg_map.childNodes;  _ll = _l.length;
+        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+        // And in the layer manager :
+        _l = layer_list.node().childNodes;  _ll = _l.length;
+        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+        // Get a new object for where we are storing the main properties :
+        current_layers = new Object();
     }
 
-    let preferences = JSON.parse(json_pref),
-        map_config = preferences.map_config,
-        layers = preferences.layers;
-        let a = document.getElementById("overlay");
+    let a = document.getElementById("overlay");
         a.style.display = "";
         a.querySelector("button").style.display = "none";
 
     let g_timeout;
     let set_final_param = () => {
-        if(g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function(){
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            reproj_symbol_layer();
             let _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
             zoom_without_redraw();
+            s = map_config.projection_scale;
+            t = map_config.projection_translate;
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
+            reproj_symbol_layer();
             let desired_order = layers.map( i => i.layer_name);
             reorder_elem_list_layer(desired_order);
             desired_order.reverse();
             reorder_layers(desired_order);
             apply_layout_lgd_elem();
+            if(map_config.canvas_rotation){
+                document.getElementById("form_rotate").value = map_config.canvas_rotation;
+                document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
+                rotate_global(map_config.canvas_rotation);
+            }
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 950);
+        }, 250);
     };
 
     function apply_layout_lgd_elem(){
@@ -406,6 +436,7 @@ function apply_user_preferences(json_pref){
                 scaleBar.x = map_config.layout_features.scale_bar.x;
                 scaleBar.y = map_config.layout_features.scale_bar.y;
                 scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
+                scaleBar.resize();
             }
             if(map_config.layout_features.north_arrow){
                 northArrow.display();
@@ -428,7 +459,12 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.user_ellipse){
                 for(let i = 0; i < map_config.layout_features.user_ellipse.length; i++) {
                     let ft = map_config.layout_features.user_ellipse[i];
-                    new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map, true);
+                    let ellps = new UserEllipse(ft.id, [ft.cx, ft.cy], svg_map, true);
+                    let ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.setAttribute('rx', ft.rx);
+                    ellps_node.setAttribute('ry', ft.ry);
+                    ellps_node.style.stroke = ft.stroke;
+                    ellps_node.style.strokeWidth = ft.stroke_width;
                 }
             }
             if(map_config.layout_features.text_annot){
@@ -437,9 +473,8 @@ function apply_user_preferences(json_pref){
                     let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
                     let inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = ft.content;
-                    inner_p.style.fontFamily = ft.fontFamily;
-                    inner_p.style.fontSize = ft.fontSize;
-                    inner_p.style.color = ft.color;
+                    inner_p.style = ft.style;
+                    new_txt_bow.text_annot.attr('transform', ft.transform);
                 }
             }
             if(map_config.layout_features.single_symbol){
@@ -447,9 +482,9 @@ function apply_user_preferences(json_pref){
                     let ft = map_config.layout_features.single_symbol[i];
                     let symb = add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
                     if(ft.scalable){
-                        console.log(symb);
-                        symb.node().parentElement.classList.add('scalable-legend');
-                        symb.node().parentElement.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
+                        let parent_symb = symb.node().parentElement;
+                        parent_symb.classList.add('scalable-legend');
+                        parent_symb.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
                     }
                 }
             }
@@ -457,6 +492,7 @@ function apply_user_preferences(json_pref){
         up_legends();
     }
 
+    var done = 0;
     var func_name_corresp = new Map([
         ["Links", "flow"], ["Carto_doug", "cartogram"],
         ["OlsonCarto", "cartogram"], ["Stewart", "smooth"],
@@ -501,7 +537,6 @@ function apply_user_preferences(json_pref){
 
     // Add each layer :
     for(let i = map_config.n_layers - 1; i > -1; --i){
-        if(g_timeout) clearTimeout(g_timeout);
         let _layer = layers[i],
             layer_name = _layer.layer_name,
             symbol;
@@ -532,8 +567,8 @@ function apply_user_preferences(json_pref){
                     current_layer_prop.fields_type = _layer.fields_type;
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
-
-                let layer_selec = map.select("#" + layer_name);
+                let layer_id = _app.layer_to_id.get(layer_name);
+                let layer_selec = map.select("#" + layer_id);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
                 if( _layer['stroke-width-const']){
@@ -593,7 +628,7 @@ function apply_user_preferences(json_pref){
                     }
                 }
 
-                if(_layer.fill_color.single){
+                if(_layer.fill_color.single && _layer.renderer != "DiscLayer"){
                   layer_selec
                       .selectAll('path')
                       .style("fill", _layer.fill_color.single);
@@ -607,9 +642,13 @@ function apply_user_preferences(json_pref){
                 if(_layer.visible == 'hidden'){
                     handle_active_layer(layer_name);
                 }
-                set_final_param();
+                done += 1;
+                if(done == map_config.n_layers) set_final_param();
             });
-
+      } else if (layer_name == "World"){
+          add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible != 'hidden'});
+          done += 1;
+          if(done == map_config.n_layers) set_final_param();
       // ... or this is a layer provided by the application :
       } else {
           if (layer_name == "Sphere" || layer_name == "Graticule"){
@@ -627,16 +666,13 @@ function apply_user_preferences(json_pref){
                   options.fill = _layer.fill_color;
               }
               add_layout_feature(layer_name.toLowerCase(), options);
-          } else if (layer_name == "World"){
-              add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px"});
-
           // ... or this is a layer of proportionnals symbols :
           } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")){
               let geojson_pt_layer = _layer.geo_pt;
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
-                  fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
+                  fill_color: (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")? _layer.fill_color.class : _layer.fill_color.single,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,
@@ -661,7 +697,11 @@ function apply_user_preferences(json_pref){
                   rehandle_legend(layer_name, _layer.legend);
               }
               current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
-              map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+              map.select('#' + _app.layer_to_id.get(layer_name))
+                  .selectAll(_layer.symbol)
+                  .styles({'stroke-width': _layer['stroke-width-const'] + "px",
+                           'fill-opacity': fill_opacity,
+                           'stroke-opacity': stroke_opacity});
 
           // ... or this is a layer of labels :
           } else if (_layer.renderer && _layer.renderer.startsWith("Label")){
@@ -686,15 +726,17 @@ function apply_user_preferences(json_pref){
                       {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
                       {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
               ];
-
+              let layer_id = encodeId(layer_name);
+              _app.layer_to_id.set(layer_name, layer_id);
+              _app.id_to_layer.set(layer_id, layer_name);
               // Add the features at there original positions :
-              map.append("g").attrs({id: layer_name, class: "layer"})
+              map.append("g").attrs({id: layer_id, class: "layer"})
                   .selectAll("image")
                   .data(new_layer_data.features).enter()
                   .insert("image")
                   .attrs( (d,j) => {
                     let symb = symbols_map.get(d.properties.symbol_field),
-                        prop = prop = _layer.current_state[j],
+                        prop = _layer.current_state[j],
                         coords = prop.pos;
                     return {
                       "x": coords[0] - symb[1] / 2,
@@ -733,7 +775,8 @@ function apply_user_preferences(json_pref){
           }
           // This function is called on each layer added
           //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
-          set_final_param();
+          done += 1;
+          if(done == map_config.n_layers) set_final_param();
       }
     }
 }
@@ -742,6 +785,7 @@ function reorder_layers(desired_order){
     let layers = svg_map.getElementsByClassName('layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
+    desired_order = desired_order.map(el => _app.layer_to_id.get(el))
     for(let i = 0; i < nb_layers; i++){
         if(document.getElementById(desired_order[i]))
           parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
@@ -769,6 +813,8 @@ function rehandle_legend(layer_name, properties){
         } else if(prop.type == 'legend_root_links'){
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision)
         }
-        svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name).setAttribute('transform', prop.transform);
+        let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
+        lgd.setAttribute('transform', prop.transform);
+        lgd.setAttribute('display', prop.display);
     }
 }

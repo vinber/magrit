@@ -121,7 +121,7 @@ function setUpInterface(resume_project)
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").attr('data-i18n', 'app_page.section2_.title_no_choice').style('display', 'none'),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
         accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
         b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
         accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
@@ -214,7 +214,7 @@ function setUpInterface(resume_project)
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attr("src", "/static/img/b/addgeom_t.png")
+        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom'})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 
@@ -405,6 +405,23 @@ function setUpInterface(resume_project)
                 zoom_without_redraw();
             });
 
+    let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    d2.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button")
+            .styles({margin: 0, padding: 0})
+            .attrs({id: "resize_fit", type: "number", "value": h,
+                    class: "m_elem_right list_elem_section4 button_st4 i18n",
+                    'data-i18n': '[html]app_page.common.ok'})
+            .on('click', function(){
+                document.getElementById('btn_s4').click();
+                window.scrollTo(0, 0);
+                w = Math.round(window.innerWidth - 361);
+                h = window.innerHeight - 55;
+                canvas_mod_size([w, h]);
+                document.getElementById('map_ratio_select').value = "ratio_user";
+            });
+
     let g = dv4.append("li").styles({margin: "1px", padding: "4px"});
     g.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
@@ -446,7 +463,7 @@ function setUpInterface(resume_project)
 
     let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
     _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
-    _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
     _i.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
     _i.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
@@ -546,26 +563,9 @@ function setUpInterface(resume_project)
 
     let exp_a = export_png_options.append("p");
     exp_a.append("span")
-            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.height"});
-
-    exp_a.append("input")
-            .style("width", "60px")
-            .attrs({"id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h})
-            .on("change", function(){
-                let ratio = h / w,
-                    export_png_width = document.getElementById("export_png_width");
-                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-            });
-
-    exp_a.append("span")
-            .attr("id", "export_png_height_txt")
-            .html(" (px)");
-
-    let exp_b = export_png_options.append("p");
-    exp_b.append("span")
             .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.width"});
 
-    exp_b.append("input")
+    exp_a.append("input")
             .style("width", "60px")
             .attrs({"id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w})
             .on("change", function(){
@@ -574,8 +574,25 @@ function setUpInterface(resume_project)
                 export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
             });
 
-    exp_b.append("span")
+    exp_a.append("span")
             .attr("id", "export_png_width_txt")
+            .html(" (px)");
+
+    let exp_b = export_png_options.append("p");
+    exp_b.append("span")
+            .attrs({"class": "i18n", "data-i18n": "[html]app_page.section5b.height"});
+
+    exp_b.append("input")
+            .style("width", "60px")
+            .attrs({"id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h})
+            .on("change", function(){
+                let ratio = h / w,
+                    export_png_width = document.getElementById("export_png_width");
+                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+            });
+
+    exp_b.append("span")
+            .attr("id", "export_png_height_txt")
             .html(" (px)");
 
     let export_name = dv5b.append("p");
@@ -617,7 +634,8 @@ function setUpInterface(resume_project)
             ok_button.disabled = this.value.length == 0 ? 'true' : '';
         });
 
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -697,7 +715,7 @@ function setUpInterface(resume_project)
             .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                     min: -180.0, max: 180.0, value: 0, step: "any"})
             .styles({width: "38px", "margin": "0 10px",
-                     "color": " white", "background-color": "#173a50",
+                     "color": " white", "background-color": "#000",
                      "vertical-align": "calc(20%)"})
             .on("change", function(){
                 let val = +this.value,
@@ -717,7 +735,7 @@ function setUpInterface(resume_project)
 
     let proj_select = proj_options.append("select")
             .attr("id","form_projection")
-            .styles({"align": "center", "color": " white", "background-color": "#173a50", "border": "none"})
+            .styles({"align": "center", "color": " white", "background-color": "#000", "border": "none"})
             .on("change", function(){
                 current_proj_name = this.selectedOptions[0].textContent;
                 change_projection(this.value);
@@ -756,7 +774,7 @@ function setUpInterface(resume_project)
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', function(){
@@ -777,57 +795,63 @@ function setUpInterface(resume_project)
         .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
+    const_options.append('button')
+        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom'})
+        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+        .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>')
+        .on('click', function(){
+            window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        });
+
     const_options.append("button")
-              .attrs({id: "help_btn", class: "const_buttons i18n",
-                      "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-                      "data-tooltip-position": "bottom"})
-              .styles({cursor: "pointer", background: "transparent"})
-              .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
-              .on("click", function(){
-                  if(document.getElementById("menu_lang"))
-                      document.getElementById("menu_lang").remove();
-                  let click_func = function(window_name, target_url){
-                          window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                  }
-                  let box_content = '<div class="about_content">' +
-                      '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
-                      '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' +
-                      '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
-                      '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
-                  swal({
-                      title: i18next.t("app_page.help_box.title"),
-                      html: box_content,
-                      showCancelButton: true,
-                      showConfirmButton: false,
-                      cancelButtonText: i18next.t('app_page.common.close'),
-                      animation: "slide-from-top",
-                      inputPlaceholder: i18next.t("app_page.help_box.list_placeholders"),
-                      onOpen: function(){
-                          let content = document.getElementsByClassName('about_content')[0];
-                          let credit_link = content.querySelector('#credit_link');
-                          credit_link.style.fontWeight = "bold";
-                          credit_link.style.cursor = "pointer";
-                          credit_link.color = "#173a50";
-                          credit_link.onclick = function(){
-                              window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_doc').onclick = function(){
-                              window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_contact').onclick = function(){
-                              window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                          content.querySelector('.btn_gh').onclick = function(){
-                              window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                          };
-                      }
-                   }).then(inputValue => {
-                          swal("Nice!", "You wrote: " + inputValue, "success");
-                        }, dismissValue => { null; });
-                });
+        .attrs({id: "help_btn", class: "const_buttons i18n",
+                "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+                "data-tooltip-position": "bottom"})
+        .styles({cursor: "pointer", background: "transparent"})
+        .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
+        .on("click", function(){
+            if(document.getElementById("menu_lang"))
+                document.getElementById("menu_lang").remove();
+            let click_func = function(window_name, target_url){
+                    window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            }
+            let box_content = '<div class="about_content">' +
+                '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
+                '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+                // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
+                '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
+                '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+            swal({
+                title: i18next.t("app_page.help_box.title"),
+                html: box_content,
+                showCancelButton: true,
+                showConfirmButton: false,
+                cancelButtonText: i18next.t('app_page.common.close'),
+                animation: "slide-from-top",
+                onOpen: function(){
+                    let content = document.getElementsByClassName('about_content')[0];
+                    let credit_link = content.querySelector('#credit_link');
+                    credit_link.style.fontWeight = "bold";
+                    credit_link.style.cursor = "pointer";
+                    credit_link.color = "#000";
+                    credit_link.onclick = function(){
+                        window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_doc').onclick = function(){
+                        window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_contact').onclick = function(){
+                        window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                    content.querySelector('.btn_gh').onclick = function(){
+                        window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    };
+                }
+             }).then(inputValue => { null; },
+                     dismissValue => { null; });
+        });
 
     const_options.append("button")
         .attrs({id: "current_app_lang", class: "const_buttons"})
@@ -852,7 +876,7 @@ function setUpInterface(resume_project)
                 menu.id = "menu_lang";
                 menu.style.minWidth = "30px";
                 menu.style.width = "50px";
-                menu.style.background = "#173a50";
+                menu.style.background = "#000";
                 let list_elems = document.createElement("ul");
                 menu.appendChild(list_elems);
                 for (let i = 0; i < actions.length; i++) {
@@ -934,7 +958,7 @@ function setUpInterface(resume_project)
 
           for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
               let n = a.target.childNodes[i].getAttribute("layer_name");
-              desired_order[i] = n;
+              desired_order[i] = _app.layer_to_id.get(n);
               actual_order[i] = layers[i].id;
           }
           for(let i = 0, len = desired_order.length; i < len; i++){
@@ -950,6 +974,13 @@ function setUpInterface(resume_project)
         onEnd: event => {
             document.body.classList.remove("no-drop");
         },
+    });
+}
+
+function encodeId(s) {
+    if (s==='') return '_';
+    return s.replace(/[^a-zA-Z0-9_-]/g, function(match) {
+        return '_'+match[0].charCodeAt(0).toString(16)+'_';
     });
 }
 
@@ -1045,12 +1076,9 @@ function make_ico_choice(){
                     if(this.classList.contains('active')){
                         switch_accordion_section('btn_s2b');
                         return;
+                    } else {
+                        clean_menu_function();
                     }
-                    fields_handler.unfill();
-                    let previous_button = document.getElementById("button_" + current_functionnality.name);
-                    previous_button.style.filter = "invert(0%) saturate(100%)";
-                    clean_menu_function();
-                    previous_button.classList.remove('active');
                 }
 
                 // Highlight the icon of the selected functionnality :
@@ -1060,9 +1088,9 @@ function make_ico_choice(){
                 document.getElementById('accordion2b').style.display = '';
 
                 // Get the function to fill the menu with the appropriate options (and do it):
-                current_functionnality = get_menu_option(func_name);
-                let make_menu = eval(current_functionnality.menu_factory);
-                window.fields_handler = eval(current_functionnality.fields_handler);
+                _app.current_functionnality = get_menu_option(func_name);
+                let make_menu = eval(_app.current_functionnality.menu_factory);
+                window.fields_handler = eval(_app.current_functionnality.fields_handler);
                 make_menu();
 
                 // Replace the title of the section:
@@ -1070,26 +1098,27 @@ function make_ico_choice(){
                 selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
                                         i18next.t("app_page.common.representation") +
                                         '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
-                                        current_functionnality.name +
+                                        _app.current_functionnality.name +
                                         '">' +
-                                        i18next.t("app_page.func_title."+ current_functionnality.name) +
+                                        i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
                                         '</span>';
                 selec_title.style.display = '';
-                // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-                let btn_info = document.getElementById("btn_info");
-                btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-                btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-                new Popover(btn_info,{
-                    container: document.getElementById("twbs"),
-                    customClass: "help-popover",
-                    dismiss: "true",
-                    dismissOutsideClick: true,
-                    placement: "right"
-                });
+
+                // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
+                // let btn_info = document.getElementById("btn_info");
+                // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
+                // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
+                // new Popover(btn_info,{
+                //     container: document.getElementById("twbs"),
+                //     customClass: "help-popover",
+                //     dismiss: "true",
+                //     dismissOutsideClick: true,
+                //     placement: "right"
+                // });
 
                 // Fill the field of the functionnality with the field
                 // of the targeted layer if already uploaded by the user :
-                if(targeted_layer_added){
+                if(_app.targeted_layer_added){
                     let target_layer = Object.getOwnPropertyNames(user_data)[0];
                     fields_handler.fill(target_layer);
                 }
@@ -1134,28 +1163,29 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map  = [],
-    targeted_layer_added = false,
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map"),
-    current_functionnality = undefined;
+    map_div = d3.select("#map");
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
             .append("svg")
-                .attr("id", "svg_map")
-                .attr("width", w)
-                .attr("height", h)
-                .style("position", "absolute")
-                .call(zoom);
+            .attrs({'id': 'svg_map', 'width': w, 'height': h})
+            .style("position", "absolute")
+            .on("contextmenu", function(event){ d3.event.preventDefault(); })
+            .call(zoom);
 
-map.on("contextmenu", function(event){ d3.event.preventDefault(); });
+// map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
 var defs = map.append("defs");
 
 var _app = {
-    to_cancel: undefined
+    to_cancel: undefined,
+    targeted_layer_added: false,
+    current_functionnality: undefined,
+    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1287,7 +1317,8 @@ function binds_layers_buttons(layer_name){
         alert("This shouldn't happend");
         return;
     }
-    let sortable_elem = d3.select("#sortable").select("." + layer_name);
+    let layer_id = _app.layer_to_id.get(layer_name);
+    let sortable_elem = d3.select("#sortable").select("." + layer_id);
     sortable_elem.on("dblclick", () => { handle_click_layer(layer_name); });
     sortable_elem.on("contextmenu", () => { d3.event.preventDefault(); return; });
     sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
@@ -1322,7 +1353,7 @@ function displayInfoOnMove(){
 
         for(let i = nb_layer-1; i > -1; i--){
             if(layers[i].style.visibility != "hidden"){
-                top_visible_layer = layers[i].id
+                top_visible_layer = _app.id_to_layer(layers[i].id);
                 break;
             }
         }
@@ -1332,7 +1363,7 @@ function displayInfoOnMove(){
             return;
         }
 
-        let id_top_layer = "#" + top_visible_layer,
+        let id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
             symbol = current_layers[top_visible_layer].symbol;
 
         d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
@@ -1393,18 +1424,17 @@ function reproj_symbol_layer(){
         && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
             || current_layers[lyr_name].renderer.indexOf('TypoSymbols')  > -1
             || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )){
-      let ref_layer_name = current_layers[lyr_name].ref_layer_name,
-          symbol = current_layers[lyr_name].symbol;
+      let symbol = current_layers[lyr_name].symbol;
 
       if (symbol == "text") { // Reproject the labels :
-          map.select('#' + lyr_name)
+          map.select('#' + _app.layer_to_id.get(lyr_name))
                 .selectAll(symbol)
                 .attrs( d => {
-                  let pt = path.centroid({'type': 'Point', 'coordinates': d.coords});
+                  let pt = path.centroid(d.geometry);
                   return {'x': pt[0], 'y': pt[1]};
                 });
       } else if (symbol == "image"){ // Reproject pictograms :
-          map.select('#' + lyr_name)
+          map.select('#' + _app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .attrs(function(d,i){
                 let coords = path.centroid(d.geometry),
@@ -1412,7 +1442,7 @@ function reproj_symbol_layer(){
                 return { 'x': coords[0] - size, 'y': coords[1] - size };
               });
       } else if(symbol == "circle"){ // Reproject Prop Symbol :
-          map.select("#"+lyr_name)
+          map.select("#"+_app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
@@ -1424,7 +1454,7 @@ function reproj_symbol_layer(){
                 };
               });
       } else if (symbol == "rect") { // Reproject Prop Symbol :
-          map.select("#"+lyr_name)
+          map.select("#"+_app.layer_to_id.get(lyr_name))
               .selectAll(symbol)
               .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
               .attrs( d => {
@@ -1526,17 +1556,29 @@ var make_confirm_dialog2 = (function(class_box, title, options){
 
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         }
         let _onclose = () => {
             deferred.resolve(false);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
+        function helper_esc_key_twbs(evt){
+              evt = evt || window.event;
+              // evt.preventDefault();
+              let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+              if (isEscape) {
+                  _onclose();
+                  document.removeEventListener('keydown', helper_esc_key_twbs);
+              }
+        }
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 })();
@@ -1585,8 +1627,10 @@ function remove_ext_dataset_cleanup(){
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
     let data_ext_txt = document.getElementById("data_ext");
-    data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
+    data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
     data_ext_txt.onclick = click_button_add_layer;
+    data_ext_txt.classList.add('i18n');
+    data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
     document.getElementById('sample_zone').style.display = null;
@@ -1596,7 +1640,7 @@ function remove_ext_dataset_cleanup(){
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
-     let g_lyr_name = "#"+name;
+     let g_lyr_name = "#" + _app.layer_to_id.get(name);
 
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
@@ -1611,7 +1655,7 @@ function remove_layer_cleanup(name){
 
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
-    document.querySelector('#sortable .' + name).remove()
+    document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove()
 
     // Remove the layer from the "geo export" menu :
     let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
@@ -1621,21 +1665,23 @@ function remove_layer_cleanup(name){
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :
         //$("#input_geom").qtip("destroy");
+        document.getElementById("remove_target").remove();
         d3.select("#img_in_geom")
             .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
         d3.select("#input_geom")
+            .attrs({'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom'})
             .html(i18next.t("app_page.section1.add_geom"))
             .on('click', click_button_add_layer);
-        document.getElementById("remove_target").remove();
         // Unfiling the fields related to the targeted functionnality:
-        if(current_functionnality)
-            fields_handler.unfill()
+        if(_app.current_functionnality){
+            clean_menu_function();
+        }
 
         // Update some global variables :
         field_join_map = [];
         user_data = new Object();
-        targeted_layer_added = false;
+        _app.targeted_layer_added = false;
 
         // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
         document.getElementById('sample_zone').style.display = null;
@@ -1646,14 +1692,7 @@ function remove_layer_cleanup(name){
         // Disabled the button allowing the user to choose type for its layer :
         document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
-        // Also reset the user choosen values, remembered for its ease :
-        fields_TypoSymbol.box_typo = undefined;
-        fields_TypoSymbol.rendering_params = {};
-        fields_TypoSymbol.cats = {};
-        fields_PropSymbolChoro.rendering_params = {};
-        fields_Typo.rendering_params = {};
-        fields_Choropleth.rendering_params = {};
-        fields_PropSymbolTypo.rendering_params = {};
+        reset_user_values();
     }
 
     // There is probably better ways in JS to delete the object,
@@ -1700,7 +1739,7 @@ function zoom_without_redraw(){
           .transition()
           .duration(50)
           .style("stroke-width", function(){
-                let lyr_name = this.id;
+                let lyr_name = _app.id_to_layer.get(this.id);
                 return current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
@@ -1715,7 +1754,7 @@ function zoom_without_redraw(){
           .transition()
           .duration(50)
           .style("stroke-width", function(){
-                let lyr_name = this.id;
+                let lyr_name = _app.id_to_layer.get(this.id);
                 return current_layers[lyr_name].fixed_stroke
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
@@ -1751,7 +1790,8 @@ function redraw_legends_symbols(targeted_node){
         var legend_nodes = [targeted_node];
 
     for(let i=0; i<legend_nodes.length; ++i){
-        let layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
+        let layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+            layer_name = _app.id_to_layer.get(layer_id),
             rendered_field = current_layers[layer_name].rendered_field,
             nested = legend_nodes[i].getAttribute("nested"),
             display_value = legend_nodes[i].getAttribute("display"),
@@ -1769,7 +1809,7 @@ function redraw_legends_symbols(targeted_node){
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
-        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
         if(transform_param)
@@ -1929,7 +1969,7 @@ function change_projection(proj_name) {
                 || null;
     if(!layer_name){
         let layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
+        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
     }
     if(layer_name){
         scale_to_lyr(layer_name);
@@ -1958,7 +1998,7 @@ function handle_active_layer(name){
         parent_div = selec.parentElement;
         name = parent_div.parentElement.getAttribute("layer_name");
     } else {
-        selec = document.querySelector("#sortable ." + name + " .active_button");
+        selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
         parent_div = selec.parentElement;
     }
     let func = function() { handle_active_layer(name); };
@@ -1973,8 +2013,8 @@ function handle_active_layer(name){
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    map.select("#"+name).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.select("#"+_app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
     if(at_end){
         displayInfoOnMove();
@@ -2019,6 +2059,9 @@ function handle_title_properties(){
     }
     var title_props = {
         size: title.style("font-size"),
+        font_weight: title.style('font-weight'),
+        font_style: title.style('font-style'),
+        text_decoration: title.style('text-decoration'),
         color: title.style("fill"),
         position_x: title.attr("x"),
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
@@ -2026,32 +2069,35 @@ function handle_title_properties(){
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
         font_family: title.style("font-family")
         };
+    title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
     make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
         .then(function(confirmed){
             if(!confirmed)
-                title.style("font-size", title_props.size)
-                    .style("fill", title_props.color)
-                    .style("font-family", title_props.font_family)
-                    .attrs({x: title_props.position_x, y: title_props.position_y});
+                title.attrs({x: title_props.position_x, y: title_props.position_y})
+                    .styles({
+                        "font-size": title_props.size, "fill": title_props.color,
+                        "font-family": title_props.font_family, 'font-style': title_props.font_style,
+                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+                        });
             });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
     box_content.append("p")
         .html(i18next.t("app_page.title_box.font_size"))
         .insert("input")
-        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "50px")
+        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "65px")
         .on("change", function(){  title.style("font-size", this.value + "px");  });
     box_content.append("p")
         .html(i18next.t("app_page.title_box.xpos"))
         .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "50px")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "65px")
         .on("change", function(){  title.attr("x", w * +this.value / 100);  });
     box_content.append("p")
         .html(i18next.t("app_page.title_box.ypos"))
         .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "50px")
+        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "65px")
         .on("change", function(){  title.attr("y", h * +this.value / 100);  });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
         .insert("input")
@@ -2064,7 +2110,39 @@ function handle_title_properties(){
         font_select.append("option").text(font[0]).attr("value", font[1])
     });
     font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title + allow to move the title with the mouse
+    // TODO : Allow the display a rectangle (resizable + selection color) under the title
+    let options_format = box_content.append('p'),
+        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+    btn_bold.on('click', function(){
+        if(this.classList.contains('active')){
+            this.classList.remove('active');
+            title.style('font-weight', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-weight', 'bold');
+        }
+    });
+    btn_italic.on('click', function(){
+        if(this.classList.contains('active')){
+            this.classList.remove('active');
+            title.style('font-style', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-style', 'italic');
+        }
+    });
+    btn_underline.on('click', function(){
+      if(this.classList.contains('active')){
+          this.classList.remove('active');
+          title.style('text-decoration', '');
+      } else {
+          this.classList.add('active');
+          title.style('text-decoration', 'underline');
+      }
+  });
     return;
 }
 
@@ -2211,10 +2289,33 @@ function check_output_name(name, extension){
     }
 }
 
+function patchSvgForForeignObj(){
+    let elems = document.getElementsByTagName("foreignObject");
+    let originals = [];
+    for(let i = 0; i < elems.length; i++){
+        let el = elems[i];
+        originals.push([el.getAttribute('width'), el.getAttribute('height')]);
+        el.setAttribute('width', '100%');
+        el.setAttribute('height', '100%')
+    }
+    return originals;
+}
+
+function unpatchSvgForForeignObj(originals){
+    let elems = document.getElementsByTagName("foreignObject");
+    for(let i = 0; i < originals.length; i++){
+        let el = elems[i];
+        el.setAttribute('width', originals[i][0]);
+        el.setAttribute('height', originals[i][1]);
+    }
+}
+
+
 function export_compo_svg(output_name){
     output_name = check_output_name(output_name, "svg");
     //patchSvgForInkscape();
     patchSvgForFonts();
+    let dimensions_foreign_obj = patchSvgForForeignObj();
     let targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
@@ -2238,25 +2339,41 @@ function export_compo_svg(output_name){
     dl_link.click();
     dl_link.remove();
     unpatchSvgForFonts();
+    unpatchSvgForForeignObj(dimensions_foreign_obj);
     //unpatchSvgForInkscape();
 }
 
+// Maybe PNGs should be rendered on server side in order to avoid limitations that
+//   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png(type="web", scalefactor=1, output_name){
+    document.getElementById("overlay").style.display = "";
     output_name = check_output_name(output_name, "png");
+    let dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
         targetSVG = document.querySelector("#svg_map"),
+        mime_type = "image/png",
+        svg_xml,
+        ctx,
+        img;
+
+    // At this point it might be better to wrap the whole function in a try catch ?
+    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+    try {
         svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
         ctx = targetCanvas.getContext('2d'),
-        mime_type = "image/png",
         img = new Image();
-
+    } catch(err) {
+        document.getElementById("overlay").style.display = "none";
+        display_error_during_computation(String(err));
+        return;
+    }
     if(scalefactor != 1){
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            console.log(err);
-            display_error_during_computation("Too high resolution selected : " + String(err));
+            document.getElementById("overlay").style.display = "none";
+            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
     }
@@ -2267,6 +2384,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
             var imgUrl = targetCanvas.toDataURL(mime_type),
                 dl_link = document.createElement("a");
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
@@ -2277,7 +2395,9 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
+        document.getElementById("overlay").style.display = "none";
         unpatchSvgForFonts();
+        unpatchSvgForForeignObj(dimensions_foreign_obj);
     }
 }
 
@@ -2295,8 +2415,8 @@ function export_layer_geo(layer, type, projec, proj4str){
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
         ["ESRI Shapefile", "zip"],
-        ["GML", "zip"],
-        ["KML", "kml"]]);
+        ["GML", "zip"]]);
+        // ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true)
         .then( data => {
@@ -2321,8 +2441,8 @@ function export_layer_geo(layer, type, projec, proj4str){
                 dataStr;
             if(ext.indexOf("json") > -1)
                 dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-            else if (ext.indexOf("kml") > -1)
-                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            // else if (ext.indexOf("kml") > -1)
+            //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
             else
                 dataStr = "data:application/zip;base64," + data;
 
@@ -2337,149 +2457,6 @@ function export_layer_geo(layer, type, projec, proj4str){
             console.log(error);
         });
 }
-
-// function make_export_layer_box(){
-//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
-//                          i18next.t("app_page.export_box.geo_title_box"),
-//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
-//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
-//
-//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-//         if(sample_no_values.has(name))
-//             return 0;
-//         else if(current_layers[name].renderer
-//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
-//             return 0;
-//         return 1;
-//     });
-//
-//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-//
-//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
-//              .insert("select").attr("id", "layer_to_export");
-//
-//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-//              .insert("select").attr("id", "datatype_to_use");
-//
-//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
-//              .insert("select").attrs({id: "projection_to_use", disabled: true});
-//
-//     let proj4_input = box_content.append("input")
-//         .attr("id", "proj4str")
-//         .styles({display: 'none', width: '200px'})
-//         .on('keyup', function(){
-//             if(this.value.length == 0){
-//                 button_ok.disabled = "true";
-//             } else {
-//                 button_ok.disabled = ""
-//             }
-//         });
-//
-//     layer_names.forEach( name => {
-//         selec_layer.append("option").attr("value", name).text(name);
-//     });
-//
-//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-//         selec_type.append("option").attr("value", name).text(name);
-//     });
-//
-//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-//     });
-//
-//     selec_type.on("change", function(){
-//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
-//             selec_projection.node().options.selectedIndex = 0;
-//             selec_projection.attr("disabled", true);
-//             button_ok.disabled = "";
-//         } else {
-//             selec_projection.attr("disabled", null);
-//         }
-//     });
-//
-//     selec_projection.on("change", function(){
-//         if(this.value == "proj4string"){
-//             proj4_input.style("display", "initial");
-//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
-//                 button_ok.disabled = "true";
-//         } else {
-//             proj4_input.style("display", "none");
-//             button_ok.disabled = "";
-//         }
-//     });
-//
-//     // TODO : allow export to "geopackage" format ?
-//     let extensions = new Map([
-//         ["GeoJSON", "geojson"],
-//         ["TopoJSON", "topojson"],
-//         ["ESRI Shapefile", "zip"],
-//         ["GML", "zip"],
-//         ["KML", "kml"]]);
-//
-//     dialogBox.then( confirmed => { if(confirmed){
-//         let layer = selec_layer.node().value,
-//             type = selec_type.node().value,
-//             projec = selec_projection.node().value;
-//         let formToSend = new FormData();
-//         formToSend.append("layer", layer);
-//         formToSend.append("layer_name", current_layers[layer].key_name);
-//         formToSend.append("format", type);
-//         if(projec == "proj4string")
-//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
-//         else
-//             formToSend.append("projection", JSON.stringify({"name" : projec}));
-//
-//         xhrequest("POST", '/get_layer2', formToSend, true)
-//             .then( data => {
-//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
-//                     let error_message;
-//                     if(data.indexOf('{"Error"') < 5){
-//                         data = JSON.parse(data);
-//                         error_message = i18next.t(data.Error);
-//                     } else {
-//                         error_message = i18next.t('app_page.common.error_msg');
-//                     }
-//                     swal({title: "Oops...",
-//                          text: error_message,
-//                          type: "error",
-//                          allowOutsideClick: false,
-//                          allowEscapeKey: false
-//                         }).then( () => { null; },
-//                                   () => { null; });
-//                     return;
-//                 }
-//                 let ext = extensions.get(type),
-//                     dataStr;
-//                 if(ext.indexOf("json") > -1)
-//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-//                 else if (ext.indexOf("kml") > -1)
-//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-//                 else
-//                     dataStr = "data:application/zip;base64," + data;
-//
-//                 let dlAnchorElem = document.createElement('a');
-//                 dlAnchorElem.setAttribute("href", dataStr);
-//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-//                 document.body.appendChild(dlAnchorElem);
-//                 dlAnchorElem.click();
-//                 dlAnchorElem.remove();
-//
-//             }, error => {
-//                 console.log(error);
-//             });
-//         dialogBox.dialog("destroy").remove();
-//     }});
-// }
-
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917
@@ -2523,6 +2500,6 @@ let beforeUnloadWindow = (event) => {
         window.localStorage.removeItem("magrit_project");
         window.localStorage.setItem("magrit_project", json_params);
     });
-    event.returnValue = (targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
+    event.returnValue = (_app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
                         ? "Confirm exit" : undefined;
 };

@@ -103,16 +103,27 @@ var display_box_symbol_typo = function(layer, field, categories){
         container = document.getElementById("symbol_box"),
         _onclose = () => {
             deferred.resolve(false);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             container.remove();
           }
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+              evt.preventDefault();
+              _onclose();
+          }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function(){
         let symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     }
     return deferred.promise;
 };
@@ -196,6 +207,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
     container.querySelector(".btn_ok").onclick = function(){
         let res_url = newbox.select("#current_symb").style("background-image");
         deferred.resolve(res_url);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if(parent_css_selector) reOpenParent(parent_css_selector);
@@ -203,6 +215,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
 
     let _onclose = () => {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if(parent_css_selector) reOpenParent(parent_css_selector);
@@ -210,6 +223,15 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          evt.preventDefault();
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+              _onclose();
+          }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -258,7 +280,6 @@ function make_style_box_indiv_symbol(symbol_node){
         let current_state = parent.classList.contains('scalable-legend');
         let b = box_content.append('p').attr('class', 'line_elem');
         b.append('label')
-            .style('float', 'right')
             .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
             .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         b.append('input')

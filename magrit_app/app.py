@@ -60,6 +60,7 @@ try:
         make_geojson_links, repairCoordsPole)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
+    from helpers.error_middleware404 import error_middleware
 
 except:
     from .helpers.misc import (
@@ -73,6 +74,7 @@ except:
         make_geojson_links, repairCoordsPole)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
+    from .helpers.error_middleware404 import error_middleware
 
 pp = '(aiohttp_app) '
 
@@ -193,6 +195,8 @@ async def cache_input_topojson(request):
             result = result.decode()
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
+            request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+            request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
@@ -242,6 +246,8 @@ async def cache_input_topojson(request):
             result = result.decode()
             request.app['logger'].info(
                 '{} - Used result from redis'.format(user_id))
+            request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+            request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
             return web.Response(text=''.join([
                 '{"key":', hash_val,
                 ',"file":', result.replace(hash_val, name), '}'
@@ -320,6 +326,8 @@ async def convert(request):
         result = await request.app['redis_conn'].get(f_nameQ)
         request.app['logger'].info(
             '{} - Used result from redis'.format(user_id))
+        request.app['redis_conn'].pexpire(f_nameQ, 86400000)
+        request.app['redis_conn'].pexpire(f_nameNQ, 86400000)
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
             ))
@@ -365,7 +373,8 @@ async def convert(request):
         os.removedirs(dir_path)
 
     elif ('octet-stream' in datatype
-            or 'text/json' in datatype) and "geojson" in name.lower():
+            or 'text/json' in datatype or 'application/geo+json' in datatype) \
+            and "geojson" in name.lower():
         # if '"crs"' in data and ('"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data or "4326" not in data):
         with open(filepath, 'wb') as f:
             f.write(data)
@@ -388,7 +397,6 @@ async def convert(request):
             request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
 
     elif 'octet-stream' in datatype and "kml" in name.lower():
-        print(datatype, name)
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
@@ -430,13 +438,26 @@ async def serve_main_page(request):
 async def serve_contact_form(request):
     return {"app_name": request.app["app_name"]}
 
+async def store_contact_info(request):
+    posted_data = await request.post()
+    asyncio.ensure_future(
+        request.app['redis_conn'].lpush('contact',
+            json.dumps({
+                "name": posted_data.get('name'),
+                "email": posted_data.get('email'),
+                "subject": posted_data.get('subject'),
+                "message": posted_data.get('message')
+                })))
+    return web.Response(text='')
+
 def make_carto_doug(file_path, field_name, iterations):
     gdf = GeoDataFrame.from_file(file_path)
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
         gdf = gdf[gdf[field_name].notnull()]
-        gdf.index = range(len(gdf))
+    gdf = gdf.iloc[gdf[field_name].nonzero()]
+    gdf.index = range(len(gdf))
     return make_cartogram(gdf.copy(), field_name, iterations)
 
 async def carto_doug(posted_data, user_id, app):
@@ -964,7 +985,6 @@ async def convert_csv_geo(request):
 
 async def get_stats_json(request):
     posted_data = await request.post()
-    print(posted_data)
     if not ('data' in posted_data
             and mmh3_hash(posted_data['data']) == 1163649321):
         return web.Response()
@@ -978,9 +998,11 @@ async def get_stats_json(request):
         ])
     layers, sample_layers = await asyncio.gather(*[
         redis_conn.get('layers'), redis_conn.get('sample_layers')])
+    contact = await redis_conn.lrange('contact', 0, -1)
     count = len(request.app['app_users'])
     return web.Response(text=json.dumps(
-        {"count": count , "layer": layers, "sample": sample_layers,
+        {"count": count , "layer": layers,
+         "sample": sample_layers, "contact": contact,
          "t": {"stewart": stewart, "dougenik": doug,
                "gridded": gridded, "olson": olson, "links": links}
              }))
@@ -1032,20 +1054,18 @@ def check_port_available(port_nb):
 
 
 async def on_shutdown(app):
-    app["redis_conn"].quit()
+    await app["redis_conn"].quit()
     app["ProcessPool"].shutdown()
     app["ThreadPool"].shutdown()
     for task in asyncio.Task.all_tasks():
         await asyncio.sleep(0)
         info = task._repr_info()
-#        if "RedisConnection" in info[1]:
-#            task.cancel()
         if "RedisPool" in info[1] and "pending" in info[0]:
             try:
-                await asyncio.wait_for(task, 1)
+                await asyncio.wait_for(task, 2)
             except asyncio.TimeoutError:
                 task.cancel()
-        else:
+        elif not "Application.shutdown()" in info[1]:
             task.cancel()
 
 async def init(loop, port=None):
@@ -1056,12 +1076,14 @@ async def init(loop, port=None):
     app = web.Application(
         loop=loop,
         middlewares=[
+            error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
     add_route('GET', '/contact', serve_contact_form)
+    add_route('POST', '/contact', store_contact_info)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)

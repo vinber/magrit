@@ -80,6 +80,16 @@ function get_menu_option(func){
 *
 */
 function clean_menu_function(){
+    if(fields_handler && fields_handler.unfill) {
+        fields_handler.unfill();
+        fields_handler = undefined;
+    }
+    if(_app.current_functionnality && _app.current_functionnality.name){
+        let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
+        previous_button.style.filter = "invert(0%) saturate(100%)";
+        previous_button.classList.remove('active');
+        _app.current_functionnality = undefined;
+    }
     section2.select(".form-rendering").remove();
     document.getElementById('accordion2b').style.display = 'none';
     let btn_s2b = document.getElementById('btn_s2b');
@@ -88,6 +98,22 @@ function clean_menu_function(){
     btn_s2b.style.display = 'none';
 }
 
+/**
+*  Reset the user choosen values remembered for its ease
+*  (like discretization choice, symbols, etc. which are redisplayed as they
+*   were selected by the user)
+*
+*/
+function reset_user_values(){
+    //
+    fields_TypoSymbol.box_typo = undefined;
+    fields_TypoSymbol.rendering_params = {};
+    fields_TypoSymbol.cats = {};
+    fields_PropSymbolChoro.rendering_params = {};
+    fields_Typo.rendering_params = {};
+    fields_Choropleth.rendering_params = {};
+    fields_PropSymbolTypo.rendering_params = {};
+}
 /**
 * Function to remove each node (each <option>) of a <select> HTML element :
 *
@@ -108,21 +134,26 @@ function unfillSelectInput(select_node){
 *        one to avoid collision or unwanted characters)
 */
 function check_layer_name(name){
-    if(!(current_layers.hasOwnProperty(name)))
+    if(name.match(/^\d+/)){
+        name = "_" + name;
+    }
+    // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
+    if(!current_layers.hasOwnProperty(name) && ["Graticule", "Sphere", "World"].indexOf(name) < 0)
         return name;
     else {
         let i = 1;
-        if(name.match(/_\d+$/)){
-            i = name.match(/_\d+$/);
+        let match = name.match(/_\d+$/);
+        if(match){
+            i = match[0];
             name = name.substring(name, name.indexOf(i));
             return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
         }
         else {
-            name = [name, i].join('_');
-            return check_layer_name(name);
+            return check_layer_name([name, i].join('_'));
         }
     }
 }
+
 /**
 * Display a message when switching between functionnalitiesif the layer to render
 * doesn't have any interesting field to use.
@@ -145,8 +176,9 @@ var get_first_guess_span = function(){
     let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
                                   [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
         height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
-                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    return Math.round((width_km + height_km) / 2 * 0.02);
+                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
+        val = Math.max(width_km , height_km) * 0.05;
+        return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 }
 
 /**
@@ -170,15 +202,8 @@ function test_maxmin_resolution(cell_value){
     return;
 }
 
-
 function make_template_functionnality(parent_node){
-    let dialog_content = parent_node.append("div").attr("class", "form-rendering");
-    dialog_content.append("p").attr("class", "container_img_help")
-        .append("img")
-        .attrs({id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-                class: "help_tooltip", "data-tooltip_help": " "})
-        .styles({"cursor": "pointer"});
-    return dialog_content;
+    return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top){
@@ -316,8 +341,8 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 
 function fetch_min_max_table_value(parent_id){
     var parent_node = parent_id ? document.getElementById(parent_id)
-                        : current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
-                        : current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
+                        : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
+                        : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
                         : null;
 
     if(!parent_node) return;
@@ -1004,6 +1029,7 @@ var fields_Stewart = {
     }
 };
 
+
 function render_stewart(){
   let formToSend = new FormData(),
       doc = document,
@@ -1021,6 +1047,11 @@ function render_stewart(){
       mask_name = doc.getElementById('stewart_mask').value,
       new_user_layer_name = document.getElementById("stewart_output_name").value;
 
+  if(nb_class != (nb_class | 0)){
+      nb_class = (nb_class | 0);
+      doc.getElementById('stewart_nb_class').value = nb_class;
+  }
+
   if(reso && reso > 0){
       let res_test = test_maxmin_resolution(reso);
       if(res_test){
@@ -1033,7 +1064,6 @@ function render_stewart(){
       reso = null;
   }
   bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
-
 
   var1_to_send[field1_n] = current_layers[layer].original_fields.has(field1_n) ? [] : user_data[layer].map(i => +i[field1_n]);
   if(field2_n != "None"){
@@ -1076,7 +1106,7 @@ function render_stewart(){
           current_layers[n_layer_name].colors_breaks = colors_breaks;
           current_layers[n_layer_name].rendered_field = field1_n;
           current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
-          map.select("#"+n_layer_name)
+          map.select("#" + _app.layer_to_id.get(n_layer_name))
                   .selectAll("path")
                   .styles( (d,i) => ({'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0}));
           handle_legend(n_layer_name);
@@ -1085,7 +1115,10 @@ function render_stewart(){
       }, error => {
           display_error_during_computation();
           console.log(error);
-      });
+      }).catch(function(err){
+          display_error_during_computation();
+          console.log(err);
+      });;
 }
 
 
@@ -1126,7 +1159,7 @@ function fillMenu_Stewart(){
       .html(i18next.t("app_page.func_options.smooth.beta"));
     d.insert('input')
       .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en', lang: 'fr'});
+      .attrs({type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any"});
 
     let p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span')
@@ -1237,7 +1270,7 @@ var fields_Anamorphose = {
                 //   return;
                 // }
 
-                let layer_select = document.getElementById(layer).getElementsByTagName("path"),
+                let layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
                     d_values = [],
@@ -1310,7 +1343,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
-                        map.select("#" + n_layer_name)
+                        map.select("#" + _app.layer_to_id.get(n_layer_name))
                                 .selectAll("path")
                                 .style("fill-opacity", 0.8)
                                 .style("stroke", "black")
@@ -1355,7 +1388,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                         current_layers[n_layer_name].renderer = "Carto_doug";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        map.select("#" + n_layer_name)
+                        map.select("#" + _app.layer_to_id.get(n_layer_name))
                             .selectAll("path")
                             .style("fill", function(){ return Colors.random(); })
                             .style("fill-opacity", 0.8)
@@ -1479,7 +1512,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
     if(!geojson_pt_layer){
         function make_geojson_pt_layer(){
-          let ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+          let ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
               result = [];
           for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
             let ft = ref_layer_selection[i].__data__,
@@ -1547,10 +1580,13 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
         geojson_pt_layer = make_geojson_pt_layer();
     }
+    let layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = []
     if(symbol_type === 'circle'){
       map.append("g")
-        .attr("id", layer_to_add)
+        .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
         .data(geojson_pt_layer.features)
@@ -1570,7 +1606,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         .style("stroke-width", 1 / zs);
     } else if(symbol_type === "rect"){
       map.append("g")
-        .attr("id", layer_to_add)
+        .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
         .data(geojson_pt_layer.features)
@@ -1624,18 +1660,17 @@ function render_categorical(layer, rendering_params){
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
-    map.select("#" + layer).style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
-        field = rendering_params.rendered_field,
-        layer_to_render = map.select("#" + layer).selectAll("path");
-
-    layer_to_render.style("fill", (d,i) => colorsByFeature[i])
-                    .style("fill-opacity", 0.9)
-                    .style("stroke-opacity", 0.9)
-                    .style("stroke", "black");
+        field = rendering_params.rendered_field;
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render
+        .style("opacity", 1)
+        .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
+    layer_to_render.selectAll("path")
+        .style("fill", (d,i) => colorsByFeature[i])
+        .styles({'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000'});
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = field;
     current_layers[layer].fill_color = {"class": rendering_params['colorByFeature']};
@@ -1662,14 +1697,14 @@ function render_choro(layer, rendering_params){
                         no_data: rendering_params.no_data,
                         type: rendering_params.type,
                         breaks: breaks}
-    var layer_to_render = map.select("#"+layer).selectAll("path");
-    map.select("#"+layer)
-            .style("opacity", 1)
-            .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
-    layer_to_render.style('fill-opacity', 1)
-                   .style("fill", (d,i) => rendering_params['colorsByFeature'][i] )
-                   .style('stroke-opacity', 1)
-                   .style("stroke", "black");
+    var layer_to_render = map.select("#"+_app.layer_to_id.get(layer));
+    layer_to_render
+        .style("opacity", 1)
+        .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
+    layer_to_render
+        .selectAll("path")
+        .styles({'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000'})
+        .style("fill", (d,i) => rendering_params['colorsByFeature'][i] );
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};
@@ -2102,6 +2137,10 @@ var render_discont = function(){
     new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
                     ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
+    let id_layer = encodeId(new_layer_name);
+    _app.layer_to_id.set(new_layer_name, id_layer);
+    _app.id_to_layer.set(id_layer, new_layer_name);
+
     // field_id = field_id == "__default__" ? undefined : field_id;
     let field_id = undefined;
 
@@ -2134,7 +2173,7 @@ var render_discont = function(){
         }
 
         breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
-        let result_layer = map.append("g").attr("id", new_layer_name)
+        let result_layer = map.append("g").attr("id", id_layer)
                 .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
@@ -2435,9 +2474,10 @@ var fields_TypoSymbol = {
 
 function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
+    let ref_layer_id = _app.layer_to_id.get(layer_name);
     let field = rendering_params.field;
     let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    let ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
+    let ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer(){
@@ -2478,13 +2518,16 @@ function render_TypoSymbols(rendering_params, new_name){
     }
 
     var new_layer_data = make_geojson_pt_layer();
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
             {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
     ];
 
-    map.append("g").attrs({id: layer_to_add, class: "layer"})
+    map.append("g").attrs({id: layer_id, class: "layer"})
         .selectAll("image")
         .data(new_layer_data.features).enter()
         .insert("image")
@@ -2692,14 +2735,14 @@ function fillMenu_FlowMap(){
     let destination_section = dv2.append('p').attr('class', 'params_section2');
     destination_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field'})
-      .html(i18next.t('app_page.func_options.flow.origin_field'));
+      .html(i18next.t('app_page.func_options.flow.destination_field'));
     destination_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_j'});
 
     let intensity_section = dv2.append('p').attr('class', 'params_section2');
     intensity_section.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field'})
-      .html(i18next.t('app_page.func_options.flow.destination_field'));
+      .html(i18next.t('app_page.func_options.flow.intensity_field'));
     intensity_section.append('select')
       .attrs({class: 'params', id: 'FlowMap_field_fij'});
 
@@ -2880,7 +2923,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
 
               let new_layer_name = add_layer_topojson(data, options);
               if(!new_layer_name) return;
-              let layer_to_render = map.select("#" + new_layer_name).selectAll("path"),
+              let layer_to_render = map.select("#" + _app.layer_to_id.get(new_layer_name)).selectAll("path"),
                   fij_field_name = field_fij,
                   fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
                   nb_ft = fij_values.length,
@@ -2933,18 +2976,28 @@ var render_label = function(layer, rendering_params, options){
     let layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);
+    let layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     let nb_ft;
     if(options && options.data){
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer){
         let type_ft_ref = rendering_params.symbol || "path";
-        let ref_selection = document.getElementById(layer).getElementsByTagName(type_ft_ref);
+        let ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
             let ft = ref_selection[i].__data__;
-            new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
+            let coords = d3.geoCentroid(ft.geometry);
+            new_layer_data.push({
+                id: i,
+                type: "Feature",
+                properties: {label: ft.properties[label_field], x: coords[0], y: coords[1]},
+                geometry: {type: "Point", coordinates: coords}
+            });
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
         }
     }
     var context_menu = new ContextMenu(),
@@ -2953,12 +3006,12 @@ var render_label = function(layer, rendering_params, options){
             {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
         ];
 
-    map.append("g").attrs({id: layer_to_add, class: "layer result_layer"})
+    map.append("g").attrs({id: layer_id, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
         .attrs( (d,i) => {
-          let centroid = path.centroid({'type': 'Point', 'coordinates': d.coords});
+          let centroid = path.centroid(d.geometry);
           return {
             "id": "Feature_" + i,
             "x": centroid[0],
@@ -2968,7 +3021,7 @@ var render_label = function(layer, rendering_params, options){
             };
         })
         .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
-        .text(d => d.label)
+        .text(d => d.properties.label)
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){

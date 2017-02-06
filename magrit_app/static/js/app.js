@@ -112,7 +112,7 @@ function setUpInterface(resume_project) {
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
         b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
         accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").attr('data-i18n', 'app_page.section2_.title_no_choice').style('display', 'none'),
+        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
         accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
         b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
         accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
@@ -164,7 +164,7 @@ function setUpInterface(resume_project) {
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
     dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attr("src", "/static/img/b/addgeom_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom' }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
     var section4 = d3.select("#section4");
     var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
@@ -315,6 +315,19 @@ function setUpInterface(resume_project) {
         zoom_without_redraw();
     });
 
+    var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+    d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit", type: "number", "value": h,
+        class: "m_elem_right list_elem_section4 button_st4 i18n",
+        'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
+        document.getElementById('btn_s4').click();
+        window.scrollTo(0, 0);
+        w = Math.round(window.innerWidth - 361);
+        h = window.innerHeight - 55;
+        canvas_mod_size([w, h]);
+        document.getElementById('map_ratio_select').value = "ratio_user";
+    });
+
     var g = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     g.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.canvas_rotation");
 
@@ -350,9 +363,7 @@ function setUpInterface(resume_project) {
     _i.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
         return add_layout_feature('arrow');
     });
-    _i.insert('span').insert('img').attrs({ id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw' }).on('click', function () {
-        return add_layout_feature('free_draw');
-    });
+    // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     _i.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
         return add_layout_feature('ellipse');
     });
@@ -457,26 +468,26 @@ function setUpInterface(resume_project) {
     });
 
     var exp_a = export_png_options.append("p");
-    exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
+    exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
 
-    exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
-        var ratio = h / w,
-            export_png_width = document.getElementById("export_png_width");
-        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-    });
-
-    exp_a.append("span").attr("id", "export_png_height_txt").html(" (px)");
-
-    var exp_b = export_png_options.append("p");
-    exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
-
-    exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
+    exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
         var ratio = h / w,
             export_png_height = document.getElementById("export_png_height");
         export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
     });
 
-    exp_b.append("span").attr("id", "export_png_width_txt").html(" (px)");
+    exp_a.append("span").attr("id", "export_png_width_txt").html(" (px)");
+
+    var exp_b = export_png_options.append("p");
+    exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
+
+    exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
+        var ratio = h / w,
+            export_png_width = document.getElementById("export_png_width");
+        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+    });
+
+    exp_b.append("span").attr("id", "export_png_height_txt").html(" (px)");
 
     var export_name = dv5b.append("p");
     export_name.append("span").attrs({ class: "i18n", "data-i18n": "[html]app_page.section5b.filename" });
@@ -501,7 +512,8 @@ function setUpInterface(resume_project) {
         ok_button.disabled = this.value.length == 0 ? 'true' : '';
     });
 
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach(function (name) {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -565,7 +577,7 @@ function setUpInterface(resume_project) {
 
     rotation_param.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
         min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
-        "color": " white", "background-color": "#173a50",
+        "color": " white", "background-color": "#000",
         "vertical-align": "calc(20%)" }).on("change", function () {
         var val = +this.value,
             old_value = +document.getElementById('form_projection_center').value;
@@ -581,7 +593,7 @@ function setUpInterface(resume_project) {
     });
     rotation_param.append("span").style("vertical-align", "calc(20%)").html("°");
 
-    var proj_select = proj_options.append("select").attr("id", "form_projection").styles({ "align": "center", "color": " white", "background-color": "#173a50", "border": "none" }).on("change", function () {
+    var proj_select = proj_options.append("select").attr("id", "form_projection").styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none" }).on("change", function () {
         current_proj_name = this.selectedOptions[0].textContent;
         change_projection(this.value);
     });
@@ -618,7 +630,7 @@ function setUpInterface(resume_project) {
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
         window.localStorage.removeItem("magrit_project");
         window.removeEventListener("beforeunload", beforeUnloadWindow);
         location.reload();
@@ -628,6 +640,10 @@ function setUpInterface(resume_project) {
 
     const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    });
+
     const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
         "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
         "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
@@ -635,7 +651,9 @@ function setUpInterface(resume_project) {
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.0.0 (unreleased)" }) + '</span></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' + '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p></div>';
+        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.0.0 (unreleased)" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
         swal({
             title: i18next.t("app_page.help_box.title"),
             html: box_content,
@@ -643,18 +661,17 @@ function setUpInterface(resume_project) {
             showConfirmButton: false,
             cancelButtonText: i18next.t('app_page.common.close'),
             animation: "slide-from-top",
-            inputPlaceholder: i18next.t("app_page.help_box.list_placeholders"),
             onOpen: function onOpen() {
                 var content = document.getElementsByClassName('about_content')[0];
                 var credit_link = content.querySelector('#credit_link');
                 credit_link.style.fontWeight = "bold";
                 credit_link.style.cursor = "pointer";
-                credit_link.color = "#173a50";
+                credit_link.color = "#000";
                 credit_link.onclick = function () {
                     window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                 };
                 content.querySelector('.btn_doc').onclick = function () {
-                    window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
                 };
                 content.querySelector('.btn_contact').onclick = function () {
                     window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
@@ -664,7 +681,7 @@ function setUpInterface(resume_project) {
                 };
             }
         }).then(function (inputValue) {
-            swal("Nice!", "You wrote: " + inputValue, "success");
+            null;
         }, function (dismissValue) {
             null;
         });
@@ -685,7 +702,7 @@ function setUpInterface(resume_project) {
                 menu.id = "menu_lang";
                 menu.style.minWidth = "30px";
                 menu.style.width = "50px";
-                menu.style.background = "#173a50";
+                menu.style.background = "#000";
                 var list_elems = document.createElement("ul");
                 menu.appendChild(list_elems);
 
@@ -760,7 +777,7 @@ function setUpInterface(resume_project) {
 
             for (var i = 0, len_i = a.target.childNodes.length; i < len_i; i++) {
                 var n = a.target.childNodes[i].getAttribute("layer_name");
-                desired_order[i] = n;
+                desired_order[i] = _app.layer_to_id.get(n);
                 actual_order[i] = layers[i].id;
             }
             for (var _i2 = 0, len = desired_order.length; _i2 < len; _i2++) {
@@ -776,6 +793,13 @@ function setUpInterface(resume_project) {
         onEnd: function onEnd(event) {
             document.body.classList.remove("no-drop");
         }
+    });
+}
+
+function encodeId(s) {
+    if (s === '') return '_';
+    return s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
+        return '_' + match[0].charCodeAt(0).toString(16) + '_';
     });
 }
 
@@ -856,12 +880,9 @@ function make_ico_choice() {
                 if (this.classList.contains('active')) {
                     switch_accordion_section('btn_s2b');
                     return;
+                } else {
+                    clean_menu_function();
                 }
-                fields_handler.unfill();
-                var previous_button = document.getElementById("button_" + current_functionnality.name);
-                previous_button.style.filter = "invert(0%) saturate(100%)";
-                clean_menu_function();
-                previous_button.classList.remove('active');
             }
 
             // Highlight the icon of the selected functionnality :
@@ -871,30 +892,31 @@ function make_ico_choice() {
             document.getElementById('accordion2b').style.display = '';
 
             // Get the function to fill the menu with the appropriate options (and do it):
-            current_functionnality = get_menu_option(func_name);
-            var make_menu = eval(current_functionnality.menu_factory);
-            window.fields_handler = eval(current_functionnality.fields_handler);
+            _app.current_functionnality = get_menu_option(func_name);
+            var make_menu = eval(_app.current_functionnality.menu_factory);
+            window.fields_handler = eval(_app.current_functionnality.fields_handler);
             make_menu();
 
             // Replace the title of the section:
             var selec_title = document.getElementById("btn_s2b");
-            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + current_functionnality.name + '">' + i18next.t("app_page.func_title." + current_functionnality.name) + '</span>';
+            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
             selec_title.style.display = '';
-            // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-            var btn_info = document.getElementById("btn_info");
-            btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-            btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-            new Popover(btn_info, {
-                container: document.getElementById("twbs"),
-                customClass: "help-popover",
-                dismiss: "true",
-                dismissOutsideClick: true,
-                placement: "right"
-            });
+
+            // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
+            // let btn_info = document.getElementById("btn_info");
+            // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
+            // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
+            // new Popover(btn_info,{
+            //     container: document.getElementById("twbs"),
+            //     customClass: "help-popover",
+            //     dismiss: "true",
+            //     dismissOutsideClick: true,
+            //     placement: "right"
+            // });
 
             // Fill the field of the functionnality with the field
             // of the targeted layer if already uploaded by the user :
-            if (targeted_layer_added) {
+            if (_app.targeted_layer_added) {
                 var target_layer = Object.getOwnPropertyNames(user_data)[0];
                 fields_handler.fill(target_layer);
             }
@@ -943,24 +965,26 @@ var user_data = new Object(),
     result_data = new Object(),
     joined_dataset = [],
     field_join_map = [],
-    targeted_layer_added = false,
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map"),
-    current_functionnality = undefined;
+    map_div = d3.select("#map");
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
-var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attr("id", "svg_map").attr("width", w).attr("height", h).style("position", "absolute").call(zoom);
-
-map.on("contextmenu", function (event) {
+var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attrs({ 'id': 'svg_map', 'width': w, 'height': h }).style("position", "absolute").on("contextmenu", function (event) {
     d3.event.preventDefault();
-});
+}).call(zoom);
+
+// map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
 var defs = map.append("defs");
 
 var _app = {
-    to_cancel: undefined
+    to_cancel: undefined,
+    targeted_layer_added: false,
+    current_functionnality: undefined,
+    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1047,7 +1071,8 @@ function binds_layers_buttons(layer_name) {
         alert("This shouldn't happend");
         return;
     }
-    var sortable_elem = d3.select("#sortable").select("." + layer_name);
+    var layer_id = _app.layer_to_id.get(layer_name);
+    var sortable_elem = d3.select("#sortable").select("." + layer_id);
     sortable_elem.on("dblclick", function () {
         handle_click_layer(layer_name);
     });
@@ -1099,7 +1124,7 @@ function displayInfoOnMove() {
 
             for (var i = nb_layer - 1; i > -1; i--) {
                 if (layers[i].style.visibility != "hidden") {
-                    top_visible_layer = layers[i].id;
+                    top_visible_layer = _app.id_to_layer(layers[i].id);
                     break;
                 }
             }
@@ -1111,7 +1136,7 @@ function displayInfoOnMove() {
                 };
             }
 
-            var id_top_layer = "#" + top_visible_layer,
+            var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
                 symbol = current_layers[top_visible_layer].symbol;
 
             d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
@@ -1170,25 +1195,24 @@ function reproj_lgd_elem(){
 function reproj_symbol_layer() {
     for (var lyr_name in current_layers) {
         if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
-            var ref_layer_name = current_layers[lyr_name].ref_layer_name,
-                symbol = current_layers[lyr_name].symbol;
+            var symbol = current_layers[lyr_name].symbol;
 
             if (symbol == "text") {
                 // Reproject the labels :
-                map.select('#' + lyr_name).selectAll(symbol).attrs(function (d) {
-                    var pt = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
+                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d) {
+                    var pt = path.centroid(d.geometry);
                     return { 'x': pt[0], 'y': pt[1] };
                 });
             } else if (symbol == "image") {
                 // Reproject pictograms :
-                map.select('#' + lyr_name).selectAll(symbol).attrs(function (d, i) {
+                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d, i) {
                     var coords = path.centroid(d.geometry),
                         size = +this.getAttribute('width').slice(0, -2) / 2;
                     return { 'x': coords[0] - size, 'y': coords[1] - size };
                 });
             } else if (symbol == "circle") {
                 // Reproject Prop Symbol :
-                map.select("#" + lyr_name).selectAll(symbol).style('display', function (d) {
+                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
                     return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
                 }).attrs(function (d) {
                     var centroid = path.centroid(d);
@@ -1200,7 +1224,7 @@ function reproj_symbol_layer() {
                 });
             } else if (symbol == "rect") {
                 // Reproject Prop Symbol :
-                map.select("#" + lyr_name).selectAll(symbol).style('display', function (d) {
+                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
                     return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
                 }).attrs(function (d) {
                     var centroid = path.centroid(d),
@@ -1279,17 +1303,29 @@ var make_confirm_dialog2 = function (class_box, title, options) {
 
         container.querySelector(".btn_ok").onclick = function () {
             deferred.resolve(true);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
             container.remove();
         };
         var _onclose = function _onclose() {
             deferred.resolve(false);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
+        function helper_esc_key_twbs(evt) {
+            evt = evt || window.event;
+            // evt.preventDefault();
+            var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+            if (isEscape) {
+                _onclose();
+                document.removeEventListener('keydown', helper_esc_key_twbs);
+            }
+        }
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 }();
@@ -1341,8 +1377,10 @@ function remove_ext_dataset_cleanup() {
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
     var data_ext_txt = document.getElementById("data_ext");
-    data_ext_txt.innerHTML = "<b>" + i18next.t("app_page.section1.add_ext_dataset") + "</b>";
+    data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
     data_ext_txt.onclick = click_button_add_layer;
+    data_ext_txt.classList.add('i18n');
+    data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
     document.getElementById('sample_zone').style.display = null;
@@ -1352,7 +1390,7 @@ function remove_ext_dataset_cleanup() {
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name) {
-    var g_lyr_name = "#" + name;
+    var g_lyr_name = "#" + _app.layer_to_id.get(name);
 
     // Making some clean-up regarding the result layer :
     if (current_layers[name].is_result) {
@@ -1363,7 +1401,7 @@ function remove_layer_cleanup(name) {
 
     // Remove the layer from the map and from the layer manager :
     map.select(g_lyr_name).remove();
-    document.querySelector('#sortable .' + name).remove();
+    document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove();
 
     // Remove the layer from the "geo export" menu :
     var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
@@ -1373,16 +1411,18 @@ function remove_layer_cleanup(name) {
     if (current_layers[name].targeted) {
         // Updating the top of the menu (section 1) :
         //$("#input_geom").qtip("destroy");
-        d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
-        d3.select("#input_geom").html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
         document.getElementById("remove_target").remove();
+        d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
+        d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
-        if (current_functionnality) fields_handler.unfill();
+        if (_app.current_functionnality) {
+            clean_menu_function();
+        }
 
         // Update some global variables :
         field_join_map = [];
         user_data = new Object();
-        targeted_layer_added = false;
+        _app.targeted_layer_added = false;
 
         // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
         document.getElementById('sample_zone').style.display = null;
@@ -1393,14 +1433,7 @@ function remove_layer_cleanup(name) {
         // Disabled the button allowing the user to choose type for its layer :
         document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
-        // Also reset the user choosen values, remembered for its ease :
-        fields_TypoSymbol.box_typo = undefined;
-        fields_TypoSymbol.rendering_params = {};
-        fields_TypoSymbol.cats = {};
-        fields_PropSymbolChoro.rendering_params = {};
-        fields_Typo.rendering_params = {};
-        fields_Choropleth.rendering_params = {};
-        fields_PropSymbolTypo.rendering_params = {};
+        reset_user_values();
     }
 
     // There is probably better ways in JS to delete the object,
@@ -1443,13 +1476,13 @@ function zoom_without_redraw() {
     if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
         transform = d3.zoomTransform(svg_map);
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = this.id;
+            var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / transform.k + "px";
         }).attr("transform", transform.toString() + rot_val);
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", transform.toString() + rot_val);
     } else {
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = this.id;
+            var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k + "px";
         }).attr("transform", d3.event.transform + rot_val);
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
@@ -1476,7 +1509,8 @@ function redraw_legends_symbols(targeted_node) {
     if (!targeted_node) var legend_nodes = document.querySelectorAll("#legend_root2");else var legend_nodes = [targeted_node];
 
     for (var i = 0; i < legend_nodes.length; ++i) {
-        var layer_name = legend_nodes[i].classList[2].split('lgdf_')[1],
+        var layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+            layer_name = _app.id_to_layer.get(layer_id),
             rendered_field = current_layers[layer_name].rendered_field,
             nested = legend_nodes[i].getAttribute("nested"),
             display_value = legend_nodes[i].getAttribute("display"),
@@ -1494,7 +1528,7 @@ function redraw_legends_symbols(targeted_node) {
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
-        var new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+        var new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
         if (transform_param) new_lgd.setAttribute("transform", transform_param);
@@ -1631,7 +1665,7 @@ function change_projection(proj_name) {
     var layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
     if (!layer_name) {
         var layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? layers[layers.length - 1].id : null;
+        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
     }
     if (layer_name) {
         scale_to_lyr(layer_name);
@@ -1659,7 +1693,7 @@ function handle_active_layer(name) {
         parent_div = selec.parentElement;
         name = parent_div.parentElement.getAttribute("layer_name");
     } else {
-        selec = document.querySelector("#sortable ." + name + " .active_button");
+        selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
         parent_div = selec.parentElement;
     }
     var func = function func() {
@@ -1676,8 +1710,8 @@ function handle_active_layer(name) {
         eye_closed.onclick = func;
         parent_div.replaceChild(eye_closed, selec);
     }
-    map.select("#" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    map.selectAll(".lgdf_" + name).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.select("#" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+    map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
     if (at_end) {
         displayInfoOnMove();
@@ -1717,6 +1751,9 @@ function handle_title_properties() {
     }
     var title_props = {
         size: title.style("font-size"),
+        font_weight: title.style('font-weight'),
+        font_style: title.style('font-style'),
+        text_decoration: title.style('text-decoration'),
         color: title.style("fill"),
         position_x: title.attr("x"),
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
@@ -1724,20 +1761,25 @@ function handle_title_properties() {
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
         font_family: title.style("font-family")
     };
+    title_props.font_weight = title_props.font_weight == "400" || title_props.font_weight == "" ? "" : "bold";
 
     // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
     make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true }).then(function (confirmed) {
-        if (!confirmed) title.style("font-size", title_props.size).style("fill", title_props.color).style("font-family", title_props.font_family).attrs({ x: title_props.position_x, y: title_props.position_y });
+        if (!confirmed) title.attrs({ x: title_props.position_x, y: title_props.position_y }).styles({
+            "font-size": title_props.size, "fill": title_props.color,
+            "font-family": title_props.font_family, 'font-style': title_props.font_style,
+            'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+        });
     });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
-    box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "65px").on("change", function () {
         title.style("font-size", this.value + "px");
     });
-    box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "65px").on("change", function () {
         title.attr("x", w * +this.value / 100);
     });
-    box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "50px").on("change", function () {
+    box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "65px").on("change", function () {
         title.attr("y", h * +this.value / 100);
     });
     box_content.append("p").html(i18next.t("app_page.title_box.font_color")).insert("input").attrs({ type: "color", value: rgb2hex(title_props.color) }).on("change", function () {
@@ -1752,7 +1794,39 @@ function handle_title_properties() {
     font_select.node().selectedIndex = available_fonts.map(function (d) {
         return d[1] == title_props.font_family ? "1" : "0";
     }).indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title + allow to move the title with the mouse
+    // TODO : Allow the display a rectangle (resizable + selection color) under the title
+    var options_format = box_content.append('p'),
+        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+    btn_bold.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('font-weight', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-weight', 'bold');
+        }
+    });
+    btn_italic.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('font-style', '');
+        } else {
+            this.classList.add('active');
+            title.style('font-style', 'italic');
+        }
+    });
+    btn_underline.on('click', function () {
+        if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            title.style('text-decoration', '');
+        } else {
+            this.classList.add('active');
+            title.style('text-decoration', 'underline');
+        }
+    });
     return;
 }
 
@@ -1901,10 +1975,32 @@ function check_output_name(name, extension) {
     }
 }
 
+function patchSvgForForeignObj() {
+    var elems = document.getElementsByTagName("foreignObject");
+    var originals = [];
+    for (var i = 0; i < elems.length; i++) {
+        var el = elems[i];
+        originals.push([el.getAttribute('width'), el.getAttribute('height')]);
+        el.setAttribute('width', '100%');
+        el.setAttribute('height', '100%');
+    }
+    return originals;
+}
+
+function unpatchSvgForForeignObj(originals) {
+    var elems = document.getElementsByTagName("foreignObject");
+    for (var i = 0; i < originals.length; i++) {
+        var el = elems[i];
+        el.setAttribute('width', originals[i][0]);
+        el.setAttribute('height', originals[i][1]);
+    }
+}
+
 function export_compo_svg(output_name) {
     output_name = check_output_name(output_name, "svg");
     //patchSvgForInkscape();
     patchSvgForFonts();
+    var dimensions_foreign_obj = patchSvgForForeignObj();
     var targetSvg = document.getElementById("svg_map"),
         serializer = new XMLSerializer(),
         source = serializer.serializeToString(targetSvg);
@@ -1928,29 +2024,43 @@ function export_compo_svg(output_name) {
     dl_link.click();
     dl_link.remove();
     unpatchSvgForFonts();
+    unpatchSvgForForeignObj(dimensions_foreign_obj);
     //unpatchSvgForInkscape();
 }
 
+// Maybe PNGs should be rendered on server side in order to avoid limitations that
+//   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png() {
     var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "web";
     var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
     var output_name = arguments[2];
 
+    document.getElementById("overlay").style.display = "";
     output_name = check_output_name(output_name, "png");
+    var dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
     var targetCanvas = d3.select("body").append("canvas").attrs({ id: "canvas_map_export", height: h, width: w }).node(),
         targetSVG = document.querySelector("#svg_map"),
-        svg_xml = new XMLSerializer().serializeToString(targetSVG),
-        ctx = targetCanvas.getContext('2d'),
         mime_type = "image/png",
-        img = new Image();
+        svg_xml,
+        ctx,
+        img;
 
+    // At this point it might be better to wrap the whole function in a try catch ?
+    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+    try {
+        svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
+    } catch (err) {
+        document.getElementById("overlay").style.display = "none";
+        display_error_during_computation(String(err));
+        return;
+    }
     if (scalefactor != 1) {
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            console.log(err);
-            display_error_during_computation("Too high resolution selected : " + String(err));
+            document.getElementById("overlay").style.display = "none";
+            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
     }
@@ -1961,6 +2071,7 @@ function _export_compo_png() {
             var imgUrl = targetCanvas.toDataURL(mime_type),
                 dl_link = document.createElement("a");
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
@@ -1971,7 +2082,9 @@ function _export_compo_png() {
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
+        document.getElementById("overlay").style.display = "none";
         unpatchSvgForFonts();
+        unpatchSvgForForeignObj(dimensions_foreign_obj);
     };
 }
 
@@ -1982,7 +2095,8 @@ function export_layer_geo(layer, type, projec, proj4str) {
     formToSend.append("format", type);
     if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
+    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"]]);
+    // ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
         if (data.indexOf('{"Error"') == 0 || data.length == 0) {
@@ -2007,7 +2121,10 @@ function export_layer_geo(layer, type, projec, proj4str) {
         }
         var ext = extensions.get(type),
             dataStr = void 0;
-        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
+        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        // else if (ext.indexOf("kml") > -1)
+        //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+        else dataStr = "data:application/zip;base64," + data;
 
         var dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
@@ -2019,149 +2136,6 @@ function export_layer_geo(layer, type, projec, proj4str) {
         console.log(error);
     });
 }
-
-// function make_export_layer_box(){
-//     let dialogBox = make_confirm_dialog2("dialogGeoExport",
-//                          i18next.t("app_page.export_box.geo_title_box"),
-//                          {text_ok: i18next.t("app_page.section5b.export_button")}),
-//         box_content = d3.select(".dialogGeoExport").select(".modal-body").append("div"),
-//         button_ok = document.querySelector('.dialogGeoExport').querySelector('.btn_ok');
-//
-//     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-//         if(sample_no_values.has(name))
-//             return 0;
-//         else if(current_layers[name].renderer
-//                 && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-//                     || current_layers[name].renderer.indexOf("Dorling") > -1))
-//             return 0;
-//         return 1;
-//     });
-//
-//     box_content.append("h3").html(i18next.t("app_page.export_box.options"));
-//
-//     let selec_layer = box_content.append("p").html(i18next.t("app_page.export_box.option_layer"))
-//              .insert("select").attr("id", "layer_to_export");
-//
-//     let selec_type = box_content.append("p").html(i18next.t("app_page.export_box.option_datatype"))
-//              .insert("select").attr("id", "datatype_to_use");
-//
-//     let selec_projection = box_content.append("p").html(i18next.t("app_page.export_box.option_projection"))
-//              .insert("select").attrs({id: "projection_to_use", disabled: true});
-//
-//     let proj4_input = box_content.append("input")
-//         .attr("id", "proj4str")
-//         .styles({display: 'none', width: '200px'})
-//         .on('keyup', function(){
-//             if(this.value.length == 0){
-//                 button_ok.disabled = "true";
-//             } else {
-//                 button_ok.disabled = ""
-//             }
-//         });
-//
-//     layer_names.forEach( name => {
-//         selec_layer.append("option").attr("value", name).text(name);
-//     });
-//
-//     ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-//         selec_type.append("option").attr("value", name).text(name);
-//     });
-//
-//     [["Geographic coordinates / WGS84 (EPSG:4326)", "epsg:4326"],
-//      ["Web-mercator / WGS84 (EPSG:3857)", "epsg:3857"],
-//      ["LAEA Europe / ETRS89 (EPSG:3035)", "epsg:3035"],
-//      ["USA Albers Equal Area / NAD83", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"],
-//      ["British National Grid / OSGB36 (EPSG:27700)", "epsg:27700"],
-//      ["Lambert-93 / RGF93-GRS80 (EPSG:2154)", "epsg:2154"],
-//      ["Eckert IV / WGS84", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "],
-//      ["Enter any valid Proj.4 string...", "proj4string"]].forEach(projection => {
-//         selec_projection.append("option").attr("value", projection[1]).text(projection[0]);
-//     });
-//
-//     selec_type.on("change", function(){
-//         if(this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON"){
-//             selec_projection.node().options.selectedIndex = 0;
-//             selec_projection.attr("disabled", true);
-//             button_ok.disabled = "";
-//         } else {
-//             selec_projection.attr("disabled", null);
-//         }
-//     });
-//
-//     selec_projection.on("change", function(){
-//         if(this.value == "proj4string"){
-//             proj4_input.style("display", "initial");
-//             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
-//                 button_ok.disabled = "true";
-//         } else {
-//             proj4_input.style("display", "none");
-//             button_ok.disabled = "";
-//         }
-//     });
-//
-//     // TODO : allow export to "geopackage" format ?
-//     let extensions = new Map([
-//         ["GeoJSON", "geojson"],
-//         ["TopoJSON", "topojson"],
-//         ["ESRI Shapefile", "zip"],
-//         ["GML", "zip"],
-//         ["KML", "kml"]]);
-//
-//     dialogBox.then( confirmed => { if(confirmed){
-//         let layer = selec_layer.node().value,
-//             type = selec_type.node().value,
-//             projec = selec_projection.node().value;
-//         let formToSend = new FormData();
-//         formToSend.append("layer", layer);
-//         formToSend.append("layer_name", current_layers[layer].key_name);
-//         formToSend.append("format", type);
-//         if(projec == "proj4string")
-//             formToSend.append("projection", JSON.stringify({"proj4string" : proj4_input.node().value}));
-//         else
-//             formToSend.append("projection", JSON.stringify({"name" : projec}));
-//
-//         xhrequest("POST", '/get_layer2', formToSend, true)
-//             .then( data => {
-//                 if(data.indexOf('{"Error"') == 0 || data.length == 0){
-//                     let error_message;
-//                     if(data.indexOf('{"Error"') < 5){
-//                         data = JSON.parse(data);
-//                         error_message = i18next.t(data.Error);
-//                     } else {
-//                         error_message = i18next.t('app_page.common.error_msg');
-//                     }
-//                     swal({title: "Oops...",
-//                          text: error_message,
-//                          type: "error",
-//                          allowOutsideClick: false,
-//                          allowEscapeKey: false
-//                         }).then( () => { null; },
-//                                   () => { null; });
-//                     return;
-//                 }
-//                 let ext = extensions.get(type),
-//                     dataStr;
-//                 if(ext.indexOf("json") > -1)
-//                     dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-//                 else if (ext.indexOf("kml") > -1)
-//                     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-//                 else
-//                     dataStr = "data:application/zip;base64," + data;
-//
-//                 let dlAnchorElem = document.createElement('a');
-//                 dlAnchorElem.setAttribute("href", dataStr);
-//                 dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-//                 document.body.appendChild(dlAnchorElem);
-//                 dlAnchorElem.click();
-//                 dlAnchorElem.remove();
-//
-//             }, error => {
-//                 console.log(error);
-//             });
-//         dialogBox.dialog("destroy").remove();
-//     }});
-// }
-
 
 /*
 * Straight from http://stackoverflow.com/a/26047748/5050917
@@ -2202,7 +2176,7 @@ var beforeUnloadWindow = function beforeUnloadWindow(event) {
         window.localStorage.removeItem("magrit_project");
         window.localStorage.setItem("magrit_project", json_params);
     });
-    event.returnValue = targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
+    event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
 };
 "use strict";
 // Helper function in order to have a colorbrewer color ramp with
@@ -2839,7 +2813,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
 
     if (result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];else if (user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];else {
-        var layer = svg_map.querySelector('#' + layer_name);
+        var layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
         var db_data = Array.prototype.map.call(layer.children, function (d) {
             return d.__data__.properties;
         });
@@ -3101,7 +3075,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             col_schema.push(document.querySelector(".color_params_right").value);
         }
         deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
-
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3109,12 +3083,22 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -3132,7 +3116,7 @@ function fetch_categorical_colors() {
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
     var nb_features = current_layers[layer_name].n_features,
-        nb_class = cats.size;
+        nb_class = cats.length;
 
     var modal_box = make_dialog_container("categorical_box", i18next.t("app_page.categorical_box.title", { layer: layer_name, nb_features: nb_features }), "dialog");
 
@@ -3184,6 +3168,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         container = document.getElementById("categorical_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3195,6 +3180,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             return color_map.get(ft[field])[0];
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -3202,6 +3188,15 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -3665,18 +3660,29 @@ var display_discretization_links_discont = function display_discretization_links
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     };
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        // evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 "use strict";
@@ -3684,8 +3690,6 @@ var display_discretization_links_discont = function display_discretization_links
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function get_menu_option(func) {
     var menu_option = {
@@ -3767,6 +3771,16 @@ function get_menu_option(func) {
 *
 */
 function clean_menu_function() {
+    if (fields_handler && fields_handler.unfill) {
+        fields_handler.unfill();
+        fields_handler = undefined;
+    }
+    if (_app.current_functionnality && _app.current_functionnality.name) {
+        var previous_button = document.getElementById("button_" + _app.current_functionnality.name);
+        previous_button.style.filter = "invert(0%) saturate(100%)";
+        previous_button.classList.remove('active');
+        _app.current_functionnality = undefined;
+    }
     section2.select(".form-rendering").remove();
     document.getElementById('accordion2b').style.display = 'none';
     var btn_s2b = document.getElementById('btn_s2b');
@@ -3775,6 +3789,22 @@ function clean_menu_function() {
     btn_s2b.style.display = 'none';
 }
 
+/**
+*  Reset the user choosen values remembered for its ease
+*  (like discretization choice, symbols, etc. which are redisplayed as they
+*   were selected by the user)
+*
+*/
+function reset_user_values() {
+    //
+    fields_TypoSymbol.box_typo = undefined;
+    fields_TypoSymbol.rendering_params = {};
+    fields_TypoSymbol.cats = {};
+    fields_PropSymbolChoro.rendering_params = {};
+    fields_Typo.rendering_params = {};
+    fields_Choropleth.rendering_params = {};
+    fields_PropSymbolTypo.rendering_params = {};
+}
 /**
 * Function to remove each node (each <option>) of a <select> HTML element :
 *
@@ -3795,18 +3825,23 @@ function unfillSelectInput(select_node) {
 *        one to avoid collision or unwanted characters)
 */
 function check_layer_name(name) {
-    if (!current_layers.hasOwnProperty(name)) return name;else {
+    if (name.match(/^\d+/)) {
+        name = "_" + name;
+    }
+    // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
+    if (!current_layers.hasOwnProperty(name) && ["Graticule", "Sphere", "World"].indexOf(name) < 0) return name;else {
         var i = 1;
-        if (name.match(/_\d+$/)) {
-            i = name.match(/_\d+$/);
+        var match = name.match(/_\d+$/);
+        if (match) {
+            i = match[0];
             name = name.substring(name, name.indexOf(i));
             return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
         } else {
-            name = [name, i].join('_');
-            return check_layer_name(name);
+            return check_layer_name([name, i].join('_'));
         }
     }
 }
+
 /**
 * Display a message when switching between functionnalitiesif the layer to render
 * doesn't have any interesting field to use.
@@ -3827,8 +3862,9 @@ var get_first_guess_span = function get_first_guess_span() {
     var bbox = _target_layer_file.bbox,
         abs = Math.abs;
     var width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
-        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    return Math.round((width_km + height_km) / 2 * 0.02);
+        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
+        val = Math.max(width_km, height_km) * 0.05;
+    return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 };
 
 /**
@@ -3848,10 +3884,7 @@ function test_maxmin_resolution(cell_value) {
 }
 
 function make_template_functionnality(parent_node) {
-    var dialog_content = parent_node.append("div").attr("class", "form-rendering");
-    dialog_content.append("p").attr("class", "container_img_help").append("img").attrs({ id: "btn_info", src: "/static/img/Information.png", width: "17", height: "17", alt: "Informations",
-        class: "help_tooltip", "data-tooltip_help": " " }).styles({ "cursor": "pointer" });
-    return dialog_content;
+    return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top) {
@@ -3949,7 +3982,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 }
 
 function fetch_min_max_table_value(parent_id) {
-    var parent_node = parent_id ? document.getElementById(parent_id) : current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable") : current_functionnality.name == "discont" ? document.getElementById("Discont_discTable") : null;
+    var parent_node = parent_id ? document.getElementById(parent_id) : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable") : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable") : null;
 
     if (!parent_node) return;
 
@@ -4716,6 +4749,11 @@ function render_stewart() {
         mask_name = doc.getElementById('stewart_mask').value,
         new_user_layer_name = document.getElementById("stewart_output_name").value;
 
+    if (nb_class != (nb_class | 0)) {
+        nb_class = nb_class | 0;
+        doc.getElementById('stewart_nb_class').value = nb_class;
+    }
+
     if (reso && reso > 0) {
         var res_test = test_maxmin_resolution(reso);
         if (res_test) {
@@ -4774,7 +4812,7 @@ function render_stewart() {
         current_layers[n_layer_name].colors_breaks = colors_breaks;
         current_layers[n_layer_name].rendered_field = field1_n;
         current_layers[n_layer_name].color_palette = { name: "Oranges", reversed: true };
-        map.select("#" + n_layer_name).selectAll("path").styles(function (d, i) {
+        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").styles(function (d, i) {
             return { 'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0 };
         });
         handle_legend(n_layer_name);
@@ -4783,7 +4821,10 @@ function render_stewart() {
     }, function (error) {
         display_error_during_computation();
         console.log(error);
-    });
+    }).catch(function (err) {
+        display_error_during_computation();
+        console.log(err);
+    });;
 }
 
 function fillMenu_Stewart() {
@@ -4804,7 +4845,7 @@ function fillMenu_Stewart() {
 
     var d = dialog_content.append('p').attr('class', 'params_section2');
     d.append('span').styles({ "margin-right": "35px" }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta' }).html(i18next.t("app_page.func_options.smooth.beta"));
-    d.insert('input').style("width", "60px").attrs(_defineProperty({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any", lang: 'en' }, "lang", 'fr'));
+    d.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "stewart_beta", value: 2, min: 0, max: 11, step: "any" });
 
     var p_reso = dialog_content.append('p').attr('class', 'params_section2');
     p_reso.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution' }).text(i18next.t("app_page.func_options.smooth.resolution"));
@@ -4897,7 +4938,7 @@ var fields_Anamorphose = {
                     //   return;
                     // }
 
-                    var layer_select = document.getElementById(layer).getElementsByTagName("path"),
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                         sqrt = Math.sqrt,
                         abs = Math.abs,
                         d_values = [],
@@ -4957,7 +4998,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name].scale_max = scale_max;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
-                        map.select("#" + n_layer_name).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
+                        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
                         switch_accordion_section();
                     }, function (err) {
                         display_error_during_computation();
@@ -4998,7 +5039,7 @@ var fields_Anamorphose = {
                     current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                     current_layers[n_layer_name].renderer = "Carto_doug";
                     current_layers[n_layer_name].rendered_field = field_name;
-                    map.select("#" + n_layer_name).selectAll("path").style("fill", function () {
+                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill", function () {
                         return Colors.random();
                     }).style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
                     switch_accordion_section();
@@ -5098,7 +5139,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
     if (!geojson_pt_layer) {
         (function () {
             var make_geojson_pt_layer = function make_geojson_pt_layer() {
-                var ref_layer_selection = document.getElementById(layer).getElementsByTagName("path"),
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     result = [];
                 for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
                     var ft = ref_layer_selection[i].__data__,
@@ -5178,9 +5219,12 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             geojson_pt_layer = make_geojson_pt_layer();
         })();
     }
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = [];
     if (symbol_type === 'circle') {
-        map.append("g").attr("id", layer_to_add).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
+        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
             result_data[layer_to_add].push(d.properties);
             return {
                 'id': ['PropSymbol_', i, ' feature_', d.id].join(''),
@@ -5192,7 +5236,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             return d.properties.color;
         }).style("stroke", "black").style("stroke-width", 1 / zs);
     } else if (symbol_type === "rect") {
-        map.append("g").attr("id", layer_to_add).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
+        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
             var size = d.properties[t_field_name];
             result_data[layer_to_add].push(d.properties);
             return {
@@ -5241,16 +5285,15 @@ function render_categorical(layer, rendering_params) {
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
-    map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k + "px");
 
     var colorsByFeature = rendering_params.colorByFeature,
         color_map = rendering_params.color_map,
-        field = rendering_params.rendered_field,
-        layer_to_render = map.select("#" + layer).selectAll("path");
-
-    layer_to_render.style("fill", function (d, i) {
+        field = rendering_params.rendered_field;
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render.style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k + "px");
+    layer_to_render.selectAll("path").style("fill", function (d, i) {
         return colorsByFeature[i];
-    }).style("fill-opacity", 0.9).style("stroke-opacity", 0.9).style("stroke", "black");
+    }).styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000' });
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = field;
     current_layers[layer].fill_color = { "class": rendering_params['colorByFeature'] };
@@ -5277,11 +5320,11 @@ function render_choro(layer, rendering_params) {
         no_data: rendering_params.no_data,
         type: rendering_params.type,
         breaks: breaks };
-    var layer_to_render = map.select("#" + layer).selectAll("path");
-    map.select("#" + layer).style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
-    layer_to_render.style('fill-opacity', 1).style("fill", function (d, i) {
+    var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
+    layer_to_render.style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
+    layer_to_render.selectAll("path").styles({ 'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000' }).style("fill", function (d, i) {
         return rendering_params['colorsByFeature'][i];
-    }).style('stroke-opacity', 1).style("stroke", "black");
+    });
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = { "class": rendering_params['colorsByFeature'] };
@@ -5661,6 +5704,10 @@ var render_discont = function render_discont() {
 
     new_layer_name = new_layer_name.length > 0 && /^\w+$/.test(new_layer_name) ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
 
+    var id_layer = encodeId(new_layer_name);
+    _app.layer_to_id.set(new_layer_name, id_layer);
+    _app.id_to_layer.set(id_layer, new_layer_name);
+
     // field_id = field_id == "__default__" ? undefined : field_id;
     var field_id = undefined;
 
@@ -5706,7 +5753,7 @@ var render_discont = function render_discont() {
         }).filter(function (d) {
             return d[1] !== undefined;
         });
-        var result_layer = map.append("g").attr("id", new_layer_name).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
+        var result_layer = map.append("g").attr("id", id_layer).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
 
         result_data[new_layer_name] = [];
         var data_result = result_data[new_layer_name],
@@ -5971,9 +6018,10 @@ var fields_TypoSymbol = {
 
 function render_TypoSymbols(rendering_params, new_name) {
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
+    var ref_layer_id = _app.layer_to_id.get(layer_name);
     var field = rendering_params.field;
     var layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
-    var ref_selection = document.getElementById(layer_name).getElementsByTagName("path");
+    var ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName("path");
     var nb_ft = ref_selection.length;
 
     function make_geojson_pt_layer() {
@@ -6014,6 +6062,9 @@ function render_TypoSymbols(rendering_params, new_name) {
     }
 
     var new_layer_data = make_geojson_pt_layer();
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     var context_menu = new ContextMenu(),
         getItems = function getItems(self_parent) {
         return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -6023,7 +6074,7 @@ function render_TypoSymbols(rendering_params, new_name) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_to_add, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
+    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
         var symb = rendering_params.symbols_map.get(d.properties.symbol_field),
             coords = path.centroid(d.geometry);
         return {
@@ -6194,11 +6245,11 @@ function fillMenu_FlowMap() {
     origin_section.insert('select').attrs({ id: 'FlowMap_field_i', class: 'params' });
 
     var destination_section = dv2.append('p').attr('class', 'params_section2');
-    destination_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.origin_field'));
+    destination_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
     destination_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_j' });
 
     var intensity_section = dv2.append('p').attr('class', 'params_section2');
-    intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
+    intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.intensity_field'));
     intensity_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_fij' });
 
     var discretization_section = dv2.append('p').attr('class', 'params_section2');
@@ -6352,7 +6403,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
 
         var new_layer_name = add_layer_topojson(data, options);
         if (!new_layer_name) return;
-        var layer_to_render = map.select("#" + new_layer_name).selectAll("path"),
+        var layer_to_render = map.select("#" + _app.layer_to_id.get(new_layer_name)).selectAll("path"),
             fij_field_name = field_fij,
             fij_values = result_data[new_layer_name].map(function (obj) {
             return +obj[fij_field_name];
@@ -6402,18 +6453,28 @@ var render_label = function render_label(layer, rendering_params, options) {
     var font_size = rendering_params.ref_font_size + "px";
     var new_layer_data = [];
     var layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0 ? check_layer_name(rendering_params.uo_layer_name) : check_layer_name("Labels_" + layer);
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     var nb_ft = void 0;
     if (options && options.data) {
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer) {
         var type_ft_ref = rendering_params.symbol || "path";
-        var ref_selection = document.getElementById(layer).getElementsByTagName(type_ft_ref);
+        var ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
         for (var i = 0; i < nb_ft; i++) {
             var ft = ref_selection[i].__data__;
-            new_layer_data.push({ label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry) });
+            var coords = d3.geoCentroid(ft.geometry);
+            new_layer_data.push({
+                id: i,
+                type: "Feature",
+                properties: { label: ft.properties[label_field], x: coords[0], y: coords[1] },
+                geometry: { type: "Point", coordinates: coords }
+            });
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
         }
     }
     var context_menu = new ContextMenu(),
@@ -6425,8 +6486,8 @@ var render_label = function render_label(layer, rendering_params, options) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_to_add, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var centroid = path.centroid({ 'type': 'Point', 'coordinates': d.coords });
+    map.append("g").attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+        var centroid = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
             "x": centroid[0],
@@ -6435,7 +6496,7 @@ var render_label = function render_label(layer, rendering_params, options) {
             "text-anchor": "middle"
         };
     }).styles({ "font-size": font_size, "font-family": selected_font, fill: txt_color }).text(function (d) {
-        return d.label;
+        return d.properties.label;
     }).on("mouseover", function () {
         this.style.cursor = "pointer";
     }).on("mouseout", function () {
@@ -6491,8 +6552,8 @@ function switch_accordion_section(id_elem) {
     document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
-function path_to_geojson(id_layer) {
-    if (id_layer.indexOf('#') != 0) id_layer = ["#", id_layer].join('');
+function path_to_geojson(layer_name) {
+    var id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
     var result_geojson = [];
     d3.select(id_layer).selectAll("path").each(function (d, i) {
         result_geojson.push({
@@ -6577,17 +6638,25 @@ function make_content_summary(serie) {
 }
 
 function copy_layer(ref_layer, new_name, type_result) {
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + ref_layer).cloneNode(true));
-    svg_map.lastChild.setAttribute("id", new_name);
+    var id_new_layer = encodeId(new_name);
+    var id_ref_layer = _app.layer_to_id.get(ref_layer);
+    _app.layer_to_id.set(new_name, id_new_layer);
+    _app.id_to_layer.set(id_new_layer, new_name);
+    svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + id_ref_layer).cloneNode(true));
+    svg_map.lastChild.setAttribute("id", id_new_layer);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
     current_layers[new_name] = { n_features: current_layers[ref_layer].n_features,
         type: current_layers[ref_layer].type,
         ref_layer_name: ref_layer };
-    var selec_src = document.getElementById(ref_layer).getElementsByTagName("path");
-    var selec_dest = document.getElementById(new_name).getElementsByTagName("path");
+    result_data[new_name] = [];
+    var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
+    var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
     for (var i = 0; i < selec_src.length; i++) {
         selec_dest[i].__data__ = selec_src[i].__data__;
-    }up_legends();
+        result_data[new_name].push(selec_dest[i].__data__.properties);
+    }
+    document.getElementById(id_new_layer).style.visibility = "";
+    up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
@@ -6634,17 +6703,20 @@ function get_other_layer_names() {
 */
 function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer) {
     var _list_display_name = get_display_name_on_layer_list(layer_name),
+        layer_id = encodeId(layer_name),
         layers_listed = layer_list.node(),
         li = document.createElement("li");
 
     li.setAttribute("layer_name", layer_name);
     if (type_layer == "result") {
-        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - ", type_geom[0], " - ", nb_ft, " features"].join(''));
+        li.setAttribute("class", ["sortable_result ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(type_geom[1]), "</div> "].join('');
     } else if (type_layer == "sample") {
-        li.setAttribute("class", ["sortable ", layer_name].join(''));
-        li.setAttribute("layer-tooltip", ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.setAttribute("class", ["sortable ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type_geom), "</div> "].join('');
     }
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
@@ -6779,6 +6851,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if (tmp.length > fields_type.length) {
@@ -6793,6 +6866,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose2;
     } else {
@@ -6803,6 +6877,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose3;
         container.querySelector("#xclose").onclick = _onclose3;
@@ -6824,8 +6899,21 @@ function make_box_type_fields(layer_name) {
         }
         modal_box.close();
         container.remove();
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     };
-
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            evt.preventDefault();
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
+        }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
@@ -7307,8 +7395,8 @@ function getMaximalAvailableRectangle(legend_nodes) {
     }
     for (var _i3 = 0; _i3 < legend_nodes.length; _i3++) {
         var bbox = legend_nodes[_i3].getBoundingClientRect(),
-            bx = Math.floor(bbox.x - x0),
-            by = Math.floor(bbox.y - y0);
+            bx = Math.floor(bbox.left - x0),
+            by = Math.floor(bbox.top - y0);
         fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
     }
     return getMaxRect(mat);
@@ -7330,8 +7418,8 @@ function getTranslateNewLegend() {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var MAX_INPUT_SIZE = 8704000; // max allowed input size in bytes
-
+var MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
+// const ALERT_INPUT_SIZE = 870400; // If the input is larger than this size, the user will receive an alert
 /**
 * Function triggered when some images of the interface are clicked
 * in order to create an <input> element, simulate a click on it, let the user
@@ -7343,12 +7431,22 @@ function click_button_add_layer() {
         self = this,
         input = document.createElement('input');
 
+    var target_layer_on_add = false;
+
+    if (self.id == "img_data_ext" || self.id == "data_ext") {
+        input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
+        target_layer_on_add = true;
+    } else if (self.id === "input_geom" || self.id === "input_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        target_layer_on_add = true;
+    } else if (self.id == "input_layout_geom") {
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+    }
     input.setAttribute('type', 'file');
     input.setAttribute('multiple', '');
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function (event) {
-        var target_layer_on_add = self.id === "input_geom" ? true : self.id === "img_in_geom" ? true : self.id === "img_data_ext" ? true : self.id === "data_ext" ? true : false;
 
         var files = event.target.files;
 
@@ -7378,13 +7476,14 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? files_to_send.push(f) : null;
         });
         elem.style.border = '';
-        if (target_layer_on_add && targeted_layer_added) {
+        if (target_layer_on_add && _app.targeted_layer_added) {
             swal({ title: i18next.t("app_page.common.error") + "!",
-                text: i18next.t('app_page.common'),
+                text: i18next.t('app_page.common.error_only_one'),
                 type: "error",
                 allowOutsideClick: false });
         } else if (files_to_send.length == 4) {
             handle_shapefile(files_to_send, target_layer_on_add);
+            elem.style.border = '';
         } else {
             elem.style.border = '3px dashed red';
             swal({ title: i18next.t("app_page.common.error") + "!",
@@ -7395,7 +7494,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         }
     } else if (files[0].name.toLowerCase().indexOf('topojson') > -1) {
         elem.style.border = '';
-        if (target_layer_on_add && targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
+        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
             allowOutsideClick: false });
@@ -7404,7 +7503,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     } else if (files[0].name.toLowerCase().indexOf('geojson') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
 
-        if (target_layer_on_add && targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
+        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
             allowOutsideClick: false });
@@ -7423,7 +7522,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             type: "error",
             allowOutsideClick: false });
     } else {
-        elem.style.border = '3px dashed red';
+        elem.style.border = '';
         var shp_part = void 0;
         Array.prototype.forEach.call(files, function (f) {
             return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? shp_part = true : null;
@@ -7432,20 +7531,27 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_shp'),
                 type: "error",
-                allowOutsideClick: false });
+                allowOutsideClick: false,
+                allowEscapeKey: false }).then(function (valid) {
+                null;
+            }, function (dismiss) {
+                null;
+            });
         } else {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_invalid'),
                 type: "error",
-                allowOutsideClick: false });
+                allowOutsideClick: false,
+                allowEscapeKey: false }).then(function (valid) {
+                null;
+            }, function (dismiss) {
+                null;
+            });
         }
-        elem.style.border = '';
     }
 }
 
 function handleOneByOneShp(files, target_layer_on_add) {
-    var _this = this;
-
     function populate_shp_slot(slots, file) {
         if (file.name.indexOf(".shp") > -1) {
             slots.set(".shp", file);
@@ -7488,6 +7594,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
             var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
             handle_shapefile(file_list, target_layer_on_add);
         } else {
+            var opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
             swal({
                 title: "",
                 text: i18next.t("app_page.common.layer_type_selection"),
@@ -7500,10 +7607,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
                 confirmButtonText: i18next.t("app_page.common.confirm"),
                 input: 'select',
                 inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                inputOptions: {
-                    'target': i18next.t("app_page.common.target_l"),
-                    'layout': i18next.t("app_page.common.layout_l")
-                },
+                inputOptions: opts,
                 inputValidator: function inputValidator(value) {
                     return new Promise(function (resolve, reject) {
                         if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
@@ -7529,7 +7633,6 @@ function handleOneByOneShp(files, target_layer_on_add) {
     var shp_slots = new Map();
     populate_shp_slot(shp_slots, files[0]);
     document.getElementById("dv_drop_shp").addEventListener("drop", function (event) {
-        console.log("file dropped");
         event.preventDefault();event.stopPropagation();
         var next_files = event.dataTransfer.files;
         for (var f_ix = 0; f_ix < next_files.length; f_ix++) {
@@ -7541,11 +7644,11 @@ function handleOneByOneShp(files, target_layer_on_add) {
         }
     });
     document.getElementById("dv_drop_shp").addEventListener("dragover", function (event) {
-        _this.style.border = "dashed 2.5px green";
+        this.style.border = "dashed 2.5px green";
         event.preventDefault();event.stopPropagation();
     });
     document.getElementById("dv_drop_shp").addEventListener("dragleave", function (event) {
-        _this.style.border = "dashed 1px green";
+        this.style.border = "dashed 1px green";
         event.preventDefault();event.stopPropagation();
     });
 }
@@ -7593,9 +7696,12 @@ function prepare_drop_section() {
 
         elem.addEventListener("drop", function _drop_func(e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
             if (timeout) {
                 clearTimeout(timeout);
+            }
+            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1 || !e.dataTransfer.files.length) {
+                document.getElementById("overlay_drop").style.display = "none";
+                return;
             }
             var overlay_drop = document.getElementById("overlay_drop");
             overlay_drop.style.display = "";
@@ -7606,6 +7712,12 @@ function prepare_drop_section() {
                 });
                 handleOneByOneShp(files);
             } else {
+                var opts = void 0;
+                if (files[0].name.indexOf(".csv") > -1 || files[0].name.indexOf(".tsv") > -1 || files[0].name.indexOf(".txt") > -1 || files[0].name.indexOf(".xls") > -1 || files[0].name.indexOf(".xlsx") > -1 || files[0].name.indexOf(".ods") > -1) {
+                    opts = { 'target': i18next.t("app_page.common.ext_dataset") };
+                } else {
+                    opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
+                }
                 swal({
                     title: "",
                     text: i18next.t("app_page.common.layer_type_selection"),
@@ -7618,10 +7730,7 @@ function prepare_drop_section() {
                     confirmButtonText: i18next.t("app_page.common.confirm"),
                     input: 'select',
                     inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                    inputOptions: {
-                        'target': i18next.t("app_page.common.target_l"),
-                        'layout': i18next.t("app_page.common.layout_l")
-                    },
+                    inputOptions: opts,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
                             if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
@@ -7665,7 +7774,10 @@ function prepare_drop_section() {
         elem.addEventListener("drop", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (!e.dataTransfer.files.length) return;
+            if (!e.dataTransfer.files.length) {
+                elem.style.border = '';
+                return;
+            }
             var files = e.dataTransfer.files,
                 target_layer_on_add = elem.id === "section1" ? true : false;
             if (files.length == 1 && (files[0].name.indexOf(".shp") > -1 || files[0].name.indexOf(".shx") > -1 || files[0].name.indexOf(".dbf") > -1 || files[0].name.indexOf(".prj") > -1)) {
@@ -7847,14 +7959,18 @@ function update_menu_dataset() {
         nb_features = joined_dataset[0].length,
         field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
 
-    d3.select("#img_data_ext").attrs({ "id": "img_data_ext",
+    var data_ext = document.getElementById("data_ext");
+
+    d3.select(data_ext.parentElement.firstChild).attrs({ "id": "img_data_ext",
         "class": "user_panel",
         "src": "/static/img/b/tabular.svg",
         "width": "26", "height": "26",
         "alt": "Additional dataset" });
 
-    d3.select('#data_ext').attr("layer-target-tooltip", ['<b>', dataset_name, '.csv</b> - ', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features })].join('')).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
-    document.getElementById("data_ext").parentElement.innerHTML = document.getElementById("data_ext").parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    data_ext.classList.remove('i18n');
+    data_ext.removeAttribute('data-i18n');
+    d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
+    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
     document.getElementById("remove_dataset").onclick = function () {
         remove_ext_dataset();
@@ -7865,7 +7981,7 @@ function update_menu_dataset() {
     document.getElementById("remove_dataset").onmouseout = function () {
         this.style.opacity = 0.5;
     };
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         valid_join_check_display(false);
         document.getElementById('sample_zone').style.display = "none";
     }
@@ -7911,9 +8027,9 @@ function add_dataset(readed_dataset) {
 
     update_menu_dataset();
 
-    if (current_functionnality && current_functionnality.name == "flow") fields_handler.fill();
+    if (_app.current_functionnality && _app.current_functionnality.name == "flow") fields_handler.fill();
 
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         var layer_name = Object.getOwnPropertyNames(user_data)[0];
         ask_join_now(layer_name);
     }
@@ -8007,7 +8123,12 @@ function add_layer_topojson(text, options) {
     var random_color1 = ColorsSelected.random(),
         lyr_name = layers_names[0],
         lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name),
+        lyr_id = encodeId(lyr_name_to_add),
         skip_rescale = options && options.skip_rescale ? skip_rescale : false;
+
+    _app.layer_to_id.set(lyr_name_to_add, lyr_id);
+    _app.id_to_layer.set(lyr_id, lyr_name_to_add);
+
     var nb_ft = topoObj.objects[lyr_name].geometries.length,
         topoObj_objects = topoObj.objects[lyr_name],
         field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -8032,7 +8153,7 @@ function add_layer_topojson(text, options) {
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    map.append("g").attr("id", lyr_name_to_add).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attr("d", path).attr("id", function (d, ix) {
+    map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
             if (field_names.length > 0) {
                 if (d.id != undefined && d.id != ix) {
@@ -8049,19 +8170,17 @@ function add_layer_topojson(text, options) {
     }).styles({ "stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
         "stroke-opacity": .4,
         "fill": type != 'Line' ? random_color1 : null,
-        "fill-opacity": type != 'Line' ? 0.90 : 0 }).attrs({ "height": "100%", "width": "100%" });
+        "fill-opacity": type != 'Line' ? 0.90 : 0 });
 
-    var class_name = [target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null, lyr_name_to_add].join('');
+    var class_name = [target_layer_on_add ? "sortable_target " : result_layer_on_add ? "sortable_result " : null, lyr_id].join('');
 
     var layers_listed = layer_list.node(),
         li = document.createElement("li"),
         nb_fields = field_names.length,
-        layer_tooltip_content = ["<b>", lyr_name_to_add, "</b> - ", type, " - ", nb_ft, " ", i18next.t("app_page.common.feature", { count: +nb_ft }), " - ", nb_fields, " ", i18next.t("app_page.common.field", { count: +nb_fields })].join(''),
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
     li.setAttribute("class", class_name);
     li.setAttribute("layer_name", lyr_name_to_add);
-    li.setAttribute("layer-tooltip", layer_tooltip_content);
     d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
     if (target_layer_on_add) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
@@ -8078,11 +8197,11 @@ function add_layer_topojson(text, options) {
             _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
 
         _button = _button.substring(10, _button.indexOf("class") - 2);
-        d3.select("#img_in_geom").attrs({ "src": _button, "width": "26", "height": "26" }).on("click", null);
-        d3.select('#input_geom').attr("layer-target-tooltip", layer_tooltip_content).html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">', nb_ft, ' ', i18next.t("app_page.common.feature", { count: +nb_ft }), ' - ', _nb_fields, ' ', i18next.t("app_page.common.field", { count: +_nb_fields }), '</i></span>'].join(''));
-
-        var input_geom = document.getElementById("input_geom").parentElement;
-        input_geom.innerHTML = input_geom.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
+        var _input_geom = document.getElementById("input_geom");
+        _input_geom.classList.remove('i18n');
+        _input_geom.removeAttribute('data-i18n');
+        d3.select(_input_geom).attrs({ "src": _button, "width": "26", "height": "26" }).html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">', nb_ft, ' ', i18next.t("app_page.common.feature", { count: +nb_ft }), ' - ', _nb_fields, ' ', i18next.t("app_page.common.field", { count: +_nb_fields }), '</i></span>'].join('')).on("click", null);
+        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
         var remove_target = document.getElementById("remove_target");
         remove_target.onclick = function () {
             remove_layer(lyr_name_to_add);
@@ -8093,7 +8212,7 @@ function add_layer_topojson(text, options) {
         remove_target.onmouseout = function () {
             this.style.opacity = 0.5;
         };
-        targeted_layer_added = true;
+        _app.targeted_layer_added = true;
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
 
         window._target_layer_file = topoObj;
@@ -8102,9 +8221,9 @@ function add_layer_topojson(text, options) {
             center_map(lyr_name_to_add);
         }
         handle_click_hand("lock");
-        if (window.current_functionnality) fields_handler.fill(lyr_name_to_add);
+        if (_app.current_functionnality != undefined) fields_handler.fill(lyr_name_to_add);
     } else if (result_layer_on_add) {
-        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : current_functionnality.name), "</div>"].join('');
+        li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), "</div>"].join('');
         if (!skip_rescale) {
             center_map(lyr_name_to_add);
         }
@@ -8113,7 +8232,7 @@ function add_layer_topojson(text, options) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
     }
 
-    if (!target_layer_on_add && window.current_functionnality != undefined && current_functionnality.name == "smooth") {
+    if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name == "smooth") {
         fields_handler.fill();
     }
 
@@ -8153,7 +8272,7 @@ function add_layer_topojson(text, options) {
 function scale_to_lyr(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#" + name).selectAll(symbol).each(function (d, i) {
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (bbox_layer_path === undefined) {
             bbox_layer_path = bbox_path;
@@ -8178,7 +8297,7 @@ function scale_to_lyr(name) {
 function center_map(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#" + name).selectAll(symbol).each(function (d, i) {
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
             bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
@@ -8213,7 +8332,7 @@ function add_layout_feature(selected_feature) {
         if (existing_annotation) existing_id = Array.prototype.map.call(existing_annotation, function (elem) {
             return +elem.childNodes[0].id.split('text_annotation_')[1];
         });
-        for (var i = 0; i < 25; i++) {
+        for (var i = 0; i < 50; i++) {
             if (existing_id.indexOf(i) == -1) {
                 existing_id.push(i);
                 new_id = ["text_annotation_", i].join('');
@@ -8221,7 +8340,7 @@ function add_layout_feature(selected_feature) {
             } else continue;
         }
         if (!new_id) {
-            swal(i18next.t("app_page.common.error") + "!", i18next.t("Maximum number of text annotations has been reached"), "error");
+            swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_max_text_annot"), "error");
             return;
         }
         var txt_box = new Textbox(svg_map, new_id);
@@ -8301,64 +8420,61 @@ function add_layout_feature(selected_feature) {
                 }
             });
         }
-
-        //    } else if (selected_feature == "free_draw"){
-        //        handleCreateFreeDraw();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
 }
 
-function handleCreateFreeDraw() {
-    var start_point = void 0,
-        tmp_start_point = void 0,
-        active_line = void 0,
-        drawing_data = { "lines": [] };
-
-    var render_line = d3.line().x(function (d) {
-        return d[0];
-    }).y(function (d) {
-        return d[1];
-    });
-    var draw_calc = map.append("g").append("rect").attrs({ class: "draw_calc", x: 0, y: 0, width: w, height: h }).style("opacity", 0.1).style("fill", "grey");
-
-    function redraw() {
-        var lines;
-        lines = draw_calc.selectAll('.line').data(drawing_data.lines);
-        lines.enter().append('path').attrs({
-            "class": 'line',
-            stroke: function stroke(d) {
-                return d.color;
-            }
-        });
-        lines.attr("d", function (d) {
-            return render_line(d.points);
-        });
-        return lines.exit();
-    };
-
-    var drag = d3.drag().on('start', function () {
-        active_line = {
-            points: [],
-            color: "black"
-        };
-        drawing_data.lines.push(active_line);
-        return redraw();
-    }).on('drag', function () {
-        active_line.points.push([d3.event.x, d3.event.y]);
-        console.log(drawing_data);
-        return redraw();
-    }).on('end', function () {
-        if (active_line.points.length === 0) {
-            drawing_data.lines.pop();
-        }
-        active_line = null;
-        console.log(drawing_data);
-        return;
-    });
-    zoom.on("zoom", null);
-    draw_calc.call(drag);
-}
+// function handleCreateFreeDraw(){
+//     let start_point,
+//         tmp_start_point,
+//         active_line,
+//         drawing_data = { "lines": [] };
+//
+//     let render_line = d3.line().x(d => d[0]).y(d => d[1]);
+//     let draw_calc = map.append("g")
+//                         .append("rect")
+//                         .attrs({class: "draw_calc", x: 0, y: 0, width: w, height: h})
+//                         .style("opacity", 0.1).style("fill", "grey");
+//
+//     function redraw() {
+//       var lines;
+//       lines = draw_calc.selectAll('.line').data(drawing_data.lines);
+//       lines.enter().append('path').attrs({
+//         "class": 'line',
+//         stroke: function(d) {
+//           return d.color;
+//         }
+//       });
+//       lines.attr("d", function(d) { return render_line(d.points);});
+//       return lines.exit();
+//     };
+//
+//     let drag = d3.drag()
+//            .on('start', function() {
+//               active_line = {
+//                 points: [],
+//                 color: "black"
+//               };
+//               drawing_data.lines.push(active_line);
+//               return redraw();
+//             })
+//             .on('drag', function() {
+//               active_line.points.push([d3.event.x, d3.event.y]);
+//               console.log(drawing_data);
+//               return redraw();
+//             })
+//             .on('end', function() {
+//               if (active_line.points.length === 0) {
+//                 drawing_data.lines.pop();
+//               }
+//               active_line = null;
+//               console.log(drawing_data);
+//               return;
+//             });
+//     zoom.on("zoom", null);
+//     draw_calc.call(drag);
+// }
 
 function add_single_symbol(symbol_dataurl, x, y) {
     var width = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30px";
@@ -8431,20 +8547,13 @@ function add_sample_layer() {
     if (existing_dialog) existing_dialog.remove();
 
     var dialog_res = [],
-        selec = { layout: null, target: null },
-        sample_datasets = undefined;
-
-    d3.json('/static/json/sample_layers.json', function (error, json) {
-        if (error) throw error;else sample_datasets = json[0];
-    });
-
-    var target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
+        selec,
+        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
-            var url = undefined;
-            if (selec.target) {
-                add_sample_geojson(selec.target, { target_layer_on_add: true });
+            if (selec) {
+                add_sample_geojson(selec, { target_layer_on_add: true });
             }
         }
     });
@@ -8457,10 +8566,10 @@ function add_sample_layer() {
         t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
     });
     t_layer_selec.on("change", function () {
-        selec.target = this.value;
+        selec = this.value;
     });
 
-    if (targeted_layer_added) {
+    if (_app.targeted_layer_added) {
         title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
         t_layer_selec.node().disabled = true;
     }
@@ -8475,8 +8584,11 @@ function add_simplified_land_layer() {
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
+    options.visible = options.visible || true;
 
     d3.json("/static/data_sample/World.topojson", function (error, json) {
+        _app.layer_to_id.set('World', 'World');
+        _app.id_to_layer.set('World', 'World');
         current_layers["World"] = {
             "type": "Polygon",
             "n_features": 125,
@@ -8489,6 +8601,9 @@ function add_simplified_land_layer() {
         if (!options.skip_rescale) {
             scale_to_lyr("World");
             center_map("World");
+        }
+        if (!options.visible == 'hidden') {
+            handle_active_layer('World');
         }
         zoom_without_redraw();
     });
@@ -8527,7 +8642,7 @@ function handleClickAddEllipse() {
         if (!ellipses) {
             return 0;
         } else if (ellipses.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             var ids = [];
@@ -8553,7 +8668,7 @@ function handleClickAddEllipse() {
         ellipse_id = getId();
 
     if (ellipse_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
     } else {
         ellipse_id = "user_ellipse_" + ellipse_id;
@@ -8576,7 +8691,7 @@ function handleClickAddArrow() {
         if (!arrows) {
             return 0;
         } else if (arrows.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error");
+            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
             return null;
         } else {
             var ids = [];
@@ -8604,7 +8719,7 @@ function handleClickAddArrow() {
         arrow_id = getId();
 
     if (arrow_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error");
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
     } else {
         arrow_id = "arrow_" + arrow_id;
@@ -8646,7 +8761,7 @@ function accordionize() {
     var css_selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ".accordion";
     var parent = arguments[1];
 
-    parent = parent && (typeof parent === 'undefined' ? 'undefined' : _typeof(parent)) === "object" ? parent : parent && typeof parent === "string" ? document.querySelector(parent) : document;
+    parent = parent && (typeof parent === "undefined" ? "undefined" : _typeof(parent)) === "object" ? parent : parent && typeof parent === "string" ? document.querySelector(parent) : document;
     var acc = parent.querySelectorAll(css_selector),
         opened_css_selector = css_selector + ".active";
     for (var i = 0; i < acc.length; i++) {
@@ -8900,7 +9015,7 @@ function make_single_color_menu(layer, fill_prev) {
     var symbol = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "path";
 
     var fill_color_section = d3.select("#fill_color_section"),
-        g_lyr_name = "#" + layer,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer),
         last_color = fill_prev && fill_prev.single ? fill_prev.single : "#FFF";
     var block = fill_color_section.insert('p');
     block.insert("span").html(i18next.t("app_page.layer_style_popup.fill_color"));
@@ -8916,7 +9031,7 @@ function make_random_color(layer) {
     var block = d3.select("#fill_color_section");
     block.selectAll('span').remove();
     block.insert("span").styles({ "cursor": "pointer", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.toggle_colors")).on("click", function (d, i) {
-        map.select("#" + layer).selectAll(symbol).transition().style("fill", function () {
+        map.select("#" + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style("fill", function () {
             return Colors.names[Colors.random()];
         });
         current_layers[layer].fill_color = { "random": true };
@@ -8925,7 +9040,7 @@ function make_random_color(layer) {
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map) {
-    map.select("#" + layer).selectAll(symbol).transition().style("fill", function (d) {
+    map.select("#" + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style("fill", function (d) {
         return color_cat_map.get(d.properties[field_name]);
     });
 }
@@ -9021,7 +9136,7 @@ function createStyleBoxTypoSymbols(layer_name) {
     var existing_box = document.querySelector(".styleBox");
     if (existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("image"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         symbols_map = current_layers[layer_name].symbols_map,
         rendered_field = current_layers[layer_name].rendered_field;
@@ -9130,7 +9245,7 @@ function createStyleBoxLabel(layer_name) {
     var existing_box = document.querySelector(".styleBox");
     if (existing_box) existing_box.remove();
 
-    var selection = map.select("#" + layer_name).selectAll("text"),
+    var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name;
 
     var prev_settings = [],
@@ -9148,7 +9263,8 @@ function createStyleBoxLabel(layer_name) {
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
         selection.transition().attrs(function (d) {
-            return { x: d.coords[0], y: d.coords[1] };
+            var coords = path.centroid(d.geometry);
+            return { x: coords[0], y: coords[1] };
         });
     });
 
@@ -9264,7 +9380,7 @@ function createStyleBox(layer_name) {
     var type = current_layers[layer_name].type,
         rendering_params = null,
         renderer = current_layers[layer_name].renderer,
-        g_lyr_name = "#" + layer_name,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
@@ -9314,6 +9430,9 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
                     return obj[1];
                 });
+            } else if (renderer == "Categorical") {
+                current_layers[layer_name].color_map = rendering_params.color_map;
+                current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
             }
             // Also change the legend if there is one displayed :
             var _type_layer_links = renderer == "DiscLayer" || renderer == "Links";
@@ -9417,17 +9536,20 @@ function createStyleBox(layer_name) {
                 }
             } else if (renderer == "Categorical") {
                 (function () {
-                    var renderer_field = current_layers[layer_name].rendered_field;
+                    var rendered_field = current_layers[layer_name].rendered_field;
 
                     popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                        var cats = prepare_categories_array(layer_name, renderer_field, current_layers[layer_name].color_map);
-                        display_categorical_box(layer_name, renderer_field, cats).then(function (confirmed) {
+                        var cats = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                        display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
-                                    nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2],
+                                    nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
                                     renderer: "Categorical", rendered_field: rendered_field
                                 };
-                                render_categorical(layer_name, rendering_params);
+                                selection.transition().style('fill', function (d, i) {
+                                    return rendering_params.colorsByFeature[i];
+                                });
+                                lgd_to_change = true;
                             }
                         });
                     });
@@ -9450,7 +9572,7 @@ function createStyleBox(layer_name) {
                                 field: current_layers[layer_name].rendered_field
                             };
                             var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                            selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                            selection.transition().style("fill", function (d, i) {
                                 return rendering_params.colorsByFeature[i];
                             });
                         }
@@ -9476,7 +9598,7 @@ function createStyleBox(layer_name) {
                                     field: field_to_discretize
                                 };
                                 var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                                selection.transition().style('fill-opacity', 0.9).style("fill", function (d, i) {
+                                selection.transition().style("fill", function (d, i) {
                                     return rendering_params.colorsByFeature[i];
                                 });
                             }
@@ -9513,7 +9635,7 @@ function createStyleBox(layer_name) {
                         seq_color_select.append("option").text(name).attr("value", name);
                     });
                     seq_color_select.node().value = prev_palette.name;
-                    popup.insert('p').attr('class', 'line_elem').style('text-align', 'center').insert("button").styles({ "display": "inline", "margin-left": "10px" }).attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                    popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
                         var pal_name = document.getElementById("coloramp_params").value;
                         recolor_stewart(pal_name, true);
                     });
@@ -9669,7 +9791,6 @@ function createStyleBox(layer_name) {
                     inputOptions: input_fields,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
-                            console.log(value);
                             if (_fields.indexOf(value) < 0) {
                                 reject(i18next.t("app_page.common.no_value"));
                             } else {
@@ -9696,7 +9817,7 @@ function createStyleBox(layer_name) {
 }
 
 function get_fields_name(layer_name) {
-    var elem = document.getElementById(layer_name).childNodes[0];
+    var elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
     if (!elem.__data__ || !elem.__data__.properties) {
         return null;
     } else {
@@ -9705,7 +9826,7 @@ function get_fields_name(layer_name) {
 }
 
 function createStyleBox_ProbSymbol(layer_name) {
-    var g_lyr_name = "#" + layer_name,
+    var g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         type_method = current_layers[layer_name].renderer,
         type_symbol = current_layers[layer_name].symbol,
@@ -9768,13 +9889,23 @@ function createStyleBox_ProbSymbol(layer_name) {
                     });
                 }
             }
-
-            if (type_method == "PropSymbolsChoro") {
-                console.log(rendering_params.breaks);
-                current_layers[layer_name].fill_color = { "class": [].concat(rendering_params.colorsByFeature) };
-                current_layers[layer_name].colors_breaks = [];
-                for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-                    current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+            if (type_method == "PropSymbolsChoro" || type_method == "PropSymbolsTypo") {
+                if (type_method == "PropSymbolsChoro") {
+                    current_layers[layer_name].fill_color = { "class": [].concat(rendering_params.colorsByFeature) };
+                    current_layers[layer_name].colors_breaks = [];
+                    for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
+                        current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+                    }
+                    current_layers[layer_name].options_disc = {
+                        schema: rendering_params.schema,
+                        colors: rendering_params.colors,
+                        no_data: rendering_params.no_data,
+                        type: rendering_params.type,
+                        breaks: rendering_params.breaks
+                    };
+                } else if (type_method == "PropSymbolsTypo") {
+                    current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
+                    current_layers[layer_name].color_map = rendering_params.color_map;
                 }
                 current_layers[layer_name].rendered_field2 = rendering_params.field;
                 // Also change the legend if there is one displayed :
@@ -9841,13 +9972,17 @@ function createStyleBox_ProbSymbol(layer_name) {
                 current_layers[layer_name].options_disc).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
-                            nb_class: confirmed[0], type: confirmed[1],
-                            breaks: confirmed[2], colors: confirmed[3],
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
                             colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
                             renderer: "PropSymbolsChoro",
                             field: field_color
                         };
-                        selection.style('fill-opacity', 0.9).style("fill", function (d, i) {
+                        selection.style("fill", function (d, i) {
                             return rendering_params.colorsByFeature[i];
                         });
                     }
@@ -9888,15 +10023,18 @@ function createStyleBox_ProbSymbol(layer_name) {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color }));
-            popup.append('p').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                display_categorical_box(result_data[layer_name], layer_name, field_color, current_layers[layer_name].color_map).then(function (confirmed) {
+            popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var cats = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+                display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {
-                            nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2]
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: field_color
                         };
-                        selection.style('fill-opacity', 0.9).style("fill", function (d, i) {
-                            return rendering_params.colorByFeature[i];
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
                         });
+                        lgd_to_change = true;
                     }
                 });
             });
@@ -10006,7 +10144,6 @@ function createStyleBox_ProbSymbol(layer_name) {
                     inputOptions: input_fields,
                     inputValidator: function inputValidator(value) {
                         return new Promise(function (resolve, reject) {
-                            console.log(value);
                             if (_fields.indexOf(value) < 0) {
                                 reject(i18next.t("app_page.common.no_value"));
                             } else {
@@ -10203,8 +10340,13 @@ var UserArrow = function () {
 
             this.arrow.call(this.drag_behavior);
 
-            this.arrow.on("contextmenu dblclick", function () {
+            this.arrow.on("contextmenu", function () {
                 context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
+            });
+            this.arrow.on("dblclick", function () {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                _this.handle_ctrl_pt();
             });
         }
     }, {
@@ -10216,6 +10358,58 @@ var UserArrow = function () {
         key: "down_element",
         value: function down_element() {
             down_legend(this.arrow.node());
+        }
+    }, {
+        key: "handle_ctrl_pt",
+        value: function handle_ctrl_pt() {
+            var self = this,
+                line = self.arrow.node().querySelector("line"),
+                zoom_params = svg_map.__zoom,
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+            // Desactive the ability to drag the arrow :
+            self.arrow.on('.drag', null);
+            // Desactive the ability to zoom/move on the map ;
+            handle_click_hand('lock');
+
+            // Append two red squares for the start point and the end point of the arrow :
+            map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this),
+                    nx = d3.event.x,
+                    ny = d3.event.y;
+                t.attrs({ x: nx - 3, y: ny - 3 });
+                line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+                line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+            }));
+            map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this),
+                    nx = d3.event.x,
+                    ny = d3.event.y;
+                t.attrs({ x: nx - 3, y: ny - 3 });
+                line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+                line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+            }));
+
+            // Exit the "edit" state by double clicking again on the arrow :
+            this.arrow.on("dblclick", function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+                map.select('#arrow_start_pt').remove();
+                map.select('#arrow_end_pt').remove();
+                // Unlock the zoom on the map according to the previous behaviour :
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
+                // Reactive the ability to move the arrow :
+                self.arrow.call(self.drag_behavior);
+                // Restore the ability to edit the control points on dblclick on the arrow :
+                self.arrow.on("dblclick", function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+            });
         }
     }, {
         key: "calcAngle",
@@ -10240,7 +10434,6 @@ var UserArrow = function () {
             var self = this,
                 line = self.arrow.node().querySelector("line"),
                 angle = (-this.calcAngle()).toFixed(0),
-                zoom_params = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
             if (!map_locked) handle_click_hand('lock');
@@ -10271,15 +10464,21 @@ var UserArrow = function () {
             var box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
             var s1 = box_content.append("p").attr('class', 'line_elem');
             s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
+            s1.insert("span").styles({ 'float': 'right', 'width': '13px' }).html("px");
+            s1.insert("input").attrs({ id: "arrow_weight_text", class: "without_spinner", value: self.lineWeight, min: 0, max: 34, step: 0.1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
+                var elem = document.getElementById("arrow_lineWeight");
+                elem.value = this.value;
+                elem.dispatchEvent(new Event('change'));
+            });
+
             s1.append("input").attrs({ type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
                 line.style.strokeWidth = this.value;
-                txt_line_weight.html(this.value + "px");
+                document.getElementById("arrow_weight_text").value = +this.value;
             });
-            var txt_line_weight = s1.append("span").style('float', 'right').html(self.lineWeight + " px");
 
             var s2 = box_content.append("p").attr('class', 'line_elem');
             s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
-            s2.insert("span").style('float', 'right').html(" °");
+            s2.insert("span").styles({ 'float': 'right', 'width': '13px' }).html("&nbsp;°");
             s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
                 var elem = document.getElementById("arrow_angle");
                 elem.value = this.value;
@@ -10297,45 +10496,6 @@ var UserArrow = function () {
                 line.x2.baseVal.value = nx;
                 line.y2.baseVal.value = ny;
                 document.getElementById("arrow_angle_text").value = +this.value;
-            });
-
-            var s3 = box_content.append("p").attr('class', 'line_elem').style('text-align', 'center');
-            s3.append("button").attr("class", "button_st4").html(i18next.t("app_page.arrow_edit_box.move_points")).on("click", function () {
-                d3.select(".styleBoxArrow").styles({ 'top': 'unset', 'bottom': 'unset', 'right': 'unset', 'left': 'unset' });
-                box_content.style('display', 'none');
-                map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
-                    var t = d3.select(this),
-                        nx = d3.event.x,
-                        ny = d3.event.y;
-                    t.attrs({ x: nx - 3, y: ny - 3 });
-                    line.x1.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                    line.y1.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                }));
-
-                map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
-                    var t = d3.select(this),
-                        nx = d3.event.x,
-                        ny = d3.event.y;
-                    t.attrs({ x: nx - 3, y: ny - 3 });
-                    line.x2.baseVal.value = nx / zoom_params.k - zoom_params.x;
-                    line.y2.baseVal.value = ny / zoom_params.k - zoom_params.y;
-                }));
-
-                var move_pt_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").append('div').attr('id', 'move_pt_content').node();
-                var el = document.createElement("button");
-                el.className = "button_st3";
-                el.style = "float:right;background:forestgreen;font-size:14px;";
-                el.innerHTML = i18next.t("app_page.common.done");
-                el.onclick = function () {
-                    self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                    self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                    map.select('#arrow_start_pt').remove();
-                    map.select('#arrow_end_pt').remove();
-                    el.remove();
-                    box_content.style('display', '');
-                    d3.select(".styleBoxArrow").styles({ 'top': '', 'bottom': '', 'right': '', 'left': '' });
-                };
-                move_pt_content.appendChild(el);
             });
         }
     }]);
@@ -10355,19 +10515,19 @@ var Textbox = function () {
         this.y = position[1];
         this.fontsize = 14;
 
-        function end_edit_action() {
-            inner_ft.attr("contentEditable", "false");
-            inner_ft.style("background-color", "transparent");
-            inner_ft.style("border", "");
-            // Recompute the size of the p inside the foreignObj
-            var inner_bbox = inner_p.getBoundingClientRect();
-            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
-            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
-            d3.select("body").classed("noselect", false);
-            state = null;
-        };
+        // function end_edit_action(){
+        //     inner_ft.attr("contentEditable", "false");
+        //     inner_ft.style("background-color", "transparent");
+        //     inner_ft.style("border", "");
+        //     // Recompute the size of the p inside the foreignObj
+        //     let inner_bbox = inner_p.getBoundingClientRect();
+        //     foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+        //     foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
+        //     d3.select("body").classed("noselect", false);
+        //     state = null;
+        // };
 
-        var current_timeout, state;
+        var current_timeout;
         var context_menu = new ContextMenu(),
             getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
@@ -10383,13 +10543,8 @@ var Textbox = function () {
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement);
-            //     xy0 = get_map_xy0(),
-            //     bbox = this.getBoundingClientRect();
             return {
-                x: t.attr("x"),
-                y: t.attr("y"),
-                //     dim_x: bbox.width / 2,
-                //     dim_y: bbox.height / 2,
+                x: t.attr("x"), y: t.attr("y"),
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false
             };
         }).on("start", function () {
@@ -10399,10 +10554,11 @@ var Textbox = function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
-            var x = +d3.event.x,
-                y = +d3.event.y,
-                t = d3.select(this.parentElement);
-            t.attrs({ x: x, y: y });
+            d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
+            // let x = +d3.event.x,
+            //     y = +d3.event.y,
+            //     t = d3.select(this.parentElement);
+            // t.attrs({x: x, y: y});
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -10411,9 +10567,9 @@ var Textbox = function () {
         foreign_obj.setAttributeNS(null, "overflow", "visible");
         foreign_obj.setAttributeNS(null, "width", "100%");
         foreign_obj.setAttributeNS(null, "height", "100%");
-        foreign_obj.setAttributeNS(null, "rotate", 0);
         foreign_obj.setAttributeNS(null, "class", "legend txt_annot");
         foreign_obj.id = new_id_txt_annot;
+        foreign_obj.style.cursor = "pointer";
 
         var inner_p = document.createElement("p");
         inner_p.setAttribute("id", "in_" + new_id_txt_annot);
@@ -10440,30 +10596,25 @@ var Textbox = function () {
             context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
         });
 
-        inner_ft.on("dblclick", function () {
+        inner_ft.on('dblclick', function () {
+            d3.event.preventDefault();
             d3.event.stopPropagation();
+            _this2.editStyle();
         });
 
         inner_ft.on("mouseover", function () {
-            inner_ft.attr("contentEditable", "true"); // Not sure if its better to change this than always letting it editable
-            inner_ft.style("background-color", "white");
-            inner_ft.style("border", "1px solid red");
-            inner_ft.on("keyup", function () {
-                clearTimeout(current_timeout);
-                current_timeout = setTimeout(end_edit_action, 7500);
-                state = "keyup";
-            });
+            inner_ft.style("background-color", "#0080001a");
             // toogle the size of the container to 100% while we are using it :
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
-            d3.select("body").classed("noselect", true);
         });
+
         inner_ft.on("mouseout", function () {
-            // use a small delay after leaving the box before deactiving it :
-            if (!state) {
-                clearTimeout(current_timeout);
-                current_timeout = setTimeout(end_edit_action, 2500);
-            }
+            inner_ft.style("background-color", null);
+            // Recompute the size of the p inside the foreignObj
+            var inner_bbox = inner_p.getBoundingClientRect();
+            foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
+            foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
         });
 
         this.text_annot = frgn_obj;
@@ -10477,51 +10628,58 @@ var Textbox = function () {
         value: function editStyle() {
             var _this3 = this;
 
-            var current_options = { size: this.text_annot.select("p").style("font-size"),
-                color: this.text_annot.select("p").style("color"),
-                content: unescape(this.text_annot.select("p").html()),
-                rotate: this.text_annot.attr('rotate'),
-                transform_rotate: this.text_annot.attr('transform'),
-                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-                font: "" };
             var map_xy0 = get_map_xy0();
             var self = this,
                 inner_p = this.text_annot.select('p');
+
+            var current_options = {
+                size: inner_p.style("font-size"),
+                color: inner_p.style("color"),
+                content: unescape(inner_p.html()),
+                transform_rotate: this.text_annot.attr('transform'),
+                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
+                font: "",
+                font_weight: inner_p.style('font-weight'),
+                font_style: inner_p.style('font-style'),
+                text_decoration: inner_p.style('text-decoration')
+            };
+            current_options.font_weight = current_options.font_weight == "400" || current_options.font_weight == "" ? '' : 'bold';
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
                     self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
                     self.fontsize = current_options.size;
-                    self.rotate = current_options.rotate;
+                    // self.rotate = current_options.rotate;
                     self.text_annot.attr('transform', current_options.transform_rotate);
                 }
             });
             var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
 
+            var current_rotate = typeof current_options.transform_rotate == "string" ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
+            if (current_rotate && current_rotate.length == 3) {
+                current_rotate = +current_rotate[0];
+            } else {
+                current_rotate = 0;
+            }
+
+            var bbox = inner_p.node().getBoundingClientRect(),
+                nx = bbox.left - map_xy0.x,
+                ny = bbox.top - map_xy0.y,
+                x_center = nx + bbox.width / 2,
+                y_center = ny + bbox.height / 2;
+
             var option_rotation = box_content.append('p').attr('class', 'line_elem');
             option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
             option_rotation.append('span').style('float', 'right').html(' °');
-            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_options.rotate,
+            option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_rotate,
                 class: "without_spinner", id: "textbox_txt_rotate" }).styles({ 'width': '40px', 'float': 'right' }).on("change", function () {
-                var rotate_value = +this.value,
-                    bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.x - map_xy0.x,
-                    ny = bbox.y - map_xy0.y,
-                    x_center = nx + bbox.width / 2,
-                    y_center = ny + bbox.height / 2;
-                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
-                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+                var rotate_value = +this.value;
+                self.text_annot.attrs({ x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_range_rotate").value = rotate_value;
             });
 
-            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_options.rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
-                var rotate_value = +this.value,
-                    bbox = inner_p.node().getBoundingClientRect(),
-                    nx = bbox.x - map_xy0.x,
-                    ny = bbox.y - map_xy0.y,
-                    x_center = nx + bbox.width / 2,
-                    y_center = ny + bbox.height / 2;
-                self.text_annot.attrs({ 'rotate': rotate_value, x: nx, y: ny,
-                    'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
+            option_rotation.append("input").attrs({ type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_rotate }).styles({ "vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px" }).on("change", function () {
+                var rotate_value = +this.value;
+                self.text_annot.attrs({ x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")" });
                 document.getElementById("textbox_txt_rotate").value = rotate_value;
             });
 
@@ -10547,14 +10705,12 @@ var Textbox = function () {
             });
 
             var options_format = box_content.append('p'),
-                btn_bold = options_format.insert('img').attrs({ title: 'Bold', src: 'data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=' }),
-                btn_italic = options_format.insert('img').attrs({ title: 'Italic', src: 'data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==' }),
-                btn_underline = options_format.insert('img').attrs({ title: 'Underline', src: 'data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7' });
+                btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+                btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+                btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
 
             var content_modif_zone = box_content.append("p");
             content_modif_zone.append("span").html(i18next.t("app_page.text_box_edit_box.content"));
-            content_modif_zone.append("img").attrs({ "id": "btn_info_text_annotation", "src": "/static/img/Information.png", "width": "17", "height": "17", "alt": "Information",
-                class: "info_tooltip", "data-tooltip_info": i18next.t("app_page.text_box_edit_box.info_tooltip") }).styles({ "cursor": "pointer", "vertical-align": "bottom" });
             content_modif_zone.append("span").html("<br>");
             var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
                 inner_p.html(this.value);
@@ -10562,29 +10718,32 @@ var Textbox = function () {
             textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
             btn_bold.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<b>' + current_text.slice(startIdx, endIdx) + '</b>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('font-weight', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('font-weight', 'bold');
+                }
             });
 
             btn_italic.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<i>' + current_text.slice(startIdx, endIdx) + '</i>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('font-style', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('font-style', 'italic');
+                }
             });
             btn_underline.on('click', function () {
-                var startIdx = +textarea.selectionStart,
-                    endIdx = +textarea.selectionEnd,
-                    current_text = textarea.value;
-                var tmp = current_text.slice(0, startIdx) + '<u>' + current_text.slice(startIdx, endIdx) + '</u>' + current_text.slice(endIdx);
-                inner_p.html(tmp);
-                textarea.value = tmp;
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    inner_p.style('text-decoration', '');
+                } else {
+                    this.classList.add('active');
+                    inner_p.style('text-decoration', 'underline');
+                }
             });
         }
     }, {
@@ -10978,6 +11137,7 @@ var UserEllipse = function () {
         });
 
         this.draw();
+        return this;
     }
 
     _createClass(UserEllipse, [{
@@ -11007,8 +11167,13 @@ var UserEllipse = function () {
 
             this.ellipse.call(this.drag_behavior);
 
-            this.ellipse.on("contextmenu dblclick", function () {
+            this.ellipse.on("contextmenu", function () {
                 context_menu.showMenu(d3.event, document.body, getItems());
+            });
+            this.ellipse.on('dblclick', function () {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                _this6.handle_ctrl_pt();
             });
         }
     }, {
@@ -11080,38 +11245,73 @@ var UserEllipse = function () {
             s2.append("input").attrs({ type: "color", id: "ellipse_strokeColor", value: self.stroke_color }).on("change", function () {
                 ellipse_elem.style.stroke = this.value;
             });
-
-            var s2b = box_content.append("p").attr('class', 'line_elem');
-            s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"));
-            s2b.insert("input").attrs({ id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1 }).styles({ width: "80px", "vertical-align": "middle", 'float': 'right' }).on("change", function () {
-                var pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
-                    distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
-                    angle = Math.abs(+this.value);
-
-                var _self$calcDestFromOAD3 = self.calcDestFromOAD(self.pt1, angle, distance),
-                    _self$calcDestFromOAD4 = _slicedToArray(_self$calcDestFromOAD3, 2),
-                    nx = _self$calcDestFromOAD4[0],
-                    ny = _self$calcDestFromOAD4[1];
-
-                console.log("angle :", angle);console.log("pt2 :", pt2);console.log("distance :", distance);
-                console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
-                console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
-                ellipse_elem.rx.baseVal.value = self.pt1[0] - nx;
-                ellipse_elem.ry.baseVal.value = self.pt1[1] - ny;
-                document.getElementById("ellipse_angle_text").value = +this.value;
-            });
-
-            s2b.insert("input").attrs({ id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
-                var elem = document.getElementById("ellipse_angle");
-                elem.value = this.value;
-                elem.dispatchEvent(new Event('change'));
-            });
-            s2b.insert("span").style('float', 'right').html(" °");
+            //  let s2b = box_content.append("p").attr('class', 'line_elem')
+            //  s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+            //  s2b.insert("span").styles({float: 'right', 'width': '12px'}).html("&nbsp;°");
+            //  s2b.insert("input")
+            //      .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
+            //      .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
+            //      .on("input", function(){
+            //          let elem = document.getElementById("ellipse_angle");
+            //          elem.value = this.value;
+            //          elem.dispatchEvent(new Event('change'));
+            //      });
+            //  s2b.insert("input")
+            //      .attrs({id: "ellipse_angle", type: "range", value: Math.abs(angle), min: 0, max: 360, step: 1})
+            //      .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
+            //      .on("change", function(){
+            //         let pt2 = [self.pt1[0] - ellipse_elem.rx.baseVal.value, self.pt1[1]],
+            //             distance = Math.sqrt((self.pt1[0] - pt2[0]) * (self.pt1[0] - pt2[0]) + (self.pt1[1] - pt2[1]) * (self.pt1[1] - pt2[1])),
+            //             angle = Math.abs(+this.value);
+            //          let [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+            //          console.log("angle :", angle); console.log("pt2 :", pt2); console.log("distance :", distance);
+            //          console.log(ellipse_elem.rx.baseVal.value, self.pt1[0], nx);
+            //          console.log(ellipse_elem.ry.baseVal.value, self.pt1[1], ny);
+            //          ellipse_elem.rx.baseVal.value = nx;
+            //          ellipse_elem.ry.baseVal.value = ny;
+            //          document.getElementById("ellipse_angle_text").value = +this.value;
+            //      });
         }
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
-            null;
+            var self = this,
+                ellipse_elem = self.ellipse.node().querySelector("ellipse"),
+                zoom_param = svg_map.__zoom,
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+            // Desactive the ability to drag the ellipse :
+            self.ellipse.on('.drag', null);
+            // Desactive the ability to zoom/move on the map ;
+            handle_click_hand('lock');
+
+            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y).attr("height", 6).attr("width", 6).style("fill", "red").style("cursor", "grab").call(d3.drag().on("drag", function () {
+                var t = d3.select(this);
+                t.attr("x", d3.event.x);
+                var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+                // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
+                ellipse_elem.rx.baseVal.value = dist;
+            }));
+            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
+                x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+                var t = d3.select(this);
+                t.attr("y", d3.event.y);
+                var dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+                ellipse_elem.ry.baseVal.value = dist;
+            }));
+            self.ellipse.on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                map.selectAll('.ctrl_pt').remove();
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
+                self.ellipse.call(self.drag_behavior);
+                self.ellipse.on('dblclick', function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+            });
         }
     }]);
 
@@ -11131,7 +11331,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function handle_legend(layer) {
     var state = current_layers[layer].renderer;
     if (state != undefined) {
-        var class_name = [".lgdf", layer].join('_');
+        var class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
         if (map.selectAll(class_name).node()) {
             if (!map.selectAll(class_name).attr("display")) map.selectAll(class_name).attr("display", "none");else {
                 map.selectAll(class_name).attr("display", null);
@@ -11178,7 +11378,10 @@ function createLegend(layer, title) {
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         createLegend_choro(layer, field2, title, field2, 4);
         createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) createLegend_choro(layer, field, title, field, 0, undefined, 2);else if (renderer.indexOf("Carto_doug") != -1) createLegend_nothing(layer, field, "Dougenik Cartogram", field);else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    } else if (renderer.indexOf("PropSymbols") != -1) createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) createLegend_choro(layer, field, title, field, 0, undefined, 2);
+    // else if (renderer.indexOf("Carto_doug") != -1)
+    //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
+    else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
 }
 
 function up_legend(legend_node) {
@@ -11269,41 +11472,51 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = d3.event.y,
             change = void 0;
 
-        if (bbox_elem.x < map_offset.x || bbox_elem.x + bbox_elem.width > map_offset.x + w) {
+        if (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w) {
             val_x = prev_value[0];
             change = true;
         }
-        if (bbox_elem.y < map_offset.y || bbox_elem.y + bbox_elem.height > map_offset.y + h) {
+        if (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h) {
             val_y = prev_value[1];
             change = true;
         }
         if (change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
     });
 };
-
-function createLegend_nothing(layer, field, title, subtitle, rect_fill_value) {
-    var subtitle = subtitle || field,
-        space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = h / 2,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' ');
-
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_nothing', class: tmp_class_name, layer_field: field }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
-
-    var rect_under_legend = legend_root.insert("rect");
-
-    legend_root.insert('text').text(title || "Title").attrs({ id: 'legendtitle', x: xpos + space_elem, y: ypos }).style("font", "bold 12px 'Enriqueta', arial, serif");
-
-    legend_root.insert('text').text(subtitle).attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).style("font", "italic 12px 'Enriqueta', arial, serif");
-
-    legend_root.call(drag_legend_func(legend_root));
-
-    legend_root.append("g").insert("text").attrs({ id: 'legend_bottom_note', x: xpos, y: ypos + 2 * space_elem }).html('');
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-}
+// function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
+//     var subtitle = subtitle || field,
+//         space_elem = 18,
+//         boxgap = 12,
+//         xpos = 30,
+//         ypos = h / 2,
+//         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+//
+//     var legend_root = map.insert('g')
+//         .attrs({id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer})
+//         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
+//
+//     var rect_under_legend = legend_root.insert("rect");
+//
+//     legend_root.insert('text')
+//             .text(title || "Title")
+//             .attrs({id: 'legendtitle', x: xpos + space_elem, y: ypos})
+//             .style("font", "bold 12px 'Enriqueta', arial, serif");
+//
+//     legend_root.insert('text')
+//             .text(subtitle)
+//             .attrs({id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15})
+//             .style("font", "italic 12px 'Enriqueta', arial, serif");
+//
+//     legend_root.call(drag_legend_func(legend_root));
+//
+//     legend_root.append("g")
+//             .insert("text")
+//             .attrs({id: 'legend_bottom_note', x: xpos, y: ypos + 2*space_elem})
+//             .html('');
+//     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+//     legend_root.select('#legendtitle').text(title || "");
+//     make_legend_context_menu(legend_root, layer);
+// }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision) {
     var space_elem = 18,
@@ -11311,17 +11524,17 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
         xpos = 30,
         ypos = 30,
         y_pos2 = ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         breaks = current_layers[layer].breaks,
         nb_class = breaks.length;
 
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+    var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
     var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos);
+    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
     var ref_symbols_params = [];
 
@@ -11331,7 +11544,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     if (current_layers[layer].renderer == "DiscLayer") {
         // Todo use the same way to store the threshold for links and disclayer
         // in order to avoid theses condition
-        var values = Array.prototype.map.call(svg_map.querySelector('#' + layer).querySelectorAll('path'), function (d) {
+        var values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'), function (d) {
             return +d.__data__.properties["disc_value"];
         });
         current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
@@ -11466,19 +11679,19 @@ function createLegend_symbol(layer, field, title, subtitle) {
         ypos = 30,
         y_pos2 = ypos + space_elem * 1.5,
         nb_features = current_layers[layer].n_features,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         symbol_type = current_layers[layer].symbol;
 
     var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)',
+    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root2', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
 
     var rect_under_legend = legend_root.insert("rect");
-    legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos);
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
-    var ref_symbols = document.getElementById(layer).getElementsByTagName(symbol_type),
+    var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
         sqrt = Math.sqrt;
 
@@ -11615,7 +11828,7 @@ function createLegend_choro(layer, field, title, subtitle) {
         ypos = 30,
         last_pos = null,
         y_pos2 = ypos + boxheight * 1.8,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + layer].join(' '),
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         nb_class,
         data_colors_label;
 
@@ -11623,12 +11836,13 @@ function createLegend_choro(layer, field, title, subtitle) {
 
     var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root', class: tmp_class_name, layer_field: field,
         transform: 'translate(0,0)', 'boxgap': boxgap,
-        'rounding_precision': rounding_precision });
+        'rounding_precision': rounding_precision, layer_name: layer });
 
     var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + boxheight).attr("y", ypos);
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + boxheight).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
+
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + boxheight, y: ypos + 15 });
 
     if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
         data_colors_label = [];
@@ -11710,7 +11924,7 @@ function createLegend_choro(layer, field, title, subtitle) {
 function createlegendEditBox(legend_id, layer_name) {
     function bind_selections() {
         box_class = [layer_name, "_legend_popup"].join('');
-        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_name].join(''));
+        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", _app.layer_to_id.get(layer_name)].join(''));
         title_content = legend_node.querySelector("#legendtitle");
         subtitle_content = legend_node.querySelector("#legendsubtitle");
         note_content = legend_node.querySelector("#legend_bottom_note");
@@ -11730,7 +11944,9 @@ function createlegendEditBox(legend_id, layer_name) {
     if (document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
     var original_params = {
         title_content: title_content.textContent,
+        y_title: title_content.y.baseVal[0].value,
         subtitle_content: subtitle_content.textContent,
+        y_subtitle: subtitle_content.y.baseVal[0].value,
         note_content: note_content.textContent,
         no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
     }; //, source_content: source_content.textContent ? source_content.textContent : ""
@@ -11746,7 +11962,9 @@ function createlegendEditBox(legend_id, layer_name) {
     make_confirm_dialog2(box_class, layer_name).then(function (confirmed) {
         if (!confirmed) {
             title_content.textContent = original_params.title_content;
+            title_content.y.baseVal[0].value = original_params.y_title;
             subtitle_content.textContent = original_params.subtitle_content;
+            subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
             note_content.textContent = original_params.note_content;
             if (no_data_txt) {
                 no_data_txt.textContent = original_params.no_data_txt;
@@ -11760,7 +11978,7 @@ function createlegendEditBox(legend_id, layer_name) {
     var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
         current_nb_dec;
 
-    box_body.append('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+    box_body.append('p').style('text-align', 'center').insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
 
     var a = box_body.append('p');
     a.append('span').html(i18next.t("app_page.legend_style_box.lgd_title"));
@@ -11772,7 +11990,17 @@ function createlegendEditBox(legend_id, layer_name) {
     var b = box_body.append('p');
     b.insert('span').html(i18next.t("app_page.legend_style_box.var_name"));
     b.insert('input').attr("value", subtitle_content.textContent).styles({ float: "right" }).on("keyup", function () {
+        var empty = subtitle_content.textContent == "";
+        // Move up the title to its original position if the subtitle isn't empty :
+        if (empty && this.value != "") {
+            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+        }
+        // Change the displayed content :
         subtitle_content.textContent = this.value;
+        // Move down the title (if it wasn't already moved down), if the new subtitle is empty
+        if (!empty && subtitle_content.textContent == "") {
+            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+        }
     });
 
     var c = box_body.insert('p');
@@ -11863,7 +12091,7 @@ function createlegendEditBox(legend_id, layer_name) {
         var gap_section = box_body.insert("p");
         gap_section.append("input").style('margin-left', '0px').attrs({ "type": "checkbox", id: 'style_lgd' }).on("change", function () {
             var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-            legend_node = svg_map.querySelector(["#legend_root.lgdf_", layer_name].join(''));
+            legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
             var boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
             var rounding_precision = legend_node.getAttribute("rounding_precision");
             var transform_param = legend_node.getAttribute("transform"),
@@ -11873,7 +12101,7 @@ function createlegendEditBox(legend_id, layer_name) {
             legend_node.remove();
             createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision);
             bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
+            if (transform_param) svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
         });
         gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
 
@@ -11882,7 +12110,7 @@ function createlegendEditBox(legend_id, layer_name) {
         var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         var _gap_section = box_body.insert("p");
         _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
-            legend_node = svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+            legend_node = svg_map.querySelector(["#legend_root2.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
             var rendered_field = current_layers[layer_name].rendered_field;
             var nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
             var rounding_precision = legend_node.getAttribute("rounding_precision");
@@ -11893,7 +12121,7 @@ function createlegendEditBox(legend_id, layer_name) {
             legend_node.remove();
             createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
             bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root2.lgdf_", layer_name].join('')).setAttribute("transform", transform_param);
+            if (transform_param) svg_map.querySelector(["#legend_root2.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
         });
         _gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t("app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = _current_state;
@@ -11942,7 +12170,7 @@ function move_legends() {
         var legends_type = legends[j];
         for (var i = 0, i_len = legends_type.length; i < i_len; ++i) {
             var legend_bbox = legends_type[i].getBoundingClientRect();
-            if (legend_bbox.x + legend_bbox.width > dim_width) {
+            if (legend_bbox.left + legend_bbox.width > dim_width) {
                 var current_transform = legends_type[i].getAttribute("transform");
 
                 var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(","),
@@ -11950,10 +12178,10 @@ function move_legends() {
                     val_x = _$exec$1$split2[0],
                     val_y = _$exec$1$split2[1];
 
-                var trans_x = legend_bbox.x + legend_bbox.width - dim_width;
+                var trans_x = legend_bbox.left + legend_bbox.width - dim_width;
                 legends_type[i].setAttribute("transform", ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
             }
-            if (legend_bbox.y + legend_bbox.height > dim_heght) {
+            if (legend_bbox.top + legend_bbox.height > dim_heght) {
                 var _current_transform = legends_type[i].getAttribute("transform");
 
                 var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(","),
@@ -11961,7 +12189,7 @@ function move_legends() {
                     _val_x = _$exec$1$split4[0],
                     _val_y = _$exec$1$split4[1];
 
-                var trans_y = legend_bbox.y + legend_bbox.height - dim_heght;
+                var trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
                 legends_type[i].setAttribute("transform", ["translate(", [_val_x, +_val_y - trans_y], ")"].join(''));
             }
         }
@@ -12045,6 +12273,7 @@ function get_map_template() {
     map_config.div_height = +h;
     map_config.n_layers = layers._groups[0].length;
     map_config.background_color = map.style("background-color");
+    map_config.canvas_rotation = typeof canvas_rotation_value == "string" ? canvas_rotation_value.match(/\d+/) : undefined;
 
     if (map_title) {
         map_config.title = {
@@ -12117,11 +12346,10 @@ function get_map_template() {
                 map_config.layout_features.text_annot.push({
                     id: ft.id,
                     content: inner_p.innerHTML,
-                    fontFamily: inner_p.style.fontFamily,
-                    fontSize: inner_p.style.fontSize,
-                    color: inner_p.style.color,
+                    style: inner_p.getAttribute('style'),
                     position_x: ft.x.baseVal.value,
-                    position_y: ft.y.baseVal.value
+                    position_y: ft.y.baseVal.value,
+                    transform: ft.getAttribute('transform')
                 });
             } else if (ft.classList.contains('single_symbol')) {
                 if (!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
@@ -12134,14 +12362,15 @@ function get_map_template() {
                     href: img.getAttribute('href'),
                     scalable: ft.classList.contains('scalable-legend')
                 });
-                console.log(map_config.layout_features.single_symbol);
+                // console.log(map_config.layout_features.single_symbol);
             }
         }
     }
     for (var _i = map_config.n_layers - 1; _i > -1; --_i) {
         layers_style[_i] = new Object();
         var layer_style_i = layers_style[_i],
-            layer_name = layers._groups[0][_i].id,
+            layer_id = layers._groups[0][_i].id,
+            layer_name = _app.id_to_layer.get(layer_id),
             current_layer_prop = current_layers[layer_name],
             nb_ft = current_layer_prop.n_features,
             selection = void 0;
@@ -12149,7 +12378,7 @@ function get_map_template() {
         layer_style_i.layer_name = layer_name;
         layer_style_i.n_features = nb_ft;
         layer_style_i.visible = layers._groups[0][_i].style.visibility;
-        var lgd = document.getElementsByClassName('lgdf_' + layer_name);
+        var lgd = document.getElementsByClassName('lgdf_' + layer_id);
         if (lgd.length == 0) {
             layer_style_i.legend = undefined;
         } else if (lgd.length == 1) {
@@ -12167,7 +12396,7 @@ function get_map_template() {
         if (current_layer_prop.options_disc !== undefined) layer_style_i.options_disc = current_layer_prop.options_disc;
 
         if (current_layer_prop.targeted) {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
             layer_style_i.targeted = true;
             layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
@@ -12182,11 +12411,11 @@ function get_map_template() {
                 layer_style_i.step = current_layers.Graticule.step;
             }
         } else if (!current_layer_prop.renderer) {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1) {
             var type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_name).selectAll(type_symbol);
-            var features = Array.prototype.map.call(svg_map.querySelector("#" + layer_name).getElementsByTagName(type_symbol), function (d) {
+            selection = map.select("#" + layer_id).selectAll(type_symbol);
+            var features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function (d) {
                 return d.__data__;
             });
             layer_style_i.symbol = type_symbol;
@@ -12205,7 +12434,7 @@ function get_map_template() {
             }
         } else if (current_layer_prop.renderer == "Stewart" || current_layer_prop.renderer == "Gridded" || current_layer_prop.renderer == "Choropleth" || current_layer_prop.renderer == "Categorical" || current_layer_prop.renderer == "Carto_doug" || current_layer_prop.renderer == "OlsonCarto") {
             (function () {
-                selection = map.select("#" + layer_name).selectAll("path");
+                selection = map.select("#" + layer_id).selectAll("path");
                 layer_style_i.renderer = current_layer_prop.renderer;
                 layer_style_i.topo_geom = String(current_layer_prop.key_name);
                 layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -12230,7 +12459,7 @@ function get_map_template() {
                 }
             })();
         } else if (current_layer_prop.renderer == "Links" || current_layer_prop.renderer == "DiscLayer") {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
@@ -12244,7 +12473,7 @@ function get_map_template() {
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
         } else if (current_layer_prop.renderer == "TypoSymbols") {
-            selection = map.select("#" + layer_name).selectAll("image");
+            selection = map.select("#" + layer_id).selectAll("image");
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.symbols_map = [].concat(_toConsumableArray(current_layer_prop.symbols_map));
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
@@ -12262,8 +12491,8 @@ function get_map_template() {
             }
             layer_style_i.current_state = state_to_save;
         } else if (current_layer_prop.renderer == "Label") {
-            selection = map.select("#" + layer_name).selectAll("text");
-            var _selec = document.getElementById(layer_name).getElementsByTagName('text');
+            selection = map.select("#" + layer_id).selectAll("text");
+            var _selec = document.getElementById(layer_id).getElementsByTagName('text');
             layer_style_i.renderer = current_layer_prop.renderer;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             layer_style_i.default_font = current_layer_prop.default_font;
@@ -12279,7 +12508,7 @@ function get_map_template() {
             layer_style_i.data_labels = _features;
             layer_style_i.current_position = current_position;
         } else {
-            selection = map.select("#" + layer_name).selectAll("path");
+            selection = map.select("#" + layer_id).selectAll("path");
         }
         layer_style_i.stroke_opacity = selection.style("stroke-opacity");
         layer_style_i.fill_opacity = selection.style("fill-opacity");
@@ -12304,7 +12533,7 @@ function save_map_template() {
         var dlAnchorElem = document.createElement('a');
         dlAnchorElem.style.display = "none";
         dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
-        dlAnchorElem.setAttribute("download", "magrit_project_properties.json");
+        dlAnchorElem.setAttribute("download", "magrit_project.json");
         document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
         dlAnchorElem.remove();
@@ -12312,7 +12541,9 @@ function save_map_template() {
 }
 
 function load_map_template() {
-    var input_button = d3.select(document.createElement('input')).attr("type", "file").attr("name", "file").attr("enctype", "text/json").on('change', function () {
+    var input_button = d3.select(document.createElement('input')).attr("type", "file").attr("name", "file").attr("accept", ".json")
+    // .attr("enctype", "text/json")
+    .on('change', function () {
         prepareReading(d3.event);
     });
 
@@ -12328,7 +12559,34 @@ function load_map_template() {
     input_button.node().dispatchEvent(new MouseEvent("click"));
 }
 
+function display_error_loading_project(error) {
+    error = error || "Unknown";
+    swal({ title: i18next.t("app_page.common.error") + "!",
+        text: i18next.t("app_page.common.error_map_project") + error,
+        type: "error",
+        allowOutsideClick: false });
+}
+
 function apply_user_preferences(json_pref) {
+    var preferences = void 0;
+    try {
+        preferences = JSON.parse(json_pref);
+    } catch (err) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project") + err);
+        return;
+    }
+    var map_config = preferences.map_config,
+        layers = preferences.layers;
+    if (!layers || !map_config) {
+        display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
+        return;
+    }
+    // Restore the state of the page (without open functionnality)
+    if (window.fields_handler) {
+        clean_menu_function();
+    }
+    // Clean the values remembered for the user from the previous rendering if any :
+    reset_user_values();
     {
         var layer_names = Object.getOwnPropertyNames(current_layers);
         for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
@@ -12338,13 +12596,11 @@ function apply_user_preferences(json_pref) {
             _ll = void 0;
         // Make sure there is no layers and legend/layout features on the map :
         _l = svg_map.childNodes;_ll = _l.length;
-        console.log(_l);
         for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
             _l[_i4].remove();
         }
         // And in the layer manager :
         _l = layer_list.node().childNodes;_ll = _l.length;
-        console.log(_l);
         for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
             _l[_i5].remove();
         }
@@ -12352,26 +12608,24 @@ function apply_user_preferences(json_pref) {
         current_layers = new Object();
     }
 
-    var preferences = JSON.parse(json_pref),
-        map_config = preferences.map_config,
-        layers = preferences.layers;
     var a = document.getElementById("overlay");
     a.style.display = "";
     a.querySelector("button").style.display = "none";
 
     var g_timeout = void 0;
     var set_final_param = function set_final_param() {
-        if (g_timeout) clearTimeout(g_timeout);
         g_timeout = setTimeout(function () {
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);;
-            reproj_symbol_layer();
             var _zoom = svg_map.__zoom;
             _zoom.k = map_config.zoom_scale;
             _zoom.x = map_config.zoom_translate[0];
             _zoom.y = map_config.zoom_translate[1];
             zoom_without_redraw();
+            s = map_config.projection_scale;
+            t = map_config.projection_translate;
+            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
+            reproj_symbol_layer();
             var desired_order = layers.map(function (i) {
                 return i.layer_name;
             });
@@ -12379,10 +12633,15 @@ function apply_user_preferences(json_pref) {
             desired_order.reverse();
             reorder_layers(desired_order);
             apply_layout_lgd_elem();
+            if (map_config.canvas_rotation) {
+                document.getElementById("form_rotate").value = map_config.canvas_rotation;
+                document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
+                rotate_global(map_config.canvas_rotation);
+            }
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 950);
+        }, 250);
     };
 
     function apply_layout_lgd_elem() {
@@ -12409,6 +12668,7 @@ function apply_user_preferences(json_pref) {
                 scaleBar.x = map_config.layout_features.scale_bar.x;
                 scaleBar.y = map_config.layout_features.scale_bar.y;
                 scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
+                scaleBar.resize();
             }
             if (map_config.layout_features.north_arrow) {
                 northArrow.display();
@@ -12431,7 +12691,12 @@ function apply_user_preferences(json_pref) {
             if (map_config.layout_features.user_ellipse) {
                 for (var _i7 = 0; _i7 < map_config.layout_features.user_ellipse.length; _i7++) {
                     var _ft2 = map_config.layout_features.user_ellipse[_i7];
-                    new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
+                    var ellps = new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
+                    var ellps_node = ellps.ellipse.node().querySelector("ellipse");
+                    ellps_node.setAttribute('rx', _ft2.rx);
+                    ellps_node.setAttribute('ry', _ft2.ry);
+                    ellps_node.style.stroke = _ft2.stroke;
+                    ellps_node.style.strokeWidth = _ft2.stroke_width;
                 }
             }
             if (map_config.layout_features.text_annot) {
@@ -12440,9 +12705,8 @@ function apply_user_preferences(json_pref) {
                     var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
                     var inner_p = new_txt_bow.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
-                    inner_p.style.fontFamily = _ft3.fontFamily;
-                    inner_p.style.fontSize = _ft3.fontSize;
-                    inner_p.style.color = _ft3.color;
+                    inner_p.style = _ft3.style;
+                    new_txt_bow.text_annot.attr('transform', _ft3.transform);
                 }
             }
             if (map_config.layout_features.single_symbol) {
@@ -12450,9 +12714,9 @@ function apply_user_preferences(json_pref) {
                     var _ft4 = map_config.layout_features.single_symbol[_i9];
                     var symb = add_single_symbol(_ft4.href, _ft4.x, _ft4.y, _ft4.width, _ft4.height);
                     if (_ft4.scalable) {
-                        console.log(symb);
-                        symb.node().parentElement.classList.add('scalable-legend');
-                        symb.node().parentElement.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
+                        var parent_symb = symb.node().parentElement;
+                        parent_symb.classList.add('scalable-legend');
+                        parent_symb.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
                     }
                 }
             }
@@ -12460,6 +12724,7 @@ function apply_user_preferences(json_pref) {
         up_legends();
     }
 
+    var done = 0;
     var func_name_corresp = new Map([["Links", "flow"], ["Carto_doug", "cartogram"], ["OlsonCarto", "cartogram"], ["Stewart", "smooth"], ["Gridded", "grid"], ["DiscLayer", "discont"], ["Choropleth", "choro"], ["Categorical", "typo"]]);
 
     // Set the dimension of the map (width and height) :
@@ -12504,7 +12769,6 @@ function apply_user_preferences(json_pref) {
     // Add each layer :
 
     var _loop = function _loop(_i10) {
-        if (g_timeout) clearTimeout(g_timeout);
         var _layer = layers[_i10],
             layer_name = _layer.layer_name,
             symbol = void 0;
@@ -12535,8 +12799,8 @@ function apply_user_preferences(json_pref) {
                     current_layer_prop.fields_type = _layer.fields_type;
                     document.getElementById('btn_type_fields').removeAttribute('disabled');
                 }
-
-                var layer_selec = map.select("#" + layer_name);
+                var layer_id = _app.layer_to_id.get(layer_name);
+                var layer_selec = map.select("#" + layer_id);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
                 if (_layer['stroke-width-const']) {
@@ -12593,7 +12857,7 @@ function apply_user_preferences(json_pref) {
                     }
                 }
 
-                if (_layer.fill_color.single) {
+                if (_layer.fill_color.single && _layer.renderer != "DiscLayer") {
                     layer_selec.selectAll('path').style("fill", _layer.fill_color.single);
                 } else if (_layer.fill_color.random) {
                     layer_selec.selectAll('path').style("fill", function () {
@@ -12604,9 +12868,13 @@ function apply_user_preferences(json_pref) {
                 if (_layer.visible == 'hidden') {
                     handle_active_layer(layer_name);
                 }
-                set_final_param();
+                done += 1;
+                if (done == map_config.n_layers) set_final_param();
             });
-
+        } else if (layer_name == "World") {
+            add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible != 'hidden' });
+            done += 1;
+            if (done == map_config.n_layers) set_final_param();
             // ... or this is a layer provided by the application :
         } else {
             if (layer_name == "Sphere" || layer_name == "Graticule") {
@@ -12624,16 +12892,13 @@ function apply_user_preferences(json_pref) {
                     options.fill = _layer.fill_color;
                 }
                 add_layout_feature(layer_name.toLowerCase(), options);
-            } else if (layer_name == "World") {
-                add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px" });
-
                 // ... or this is a layer of proportionnals symbols :
             } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
                 var geojson_pt_layer = _layer.geo_pt;
                 var rendering_params = {
                     new_name: layer_name,
                     field: _layer.rendered_field,
-                    fill_color: _layer.renderer == "PropSymbolsChoro" ? _layer.fill_color.class : _layer.fill_color.single,
+                    fill_color: _layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo" ? _layer.fill_color.class : _layer.fill_color.single,
                     ref_value: _layer.size[0],
                     ref_size: _layer.size[1],
                     symbol: _layer.symbol,
@@ -12658,7 +12923,9 @@ function apply_user_preferences(json_pref) {
                     rehandle_legend(layer_name, _layer.legend);
                 }
                 current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
-                map.select('#' + layer_name).selectAll(_layer.symbol).style('stroke-width', _layer['stroke-width-const'] + "px");
+                map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).styles({ 'stroke-width': _layer['stroke-width-const'] + "px",
+                    'fill-opacity': fill_opacity,
+                    'stroke-opacity': stroke_opacity });
 
                 // ... or this is a layer of labels :
             } else if (_layer.renderer && _layer.renderer.startsWith("Label")) {
@@ -12689,11 +12956,13 @@ function apply_user_preferences(json_pref) {
                                 self_parent.style.display = "none";
                             } }];
                     };
-
+                    var layer_id = encodeId(layer_name);
+                    _app.layer_to_id.set(layer_name, layer_id);
+                    _app.id_to_layer.set(layer_id, layer_name);
                     // Add the features at there original positions :
-                    map.append("g").attrs({ id: layer_name, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
+                    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
                         var symb = symbols_map.get(d.properties.symbol_field),
-                            prop = prop = _layer.current_state[j],
+                            prop = _layer.current_state[j],
                             coords = prop.pos;
                         return {
                             "x": coords[0] - symb[1] / 2,
@@ -12735,7 +13004,8 @@ function apply_user_preferences(json_pref) {
             }
             // This function is called on each layer added
             //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
-            set_final_param();
+            done += 1;
+            if (done == map_config.n_layers) set_final_param();
         }
     };
 
@@ -12748,6 +13018,9 @@ function reorder_layers(desired_order) {
     var layers = svg_map.getElementsByClassName('layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
+    desired_order = desired_order.map(function (el) {
+        return _app.layer_to_id.get(el);
+    });
     for (var i = 0; i < nb_layers; i++) {
         if (document.getElementById(desired_order[i])) parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
@@ -12773,7 +13046,9 @@ function rehandle_legend(layer_name, properties) {
         } else if (prop.type == 'legend_root_links') {
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision);
         }
-        svg_map.querySelector('#' + prop.type + '.lgdf_' + layer_name).setAttribute('transform', prop.transform);
+        var lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
+        lgd.setAttribute('transform', prop.transform);
+        lgd.setAttribute('display', prop.display);
     }
 }
 "use strict";
@@ -12861,16 +13136,27 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         container = document.getElementById("symbol_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            evt.preventDefault();
+            _onclose();
+        }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     };
     return deferred.promise;
 };
@@ -12937,6 +13223,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     container.querySelector(".btn_ok").onclick = function () {
         var res_url = newbox.select("#current_symb").style("background-image");
         deferred.resolve(res_url);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if (parent_css_selector) reOpenParent(parent_css_selector);
@@ -12944,12 +13231,22 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
 
     var _onclose = function _onclose() {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         if (parent_css_selector) reOpenParent(parent_css_selector);
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+        evt = evt || window.event;
+        evt.preventDefault();
+        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+        if (isEscape) {
+            _onclose();
+        }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
@@ -12991,7 +13288,7 @@ function make_style_box_indiv_symbol(symbol_node) {
     if (type_obj == 'layout') {
         var current_state = parent.classList.contains('scalable-legend');
         var b = box_content.append('p').attr('class', 'line_elem');
-        b.append('label').style('float', 'right').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+        b.append('label').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         b.append('input').style('float', 'right').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
             var zoom_scale = svg_map.__zoom;
             if (this.checked) {
@@ -13313,7 +13610,7 @@ function createTableDOM(data, options) {
 }
 
 function make_table(layer_name) {
-    var features = svg_map.getElementById(layer_name).childNodes,
+    var features = svg_map.querySelector("#" + _app.layer_to_id.get(layer_name)).childNodes,
         table = [];
     if (!features[0].__data__.properties || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0) {
         for (var i = 0, nb_ft = features.length; i < nb_ft; i++) {

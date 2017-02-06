@@ -34,9 +34,8 @@ function switch_accordion_section(id_elem){
     document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
-function path_to_geojson(id_layer){
-    if(id_layer.indexOf('#') != 0)
-        id_layer = ["#", id_layer].join('');
+function path_to_geojson(layer_name){
+    let id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
     var result_geojson = [];
     d3.select(id_layer)
         .selectAll("path")
@@ -124,16 +123,24 @@ function make_content_summary(serie, precision=6){
 }
 
 function copy_layer(ref_layer, new_name, type_result){
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+ref_layer).cloneNode(true));
-    svg_map.lastChild.setAttribute("id", new_name);
+    let id_new_layer = encodeId(new_name);
+    let id_ref_layer = _app.layer_to_id.get(ref_layer);
+    _app.layer_to_id.set(new_name, id_new_layer);
+    _app.id_to_layer.set(id_new_layer, new_name);
+    svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+id_ref_layer).cloneNode(true));
+    svg_map.lastChild.setAttribute("id", id_new_layer);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
     current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
                              type: current_layers[ref_layer].type,
                              ref_layer_name: ref_layer};
-    let selec_src = document.getElementById(ref_layer).getElementsByTagName("path");
-    let selec_dest = document.getElementById(new_name).getElementsByTagName("path");
-    for(let i = 0; i < selec_src.length; i++)
+    result_data[new_name] = [];
+    let selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
+    let selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
+    for(let i = 0; i < selec_src.length; i++){
         selec_dest[i].__data__ = selec_src[i].__data__;
+        result_data[new_name].push(selec_dest[i].__data__.properties);
+    }
+    document.getElementById(id_new_layer).style.visibility = "";
     up_legends();
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
@@ -181,21 +188,22 @@ function get_other_layer_names(){
 */
 function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer){
     let _list_display_name = get_display_name_on_layer_list(layer_name),
+        layer_id = encodeId(layer_name),
         layers_listed = layer_list.node(),
         li = document.createElement("li");
 
     li.setAttribute("layer_name", layer_name);
     if(type_layer == "result"){
-        li.setAttribute("class", ["sortable_result ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
+        li.setAttribute("class", ["sortable_result ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
                         button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
                         button_result_type.get(type_geom[1]), "</div> "].join('');
     } else if(type_layer == "sample"){
-        li.setAttribute("class", ["sortable ", layer_name].join(''));
-        li.setAttribute("layer-tooltip",
-                ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+        li.setAttribute("class", ["sortable ", layer_id].join(''));
+        // li.setAttribute("layer-tooltip",
+        //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
         li.innerHTML = [_list_display_name, '<div class="layer_buttons">',
                         button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
                         button_type.get(type_geom), "</div> "].join('');
@@ -333,6 +341,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if(tmp.length > fields_type.length){  // There is already types selected but new fields where added :
@@ -346,6 +355,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else { // There is already types selected and no new fields (so this is a modification) :
@@ -355,6 +365,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -378,8 +389,21 @@ function make_box_type_fields(layer_name){
         }
         modal_box.close();
         container.remove();
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
     }
-
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+            evt.preventDefault();
+            current_layers[layer_name].fields_type = tmp.slice();
+            deferred.resolve(false);
+            modal_box.close();
+            container.remove();
+            document.removeEventListener('keydown', helper_esc_key_twbs);
+          }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));

@@ -8,19 +8,16 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Magrit - Contact</title>
+    <title>Magrit - 404</title>
 
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/style-index.css" rel="stylesheet">
-    <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
     <script src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script src="/static/js/lib/i18next.min.js"></script>
     <script src="/static/js/lib/loc-i18next.min.js"></script>
     <script src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
-    <script src="/static/js/lib/jquery.easing.min.js"></script>
-    <script src="/static/js/lib/cookies.min.js"></script>
-    <script  src="static/js/lib/sweetalert2.min.js"></script>
+    <!-- <script src="/static/js/lib/cookies.min.js"></script> -->
 </head>
 <style>
 @import url(http://fonts.googleapis.com/css?family=Merriweather);
@@ -38,91 +35,6 @@ html, body {
   padding: 1em;
 }
 
-form {
-  max-width: 100%;
-  text-align: center;
-  margin: 20px auto;
-}
-form input, form textarea {
-  border: 0;
-  outline: 0;
-  padding: 1em;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
-  display: block;
-  width: 100%;
-  margin-top: 1em;
-  font-family: 'Merriweather', sans-serif;
-  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  resize: none;
-}
-form input:focus, form textarea:focus {
-  -moz-box-shadow: 0 0px 2px #e74c3c !important;
-  -webkit-box-shadow: 0 0px 2px #e74c3c !important;
-  box-shadow: 0 0px 2px #e74c3c !important;
-}
-form #input-submit {
-  color: white;
-  background: #e74c3c;
-  cursor: pointer;
-}
-form #input-submit:hover {
-  -moz-box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
-  -webkit-box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
-  box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
-}
-form textarea {
-  resize: vertical;
-  height: 126px;
-}
-
-.half {
-  float: left;
-  width: 48%;
-  margin-bottom: 1em;
-}
-
-.right {
-  width: 50%;
-}
-
-.left {
-  margin-right: 2%;
-}
-
-@media (max-width: 480px) {
-  .half {
-    width: 100%;
-    float: none;
-    margin-bottom: 0;
-  }
-}
-/* Clearfix */
-.cf:before,
-.cf:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-
-.cf:after {
-  clear: both;
-}
-
-.contact-section {
-  padding-top: 100px;
-  text-align: center;
-  height: 100%;
-}
-
-.link_email {
-    font-family: Helvetica,Arial,sans-serif;
-    color: darkblue;
-}
 
 </style>
 <body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
@@ -132,7 +44,6 @@ form textarea {
           <div class="navbar-header page-scroll">
             <a class="navbar-brand page-scroll" href="/" style="padding-top: 2px;"><img src="/static/img/logo_magrit.png" alt="Magrit" width="auto" height="38"></a>
           </div>
-          <a class="btn btn-default enter_button i18n" style="float:right;color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;" data-i18n="[html]index.buttons.start_now"></a>
           <div class="btn-group" style="float:right;margin-top:7px;";>
               <button id="lang_current" type="button" class="btn btn-default" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
@@ -152,24 +63,13 @@ form textarea {
   <section id="intro" class="contact-section">
       <div class="container">
           <div class="row">
-          <h1 style="font-family:Dosis;" data-i18n="[html]contact_form.contact" class="i18n"></h1>
+          <h1 data-i18n="[html]page404.message1" class="i18n" style="font-family:Dosis; text-align: center; margin: 50px 0 40px 0;"></h1>
           <hr class="grad-transp"></hr>
           <div class="col-md-12">
-          <p class="col-md-12 i18n" data-i18n="[html]contact_form.intro_text" style="padding: 0 12% 0 12%;"></p>
-            <div class="contact_form">
-                <form class="cf" onsubmit='sendForm(); return false;'>
-                  <div class="half left cf">
-                    <input name="name" type="text" id="input-name" class="i18n" data-i18n="[placeholder]contact_form.name">
-                    <input name="email" type="email" id="input-email" class="i18n" data-i18n="[placeholder]contact_form.email">
-                    <input name="subject" type="text" id="input-subject" class="i18n" data-i18n="[placeholder]contact_form.subject">
-                  </div>
-                  <div class="half right cf">
-                    <textarea name="message" type="text" class="i18n" id="input-message" data-i18n="[placeholder]contact_form.message"></textarea>
-                  </div>
-                  <p class="col-md-12 i18n">
-                  <input type="submit" class="btn btn-success i18n" style="margin: 5px; width: auto;" data-i18n="[html]contact_form.send" id="send_button">
-                </p>
-                </form>
+          <p class="col-md-12 i18n" data-i18n="[html]page404.message2" style="padding: 0 12% 0 12%;"></p>
+            <div class="content404 text-center">
+              <a class="btn btn-default enter_button i18n" data-i18n="[html]page404.back_application"></a>
+              <a class="btn btn-default documentation_button i18n" data-i18n="[html]page404.back_documentation"></a>
             </div>
           </div>
           <div class="box-wrap clearfix"></div>
@@ -180,35 +80,6 @@ form textarea {
 </body>
 {% raw %}
 <script>
-
-function sendForm(){
-    let data = new FormData();
-    data.append('name', document.getElementById('input-name').value);
-    data.append('email', document.getElementById('input-email').value);
-    data.append('subject', document.getElementById('input-subject').value);
-    data.append('massage', document.getElementById('input-message').value);
-
-    let request = new XMLHttpRequest();
-    request.open("POST", "/contact", true);
-    request.onload = resp => {
-        swal({title: "",
-              text: i18next.t("app_page.common.ok") + "!",
-              type: "success",
-              showCancelButton: false,
-              allowOutsideClick: false,
-            }).then(() => { return; }, dismiss => { return; });
-    };
-    request.onerror = err => {
-        swal({title: "",
-              text: i18next.t("app_page.common.error_msg") + "!",
-              type: "error",
-              showCancelButton: false,
-              allowOutsideClick: false,
-            }).then(() => { return; }, dismiss => { return; });
-    };
-    request.send(data);
-}
-
 //i18n initialization :
 (function(){
     var existing_lang = ["en", "fr"];
@@ -247,10 +118,11 @@ function prepare_lang_buttons(){
 }
 
 function bind_buttons(){
-    let send_button = document.getElementById("send_button");
-    send_button.onclick = function(){
-
+    let elems = document.querySelectorAll(".enter_button");
+    for(let i=0; i < elems.length; i++){
+        elems[i].onclick = function() { window.location = "/modules" };
     }
+    document.querySelector('.documentation_button').onclick = function() { window.location = "/docs/" };
 }
 
 //Handle user click on the "language" buttons :

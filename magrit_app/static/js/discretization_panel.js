@@ -470,7 +470,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
     else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
     else {
-      let layer = svg_map.querySelector('#' + layer_name);
+      let layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
       var db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
     }
     var color_array = [],
@@ -775,7 +775,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         }
         deferred.resolve(
             [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
-
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -783,12 +783,22 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
     let _onclose = () => {
         deferred.resolve(false);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          // evt.preventDefault();
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+              _onclose();
+          }
+    }
+    document.addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 }
 
@@ -807,7 +817,7 @@ function fetch_categorical_colors(){
 
 function display_categorical_box(data_layer, layer_name, field, cats){
     var nb_features = current_layers[layer_name].n_features,
-        nb_class = cats.size;
+        nb_class = cats.length;
 
     var modal_box = make_dialog_container(
         "categorical_box",
@@ -874,6 +884,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         container = document.getElementById("categorical_box"),
         _onclose = () => {
             deferred.resolve(false);
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             container.remove();
             reOpenParent();
@@ -883,6 +894,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         let color_map = fetch_categorical_colors();
         let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
         deferred.resolve([nb_class, color_map, colorByFeature]);
+        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
         reOpenParent();
@@ -890,6 +902,15 @@ function display_categorical_box(data_layer, layer_name, field, cats){
 
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
+    function helper_esc_key_twbs(evt){
+          evt = evt || window.event;
+          // evt.preventDefault();
+          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+          if (isEscape) {
+              _onclose();
+          }
+    }
+    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
     return deferred.promise;
 };
 
