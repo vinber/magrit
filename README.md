@@ -1,10 +1,14 @@
-## Magrit - Thematic cartography ![png](magrit_app/static/img/logo_magrit2.png)
+## Magrit - Thematic cartography
 
-"Magrit" is an online mapping application by the RIATE UMS (http://www.ums-riate.fr). This tool makes it possible to produce thematic maps of a high graphic quality. In addition to proposing to the user all the usual cartographic representations, the application offers the possibility to realize many cartographic methods often difficult to implement: smoothing, grids, discontinuities, anamorphoses, etc. Ultimately, Magrit intends to cover the entire processing chain, from the geographical data to the editing card, in a single environment, .
+![png](magrit_app/static/img/logo_magrit2.png)
+
+"Magrit" is an online mapping application by the RIATE UMS (http://www.ums-riate.fr).  
+This tool makes it possible to produce **thematic maps** of a **high graphic quality**.   
+In addition to proposing to the user all the usual cartographic representations, the application offers the possibility to realize many cartographic methods often difficult to implement: *smoothing*, *grids*, *discontinuities*, *cartograms*, etc.   Ultimately, Magrit intends to cover the entire processing chain, from the geographical data to the editing card, in a single environment, .
 
 #### Result examples :
 
-<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" style="max-height: 150px: width: 100%;/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" style="max-height: 150px: width: 100%;/></p>
+<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" style="max-height: 150px: width: 100%;"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" style="max-height: 150px: width: 100%;"/></p>
 
 
 More example are availables on the [gallery](http://magrit.hypotheses.org/galerie).
