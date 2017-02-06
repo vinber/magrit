@@ -750,7 +750,8 @@ function add_layer_topojson(text, options){
     var parsedJSON = JSON.parse(text),
         result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
         target_layer_on_add = (options && options.target_layer_on_add) ? true : false,
-        skip_alert = (options && options.skip_alert) ? true : false;
+        skip_alert = (options && options.skip_alert) ? true : false,
+        fields_type = (options && options.fields_type) ? options.fields_type : undefined;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         alert(parsedJSON.Error);
@@ -908,6 +909,9 @@ function add_layer_topojson(text, options){
     }
 
     if(!skip_alert){
+        if(fields_type != undefined){
+            current_layers[lyr_name_to_add].fields_type = fields_type;
+        }
         swal({title: "",
               text: i18next.t("app_page.common.layer_success"),
               allowOutsideClick: true,
@@ -1223,6 +1227,15 @@ function add_sample_layer(){
     var existing_dialog = document.querySelector(".sampleDialogBox");
     if(existing_dialog) existing_dialog.remove();
 
+    var fields_type_sample = new Map([
+        ['GrandParisMunicipalities', [{"name":"DEP","type":"category"},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category"},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category"},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
+        ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id"},{"name":"STATUT","type":"category"},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
+        ['nuts2-2013-data', [{"name":"id","type":"id"},{"name":"name","type":"id"},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category"}]],
+        ['brazil', [{"name":"ADMIN_NAME","type":"id"},{"name":"Abbreviation","type":"id"},{"name":"Capital","type":"id"},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category"},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
+        ['world_countries_data', [{"name":"ISO2","type":"id"},{"name":"ISO3","type":"id"},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id"},{"name":"NAMEfr","type":"id"},{"name":"UNRegion","type":"category"},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]],
+        ['us_states', [{"name":"NAME","type":"id"},{"name":"POPDENS1","type":"ratio"},{"name":"POPDENS2","type":"ratio"},{"name":"STUSPS","type":"id"},{"name":"pop2015_est","type":"stock"}]]
+      ]);
+
     var dialog_res = [],
         selec,
         target_layers = [
@@ -1239,7 +1252,7 @@ function add_sample_layer(){
         .then(function(confirmed){
             if(confirmed){
                 if(selec){
-                    add_sample_geojson(selec, {target_layer_on_add: true});
+                    add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
                 }
             }
         });

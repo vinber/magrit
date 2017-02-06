@@ -966,6 +966,9 @@ function get_fields_name(layer_name){
 }
 
 function createStyleBox_ProbSymbol(layer_name){
+    let existing_box = document.querySelector(".styleBox");
+    if(existing_box) existing_box.remove();
+
     var g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
         type_method = current_layers[layer_name].renderer,
