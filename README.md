@@ -2,16 +2,16 @@
 
 ![png](magrit_app/static/img/logo_magrit2.png)
 
-"Magrit" is an online mapping application developed by the RIATE UMS (http://www.ums-riate.fr).  
-This tool makes it possible to produce **thematic maps** of a **high graphic quality**.   
-In addition to proposing to the user all the usual cartographic representations, the application offers the possibility to realize many cartographic methods often difficult to implement: *smoothing*, *grids*, *discontinuities*, *cartograms*, etc.   Ultimately, Magrit intends to cover the entire processing chain, from the geographical data to the editing card, in a single environment, .
+"Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
+This tool allows to produce **high quality thematic maps**.   
+All usual cartographic representations as well as many cartographic methods often difficult to implement (*smoothing*, *grids*, *discontinuities*, *cartograms*) are available.      Magrit intends to cover the entire processing chain in a single environment, from geographical data to graphic editing.
 
 #### Result examples :
 
 <p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/></p>
 
 
-More example are availables on the [gallery](http://magrit.hypotheses.org/galerie).
+More examples are available in the [gallery](http://magrit.hypotheses.org/galerie).
 
 #### Usage
 
@@ -20,7 +20,7 @@ Most users should go on :
 - the [user documentation](http://magrit.cnrs.fr/docs/)
 
 
-#### Installation for developpement
+#### Instruction for developpers
 Installation of the required libraries :
 (Ubuntu 16.04)
 ```
@@ -77,8 +77,9 @@ docker run --publish "80:80" -dP --name nginx --link magritapp:magritapp nginx
 
 
 #### Contributing to Magrit :
-Contributions are welcome ! There is various way to contribute to the project:
+Contributions are welcome! There are various way to contribute to the project:
 - Feedback and bug reports
-- Translation (only French and English languages are currently availables)
-- Code contribution (you're one the right place! Clone the repo, fix what you want to be fix and submit a pull request)
-- Contributing to the [gallery](http://magrit.hypotheses.org/galerie)
+- Translation (only French and English languages are currently available)
+- Code contribution (you're one the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
+- Contribute to the [gallery](http://magrit.hypotheses.org/galerie)
+

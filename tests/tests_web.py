@@ -495,6 +495,19 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root", 5):
             self.fail("Legend not displayed on stewart")
 
+        self.open_menu_section('2b')
+
+        driver.find_element_by_id("stewart_nb_class").clear()
+        driver.find_element_by_id("stewart_nb_class").send_keys("9")
+        driver.find_element_by_id("stewart_span").clear()
+        driver.find_element_by_id("stewart_span").send_keys("115")
+        Select(driver.find_element_by_id("stewart_mask")
+            ).select_by_visible_text("None")
+        driver.find_element_by_id("stewart_yes").click()
+        self.waitClickButtonSwal()
+        if not self.try_element_present(By.ID, "legend_root", 5):
+            self.fail("Legend not displayed on stewart")
+
     def test_cartogram_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -704,16 +717,31 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 or not self.try_element_present(By.ID, 'legend_root'):
             self.fail("Legend won't display on Prop Symbol Choro")
 
-    def test_propSymbolsChoro(self):
+    def test_propSymbolsChoro_and_remove(self):
         driver = self.driver
         driver.get(self.base_url)
+        # Add a sample layer :
         self.clickWaitTransition('#sample_link')
         Select(driver.find_element_by_css_selector("select.sample_target")
-                ).select_by_value('brazil')
-
+                ).select_by_value('martinique')
         driver.find_element_by_css_selector('.btn_ok').click()
         self.waitClickButtonSwal()
         self.validTypefield()
+        time.sleep(0.4)
+
+        # Remove it to load another one :
+        driver.find_element_by_id('remove_target').click()
+        self.waitClickButtonSwal()
+
+        # Add the layer we really want to add :
+        self.clickWaitTransition('#sample_link')
+        Select(driver.find_element_by_css_selector("select.sample_target")
+                ).select_by_value('brazil')
+        driver.find_element_by_css_selector('.btn_ok').click()
+        self.waitClickButtonSwal()
+        self.validTypefield()
+
+        # Render a "stock and ratio" map with its data :
         self.open_menu_section(2)
         self.clickWaitTransition('#button_choroprop')
         Select(driver.find_element_by_id('PropSymbolChoro_field_1')
