@@ -8,7 +8,7 @@ In addition to proposing to the user all the usual cartographic representations,
 
 #### Result examples :
 
-<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" style="max-height: 150px: width: 100%;"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" style="max-height: 150px: width: 100%;"/></p>
+<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/></p>
 
 
 More example are availables on the [gallery](http://magrit.hypotheses.org/galerie).
