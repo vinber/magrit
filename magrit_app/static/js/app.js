@@ -2035,6 +2035,7 @@ function _export_compo_png() {
     var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
     var output_name = arguments[2];
 
+    document.getElementById("overlay").style.display = "";
     output_name = check_output_name(output_name, "png");
     var dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
@@ -2050,6 +2051,7 @@ function _export_compo_png() {
     try {
         svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
     } catch (err) {
+        document.getElementById("overlay").style.display = "none";
         display_error_during_computation(String(err));
         return;
     }
@@ -2057,6 +2059,7 @@ function _export_compo_png() {
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
@@ -2068,6 +2071,7 @@ function _export_compo_png() {
             var imgUrl = targetCanvas.toDataURL(mime_type),
                 dl_link = document.createElement("a");
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
@@ -2078,6 +2082,7 @@ function _export_compo_png() {
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
+        document.getElementById("overlay").style.display = "none";
         unpatchSvgForFonts();
         unpatchSvgForForeignObj(dimensions_foreign_obj);
     };
@@ -11371,7 +11376,10 @@ function createLegend(layer, title) {
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         createLegend_choro(layer, field2, title, field2, 4);
         createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) createLegend_choro(layer, field, title, field, 0, undefined, 2);else if (renderer.indexOf("Carto_doug") != -1) createLegend_nothing(layer, field, "Dougenik Cartogram", field);else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    } else if (renderer.indexOf("PropSymbols") != -1) createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) createLegend_choro(layer, field, title, field, 0, undefined, 2);
+    // else if (renderer.indexOf("Carto_doug") != -1)
+    //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
+    else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
 }
 
 function up_legend(legend_node) {
@@ -11473,30 +11481,40 @@ var drag_legend_func = function drag_legend_func(legend_group) {
         if (change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
     });
 };
-
-function createLegend_nothing(layer, field, title, subtitle, rect_fill_value) {
-    var subtitle = subtitle || field,
-        space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = h / 2,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
-
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
-
-    var rect_under_legend = legend_root.insert("rect");
-
-    legend_root.insert('text').text(title || "Title").attrs({ id: 'legendtitle', x: xpos + space_elem, y: ypos }).style("font", "bold 12px 'Enriqueta', arial, serif");
-
-    legend_root.insert('text').text(subtitle).attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).style("font", "italic 12px 'Enriqueta', arial, serif");
-
-    legend_root.call(drag_legend_func(legend_root));
-
-    legend_root.append("g").insert("text").attrs({ id: 'legend_bottom_note', x: xpos, y: ypos + 2 * space_elem }).html('');
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-}
+// function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
+//     var subtitle = subtitle || field,
+//         space_elem = 18,
+//         boxgap = 12,
+//         xpos = 30,
+//         ypos = h / 2,
+//         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+//
+//     var legend_root = map.insert('g')
+//         .attrs({id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer})
+//         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
+//
+//     var rect_under_legend = legend_root.insert("rect");
+//
+//     legend_root.insert('text')
+//             .text(title || "Title")
+//             .attrs({id: 'legendtitle', x: xpos + space_elem, y: ypos})
+//             .style("font", "bold 12px 'Enriqueta', arial, serif");
+//
+//     legend_root.insert('text')
+//             .text(subtitle)
+//             .attrs({id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15})
+//             .style("font", "italic 12px 'Enriqueta', arial, serif");
+//
+//     legend_root.call(drag_legend_func(legend_root));
+//
+//     legend_root.append("g")
+//             .insert("text")
+//             .attrs({id: 'legend_bottom_note', x: xpos, y: ypos + 2*space_elem})
+//             .html('');
+//     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+//     legend_root.select('#legendtitle').text(title || "");
+//     make_legend_context_menu(legend_root, layer);
+// }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision) {
     var space_elem = 18,
@@ -11512,9 +11530,9 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos);
+    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + space_elem).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
     var ref_symbols_params = [];
 
@@ -11820,8 +11838,9 @@ function createLegend_choro(layer, field, title, subtitle) {
 
     var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attr("x", xpos + boxheight).attr("y", ypos);
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attr("x", xpos + boxheight).attr("y", ypos + 15);
+    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
+
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + boxheight, y: ypos + 15 });
 
     if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
         data_colors_label = [];
@@ -11923,7 +11942,9 @@ function createlegendEditBox(legend_id, layer_name) {
     if (document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
     var original_params = {
         title_content: title_content.textContent,
+        y_title: title_content.y.baseVal[0].value,
         subtitle_content: subtitle_content.textContent,
+        y_subtitle: subtitle_content.y.baseVal[0].value,
         note_content: note_content.textContent,
         no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
     }; //, source_content: source_content.textContent ? source_content.textContent : ""
@@ -11939,7 +11960,9 @@ function createlegendEditBox(legend_id, layer_name) {
     make_confirm_dialog2(box_class, layer_name).then(function (confirmed) {
         if (!confirmed) {
             title_content.textContent = original_params.title_content;
+            title_content.y.baseVal[0].value = original_params.y_title;
             subtitle_content.textContent = original_params.subtitle_content;
+            subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
             note_content.textContent = original_params.note_content;
             if (no_data_txt) {
                 no_data_txt.textContent = original_params.no_data_txt;

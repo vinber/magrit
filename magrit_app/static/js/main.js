@@ -2346,6 +2346,7 @@ function export_compo_svg(output_name){
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
 //   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png(type="web", scalefactor=1, output_name){
+    document.getElementById("overlay").style.display = "";
     output_name = check_output_name(output_name, "png");
     let dimensions_foreign_obj = patchSvgForForeignObj();
     patchSvgForFonts();
@@ -2363,6 +2364,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         ctx = targetCanvas.getContext('2d'),
         img = new Image();
     } catch(err) {
+        document.getElementById("overlay").style.display = "none";
         display_error_during_computation(String(err));
         return;
     }
@@ -2370,6 +2372,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
@@ -2381,6 +2384,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
             var imgUrl = targetCanvas.toDataURL(mime_type),
                 dl_link = document.createElement("a");
         } catch (err) {
+            document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
@@ -2391,6 +2395,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         dl_link.click();
         dl_link.remove();
         targetCanvas.remove();
+        document.getElementById("overlay").style.display = "none";
         unpatchSvgForFonts();
         unpatchSvgForForeignObj(dimensions_foreign_obj);
     }
