@@ -651,7 +651,7 @@ function setUpInterface(resume_project) {
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.0.0 (unreleased)" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.1.0" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
         // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
         '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
         swal({
@@ -11380,21 +11380,27 @@ function createLegend(layer, title) {
     var renderer = current_layers[layer].renderer,
         field = current_layers[layer].rendered_field,
         field2 = current_layers[layer].rendered_field2,
-        el;
+        el,
+        el2,
+        lgd_pos,
+        lgd_pos2;
 
-    var lgd_pos = getTranslateNewLegend();
+    lgd_pos = getTranslateNewLegend();
 
     if (renderer.indexOf("PropSymbolsChoro") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
-        createLegend_symbol(layer, field, title, field);
+        lgd_pos2 = getTranslateNewLegend();
+        el2 = createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 4);
-        createLegend_symbol(layer, field, title, field);
+        lgd_pos2 = getTranslateNewLegend();
+        el2 = createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
     else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
     if (el && lgd_pos && lgd_pos.x) el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
+    if (el2 && lgd_pos2 && lgd_pos2.x) el2.attr('transform', 'translate(' + lgd_pos2.x + ',' + lgd_pos2.y + ')');
 }
 
 function up_legend(legend_node) {
