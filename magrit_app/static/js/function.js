@@ -88,6 +88,7 @@ function clean_menu_function(){
         let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
         previous_button.style.filter = "invert(0%) saturate(100%)";
         previous_button.classList.remove('active');
+        _app.current_functionnality = undefined;
     }
     section2.select(".form-rendering").remove();
     document.getElementById('accordion2b').style.display = 'none';
@@ -175,8 +176,9 @@ var get_first_guess_span = function(){
     let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
                                   [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
         height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
-                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    return Math.round((width_km + height_km) / 2 * 0.02);
+                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
+        val = Math.max(width_km , height_km) * 0.05;
+        return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 }
 
 /**

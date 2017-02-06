@@ -16,7 +16,7 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
     gdf.set_index(join_field, inplace=True, drop=False)
     gdf.geometry = gdf.geometry.centroid
     csv_table = pd_read_json(csv_table)
-    csv_table = csv_table[csv_table["i"].isin(gdf.id) & csv_table["j"].isin(gdf.id)]
+    csv_table = csv_table[csv_table["i"].isin(gdf.index) & csv_table["j"].isin(gdf.index)]
 #    csv_table.set_index(field_i, inplace=True, drop=False)
 #    csv_table = csv_table.loc[gdf.id]
 #    csv_table.set_index(field_j, inplace=True, drop=False)
