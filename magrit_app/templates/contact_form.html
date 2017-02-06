@@ -12,6 +12,7 @@
 
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/style-index.css" rel="stylesheet">
+    <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
     <script src="/static/js/lib/jquery-2.2.1.min.js"></script>
     <script src="/static/js/lib/i18next.min.js"></script>
     <script src="/static/js/lib/loc-i18next.min.js"></script>
@@ -19,6 +20,7 @@
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/jquery.easing.min.js"></script>
     <script src="/static/js/lib/cookies.min.js"></script>
+    <script  src="static/js/lib/sweetalert2.min.js"></script>
 </head>
 <style>
 @import url(http://fonts.googleapis.com/css?family=Merriweather);
@@ -155,11 +157,11 @@ form textarea {
           <div class="col-md-12">
           <p class="col-md-12 i18n" data-i18n="[html]contact_form.intro_text" style="padding: 0 12% 0 12%;"></p>
             <div class="contact_form">
-                <form class="cf">
+                <form class="cf" onsubmit='sendForm(); return false;'>
                   <div class="half left cf">
-                    <input type="text" id="input-name" class="i18n" data-i18n="[placeholder]contact_form.name">
-                    <input type="email" id="input-email" class="i18n" data-i18n="[placeholder]contact_form.email">
-                    <input type="text" id="input-subject" class="i18n" data-i18n="[placeholder]contact_form.subject">
+                    <input name="name" type="text" id="input-name" class="i18n" data-i18n="[placeholder]contact_form.name">
+                    <input name="email" type="email" id="input-email" class="i18n" data-i18n="[placeholder]contact_form.email">
+                    <input name="subject" type="text" id="input-subject" class="i18n" data-i18n="[placeholder]contact_form.subject">
                   </div>
                   <div class="half right cf">
                     <textarea name="message" type="text" class="i18n" id="input-message" data-i18n="[placeholder]contact_form.message"></textarea>
@@ -178,6 +180,35 @@ form textarea {
 </body>
 {% raw %}
 <script>
+
+function sendForm(){
+    let data = new FormData();
+    data.append('name', document.getElementById('input-name').value);
+    data.append('email', document.getElementById('input-email').value);
+    data.append('subject', document.getElementById('input-subject').value);
+    data.append('massage', document.getElementById('input-message').value);
+
+    let request = new XMLHttpRequest();
+    request.open("POST", "/contact", true);
+    request.onload = resp => {
+        swal({title: "",
+              text: i18next.t("app_page.common.ok") + "!",
+              type: "success",
+              showCancelButton: false,
+              allowOutsideClick: false,
+            }).then(() => { return; }, dismiss => { return; });
+    };
+    request.onerror = err => {
+        swal({title: "",
+              text: i18next.t("app_page.common.error_msg") + "!",
+              type: "error",
+              showCancelButton: false,
+              allowOutsideClick: false,
+            }).then(() => { return; }, dismiss => { return; });
+    };
+    request.send(data);
+}
+
 //i18n initialization :
 (function(){
     var existing_lang = ["en", "fr"];

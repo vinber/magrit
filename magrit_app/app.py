@@ -375,7 +375,6 @@ async def convert(request):
     elif ('octet-stream' in datatype
             or 'text/json' in datatype or 'application/geo+json' in datatype) \
             and "geojson" in name.lower():
-        # if '"crs"' in data and ('"urn:ogc:def:crs:OGC:1.3:CRS84"' not in data or "4326" not in data):
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
@@ -437,6 +436,18 @@ async def serve_main_page(request):
 @aiohttp_jinja2.template('contact_form.html')
 async def serve_contact_form(request):
     return {"app_name": request.app["app_name"]}
+
+async def store_contact_info(request):
+    posted_data = await request.post()
+    asyncio.ensure_future(
+        request.app['redis_conn'].lpush('contact',
+            json.dumps({
+                "name": posted_data.get('name'),
+                "email": posted_data.get('email'),
+                "subject": posted_data.get('subject'),
+                "message": posted_data.get('message')
+                })))
+    return web.Response(text='')
 
 def make_carto_doug(file_path, field_name, iterations):
     gdf = GeoDataFrame.from_file(file_path)
@@ -986,9 +997,11 @@ async def get_stats_json(request):
         ])
     layers, sample_layers = await asyncio.gather(*[
         redis_conn.get('layers'), redis_conn.get('sample_layers')])
+    contact = await redis_conn.lrange('contact', 0, -1)
     count = len(request.app['app_users'])
     return web.Response(text=json.dumps(
-        {"count": count , "layer": layers, "sample": sample_layers,
+        {"count": count , "layer": layers,
+         "sample": sample_layers, "contact": contact,
          "t": {"stewart": stewart, "dougenik": doug,
                "gridded": gridded, "olson": olson, "links": links}
              }))
@@ -1069,6 +1082,7 @@ async def init(loop, port=None):
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
     add_route('GET', '/contact', serve_contact_form)
+    add_route('POST', '/contact', store_contact_info)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)

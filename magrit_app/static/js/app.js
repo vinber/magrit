@@ -11379,18 +11379,22 @@ function handle_legend(layer) {
 function createLegend(layer, title) {
     var renderer = current_layers[layer].renderer,
         field = current_layers[layer].rendered_field,
-        field2 = current_layers[layer].rendered_field2;
+        field2 = current_layers[layer].rendered_field2,
+        el;
+
+    var lgd_pos = getTranslateNewLegend();
 
     if (renderer.indexOf("PropSymbolsChoro") != -1) {
-        createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
+        el = createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
         createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
-        createLegend_choro(layer, field2, title, field2, 4);
+        el = createLegend_choro(layer, field2, title, field2, 4);
         createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) createLegend_choro(layer, field, title, field, 0, undefined, 2);
+    } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
     else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    if (el && lgd_pos && lgd_pos.x) el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
 }
 
 function up_legend(legend_node) {
@@ -11629,6 +11633,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
+    return legend_root;
 }
 
 /**
@@ -11823,6 +11828,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         legend_root.attr("transform", "translate(120, 0)");
     }
     make_legend_context_menu(legend_root, layer);
+    return legend_root;
 }
 
 function createLegend_choro(layer, field, title, subtitle) {
@@ -11926,6 +11932,7 @@ function createLegend_choro(layer, field, title, subtitle) {
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
+    return legend_root;
 }
 
 // Todo : find a better organization for the options in this box
