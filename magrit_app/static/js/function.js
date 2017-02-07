@@ -776,7 +776,7 @@ var fields_Typo = {
                   switch_accordion_section();
                   handle_legend(self.rendering_params[selected_field].new_name)
               }
-          }
+          };
           if(self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert){
               swal({title: "",
                     text: i18next.t("app_page.common.error_too_many_features_color"),
@@ -789,9 +789,9 @@ var fields_Typo = {
                   }).then(() => {
                     render();
                   }, dismiss => { return; });
-            } else {
+          } else {
                 render();
-            }
+          }
         });
         uo_layer_name.attr('value', "Typo_" + layer);
         section2.selectAll(".params").attr("disabled", null);
@@ -1921,6 +1921,17 @@ var fields_PropSymbolTypo = {
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
 
+        let prepare_colors = (field) => {
+            let [cats, col_map] = prepare_categories_array(layer, field, null);
+            let nb_class = col_map.size;
+            let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+            self.rendering_params[field] = {
+                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+                renderer: 'Categorical', rendered_field: field, skip_alert: false
+            };
+
+        }
+
         if(fields_categ.length == 0 || fields_num.length == 0){
             display_error_num_field();
             return;
@@ -1934,6 +1945,13 @@ var fields_PropSymbolTypo = {
           field2_selec.append('option').text(field).attr('value', field);
         });
 
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+          let first_field = fields_categ[0];
+          prepare_colors(first_field);
+          ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
+
         field1_selec.on("change", function(){
             let field_name = this.value,
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
@@ -1943,7 +1961,8 @@ var fields_PropSymbolTypo = {
 
         field2_selec.on("change", function(){
             let field_name = this.value;
-            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+            prepare_colors(field_name);
+            // ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
             uo_layer_name.attr('value', ['Typo', field1_selec.node().value, field_name, layer].join('_'));
         });
 
@@ -1967,10 +1986,10 @@ var fields_PropSymbolTypo = {
                       display_categorical_box(user_data[layer], layer, selected_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
-                                ok_button.attr("disabled", null);
+                                // ok_button.attr("disabled", null);
                                 self.rendering_params[selected_field] = {
                                         nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                                        renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name, skip_alert: true
                                     }
                             }
                         });
@@ -1981,10 +2000,10 @@ var fields_PropSymbolTypo = {
                 display_categorical_box(user_data[layer], layer, selected_field, cats)
                   .then(function(confirmed){
                       if(confirmed){
-                          ok_button.attr("disabled", null);
+                          // ok_button.attr("disabled", null);
                           self.rendering_params[selected_field] = {
                                   nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                  renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                                  renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name, skip_alert: true
                               }
                       }
                   });
@@ -1992,14 +2011,32 @@ var fields_PropSymbolTypo = {
         });
 
         ok_button.on('click', function(){
-          render_PropSymbolTypo(
-            field1_selec.node().value,
-            field2_selec.node().value,
-            uo_layer_name.node().value,
-            ref_value_field.node().value,
-            section2.select('#PropSymbolTypo_ref_size').node().value,
-            section2.select('#PropSymbolTypo_symbol_type').node().value
-          )
+            let render = () => {
+                render_PropSymbolTypo(
+                    field1_selec.node().value,
+                    field2_selec.node().value,
+                    uo_layer_name.node().value,
+                    ref_value_field.node().value,
+                    section2.select('#PropSymbolTypo_ref_size').node().value,
+                    section2.select('#PropSymbolTypo_symbol_type').node().value
+                )
+            };
+            let field_color = field2_selec.node().value;
+            if(self.rendering_params[field_color].color_map.size > 15 && !self.rendering_params[field_color].skip_alert){
+                swal({title: "",
+                      text: i18next.t("app_page.common.error_too_many_features_color"),
+                      type: "warning",
+                      showCancelButton: true,
+                      allowOutsideClick: false,
+                      confirmButtonColor: "#DD6B55",
+                      confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                      cancelButtonText: i18next.t("app_page.common.cancel")
+                    }).then(() => {
+                      render();
+                    }, dismiss => { return; });
+            } else {
+                  render();
+            }
         });
         setSelected(field1_selec.node(), fields_num[0]);
         setSelected(field2_selec.node(), fields_categ[0]);
