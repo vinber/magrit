@@ -664,8 +664,8 @@ var fillMenu_Typo = function(){
 
     let a = dv2.append('p').attr('class', 'params_section2');
     a.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice'})
-      .html(i18next.t("app_page.func_options.typo.color_choice"))
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field'})
+      .html(i18next.t("app_page.func_options.typo.field"))
     a.insert('select')
       .attrs({id: 'Typo_field_1', class: 'params'});
 
@@ -692,6 +692,17 @@ var fields_Typo = {
             btn_typo_class = section2.select('#Typo_class'),
             uo_layer_name = section2.select('#Typo_output_name');
 
+        let prepare_colors = (field) => {
+            let [cats, col_map] = prepare_categories_array(layer, field, null);
+            let nb_class = col_map.size;
+            let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+            self.rendering_params[field] = {
+                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+                renderer: 'Categorical', rendered_field: field, skip_alert: false
+            };
+
+        }
+
         fields_name.forEach(f_name => {
             field_selec.append("option").text(f_name).attr("value", f_name);
         });
@@ -699,15 +710,22 @@ var fields_Typo = {
         field_selec.on("change", function(){
           let selected_field = this.value;
           uo_layer_name.attr('value', ["Typo", selected_field, layer].join('_'));
-          ok_button.attr('disabled', self.rendering_params[selected_field] ? null : true)
+          prepare_colors(selected_field);
         });
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields_name[0];
+            prepare_colors(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
 
         btn_typo_class.on("click", function(){
             let selected_field = field_selec.node().value,
                 nb_features = current_layers[layer].n_features,
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
-
+                cats;
+            [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
             if(cats.length > 15){
                 swal({title: "",
                       text: i18next.t("app_page.common.error_too_many_features_color"),
@@ -721,11 +739,10 @@ var fields_Typo = {
                     display_categorical_box(user_data[layer], layer, selected_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
-                                ok_button.attr("disabled", null);
                                 self.rendering_params[selected_field] = {
                                         nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: selected_field
-                                    }
+                                        renderer:"Categorical", rendered_field: selected_field, skip_alert: true
+                                    };
                             }
                         });
                 }, dismiss => {
@@ -735,10 +752,9 @@ var fields_Typo = {
                 display_categorical_box(user_data[layer], layer, selected_field, cats)
                     .then(function(confirmed){
                         if(confirmed){
-                            ok_button.attr("disabled", null);
                             self.rendering_params[selected_field] = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                    renderer:"Categorical", rendered_field: selected_field
+                                    renderer:"Categorical", rendered_field: selected_field, skip_alert: true
                                 }
                         }
                     });
@@ -747,18 +763,35 @@ var fields_Typo = {
 
         ok_button.on('click', function(){
           let selected_field = field_selec.node().value;
-          if(self.rendering_params[selected_field]){
-              let layer = Object.getOwnPropertyNames(user_data)[0],
-                  output_name = uo_layer_name.node().value;
-              if(output_name.length > 0 && /^\w+$/.test(output_name)){
-                  self.rendering_params[selected_field].new_name = check_layer_name(output_name);
-              } else {
-                  self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+          let render = () => {
+              if(self.rendering_params[selected_field]){
+                  let layer = Object.getOwnPropertyNames(user_data)[0],
+                      output_name = uo_layer_name.node().value;
+                  if(output_name.length > 0 && /^\w+$/.test(output_name)){
+                      self.rendering_params[selected_field].new_name = check_layer_name(output_name);
+                  } else {
+                      self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+                  }
+                  render_categorical(layer, self.rendering_params[selected_field]);
+                  switch_accordion_section();
+                  handle_legend(self.rendering_params[selected_field].new_name)
               }
-              render_categorical(layer, self.rendering_params[selected_field]);
-              switch_accordion_section();
-              handle_legend(self.rendering_params[selected_field].new_name)
           }
+          if(self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert){
+              swal({title: "",
+                    text: i18next.t("app_page.common.error_too_many_features_color"),
+                    type: "warning",
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    cancelButtonText: i18next.t("app_page.common.cancel")
+                  }).then(() => {
+                    render();
+                  }, dismiss => { return; });
+            } else {
+                render();
+            }
         });
         uo_layer_name.attr('value', "Typo_" + layer);
         section2.selectAll(".params").attr("disabled", null);
@@ -1859,12 +1892,16 @@ function prepare_categories_array(layer_name, selected_field, col_map){
         col_map.forEach( (v,k) => {
             cats.push({name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
         });
+        col_map = new Map();
+        for(let i=0; i<cats.length; i++){
+            col_map.set(cats[i].name, [cats[i].color, cats[i].name, cats[i].nb_elem]);
+        }
     } else {
         col_map.forEach( (v,k) => {
             cats.push({name: k, display_name: v[1], nb_elem: v[2], color: v[0]});
       });
     }
-    return cats;
+    return [cats, col_map];
 }
 
 var fields_PropSymbolTypo = {
@@ -1914,7 +1951,8 @@ var fields_PropSymbolTypo = {
             let selected_field = field2_selec.node().value,
                 new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_')),
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
+                cats;
+            [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
 
             if(cats.length > 15){
                 swal({title: "",

@@ -4313,7 +4313,7 @@ var fillMenu_Typo = function fillMenu_Typo() {
     var dv2 = make_template_functionnality(section2);
 
     var a = dv2.append('p').attr('class', 'params_section2');
-    a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice' }).html(i18next.t("app_page.func_options.typo.color_choice"));
+    a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' }).html(i18next.t("app_page.func_options.typo.field"));
     a.insert('select').attrs({ id: 'Typo_field_1', class: 'params' });
 
     var b = dv2.insert('p').style("margin", "auto");
@@ -4336,6 +4336,22 @@ var fields_Typo = {
             btn_typo_class = section2.select('#Typo_class'),
             uo_layer_name = section2.select('#Typo_output_name');
 
+        var prepare_colors = function prepare_colors(field) {
+            var _prepare_categories_a = prepare_categories_array(layer, field, null),
+                _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+                cats = _prepare_categories_a2[0],
+                col_map = _prepare_categories_a2[1];
+
+            var nb_class = col_map.size;
+            var colorByFeature = user_data[layer].map(function (ft) {
+                return col_map.get(ft[field])[0];
+            });
+            self.rendering_params[field] = {
+                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+                renderer: 'Categorical', rendered_field: field, skip_alert: false
+            };
+        };
+
         fields_name.forEach(function (f_name) {
             field_selec.append("option").text(f_name).attr("value", f_name);
         });
@@ -4343,14 +4359,29 @@ var fields_Typo = {
         field_selec.on("change", function () {
             var selected_field = this.value;
             uo_layer_name.attr('value', ["Typo", selected_field, layer].join('_'));
-            ok_button.attr('disabled', self.rendering_params[selected_field] ? null : true);
+            prepare_colors(selected_field);
+            // ok_button.attr('disabled', self.rendering_params[selected_field] ? null : true);
         });
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            var first_field = fields_name[0];
+            prepare_colors(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
 
         btn_typo_class.on("click", function () {
             var selected_field = field_selec.node().value,
                 nb_features = current_layers[layer].n_features,
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
+                cats = void 0;
+
+            var _prepare_categories_a3 = prepare_categories_array(layer, selected_field, col_map);
+
+            var _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2);
+
+            cats = _prepare_categories_a4[0];
+            col_map = _prepare_categories_a4[1];
 
             if (cats.length > 15) {
                 swal({ title: "",
@@ -4364,10 +4395,9 @@ var fields_Typo = {
                 }).then(function () {
                     display_categorical_box(user_data[layer], layer, selected_field, cats).then(function (confirmed) {
                         if (confirmed) {
-                            ok_button.attr("disabled", null);
                             self.rendering_params[selected_field] = {
                                 nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2],
-                                renderer: "Categorical", rendered_field: selected_field
+                                renderer: "Categorical", rendered_field: selected_field, skip_alert: true
                             };
                         }
                     });
@@ -4377,10 +4407,9 @@ var fields_Typo = {
             } else {
                 display_categorical_box(user_data[layer], layer, selected_field, cats).then(function (confirmed) {
                     if (confirmed) {
-                        ok_button.attr("disabled", null);
                         self.rendering_params[selected_field] = {
                             nb_class: confirmed[0], color_map: confirmed[1], colorByFeature: confirmed[2],
-                            renderer: "Categorical", rendered_field: selected_field
+                            renderer: "Categorical", rendered_field: selected_field, skip_alert: true
                         };
                     }
                 });
@@ -4389,17 +4418,36 @@ var fields_Typo = {
 
         ok_button.on('click', function () {
             var selected_field = field_selec.node().value;
-            if (self.rendering_params[selected_field]) {
-                var _layer2 = Object.getOwnPropertyNames(user_data)[0],
-                    output_name = uo_layer_name.node().value;
-                if (output_name.length > 0 && /^\w+$/.test(output_name)) {
-                    self.rendering_params[selected_field].new_name = check_layer_name(output_name);
-                } else {
-                    self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, _layer2].join('_'));
+            var render = function render() {
+                if (self.rendering_params[selected_field]) {
+                    var _layer2 = Object.getOwnPropertyNames(user_data)[0],
+                        output_name = uo_layer_name.node().value;
+                    if (output_name.length > 0 && /^\w+$/.test(output_name)) {
+                        self.rendering_params[selected_field].new_name = check_layer_name(output_name);
+                    } else {
+                        self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, _layer2].join('_'));
+                    }
+                    render_categorical(_layer2, self.rendering_params[selected_field]);
+                    switch_accordion_section();
+                    handle_legend(self.rendering_params[selected_field].new_name);
                 }
-                render_categorical(_layer2, self.rendering_params[selected_field]);
-                switch_accordion_section();
-                handle_legend(self.rendering_params[selected_field].new_name);
+            };
+            if (self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert) {
+                swal({ title: "",
+                    text: i18next.t("app_page.common.error_too_many_features_color"),
+                    type: "warning",
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    cancelButtonText: i18next.t("app_page.common.cancel")
+                }).then(function () {
+                    render();
+                }, function (dismiss) {
+                    return;
+                });
+            } else {
+                render();
             }
         });
         uo_layer_name.attr('value', "Typo_" + layer);
@@ -5448,12 +5496,16 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
         col_map.forEach(function (v, k) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()] });
         });
+        col_map = new Map();
+        for (var _i6 = 0; _i6 < cats.length; _i6++) {
+            col_map.set(cats[_i6].name, [cats[_i6].color, cats[_i6].name, cats[_i6].nb_elem]);
+        }
     } else {
         col_map.forEach(function (v, k) {
             cats.push({ name: k, display_name: v[1], nb_elem: v[2], color: v[0] });
         });
     }
-    return cats;
+    return [cats, col_map];
 }
 
 var fields_PropSymbolTypo = {
@@ -5506,7 +5558,15 @@ var fields_PropSymbolTypo = {
             var selected_field = field2_selec.node().value,
                 new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_')),
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
+                cats = void 0;
+
+            var _prepare_categories_a5 = prepare_categories_array(layer, selected_field, col_map);
+
+            var _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2);
+
+            cats = _prepare_categories_a6[0];
+            col_map = _prepare_categories_a6[1];
+
 
             if (cats.length > 15) {
                 swal({ title: "",
@@ -5556,8 +5616,8 @@ var fields_PropSymbolTypo = {
         for (var i = field1_selec.childElementCount - 1; i >= 0; i--) {
             field1_selec.removeChild(field1_selec.children[i]);
         }
-        for (var _i6 = field2_selec.childElementCount - 1; _i6 >= 0; _i6--) {
-            field2_selec.removeChild(field2_selec.children[_i6]);
+        for (var _i7 = field2_selec.childElementCount - 1; _i7 >= 0; _i7--) {
+            field2_selec.removeChild(field2_selec.children[_i7]);
         }
         section2.selectAll(".params").attr("disabled", true);
     },
@@ -6427,8 +6487,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i7 = 0; _i7 < nb_class; ++_i7) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i7], user_breaks[_i7 + 1]], sizes[_i7]]);
+        for (var _i8 = 0; _i8 < nb_class; ++_i8) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i8], user_breaks[_i8 + 1]], sizes[_i8]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });
@@ -7977,7 +8037,6 @@ function update_menu_dataset() {
     };
     if (_app.targeted_layer_added) {
         valid_join_check_display(false);
-        document.getElementById('sample_zone').style.display = "none";
     }
 }
 
@@ -8188,10 +8247,11 @@ function add_layer_topojson(text, options) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
         if (joined_dataset.length != 0) {
-            valid_join_check_display(false);
+            valid_join_check_display(false);console.log(section1.select(".s1"));
             section1.select(".s1").html("").on("click", null);
-            document.getElementById('sample_zone').style.display = "none";
         }
+
+        document.getElementById('sample_zone').style.display = "none";
 
         var _button = button_type.get(type),
             _nb_fields = field_names.length,
@@ -9011,6 +9071,8 @@ function createJoinBox(layer) {
 "use strict";
 // TODO : refactor some functions in this file (they are really too messy)
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function handle_click_layer(layer_name) {
@@ -9546,7 +9608,11 @@ function createStyleBox(layer_name) {
                     var rendered_field = current_layers[layer_name].rendered_field;
 
                     popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                        var cats = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                        var _prepare_categories_a = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
+                            _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+                            cats = _prepare_categories_a2[0],
+                            _ = _prepare_categories_a2[1];
+
                         display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
                             if (confirmed) {
                                 rendering_params = {
@@ -10034,7 +10100,11 @@ function createStyleBox_ProbSymbol(layer_name) {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color }));
             popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-                var cats = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+                var _prepare_categories_a3 = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map),
+                    _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+                    cats = _prepare_categories_a4[0],
+                    _ = _prepare_categories_a4[1];
+
                 display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
                     if (confirmed) {
                         rendering_params = {

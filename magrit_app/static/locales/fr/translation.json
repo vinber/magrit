@@ -388,7 +388,7 @@
             "categorical_color": "Couleur selon un champ catégoriel",
             "random_color": "Couleur aléatoire pour chaque entité",
             "field_to_render": "Champ à utiliser ",
-            "choose_colors": "Choix des couleurs",
+            "choose_colors": "Modification des couleurs",
             "field": "Champ",
             "choose_discretization": "Choix de la discrétisation",
             "color_palette": "Palette de couleur",
@@ -461,7 +461,7 @@
             },
             "typo": {
                 "field": "Champ",
-                "color_choice": "Choix des couleurs "
+                "color_choice": "Modification des couleurs "
             },
             "choroprop": {
                 "field1": "Valeur 1<br>(taille du symbole) ",

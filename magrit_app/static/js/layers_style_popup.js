@@ -635,7 +635,7 @@ function createStyleBox(layer_name){
                 .styles({"font-size": "0.8em", "text-align": "center"})
                 .html(i18next.t("app_page.layer_style_popup.choose_colors"))
                 .on("click", function(){
-                    let cats = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                    let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
                     display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
@@ -1188,7 +1188,7 @@ function createStyleBox_ProbSymbol(layer_name){
           .insert('button')
           .attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors"))
           .on("click", function(){
-            let cats = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+            let [cats, _] = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
             display_categorical_box(result_data[layer_name], layer_name, field_color, cats)
                 .then(function(confirmed){
                     if(confirmed){

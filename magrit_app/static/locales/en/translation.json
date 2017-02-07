@@ -396,7 +396,7 @@
             "categorical_color": "Color according to a categorical field",
             "random_color": "Random color on each feature",
             "field_to_render": "Field to render ",
-            "choose_colors": "Choose colors",
+            "choose_colors": "Modify colors",
             "field": "Field",
             "choose_discretization": "Display and arrange classes",
             "color_palette": "Color palette ",
@@ -467,7 +467,7 @@
             },
             "typo": {
                 "field": "Field",
-                "color_choice": "Choose colors..."
+                "color_choice": "Modify colors..."
             },
             "choroprop": {
                 "field1": "Field 1<br>(symbol size) ",
