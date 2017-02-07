@@ -202,6 +202,16 @@ function test_maxmin_resolution(cell_value){
     return;
 }
 
+/*
+* Set the appropriate discretisation icon as selected
+*
+*/
+function color_disc_icons(type_disc) {
+    document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
+    console.log(document.getElementById('ico_' + type_disc));
+    console.log(type_disc);
+}
+
 function make_template_functionnality(parent_node){
     return parent_node.append('div').attr('class', 'form-rendering');
 }
@@ -457,9 +467,40 @@ var fields_PropSymbolChoro = {
             img_valid_disc = section2.select('#img_choice_disc'),
             ok_button = section2.select('#propChoro_yes');
 
+        let uncolor_icons = () => {
+            ico_jenks.style('border', null);
+            ico_q6.style('border', null);
+            ico_quantiles.style('border', null);
+            ico_equal_intervals.style('border', null);
+        };
+
+        let prepare_disc_quantiles = (field) => {
+            let _values = user_data[layer].map(v => v[field]),
+                n_class = getOptNbClass(_values.length);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
+            self.rendering_params[field] = {
+                nb_class: nb_class, type: 'quantiles', colors: color_array,
+                breaks: breaks, no_data: no_data_color,
+                colorsByFeature: colors_map, renderer: 'Choropleth',
+                rendered_field: field, schema: ["Reds"]
+            };
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            ok_button.attr("disabled", null);
+            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            uncolor_icons();
+            ico_quantiles.style('border', 'solid 1px green');
+        }
+
         if(fields_stock.length == 0 || fields_ratio.length == 0){
             display_error_num_field();
             return;
+        }
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields_ratio[0];
+            prepare_disc_quantiles(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
         }
 
         fields_stock.forEach(function(field){
@@ -482,19 +523,25 @@ var fields_PropSymbolChoro = {
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_propsymbolchoro"));
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
-                ok_button.attr('disabled', null);
+                // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
+                // console.log(section2); console.log(self.rendering_params[field_name].type);
             } else {
-                ok_button.attr('disabled', true);
-                img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                choro_mini_choice_disc.html('');
+                prepare_disc_quantiles(field_name);
+                // ok_button.attr('disabled', true);
+                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // choro_mini_choice_disc.html('');
             }
 
         });
 
         ico_jenks.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -511,6 +558,8 @@ var fields_PropSymbolChoro = {
         });
 
         ico_quantiles.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -527,6 +576,8 @@ var fields_PropSymbolChoro = {
         });
 
         ico_equal_intervals.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -543,6 +594,8 @@ var fields_PropSymbolChoro = {
         });
 
         ico_q6.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]);
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6, 'BuGn');
@@ -576,7 +629,9 @@ var fields_PropSymbolChoro = {
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    ok_button.attr("disabled", null);
+                    // ok_button.attr("disabled", null);
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                         nb_class: confirmed[0], type: confirmed[1],
                         schema: confirmed[5], no_data: confirmed[6],
@@ -849,10 +904,6 @@ var fields_Choropleth = {
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
-        let color_icons = (type_disc) => {
-            section.select('#' + type_disc).border('solid 1x green')
-        }
-
         let uncolor_icons = () => {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
@@ -903,7 +954,8 @@ var fields_Choropleth = {
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
-                color_icons(self.rendering_params[field_name].type);
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
             } else {
                 prepare_disc_quantiles(field_name);
                 // ok_button.attr('disabled', true);
@@ -1008,9 +1060,10 @@ var fields_Choropleth = {
                 if(confirmed){
                     // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                    color_icons(confirmed[1]);
                     choro_mini_choice_disc.html(
                         i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', {count: confirmed[0]}));
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
                             breaks: confirmed[2], colors: confirmed[3],

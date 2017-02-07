@@ -3877,6 +3877,16 @@ function test_maxmin_resolution(cell_value) {
     return;
 }
 
+/*
+* Set the appropriate discretisation icon as selected
+*
+*/
+function color_disc_icons(type_disc) {
+    document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
+    console.log(document.getElementById('ico_' + type_disc));
+    console.log(type_disc);
+}
+
 function make_template_functionnality(parent_node) {
     return parent_node.append('div').attr('class', 'form-rendering');
 }
@@ -4072,9 +4082,51 @@ var fields_PropSymbolChoro = {
             img_valid_disc = section2.select('#img_choice_disc'),
             ok_button = section2.select('#propChoro_yes');
 
+        var uncolor_icons = function uncolor_icons() {
+            ico_jenks.style('border', null);
+            ico_q6.style('border', null);
+            ico_quantiles.style('border', null);
+            ico_equal_intervals.style('border', null);
+        };
+
+        var prepare_disc_quantiles = function prepare_disc_quantiles(field) {
+            var _values = user_data[layer].map(function (v) {
+                return v[field];
+            }),
+                n_class = getOptNbClass(_values.length);
+
+            var _discretize_to_colors = discretize_to_colors(_values, "quantiles", n_class),
+                _discretize_to_colors2 = _slicedToArray(_discretize_to_colors, 6),
+                nb_class = _discretize_to_colors2[0],
+                type = _discretize_to_colors2[1],
+                breaks = _discretize_to_colors2[2],
+                color_array = _discretize_to_colors2[3],
+                colors_map = _discretize_to_colors2[4],
+                no_data_color = _discretize_to_colors2[5];
+
+            self.rendering_params[field] = {
+                nb_class: nb_class, type: 'quantiles', colors: color_array,
+                breaks: breaks, no_data: no_data_color,
+                colorsByFeature: colors_map, renderer: 'Choropleth',
+                rendered_field: field, schema: ["Reds"]
+            };
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            ok_button.attr("disabled", null);
+            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            uncolor_icons();
+            ico_quantiles.style('border', 'solid 1px green');
+        };
+
         if (fields_stock.length == 0 || fields_ratio.length == 0) {
             display_error_num_field();
             return;
+        }
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            var first_field = fields_ratio[0];
+            prepare_disc_quantiles(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
         }
 
         fields_stock.forEach(function (field) {
@@ -4101,31 +4153,37 @@ var fields_PropSymbolChoro = {
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_propsymbolchoro"));
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
             if (self.rendering_params[field_name] !== undefined) {
-                ok_button.attr('disabled', null);
+                // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
+                // console.log(section2); console.log(self.rendering_params[field_name].type);
             } else {
-                ok_button.attr('disabled', true);
-                img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                choro_mini_choice_disc.html('');
+                prepare_disc_quantiles(field_name);
+                // ok_button.attr('disabled', true);
+                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // choro_mini_choice_disc.html('');
             }
         });
 
         ico_jenks.on('click', function () {
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             var selected_field = field_color.node().value,
                 _values = user_data[layer].map(function (v) {
                 return v[selected_field];
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors = discretize_to_colors(_values, "jenks", n_class, 'BuGn'),
-                _discretize_to_colors2 = _slicedToArray(_discretize_to_colors, 6),
-                nb_class = _discretize_to_colors2[0],
-                type = _discretize_to_colors2[1],
-                breaks = _discretize_to_colors2[2],
-                color_array = _discretize_to_colors2[3],
-                colors_map = _discretize_to_colors2[4],
-                no_data_color = _discretize_to_colors2[5];
+            var _discretize_to_colors3 = discretize_to_colors(_values, "jenks", n_class, 'BuGn'),
+                _discretize_to_colors4 = _slicedToArray(_discretize_to_colors3, 6),
+                nb_class = _discretize_to_colors4[0],
+                type = _discretize_to_colors4[1],
+                breaks = _discretize_to_colors4[2],
+                color_array = _discretize_to_colors4[3],
+                colors_map = _discretize_to_colors4[4],
+                no_data_color = _discretize_to_colors4[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'jenks', colors: color_array,
@@ -4139,20 +4197,22 @@ var fields_PropSymbolChoro = {
         });
 
         ico_quantiles.on('click', function () {
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             var selected_field = field_color.node().value,
                 _values = user_data[layer].map(function (v) {
                 return v[selected_field];
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors3 = discretize_to_colors(_values, "quantiles", n_class, 'BuGn'),
-                _discretize_to_colors4 = _slicedToArray(_discretize_to_colors3, 6),
-                nb_class = _discretize_to_colors4[0],
-                type = _discretize_to_colors4[1],
-                breaks = _discretize_to_colors4[2],
-                color_array = _discretize_to_colors4[3],
-                colors_map = _discretize_to_colors4[4],
-                no_data_color = _discretize_to_colors4[5];
+            var _discretize_to_colors5 = discretize_to_colors(_values, "quantiles", n_class, 'BuGn'),
+                _discretize_to_colors6 = _slicedToArray(_discretize_to_colors5, 6),
+                nb_class = _discretize_to_colors6[0],
+                type = _discretize_to_colors6[1],
+                breaks = _discretize_to_colors6[2],
+                color_array = _discretize_to_colors6[3],
+                colors_map = _discretize_to_colors6[4],
+                no_data_color = _discretize_to_colors6[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'quantiles', colors: color_array,
@@ -4166,20 +4226,22 @@ var fields_PropSymbolChoro = {
         });
 
         ico_equal_intervals.on('click', function () {
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             var selected_field = field_color.node().value,
                 _values = user_data[layer].map(function (v) {
                 return v[selected_field];
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors5 = discretize_to_colors(_values, "equal_interval", n_class, 'BuGn'),
-                _discretize_to_colors6 = _slicedToArray(_discretize_to_colors5, 6),
-                nb_class = _discretize_to_colors6[0],
-                type = _discretize_to_colors6[1],
-                breaks = _discretize_to_colors6[2],
-                color_array = _discretize_to_colors6[3],
-                colors_map = _discretize_to_colors6[4],
-                no_data_color = _discretize_to_colors6[5];
+            var _discretize_to_colors7 = discretize_to_colors(_values, "equal_interval", n_class, 'BuGn'),
+                _discretize_to_colors8 = _slicedToArray(_discretize_to_colors7, 6),
+                nb_class = _discretize_to_colors8[0],
+                type = _discretize_to_colors8[1],
+                breaks = _discretize_to_colors8[2],
+                color_array = _discretize_to_colors8[3],
+                colors_map = _discretize_to_colors8[4],
+                no_data_color = _discretize_to_colors8[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'equal_interval', colors: color_array,
@@ -4193,19 +4255,21 @@ var fields_PropSymbolChoro = {
         });
 
         ico_q6.on('click', function () {
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             var selected_field = field_color.node().value,
                 _values = user_data[layer].map(function (v) {
                 return v[selected_field];
             });
 
-            var _discretize_to_colors7 = discretize_to_colors(_values, "Q6", 6, 'BuGn'),
-                _discretize_to_colors8 = _slicedToArray(_discretize_to_colors7, 6),
-                nb_class = _discretize_to_colors8[0],
-                type = _discretize_to_colors8[1],
-                breaks = _discretize_to_colors8[2],
-                color_array = _discretize_to_colors8[3],
-                colors_map = _discretize_to_colors8[4],
-                no_data_color = _discretize_to_colors8[5];
+            var _discretize_to_colors9 = discretize_to_colors(_values, "Q6", 6, 'BuGn'),
+                _discretize_to_colors10 = _slicedToArray(_discretize_to_colors9, 6),
+                nb_class = _discretize_to_colors10[0],
+                type = _discretize_to_colors10[1],
+                breaks = _discretize_to_colors10[2],
+                color_array = _discretize_to_colors10[3],
+                colors_map = _discretize_to_colors10[4],
+                no_data_color = _discretize_to_colors10[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'Q6', colors: color_array,
@@ -4231,7 +4295,9 @@ var fields_PropSymbolChoro = {
 
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
-                    ok_button.attr("disabled", null);
+                    // ok_button.attr("disabled", null);
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                         nb_class: confirmed[0], type: confirmed[1],
                         schema: confirmed[5], no_data: confirmed[6],
@@ -4500,10 +4566,6 @@ var fields_Choropleth = {
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
-        var color_icons = function color_icons(type_disc) {
-            section.select('#' + type_disc).border('solid 1x green');
-        };
-
         var uncolor_icons = function uncolor_icons() {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
@@ -4517,14 +4579,14 @@ var fields_Choropleth = {
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors9 = discretize_to_colors(_values, "quantiles", n_class),
-                _discretize_to_colors10 = _slicedToArray(_discretize_to_colors9, 6),
-                nb_class = _discretize_to_colors10[0],
-                type = _discretize_to_colors10[1],
-                breaks = _discretize_to_colors10[2],
-                color_array = _discretize_to_colors10[3],
-                colors_map = _discretize_to_colors10[4],
-                no_data_color = _discretize_to_colors10[5];
+            var _discretize_to_colors11 = discretize_to_colors(_values, "quantiles", n_class),
+                _discretize_to_colors12 = _slicedToArray(_discretize_to_colors11, 6),
+                nb_class = _discretize_to_colors12[0],
+                type = _discretize_to_colors12[1],
+                breaks = _discretize_to_colors12[2],
+                color_array = _discretize_to_colors12[3],
+                colors_map = _discretize_to_colors12[4],
+                no_data_color = _discretize_to_colors12[5];
 
             self.rendering_params[field] = {
                 nb_class: nb_class, type: 'quantiles', colors: color_array,
@@ -4566,7 +4628,8 @@ var fields_Choropleth = {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
-                color_icons(self.rendering_params[field_name].type);
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
             } else {
                 prepare_disc_quantiles(field_name);
                 // ok_button.attr('disabled', true);
@@ -4584,14 +4647,14 @@ var fields_Choropleth = {
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors11 = discretize_to_colors(_values, "jenks", n_class),
-                _discretize_to_colors12 = _slicedToArray(_discretize_to_colors11, 6),
-                nb_class = _discretize_to_colors12[0],
-                type = _discretize_to_colors12[1],
-                breaks = _discretize_to_colors12[2],
-                color_array = _discretize_to_colors12[3],
-                colors_map = _discretize_to_colors12[4],
-                no_data_color = _discretize_to_colors12[5];
+            var _discretize_to_colors13 = discretize_to_colors(_values, "jenks", n_class),
+                _discretize_to_colors14 = _slicedToArray(_discretize_to_colors13, 6),
+                nb_class = _discretize_to_colors14[0],
+                type = _discretize_to_colors14[1],
+                breaks = _discretize_to_colors14[2],
+                color_array = _discretize_to_colors14[3],
+                colors_map = _discretize_to_colors14[4],
+                no_data_color = _discretize_to_colors14[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'jenks', colors: color_array,
@@ -4613,14 +4676,14 @@ var fields_Choropleth = {
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors13 = discretize_to_colors(_values, "quantiles", n_class),
-                _discretize_to_colors14 = _slicedToArray(_discretize_to_colors13, 6),
-                nb_class = _discretize_to_colors14[0],
-                type = _discretize_to_colors14[1],
-                breaks = _discretize_to_colors14[2],
-                color_array = _discretize_to_colors14[3],
-                colors_map = _discretize_to_colors14[4],
-                no_data_color = _discretize_to_colors14[5];
+            var _discretize_to_colors15 = discretize_to_colors(_values, "quantiles", n_class),
+                _discretize_to_colors16 = _slicedToArray(_discretize_to_colors15, 6),
+                nb_class = _discretize_to_colors16[0],
+                type = _discretize_to_colors16[1],
+                breaks = _discretize_to_colors16[2],
+                color_array = _discretize_to_colors16[3],
+                colors_map = _discretize_to_colors16[4],
+                no_data_color = _discretize_to_colors16[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'quantiles', colors: color_array,
@@ -4642,14 +4705,14 @@ var fields_Choropleth = {
             }),
                 n_class = getOptNbClass(_values.length);
 
-            var _discretize_to_colors15 = discretize_to_colors(_values, "equal_interval", n_class),
-                _discretize_to_colors16 = _slicedToArray(_discretize_to_colors15, 6),
-                nb_class = _discretize_to_colors16[0],
-                type = _discretize_to_colors16[1],
-                breaks = _discretize_to_colors16[2],
-                color_array = _discretize_to_colors16[3],
-                colors_map = _discretize_to_colors16[4],
-                no_data_color = _discretize_to_colors16[5];
+            var _discretize_to_colors17 = discretize_to_colors(_values, "equal_interval", n_class),
+                _discretize_to_colors18 = _slicedToArray(_discretize_to_colors17, 6),
+                nb_class = _discretize_to_colors18[0],
+                type = _discretize_to_colors18[1],
+                breaks = _discretize_to_colors18[2],
+                color_array = _discretize_to_colors18[3],
+                colors_map = _discretize_to_colors18[4],
+                no_data_color = _discretize_to_colors18[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'equal_interval', colors: color_array,
@@ -4670,14 +4733,14 @@ var fields_Choropleth = {
                 return v[selected_field];
             });
 
-            var _discretize_to_colors17 = discretize_to_colors(_values, "Q6", 6),
-                _discretize_to_colors18 = _slicedToArray(_discretize_to_colors17, 6),
-                nb_class = _discretize_to_colors18[0],
-                type = _discretize_to_colors18[1],
-                breaks = _discretize_to_colors18[2],
-                color_array = _discretize_to_colors18[3],
-                colors_map = _discretize_to_colors18[4],
-                no_data_color = _discretize_to_colors18[5];
+            var _discretize_to_colors19 = discretize_to_colors(_values, "Q6", 6),
+                _discretize_to_colors20 = _slicedToArray(_discretize_to_colors19, 6),
+                nb_class = _discretize_to_colors20[0],
+                type = _discretize_to_colors20[1],
+                breaks = _discretize_to_colors20[2],
+                color_array = _discretize_to_colors20[3],
+                colors_map = _discretize_to_colors20[4],
+                no_data_color = _discretize_to_colors20[5];
 
             self.rendering_params[selected_field] = {
                 nb_class: nb_class, type: 'Q6', colors: color_array,
@@ -4708,8 +4771,9 @@ var fields_Choropleth = {
                 if (confirmed) {
                     // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                    color_icons(confirmed[1]);
                     choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', { count: confirmed[0] }));
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                         nb_class: confirmed[0], type: confirmed[1],
                         breaks: confirmed[2], colors: confirmed[3],

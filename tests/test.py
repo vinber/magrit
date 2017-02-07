@@ -6,14 +6,13 @@
 import os
 import pytest
 import ujson as json
-#import subprocess
-#import time
+
 from magrit_app.app import rawcsv_to_geo, _init
 from magrit_app.helpers.topo_to_geo import convert_from_topo
 from magrit_app.helpers.geo import check_projection
 from aiohttp import FormData
 from aiohttp.test_utils import make_mocked_request
-#from selenium import webdriver
+
 pytest_plugins = 'aiohttp.pytest_plugin'
 
 
@@ -58,56 +57,55 @@ def test_check_proj4_string():
     assert check_projection("epsg:12345") is False
 
 async def test_calc_helper_float(cli):
-   data = {
-       "var1": "[1.32,2.36,3.36,4.78,5.45,6.98]",
-       "var2": "[6.1,5.2,4.3,3.4,2.5,1.6]",
-       "operator": "/"
-   }
-   resp = await cli.post('/helpers/calc', data=data)
-   assert resp.status == 200
-   assert await resp.text() \
-       == '[0.2163934426,0.4538461538,0.7813953488,1.4058823529,2.18,4.3625]'
+    data = {
+        "var1": "[1.32,2.36,3.36,4.78,5.45,6.98]",
+        "var2": "[6.1,5.2,4.3,3.4,2.5,1.6]",
+        "operator": "/"
+        }
+    resp = await cli.post('/helpers/calc', data=data)
+    assert resp.status == 200
+    assert await resp.text() \
+        == '[0.2163934426,0.4538461538,0.7813953488,1.4058823529,2.18,4.3625]'
 
 async def test_calc_helper_int(cli):
-   data = {
+    data = {
        "var1": "[1, 2, 3, 4, 5, 6]",
        "var2": "[6, 5, 4, 3, 2, 1]",
        "operator": "+"
-   }
-   resp = await cli.post('/helpers/calc', data=data)
-   assert resp.status == 200
-   assert await resp.text() == '[7,7,7,7,7,7]'
+    }
+    resp = await cli.post('/helpers/calc', data=data)
+    assert resp.status == 200
+    assert await resp.text() == '[7,7,7,7,7,7]'
 
-   data = {
+    data = {
        "var1": "[1, 2, 3, 4, 5, 6]",
        "var2": "[6, 5, 4, 3, 2, 1]",
        "operator": "^"
-   }
-   resp = await cli.post('/helpers/calc', data=data)
-   assert resp.status == 200
-   assert await resp.text() == '[1,32,81,64,25,6]'
+    }
+    resp = await cli.post('/helpers/calc', data=data)
+    assert resp.status == 200
+    assert await resp.text() == '[1,32,81,64,25,6]'
 
 async def test_get_pages(cli):
-   # resp = await cli.get('/')
-   # assert resp.status == 200
-   # content = await resp.text()
-   # assert "Magrit" in content
+    resp = await cli.get('/')
+    assert resp.status == 200
+    content = await resp.text()
+    assert "Magrit" in content
 
-   resp = await cli.get('/modules')
-   assert resp.status == 200
-   content = await resp.text()
-   assert '<html lang="en">' in content
+    resp = await cli.get('/modules')
+    assert resp.status == 200
+    content = await resp.text()
+    assert '<html lang="en">' in content
 
-   resp = await cli.get('/contact')
-   assert resp.status == 200
-   content = await resp.text()
-   assert "<title>Magrit - Contact</title>" in content
+    resp = await cli.get('/contact')
+    assert resp.status == 200
+    content = await resp.text()
+    assert "<title>Magrit - Contact</title>" in content
 
-   # We are serving a custom 404 page :
-   resp = await cli.get('/abcde')
-   assert resp.status == 200
-   content = await resp.text()
-   assert "<title>Magrit - 404</title>" in content
+    resp = await cli.get('/abcde')
+    assert resp.status == 200
+    content = await resp.text()
+    assert "<title>Magrit - 404</title>" in content
 
 # async def test_convert_tabular(cli):
 #     data = FormData()
