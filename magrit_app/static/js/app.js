@@ -4632,9 +4632,6 @@ var fields_Choropleth = {
                 color_disc_icons(self.rendering_params[field_name].type);
             } else {
                 prepare_disc_quantiles(field_name);
-                // ok_button.attr('disabled', true);
-                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                // choro_mini_choice_disc.html('');
             }
         });
 
@@ -5089,9 +5086,11 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
+                var PropSizer;
+
                 (function () {
-                    var ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                        scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    var scale_max = +document.getElementById("Anamorph_opt2").value / 100,
                         nb_ft = current_layers[layer].n_features,
                         dataset = user_data[layer];
 
@@ -5103,50 +5102,55 @@ var fields_Anamorphose = {
                     var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                         sqrt = Math.sqrt,
                         abs = Math.abs,
-                        d_values = [],
-                        area_values = [],
-                        min = +dataset[0][field_name],
-                        max = +dataset[0][field_name],
-                        sum = 0;
+                        d_val = [],
+                        transform = [];
 
                     for (var i = 0; i < nb_ft; ++i) {
                         var val = +dataset[i][field_name];
                         // We deliberatly use 0 if this is a missing value :
                         if (isNaN(val) || !isFinite(val)) val = 0;
-                        if (val > max) max = val;else if (val < min) min = val;
-                        sum += val;
-                        d_values.push(val);
-                        area_values.push(+path.area(layer_select[i].__data__.geometry));
+                        d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                     }
+                    d_val.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+                    var ref = d_val[0][1] / d_val[0][2];
+                    d_val[0].push(1);
 
-                    var mean = sum / nb_ft,
-                        transform = [];
-                    if (ref_size == "mean") {
-                        var low_ = abs(mean - min),
-                            up_ = abs(max - mean),
-                            max_dif = low_ > up_ ? low_ : up_;
+                    PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
+                        var _this = this;
 
-                        for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
-                            var _val = d_values[_i4],
-                                scale_area = void 0;
-                            if (_val > mean) scale_area = 1 + scale_max / (max_dif / abs(_val - mean));else if (_val == mean) scale_area = 1;else scale_area = 1 - scale_max / (max_dif / abs(mean - _val));
-                            transform.push(scale_area);
+                        this.fixed_value = fixed_value;
+                        var sqrt = Math.sqrt,
+                            abs = Math.abs,
+                            pi = Math.PI;
+                        if (type_symbol === "circle") {
+                            this.smax = fixed_size * fixed_size * pi;
+                            this.scale = function (val) {
+                                return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
+                            };
+                        } else {
+                            this.smax = fixed_size * fixed_size;
+                            this.scale = function (val) {
+                                return sqrt(abs(val) * _this.smax / _this.fixed_value);
+                            };
                         }
-                    } else if (ref_size == "max") {
-                        var _max_dif = abs(max - min);
+                    };
 
-                        for (var _i5 = 0; _i5 < nb_ft; ++_i5) {
-                            var _val2 = d_values[_i5],
-                                val_dif = _max_dif / _val2,
-                                _scale_area = void 0;
-                            if (val_dif < 1) _scale_area = 1;else _scale_area = 1 - scale_max / val_dif;
-                            transform.push(_scale_area);
-                        }
+                    for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
+                        var _val = d_val[_i4][1] / d_val[_i4][2];
+                        var scale = sqrt(_val / ref);
+                        d_val[_i4].push(scale / scale_max);
                     }
+                    d_val.sort(function (a, b) {
+                        return a[0] - b[0];
+                    });
                     var formToSend = new FormData();
                     formToSend.append("json", JSON.stringify({
                         topojson: current_layers[layer].key_name,
-                        scale_values: transform,
+                        scale_values: d_val.map(function (ft) {
+                            return ft[3];
+                        }),
                         field_name: field_name,
                         scale_max: scale_max }));
                     xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
@@ -5237,20 +5241,12 @@ function fillMenu_Anamorphose() {
     doug1.insert('input').attrs({ type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations" });
 
     // Options for Olson mode :
-    var o1 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');;
-    o1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_txt' }).html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
-    var type_scale_olson = o1.append("select").attrs({ class: "params", id: "Anamorph_olson_scale_kind" });
-
     var o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
     o2.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale' }).html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
     o2.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1 });
 
     [['Dougenik & al. (1985)', 'dougenik'], ['Olson (2005)', 'olson']].forEach(function (fun_name) {
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
-    });
-
-    [["app_page.func_options.cartogram.olson_scale_max", "max"], ["app_page.func_options.cartogram.olson_scale_mean", "mean"]].forEach(function (opt_field) {
-        type_scale_olson.append("option").attrs({ "value": opt_field[1], 'data-i18n': '[text]' + opt_field[0] }).text(i18next.t(opt_field[0]));
     });
 
     make_layer_name_button(dialog_content, "Anamorph_output_name");
@@ -5617,8 +5613,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()] });
         });
         col_map = new Map();
-        for (var _i6 = 0; _i6 < cats.length; _i6++) {
-            col_map.set(cats[_i6].name, [cats[_i6].color, cats[_i6].name, cats[_i6].nb_elem]);
+        for (var _i5 = 0; _i5 < cats.length; _i5++) {
+            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -5780,8 +5776,8 @@ var fields_PropSymbolTypo = {
         for (var i = field1_selec.childElementCount - 1; i >= 0; i--) {
             field1_selec.removeChild(field1_selec.children[i]);
         }
-        for (var _i7 = field2_selec.childElementCount - 1; _i7 >= 0; _i7--) {
-            field2_selec.removeChild(field2_selec.children[_i7]);
+        for (var _i6 = field2_selec.childElementCount - 1; _i6 >= 0; _i6--) {
+            field2_selec.removeChild(field2_selec.children[_i6]);
         }
         section2.selectAll(".params").attr("disabled", true);
     },
@@ -6651,8 +6647,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i8 = 0; _i8 < nb_class; ++_i8) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i8], user_breaks[_i8 + 1]], sizes[_i8]]);
+        for (var _i7 = 0; _i7 < nb_class; ++_i7) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i7], user_breaks[_i7 + 1]], sizes[_i7]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });

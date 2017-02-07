@@ -958,9 +958,6 @@ var fields_Choropleth = {
                 color_disc_icons(self.rendering_params[field_name].type);
             } else {
                 prepare_disc_quantiles(field_name);
-                // ok_button.attr('disabled', true);
-                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                // choro_mini_choice_disc.html('');
             }
         });
 
@@ -1392,8 +1389,8 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson"){
-                let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                    scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
                     nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
@@ -1405,61 +1402,43 @@ var fields_Anamorphose = {
                 let layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
-                    d_values = [],
-                    area_values = [],
-                    min = +dataset[0][field_name],
-                    max = +dataset[0][field_name],
-                    sum = 0;
+                    d_val = [],
+                    transform = [];
 
                 for(let i = 0; i < nb_ft; ++i){
                     let val = +dataset[i][field_name];
                     // We deliberatly use 0 if this is a missing value :
                     if(isNaN(val) || !isFinite(val)) val = 0
-                    if(val > max) max = val;
-                    else if (val < min) min = val;
-                    sum += val;
-                    d_values.push(val);
-                    area_values.push(+path.area(layer_select[i].__data__.geometry));
+                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
+                }
+                d_val.sort((a, b) => b[1] - a[1]);
+                let ref = d_val[0][1] / d_val[0][2];
+                d_val[0].push(1);
+                var PropSizer = function(fixed_value, fixed_size, type_symbol){
+                  this.fixed_value = fixed_value;
+                  var sqrt = Math.sqrt,
+                      abs = Math.abs,
+                      pi = Math.PI;
+                  if(type_symbol === "circle"){
+                    this.smax = fixed_size * fixed_size * pi;
+                    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
+                  } else {
+                    this.smax = fixed_size * fixed_size
+                    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
+                  }
                 }
 
-                let mean = sum / nb_ft,
-                    transform = [];
-                if(ref_size == "mean"){
-                    let low_ = abs(mean-min),
-                        up_ = abs(max-mean),
-                        max_dif = low_ > up_ ? low_ : up_;
-
-                    for(let i= 0; i < nb_ft; ++i){
-                        let val = d_values[i],
-                            scale_area;
-                        if(val > mean)
-                            scale_area = 1 + scale_max / (max_dif / abs(val-mean));
-                        else if(val == mean)
-                            scale_area = 1;
-                        else
-                            scale_area = 1 - scale_max / (max_dif / abs(mean-val));
-                        transform.push(scale_area);
-                    }
-                } else if (ref_size == "max"){
-                    let max_dif = abs(max-min);
-
-                    for(let i= 0; i < nb_ft; ++i){
-                        let val = d_values[i],
-                            val_dif = max_dif / val,
-                            scale_area;
-                        if(val_dif < 1)
-                            scale_area = 1;
-                        else
-                            scale_area = 1 - (scale_max / val_dif);
-                        transform.push(scale_area);
-                    }
-
+                for(let i= 0; i < nb_ft; ++i){
+                    let val = d_val[i][1] / d_val[i][2];
+                    let scale = sqrt(val / ref);
+                    d_val[i].push(scale / scale_max);
                 }
+                d_val.sort((a, b) => a[0] - b[0]);
                 let formToSend = new FormData();
                 formToSend.append("json",
                     JSON.stringify({
                         topojson: current_layers[layer].key_name,
-                        scale_values: transform,
+                        scale_values: d_val.map(ft => ft[3]),
                         field_name: field_name,
                         scale_max: scale_max})
                     );
@@ -1571,13 +1550,6 @@ function fillMenu_Anamorphose(){
       .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"})
 
     // Options for Olson mode :
-    let o1 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');;
-    o1.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_txt'})
-      .html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
-    let type_scale_olson = o1.append("select")
-      .attrs({class: "params", id: "Anamorph_olson_scale_kind"});
-
     let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
     o2.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
@@ -1589,12 +1561,6 @@ function fillMenu_Anamorphose(){
      [['Dougenik & al. (1985)', 'dougenik'],
      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
-    });
-
-    [["app_page.func_options.cartogram.olson_scale_max", "max"],
-     ["app_page.func_options.cartogram.olson_scale_mean", "mean"]
-    ].forEach(opt_field => {
-        type_scale_olson.append("option").attrs({"value": opt_field[1], 'data-i18n': '[text]' + opt_field[0]}).text(i18next.t(opt_field[0]));
     });
 
     make_layer_name_button(dialog_content, "Anamorph_output_name");

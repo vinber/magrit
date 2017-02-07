@@ -40,6 +40,17 @@ $ source venv/bin/activate
 (venv)$ pip install -r requirements-dev.txt
 (venv)$ python setup.py install
 ```
+#### Running the test suite :
+##### Basic tests without web browser (same than those runned on Travis) :
+```
+(venv)$ py.test tests/test.py
+```
+
+##### Tests using selenium webdriver API (require [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/downloads) available) :
+(its actually 3 steps in one : launching the application, waiting for its start to be complete, then actually launching the test suite)
+```
+(venv)$ magrit & sleep 3 && py.test tests/tests_web.py
+```
 
 #### Launching the application:
 ```bash
@@ -83,4 +94,3 @@ Contributions are welcome! There are various way to contribute to the project:
 - Translation (only French and English languages are currently available)
 - Code contribution (you're one the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
 - Contribute to the [gallery](http://magrit.hypotheses.org/galerie)
-
