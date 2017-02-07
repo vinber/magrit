@@ -103,9 +103,11 @@ async def test_get_pages(cli):
    content = await resp.text()
    assert "<title>Magrit - Contact</title>" in content
 
+   # We are serving a custom 404 page : 
    resp = await cli.get('/abcde')
-   assert resp.status == 404
+   assert resp.status == 200
    content = await resp.text()
+   assert "<title>Magrit - 404</title>" in content
 
 # async def test_convert_tabular(cli):
 #     data = FormData()
