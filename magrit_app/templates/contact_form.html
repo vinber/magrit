@@ -186,7 +186,7 @@ function sendForm(){
     data.append('name', document.getElementById('input-name').value);
     data.append('email', document.getElementById('input-email').value);
     data.append('subject', document.getElementById('input-subject').value);
-    data.append('massage', document.getElementById('input-message').value);
+    data.append('message', document.getElementById('input-message').value);
 
     let request = new XMLHttpRequest();
     request.open("POST", "/contact", true);
