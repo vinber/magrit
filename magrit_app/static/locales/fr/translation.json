@@ -31,6 +31,7 @@
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
             "error_map_project": "Impossible de charger le fichier projet. Erreur : ",
             "error_invalid_map_project": "Fichier-projet corrompu/invalide.",
+            "error_invalid_empty": "La couche à charger ne contient pas de données.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",

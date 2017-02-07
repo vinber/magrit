@@ -1124,7 +1124,7 @@ function displayInfoOnMove() {
 
             for (var i = nb_layer - 1; i > -1; i--) {
                 if (layers[i].style.visibility != "hidden") {
-                    top_visible_layer = _app.id_to_layer(layers[i].id);
+                    top_visible_layer = _app.id_to_layer.get(layers[i].id);
                     break;
                 }
             }
@@ -2726,7 +2726,6 @@ var display_discretization = function display_discretization(layer_name, field_n
             // Clean-up previously made histogram :
             newBox.select("#svg_discretization").selectAll(".bar").remove();
             newBox.select("#svg_discretization").selectAll(".text_bar").remove();
-            newBox.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if (!provided_colors) {
                 var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
@@ -2798,8 +2797,6 @@ var display_discretization = function display_discretization(layer_name, field_n
             }).styles({ "color": "black", "cursor": "default", "display": "none" }).text(function (d) {
                 return formatCount(d.val);
             });
-
-            svg_histo.append("g").attr("class", "y_axis").attr("transform", "translate(0, -" + (margin.top + margin.bottom) + ")").call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format(".2f")));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ');
             return true;
@@ -3250,7 +3247,7 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
 
             svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
 
-            svg_ref_histo.append("g").attr("class", "y_axis").style("font-size", "10px").call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format(".2f")));
+            svg_ref_histo.append("g").attr("class", "y_axis").style("font-size", "10px").call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format(".0f")));
         } else if (type == "box_plot") {
             svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
 
@@ -3435,7 +3432,6 @@ var display_discretization_links_discont = function display_discretization_links
         draw: function draw() {
             // Clean-up previously made histogram :
             d3.select("#svg_discretization").selectAll(".bar").remove();
-            d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
             for (var i = 0, len = bins.length; i < len; ++i) {
                 bins[i].color = array_color[i];
@@ -3463,8 +3459,6 @@ var display_discretization_links_discont = function display_discretization_links
                     "fill": d.color
                 };
             });
-
-            svg_histo.append("g").attr("class", "y axis").attr("transform", "translate(0, -" + (margin.top + margin.bottom) + ")").call(d3.axisLeft().scale(y).ticks(5));
 
             return true;
         }
@@ -8101,14 +8095,15 @@ function ask_existing_feature(feature_name) {
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options) {
 
-    var parsedJSON = JSON.parse(text),
-        result_layer_on_add = options && options.result_layer_on_add ? true : false,
+    var parsedJSON = JSON.parse(text);
+    var result_layer_on_add = options && options.result_layer_on_add ? true : false,
         target_layer_on_add = options && options.target_layer_on_add ? true : false,
         skip_alert = options && options.skip_alert ? true : false,
         fields_type = options && options.fields_type ? options.fields_type : undefined;
 
     if (parsedJSON.Error) {
         // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+        display_error_during_computation(parsedJSON.Error);
         alert(parsedJSON.Error);
         return;
     }
@@ -8131,8 +8126,14 @@ function add_layer_topojson(text, options) {
     _app.id_to_layer.set(lyr_id, lyr_name_to_add);
 
     var nb_ft = topoObj.objects[lyr_name].geometries.length,
-        topoObj_objects = topoObj.objects[lyr_name],
-        field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+        topoObj_objects = topoObj.objects[lyr_name];
+
+    if (!topoObj_objects.geometries || topoObj_objects.geometries.length == 0) {
+        display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+        return;
+    }
+
+    var field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
     if (topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';else if (topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';else if (topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
@@ -9664,7 +9665,7 @@ function createStyleBox(layer_name) {
             var max_val = 0,
                 previous_stroke_opacity = selection.style("stroke-opacity");
             selection.each(function (d) {
-                if (d.properties.fij > max_val) max_val = d.properties.fij;
+                if (+d.properties.fij > max_val) max_val = d.properties.fij;
             });
             var threshold_section = popup.append('p').attr("class", "line_elem");
             threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
@@ -9693,10 +9694,10 @@ function createStyleBox(layer_name) {
                             var links_byId = current_layers[layer_name].linksbyId;
                             current_layers[layer_name].breaks = result[1];
                             for (var i = 0; i < nb_ft; ++i) {
-                                links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
+                                current_layers[layer_name].linksbyId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                             }
                             selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                                return links_byId[i][2];
+                                return sizes[serie.getClass(+links_byId[i][1])];
                             });
                         })();
                     }

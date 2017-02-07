@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
+import numpy as np
 from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
@@ -11,17 +12,23 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 
 
+def _compute_centroids(geometries):
+	res = []
+	for geom in geometries:
+		if hasattr(geom, '__len__'):
+			ix_biggest = np.argmax([g.area for g in geom])
+			res.append(geom[ix_biggest].centroid)
+		else:
+			res.append(geom.centroid)
+	return res
+
+
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
     gdf.set_index(join_field, inplace=True, drop=False)
-    gdf.geometry = gdf.geometry.centroid
+    gdf.geometry = _compute_centroids(gdf.geometry)
     csv_table = pd_read_json(csv_table)
     csv_table = csv_table[csv_table["i"].isin(gdf.index) & csv_table["j"].isin(gdf.index)]
-#    csv_table.set_index(field_i, inplace=True, drop=False)
-#    csv_table = csv_table.loc[gdf.id]
-#    csv_table.set_index(field_j, inplace=True, drop=False)
-#    csv_table = csv_table.loc[gdf.id]
-#    csv_table = csv_table.reset_index(drop=True).dropna()
     geoms_loc = gdf.geometry.loc
     ft_template_start = \
         '''{"type":"Feature","geometry":{"type":"LineString","coordinates":['''

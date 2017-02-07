@@ -193,9 +193,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             return true;
         },
         draw: function(){
-                // Clean-up previously made histogram :
+            // Clean-up previously made histogram :
             d3.select("#svg_discretization").selectAll(".bar").remove();
-            d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = array_color[i];
@@ -223,13 +222,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                   "stroke-opacity": 1,
                   "fill": d.color
                 }));
-
-            svg_histo.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.axisLeft()
-                    .scale(y)
-                    .ticks(5));
 
             return true;
         },

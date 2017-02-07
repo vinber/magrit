@@ -747,13 +747,14 @@ function ask_existing_feature(feature_name){
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options){
 
-    var parsedJSON = JSON.parse(text),
-        result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
+    var parsedJSON = JSON.parse(text);
+    var result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
         target_layer_on_add = (options && options.target_layer_on_add) ? true : false,
         skip_alert = (options && options.skip_alert) ? true : false,
         fields_type = (options && options.fields_type) ? options.fields_type : undefined;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+        display_error_during_computation(parsedJSON.Error);
         alert(parsedJSON.Error);
         return;
     }
@@ -776,8 +777,14 @@ function add_layer_topojson(text, options){
     _app.id_to_layer.set(lyr_id, lyr_name_to_add);
 
     let nb_ft = topoObj.objects[lyr_name].geometries.length,
-        topoObj_objects = topoObj.objects[lyr_name],
-        field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+        topoObj_objects = topoObj.objects[lyr_name];
+
+    if(!topoObj_objects.geometries || topoObj_objects.geometries.length == 0){
+        display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+        return;
+    }
+
+    let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
     if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
     else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';

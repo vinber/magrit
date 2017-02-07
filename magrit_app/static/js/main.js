@@ -1353,7 +1353,7 @@ function displayInfoOnMove(){
 
         for(let i = nb_layer-1; i > -1; i--){
             if(layers[i].style.visibility != "hidden"){
-                top_visible_layer = _app.id_to_layer(layers[i].id);
+                top_visible_layer = _app.id_to_layer.get(layers[i].id);
                 break;
             }
         }

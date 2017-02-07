@@ -362,10 +362,9 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             return true;
         },
         draw: function(provided_colors){
-                // Clean-up previously made histogram :
+            // Clean-up previously made histogram :
             newBox.select("#svg_discretization").selectAll(".bar").remove();
             newBox.select("#svg_discretization").selectAll(".text_bar").remove();
-            newBox.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if(!provided_colors){
                 var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
@@ -443,14 +442,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 }))
                 .styles({"color": "black", "cursor": "default", "display": "none"})
                 .text(d => formatCount(d.val));
-
-            svg_histo.append("g")
-                .attr("class", "y_axis")
-                .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.axisLeft()
-                    .scale(y)
-                    .ticks(5)
-                    .tickFormat(d3.format(".2f")));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
             return true;
@@ -995,7 +986,7 @@ var prepare_ref_histo = function(parent_node, serie, formatCount){
                 .call(d3.axisLeft()
                     .scale(y)
                     .ticks(5)
-                    .tickFormat(d3.format(".2f")));
+                    .tickFormat(d3.format(".0f")));
         } else if (type == "box_plot") {
             svg_ref_histo.append("g")
                 .style("font-size", "10px")

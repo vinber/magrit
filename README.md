@@ -1,6 +1,7 @@
 ## Magrit - Thematic cartography
 
 ![png](magrit_app/static/img/logo_magrit2.png)
+[![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)
 
 "Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
 This tool allows to produce **high quality thematic maps**.   

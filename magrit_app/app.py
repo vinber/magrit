@@ -81,8 +81,12 @@ pp = '(aiohttp_app) '
 
 @aiohttp_jinja2.template('index2.html')
 async def index_handler(request):
+    asyncio.ensure_future(
+        request.app['redis_conn'].incr('view_onepage'))
     session = await get_session(request)
     if 'last_visit' in session:
+        asyncio.ensure_future(
+            request.app['redis_conn'].incr('single_view_onepage'))
         date = 'Last visit : {}'.format(datetime.fromtimestamp(
             session['last_visit']).strftime("%B %d, %Y at %H:%M:%S"))
     else:
@@ -262,14 +266,15 @@ async def cache_input_topojson(request):
             ['{"key":', hash_val, ',"file":null}']
             ))
 
-
-def get_user_id(session_redis, app_users):
+def get_user_id(session_redis, app_users, redis_conn=None):
     """
     Function to get (or retrieve) the user unique ID
     (ID is used amongst other things to set/get data in/from redis
     and for retrieving the layers decribed in a "preference file" of an user)
     """
     if 'app_user' not in session_redis:
+        if redis_conn:
+            asyncio.ensure_future(redis_conn.incr('single_view_modulepage'))
         user_id = get_key(app_users)
         app_users.add(user_id)
         session_redis['app_user'] = user_id
@@ -429,7 +434,7 @@ async def convert(request):
 @aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
     session_redis = await get_session(request)
-    get_user_id(session_redis, request.app['app_users'])
+    get_user_id(session_redis, request.app['app_users'], request.app['redis_conn'])
     return {"app_name": request.app["app_name"]}
 
 
@@ -439,13 +444,15 @@ async def serve_contact_form(request):
 
 async def store_contact_info(request):
     posted_data = await request.post()
+    date = datetime.fromtimestamp(time.time()).strftime("%B %d, %Y at %H:%M:%S")
     asyncio.ensure_future(
         request.app['redis_conn'].lpush('contact',
             json.dumps({
                 "name": posted_data.get('name'),
                 "email": posted_data.get('email'),
                 "subject": posted_data.get('subject'),
-                "message": posted_data.get('message')
+                "message": posted_data.get('message'),
+                "date": date
                 })))
     return web.Response(text='')
 
@@ -997,10 +1004,13 @@ async def get_stats_json(request):
         ])
     layers, sample_layers = await asyncio.gather(*[
         redis_conn.get('layers'), redis_conn.get('sample_layers')])
+    view_onepage, single_view_onepage = await asyncio.gather(*[
+        redis_conn.get('view_onepage'), redis_conn.get('single_view_onepage')])
     contact = await redis_conn.lrange('contact', 0, -1)
-    count = len(request.app['app_users'])
+    count = await redis.get('single_view_modulepage')
     return web.Response(text=json.dumps(
         {"count": count , "layer": layers,
+         "view_onepage": view_onepage, "single_view_onepage": single_view_onepage,
          "sample": sample_layers, "contact": contact,
          "t": {"stewart": stewart, "dougenik": doug,
                "gridded": gridded, "olson": olson, "links": links}

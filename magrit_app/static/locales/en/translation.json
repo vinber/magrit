@@ -31,6 +31,7 @@
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
             "error_map_project": "Unable to load project file. Error : ",
             "error_invalid_map_project": "Invalid/corrupted project-file.",
+            "error_invalid_empty": "The layer to load seems to be empty.",
             "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
             "target_layer": "Target layer",
             "result_layer": "Result layer",

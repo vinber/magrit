@@ -769,7 +769,7 @@ function createStyleBox(layer_name){
         var prev_min_display = current_layers[layer_name].min_display || 0;
         let max_val = 0,
             previous_stroke_opacity = selection.style("stroke-opacity");
-        selection.each(function(d){if(d.properties.fij > max_val) max_val = d.properties.fij;})
+        selection.each(function(d){if(+d.properties.fij > max_val) max_val = d.properties.fij;})
         let threshold_section = popup.append('p').attr("class", "line_elem");
         threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
         // The legend will be updated in order to start on the minimum value displayed instead of
@@ -806,10 +806,10 @@ function createStyleBox(layer_name){
                                 let links_byId = current_layers[layer_name].linksbyId;
                                 current_layers[layer_name].breaks = result[1];
                                 for(let i = 0; i < nb_ft; ++i){
-                                    links_byId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
+                                    current_layers[layer_name].linksbyId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
                                 }
                                 selection.style('fill-opacity', 0)
-                                        .style("stroke-width", (d,i) => {return links_byId[i][2]});
+                                         .style("stroke-width", (d,i) => sizes[serie.getClass(+links_byId[i][1])]);
                             }
                         });
                 });
