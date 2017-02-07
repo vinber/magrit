@@ -622,7 +622,6 @@ function update_menu_dataset(){
     };
     if(_app.targeted_layer_added){
         valid_join_check_display(false);
-        document.getElementById('sample_zone').style.display = "none";
     }
 }
 
@@ -852,10 +851,12 @@ function add_layer_topojson(text, options){
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
-        if(joined_dataset.length != 0){ valid_join_check_display(false);
+        if(joined_dataset.length != 0){
+            valid_join_check_display(false); console.log(section1.select(".s1"));
             section1.select(".s1").html("").on("click", null);
-            document.getElementById('sample_zone').style.display = "none";
         }
+
+        document.getElementById('sample_zone').style.display = "none";
 
         let _button = button_type.get(type),
             nb_fields = field_names.length,
