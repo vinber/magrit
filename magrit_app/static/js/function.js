@@ -849,6 +849,34 @@ var fields_Choropleth = {
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
+        let color_icons = (type_disc) => {
+            section.select('#' + type_disc).border('solid 1x green')
+        }
+
+        let uncolor_icons = () => {
+            ico_jenks.style('border', null);
+            ico_q6.style('border', null);
+            ico_quantiles.style('border', null);
+            ico_equal_intervals.style('border', null);
+        };
+
+        let prepare_disc_quantiles = (field) => {
+            let _values = user_data[layer].map(v => v[field]),
+                n_class = getOptNbClass(_values.length);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
+            self.rendering_params[field] = {
+                nb_class: nb_class, type: 'quantiles', colors: color_array,
+                breaks: breaks, no_data: no_data_color,
+                colorsByFeature: colors_map, renderer: 'Choropleth',
+                rendered_field: field, schema: ["Reds"]
+            };
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            ok_button.attr("disabled", null);
+            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            uncolor_icons();
+            ico_quantiles.style('border', 'solid 1px green');
+        }
+
         if(fields.length === 0){
             display_error_num_field();
             return;
@@ -858,24 +886,35 @@ var fields_Choropleth = {
             field_selec.append("option").text(field).attr("value", field);
         });
 
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields[0];
+            prepare_disc_quantiles(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
+
         field_selec.on("change", function(){
             let field_name = this.value,
                 vals = user_data[layer].map(a => +a[field_name]);
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_choro"));
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
-                ok_button.attr('disabled', null);
+                // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                color_icons(self.rendering_params[field_name].type);
             } else {
-                ok_button.attr('disabled', true);
-                img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                choro_mini_choice_disc.html('');
+                prepare_disc_quantiles(field_name);
+                // ok_button.attr('disabled', true);
+                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // choro_mini_choice_disc.html('');
             }
         });
 
         ico_jenks.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -892,6 +931,8 @@ var fields_Choropleth = {
         });
 
         ico_quantiles.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -903,11 +944,13 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
         ico_equal_intervals.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -919,11 +962,13 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
         ico_q6.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]);
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6);
@@ -934,7 +979,7 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
@@ -961,8 +1006,9 @@ var fields_Choropleth = {
             }
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    ok_button.attr("disabled", null);
+                    // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                    color_icons(confirmed[1]);
                     choro_mini_choice_disc.html(
                         i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', {count: confirmed[0]}));
                     self.rendering_params[selected_field] = {
