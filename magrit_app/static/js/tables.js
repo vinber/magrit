@@ -422,6 +422,8 @@ var boxExplore2 = {
                 deferred.resolve(false);
                 modal_box.close();
                 container.remove();
+                overlay_under_modal.hide();
+                document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
             };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -429,7 +431,19 @@ var boxExplore2 = {
             deferred.resolve([true, true]);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         };
+        function helper_esc_key_twbs(evt){
+              evt = evt || window.event;
+              let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+              if (isEscape) {
+                evt.stopPropagation();
+                _onclose();
+              }
+        }
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        overlay_under_modal.display();
         this.display_table(layer_name);
         return deferred.promise;
     }

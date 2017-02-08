@@ -457,13 +457,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("Typo_field_1")
             ).select_by_value("Pays")
         time.sleep(0.1)
-        self.click_element_with_retry("#Typo_class")
-
-        # Confirm the fact that there is a lot of features for this kind of representation :
-        self.waitClickButtonSwal()
 
         # Valid with the random colors selected for each category :
         self.click_element_with_retry(".btn_ok")
+        # Confirm the fact that there is a lot of features for this kind of representation :
+        self.waitClickButtonSwal()
+
         driver.find_element_by_id("Typo_yes").click()
 
     def test_stewart(self):

@@ -1263,6 +1263,29 @@ function make_dialog_container(id_box, title, class_box) {
     return modal_box;
 }
 
+var overlay_under_modal = function () {
+    var twbs_div = document.querySelector('.twbs');
+    var bg = document.createElement('div');
+    bg.id = 'overlay_twbs';
+    bg.style.width = "100%";
+    bg.style.height = "100%";
+    bg.style.position = "fixed";
+    bg.style.zIndex = 99;
+    bg.style.top = 0;
+    bg.style.left = 0;
+    bg.style.background = "rgba(0,0,0,0.4)";
+    bg.style.display = "none";
+    twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
+    return {
+        display: function display() {
+            bg.style.display = "";
+        },
+        hide: function hide() {
+            bg.style.display = "none";
+        }
+    };
+}();
+
 var make_confirm_dialog2 = function (class_box, title, options) {
     var existing = new Set();
     var get_available_id = function get_available_id() {
@@ -1297,35 +1320,38 @@ var make_confirm_dialog2 = function (class_box, title, options) {
         var text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
         var modal_box = new Modal(container, {
             backdrop: true,
+            keyboard: false,
             content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '<p>' + html_content + '</p>' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>' + '</div>'
         });
         modal_box.open();
-
+        overlay_under_modal.display();
         container.querySelector(".btn_ok").onclick = function () {
             deferred.resolve(true);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         };
         var _onclose = function _onclose() {
             deferred.resolve(false);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
         function helper_esc_key_twbs(evt) {
             evt = evt || window.event;
-            // evt.preventDefault();
             var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
             if (isEscape) {
+                evt.stopPropagation();
                 _onclose();
                 document.removeEventListener('keydown', helper_esc_key_twbs);
             }
         }
-        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 }();
@@ -3077,7 +3103,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        var p = reOpenParent();
+        if (!p) overlay_under_modal.hide();
     };
 
     var _onclose = function _onclose() {
@@ -3085,19 +3112,21 @@ var display_discretization = function display_discretization(layer_name, field_n
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        var p = reOpenParent();
+        if (!p) overlay_under_modal.hide();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        // evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
+            evt.stopPropagation();
             _onclose();
         }
     }
     document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display();
     return deferred.promise;
 };
 
@@ -3167,10 +3196,11 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         container = document.getElementById("categorical_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        var p = reOpenParent();
+        if (!p) overlay_under_modal.hide();
     };
 
     container.querySelector(".btn_ok").onclick = function () {
@@ -3179,23 +3209,25 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             return color_map.get(ft[field])[0];
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        var p = reOpenParent();
+        if (!p) overlay_under_modal.hide();
     };
 
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        // evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
+            evt.stopPropagation();
             _onclose();
         }
     }
-    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display();
     return deferred.promise;
 };
 
@@ -3205,6 +3237,9 @@ function reOpenParent(css_selector) {
         parent_style_box.className = parent_style_box.className.concat(" in");
         parent_style_box.setAttribute("aria-hidden", false);
         parent_style_box.style.display = "block";
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -7107,6 +7142,7 @@ function make_box_type_fields(layer_name) {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose3;
@@ -7129,21 +7165,23 @@ function make_box_type_fields(layer_name) {
         }
         modal_box.close();
         container.remove();
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     };
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
-            evt.preventDefault();
+            evt.stopPropagation();
             current_layers[layer_name].fields_type = tmp.slice();
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         }
     }
-    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
@@ -7171,7 +7209,7 @@ function make_box_type_fields(layer_name) {
             box_select.node().childNodes[i].childNodes[1].options.remove(4);
         }
     }
-
+    overlay_under_modal.display();
     return deferred.promise;
 };
 
@@ -9650,7 +9688,11 @@ function createStyleBox(layer_name) {
 
     var stroke_prev = selection.style('stroke'),
         border_opacity = selection.style('stroke-opacity'),
-        stroke_width = +current_layers[layer_name]['stroke-width-const'];
+        stroke_width = +current_layers[layer_name]['stroke-width-const'],
+        prev_min_display,
+        prev_size,
+        prev_breaks,
+        prev_linksbyId;
 
     if (stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev);
 
@@ -9724,11 +9766,34 @@ function createStyleBox(layer_name) {
             if (type === "Point" && !renderer) {
                 selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius));
             } else if (type == "Line") {
-                if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", previous_stroke_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", previous_stroke_opacity).style("stroke", function () {
-                    return Colors.name[Colors.random()];
-                });else if (fill_math == "class" && renderer == "Links") selection.style('stroke-opacity', function (d, i) {
-                    return current_layers[layer_name].linksbyId[i][0];
-                }).style("stroke", stroke_prev);
+                if (current_layers[layer_name].renderer == "Links" && prev_min_display != undefined) {
+                    current_layers[layer_name].min_display = prev_min_display;
+                    current_layers[layer_name].breaks = prev_breaks;
+                    current_layers[layer_name].linksbyId = prev_linksbyId;
+                    selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("display", function (d) {
+                        return +d.properties.fij > prev_min_display ? null : "none";
+                    }).style("stroke-opacity", border_opacity).style("stroke-width", function (d, i) {
+                        return prev_linksbyId[i][2];
+                    });
+                } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined) {
+                    (function () {
+                        current_layers[layer_name].min_display = prev_min_display;
+                        current_layers[layer_name].size = prev_size;
+                        current_layers[layer_name].breaks = prev_breaks;
+                        var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+                        console.log(border_opacity, fill_prev.single, lim);
+                        selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
+                            return +i <= lim ? null : "none";
+                        });
+                        console.log('a');
+                    })();
+                } else {
+                    if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", border_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", border_opacity).style("stroke", function () {
+                        return Colors.name[Colors.random()];
+                    });else if (fill_meth == "class" && renderer == "Links") selection.style('stroke-opacity', function (d, i) {
+                        return current_layers[layer_name].linksbyId[i][0];
+                    }).style("stroke", stroke_prev);
+                }
             } else {
                 if (current_layers[layer_name].renderer == "Stewart") {
                     recolor_stewart(prev_palette.name, prev_palette.reversed);
@@ -9737,7 +9802,7 @@ function createStyleBox(layer_name) {
                 } else if (fill_meth == "class") {
                     selection.style('fill-opacity', opacity).style("fill", function (d, i) {
                         return fill_prev.class[i];
-                    }).style('stroke-opacity', previous_stroke_opacity).style("stroke", stroke_prev);
+                    }).style('stroke-opacity', border_opacity).style("stroke", stroke_prev);
                 } else if (fill_meth == "random") {
                     selection.style('fill', function () {
                         return Colors.name[Colors.random()];
@@ -9911,13 +9976,11 @@ function createStyleBox(layer_name) {
             fill_opacity_section.append("span").style("float", "right").attr("id", "fill_opacity_txt").html(+opacity * 100 + "%");
         })();
     } else if (type === "Line" && renderer == "Links") {
-        var prev_min_display;
-
         (function () {
             prev_min_display = current_layers[layer_name].min_display || 0;
-
-            var max_val = 0,
-                previous_stroke_opacity = selection.style("stroke-opacity");
+            prev_breaks = current_layers[layer_name].breaks.slice();
+            prev_linksbyId = current_layers[layer_name].linksbyId.slice();
+            var max_val = 0;
             selection.each(function (d) {
                 if (+d.properties.fij > max_val) max_val = d.properties.fij;
             });
@@ -9959,7 +10022,9 @@ function createStyleBox(layer_name) {
             });
         })();
     } else if (type === "Line" && renderer == "DiscLayer") {
-        var prev_min_display = current_layers[layer_name].min_display || 0;
+        prev_min_display = current_layers[layer_name].min_display || 0;
+        prev_size = current_layers[layer_name].size.slice();
+        prev_breaks = current_layers[layer_name].breaks.slice();
         var max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
             return i.disc_value;
         }));
@@ -10196,22 +10261,22 @@ function createStyleBox_ProbSymbol(layer_name) {
             current_layers[layer_name]['stroke-width-const'] = stroke_width;
             var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
             if (fill_meth == "single") {
-                selection.style('fill', fill_prev.single).style('stroke-opacity', previous_stroke_opacity).style('stroke', stroke_prev);
+                selection.style('fill', fill_prev.single).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
             } else if (fill_meth == "two") {
                 current_layers[layer_name].break_val = prev_col_breaks;
                 current_layers[layer_name].fill_color = { "two": [fill_prev.two[0], fill_prev.two[1]] };
                 selection.style('fill', function (d, i) {
                     return d_values[i] > prev_col_breaks ? fill_prev.two[1] : fill_prev.two[0];
-                }).style('stroke-opacity', previous_stroke_opacity).style('stroke', stroke_prev);
+                }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
             } else if (fill_meth == "class") {
                 selection.style('fill-opacity', opacity).style("fill", function (d, i) {
                     return current_layers[layer_name].fill_color.class[i];
-                }).style('stroke-opacity', previous_stroke_opacity).style("stroke", stroke_prev);
+                }).style('stroke-opacity', border_opacity).style("stroke", stroke_prev);
                 current_layers[layer_name].colors_breaks = prev_col_breaks;
             } else if (fill_meth == "random") {
                 selection.style('fill', function () {
                     return Colors.name[Colors.random()];
-                }).style('stroke-opacity', previous_stroke_opacity).style('stroke', stroke_prev);
+                }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
             } else if (fill_meth == "categorical") {
                 fill_categorical(layer_name, fill_prev.categorical[0], type_symbol, fill_prev.categorical[1]);
             }
@@ -13427,9 +13492,10 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         container = document.getElementById("symbol_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
+        overlay_under_modal.hide();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
@@ -13441,14 +13507,16 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
             _onclose();
         }
     }
-    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', helper_esc_key_twbs);
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
         modal_box.close();
         container.remove();
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     };
+    overlay_under_modal.display();
     return deferred.promise;
 };
 
@@ -13531,9 +13599,9 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
+            evt.stopPropagation();
             _onclose();
         }
     }
@@ -14050,6 +14118,8 @@ var boxExplore2 = {
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -14057,7 +14127,19 @@ var boxExplore2 = {
             deferred.resolve([true, true]);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
+            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
         };
+        function helper_esc_key_twbs(evt) {
+            evt = evt || window.event;
+            var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+            if (isEscape) {
+                evt.stopPropagation();
+                _onclose();
+            }
+        }
+        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        overlay_under_modal.display();
         this.display_table(layer_name);
         return deferred.promise;
     }

@@ -1503,6 +1503,25 @@ function make_dialog_container(id_box, title, class_box){
         return modal_box;
 }
 
+var overlay_under_modal = (function(){
+    let twbs_div = document.querySelector('.twbs');
+    let bg = document.createElement('div');
+    bg.id = 'overlay_twbs';
+    bg.style.width = "100%";
+    bg.style.height = "100%";
+    bg.style.position = "fixed";
+    bg.style.zIndex = 99;
+    bg.style.top = 0;
+    bg.style.left = 0;
+    bg.style.background = "rgba(0,0,0,0.4)";
+    bg.style.display = "none";
+    twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
+    return {
+        display: function(){ bg.style.display = "" },
+        hide: function(){ bg.style.display = "none"}
+    };
+})();
+
 var make_confirm_dialog2 = (function(class_box, title, options){
     let existing = new Set();
     let get_available_id = () => {
@@ -1538,6 +1557,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
         let modal_box = new Modal(container, {
             backdrop: true,
+            keyboard: false,
             content: '<div class="modal-header">'
                       +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
                       +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
@@ -1553,32 +1573,34 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                       +'</div>'
         });
         modal_box.open();
-
+        overlay_under_modal.display();
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         }
         let _onclose = () => {
             deferred.resolve(false);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
         function helper_esc_key_twbs(evt){
               evt = evt || window.event;
-              // evt.preventDefault();
               let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
               if (isEscape) {
+                  evt.stopPropagation();
                   _onclose();
                   document.removeEventListener('keydown', helper_esc_key_twbs);
               }
         }
-        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 })();
