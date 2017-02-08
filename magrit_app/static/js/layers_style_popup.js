@@ -463,7 +463,7 @@ function createStyleBox(layer_name){
     var stroke_prev = selection.style('stroke'),
         border_opacity = selection.style('stroke-opacity'),
         stroke_width = +current_layers[layer_name]['stroke-width-const'],
-        prev_min_display, prev_size, prev_breaks, prev_linksbyId;
+        prev_min_display, prev_size, prev_breaks;
 
     if(stroke_prev.startsWith("rgb"))
         stroke_prev = rgb2hex(stroke_prev);
@@ -509,6 +509,14 @@ function createStyleBox(layer_name){
                 } else if (renderer == "Categorical"){
                     current_layers[layer_name].color_map = rendering_params.color_map;
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
+                } else if (renderer == "DiscLayer"){
+                    selection.each(function(d){
+                        d.properties.prop_val = this.style.strokeWidth;
+                    });
+                } else if (renderer == "Links"){
+                    selection.each(function(d, i) {
+                        current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
+                    })
                 }
                 // Also change the legend if there is one displayed :
                 let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
@@ -552,23 +560,21 @@ function createStyleBox(layer_name){
                     if(current_layers[layer_name].renderer == "Links" && prev_min_display != undefined){
                         current_layers[layer_name].min_display = prev_min_display;
                         current_layers[layer_name].breaks = prev_breaks;
-                        current_layers[layer_name].linksbyId = prev_linksbyId;
                         selection.style('fill-opacity', 0)
                                  .style("stroke", fill_prev.single)
                                  .style("display", d => (+d.properties.fij > prev_min_display) ? null : "none")
                                  .style("stroke-opacity", border_opacity)
-                                 .style("stroke-width", (d,i) => prev_linksbyId[i][2]);
+                                 .style("stroke-width", (d,i) => current_layers[layer_name].linksbyId[i][2]);
                     } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined){
                         current_layers[layer_name].min_display = prev_min_display;
                         current_layers[layer_name].size = prev_size;
                         current_layers[layer_name].breaks = prev_breaks;
                         let lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                        console.log(border_opacity, fill_prev.single, lim)
                         selection.style('fill-opacity', 0)
                                  .style("stroke", fill_prev.single)
                                  .style("stroke-opacity", border_opacity)
-                                 .style("display", (d,i) => +i <= lim ? null : "none" );
-                        console.log('a');
+                                 .style("display", (d,i) => +i <= lim ? null : "none" )
+                                 .style('stroke-width', d => d.properties.prop_val);
                     } else {
                         if(fill_meth == "single")
                             selection.style("stroke", fill_prev.single)
@@ -791,7 +797,6 @@ function createStyleBox(layer_name){
     } else if (type === "Line" && renderer == "Links"){
         prev_min_display = current_layers[layer_name].min_display || 0;
         prev_breaks = current_layers[layer_name].breaks.slice();
-        prev_linksbyId = current_layers[layer_name].linksbyId.slice();
         let max_val = 0;
         selection.each(function(d){if(+d.properties.fij > max_val) max_val = d.properties.fij;})
         let threshold_section = popup.append('p').attr("class", "line_elem");
@@ -823,15 +828,13 @@ function createStyleBox(layer_name){
                                                          "user_defined")
                         .then(function(result){
                             if(result){
+                                let serie = result[0],
+                                    sizes = result[1].map(ft => ft[1]),
+                                    links_byId = current_layers[layer_name].linksbyId;
+
                                 lgd_to_change = true;
-                                let serie = result[0];
                                 serie.setClassManually(result[2]);
-                                let sizes = result[1].map(ft => ft[1]);
-                                let links_byId = current_layers[layer_name].linksbyId;
                                 current_layers[layer_name].breaks = result[1];
-                                for(let i = 0; i < nb_ft; ++i){
-                                    current_layers[layer_name].linksbyId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
-                                }
                                 selection.style('fill-opacity', 0)
                                          .style("stroke-width", (d,i) => sizes[serie.getClass(+links_byId[i][1])]);
                             }
@@ -870,10 +873,11 @@ function createStyleBox(layer_name){
                                                      "user_defined")
                     .then(function(result){
                         if(result){
+                            let serie = result[0],
+                                sizes = result[1].map(ft => ft[1]);
+
                             lgd_to_change = true;
-                            let serie = result[0];
                             serie.setClassManually(result[2]);
-                            let sizes = result[1].map(ft => ft[1]);
                             current_layers[layer_name].breaks = result[1];
                             current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
                             selection.style('fill-opacity', 0)

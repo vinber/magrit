@@ -1425,19 +1425,6 @@ var fields_Anamorphose = {
                 d_val.sort((a, b) => b[1] - a[1]);
                 let ref = d_val[0][1] / d_val[0][2];
                 d_val[0].push(1);
-                var PropSizer = function(fixed_value, fixed_size, type_symbol){
-                  this.fixed_value = fixed_value;
-                  var sqrt = Math.sqrt,
-                      abs = Math.abs,
-                      pi = Math.PI;
-                  if(type_symbol === "circle"){
-                    this.smax = fixed_size * fixed_size * pi;
-                    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
-                  } else {
-                    this.smax = fixed_size * fixed_size
-                    this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
-                  }
-                }
 
                 for(let i= 0; i < nb_ft; ++i){
                     let val = d_val[i][1] / d_val[i][2];

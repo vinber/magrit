@@ -5130,8 +5130,6 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                var PropSizer;
-
                 (function () {
                     // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
                     // let opt_scale_max = document.getElementById("Anamorph_opt2");
@@ -5164,26 +5162,6 @@ var fields_Anamorphose = {
                     });
                     var ref = d_val[0][1] / d_val[0][2];
                     d_val[0].push(1);
-
-                    PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
-                        var _this = this;
-
-                        this.fixed_value = fixed_value;
-                        var sqrt = Math.sqrt,
-                            abs = Math.abs,
-                            pi = Math.PI;
-                        if (type_symbol === "circle") {
-                            this.smax = fixed_size * fixed_size * pi;
-                            this.scale = function (val) {
-                                return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
-                            };
-                        } else {
-                            this.smax = fixed_size * fixed_size;
-                            this.scale = function (val) {
-                                return sqrt(abs(val) * _this.smax / _this.fixed_value);
-                            };
-                        }
-                    };
 
                     for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
                         var _val = d_val[_i4][1] / d_val[_i4][2];
@@ -9691,8 +9669,7 @@ function createStyleBox(layer_name) {
         stroke_width = +current_layers[layer_name]['stroke-width-const'],
         prev_min_display,
         prev_size,
-        prev_breaks,
-        prev_linksbyId;
+        prev_breaks;
 
     if (stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev);
 
@@ -9732,6 +9709,14 @@ function createStyleBox(layer_name) {
             } else if (renderer == "Categorical") {
                 current_layers[layer_name].color_map = rendering_params.color_map;
                 current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
+            } else if (renderer == "DiscLayer") {
+                selection.each(function (d) {
+                    d.properties.prop_val = this.style.strokeWidth;
+                });
+            } else if (renderer == "Links") {
+                selection.each(function (d, i) {
+                    current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
+                });
             }
             // Also change the legend if there is one displayed :
             var _type_layer_links = renderer == "DiscLayer" || renderer == "Links";
@@ -9769,11 +9754,10 @@ function createStyleBox(layer_name) {
                 if (current_layers[layer_name].renderer == "Links" && prev_min_display != undefined) {
                     current_layers[layer_name].min_display = prev_min_display;
                     current_layers[layer_name].breaks = prev_breaks;
-                    current_layers[layer_name].linksbyId = prev_linksbyId;
                     selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("display", function (d) {
                         return +d.properties.fij > prev_min_display ? null : "none";
                     }).style("stroke-opacity", border_opacity).style("stroke-width", function (d, i) {
-                        return prev_linksbyId[i][2];
+                        return current_layers[layer_name].linksbyId[i][2];
                     });
                 } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined) {
                     (function () {
@@ -9781,11 +9765,11 @@ function createStyleBox(layer_name) {
                         current_layers[layer_name].size = prev_size;
                         current_layers[layer_name].breaks = prev_breaks;
                         var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                        console.log(border_opacity, fill_prev.single, lim);
                         selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
                             return +i <= lim ? null : "none";
+                        }).style('stroke-width', function (d) {
+                            return d.properties.prop_val;
                         });
-                        console.log('a');
                     })();
                 } else {
                     if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", border_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", border_opacity).style("stroke", function () {
@@ -9979,7 +9963,6 @@ function createStyleBox(layer_name) {
         (function () {
             prev_min_display = current_layers[layer_name].min_display || 0;
             prev_breaks = current_layers[layer_name].breaks.slice();
-            prev_linksbyId = current_layers[layer_name].linksbyId.slice();
             var max_val = 0;
             selection.each(function (d) {
                 if (+d.properties.fij > max_val) max_val = d.properties.fij;
@@ -10002,17 +9985,15 @@ function createStyleBox(layer_name) {
                 display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                     if (result) {
                         (function () {
-                            lgd_to_change = true;
-                            var serie = result[0];
-                            serie.setClassManually(result[2]);
-                            var sizes = result[1].map(function (ft) {
+                            var serie = result[0],
+                                sizes = result[1].map(function (ft) {
                                 return ft[1];
-                            });
-                            var links_byId = current_layers[layer_name].linksbyId;
+                            }),
+                                links_byId = current_layers[layer_name].linksbyId;
+
+                            lgd_to_change = true;
+                            serie.setClassManually(result[2]);
                             current_layers[layer_name].breaks = result[1];
-                            for (var i = 0; i < nb_ft; ++i) {
-                                current_layers[layer_name].linksbyId[i][2] = sizes[serie.getClass(+links_byId[i][1])];
-                            }
                             selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
                                 return sizes[serie.getClass(+links_byId[i][1])];
                             });
@@ -10045,12 +10026,13 @@ function createStyleBox(layer_name) {
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                 if (result) {
                     (function () {
-                        lgd_to_change = true;
-                        var serie = result[0];
-                        serie.setClassManually(result[2]);
-                        var sizes = result[1].map(function (ft) {
+                        var serie = result[0],
+                            sizes = result[1].map(function (ft) {
                             return ft[1];
                         });
+
+                        lgd_to_change = true;
+                        serie.setClassManually(result[2]);
                         current_layers[layer_name].breaks = result[1];
                         current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
                         selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
