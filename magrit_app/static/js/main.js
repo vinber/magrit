@@ -1910,6 +1910,7 @@ function handleClipPath(proj_name){
         map.selectAll(".layer")
             .attr("clip-path", "url(#clip)");
 
+        svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
         let defs_sphere = defs.node().querySelector("#sphere"),
             defs_clipPath = defs.node().querySelector("clipPath");

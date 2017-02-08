@@ -1613,6 +1613,8 @@ function handleClipPath(proj_name) {
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
 
         map.selectAll(".layer").attr("clip-path", "url(#clip)");
+
+        svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
         var _defs_sphere = defs.node().querySelector("#sphere"),
             _defs_clipPath = defs.node().querySelector("clipPath");
@@ -8557,8 +8559,9 @@ function setSphereBottom() {
     var layers = document.getElementsByClassName("layer"),
         layers_list = document.querySelector(".layer_list");
 
-    svg_map.insertBefore(layers[layers.length - 1], layers[0]);
+    svg_map.insertBefore(layers[layers.length - 1], svg_map.querySelector('#Sphere'));
     layers_list.appendChild(layers_list.childNodes[0]);
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
 }
 
 function add_layout_feature(selected_feature) {
@@ -8836,7 +8839,7 @@ function add_simplified_land_layer() {
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "World", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr("d", path).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "World", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attrs({ 'd': path, 'clip-path': 'url(#clip)' }).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
         create_li_layer_elem("World", null, "Polygon", "sample");
         if (!options.skip_rescale) {
@@ -13300,6 +13303,7 @@ function reorder_layers(desired_order) {
     for (var i = 0; i < nb_layers; i++) {
         if (document.getElementById(desired_order[i])) parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
 }
 
 function reorder_elem_list_layer(desired_order) {

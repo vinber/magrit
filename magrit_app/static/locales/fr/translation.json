@@ -403,7 +403,7 @@
             "border_color": "Couleur de la bordure<br>",
             "border_opacity": "Opacité de la bordure<br>",
             "width": "Épaisseur (px)<br>",
-            "border_width": "Épaisseur de la bordure<br>",
+            "border_width": "Épaisseur de la bordure (px)<br>",
             "field_symbol_color": "Champ utilisé pour les <strong>couleurs des symboles</strong> : <i>{{ field }}</i><br>",
             "color_break": "Couleur selon une valeur limite",
             "break_value": "<br>Valeur limite ",

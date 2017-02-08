@@ -999,8 +999,9 @@ function setSphereBottom(){
     let layers = document.getElementsByClassName("layer"),
         layers_list = document.querySelector(".layer_list");
 
-    svg_map.insertBefore(layers[layers.length - 1], layers[0]);
+    svg_map.insertBefore(layers[layers.length - 1], svg_map.querySelector('#Sphere'));
     layers_list.appendChild(layers_list.childNodes[0]);
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
  }
 
 
@@ -1304,7 +1305,7 @@ function add_simplified_land_layer(options = {}){
             .data(topojson.feature(json, json.objects.World).features)
             .enter()
             .append('path')
-            .attr("d", path)
+            .attrs({'d': path, 'clip-path': 'url(#clip)'})
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         create_li_layer_elem("World", null, "Polygon", "sample");
