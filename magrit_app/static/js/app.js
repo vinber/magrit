@@ -3881,11 +3881,18 @@ function test_maxmin_resolution(cell_value) {
 * Set the appropriate discretisation icon as selected
 *
 */
-function color_disc_icons(type_disc) {
-    document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
-    console.log(document.getElementById('ico_' + type_disc));
-    console.log(type_disc);
-}
+var color_disc_icons = function () {
+    var types = new Set(['q6', 'equal_interval', 'jenks', 'quantiles']);
+    return function (type_disc) {
+        if (!type_disc) return;
+        type_disc = type_disc.toLowerCase();
+        if (!types.has(type_disc)) {
+            return;
+        } else {
+            document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
+        }
+    };
+}();
 
 function make_template_functionnality(parent_node) {
     return parent_node.append('div').attr('class', 'form-rendering');
@@ -3903,7 +3910,7 @@ function make_discretization_icons(discr_section) {
     var subsection2 = discr_section.append('p');
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks' });
-    subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals' });
+    subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/others.png', 'id': 'ico_others' });
     subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px' });
@@ -4072,7 +4079,7 @@ var fields_PropSymbolChoro = {
             ico_disc = section2.select('#ico_others'),
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             ico_q6 = section2.select('#ico_q6'),
             uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
             ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
@@ -4086,7 +4093,7 @@ var fields_PropSymbolChoro = {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
             ico_quantiles.style('border', null);
-            ico_equal_intervals.style('border', null);
+            ico_equal_interval.style('border', null);
         };
 
         var prepare_disc_quantiles = function prepare_disc_quantiles(field) {
@@ -4225,7 +4232,7 @@ var fields_PropSymbolChoro = {
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function () {
+        ico_equal_interval.on('click', function () {
             uncolor_icons();
             this.style.border = 'solid 1px green';
             var selected_field = field_color.node().value,
@@ -4382,7 +4389,7 @@ var fillMenu_Typo = function fillMenu_Typo() {
     a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' }).html(i18next.t("app_page.func_options.typo.field"));
     a.insert('select').attrs({ id: 'Typo_field_1', class: 'params' });
 
-    var b = dv2.insert('p').style("margin", "auto");
+    var b = dv2.insert('p').styles({ "margin": "auto", "text-align": "center" });
     b.append("button").attrs({ id: "Typo_class", class: "button_disc params i18n",
         'data-i18n': '[html]app_page.func_options.typo.color_choice' }).styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.func_options.typo.color_choice"));
 
@@ -4562,7 +4569,7 @@ var fields_Choropleth = {
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
             ico_q6 = section2.select('#ico_q6'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
@@ -4570,7 +4577,7 @@ var fields_Choropleth = {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
             ico_quantiles.style('border', null);
-            ico_equal_intervals.style('border', null);
+            ico_equal_interval.style('border', null);
         };
 
         var prepare_disc_quantiles = function prepare_disc_quantiles(field) {
@@ -4693,7 +4700,7 @@ var fields_Choropleth = {
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function () {
+        ico_equal_interval.on('click', function () {
             uncolor_icons();
             this.style.border = 'solid 1px green';
             var selected_field = field_selec.node().value,
@@ -5090,8 +5097,12 @@ var fields_Anamorphose = {
 
                 (function () {
                     // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                    var scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                        nb_ft = current_layers[layer].n_features,
+                    // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                    // if(opt_scale_max.value > 100){
+                    //     opt_scale_max.value = 100;
+                    // }
+                    // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    var nb_ft = current_layers[layer].n_features,
                         dataset = user_data[layer];
 
                     // if(contains_empty_val(dataset.map(a => a[field_name]))){
@@ -5140,7 +5151,7 @@ var fields_Anamorphose = {
                     for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
                         var _val = d_val[_i4][1] / d_val[_i4][2];
                         var scale = sqrt(_val / ref);
-                        d_val[_i4].push(scale / scale_max);
+                        d_val[_i4].push(scale);
                     }
                     d_val.sort(function (a, b) {
                         return a[0] - b[0];
@@ -5151,8 +5162,7 @@ var fields_Anamorphose = {
                         scale_values: d_val.map(function (ft) {
                             return ft[3];
                         }),
-                        field_name: field_name,
-                        scale_max: scale_max }));
+                        field_name: field_name }));
                     xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
                         var options = { result_layer_on_add: true };
                         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
@@ -5161,7 +5171,7 @@ var fields_Anamorphose = {
                         var n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        current_layers[n_layer_name].scale_max = scale_max;
+                        current_layers[n_layer_name].scale_max = 1;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
                         map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
@@ -5242,8 +5252,12 @@ function fillMenu_Anamorphose() {
 
     // Options for Olson mode :
     var o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    o2.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale' }).html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    o2.insert('input').style("width", "60px").attrs({ type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1 });
+    // o2.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
+    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
+    // o2.insert('input')
+    //   .style("width", "60px")
+    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
 
     [['Dougenik & al. (1985)', 'dougenik'], ['Olson (2005)', 'olson']].forEach(function (fun_name) {
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
@@ -10420,6 +10434,9 @@ function make_style_box_indiv_label(label_node) {
 
     var new_params = {};
 
+    var existing_box = document.querySelector(".styleTextAnnotation");
+    if (existing_box) existing_box.remove();
+
     make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv")).then(function (confirmed) {
         if (!confirmed) {
             label_node.style.fontsize = current_options.size;
@@ -10678,6 +10695,9 @@ var UserArrow = function () {
 
             if (!map_locked) handle_click_hand('lock');
 
+            var existing_box = document.querySelector(".styleBoxArrow");
+            if (existing_box) existing_box.remove();
+
             make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (confirmed) {
                     // Store shorcut of useful values :
@@ -10871,6 +10891,9 @@ var Textbox = function () {
             var map_xy0 = get_map_xy0();
             var self = this,
                 inner_p = this.text_annot.select('p');
+
+            var existing_box = document.querySelector(".styleTextAnnotation");
+            if (existing_box) existing_box.remove();
 
             var current_options = {
                 size: inner_p.style("font-size"),

@@ -194,6 +194,9 @@ class UserArrow {
 
         if(!map_locked) handle_click_hand('lock');
 
+        let existing_box = document.querySelector(".styleBoxArrow");
+        if(existing_box) existing_box.remove();
+
         make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
                 if(confirmed) {
@@ -385,6 +388,9 @@ class Textbox {
             let map_xy0 = get_map_xy0();
             let self = this,
                 inner_p = this.text_annot.select('p');
+
+            let existing_box = document.querySelector(".styleTextAnnotation");
+            if(existing_box) existing_box.remove();
 
             let current_options = {
                 size: inner_p.style("font-size"),

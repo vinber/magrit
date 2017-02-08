@@ -673,8 +673,7 @@ async def compute_olson(posted_data, user_id, app):
     savefile(f_name, json.dumps(ref_layer_geojson).encode())
     res = await geojson_to_topojson(f_name, remove=True)
     new_name = "_".join(["Olson_carto",
-                        str(posted_data["field_name"]),
-                        str(int(posted_data["scale_max"]*100))])
+                        str(posted_data["field_name"])])
     res = res.replace(tmp_part, new_name)
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(

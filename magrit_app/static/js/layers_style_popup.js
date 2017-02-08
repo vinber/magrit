@@ -1379,6 +1379,9 @@ function make_style_box_indiv_label(label_node){
 
     let new_params = {};
 
+    let existing_box = document.querySelector(".styleTextAnnotation");
+    if(existing_box) existing_box.remove();
+
     make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
         .then( confirmed => {
             if(!confirmed){

@@ -206,11 +206,18 @@ function test_maxmin_resolution(cell_value){
 * Set the appropriate discretisation icon as selected
 *
 */
-function color_disc_icons(type_disc) {
-    document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
-    console.log(document.getElementById('ico_' + type_disc));
-    console.log(type_disc);
-}
+var color_disc_icons = (function(){
+    let types = new Set(['q6', 'equal_interval', 'jenks', 'quantiles']);
+    return function(type_disc){
+        if(!type_disc) return ;
+        type_disc = type_disc.toLowerCase();
+        if(!types.has(type_disc)){
+            return;
+        } else {
+            document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
+        }
+    }
+})();
 
 function make_template_functionnality(parent_node){
     return parent_node.append('div').attr('class', 'form-rendering');
@@ -240,7 +247,7 @@ function make_discretization_icons(discr_section){
       .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
     subsection2.append('img')
       .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
+      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval'});
     subsection2.append('img')
       .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
       .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
@@ -457,7 +464,7 @@ var fields_PropSymbolChoro = {
             ico_disc = section2.select('#ico_others'),
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             ico_q6 = section2.select('#ico_q6'),
             uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
             ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
@@ -471,7 +478,7 @@ var fields_PropSymbolChoro = {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
             ico_quantiles.style('border', null);
-            ico_equal_intervals.style('border', null);
+            ico_equal_interval.style('border', null);
         };
 
         let prepare_disc_quantiles = (field) => {
@@ -575,7 +582,7 @@ var fields_PropSymbolChoro = {
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function(){
+        ico_equal_interval.on('click', function(){
             uncolor_icons();
             this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
@@ -724,7 +731,7 @@ var fillMenu_Typo = function(){
     a.insert('select')
       .attrs({id: 'Typo_field_1', class: 'params'});
 
-    let b = dv2.insert('p').style("margin", "auto");
+    let b = dv2.insert('p').styles({"margin": "auto", "text-align": "center"});
     b.append("button")
       .attrs({id: "Typo_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.typo.color_choice'})
@@ -900,7 +907,7 @@ var fields_Choropleth = {
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
             ico_q6 = section2.select('#ico_q6'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
 
@@ -908,7 +915,7 @@ var fields_Choropleth = {
             ico_jenks.style('border', null);
             ico_q6.style('border', null);
             ico_quantiles.style('border', null);
-            ico_equal_intervals.style('border', null);
+            ico_equal_interval.style('border', null);
         };
 
         let prepare_disc_quantiles = (field) => {
@@ -997,7 +1004,7 @@ var fields_Choropleth = {
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function(){
+        ico_equal_interval.on('click', function(){
             uncolor_icons();
             this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
@@ -1390,8 +1397,12 @@ var fields_Anamorphose = {
 
             if (algo === "olson"){
                 // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                    nb_ft = current_layers[layer].n_features,
+                // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                // if(opt_scale_max.value > 100){
+                //     opt_scale_max.value = 100;
+                // }
+                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                let nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
                 // if(contains_empty_val(dataset.map(a => a[field_name]))){
@@ -1431,7 +1442,7 @@ var fields_Anamorphose = {
                 for(let i= 0; i < nb_ft; ++i){
                     let val = d_val[i][1] / d_val[i][2];
                     let scale = sqrt(val / ref);
-                    d_val[i].push(scale / scale_max);
+                    d_val[i].push(scale);
                 }
                 d_val.sort((a, b) => a[0] - b[0]);
                 let formToSend = new FormData();
@@ -1439,8 +1450,7 @@ var fields_Anamorphose = {
                     JSON.stringify({
                         topojson: current_layers[layer].key_name,
                         scale_values: d_val.map(ft => ft[3]),
-                        field_name: field_name,
-                        scale_max: scale_max})
+                        field_name: field_name})
                     );
                 xhrequest("POST", '/compute/olson', formToSend, true)
                     .then( result => {
@@ -1451,7 +1461,7 @@ var fields_Anamorphose = {
                         let n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        current_layers[n_layer_name].scale_max = scale_max;
+                        current_layers[n_layer_name].scale_max = 1;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
                         map.select("#" + _app.layer_to_id.get(n_layer_name))
@@ -1547,19 +1557,19 @@ function fillMenu_Anamorphose(){
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations'})
       .html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
     doug1.insert('input')
-      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"})
+      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"});
 
     // Options for Olson mode :
     let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    o2.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-      .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    o2.insert('input')
-      .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
+    // o2.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
+    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
+    // o2.insert('input')
+    //   .style("width", "60px")
+    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
 
      [['Dougenik & al. (1985)', 'dougenik'],
-     ['Olson (2005)', 'olson']].forEach(function(fun_name){
+      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
     });
 
