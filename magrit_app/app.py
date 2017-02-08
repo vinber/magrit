@@ -1034,9 +1034,9 @@ async def convert_tabular(request):
     if datatype in allowed_datatypes:
         name, extension = name.split('.')
         book = get_book(file_content=data.read(), file_type=extension)
-        sheet_names = list(book.sheets.keys())
-        result = book.sheets[sheet_names[0]].csv
-        message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(book.sheets) > 1 else None
+        sheet_names = book.sheet_names()
+        result = book[sheet_names[0]].csv
+        message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(sheet_names) > 1 else None
     else:
         result = "Unknown tabular file format"
         request.app['logger'].info(
