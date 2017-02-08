@@ -8260,7 +8260,7 @@ function add_dataset(readed_dataset) {
 
     if (_app.targeted_layer_added) {
         var layer_name = Object.getOwnPropertyNames(user_data)[0];
-        ask_join_now(layer_name);
+        ask_join_now(layer_name, 'dataset');
     }
 }
 
@@ -8297,6 +8297,8 @@ function get_display_name_on_layer_list(layer_name_to_add) {
 }
 
 function ask_join_now(layer_name) {
+    var on_add = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'layer';
+
     swal({ title: "",
         text: i18next.t("app_page.join_box.before_join_ask"),
         allowOutsideClick: false,
@@ -8309,7 +8311,7 @@ function ask_join_now(layer_name) {
     }).then(function () {
         createJoinBox(layer_name);
     }, function (dismiss) {
-        make_box_type_fields(layer_name);
+        if (on_add == 'layer') make_box_type_fields(layer_name);
     });
 }
 
@@ -8828,7 +8830,7 @@ function add_simplified_land_layer() {
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
-    options.visible = options.visible || true;
+    options.visible = options.visible === false ? false : true;
 
     d3.json("/static/data_sample/World.topojson", function (error, json) {
         _app.layer_to_id.set('World', 'World');
@@ -8846,7 +8848,7 @@ function add_simplified_land_layer() {
             scale_to_lyr("World");
             center_map("World");
         }
-        if (!options.visible == 'hidden') {
+        if (!options.visible) {
             handle_active_layer('World');
         }
         zoom_without_redraw();
@@ -9139,9 +9141,18 @@ function valid_join_on(layer_name, field1, field2) {
                 field_join_map.push(undefined);
             }
         }
-    } else {
+    } else if (typeof join_values2[0] === "number" && typeof join_values1[0] === "number") {
         for (var _i4 = 0, _len4 = join_values1.length; _i4 < _len4; _i4++) {
-            val = join_values2.indexOf(String(join_values1[_i4]));
+            val = join_values2.indexOf(join_values1[_i4]);
+            if (val != -1) {
+                field_join_map.push(val);hits++;
+            } else {
+                field_join_map.push(undefined);
+            }
+        }
+    } else {
+        for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
+            val = join_values2.indexOf(String(join_values1[_i5]));
             if (val != -1) {
                 field_join_map.push(val);hits++;
             } else {
@@ -9159,12 +9170,12 @@ function valid_join_on(layer_name, field1, field2) {
             type: "success",
             allowOutsideClick: true });
         var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-        for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
-            val = field_join_map[_i5];
+        for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
+            val = field_join_map[_i6];
             for (var j = 0, leng = fields_name_to_add.length; j < leng; j++) {
                 f_name = fields_name_to_add[j];
                 if (f_name.length > 0) {
-                    user_data[layer_name][_i5][f_name] = joined_dataset[0][val][f_name];
+                    user_data[layer_name][_i6][f_name] = joined_dataset[0][val][f_name];
                 }
             }
         }
@@ -9185,14 +9196,14 @@ function valid_join_on(layer_name, field1, field2) {
             // ,i_id = fields_name_to_add.indexOf("id");
 
             // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
-            for (var _i6 = 0, _len6 = field_join_map.length; _i6 < _len6; _i6++) {
-                val = field_join_map[_i6];
+            for (var _i7 = 0, _len7 = field_join_map.length; _i7 < _len7; _i7++) {
+                val = field_join_map[_i7];
                 for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
                     f_name = fields_name_to_add[_j];
                     if (f_name.length > 0) {
                         var t_val = void 0;
                         if (val == undefined) t_val = null;else if (joined_dataset[0][val][f_name] == "") t_val = null;else t_val = joined_dataset[0][val][f_name];
-                        user_data[layer_name][_i6][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
+                        user_data[layer_name][_i7][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
                     }
                 }
             }
@@ -9223,8 +9234,8 @@ function createJoinBox(layer) {
         button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
     }button1.push("</select>");
 
-    for (var _i7 = 0, _len7 = ext_dataset_fields.length; _i7 < _len7; _i7++) {
-        if (ext_dataset_fields[_i7].length > 0) button2.push(['<option value="', ext_dataset_fields[_i7], '">', ext_dataset_fields[_i7], '</option>'].join(''));
+    for (var _i8 = 0, _len8 = ext_dataset_fields.length; _i8 < _len8; _i8++) {
+        if (ext_dataset_fields[_i8].length > 0) button2.push(['<option value="', ext_dataset_fields[_i8], '">', ext_dataset_fields[_i8], '</option>'].join(''));
     }button2.push("</select>");
 
     var inner_box = ['<p><b><i>', i18next.t("app_page.join_box.select_fields"), '</i></b></p>', '<div style="padding:10px"><p>', i18next.t("app_page.join_box.geom_layer_field"), '</p>', button1.join(''), '<em style="float:right;">(', layer, ')</em></div>', '<div style="padding:15px 10px 10px"><p>', i18next.t("app_page.join_box.ext_dataset_field"), '<br></p>', button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>', '<br><p><strong>', i18next.t("app_page.join_box.ask_join"), '<strong></p></div>'].join('');

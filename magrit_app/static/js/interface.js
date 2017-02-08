@@ -672,7 +672,7 @@ function add_dataset(readed_dataset){
 
     if(_app.targeted_layer_added){
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
-        ask_join_now(layer_name);
+        ask_join_now(layer_name, 'dataset');
     }
 }
 
@@ -712,7 +712,7 @@ function get_display_name_on_layer_list(layer_name_to_add){
         : layer_name_to_add;
 }
 
-function ask_join_now(layer_name){
+function ask_join_now(layer_name, on_add='layer'){
   swal({title: "",
         text: i18next.t("app_page.join_box.before_join_ask"),
         allowOutsideClick: false,
@@ -725,7 +725,7 @@ function ask_join_now(layer_name){
       }).then(() => {
           createJoinBox(layer_name);
       }, dismiss => {
-          make_box_type_fields(layer_name);
+          if(on_add == 'layer') make_box_type_fields(layer_name);
       });
 }
 
@@ -1287,7 +1287,7 @@ function add_simplified_land_layer(options = {}){
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
-    options.visible = options.visible || true;
+    options.visible = options.visible === false ? false : true;
 
     d3.json("/static/data_sample/World.topojson", function(error, json) {
         _app.layer_to_id.set('World', 'World');
@@ -1313,7 +1313,7 @@ function add_simplified_land_layer(options = {}){
             scale_to_lyr("World");
             center_map("World");
         }
-        if(!options.visible == 'hidden'){
+        if(!options.visible){
             handle_active_layer('World');
         }
         zoom_without_redraw();

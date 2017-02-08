@@ -11,7 +11,7 @@ geopandas >= 0.2.1
 gunicorn >= 19.6.0
 hiredis >= 0.2.0
 jenkspy >= 0.1.2
-Jinja2 == 2.8.1
+Jinja2 >= 2.8.1
 matplotlib >= 1.5.3
 murmurhash3 == 2.3.5
 numpy >= 1.11.3
