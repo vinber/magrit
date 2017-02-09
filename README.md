@@ -1,6 +1,6 @@
 ## Magrit - Thematic cartography
 
-![png](magrit_app/static/img/logo_magrit2.png)
+![png](magrit_app/static/img/logo_magrit2.png)  
 [![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)
 
 "Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
@@ -22,6 +22,10 @@ Most users should go on :
 
 
 #### Instruction for developpers
+>> NOTE : The only targeted/tested OS is currently GNU/Linux.
+However it is very likely that it can work with little change on other UNIX-like (xBSD, MacOS?).
+In addition, an explanation is provided below for an installation via Docker, which can make a deployement possible for other OS users (notably [Windows](https://docs.docker.com/docker-for-windows/), [FreeBSD](https://wiki.freebsd.org/Docker) or [MacOSX](https://docs.docker.com/docker-for-mac/))
+
 Installation of the required libraries :
 (Ubuntu 16.04)
 ```
@@ -62,6 +66,12 @@ INFO:magrit.main:serving on('0.0.0.0', 9999)
 #### Deployement with docker :
 ##### Using the latest version of the application (+ nginx for static files)
 
+The application to deploy may consist of two Docker containers:
+- one used to serve the `aiohttp` application with `Gunicorn` and to host the Redis service used;
+- the second is composed only of nginx, used in front-end of Gunicorn (i.g to buffer long POST requests, etc.) and to serve the static content.
+For now you have to build them, but we can releases them on *Docker Hub* if any interest.
+This scenario is shown below, exposing publicly `Magrit` on the port 80 :
+
 ```` bash
 cd /tmp/
 mkdir magritapp
@@ -87,6 +97,9 @@ docker run -dP --name magritapp "magrit_app:latest"
 docker run --publish "80:80" -dP --name nginx --link magritapp:magritapp nginx
 ````
 
+It is also possible to build only the 'Magrit' image, containing the `aiohttp` application; static files are then directly served by `aiohttp`.  
+
+Using the flexibility offered by Docker, one may be able to compose it's deployement in a different way to better balance the load of users (i.g. 1 container for Redis, 1 container for Nginx and 2 or 3 others containers, each one running an instance of the `aiohttp` application via `Gunicorn`).
 
 #### Contributing to Magrit :
 Contributions are welcome! There are various way to contribute to the project:

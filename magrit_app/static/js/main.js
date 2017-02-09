@@ -2336,7 +2336,7 @@ function unpatchSvgForForeignObj(originals){
 
 function export_compo_svg(output_name){
     output_name = check_output_name(output_name, "svg");
-    //patchSvgForInkscape();
+    patchSvgForInkscape();
     patchSvgForFonts();
     let dimensions_foreign_obj = patchSvgForForeignObj();
     let targetSvg = document.getElementById("svg_map"),
@@ -2363,7 +2363,7 @@ function export_compo_svg(output_name){
     dl_link.remove();
     unpatchSvgForFonts();
     unpatchSvgForForeignObj(dimensions_foreign_obj);
-    //unpatchSvgForInkscape();
+    unpatchSvgForInkscape();
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
