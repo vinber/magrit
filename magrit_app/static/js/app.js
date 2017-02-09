@@ -11711,18 +11711,30 @@ function createLegend(layer, title) {
 
     if (renderer.indexOf("PropSymbolsChoro") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
-        lgd_pos2 = getTranslateNewLegend();
         el2 = createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 4);
-        lgd_pos2 = getTranslateNewLegend();
         el2 = createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
     else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
-    if (el && lgd_pos && lgd_pos.x) el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
-    if (el2 && lgd_pos2 && lgd_pos2.x) el2.attr('transform', 'translate(' + lgd_pos2.x + ',' + lgd_pos2.y + ')');
+    if (el && lgd_pos && lgd_pos.x) {
+        el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
+    }
+    if (el2) {
+        var _lgd_pos = getTranslateNewLegend(),
+            prev_bbox = el.node().getBoundingClientRect(),
+            dim_h = lgd_pos.y + prev_bbox.height,
+            dim_w = lgd_pos.x + prev_bbox.width;
+        if (_lgd_pos.x != lgd_pos.x || _lgd_pos.y != lgd_pos.y) {
+            el2.attr('transform', 'translate(' + _lgd_pos.x + ',' + _lgd_pos.y + ')');
+        } else if (dim_h < h) {
+            el2.attr('transform', 'translate(' + lgd_pos.x + ',' + dim_h + ')');
+        } else if (dim_w < w) {
+            el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
+        }
+    }
 }
 
 function up_legend(legend_node) {
