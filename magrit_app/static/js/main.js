@@ -1655,7 +1655,6 @@ function remove_ext_dataset_cleanup(){
     data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
-    document.getElementById('sample_zone').style.display = null;
 }
 
 // Do some clean-up when a layer is removed

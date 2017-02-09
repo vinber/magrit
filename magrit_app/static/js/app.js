@@ -1409,7 +1409,6 @@ function remove_ext_dataset_cleanup() {
     data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
-    document.getElementById('sample_zone').style.display = null;
 }
 
 // Do some clean-up when a layer is removed
@@ -8246,15 +8245,25 @@ function add_dataset(readed_dataset) {
         }
     }
 
-    // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
     var cols = Object.getOwnPropertyNames(readed_dataset[0]);
+
+    // Test if there is an empty last line and remove it if its the case :
+    if (cols.map(function (f) {
+        return readed_dataset[readed_dataset.length - 1][f];
+    }).every(function (f) {
+        return f == "";
+    })) {
+        readed_dataset = readed_dataset.slice(0, readed_dataset.length - 1);
+    }
+
+    // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
     for (var _i = 0; _i < cols.length; _i++) {
         var tmp = [];
         // Check that all values of this field can be coerced to Number :
         for (var j = 0; j < readed_dataset.length; j++) {
-            if (readed_dataset[j][cols[_i]].replace && !isNaN(+readed_dataset[j][cols[_i]].replace(",", ".")) || !isNaN(+readed_dataset[j][cols[_i]])) {
+            if (readed_dataset[j][cols[_i]].replace && (!isNaN(+readed_dataset[j][cols[_i]].replace(",", ".")) || !isNaN(+readed_dataset[j][cols[_i]].split(' ').join(''))) || !isNaN(+readed_dataset[j][cols[_i]])) {
                 // Add the converted value to temporary field if its ok ...
-                var t_val = readed_dataset[j][cols[_i]].replace(",", ".");
+                var t_val = readed_dataset[j][cols[_i]].replace(",", ".").split(' ').join('');
                 tmp.push(isFinite(t_val) && t_val != "" && t_val != null ? +t_val : t_val);
             } else {
                 // Or break early if a value can't be coerced :
@@ -10706,7 +10715,7 @@ var UserArrow = function () {
             }));
 
             // Exit the "edit" state by double clicking again on the arrow :
-            this.arrow.on("dblclick", function () {
+            self.arrow.on("dblclick", function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
                 self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];

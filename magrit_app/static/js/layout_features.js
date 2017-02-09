@@ -149,7 +149,7 @@ class UserArrow {
           }));
 
       // Exit the "edit" state by double clicking again on the arrow :
-      this.arrow.on("dblclick", function(){
+      self.arrow.on("dblclick", function(){
           d3.event.stopPropagation();
           d3.event.preventDefault();
           self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
