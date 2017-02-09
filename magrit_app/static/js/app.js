@@ -499,7 +499,7 @@ function setUpInterface(resume_project) {
     var geo_a = export_geo_options.append('p').style('margin-bottom', '0');
     geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
 
-    var selec_layer = export_geo_options.insert("select").styles({ 'position': 'static', 'float': 'right' }).attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
+    var selec_layer = export_geo_options.insert("select").styles({ 'position': 'sticky', 'float': 'right' }).attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
 
     var geo_b = export_geo_options.append('p').styles({ 'clear': 'both' }); // 'margin-top': '35px !important'
     geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
@@ -2733,6 +2733,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             } else {
                 var _func = discretiz_geostats_switch.get(type);
                 breaks = serie[_func](nb_class);
+                // if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
                 serie.doCount();
                 stock_class = Array.prototype.slice.call(serie.counter);
                 if (stock_class.length == 0) {
@@ -7707,7 +7708,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
 
     for (var i = 0; i < files.length; i++) {
         if (files[i].size > MAX_INPUT_SIZE) {
-            elem.style.border = '3px dashed red';
+            // elem.style.border = '3px dashed red';
             elem.style.border = '';
             return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.too_large_input"),
@@ -7733,13 +7734,13 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {
-            elem.style.border = '3px dashed red';
-            swal({ title: i18next.t("app_page.common.error") + "!",
+            // elem.style.border = '3px dashed red';
+            elem.style.border = '';
+            return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.alert_upload1"),
                 type: "error",
                 allowEscapeKey: false,
                 allowOutsideClick: false });
-            elem.style.border = '';
         }
     } else if (files[0].name.toLowerCase().indexOf('topojson') > -1) {
         elem.style.border = '';
@@ -7781,7 +7782,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? shp_part = true : null;
         });
         if (shp_part) {
-            swal({ title: i18next.t("app_page.common.error") + "!",
+            return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_shp'),
                 type: "error",
                 allowOutsideClick: false,
@@ -7791,15 +7792,11 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                 null;
             });
         } else {
-            swal({ title: i18next.t("app_page.common.error") + "!",
+            return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_invalid'),
                 type: "error",
                 allowOutsideClick: false,
-                allowEscapeKey: false }).then(function (valid) {
-                null;
-            }, function (dismiss) {
-                null;
-            });
+                allowEscapeKey: false });
         }
     }
 }

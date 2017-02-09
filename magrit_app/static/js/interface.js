@@ -44,7 +44,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
 
     for(let i=0; i < files.length; i++){
         if(files[i].size > MAX_INPUT_SIZE){
-            elem.style.border = '3px dashed red';
+            // elem.style.border = '3px dashed red';
             elem.style.border = '';
             return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.too_large_input"),
@@ -73,13 +73,13 @@ function handle_upload_files(files, target_layer_on_add, elem){
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {
-            elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
+            // elem.style.border = '3px dashed red';
+            elem.style.border = '';
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.alert_upload1"),
                   type: "error",
                   allowEscapeKey: false,
                   allowOutsideClick: false});
-            elem.style.border = '';
         }
     }
     else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
@@ -141,17 +141,17 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.prj') > -1
                 ? shp_part = true : null);
         if(shp_part){
-            swal({title: i18next.t("app_page.common.error") + "!",
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_shp'),
                   type: "error",
                   allowOutsideClick: false,
                   allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
         } else {
-            swal({title: i18next.t("app_page.common.error") + "!",
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_invalid'),
                   type: "error",
                   allowOutsideClick: false,
-                  allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
+                  allowEscapeKey: false});
         }
     }
 }

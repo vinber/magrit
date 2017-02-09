@@ -342,6 +342,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             } else {
                 let _func = discretiz_geostats_switch.get(type);
                 breaks = serie[_func](nb_class);
+                // if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
                 serie.doCount();
                 stock_class = Array.prototype.slice.call(serie.counter);
                 if(stock_class.length == 0){

@@ -612,7 +612,7 @@ function setUpInterface(resume_project)
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer'});
 
     let selec_layer = export_geo_options.insert("select")
-        .styles({'position': 'static', 'float': 'right'})
+        .styles({'position': 'sticky', 'float': 'right'})
         .attrs({id: "layer_to_export", class: 'i18n m_elem_right'});
 
     let geo_b = export_geo_options.append('p')
