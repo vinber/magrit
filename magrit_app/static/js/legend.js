@@ -29,8 +29,8 @@ function handle_legend(layer){
                 let legends = svg_map.getElementsByClassName(class_name.slice(1, class_name.length));
                 for(let i = 0; i < legends.length; i++){
                     let bbox_legend = legends[i].getBoundingClientRect();
-                    if(bbox_legend.left < limit_left || bbox_legend.right > limit_right
-                            || bbox_legend.top < limit_top || bbox_legend.bottom > limit_bottom)
+                    if(bbox_legend.left < limit_left || bbox_legend.left > limit_right
+                            || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom)
                         legends[i].setAttribute("transform", "translate(0, 0)");
                 }
             }
@@ -137,10 +137,10 @@ function make_legend_context_menu(legend_node, layer){
         {"name": i18next.t("app_page.common.up_element"), "action": () => {  up_legend(legend_node.node());  }},
         {"name": i18next.t("app_page.common.down_element"), "action": () => { down_legend(legend_node.node()); }},
         {"name": i18next.t("app_page.common.hide"), "action": () => {
-            if(!legend_node.attr("display"))
+            if(!(legend_node.attr("display") == "none"))
                 legend_node.attr("display", "none");
             else
-                legend_node.attr("diplay", null);
+                legend_node.attr("display", null);
         }}
     ];
     legend_node.on("dblclick", () => {
@@ -570,9 +570,6 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
-    if(current_layers[layer].renderer == "PropSymbolsChoro"){
-        legend_root.attr("transform", "translate(120, 0)")
-    }
     make_legend_context_menu(legend_root, layer);
     return legend_root;
 }

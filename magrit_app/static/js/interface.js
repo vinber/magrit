@@ -996,11 +996,9 @@ function center_map(name){
 
 
 function setSphereBottom(){
-    let layers = document.getElementsByClassName("layer"),
-        layers_list = document.querySelector(".layer_list");
-
-    svg_map.insertBefore(layers[layers.length - 1], svg_map.querySelector('#Sphere'));
+    let layers_list = document.querySelector(".layer_list");
     layers_list.appendChild(layers_list.childNodes[0]);
+    svg_map.insertBefore(svg_map.querySelector('#Sphere'), svg_map.childNodes[0]);
     svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
  }
 
