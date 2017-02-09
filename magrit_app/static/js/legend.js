@@ -84,7 +84,7 @@ function createLegend(layer, title){
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
     else
-        swal("Oups..!",
+        swal("Oops..",
              i18next.t("No legend available for this representation") + ".<br>"
              + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
              "warning");

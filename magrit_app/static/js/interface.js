@@ -45,12 +45,12 @@ function handle_upload_files(files, target_layer_on_add, elem){
     for(let i=0; i < files.length; i++){
         if(files[i].size > MAX_INPUT_SIZE){
             elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
+            elem.style.border = '';
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.too_large_input"),
                   type: "error",
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
-            elem.style.border = '';
-            return;
         }
     }
 
@@ -67,6 +67,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
         } else if(files_to_send.length == 4){
             handle_shapefile(files_to_send, target_layer_on_add);
@@ -76,6 +77,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.alert_upload1"),
                   type: "error",
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
             elem.style.border = '';
         }
@@ -86,6 +88,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
            // Most direct way to add a layer :
            else handle_TopoJSON_files(files, target_layer_on_add);
@@ -99,6 +102,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
            // Send the file to the server for conversion :
            else handle_single_file(files[0], target_layer_on_add);
@@ -112,6 +116,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
    }
   else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
@@ -123,6 +128,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
    }
   else {
@@ -195,44 +201,55 @@ function handleOneByOneShp(files, target_layer_on_add){
             })
         }
       }).then( value => {
-            if(target_layer_on_add){
-                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                handle_shapefile(file_list, target_layer_on_add);
-            } else {
-                let opts = _app.targeted_layer_added
-                          ? {'layout': i18next.t("app_page.common.layout_l") }
-                          : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
-                swal({
-                    title: "",
-                    text: i18next.t("app_page.common.layer_type_selection"),
-                    type: "info",
-                    showCancelButton: true,
-                    showCloseButton: false,
-                    allowEscapeKey: true,
-                    allowOutsideClick: false,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: i18next.t("app_page.common.confirm"),
-                    input: 'select',
-                    inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                    inputOptions: opts,
-                    inputValidator: function(value) {
-                        return new Promise(function(resolve, reject){
-                            if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                reject(i18next.t("app_page.common.no_value"));
-                            } else {
-                                resolve();
-                                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                                handle_shapefile(file_list, value === "target");
-                            }
-                        })
-                    }
-                  }).then( value => {
-                        overlay_drop.style.display = "none";
-                    }, dismiss => {
-                        overlay_drop.style.display = "none";
-                        console.log(dismiss);
-                    });
-            }
+          let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+          for(let i=0; i < file_list.length; i++){
+              if(file_list[i].size > MAX_INPUT_SIZE){
+                  overlay_drop.style.display = "none";
+                  return swal({title: i18next.t("app_page.common.error") + "!",
+                        text: i18next.t("app_page.common.too_large_input"),
+                        type: "error",
+                        allowEscapeKey: false,
+                        allowOutsideClick: false});
+              }
+          }
+
+          if(target_layer_on_add){
+              handle_shapefile(file_list, target_layer_on_add);
+          } else {
+              let opts = _app.targeted_layer_added
+                        ? {'layout': i18next.t("app_page.common.layout_l") }
+                        : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
+              swal({
+                  title: "",
+                  text: i18next.t("app_page.common.layer_type_selection"),
+                  type: "info",
+                  showCancelButton: true,
+                  showCloseButton: false,
+                  allowEscapeKey: true,
+                  allowOutsideClick: false,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: i18next.t("app_page.common.confirm"),
+                  input: 'select',
+                  inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
+                  inputOptions: opts,
+                  inputValidator: function(value) {
+                      return new Promise(function(resolve, reject){
+                          if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                              reject(i18next.t("app_page.common.no_value"));
+                          } else {
+                              resolve();
+                              // let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+                              handle_shapefile(file_list, value === "target");
+                          }
+                      })
+                  }
+                }).then( value => {
+                      overlay_drop.style.display = "none";
+                  }, dismiss => {
+                      overlay_drop.style.display = "none";
+                      console.log(dismiss);
+                  });
+          }
         }, dismiss => {
             overlay_drop.style.display = "none";
             console.log(dismiss);
@@ -358,8 +375,9 @@ function prepare_drop_section(){
                                 if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
                                     reject(i18next.t("app_page.common.no_value"));
                                 } else {
-                                    resolve();
-                                    handle_upload_files(files, value === "target", elem);
+                                    // resolve();
+                                    // handle_upload_files(files, value === "target", elem);
+                                    resolve(handle_upload_files(files, value === "target", elem));
                                 }
                             })
                         }
@@ -761,7 +779,6 @@ function add_layer_topojson(text, options){
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         display_error_during_computation(parsedJSON.Error);
-        alert(parsedJSON.Error);
         return;
     }
     var type = "",

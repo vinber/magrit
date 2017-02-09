@@ -224,7 +224,7 @@ function make_template_functionnality(parent_node){
 }
 
 function make_layer_name_button(parent, id, margin_top){
-    let a = parent.append('p');
+    let a = parent.append('p').style('clear', 'both');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
       .html(i18next.t('app_page.func_options.common.output'));
@@ -1331,12 +1331,16 @@ function fillMenu_Stewart(){
       .attrs({class: 'params i18n', id: "stewart_breaks",
               "data-i18n": "[placeholder]app_page.common.expected_class",
               "placeholder": i18next.t("app_page.common.expected_class")});
-    let m  = dialog_content.append('p').attr('class', 'params_section2');
+    let m  = dialog_content.append('p')
+      .attr('class', 'params_section2')
+      .style('margin', 'auto');
     m.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask'})
       .html(i18next.t("app_page.func_options.smooth.mask"));
-    m.insert('select')
-      .attrs({class: 'params', id: "stewart_mask"});
+
+    dialog_content.insert('select')
+      .attrs({class: 'params', id: "stewart_mask"})
+      .styles({position: 'relative', float: 'right', margin: '0 0 10px 0'});
 
     [['exponential', 'app_page.func_options.smooth.func_exponential'],
      ['pareto', 'app_page.func_options.smooth.func_pareto']

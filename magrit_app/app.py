@@ -404,7 +404,9 @@ async def convert(request):
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
 
-    elif 'octet-stream' in datatype and "kml" in name.lower():
+    elif ('octet-stream' in datatype
+            or 'application/vnd.google-earth.kml+xml' in datatype) \
+            and "kml" in name.lower():
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)

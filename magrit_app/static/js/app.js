@@ -3935,7 +3935,7 @@ function make_template_functionnality(parent_node) {
 }
 
 function make_layer_name_button(parent, id, margin_top) {
-    var a = parent.append('p');
+    var a = parent.append('p').style('clear', 'both');
     a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output' }).html(i18next.t('app_page.func_options.common.output'));
     a.insert('input').styles({ 'width': '240px', 'font-size': '11.5px', "margin-top": margin_top }).attrs({ class: 'params', id: id });
 }
@@ -5067,9 +5067,10 @@ function fillMenu_Stewart() {
     bvs.insert("textarea").styles({ width: "100%", height: "2.2em", "font-size": "0.9em" }).attrs({ class: 'params i18n', id: "stewart_breaks",
         "data-i18n": "[placeholder]app_page.common.expected_class",
         "placeholder": i18next.t("app_page.common.expected_class") });
-    var m = dialog_content.append('p').attr('class', 'params_section2');
+    var m = dialog_content.append('p').attr('class', 'params_section2').style('margin', 'auto');
     m.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask' }).html(i18next.t("app_page.func_options.smooth.mask"));
-    m.insert('select').attrs({ class: 'params', id: "stewart_mask" });
+
+    dialog_content.insert('select').attrs({ class: 'params', id: "stewart_mask" }).styles({ position: 'relative', float: 'right', margin: '0 0 10px 0' });
 
     [['exponential', 'app_page.func_options.smooth.func_exponential'], ['pareto', 'app_page.func_options.smooth.func_pareto']].forEach(function (fun_name) {
         func_selec.append("option").text(i18next.t(fun_name[1])).attrs({ value: fun_name[0], 'data-i18n': '[text]' + fun_name[1] });
@@ -7706,12 +7707,12 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     for (var i = 0; i < files.length; i++) {
         if (files[i].size > MAX_INPUT_SIZE) {
             elem.style.border = '3px dashed red';
-            swal({ title: i18next.t("app_page.common.error") + "!",
+            elem.style.border = '';
+            return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.too_large_input"),
                 type: "error",
+                allowEscapeKey: false,
                 allowOutsideClick: false });
-            elem.style.border = '';
-            return;
         }
     }
 
@@ -7725,6 +7726,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.error_only_one'),
                 type: "error",
+                allowEscapeKey: false,
                 allowOutsideClick: false });
         } else if (files_to_send.length == 4) {
             handle_shapefile(files_to_send, target_layer_on_add);
@@ -7734,6 +7736,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.alert_upload1"),
                 type: "error",
+                allowEscapeKey: false,
                 allowOutsideClick: false });
             elem.style.border = '';
         }
@@ -7742,6 +7745,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
+            allowEscapeKey: false,
             allowOutsideClick: false });
         // Most direct way to add a layer :
         else handle_TopoJSON_files(files, target_layer_on_add);
@@ -7751,6 +7755,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
             type: "error",
+            allowEscapeKey: false,
             allowOutsideClick: false });
         // Send the file to the server for conversion :
         else handle_single_file(files[0], target_layer_on_add);
@@ -7759,12 +7764,14 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add) handle_dataset(files[0], target_layer_on_add);else swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_layout'),
             type: "error",
+            allowEscapeKey: false,
             allowOutsideClick: false });
     } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
         elem.style.border = '';
         if (target_layer_on_add) convert_dataset(files[0]);else swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_layout'),
             type: "error",
+            allowEscapeKey: false,
             allowOutsideClick: false });
     } else {
         elem.style.border = '';
@@ -7835,8 +7842,19 @@ function handleOneByOneShp(files, target_layer_on_add) {
             });
         }
     }).then(function (value) {
+        var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+        for (var i = 0; i < file_list.length; i++) {
+            if (file_list[i].size > MAX_INPUT_SIZE) {
+                overlay_drop.style.display = "none";
+                return swal({ title: i18next.t("app_page.common.error") + "!",
+                    text: i18next.t("app_page.common.too_large_input"),
+                    type: "error",
+                    allowEscapeKey: false,
+                    allowOutsideClick: false });
+            }
+        }
+
         if (target_layer_on_add) {
-            var file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
             handle_shapefile(file_list, target_layer_on_add);
         } else {
             var opts = _app.targeted_layer_added ? { 'layout': i18next.t("app_page.common.layout_l") } : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
@@ -7859,8 +7877,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
                             reject(i18next.t("app_page.common.no_value"));
                         } else {
                             resolve();
-                            var _file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                            handle_shapefile(_file_list, value === "target");
+                            // let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+                            handle_shapefile(file_list, value === "target");
                         }
                     });
                 }
@@ -7981,8 +7999,9 @@ function prepare_drop_section() {
                             if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
                                 reject(i18next.t("app_page.common.no_value"));
                             } else {
-                                resolve();
-                                handle_upload_files(files, value === "target", elem);
+                                // resolve();
+                                // handle_upload_files(files, value === "target", elem);
+                                resolve(handle_upload_files(files, value === "target", elem));
                             }
                         });
                     }
@@ -8366,7 +8385,6 @@ function add_layer_topojson(text, options) {
     if (parsedJSON.Error) {
         // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
         display_error_during_computation(parsedJSON.Error);
-        alert(parsedJSON.Error);
         return;
     }
     var type = "",
@@ -11718,7 +11736,7 @@ function createLegend(layer, title) {
     } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
-    else swal("Oups..!", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    else swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
     if (el && lgd_pos && lgd_pos.x) {
         el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
     }
