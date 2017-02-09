@@ -7,7 +7,7 @@ function getBreaks(values, type, nb_class){
         nb_class = +nb_class || getOptNbClass(_values.length),
         breaks = [];
     if(type === "Q6"){
-        let tmp = getBreaksQ6(serie.sorted());
+        let tmp = getBreaksQ6(serie.sorted(), serie.precision);
         breaks = tmp.breaks;
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
@@ -15,6 +15,7 @@ function getBreaks(values, type, nb_class){
     } else {
         let _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
+        if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
     }
     return [serie, breaks, nb_class, no_data];
 }
@@ -326,7 +327,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             values = serie.sorted();
 
             if(type === "Q6"){
-                var tmp = getBreaksQ6(values);
+                var tmp = getBreaksQ6(values, serie.precision);
                 console.log(values); console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;

@@ -461,7 +461,7 @@ function setUpInterface(resume_project)
                   document.getElementById("canvas_rotation_value_txt").value = this.value;
               });
 
-    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
+    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '20px'});
     _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
     // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
@@ -606,13 +606,17 @@ function setUpInterface(resume_project)
         .attr("id", "export_options_geo")
         .style("display", "none");
 
-    let geo_a = export_geo_options.append('p');
+    let geo_a = export_geo_options.append('p')
+        .style('margin-bottom', '0');
     geo_a.append('span')
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer'});
-    let selec_layer = geo_a.insert("select")
+
+    let selec_layer = export_geo_options.insert("select")
+        .styles({'position': 'static', 'float': 'right'})
         .attrs({id: "layer_to_export", class: 'i18n m_elem_right'});
 
-    let geo_b = export_geo_options.append('p');
+    let geo_b = export_geo_options.append('p')
+        .styles({'clear': 'both'}); // 'margin-top': '35px !important'
     geo_b.append('span')
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype'});
     let selec_type = geo_b.insert("select")

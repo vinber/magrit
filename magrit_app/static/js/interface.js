@@ -1052,7 +1052,7 @@ function add_layout_feature(selected_feature, options = {}){
 
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
-        options.fill = options.fill || "lightblue";
+        options.fill = options.fill || "#add8e6";
         options.fill_opacity = options.fill_opacity || 0.2;
         options.stroke_width = options.stroke_width || "0.5px";
         options.stroke_opacity = options.stroke_opacity || 1;

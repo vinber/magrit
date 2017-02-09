@@ -1868,22 +1868,8 @@ function make_mini_summary(summary){
     let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max)),
         props = {min : summary.min, max: summary.max, mean: summary.mean.toFixed(p),
                  median: summary.median.toFixed(p), stddev: summary.stddev.toFixed(p)};
-    // let elem = document.createElement('span');
-    // elem.setAttribute('class', 'i18n');
-    // elem.setAttribute('data-i18n', 'app_page.stat_summary.mini_summary');
-    // elem.setAttribute('data-i18n-data', props);
-    // elem.innerHTML = i18next.t('app_page.stat_summary.mini_summary', props);
     return i18next.t('app_page.stat_summary.mini_summary', props);
 }
-// function make_mini_summary(summary){
-//   let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
-//   return [
-//    i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
-//    i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
-//    i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
-//    i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
-//   ].join('');
-// }
 
  function fillMenu_PropSymbolTypo(layer){
     var dv2 = make_template_functionnality(section2);
@@ -1934,7 +1920,7 @@ function make_mini_summary(summary){
     var field2_selec = e.insert('select')
         .attrs({class: 'params', id: 'PropSymbolTypo_field_2'});
 
-    let f = dv2.insert('p').style("margin", "auto");
+    let f = dv2.insert('p').styles({'margin': 'auto', 'text-align': 'center'});
     f.append("button")
       .attrs({id: "Typo_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.typo.color_choice'})

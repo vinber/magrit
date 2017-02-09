@@ -591,7 +591,8 @@
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!",
             "hypotheses1": "Alive",
-            "hypotheses2": "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application."
+            "hypotheses2": "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application.",
+            "browser": "This website is optimized for Mozilla Firefox and Chromium (Google Chrome, Opera, etc.)"
         },
         "cookie_div": {
             "message": "We do NOT use cookies to profile or track users.",

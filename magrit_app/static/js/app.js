@@ -359,7 +359,7 @@ function setUpInterface(resume_project) {
         document.getElementById("canvas_rotation_value_txt").value = this.value;
     });
 
-    var _i = dv4.append('li').styles({ margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px' });
+    var _i = dv4.append('li').styles({ margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '20px' });
     _i.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
         return add_layout_feature('arrow');
     });
@@ -496,11 +496,12 @@ function setUpInterface(resume_project) {
 
     var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
 
-    var geo_a = export_geo_options.append('p');
+    var geo_a = export_geo_options.append('p').style('margin-bottom', '0');
     geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
-    var selec_layer = geo_a.insert("select").attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
 
-    var geo_b = export_geo_options.append('p');
+    var selec_layer = export_geo_options.insert("select").styles({ 'position': 'static', 'float': 'right' }).attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
+
+    var geo_b = export_geo_options.append('p').styles({ 'clear': 'both' }); // 'margin-top': '35px !important'
     geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
     var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' });
 
@@ -2492,7 +2493,7 @@ function getBreaks(values, type, nb_class) {
         nb_class = +nb_class || getOptNbClass(_values.length),
         breaks = [];
     if (type === "Q6") {
-        var tmp = getBreaksQ6(serie.sorted());
+        var tmp = getBreaksQ6(serie.sorted(), serie.precision);
         breaks = tmp.breaks;
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
@@ -2500,6 +2501,9 @@ function getBreaks(values, type, nb_class) {
     } else {
         var _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
+        if (serie.precision) breaks = breaks.map(function (val) {
+            return round_value(val, serie.precision);
+        });
     }
     return [serie, breaks, nb_class, no_data];
 }
@@ -2714,7 +2718,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             values = serie.sorted();
 
             if (type === "Q6") {
-                var tmp = getBreaksQ6(values);
+                var tmp = getBreaksQ6(values, serie.precision);
                 console.log(values);console.log(tmp);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
@@ -5576,22 +5580,8 @@ function make_mini_summary(summary) {
     var p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max)),
         props = { min: summary.min, max: summary.max, mean: summary.mean.toFixed(p),
         median: summary.median.toFixed(p), stddev: summary.stddev.toFixed(p) };
-    // let elem = document.createElement('span');
-    // elem.setAttribute('class', 'i18n');
-    // elem.setAttribute('data-i18n', 'app_page.stat_summary.mini_summary');
-    // elem.setAttribute('data-i18n-data', props);
-    // elem.innerHTML = i18next.t('app_page.stat_summary.mini_summary', props);
     return i18next.t('app_page.stat_summary.mini_summary', props);
 }
-// function make_mini_summary(summary){
-//   let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
-//   return [
-//    i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
-//    i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
-//    i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
-//    i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
-//   ].join('');
-// }
 
 function fillMenu_PropSymbolTypo(layer) {
     var dv2 = make_template_functionnality(section2);
@@ -5623,7 +5613,7 @@ function fillMenu_PropSymbolTypo(layer) {
     e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2' }).html(i18next.t("app_page.func_options.proptypo.field2"));
     var field2_selec = e.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_2' });
 
-    var f = dv2.insert('p').style("margin", "auto");
+    var f = dv2.insert('p').styles({ 'margin': 'auto', 'text-align': 'center' });
     f.append("button").attrs({ id: "Typo_class", class: "button_disc params i18n",
         'data-i18n': '[html]app_page.func_options.typo.color_choice' }).styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.func_options.typo.color_choice"));
 
@@ -7394,9 +7384,12 @@ function getOptNbClass(len_serie) {
 * and compute the number of item in each bin.
 *
 * @param {Array} serie - An array of ordered values.
+* @param {Number} precision - An integer value decribing the precision of the serie.
 * @return {Object} summary - Object containing the breaks and the stock in each class.
 */
 function getBreaksQ6(serie) {
+    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
     var breaks = [],
         tmp = 0,
         j = undefined,
@@ -7415,6 +7408,11 @@ function getBreaksQ6(serie) {
     }
     if (breaks[6] == breaks[5]) {
         breaks[5] = (breaks[5] - breaks[4]) / 2;
+    }
+    if (precision != null) {
+        breaks = breaks.map(function (val) {
+            return round_value(val, precision);
+        });
     }
     return {
         breaks: breaks,
@@ -8634,7 +8632,7 @@ function add_layout_feature(selected_feature) {
         var txt_box = new Textbox(svg_map, new_id);
     } else if (selected_feature == "sphere") {
         if (current_layers.Sphere) return;
-        options.fill = options.fill || "lightblue";
+        options.fill = options.fill || "#add8e6";
         options.fill_opacity = options.fill_opacity || 0.2;
         options.stroke_width = options.stroke_width || "0.5px";
         options.stroke_opacity = options.stroke_opacity || 1;
