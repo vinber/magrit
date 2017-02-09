@@ -442,13 +442,15 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
+        if(!p) overlay_under_modal.hide();
     }
     let _onclose = () => {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent('.styleBox');
+        let p = reOpenParent('.styleBox');
+        if(!p) overlay_under_modal.hide();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
@@ -457,6 +459,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
           // evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+              evt.preventDefault();
               _onclose();
           }
     }
