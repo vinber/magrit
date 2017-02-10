@@ -154,9 +154,10 @@ function getOptNbClass(len_serie){
 * and compute the number of item in each bin.
 *
 * @param {Array} serie - An array of ordered values.
+* @param {Number} precision - An integer value decribing the precision of the serie.
 * @return {Object} summary - Object containing the breaks and the stock in each class.
 */
-function getBreaksQ6(serie){
+function getBreaksQ6(serie, precision=null){
     var breaks = [], tmp = 0, j = undefined,
         len_serie = serie.length, stock_class = [],
         q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
@@ -172,6 +173,9 @@ function getBreaksQ6(serie){
     }
     if(breaks[6] == breaks[5]){
         breaks[5] = (breaks[5] - breaks[4]) / 2
+    }
+    if(precision != null){
+        breaks = breaks.map(val => round_value(val, precision));
     }
     return {
         breaks: breaks,

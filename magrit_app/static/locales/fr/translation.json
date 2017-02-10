@@ -31,6 +31,7 @@
             "error_values_order": "Les valeurs doivent être ordonnées (du minimum au maximum)",
             "error_map_project": "Impossible de charger le fichier projet. Erreur : ",
             "error_invalid_map_project": "Fichier-projet corrompu/invalide.",
+            "error_invalid_empty": "La couche à charger ne contient pas de données.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
@@ -40,14 +41,14 @@
             "remove_layer": "Enlever la couche {{layer}} ?",
             "remove_tabular": "Enlever le jeu de données ajouté ?",
             "cancel": "Annulation",
-            "delete": "Suppression",
+            "delete": "Suppression ",
             "deleted": "Supprimée",
             "done": "Fini!",
             "ok": "Ok",
             "valid": "Confirmation",
             "close": "Fermer",
             "edit_style": "Changer le style...",
-            "error": "Erreur",
+            "error": "Erreur ",
             "options": "Options",
             "default": "Valeur par défaut",
             "feature": "entité",
@@ -70,7 +71,7 @@
             "smaller": "plus petit",
             "larger": "plus grand",
             "expected_class": "Format attendu : 0 - 10 - 50 - 1500 - 10000",
-            "details": "Détails",
+            "details": "Détails ",
             "representation": "Représentation",
             "ask_confirm": "Confirmation ?",
             "layer_type_selection": "Sélection du type d'élément",
@@ -89,7 +90,7 @@
             "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte",
             "add_ext_dataset": "Ajout d'un jeu de données",
-            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
+            "add_sample_data": "Sélection d'un fond de carte d'exemple (avec données)"
         },
         "section2": {
             "title": "Choix de la représentation"
@@ -387,7 +388,7 @@
             "categorical_color": "Couleur selon un champ catégoriel",
             "random_color": "Couleur aléatoire pour chaque entité",
             "field_to_render": "Champ à utiliser ",
-            "choose_colors": "Choix des couleurs",
+            "choose_colors": "Modification des couleurs",
             "field": "Champ",
             "choose_discretization": "Choix de la discrétisation",
             "color_palette": "Palette de couleur",
@@ -402,7 +403,7 @@
             "border_color": "Couleur de la bordure<br>",
             "border_opacity": "Opacité de la bordure<br>",
             "width": "Épaisseur (px)<br>",
-            "border_width": "Épaisseur de la bordure<br>",
+            "border_width": "Épaisseur de la bordure (px)<br>",
             "field_symbol_color": "Champ utilisé pour les <strong>couleurs des symboles</strong> : <i>{{ field }}</i><br>",
             "color_break": "Couleur selon une valeur limite",
             "break_value": "<br>Valeur limite ",
@@ -460,7 +461,7 @@
             },
             "typo": {
                 "field": "Champ",
-                "color_choice": "Choix des couleurs "
+                "color_choice": "Modification des couleurs "
             },
             "choroprop": {
                 "field1": "Valeur 1<br>(taille du symbole) ",
@@ -584,7 +585,8 @@
             "box3_text": "Le code a été préparé pour permettre la traduction et deux langages sont déjà disponibles.",
             "box4_text": "Le projet est toujours en developpement. De nouvelles fonctionnalités sont actuellement en préparation!",
             "hypotheses1": "Vivant",
-            "hypotheses2": "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application."
+            "hypotheses2": "L'application est également adossée à un <a href=\"http://magrit.hypotheses.org/\">carnet de recherche</a> qui contient des didactitels ainsi que les actualités sur les évolutions de l'application.",
+            "browser": "Ce site web est optimisé pour Mozilla Firefox et Chromium (Google Chrome, Opera, etc.)"
         },
         "cookie_div": {
             "message": "Les cookies ne sont PAS utilisés pour stocker ou intercepter des informations sur nos visiteurs",

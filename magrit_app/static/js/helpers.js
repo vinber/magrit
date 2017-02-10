@@ -58,6 +58,7 @@ function display_error_during_computation(msg){
     msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
     swal({title: i18next.t("app_page.common.error") + "!",
           text: i18next.t("app_page.common.error_message") + msg,
+          customClass: 'swal2_custom',
           type: "error",
           allowOutsideClick: false});
 }
@@ -365,6 +366,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
@@ -389,21 +391,23 @@ function make_box_type_fields(layer_name){
         }
         modal_box.close();
         container.remove();
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
     }
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
-            evt.preventDefault();
+            evt.stopPropagation();
             current_layers[layer_name].fields_type = tmp.slice();
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
           }
     }
-    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
     newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
     newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
@@ -437,10 +441,10 @@ function make_box_type_fields(layer_name){
 
     for(let i=0; i < fields_type.length; i++){
         if(fields_type[i].has_duplicate){
-            box_select.node().childNodes[i].childNodes[1].options.remove(4);
+            box_select.node().childNodes[i].childNodes[1].options.remove(0);
         }
     }
-
+    overlay_under_modal.display();
     return deferred.promise;
 };
 

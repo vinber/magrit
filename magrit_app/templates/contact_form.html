@@ -9,7 +9,7 @@
     <meta name="author" content="">
 
     <title>Magrit - Contact</title>
-
+    <link rel="icon" type="image/png" href="static/img/favicon.png" />
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/style-index.css" rel="stylesheet">
     <link href="static/css/sweetalert2.min.css" rel="stylesheet" type="text/css">
@@ -186,7 +186,7 @@ function sendForm(){
     data.append('name', document.getElementById('input-name').value);
     data.append('email', document.getElementById('input-email').value);
     data.append('subject', document.getElementById('input-subject').value);
-    data.append('massage', document.getElementById('input-message').value);
+    data.append('message', document.getElementById('input-message').value);
 
     let request = new XMLHttpRequest();
     request.open("POST", "/contact", true);

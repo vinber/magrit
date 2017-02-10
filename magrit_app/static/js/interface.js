@@ -44,13 +44,14 @@ function handle_upload_files(files, target_layer_on_add, elem){
 
     for(let i=0; i < files.length; i++){
         if(files[i].size > MAX_INPUT_SIZE){
-            elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
+            // elem.style.border = '3px dashed red';
+            elem.style.border = '';
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.too_large_input"),
                   type: "error",
+                  customClass: 'swal2_custom',
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
-            elem.style.border = '';
-            return;
         }
     }
 
@@ -66,18 +67,22 @@ function handle_upload_files(files, target_layer_on_add, elem){
         if(target_layer_on_add && _app.targeted_layer_added){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
         } else if(files_to_send.length == 4){
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {
-            elem.style.border = '3px dashed red';
-            swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t("app_page.common.alert_upload1"),
-                  type: "error",
-                  allowOutsideClick: false});
+            // elem.style.border = '3px dashed red';
             elem.style.border = '';
+            return swal({title: i18next.t("app_page.common.error") + "!",
+                  text: i18next.t("app_page.common.alert_upload1"),
+                  customClass: 'swal2_custom',
+                  type: "error",
+                  allowEscapeKey: false,
+                  allowOutsideClick: false});
         }
     }
     else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
@@ -85,20 +90,25 @@ function handle_upload_files(files, target_layer_on_add, elem){
            if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
            // Most direct way to add a layer :
            else handle_TopoJSON_files(files, target_layer_on_add);
    }
    else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
         files[0].name.toLowerCase().indexOf('zip') > -1 ||
+        files[0].name.toLowerCase().indexOf('gml') > -1 ||
         files[0].name.toLowerCase().indexOf('kml') > -1){
            elem.style.border = '';
 
            if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
+                      allowEscapeKey: false,
                       allowOutsideClick: false});
            // Send the file to the server for conversion :
            else handle_single_file(files[0], target_layer_on_add);
@@ -112,6 +122,8 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  customClass: 'swal2_custom',
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
    }
   else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
@@ -123,6 +135,8 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  customClass: 'swal2_custom',
+                  allowEscapeKey: false,
                   allowOutsideClick: false});
    }
   else {
@@ -135,17 +149,19 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.prj') > -1
                 ? shp_part = true : null);
         if(shp_part){
-            swal({title: i18next.t("app_page.common.error") + "!",
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_shp'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowOutsideClick: false,
                   allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
         } else {
-            swal({title: i18next.t("app_page.common.error") + "!",
+            return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_invalid'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowOutsideClick: false,
-                  allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
+                  allowEscapeKey: false});
         }
     }
 }
@@ -195,44 +211,55 @@ function handleOneByOneShp(files, target_layer_on_add){
             })
         }
       }).then( value => {
-            if(target_layer_on_add){
-                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                handle_shapefile(file_list, target_layer_on_add);
-            } else {
-                let opts = _app.targeted_layer_added
-                          ? {'layout': i18next.t("app_page.common.layout_l") }
-                          : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
-                swal({
-                    title: "",
-                    text: i18next.t("app_page.common.layer_type_selection"),
-                    type: "info",
-                    showCancelButton: true,
-                    showCloseButton: false,
-                    allowEscapeKey: true,
-                    allowOutsideClick: false,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: i18next.t("app_page.common.confirm"),
-                    input: 'select',
-                    inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
-                    inputOptions: opts,
-                    inputValidator: function(value) {
-                        return new Promise(function(resolve, reject){
-                            if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
-                                reject(i18next.t("app_page.common.no_value"));
-                            } else {
-                                resolve();
-                                let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
-                                handle_shapefile(file_list, value === "target");
-                            }
-                        })
-                    }
-                  }).then( value => {
-                        overlay_drop.style.display = "none";
-                    }, dismiss => {
-                        overlay_drop.style.display = "none";
-                        console.log(dismiss);
-                    });
-            }
+          let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+          for(let i=0; i < file_list.length; i++){
+              if(file_list[i].size > MAX_INPUT_SIZE){
+                  overlay_drop.style.display = "none";
+                  return swal({title: i18next.t("app_page.common.error") + "!",
+                        text: i18next.t("app_page.common.too_large_input"),
+                        type: "error",
+                        allowEscapeKey: false,
+                        allowOutsideClick: false});
+              }
+          }
+
+          if(target_layer_on_add){
+              handle_shapefile(file_list, target_layer_on_add);
+          } else {
+              let opts = _app.targeted_layer_added
+                        ? {'layout': i18next.t("app_page.common.layout_l") }
+                        : { 'target': i18next.t("app_page.common.target_l"), 'layout': i18next.t("app_page.common.layout_l") };
+              swal({
+                  title: "",
+                  text: i18next.t("app_page.common.layer_type_selection"),
+                  type: "info",
+                  showCancelButton: true,
+                  showCloseButton: false,
+                  allowEscapeKey: true,
+                  allowOutsideClick: false,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: i18next.t("app_page.common.confirm"),
+                  input: 'select',
+                  inputPlaceholder: i18next.t("app_page.common.layer_type_selection"),
+                  inputOptions: opts,
+                  inputValidator: function(value) {
+                      return new Promise(function(resolve, reject){
+                          if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
+                              reject(i18next.t("app_page.common.no_value"));
+                          } else {
+                              resolve();
+                              // let file_list = [shp_slots.get(".shp"), shp_slots.get(".shx"), shp_slots.get(".dbf"), shp_slots.get(".prj")];
+                              handle_shapefile(file_list, value === "target");
+                          }
+                      })
+                  }
+                }).then( value => {
+                      overlay_drop.style.display = "none";
+                  }, dismiss => {
+                      overlay_drop.style.display = "none";
+                      console.log(dismiss);
+                  });
+          }
         }, dismiss => {
             overlay_drop.style.display = "none";
             console.log(dismiss);
@@ -358,8 +385,9 @@ function prepare_drop_section(){
                                 if(value.indexOf('target') < 0 && value.indexOf('layout') < 0){
                                     reject(i18next.t("app_page.common.no_value"));
                                 } else {
-                                    resolve();
-                                    handle_upload_files(files, value === "target", elem);
+                                    // resolve();
+                                    // handle_upload_files(files, value === "target", elem);
+                                    resolve(handle_upload_files(files, value === "target", elem));
                                 }
                             })
                         }
@@ -622,7 +650,6 @@ function update_menu_dataset(){
     };
     if(_app.targeted_layer_added){
         valid_join_check_display(false);
-        document.getElementById('sample_zone').style.display = "none";
     }
 }
 
@@ -641,16 +668,23 @@ function add_dataset(readed_dataset){
         }
     }
 
-    // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
     let cols = Object.getOwnPropertyNames(readed_dataset[0]);
+
+    // Test if there is an empty last line and remove it if its the case :
+    if(cols.map(f => readed_dataset[readed_dataset.length - 1][f]).every(f => f == "")){
+        readed_dataset = readed_dataset.slice(0, readed_dataset.length - 1);
+    }
+
+    // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
     for(let i = 0; i < cols.length; i++){
         let tmp = [];
         // Check that all values of this field can be coerced to Number :
         for(let j=0; j < readed_dataset.length; j++){
-            if((readed_dataset[j][cols[i]].replace && !isNaN(+readed_dataset[j][cols[i]].replace(",", ".")))
-                    || !isNaN(+readed_dataset[j][cols[i]])) {
+            if((readed_dataset[j][cols[i]].replace &&
+                    (!isNaN(+readed_dataset[j][cols[i]].replace(",", ".")) || !isNaN(+readed_dataset[j][cols[i]].split(' ').join(''))))
+                 || !isNaN(+readed_dataset[j][cols[i]])) {
                 // Add the converted value to temporary field if its ok ...
-                let t_val = readed_dataset[j][cols[i]].replace(",", ".");
+                let t_val = readed_dataset[j][cols[i]].replace(",", ".").split(' ').join('');
                 tmp.push(isFinite(t_val) && t_val != "" && t_val != null ? +t_val : t_val);
             } else {
                 // Or break early if a value can't be coerced :
@@ -673,7 +707,7 @@ function add_dataset(readed_dataset){
 
     if(_app.targeted_layer_added){
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
-        ask_join_now(layer_name);
+        ask_join_now(layer_name, 'dataset');
     }
 }
 
@@ -691,7 +725,7 @@ function add_csv_geom(file, name){
 }
 
 /**
-* Send a single file (.zip / .kml / .geojson) to the server in order to get
+* Send a single file (.zip / .kml / .gml / .geojson) to the server in order to get
 * the converted layer added to the map
 * @param {File} file
 */
@@ -713,7 +747,7 @@ function get_display_name_on_layer_list(layer_name_to_add){
         : layer_name_to_add;
 }
 
-function ask_join_now(layer_name){
+function ask_join_now(layer_name, on_add='layer'){
   swal({title: "",
         text: i18next.t("app_page.join_box.before_join_ask"),
         allowOutsideClick: false,
@@ -726,7 +760,7 @@ function ask_join_now(layer_name){
       }).then(() => {
           createJoinBox(layer_name);
       }, dismiss => {
-          make_box_type_fields(layer_name);
+          if(on_add == 'layer') make_box_type_fields(layer_name);
       });
 }
 
@@ -747,13 +781,14 @@ function ask_existing_feature(feature_name){
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options){
 
-    var parsedJSON = JSON.parse(text),
-        result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
+    var parsedJSON = JSON.parse(text);
+    var result_layer_on_add = (options && options.result_layer_on_add) ? true : false,
         target_layer_on_add = (options && options.target_layer_on_add) ? true : false,
-        skip_alert = (options && options.skip_alert) ? true : false;
+        skip_alert = (options && options.skip_alert) ? true : false,
+        fields_type = (options && options.fields_type) ? options.fields_type : undefined;
 
     if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
-        alert(parsedJSON.Error);
+        display_error_during_computation(parsedJSON.Error);
         return;
     }
     var type = "",
@@ -775,8 +810,14 @@ function add_layer_topojson(text, options){
     _app.id_to_layer.set(lyr_id, lyr_name_to_add);
 
     let nb_ft = topoObj.objects[lyr_name].geometries.length,
-        topoObj_objects = topoObj.objects[lyr_name],
-        field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+        topoObj_objects = topoObj.objects[lyr_name];
+
+    if(!topoObj_objects.geometries || topoObj_objects.geometries.length == 0){
+        display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+        return;
+    }
+
+    let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
     if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
     else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';
@@ -824,7 +865,7 @@ function add_layer_topojson(text, options){
               return "feature_" + ix;
           })
         .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
-                 "stroke-opacity": .4,
+                 "stroke-opacity": 1,
                  "fill": type != 'Line' ? random_color1 : null,
                  "fill-opacity": type != 'Line' ? 0.90 : 0});
 
@@ -844,10 +885,12 @@ function add_layer_topojson(text, options){
     if(target_layer_on_add){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
-        if(joined_dataset.length != 0){ valid_join_check_display(false);
+        if(joined_dataset.length != 0){
+            valid_join_check_display(false); console.log(section1.select(".s1"));
             section1.select(".s1").html("").on("click", null);
-            document.getElementById('sample_zone').style.display = "none";
         }
+
+        document.getElementById('sample_zone').style.display = "none";
 
         let _button = button_type.get(type),
             nb_fields = field_names.length,
@@ -908,6 +951,9 @@ function add_layer_topojson(text, options){
     }
 
     if(!skip_alert){
+        if(fields_type != undefined){
+            current_layers[lyr_name_to_add].fields_type = fields_type;
+        }
         swal({title: "",
               text: i18next.t("app_page.common.layer_success"),
               allowOutsideClick: true,
@@ -984,11 +1030,10 @@ function center_map(name){
 
 
 function setSphereBottom(){
-    let layers = document.getElementsByClassName("layer"),
-        layers_list = document.querySelector(".layer_list");
-
-    svg_map.insertBefore(layers[layers.length - 1], layers[0]);
+    let layers_list = document.querySelector(".layer_list");
     layers_list.appendChild(layers_list.childNodes[0]);
+    svg_map.insertBefore(svg_map.querySelector('#Sphere'), svg_map.childNodes[0]);
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
  }
 
 
@@ -1017,7 +1062,7 @@ function add_layout_feature(selected_feature, options = {}){
 
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
-        options.fill = options.fill || "lightblue";
+        options.fill = options.fill || "#add8e6";
         options.fill_opacity = options.fill_opacity || 0.2;
         options.stroke_width = options.stroke_width || "0.5px";
         options.stroke_opacity = options.stroke_opacity || 1;
@@ -1035,7 +1080,7 @@ function add_layout_feature(selected_feature, options = {}){
         setSphereBottom();
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined) return;
-        options.stroke = options.stroke || 'grey';
+        options.stroke = options.stroke || '#808080';
         options.stroke_width = options.stroke_width || "1px";
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
@@ -1223,6 +1268,15 @@ function add_sample_layer(){
     var existing_dialog = document.querySelector(".sampleDialogBox");
     if(existing_dialog) existing_dialog.remove();
 
+    var fields_type_sample = new Map([
+        ['GrandParisMunicipalities', [{"name":"DEP","type":"category"},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category"},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category"},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
+        ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id"},{"name":"STATUT","type":"category"},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
+        ['nuts2-2013-data', [{"name":"id","type":"id"},{"name":"name","type":"id"},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category"}]],
+        ['brazil', [{"name":"ADMIN_NAME","type":"id"},{"name":"Abbreviation","type":"id"},{"name":"Capital","type":"id"},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category"},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
+        ['world_countries_data', [{"name":"ISO2","type":"id"},{"name":"ISO3","type":"id"},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id"},{"name":"NAMEfr","type":"id"},{"name":"UNRegion","type":"category"},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]],
+        ['us_states', [{"name":"NAME","type":"id"},{"name":"POPDENS1","type":"ratio"},{"name":"POPDENS2","type":"ratio"},{"name":"STUSPS","type":"id"},{"name":"pop2015_est","type":"stock"}]]
+      ]);
+
     var dialog_res = [],
         selec,
         target_layers = [
@@ -1239,7 +1293,7 @@ function add_sample_layer(){
         .then(function(confirmed){
             if(confirmed){
                 if(selec){
-                    add_sample_geojson(selec, {target_layer_on_add: true});
+                    add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
                 }
             }
         });
@@ -1265,7 +1319,7 @@ function add_simplified_land_layer(options = {}){
     options.stroke_opacity = options.stroke_opacity || 0.0;
     options.fill_opacity = options.fill_opacity || 0.75;
     options.stroke_width = options.stroke_width || "0.3px";
-    options.visible = options.visible || true;
+    options.visible = options.visible === false ? false : true;
 
     d3.json("/static/data_sample/World.topojson", function(error, json) {
         _app.layer_to_id.set('World', 'World');
@@ -1283,7 +1337,7 @@ function add_simplified_land_layer(options = {}){
             .data(topojson.feature(json, json.objects.World).features)
             .enter()
             .append('path')
-            .attr("d", path)
+            .attrs({'d': path, 'clip-path': 'url(#clip)'})
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         create_li_layer_elem("World", null, "Polygon", "sample");
@@ -1291,7 +1345,7 @@ function add_simplified_land_layer(options = {}){
             scale_to_lyr("World");
             center_map("World");
         }
-        if(!options.visible == 'hidden'){
+        if(!options.visible){
             handle_active_layer('World');
         }
         zoom_without_redraw();

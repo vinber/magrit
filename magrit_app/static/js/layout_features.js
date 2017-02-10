@@ -149,7 +149,7 @@ class UserArrow {
           }));
 
       // Exit the "edit" state by double clicking again on the arrow :
-      this.arrow.on("dblclick", function(){
+      self.arrow.on("dblclick", function(){
           d3.event.stopPropagation();
           d3.event.preventDefault();
           self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
@@ -193,6 +193,9 @@ class UserArrow {
             map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
         if(!map_locked) handle_click_hand('lock');
+
+        let existing_box = document.querySelector(".styleBoxArrow");
+        if(existing_box) existing_box.remove();
 
         make_confirm_dialog2("styleBoxArrow", i18next.t("app_page.arrow_edit_box.title"), {widthFitContent: true})
             .then(function(confirmed){
@@ -385,6 +388,9 @@ class Textbox {
             let map_xy0 = get_map_xy0();
             let self = this,
                 inner_p = this.text_annot.select('p');
+
+            let existing_box = document.querySelector(".styleTextAnnotation");
+            if(existing_box) existing_box.remove();
 
             let current_options = {
                 size: inner_p.style("font-size"),

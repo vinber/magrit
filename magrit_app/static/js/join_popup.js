@@ -104,6 +104,12 @@ function valid_join_on(layer_name, field1, field2){
             if(val != -1) { field_join_map.push(val); hits++; }
             else { field_join_map.push(undefined); }
         }
+    } else if(typeof join_values2[0] === "number" && typeof join_values1[0] === "number"){
+        for(let i=0, len=join_values1.length; i<len; i++){
+            val = join_values2.indexOf(join_values1[i]);
+            if(val != -1) { field_join_map.push(val); hits++; }
+            else { field_join_map.push(undefined); }
+        }
     } else {
         for(let i=0, len=join_values1.length; i<len; i++){
             val = join_values2.indexOf(String(join_values1[i]));

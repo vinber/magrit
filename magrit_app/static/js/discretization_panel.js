@@ -7,7 +7,7 @@ function getBreaks(values, type, nb_class){
         nb_class = +nb_class || getOptNbClass(_values.length),
         breaks = [];
     if(type === "Q6"){
-        let tmp = getBreaksQ6(serie.sorted());
+        let tmp = getBreaksQ6(serie.sorted(), serie.precision);
         breaks = tmp.breaks;
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
@@ -15,6 +15,7 @@ function getBreaks(values, type, nb_class){
     } else {
         let _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
+        if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
     }
     return [serie, breaks, nb_class, no_data];
 }
@@ -326,7 +327,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             values = serie.sorted();
 
             if(type === "Q6"){
-                var tmp = getBreaksQ6(values);
+                var tmp = getBreaksQ6(values, serie.precision);
                 console.log(values); console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
@@ -341,6 +342,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             } else {
                 let _func = discretiz_geostats_switch.get(type);
                 breaks = serie[_func](nb_class);
+                // if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
                 serie.doCount();
                 stock_class = Array.prototype.slice.call(serie.counter);
                 if(stock_class.length == 0){
@@ -362,10 +364,9 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             return true;
         },
         draw: function(provided_colors){
-                // Clean-up previously made histogram :
+            // Clean-up previously made histogram :
             newBox.select("#svg_discretization").selectAll(".bar").remove();
             newBox.select("#svg_discretization").selectAll(".text_bar").remove();
-            newBox.select("#svg_discretization").selectAll(".y_axis").remove();
 
             if(!provided_colors){
                 var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
@@ -443,14 +444,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 }))
                 .styles({"color": "black", "cursor": "default", "display": "none"})
                 .text(d => formatCount(d.val));
-
-            svg_histo.append("g")
-                .attr("class", "y_axis")
-                .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.axisLeft()
-                    .scale(y)
-                    .ticks(5)
-                    .tickFormat(d3.format(".2f")));
 
             document.getElementById("user_breaks_area").value = breaks.join(' - ')
             return true;
@@ -778,7 +771,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        let p = reOpenParent();
+        if(!p) overlay_under_modal.hide();
     }
 
     let _onclose = () => {
@@ -786,19 +780,21 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        let p = reOpenParent();
+        if(!p) overlay_under_modal.hide();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          // evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+              evt.stopPropagation();
               _onclose();
           }
     }
     document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display();
     return deferred.promise;
 }
 
@@ -884,33 +880,36 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         container = document.getElementById("categorical_box"),
         _onclose = () => {
             deferred.resolve(false);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             container.remove();
-            reOpenParent();
+            let p = reOpenParent();
+            if(!p) overlay_under_modal.hide();
         };
 
     container.querySelector(".btn_ok").onclick = function(){
         let color_map = fetch_categorical_colors();
         let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
         deferred.resolve([nb_class, color_map, colorByFeature]);
-        document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+        document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent();
+        let p = reOpenParent();
+        if(!p) overlay_under_modal.hide();
     }
 
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          // evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+              evt.stopPropagation();
               _onclose();
           }
     }
-    document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display()
     return deferred.promise;
 };
 
@@ -920,6 +919,9 @@ function reOpenParent(css_selector){
         parent_style_box.className = parent_style_box.className.concat(" in");
         parent_style_box.setAttribute("aria-hidden", false);
         parent_style_box.style.display = "block";
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -995,7 +997,7 @@ var prepare_ref_histo = function(parent_node, serie, formatCount){
                 .call(d3.axisLeft()
                     .scale(y)
                     .ticks(5)
-                    .tickFormat(d3.format(".2f")));
+                    .tickFormat(d3.format(".0f")));
         } else if (type == "box_plot") {
             svg_ref_histo.append("g")
                 .style("font-size", "10px")

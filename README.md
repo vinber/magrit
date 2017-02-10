@@ -1,6 +1,7 @@
 ## Magrit - Thematic cartography
 
-![png](magrit_app/static/img/logo_magrit2.png)
+![png](magrit_app/static/img/logo_magrit2.png)  
+[![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)
 
 "Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
 This tool allows to produce **high quality thematic maps**.   
@@ -21,6 +22,10 @@ Most users should go on :
 
 
 #### Instruction for developpers
+>> NOTE : The only targeted/tested OS is currently GNU/Linux.
+However it is very likely that it can work with little change on other UNIX-like (xBSD, MacOS?).
+In addition, an explanation is provided below for an installation via Docker, which can make a deployement possible for other OS users (notably [Windows](https://docs.docker.com/docker-for-windows/), [FreeBSD](https://wiki.freebsd.org/Docker) or [MacOSX](https://docs.docker.com/docker-for-mac/))
+
 Installation of the required libraries :
 (Ubuntu 16.04)
 ```
@@ -39,6 +44,17 @@ $ source venv/bin/activate
 (venv)$ pip install -r requirements-dev.txt
 (venv)$ python setup.py install
 ```
+#### Running the test suite :
+##### Basic tests without web browser (same than those runned on Travis) :
+```
+(venv)$ py.test tests/test.py
+```
+
+##### Tests using selenium webdriver API (require [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/downloads) available) :
+(its actually 3 steps in one : launching the application, waiting for its start to be complete, then actually launching the test suite)
+```
+(venv)$ magrit & sleep 3 && py.test tests/tests_web.py
+```
 
 #### Launching the application:
 ```bash
@@ -49,6 +65,12 @@ INFO:magrit.main:serving on('0.0.0.0', 9999)
 
 #### Deployement with docker :
 ##### Using the latest version of the application (+ nginx for static files)
+
+The application to deploy may consist of two Docker containers:
+- one used to serve the `aiohttp` application with `Gunicorn` and to host the Redis service used;
+- the second is composed only of nginx, used in front-end of Gunicorn (i.g to buffer long requests, etc.) and to serve the static content.
+For now you have to build them, but we can releases them on *Docker Hub* if any interest.
+This scenario is shown below, exposing publicly `Magrit` on the port 80 :
 
 ```` bash
 cd /tmp/
@@ -75,6 +97,9 @@ docker run -dP --name magritapp "magrit_app:latest"
 docker run --publish "80:80" -dP --name nginx --link magritapp:magritapp nginx
 ````
 
+It is also possible to build only the 'Magrit' image, containing the `aiohttp` application; static files are then directly served by `aiohttp`.  
+
+Using the flexibility offered by Docker, one may be able to compose it's deployement in a different way to better balance the load of users (i.g. 1 container for Redis, 1 container for Nginx and 2 or 3 others containers, each one running an instance of the `aiohttp` application via `Gunicorn`).
 
 #### Contributing to Magrit :
 Contributions are welcome! There are various way to contribute to the project:
@@ -82,4 +107,3 @@ Contributions are welcome! There are various way to contribute to the project:
 - Translation (only French and English languages are currently available)
 - Code contribution (you're one the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
 - Contribute to the [gallery](http://magrit.hypotheses.org/galerie)
-

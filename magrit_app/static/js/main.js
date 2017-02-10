@@ -461,7 +461,7 @@ function setUpInterface(resume_project)
                   document.getElementById("canvas_rotation_value_txt").value = this.value;
               });
 
-    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '10px'});
+    let _i = dv4.append('li').styles({margin: '1px', padding: '4px', display: 'inline-flex', 'margin-left': '20px'});
     _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
     // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
@@ -606,13 +606,17 @@ function setUpInterface(resume_project)
         .attr("id", "export_options_geo")
         .style("display", "none");
 
-    let geo_a = export_geo_options.append('p');
+    let geo_a = export_geo_options.append('p')
+        .style('margin-bottom', '0');
     geo_a.append('span')
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer'});
-    let selec_layer = geo_a.insert("select")
+
+    let selec_layer = export_geo_options.insert("select")
+        .styles({'position': 'sticky', 'float': 'right'})
         .attrs({id: "layer_to_export", class: 'i18n m_elem_right'});
 
-    let geo_b = export_geo_options.append('p');
+    let geo_b = export_geo_options.append('p')
+        .styles({'clear': 'both'}); // 'margin-top': '35px !important'
     geo_b.append('span')
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype'});
     let selec_type = geo_b.insert("select")
@@ -816,7 +820,7 @@ function setUpInterface(resume_project)
                     window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
             }
             let box_content = '<div class="about_content">' +
-                '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.0.0 (unreleased)"}) + '</span></p>' +
+                '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.1.0"}) + '</span></p>' +
                 '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
                 // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
                 '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
@@ -1353,7 +1357,7 @@ function displayInfoOnMove(){
 
         for(let i = nb_layer-1; i > -1; i--){
             if(layers[i].style.visibility != "hidden"){
-                top_visible_layer = _app.id_to_layer(layers[i].id);
+                top_visible_layer = _app.id_to_layer.get(layers[i].id);
                 break;
             }
         }
@@ -1503,6 +1507,25 @@ function make_dialog_container(id_box, title, class_box){
         return modal_box;
 }
 
+var overlay_under_modal = (function(){
+    let twbs_div = document.querySelector('.twbs');
+    let bg = document.createElement('div');
+    bg.id = 'overlay_twbs';
+    bg.style.width = "100%";
+    bg.style.height = "100%";
+    bg.style.position = "fixed";
+    bg.style.zIndex = 99;
+    bg.style.top = 0;
+    bg.style.left = 0;
+    bg.style.background = "rgba(0,0,0,0.4)";
+    bg.style.display = "none";
+    twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
+    return {
+        display: function(){ bg.style.display = "" },
+        hide: function(){ bg.style.display = "none"}
+    };
+})();
+
 var make_confirm_dialog2 = (function(class_box, title, options){
     let existing = new Set();
     let get_available_id = () => {
@@ -1538,6 +1561,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
         let modal_box = new Modal(container, {
             backdrop: true,
+            keyboard: false,
             content: '<div class="modal-header">'
                       +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
                       +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
@@ -1553,32 +1577,34 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                       +'</div>'
         });
         modal_box.open();
-
+        overlay_under_modal.display();
         container.querySelector(".btn_ok").onclick = function(){
             deferred.resolve(true);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         }
         let _onclose = () => {
             deferred.resolve(false);
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
             existing.delete(new_id);
+            overlay_under_modal.hide();
             container.remove();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
         function helper_esc_key_twbs(evt){
               evt = evt || window.event;
-              // evt.preventDefault();
               let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
               if (isEscape) {
+                  evt.stopPropagation();
                   _onclose();
                   document.removeEventListener('keydown', helper_esc_key_twbs);
               }
         }
-        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', helper_esc_key_twbs);
         return deferred.promise;
     };
 })();
@@ -1591,6 +1617,7 @@ function remove_layer(name){
         title: "",
         text: i18next.t("app_page.common.remove_layer", {layer: name}),
         type: "warning",
+        customClass: 'swal2_custom',
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
@@ -1633,7 +1660,6 @@ function remove_ext_dataset_cleanup(){
     data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
     document.getElementById("remove_dataset").remove();
     document.getElementById("join_section").innerHTML = "";
-    document.getElementById('sample_zone').style.display = null;
 }
 
 // Do some clean-up when a layer is removed
@@ -1910,6 +1936,7 @@ function handleClipPath(proj_name){
         map.selectAll(".layer")
             .attr("clip-path", "url(#clip)");
 
+        svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
         let defs_sphere = defs.node().querySelector("#sphere"),
             defs_clipPath = defs.node().querySelector("clipPath");
@@ -2313,7 +2340,7 @@ function unpatchSvgForForeignObj(originals){
 
 function export_compo_svg(output_name){
     output_name = check_output_name(output_name, "svg");
-    //patchSvgForInkscape();
+    patchSvgForInkscape();
     patchSvgForFonts();
     let dimensions_foreign_obj = patchSvgForForeignObj();
     let targetSvg = document.getElementById("svg_map"),
@@ -2340,7 +2367,7 @@ function export_compo_svg(output_name){
     dl_link.remove();
     unpatchSvgForFonts();
     unpatchSvgForForeignObj(dimensions_foreign_obj);
-    //unpatchSvgForInkscape();
+    unpatchSvgForInkscape();
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that

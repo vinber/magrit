@@ -193,9 +193,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
             return true;
         },
         draw: function(){
-                // Clean-up previously made histogram :
+            // Clean-up previously made histogram :
             d3.select("#svg_discretization").selectAll(".bar").remove();
-            d3.select("#svg_discretization").selectAll(".y.axis").remove();
 
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = array_color[i];
@@ -223,13 +222,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                   "stroke-opacity": 1,
                   "fill": d.color
                 }));
-
-            svg_histo.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(0, -" + (margin.top + margin.bottom) +")")
-                .call(d3.axisLeft()
-                    .scale(y)
-                    .ticks(5));
 
             return true;
         },
@@ -450,21 +442,23 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         modal_box.close();
         container.remove();
         reOpenParent('.styleBox');
+        if(!p) overlay_under_modal.hide();
     }
     let _onclose = () => {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent('.styleBox');
+        let p = reOpenParent('.styleBox');
+        if(!p) overlay_under_modal.hide();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          // evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
+              evt.preventDefault();
               _onclose();
           }
     }

@@ -25,6 +25,11 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 
 
 - Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de saisir manuellement les bornes de classes.
+  
+
+Le panneau principal de la boite de dialogue permettant de choisir un type de discrétisation ainsi que les palettes de couleurs représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
+
+Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et *essaim d'abeilles*).
 
 
 Vous pouvez consulter l'article <a href="http://mappemonde.mgm.fr/119geov1/">Géovisualisation des discrétisations : une petite application pédagogique</a>, dans la revue *MappeMonde* n°119, qui met en avant l'importance du choix d'une discrétisation adaptée en cartographie.

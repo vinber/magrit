@@ -31,6 +31,7 @@
             "error_values_order": "Values have to be ordered (from the minimum to the maximum)",
             "error_map_project": "Unable to load project file. Error : ",
             "error_invalid_map_project": "Invalid/corrupted project-file.",
+            "error_invalid_empty": "The layer to load seems to be empty.",
             "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
@@ -89,7 +90,7 @@
             "title": "Add your data",
             "add_geom": "Add a basemap",
             "add_ext_dataset": "Add additional dataset",
-            "add_sample_data": "Select available sample basemap / dataset"
+            "add_sample_data": "Select available sample basemap (with included data)"
         },
         "section2": {
             "title": "Choose a representation"
@@ -395,7 +396,7 @@
             "categorical_color": "Color according to a categorical field",
             "random_color": "Random color on each feature",
             "field_to_render": "Field to render ",
-            "choose_colors": "Choose colors",
+            "choose_colors": "Modify colors",
             "field": "Field",
             "choose_discretization": "Display and arrange classes",
             "color_palette": "Color palette ",
@@ -410,7 +411,7 @@
             "border_color": "Border color<br>",
             "border_opacity": "Border opacity<br>",
             "width": "Width (px)<br>",
-            "border_width": "Border width<br>",
+            "border_width": "Border width (px)<br>",
             "field_symbol_color": "Field used for <strong>symbol colors</strong> : <i>{{ field }}</i><br>",
             "color_break": "Color according to a break value",
             "break_value": "<br>Break value ",
@@ -466,7 +467,7 @@
             },
             "typo": {
                 "field": "Field",
-                "color_choice": "Choose colors..."
+                "color_choice": "Modify colors..."
             },
             "choroprop": {
                 "field1": "Field 1<br>(symbol size) ",
@@ -590,7 +591,8 @@
             "box3_text": "Code is instrumented for localization and 2 languages are currently availables.",
             "box4_text": "Project is still under developpement. More features to come, hang tight!",
             "hypotheses1": "Alive",
-            "hypotheses2": "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application."
+            "hypotheses2": "The application is also backed against a <a href=\"http://magrit.hypotheses.org/\">research blog</a> containing detailed tutorials and news about changes in the application.",
+            "browser": "This website is optimized for Mozilla Firefox and Chromium (Google Chrome, Opera, etc.)"
         },
         "cookie_div": {
             "message": "We do NOT use cookies to profile or track users.",

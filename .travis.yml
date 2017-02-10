@@ -58,3 +58,4 @@ addons:
       - libxslt1-dev
       - libxml2
       - libxml2-dev
+      - libkml-dev

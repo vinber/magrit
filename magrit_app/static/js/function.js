@@ -202,12 +202,29 @@ function test_maxmin_resolution(cell_value){
     return;
 }
 
+/*
+* Set the appropriate discretisation icon as selected
+*
+*/
+var color_disc_icons = (function(){
+    let types = new Set(['q6', 'equal_interval', 'jenks', 'quantiles']);
+    return function(type_disc){
+        if(!type_disc) return ;
+        type_disc = type_disc.toLowerCase();
+        if(!types.has(type_disc)){
+            return;
+        } else {
+            document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
+        }
+    }
+})();
+
 function make_template_functionnality(parent_node){
     return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top){
-    let a = parent.append('p');
+    let a = parent.append('p').style('clear', 'both');
     a.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
       .html(i18next.t('app_page.func_options.common.output'));
@@ -230,7 +247,7 @@ function make_discretization_icons(discr_section){
       .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
     subsection2.append('img')
       .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_intervals'});
+      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval'});
     subsection2.append('img')
       .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
       .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
@@ -447,7 +464,7 @@ var fields_PropSymbolChoro = {
             ico_disc = section2.select('#ico_others'),
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             ico_q6 = section2.select('#ico_q6'),
             uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
             ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
@@ -457,9 +474,40 @@ var fields_PropSymbolChoro = {
             img_valid_disc = section2.select('#img_choice_disc'),
             ok_button = section2.select('#propChoro_yes');
 
+        let uncolor_icons = () => {
+            ico_jenks.style('border', null);
+            ico_q6.style('border', null);
+            ico_quantiles.style('border', null);
+            ico_equal_interval.style('border', null);
+        };
+
+        let prepare_disc_quantiles = (field) => {
+            let _values = user_data[layer].map(v => v[field]),
+                n_class = getOptNbClass(_values.length);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
+            self.rendering_params[field] = {
+                nb_class: nb_class, type: 'quantiles', colors: color_array,
+                breaks: breaks, no_data: no_data_color,
+                colorsByFeature: colors_map, renderer: 'Choropleth',
+                rendered_field: field, schema: ["Reds"]
+            };
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            ok_button.attr("disabled", null);
+            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            uncolor_icons();
+            ico_quantiles.style('border', 'solid 1px green');
+        }
+
         if(fields_stock.length == 0 || fields_ratio.length == 0){
             display_error_num_field();
             return;
+        }
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields_ratio[0];
+            prepare_disc_quantiles(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
         }
 
         fields_stock.forEach(function(field){
@@ -482,19 +530,25 @@ var fields_PropSymbolChoro = {
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_propsymbolchoro"));
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
-                ok_button.attr('disabled', null);
+                // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
+                // console.log(section2); console.log(self.rendering_params[field_name].type);
             } else {
-                ok_button.attr('disabled', true);
-                img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                choro_mini_choice_disc.html('');
+                prepare_disc_quantiles(field_name);
+                // ok_button.attr('disabled', true);
+                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // choro_mini_choice_disc.html('');
             }
 
         });
 
         ico_jenks.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -511,6 +565,8 @@ var fields_PropSymbolChoro = {
         });
 
         ico_quantiles.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -526,7 +582,9 @@ var fields_PropSymbolChoro = {
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function(){
+        ico_equal_interval.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -543,6 +601,8 @@ var fields_PropSymbolChoro = {
         });
 
         ico_q6.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_color.node().value,
                 _values = user_data[layer].map(v => v[selected_field]);
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6, 'BuGn');
@@ -576,7 +636,9 @@ var fields_PropSymbolChoro = {
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    ok_button.attr("disabled", null);
+                    // ok_button.attr("disabled", null);
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                         nb_class: confirmed[0], type: confirmed[1],
                         schema: confirmed[5], no_data: confirmed[6],
@@ -664,12 +726,12 @@ var fillMenu_Typo = function(){
 
     let a = dv2.append('p').attr('class', 'params_section2');
     a.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.color_choice'})
-      .html(i18next.t("app_page.func_options.typo.color_choice"))
+      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field'})
+      .html(i18next.t("app_page.func_options.typo.field"))
     a.insert('select')
       .attrs({id: 'Typo_field_1', class: 'params'});
 
-    let b = dv2.insert('p').style("margin", "auto");
+    let b = dv2.insert('p').styles({"margin": "auto", "text-align": "center"});
     b.append("button")
       .attrs({id: "Typo_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.typo.color_choice'})
@@ -692,6 +754,17 @@ var fields_Typo = {
             btn_typo_class = section2.select('#Typo_class'),
             uo_layer_name = section2.select('#Typo_output_name');
 
+        let prepare_colors = (field) => {
+            let [cats, col_map] = prepare_categories_array(layer, field, null);
+            let nb_class = col_map.size;
+            let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+            self.rendering_params[field] = {
+                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+                renderer: 'Categorical', rendered_field: field, skip_alert: false
+            };
+
+        }
+
         fields_name.forEach(f_name => {
             field_selec.append("option").text(f_name).attr("value", f_name);
         });
@@ -699,15 +772,22 @@ var fields_Typo = {
         field_selec.on("change", function(){
           let selected_field = this.value;
           uo_layer_name.attr('value', ["Typo", selected_field, layer].join('_'));
-          ok_button.attr('disabled', self.rendering_params[selected_field] ? null : true)
+          prepare_colors(selected_field);
         });
+
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields_name[0];
+            prepare_colors(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
 
         btn_typo_class.on("click", function(){
             let selected_field = field_selec.node().value,
                 nb_features = current_layers[layer].n_features,
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
-
+                cats;
+            [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
             if(cats.length > 15){
                 swal({title: "",
                       text: i18next.t("app_page.common.error_too_many_features_color"),
@@ -721,11 +801,10 @@ var fields_Typo = {
                     display_categorical_box(user_data[layer], layer, selected_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
-                                ok_button.attr("disabled", null);
                                 self.rendering_params[selected_field] = {
                                         nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: selected_field
-                                    }
+                                        renderer:"Categorical", rendered_field: selected_field, skip_alert: true
+                                    };
                             }
                         });
                 }, dismiss => {
@@ -735,10 +814,9 @@ var fields_Typo = {
                 display_categorical_box(user_data[layer], layer, selected_field, cats)
                     .then(function(confirmed){
                         if(confirmed){
-                            ok_button.attr("disabled", null);
                             self.rendering_params[selected_field] = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                    renderer:"Categorical", rendered_field: selected_field
+                                    renderer:"Categorical", rendered_field: selected_field, skip_alert: true
                                 }
                         }
                     });
@@ -747,17 +825,34 @@ var fields_Typo = {
 
         ok_button.on('click', function(){
           let selected_field = field_selec.node().value;
-          if(self.rendering_params[selected_field]){
-              let layer = Object.getOwnPropertyNames(user_data)[0],
-                  output_name = uo_layer_name.node().value;
-              if(output_name.length > 0 && /^\w+$/.test(output_name)){
-                  self.rendering_params[selected_field].new_name = check_layer_name(output_name);
-              } else {
-                  self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+          let render = () => {
+              if(self.rendering_params[selected_field]){
+                  let layer = Object.getOwnPropertyNames(user_data)[0],
+                      output_name = uo_layer_name.node().value;
+                  if(output_name.length > 0 && /^\w+$/.test(output_name)){
+                      self.rendering_params[selected_field].new_name = check_layer_name(output_name);
+                  } else {
+                      self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
+                  }
+                  render_categorical(layer, self.rendering_params[selected_field]);
+                  switch_accordion_section();
+                  handle_legend(self.rendering_params[selected_field].new_name)
               }
-              render_categorical(layer, self.rendering_params[selected_field]);
-              switch_accordion_section();
-              handle_legend(self.rendering_params[selected_field].new_name)
+          };
+          if(self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert){
+              swal({title: "",
+                    text: i18next.t("app_page.common.error_too_many_features_color"),
+                    type: "warning",
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                    cancelButtonText: i18next.t("app_page.common.cancel")
+                  }).then(() => {
+                    render();
+                  }, dismiss => { return; });
+          } else {
+                render();
           }
         });
         uo_layer_name.attr('value', "Typo_" + layer);
@@ -812,9 +907,33 @@ var fields_Choropleth = {
             ico_jenks = section2.select('#ico_jenks'),
             ico_quantiles = section2.select('#ico_quantiles'),
             ico_q6 = section2.select('#ico_q6'),
-            ico_equal_intervals = section2.select('#ico_equal_intervals'),
+            ico_equal_interval = section2.select('#ico_equal_interval'),
             btn_class = section2.select('#ico_others'),
             choro_mini_choice_disc = section2.select('#choro_mini_choice_disc');
+
+        let uncolor_icons = () => {
+            ico_jenks.style('border', null);
+            ico_q6.style('border', null);
+            ico_quantiles.style('border', null);
+            ico_equal_interval.style('border', null);
+        };
+
+        let prepare_disc_quantiles = (field) => {
+            let _values = user_data[layer].map(v => v[field]),
+                n_class = getOptNbClass(_values.length);
+            let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
+            self.rendering_params[field] = {
+                nb_class: nb_class, type: 'quantiles', colors: color_array,
+                breaks: breaks, no_data: no_data_color,
+                colorsByFeature: colors_map, renderer: 'Choropleth',
+                rendered_field: field, schema: ["Reds"]
+            };
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            ok_button.attr("disabled", null);
+            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            uncolor_icons();
+            ico_quantiles.style('border', 'solid 1px green');
+        }
 
         if(fields.length === 0){
             display_error_num_field();
@@ -825,24 +944,33 @@ var fields_Choropleth = {
             field_selec.append("option").text(field).attr("value", field);
         });
 
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+            let first_field = fields[0];
+            prepare_disc_quantiles(first_field);
+            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
+
         field_selec.on("change", function(){
             let field_name = this.value,
                 vals = user_data[layer].map(a => +a[field_name]);
             render_mini_chart_serie(vals, document.getElementById("container_sparkline_choro"));
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
-                ok_button.attr('disabled', null);
+                // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                uncolor_icons();
+                color_disc_icons(self.rendering_params[field_name].type);
             } else {
-                ok_button.attr('disabled', true);
-                img_valid_disc.attr('src', '/static/img/Red_x.svg');
-                choro_mini_choice_disc.html('');
+                prepare_disc_quantiles(field_name);
             }
         });
 
         ico_jenks.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -859,6 +987,8 @@ var fields_Choropleth = {
         });
 
         ico_quantiles.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -870,11 +1000,13 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
-        ico_equal_intervals.on('click', function(){
+        ico_equal_interval.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]),
                 n_class = getOptNbClass(_values.length);
@@ -886,11 +1018,13 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
         ico_q6.on('click', function(){
+            uncolor_icons();
+            this.style.border = 'solid 1px green';
             let selected_field = field_selec.node().value,
                 _values = user_data[layer].map(v => v[selected_field]);
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "Q6", 6);
@@ -901,7 +1035,7 @@ var fields_Choropleth = {
                 rendered_field: selected_field, schema: ["Reds"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
 
@@ -928,10 +1062,12 @@ var fields_Choropleth = {
             }
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    ok_button.attr("disabled", null);
+                    // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                     choro_mini_choice_disc.html(
                         i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', {count: confirmed[0]}));
+                    uncolor_icons();
+                    color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
                             nb_class: confirmed[0], type: confirmed[1],
                             breaks: confirmed[2], colors: confirmed[3],
@@ -1195,12 +1331,16 @@ function fillMenu_Stewart(){
       .attrs({class: 'params i18n', id: "stewart_breaks",
               "data-i18n": "[placeholder]app_page.common.expected_class",
               "placeholder": i18next.t("app_page.common.expected_class")});
-    let m  = dialog_content.append('p').attr('class', 'params_section2');
+    let m  = dialog_content.append('p')
+      .attr('class', 'params_section2')
+      .style('margin', 'auto');
     m.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask'})
       .html(i18next.t("app_page.func_options.smooth.mask"));
-    m.insert('select')
-      .attrs({class: 'params', id: "stewart_mask"});
+
+    dialog_content.insert('select')
+      .attrs({class: 'params', id: "stewart_mask"})
+      .styles({position: 'relative', float: 'right', margin: '0 0 10px 0'});
 
     [['exponential', 'app_page.func_options.smooth.func_exponential'],
      ['pareto', 'app_page.func_options.smooth.func_pareto']
@@ -1260,9 +1400,13 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson"){
-                let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                    scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                    nb_ft = current_layers[layer].n_features,
+                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                // if(opt_scale_max.value > 100){
+                //     opt_scale_max.value = 100;
+                // }
+                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                let nb_ft = current_layers[layer].n_features,
                     dataset = user_data[layer];
 
                 // if(contains_empty_val(dataset.map(a => a[field_name]))){
@@ -1273,63 +1417,31 @@ var fields_Anamorphose = {
                 let layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     sqrt = Math.sqrt,
                     abs = Math.abs,
-                    d_values = [],
-                    area_values = [],
-                    min = +dataset[0][field_name],
-                    max = +dataset[0][field_name],
-                    sum = 0;
+                    d_val = [],
+                    transform = [];
 
                 for(let i = 0; i < nb_ft; ++i){
                     let val = +dataset[i][field_name];
                     // We deliberatly use 0 if this is a missing value :
                     if(isNaN(val) || !isFinite(val)) val = 0
-                    if(val > max) max = val;
-                    else if (val < min) min = val;
-                    sum += val;
-                    d_values.push(val);
-                    area_values.push(+path.area(layer_select[i].__data__.geometry));
+                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                 }
+                d_val.sort((a, b) => b[1] - a[1]);
+                let ref = d_val[0][1] / d_val[0][2];
+                d_val[0].push(1);
 
-                let mean = sum / nb_ft,
-                    transform = [];
-                if(ref_size == "mean"){
-                    let low_ = abs(mean-min),
-                        up_ = abs(max-mean),
-                        max_dif = low_ > up_ ? low_ : up_;
-
-                    for(let i= 0; i < nb_ft; ++i){
-                        let val = d_values[i],
-                            scale_area;
-                        if(val > mean)
-                            scale_area = 1 + scale_max / (max_dif / abs(val-mean));
-                        else if(val == mean)
-                            scale_area = 1;
-                        else
-                            scale_area = 1 - scale_max / (max_dif / abs(mean-val));
-                        transform.push(scale_area);
-                    }
-                } else if (ref_size == "max"){
-                    let max_dif = abs(max-min);
-
-                    for(let i= 0; i < nb_ft; ++i){
-                        let val = d_values[i],
-                            val_dif = max_dif / val,
-                            scale_area;
-                        if(val_dif < 1)
-                            scale_area = 1;
-                        else
-                            scale_area = 1 - (scale_max / val_dif);
-                        transform.push(scale_area);
-                    }
-
+                for(let i= 0; i < nb_ft; ++i){
+                    let val = d_val[i][1] / d_val[i][2];
+                    let scale = sqrt(val / ref);
+                    d_val[i].push(scale);
                 }
+                d_val.sort((a, b) => a[0] - b[0]);
                 let formToSend = new FormData();
                 formToSend.append("json",
                     JSON.stringify({
                         topojson: current_layers[layer].key_name,
-                        scale_values: transform,
-                        field_name: field_name,
-                        scale_max: scale_max})
+                        scale_values: d_val.map(ft => ft[3]),
+                        field_name: field_name})
                     );
                 xhrequest("POST", '/compute/olson', formToSend, true)
                     .then( result => {
@@ -1340,7 +1452,7 @@ var fields_Anamorphose = {
                         let n_layer_name = add_layer_topojson(result, options);
                         current_layers[n_layer_name].renderer = "OlsonCarto";
                         current_layers[n_layer_name].rendered_field = field_name;
-                        current_layers[n_layer_name].scale_max = scale_max;
+                        current_layers[n_layer_name].scale_max = 1;
                         current_layers[n_layer_name].ref_layer_name = layer;
                         current_layers[n_layer_name].scale_byFeature = transform;
                         map.select("#" + _app.layer_to_id.get(n_layer_name))
@@ -1436,33 +1548,20 @@ function fillMenu_Anamorphose(){
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations'})
       .html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
     doug1.insert('input')
-      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"})
+      .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"});
 
     // Options for Olson mode :
-    let o1 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');;
-    o1.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_txt'})
-      .html(i18next.t("app_page.func_options.cartogram.olson_scale_txt"));
-    let type_scale_olson = o1.append("select")
-      .attrs({class: "params", id: "Anamorph_olson_scale_kind"});
-
     let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    o2.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-      .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    o2.insert('input')
-      .style("width", "60px")
-      .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 50, min: 0, max: 100, step: 1});
+    // o2.append('span')
+    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
+    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
+    // o2.insert('input')
+    //   .style("width", "60px")
+    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
 
      [['Dougenik & al. (1985)', 'dougenik'],
-     ['Olson (2005)', 'olson']].forEach(function(fun_name){
+      ['Olson (2005)', 'olson']].forEach(function(fun_name){
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
-    });
-
-    [["app_page.func_options.cartogram.olson_scale_max", "max"],
-     ["app_page.func_options.cartogram.olson_scale_mean", "mean"]
-    ].forEach(opt_field => {
-        type_scale_olson.append("option").attrs({"value": opt_field[1], 'data-i18n': '[text]' + opt_field[0]}).text(i18next.t(opt_field[0]));
     });
 
     make_layer_name_button(dialog_content, "Anamorph_output_name");
@@ -1769,22 +1868,8 @@ function make_mini_summary(summary){
     let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max)),
         props = {min : summary.min, max: summary.max, mean: summary.mean.toFixed(p),
                  median: summary.median.toFixed(p), stddev: summary.stddev.toFixed(p)};
-    // let elem = document.createElement('span');
-    // elem.setAttribute('class', 'i18n');
-    // elem.setAttribute('data-i18n', 'app_page.stat_summary.mini_summary');
-    // elem.setAttribute('data-i18n-data', props);
-    // elem.innerHTML = i18next.t('app_page.stat_summary.mini_summary', props);
     return i18next.t('app_page.stat_summary.mini_summary', props);
 }
-// function make_mini_summary(summary){
-//   let p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
-//   return [
-//    i18next.t("app_page.stat_summary.min"), " : ", summary.min, " | ",
-//    i18next.t("app_page.stat_summary.max"), " : ", summary.max, "<br>",
-//    i18next.t("app_page.stat_summary.mean"), " : ", summary.mean.toFixed(p), "<br>",
-//    i18next.t("app_page.stat_summary.median"), " : ", summary.median.toFixed(p), "<br>"
-//   ].join('');
-// }
 
  function fillMenu_PropSymbolTypo(layer){
     var dv2 = make_template_functionnality(section2);
@@ -1835,7 +1920,7 @@ function make_mini_summary(summary){
     var field2_selec = e.insert('select')
         .attrs({class: 'params', id: 'PropSymbolTypo_field_2'});
 
-    let f = dv2.insert('p').style("margin", "auto");
+    let f = dv2.insert('p').styles({'margin': 'auto', 'text-align': 'center'});
     f.append("button")
       .attrs({id: "Typo_class", class: "button_disc params i18n",
               'data-i18n': '[html]app_page.func_options.typo.color_choice'})
@@ -1859,12 +1944,16 @@ function prepare_categories_array(layer_name, selected_field, col_map){
         col_map.forEach( (v,k) => {
             cats.push({name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
         });
+        col_map = new Map();
+        for(let i=0; i<cats.length; i++){
+            col_map.set(cats[i].name, [cats[i].color, cats[i].name, cats[i].nb_elem]);
+        }
     } else {
         col_map.forEach( (v,k) => {
             cats.push({name: k, display_name: v[1], nb_elem: v[2], color: v[0]});
       });
     }
-    return cats;
+    return [cats, col_map];
 }
 
 var fields_PropSymbolTypo = {
@@ -1884,6 +1973,17 @@ var fields_PropSymbolTypo = {
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
 
+        let prepare_colors = (field) => {
+            let [cats, col_map] = prepare_categories_array(layer, field, null);
+            let nb_class = col_map.size;
+            let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+            self.rendering_params[field] = {
+                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+                renderer: 'Categorical', rendered_field: field, skip_alert: false
+            };
+
+        }
+
         if(fields_categ.length == 0 || fields_num.length == 0){
             display_error_num_field();
             return;
@@ -1897,6 +1997,13 @@ var fields_PropSymbolTypo = {
           field2_selec.append('option').text(field).attr('value', field);
         });
 
+        // Set some default colors in order to not force to open the box for selecting them :
+        {
+          let first_field = fields_categ[0];
+          prepare_colors(first_field);
+          ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+        }
+
         field1_selec.on("change", function(){
             let field_name = this.value,
                 max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
@@ -1906,7 +2013,8 @@ var fields_PropSymbolTypo = {
 
         field2_selec.on("change", function(){
             let field_name = this.value;
-            ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
+            prepare_colors(field_name);
+            // ok_button.attr("disabled", self.rendering_params[field_name] ? null : true);
             uo_layer_name.attr('value', ['Typo', field1_selec.node().value, field_name, layer].join('_'));
         });
 
@@ -1914,7 +2022,8 @@ var fields_PropSymbolTypo = {
             let selected_field = field2_selec.node().value,
                 new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_')),
                 col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats = prepare_categories_array(layer, selected_field, col_map);
+                cats;
+            [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
 
             if(cats.length > 15){
                 swal({title: "",
@@ -1929,10 +2038,10 @@ var fields_PropSymbolTypo = {
                       display_categorical_box(user_data[layer], layer, selected_field, cats)
                         .then(function(confirmed){
                             if(confirmed){
-                                ok_button.attr("disabled", null);
+                                // ok_button.attr("disabled", null);
                                 self.rendering_params[selected_field] = {
                                         nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                                        renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name, skip_alert: true
                                     }
                             }
                         });
@@ -1943,10 +2052,10 @@ var fields_PropSymbolTypo = {
                 display_categorical_box(user_data[layer], layer, selected_field, cats)
                   .then(function(confirmed){
                       if(confirmed){
-                          ok_button.attr("disabled", null);
+                          // ok_button.attr("disabled", null);
                           self.rendering_params[selected_field] = {
                                   nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                                  renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name
+                                  renderer:"Categorical", rendered_field: selected_field, new_name: new_layer_name, skip_alert: true
                               }
                       }
                   });
@@ -1954,14 +2063,32 @@ var fields_PropSymbolTypo = {
         });
 
         ok_button.on('click', function(){
-          render_PropSymbolTypo(
-            field1_selec.node().value,
-            field2_selec.node().value,
-            uo_layer_name.node().value,
-            ref_value_field.node().value,
-            section2.select('#PropSymbolTypo_ref_size').node().value,
-            section2.select('#PropSymbolTypo_symbol_type').node().value
-          )
+            let render = () => {
+                render_PropSymbolTypo(
+                    field1_selec.node().value,
+                    field2_selec.node().value,
+                    uo_layer_name.node().value,
+                    ref_value_field.node().value,
+                    section2.select('#PropSymbolTypo_ref_size').node().value,
+                    section2.select('#PropSymbolTypo_symbol_type').node().value
+                )
+            };
+            let field_color = field2_selec.node().value;
+            if(self.rendering_params[field_color].color_map.size > 15 && !self.rendering_params[field_color].skip_alert){
+                swal({title: "",
+                      text: i18next.t("app_page.common.error_too_many_features_color"),
+                      type: "warning",
+                      showCancelButton: true,
+                      allowOutsideClick: false,
+                      confirmButtonColor: "#DD6B55",
+                      confirmButtonText: i18next.t("app_page.common.valid") + "!",
+                      cancelButtonText: i18next.t("app_page.common.cancel")
+                    }).then(() => {
+                      render();
+                    }, dismiss => { return; });
+            } else {
+                  render();
+            }
         });
         setSelected(field1_selec.node(), fields_num[0]);
         setSelected(field2_selec.node(), fields_categ[0]);
