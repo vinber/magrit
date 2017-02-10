@@ -308,7 +308,7 @@ async def convert(request):
         hashed_input = mmh3_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
-    # If there is a single file (geojson or zip) to handle :
+    # If there is a single file (geojson, kml, gml or zip) to handle :
     elif "action" in posted_data and "file[]" in posted_data:
         try:
             field = posted_data.get('file[]')
@@ -381,42 +381,26 @@ async def convert(request):
         [os.remove(dir_path + file) for file in os.listdir(dir_path)]
         os.removedirs(dir_path)
 
-    elif ('octet-stream' in datatype
-            or 'text/json' in datatype or 'application/geo+json' in datatype) \
-            and "geojson" in name.lower():
+    elif ('octet-stream' in datatype or 'text/json' in datatype \
+            or 'application/geo+json' in datatype
+            or 'application/vnd.google-earth.kml+xml' in datatype \
+            or 'application/gml+xml' in datatype) \
+            and ("kml" in name.lower() \
+                 or "gml" in name.lower() or "geojson" in name.lower()):
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath, to_latlong=True)
         if len(res) == 0:
             return web.Response(text=json.dumps(
-                {'Error': 'Error with the GeoJSON file provided'}))
-        with open(filepath, 'wb') as f:
-            f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e5")
-        if len(result) == 0:
-            return web.Response(text=json.dumps(
-                {'Error': 'Error with the GeoJSON file provided'}))
-
-        result = result.replace(''.join([user_id, '_']), '')
-        asyncio.ensure_future(
-            store_non_quantized(
-                filepath, f_nameNQ, request.app['redis_conn']))
-        asyncio.ensure_future(
-            request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
-
-    elif ('octet-stream' in datatype
-            or 'application/vnd.google-earth.kml+xml' in datatype) \
-            and "kml" in name.lower():
-        with open(filepath, 'wb') as f:
-            f.write(data)
-        res = await ogr_to_geojson(filepath, to_latlong=True)
-        os.remove(filepath)
+                {'Error': 'Error reading the input file'}))
+        if 'gml' in name.lower():
+            os.remove(filepath.replace('gml', 'gfs'))
         with open(filepath, 'wb') as f:
             f.write(res)
         result = await geojson_to_topojson(filepath, "-q 1e5")
         if len(result) == 0:
             return web.Response(
-                text='{"Error": "Error converting reading kml file"}')
+                text='{"Error": "Error converting input file"}')
         else:
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(

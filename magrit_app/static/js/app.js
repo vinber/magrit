@@ -7751,7 +7751,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             allowOutsideClick: false });
         // Most direct way to add a layer :
         else handle_TopoJSON_files(files, target_layer_on_add);
-    } else if (files[0].name.toLowerCase().indexOf('geojson') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
+    } else if (files[0].name.toLowerCase().indexOf('geojson') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
 
         if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
@@ -8319,7 +8319,7 @@ function add_csv_geom(file, name) {
 }
 
 /**
-* Send a single file (.zip / .kml / .geojson) to the server in order to get
+* Send a single file (.zip / .kml / .gml / .geojson) to the server in order to get
 * the converted layer added to the map
 * @param {File} file
 */

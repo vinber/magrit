@@ -68,7 +68,7 @@ INFO:magrit.main:serving on('0.0.0.0', 9999)
 
 The application to deploy may consist of two Docker containers:
 - one used to serve the `aiohttp` application with `Gunicorn` and to host the Redis service used;
-- the second is composed only of nginx, used in front-end of Gunicorn (i.g to buffer long POST requests, etc.) and to serve the static content.
+- the second is composed only of nginx, used in front-end of Gunicorn (i.g to buffer long requests, etc.) and to serve the static content.
 For now you have to build them, but we can releases them on *Docker Hub* if any interest.
 This scenario is shown below, exposing publicly `Magrit` on the port 80 :
 

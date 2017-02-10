@@ -90,7 +90,7 @@
             "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte",
             "add_ext_dataset": "Ajout d'un jeu de données",
-            "add_sample_data": "Sélection fond de carte / jeu de données d'exemple"
+            "add_sample_data": "Sélection d'un fond de carte d'exemple (avec données)"
         },
         "section2": {
             "title": "Choix de la représentation"

@@ -90,7 +90,7 @@
             "title": "Add your data",
             "add_geom": "Add a basemap",
             "add_ext_dataset": "Add additional dataset",
-            "add_sample_data": "Select available sample basemap / dataset"
+            "add_sample_data": "Select available sample basemap (with included data)"
         },
         "section2": {
             "title": "Choose a representation"
