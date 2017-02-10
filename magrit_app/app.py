@@ -451,10 +451,12 @@ def make_carto_doug(file_path, field_name, iterations):
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
-        gdf = gdf[gdf[field_name].notnull()]
+    gdf = gdf[gdf[field_name].notnull()]
     gdf = gdf.iloc[gdf[field_name].nonzero()]
     gdf.index = range(len(gdf))
-    return make_cartogram(gdf.copy(), field_name, iterations)
+    result_json = json.loads(make_cartogram(gdf.copy(), field_name, iterations))
+    repairCoordsPole(result_json)
+    return json.dumps(result_json).encode()
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
@@ -484,7 +486,7 @@ async def carto_doug(posted_data, user_id, app):
         return
 
     os.remove(tmp_path)
-    savefile(tmp_path, result.encode())
+    savefile(tmp_path, result)
     res = await geojson_to_topojson(tmp_path, remove=True)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
@@ -498,7 +500,6 @@ async def carto_doug(posted_data, user_id, app):
         '{} - timing : carto_doug : {:.4f}s'
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
-
 
 # async def compute_discont(posted_data, user_id, app):
 #     st = time.time()
