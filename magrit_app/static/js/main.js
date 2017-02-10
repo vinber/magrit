@@ -1617,6 +1617,7 @@ function remove_layer(name){
         title: "",
         text: i18next.t("app_page.common.remove_layer", {layer: name}),
         type: "warning",
+        customClass: 'swal2_custom',
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",

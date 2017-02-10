@@ -58,6 +58,7 @@ function display_error_during_computation(msg){
     msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
     swal({title: i18next.t("app_page.common.error") + "!",
           text: i18next.t("app_page.common.error_message") + msg,
+          customClass: 'swal2_custom',
           type: "error",
           allowOutsideClick: false});
 }
@@ -440,7 +441,7 @@ function make_box_type_fields(layer_name){
 
     for(let i=0; i < fields_type.length; i++){
         if(fields_type[i].has_duplicate){
-            box_select.node().childNodes[i].childNodes[1].options.remove(4);
+            box_select.node().childNodes[i].childNodes[1].options.remove(0);
         }
     }
     overlay_under_modal.display();

@@ -1364,6 +1364,7 @@ function remove_layer(name) {
         title: "",
         text: i18next.t("app_page.common.remove_layer", { layer: name }),
         type: "warning",
+        customClass: 'swal2_custom',
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: "#DD6B55",
@@ -3713,7 +3714,6 @@ var display_discretization_links_discont = function display_discretization_links
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
-        // evt.preventDefault();
         var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
         if (isEscape) {
             evt.preventDefault();
@@ -6811,6 +6811,7 @@ function display_error_during_computation(msg) {
     msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
     swal({ title: i18next.t("app_page.common.error") + "!",
         text: i18next.t("app_page.common.error_message") + msg,
+        customClass: 'swal2_custom',
         type: "error",
         allowOutsideClick: false });
 }
@@ -7178,7 +7179,7 @@ function make_box_type_fields(layer_name) {
 
     for (var i = 0; i < fields_type.length; i++) {
         if (fields_type[i].has_duplicate) {
-            box_select.node().childNodes[i].childNodes[1].options.remove(4);
+            box_select.node().childNodes[i].childNodes[1].options.remove(0);
         }
     }
     overlay_under_modal.display();
@@ -7713,6 +7714,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.too_large_input"),
                 type: "error",
+                customClass: 'swal2_custom',
                 allowEscapeKey: false,
                 allowOutsideClick: false });
         }
@@ -7727,6 +7729,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add && _app.targeted_layer_added) {
             swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.error_only_one'),
+                customClass: 'swal2_custom',
                 type: "error",
                 allowEscapeKey: false,
                 allowOutsideClick: false });
@@ -7738,6 +7741,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             elem.style.border = '';
             return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t("app_page.common.alert_upload1"),
+                customClass: 'swal2_custom',
                 type: "error",
                 allowEscapeKey: false,
                 allowOutsideClick: false });
@@ -7746,6 +7750,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         elem.style.border = '';
         if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
+            customClass: 'swal2_custom',
             type: "error",
             allowEscapeKey: false,
             allowOutsideClick: false });
@@ -7756,6 +7761,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
 
         if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_one'),
+            customClass: 'swal2_custom',
             type: "error",
             allowEscapeKey: false,
             allowOutsideClick: false });
@@ -7766,6 +7772,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add) handle_dataset(files[0], target_layer_on_add);else swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_layout'),
             type: "error",
+            customClass: 'swal2_custom',
             allowEscapeKey: false,
             allowOutsideClick: false });
     } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
@@ -7773,6 +7780,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         if (target_layer_on_add) convert_dataset(files[0]);else swal({ title: i18next.t("app_page.common.error") + "!",
             text: i18next.t('app_page.common.error_only_layout'),
             type: "error",
+            customClass: 'swal2_custom',
             allowEscapeKey: false,
             allowOutsideClick: false });
     } else {
@@ -7785,6 +7793,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_shp'),
                 type: "error",
+                customClass: 'swal2_custom',
                 allowOutsideClick: false,
                 allowEscapeKey: false }).then(function (valid) {
                 null;
@@ -7795,6 +7804,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             return swal({ title: i18next.t("app_page.common.error") + "!",
                 text: i18next.t('app_page.common.alert_upload_invalid'),
                 type: "error",
+                customClass: 'swal2_custom',
                 allowOutsideClick: false,
                 allowEscapeKey: false });
         }
@@ -8448,7 +8458,7 @@ function add_layer_topojson(text, options) {
 
         return "feature_" + ix;
     }).styles({ "stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
-        "stroke-opacity": .4,
+        "stroke-opacity": 1,
         "fill": type != 'Line' ? random_color1 : null,
         "fill-opacity": type != 'Line' ? 0.90 : 0 });
 
@@ -8641,7 +8651,7 @@ function add_layout_feature(selected_feature) {
         setSphereBottom();
     } else if (selected_feature == "graticule") {
         if (current_layers["Graticule"] != undefined) return;
-        options.stroke = options.stroke || 'grey';
+        options.stroke = options.stroke || '#808080';
         options.stroke_width = options.stroke_width || "1px";
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
@@ -10111,6 +10121,7 @@ function createStyleBox(layer_name) {
                     title: "",
                     text: i18next.t("app_page.layer_style_popup.field_label"),
                     type: "question",
+                    customClass: 'swal2_custom',
                     showCancelButton: true,
                     showCloseButton: false,
                     allowEscapeKey: false,
@@ -10471,6 +10482,7 @@ function createStyleBox_ProbSymbol(layer_name) {
                     title: "",
                     text: i18next.t("app_page.layer_style_popup.field_label"),
                     type: "question",
+                    customClass: 'swal2_custom',
                     showCancelButton: true,
                     showCloseButton: false,
                     allowEscapeKey: false,

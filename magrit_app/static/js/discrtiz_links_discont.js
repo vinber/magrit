@@ -456,7 +456,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     container.querySelector("#xclose").onclick = _onclose;
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
-          // evt.preventDefault();
           let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
           if (isEscape) {
               evt.preventDefault();

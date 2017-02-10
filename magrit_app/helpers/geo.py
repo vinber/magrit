@@ -81,12 +81,11 @@ def olson_transform(geojson, scale_values):
 			# mpoly = [scale(g, xfact=val, yfact=val) for g in geom]
 			feature["geometry"] = mapping(
 				MultiPolygon([scale(g, xfact=val, yfact=val) for g in geom]))
-			print('a')
 		except Exception as err:
-			print('e',  err)
 			feature["geometry"] = mapping(
 				scale(geom, xfact=val, yfact=val))
 	geojson['features'].sort(key=lambda x: x['properties']['ref_area'], reverse=True)
+
 
 def reproj_convert_layer(geojson_path, output_path,
                          file_format, output_crs, input_crs="epsg:4326"):

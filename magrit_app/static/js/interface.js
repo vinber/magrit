@@ -49,6 +49,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.too_large_input"),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
         }
@@ -66,6 +67,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
         if(target_layer_on_add && _app.targeted_layer_added){
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
                       allowEscapeKey: false,
                       allowOutsideClick: false});
@@ -77,6 +79,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             elem.style.border = '';
             return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t("app_page.common.alert_upload1"),
+                  customClass: 'swal2_custom',
                   type: "error",
                   allowEscapeKey: false,
                   allowOutsideClick: false});
@@ -87,6 +90,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
            if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
                       allowEscapeKey: false,
                       allowOutsideClick: false});
@@ -102,6 +106,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
            if(target_layer_on_add && _app.targeted_layer_added)
                 swal({title: i18next.t("app_page.common.error") + "!",
                       text: i18next.t('app_page.common.error_only_one'),
+                      customClass: 'swal2_custom',
                       type: "error",
                       allowEscapeKey: false,
                       allowOutsideClick: false});
@@ -117,6 +122,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
    }
@@ -129,6 +135,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
    }
@@ -145,12 +152,14 @@ function handle_upload_files(files, target_layer_on_add, elem){
             return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_shp'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowOutsideClick: false,
                   allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
         } else {
             return swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.alert_upload_invalid'),
                   type: "error",
+                  customClass: 'swal2_custom',
                   allowOutsideClick: false,
                   allowEscapeKey: false});
         }
@@ -856,7 +865,7 @@ function add_layer_topojson(text, options){
               return "feature_" + ix;
           })
         .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
-                 "stroke-opacity": .4,
+                 "stroke-opacity": 1,
                  "fill": type != 'Line' ? random_color1 : null,
                  "fill-opacity": type != 'Line' ? 0.90 : 0});
 
@@ -1071,7 +1080,7 @@ function add_layout_feature(selected_feature, options = {}){
         setSphereBottom();
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined) return;
-        options.stroke = options.stroke || 'grey';
+        options.stroke = options.stroke || '#808080';
         options.stroke_width = options.stroke_width || "1px";
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;

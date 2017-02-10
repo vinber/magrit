@@ -760,3 +760,7 @@ img.layout_ft_ico:hover {
     border-left-color: rgb(48, 133, 214);
     border-right-color: rgb(48, 133, 214);
 }
+
+.swal2_custom {
+    overflow-wrap: break-word;
+}
