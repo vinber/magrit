@@ -513,8 +513,8 @@ function setUpInterface(resume_project) {
         ok_button.disabled = this.value.length == 0 ? 'true' : '';
     });
 
-    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach(function (name) {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+        // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -2124,8 +2124,7 @@ function export_layer_geo(layer, type, projec, proj4str) {
     formToSend.append("format", type);
     if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"]]);
-    // ["KML", "kml"]]);
+    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
         if (data.indexOf('{"Error"') == 0 || data.length == 0) {
@@ -2150,10 +2149,7 @@ function export_layer_geo(layer, type, projec, proj4str) {
         }
         var ext = extensions.get(type),
             dataStr = void 0;
-        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-        // else if (ext.indexOf("kml") > -1)
-        //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-        else dataStr = "data:application/zip;base64," + data;
+        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
 
         var dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
@@ -3986,25 +3982,52 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         if (!breaks) return false;
     }
 
-    var parent_nd = d3.select("#" + id_parent).styles({ 'margin-top': '3px', 'margin-bottom': '3px' });
+    var parent_nd = document.getElementById(id_parent);
+    parent_nd.style = "margin-top: 3px; amargin-bottom: 3px;";
 
-    parent_nd.append("p").styles({ margin: '1px', "word-spacing": "1.8em" }).html('Min - Max - Size');
-    parent_nd.append("div").selectAll("p").data(breaks).enter().append("p").style("margin", "0px").attr("class", "breaks_vals").attr("id", function (d, i) {
-        return ["line", i].join('_');
-    });
+    var title = document.createElement('p');
+    title.style = "margin: 1px; word-spacing: 1.8em;";
+    title.innerHTML = "Min - Max - Size";
+    parent_nd.appendChild(title);
 
-    var selec = parent_nd.selectAll(".breaks_vals");
+    var div_table = document.createElement('div');
+    parent_nd.appendChild(div_table);
+    for (var i = 0; i < breaks.length; i++) {
+        var inner_line = document.createElement('p');
+        inner_line.setAttribute('class', 'breaks_vals');
+        inner_line.id = ["line", i].join('_');
+        inner_line.style = "margin: 0px;";
 
-    for (var i = 0; i < selec._groups[0].length; i++) {
-        var selection = parent_nd.select('#line_' + i);
-        selection.insert('input').styles({ width: '60px', position: 'unset' }).attrs({ type: 'number', class: 'min_class', step: 0.1, value: (+breaks[i][0][0]).toFixed(2) });
+        var input1 = document.createElement('input');
+        input1.setAttribute('type', 'number');
+        input1.setAttribute('class', 'min_class');
+        input1.setAttribute('step', 'any');
+        input1.value = (+breaks[i][0][0]).toFixed(2);
+        input1.style = 'width: 60px; position: unset;';
+        inner_line.appendChild(input1);
 
-        selection.insert('input').styles({ width: '60px', position: 'unset' }).attrs({ type: 'number', class: 'max_class', step: 0.1, value: (+breaks[i][0][1]).toFixed(2) });
+        var input2 = document.createElement('input');
+        input2.setAttribute('type', 'number');
+        input2.setAttribute('class', 'max_class');
+        input2.setAttribute('step', 'any');
+        input2.value = (+breaks[i][0][1]).toFixed(2);
+        input2.style = 'width: 60px; position: unset;';
+        inner_line.appendChild(input2);
 
-        selection.insert('input').attrs({ type: 'number', class: 'size_class', step: 0.11, value: (+breaks[i][1]).toFixed(2) }).styles({ "margin-left": "20px", width: '55px', position: 'unset' });
+        var input3 = document.createElement('input');
+        input3.setAttribute('type', 'number');
+        input3.setAttribute('class', 'size_class');
+        input3.setAttribute('step', 'any');
+        input3.value = (+breaks[i][1]).toFixed(2);
+        input3.style = 'margin-left: 20px; width: 55px; position: unset;';
+        inner_line.appendChild(input3);
 
-        selection.insert('span').html(" px");
+        var px = document.createElement('span');
+        px.innerHTML = " px";
+        inner_line.appendChild(px);
+        div_table.appendChild(inner_line);
     }
+
     var mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
         maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
 
@@ -8636,7 +8659,7 @@ function add_layout_feature(selected_feature) {
             swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_max_text_annot"), "error");
             return;
         }
-        var txt_box = new Textbox(svg_map, new_id);
+        handleClickTextBox(new_id);
     } else if (selected_feature == "sphere") {
         if (current_layers.Sphere) return;
         options.fill = options.fill || "#add8e6";
@@ -8971,12 +8994,22 @@ function handleClickAddEllipse() {
 
     map.style("cursor", "crosshair").on("click", function () {
         start_point = [d3.event.layerX, d3.event.layerY];
-        tmp_start_point = map.append("rect").attr("x", start_point[0] - 2).attr("y", start_point[1] - 2).attr("height", 4).attr("width", 4).style("fill", "red");
+        tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
         setTimeout(function () {
             tmp_start_point.remove();
         }, 1000);
         map.style("cursor", "").on("click", null);
         new UserEllipse(ellipse_id, start_point, svg_map);
+    });
+}
+
+function handleClickTextBox(text_box_id) {
+    map.style("cursor", "crosshair").on("click", function () {
+        map.style("cursor", "").on("click", null);
+        var text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
+        setTimeout(function (_) {
+            text_box.editStyle();
+        }, 350);
     });
 }
 
@@ -9023,10 +9056,10 @@ function handleClickAddArrow() {
     map.style("cursor", "crosshair").on("click", function () {
         if (!start_point) {
             start_point = [d3.event.layerX, d3.event.layerY];
-            tmp_start_point = map.append("rect").attr("x", start_point[0] - 2).attr("y", start_point[1] - 2).attr("height", 4).attr("width", 4).style("fill", "red");
+            tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
         } else {
             end_point = [d3.event.layerX, d3.event.layerY];
-            tmp_end_point = map.append("rect").attr("x", end_point[0] - 2).attr("y", end_point[1] - 2).attr("height", 4).attr("width", 4).style("fill", "red");
+            tmp_end_point = map.append("rect").attrs({ x: end_point[0] - 2, y: end_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
         }
         if (start_point && end_point) {
             setTimeout(function () {
@@ -10719,6 +10752,31 @@ var UserArrow = function () {
                 line = self.arrow.node().querySelector("line"),
                 zoom_params = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+            // New behavior if the user click on the lock to move on the map :
+            var cleanup_edit_state = function cleanup_edit_state() {
+                self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+                self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+                map.select('#arrow_start_pt').remove();
+                map.select('#arrow_end_pt').remove();
+
+                // Reactive the ability to move the arrow :
+                self.arrow.call(self.drag_behavior);
+                // Restore the ability to edit the control points on dblclick on the arrow :
+                self.arrow.on("dblclick", function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+                // Restore the previous behiavor for the 'lock' button :
+                document.getElementById("hand_button").onclick = handle_click_hand;
+            };
+
+            document.getElementById("hand_button").onclick = function () {
+                cleanup_edit_state();
+                handle_click_hand();
+            };
+
             // Desactive the ability to drag the arrow :
             self.arrow.on('.drag', null);
             // Desactive the ability to zoom/move on the map ;
@@ -10746,22 +10804,10 @@ var UserArrow = function () {
             self.arrow.on("dblclick", function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
-                self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                map.select('#arrow_start_pt').remove();
-                map.select('#arrow_end_pt').remove();
-                // Unlock the zoom on the map according to the previous behaviour :
+                cleanup_edit_state();
                 if (!map_locked) {
                     handle_click_hand('unlock');
                 }
-                // Reactive the ability to move the arrow :
-                self.arrow.call(self.drag_behavior);
-                // Restore the ability to edit the control points on dblclick on the arrow :
-                self.arrow.on("dblclick", function () {
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
-                    self.handle_ctrl_pt();
-                });
             });
         }
     }, {
@@ -11638,6 +11684,24 @@ var UserEllipse = function () {
                 ellipse_elem = self.ellipse.node().querySelector("ellipse"),
                 zoom_param = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+            var cleanup_edit_state = function cleanup_edit_state() {
+                map.selectAll('.ctrl_pt').remove();
+                self.ellipse.call(self.drag_behavior);
+                self.ellipse.on('dblclick', function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+                document.getElementById('hand_button').onclick = handle_click_hand;
+            };
+
+            // Change the behavior of the 'lock' button :
+            document.getElementById('hand_button').onclick = function () {
+                cleanup_edit_state();
+                handle_click_hand();
+            };
+
             // Desactive the ability to drag the ellipse :
             self.ellipse.on('.drag', null);
             // Desactive the ability to zoom/move on the map ;
@@ -11657,19 +11721,14 @@ var UserEllipse = function () {
                 var dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 ellipse_elem.ry.baseVal.value = dist;
             }));
+
             self.ellipse.on('dblclick', function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
-                map.selectAll('.ctrl_pt').remove();
+                cleanup_edit_state();
                 if (!map_locked) {
                     handle_click_hand('unlock');
                 }
-                self.ellipse.call(self.drag_behavior);
-                self.ellipse.on('dblclick', function () {
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
-                    self.handle_ctrl_pt();
-                });
             });
         }
     }]);
