@@ -342,6 +342,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
@@ -356,6 +357,7 @@ function make_box_type_fields(layer_name){
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
