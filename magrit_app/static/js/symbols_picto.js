@@ -283,11 +283,11 @@ function make_style_box_indiv_symbol(symbol_node){
         let current_state = parent.classList.contains('scalable-legend');
         let b = box_content.append('p').attr('class', 'line_elem');
         b.append('label')
-            .attrs({for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
+            .attrs({for: 'checkbox_symbol_zoom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom'})
             .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
         b.append('input')
             .style('float', 'right')
-            .attrs({type: 'checkbox', id: 'checkbox_symbol_soom_scale'})
+            .attrs({type: 'checkbox', id: 'checkbox_symbol_zoom_scale'})
             .on('change', function(){
                 let zoom_scale = svg_map.__zoom;
                 if(this.checked){
@@ -302,6 +302,6 @@ function make_style_box_indiv_symbol(symbol_node){
                   parent.classList.remove('scalable-legend');
                 }
             });
-        document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
+        document.getElementById("checkbox_symbol_zoom_scale").checked = current_options.scalable;
     }
 };

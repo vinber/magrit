@@ -119,6 +119,31 @@ class UserArrow {
           line = self.arrow.node().querySelector("line"),
           zoom_params = svg_map.__zoom,
           map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+      // New behavior if the user click on the lock to move on the map :
+      let cleanup_edit_state = () => {
+          self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+          self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+          map.select('#arrow_start_pt').remove();
+          map.select('#arrow_end_pt').remove();
+
+          // Reactive the ability to move the arrow :
+          self.arrow.call(self.drag_behavior);
+          // Restore the ability to edit the control points on dblclick on the arrow :
+          self.arrow.on("dblclick", () => {
+              d3.event.preventDefault();
+              d3.event.stopPropagation();
+              self.handle_ctrl_pt()
+          });
+          // Restore the previous behiavor for the 'lock' button :
+          document.getElementById("hand_button").onclick = handle_click_hand;
+      }
+
+      document.getElementById("hand_button").onclick = function(){
+          cleanup_edit_state();
+          handle_click_hand();
+      };
+
       // Desactive the ability to drag the arrow :
       self.arrow.on('.drag', null);
       // Desactive the ability to zoom/move on the map ;
@@ -152,22 +177,10 @@ class UserArrow {
       self.arrow.on("dblclick", function(){
           d3.event.stopPropagation();
           d3.event.preventDefault();
-          self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-          self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-          map.select('#arrow_start_pt').remove();
-          map.select('#arrow_end_pt').remove();
-          // Unlock the zoom on the map according to the previous behaviour :
+          cleanup_edit_state();
           if(!map_locked){
               handle_click_hand('unlock');
           }
-          // Reactive the ability to move the arrow :
-          self.arrow.call(self.drag_behavior);
-          // Restore the ability to edit the control points on dblclick on the arrow :
-          self.arrow.on("dblclick", () => {
-              d3.event.preventDefault();
-              d3.event.stopPropagation();
-              self.handle_ctrl_pt()
-          });
       });
     }
 
@@ -1121,6 +1134,24 @@ class UserEllipse {
             ellipse_elem = self.ellipse.node().querySelector("ellipse"),
             zoom_param = svg_map.__zoom,
             map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+        let cleanup_edit_state = () => {
+            map.selectAll('.ctrl_pt').remove();
+            self.ellipse.call(self.drag_behavior);
+            self.ellipse.on('dblclick', () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                self.handle_ctrl_pt();
+            });
+            document.getElementById('hand_button').onclick = handle_click_hand;
+        };
+
+        // Change the behavior of the 'lock' button :
+        document.getElementById('hand_button').onclick = function(){
+            cleanup_edit_state();
+            handle_click_hand();
+        };
+
         // Desactive the ability to drag the ellipse :
         self.ellipse.on('.drag', null);
         // Desactive the ability to zoom/move on the map ;
@@ -1150,19 +1181,14 @@ class UserEllipse {
                 let dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 ellipse_elem.ry.baseVal.value = dist;
             }));
+
         self.ellipse.on('dblclick', function(){
             d3.event.stopPropagation();
             d3.event.preventDefault();
-            map.selectAll('.ctrl_pt').remove();
+            cleanup_edit_state();
             if(!map_locked){
                 handle_click_hand('unlock');
             }
-            self.ellipse.call(self.drag_behavior);
-            self.ellipse.on('dblclick', () => {
-                d3.event.preventDefault();
-                d3.event.stopPropagation();
-                self.handle_ctrl_pt();
-            });
         });
     }
  }

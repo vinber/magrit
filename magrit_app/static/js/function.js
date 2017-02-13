@@ -290,45 +290,52 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
             return false;
     }
 
-    let parent_nd = d3.select("#" + id_parent)
-                        .styles({'margin-top': '3px', 'margin-bottom': '3px'});
+    let parent_nd = document.getElementById(id_parent);
+    parent_nd.style = "margin-top: 3px; amargin-bottom: 3px;"
 
-    parent_nd
-        .append("p")
-        .styles({margin: '1px', "word-spacing": "1.8em"})
-        .html('Min - Max - Size');
-    parent_nd
-        .append("div")
-        .selectAll("p")
-        .data(breaks).enter()
-        .append("p")
-            .style("margin", "0px")
-            .attr("class", "breaks_vals")
-            .attr("id", (d,i) => ["line", i].join('_'));
+    let title = document.createElement('p');
+    title.style = "margin: 1px; word-spacing: 1.8em;";
+    title.innerHTML = "Min - Max - Size";
+    parent_nd.appendChild(title);
 
-    let selec = parent_nd.selectAll(".breaks_vals");
+    let div_table = document.createElement('div');
+    parent_nd.appendChild(div_table);
+    for(let i = 0; i < breaks.length; i++){
+        let inner_line = document.createElement('p');
+        inner_line.setAttribute('class', 'breaks_vals');
+        inner_line.id = ["line", i].join('_');
+        inner_line.style = "margin: 0px;"
 
-    for(let i = 0; i < selec._groups[0].length; i++){
-        let selection = parent_nd.select('#line_' + i);
-        selection
-            .insert('input')
-            .styles({width: '60px', position: 'unset'})
-            .attrs({type: 'number', class: 'min_class', step: 0.1, value: (+breaks[i][0][0]).toFixed(2)});
+        let input1 = document.createElement('input');
+        input1.setAttribute('type', 'number');
+        input1.setAttribute('class', 'min_class');
+        input1.setAttribute('step', 'any');
+        input1.value = (+breaks[i][0][0]).toFixed(2);
+        input1.style = 'width: 60px; position: unset;'
+        inner_line.appendChild(input1);
 
-        selection
-            .insert('input')
-            .styles({width: '60px', position: 'unset'})
-            .attrs({type: 'number', class: 'max_class', step: 0.1, value: (+breaks[i][0][1]).toFixed(2)});
+        let input2 = document.createElement('input');
+        input2.setAttribute('type', 'number');
+        input2.setAttribute('class', 'max_class');
+        input2.setAttribute('step', 'any');
+        input2.value = (+breaks[i][0][1]).toFixed(2);
+        input2.style = 'width: 60px; position: unset;'
+        inner_line.appendChild(input2);
 
-        selection
-            .insert('input')
-            .attrs({type: 'number', class: 'size_class', step: 0.11, value: (+breaks[i][1]).toFixed(2)})
-            .styles({"margin-left": "20px", width: '55px', position: 'unset'});
+        let input3 = document.createElement('input');
+        input3.setAttribute('type', 'number');
+        input3.setAttribute('class', 'size_class');
+        input3.setAttribute('step', 'any');
+        input3.value = (+breaks[i][1]).toFixed(2);
+        input3.style = 'margin-left: 20px; width: 55px; position: unset;'
+        inner_line.appendChild(input3);
 
-        selection
-            .insert('span')
-            .html(" px");
+        let px = document.createElement('span');
+        px.innerHTML = " px";
+        inner_line.appendChild(px);
+        div_table.appendChild(inner_line);
     }
+
     let mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
         maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
 

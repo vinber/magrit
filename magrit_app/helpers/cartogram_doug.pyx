@@ -51,6 +51,7 @@ def make_cartogram(geodf, field_name, iterations=5):
     except KeyError:
         raise KeyError('Column name \'{}\' not found'.format(field_name))
     Cartogram(geodf, f_idx, iterations).make()
+    geodf.geometry = geodf.geometry.buffer(0)
     return geodf.to_json()
 
 ctypedef public struct Holder:

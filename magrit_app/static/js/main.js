@@ -638,8 +638,8 @@ function setUpInterface(resume_project)
             ok_button.disabled = this.value.length == 0 ? 'true' : '';
         });
 
-    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
+    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach( name => {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
         selec_type.append("option").attr("value", name).text(name);
     });
 
@@ -2356,18 +2356,12 @@ function export_compo_svg(output_name){
 
     source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
-    let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source),
-        dl_link = document.createElement("a");
-
-    dl_link.download = output_name;
-    dl_link.href = url;
-    dl_link.dataset.downloadurl = ["image/svg", dl_link.download, dl_link.href].join(':');
-    document.body.appendChild(dl_link);
-    dl_link.click();
-    dl_link.remove();
-    unpatchSvgForFonts();
-    unpatchSvgForForeignObj(dimensions_foreign_obj);
-    unpatchSvgForInkscape();
+    let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+    clickLinkFromDataUrl(url, output_name).then(a => {
+        unpatchSvgForFonts();
+        unpatchSvgForForeignObj(dimensions_foreign_obj);
+        unpatchSvgForInkscape();
+    });
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
@@ -2408,23 +2402,18 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         try {
-            var imgUrl = targetCanvas.toDataURL(mime_type),
-                dl_link = document.createElement("a");
+            var imgUrl = targetCanvas.toDataURL(mime_type);
         } catch (err) {
             document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
-        dl_link.download = output_name;
-        dl_link.href = imgUrl;
-        dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
-        document.body.appendChild(dl_link);
-        dl_link.click();
-        dl_link.remove();
-        targetCanvas.remove();
-        document.getElementById("overlay").style.display = "none";
-        unpatchSvgForFonts();
-        unpatchSvgForForeignObj(dimensions_foreign_obj);
+        clickLinkFromDataUrl(imgUrl, output_name)
+            .then(_ => {
+                unpatchSvgForFonts();
+                unpatchSvgForForeignObj(dimensions_foreign_obj);
+                document.getElementById("overlay").style.display = "none";
+            });
     }
 }
 
@@ -2442,8 +2431,8 @@ function export_layer_geo(layer, type, projec, proj4str){
         ["GeoJSON", "geojson"],
         ["TopoJSON", "topojson"],
         ["ESRI Shapefile", "zip"],
-        ["GML", "zip"]]);
-        // ["KML", "kml"]]);
+        ["GML", "zip"],
+        ["KML", "kml"]]);
 
     xhrequest("POST", '/get_layer2', formToSend, true)
         .then( data => {
@@ -2465,21 +2454,16 @@ function export_layer_geo(layer, type, projec, proj4str){
                 return;
             }
             let ext = extensions.get(type),
+                filename = [layer, ext].join('.'),
                 dataStr;
-            if(ext.indexOf("json") > -1)
+            if(ext.indexOf("json") > -1){
                 dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-            // else if (ext.indexOf("kml") > -1)
-            //     dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-            else
+            } else if (ext.indexOf("kml") > -1) {
+                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            } else {
                 dataStr = "data:application/zip;base64," + data;
-
-            let dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-            document.body.appendChild(dlAnchorElem);
-            dlAnchorElem.click();
-            dlAnchorElem.remove();
-
+            }
+            clickLinkFromDataUrl(dataStr, filename);
         }, error => {
             console.log(error);
         });

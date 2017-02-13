@@ -56,7 +56,8 @@ try:
     from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
-        reproj_convert_layer, reproj_layer, check_projection, olson_transform,
+        reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
+        check_projection, olson_transform,
         make_geojson_links, repairCoordsPole)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
@@ -70,7 +71,8 @@ except:
     from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
-        reproj_convert_layer, reproj_layer, check_projection, olson_transform,
+        reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
+        check_projection, olson_transform,
         make_geojson_links, repairCoordsPole)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
@@ -451,10 +453,12 @@ def make_carto_doug(file_path, field_name, iterations):
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
-        gdf = gdf[gdf[field_name].notnull()]
+    gdf = gdf[gdf[field_name].notnull()]
     gdf = gdf.iloc[gdf[field_name].nonzero()]
     gdf.index = range(len(gdf))
-    return make_cartogram(gdf.copy(), field_name, iterations)
+    result_json = json.loads(make_cartogram(gdf.copy(), field_name, iterations))
+    repairCoordsPole(result_json)
+    return json.dumps(result_json).encode()
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
@@ -484,7 +488,7 @@ async def carto_doug(posted_data, user_id, app):
         return
 
     os.remove(tmp_path)
-    savefile(tmp_path, result.encode())
+    savefile(tmp_path, result)
     res = await geojson_to_topojson(tmp_path, remove=True)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = res.replace(tmp_part, new_name)
@@ -498,7 +502,6 @@ async def carto_doug(posted_data, user_id, app):
         '{} - timing : carto_doug : {:.4f}s'
         .format(user_id, time.time()-st))
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
-
 
 # async def compute_discont(posted_data, user_id, app):
 #     st = time.time()
@@ -848,46 +851,59 @@ async def handler_exists_layer2(request):
             '{} - Unable to fetch the requested layer ({}/{})'
             .format(user_id, layer_name, layer_name_redis))
         return web.Response(
-            text="Error: Unable to fetch the layer on the server")
+            text='{"Error": "Unable to fetch the layer on the server"}')
     elif file_format == "TopoJSON":
         return web.Response(text=res.decode())
     else:
-        res_geojson = topojson_to_geojson(json.loads(res.decode()))
-        if "GeoJSON" in file_format:
-            return web.Response(text=res_geojson)
-        else:
-            out_proj = check_projection(projection["name"] if "name" in projection
-                                        else projection["proj4string"])
-            if not out_proj:
-                return web.Response(
-                    text=json.dumps(
-                        {'Error': 'app_page.common.error_proj4_string'}))
-
-            available_formats = {"ESRI Shapefile": ".shp",
-                                 "KML": ".kml",
-                                 "GML": ".gml"}
-            ext = available_formats[file_format]
-            tmp_path = prepare_folder()
-            output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
-            savefile(output_path, res_geojson.encode())
-            reproj_convert_layer(
-                output_path, output_path.replace(".geojson", ext),
-                file_format, out_proj
-                )
-            os.remove(output_path)
-            raw_data, filename = fetch_zip_clean(tmp_path, layer_name)
-            if ".zip" in filename:
-                b64_zip = b64encode(raw_data)
-                return web.Response(
-                    body=b64_zip,
-                    headers=MultiDict({
-                        "Content-Type": "application/octet-stream",
-                        "Content-Disposition": ''.join(
-                            ["attachment; filename=", layer_name, ".zip"]),
-                        "Content-length": len(b64_zip)}))
+        try:
+            res_geojson = topojson_to_geojson(json.loads(res.decode()))
+            if "GeoJSON" in file_format:
+                return web.Response(text=res_geojson)
+            elif "KML" in file_format:
+                tmp_path = prepare_folder()
+                output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
+                savefile(output_path, res_geojson.encode())
+                result = reproj_convert_layer_kml(output_path)
+                os.removedirs(tmp_path)
+                return web.Response(text=result.decode())
             else:
-                return web.Response(text=raw_data.decode())
-    return web.Response(text="Error: Not supported yet")
+                out_proj = check_projection(projection["name"] if "name" in projection
+                                            else projection["proj4string"])
+                if not out_proj:
+                    return web.Response(
+                        text=json.dumps(
+                            {'Error': 'app_page.common.error_proj4_string'}))
+
+                available_formats = {"ESRI Shapefile": ".shp",
+                                     "KML": ".kml",
+                                     "GML": ".gml"}
+                ext = available_formats[file_format]
+                tmp_path = prepare_folder()
+                output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
+                savefile(output_path, res_geojson.encode())
+                reproj_convert_layer(
+                    output_path, output_path.replace(".geojson", ext),
+                    file_format, out_proj
+                    )
+                os.remove(output_path)
+                raw_data, filename = fetch_zip_clean(tmp_path, layer_name)
+                if ".zip" in filename:
+                    b64_zip = b64encode(raw_data)
+                    return web.Response(
+                        body=b64_zip,
+                        headers=MultiDict({
+                            "Content-Type": "application/octet-stream",
+                            "Content-Disposition": ''.join(
+                                ["attachment; filename=", layer_name, ".zip"]),
+                            "Content-length": len(b64_zip)}))
+                else:
+                    return web.Response(text=raw_data.decode())
+        except Exception as err:
+            request.app['logger'].info(
+                '{} - Error {} while converting layer {} to {} format)'
+                .format(user_id, err, layer_name, file_format))
+            return web.Response(text='{"Error": "Unexpected error"}')
+    return web.Response(text='{"Error": "Invalid file format"}')
 
 
 async def rawcsv_to_geo(data):

@@ -10,7 +10,7 @@ from shapely.ops import transform
 from shapely.affinity import scale
 from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
-
+from subprocess import Popen, PIPE
 
 def _compute_centroids(geometries):
 	res = []
@@ -85,6 +85,15 @@ def olson_transform(geojson, scale_values):
 			feature["geometry"] = mapping(
 				scale(geom, xfact=val, yfact=val))
 	geojson['features'].sort(key=lambda x: x['properties']['ref_area'], reverse=True)
+
+
+def reproj_convert_layer_kml(geojson_path):
+	process = Popen(["ogr2ogr", "-f", "KML",
+					 "-preserve_fid",
+					 "-t_srs", "EPSG:4326",
+					 "/dev/stdout", geojson_path], stdout=PIPE)
+	stdout, _ = process.communicate()
+	return stdout
 
 
 def reproj_convert_layer(geojson_path, output_path,

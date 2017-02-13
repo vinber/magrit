@@ -1058,8 +1058,7 @@ function add_layout_feature(selected_feature, options = {}){
             swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error_max_text_annot"), "error");
             return;
         }
-        let txt_box = new Textbox(svg_map, new_id);
-
+        handleClickTextBox(new_id);
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
         options.fill = options.fill || "#add8e6";
@@ -1232,6 +1231,7 @@ function add_layout_layers(){
                          [i18next.t("app_page.layout_layer_box.brazil"), "brazil"],
                          [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"],
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
+                         [i18next.t("app_page.layout_layer_box.tissot"), "tissot"]
                          ];
 
     make_confirm_dialog2("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
@@ -1424,9 +1424,7 @@ function handleClickAddEllipse(){
         .on("click", function(){
             start_point = [d3.event.layerX, d3.event.layerY];
             tmp_start_point = map.append("rect")
-                .attr("x", start_point[0] - 2)
-                .attr("y", start_point[1] - 2)
-                .attr("height", 4).attr("width", 4)
+                .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
                 .style("fill", "red");
             setTimeout(function(){
                 tmp_start_point.remove();
@@ -1434,6 +1432,15 @@ function handleClickAddEllipse(){
             map.style("cursor", "")
                 .on("click", null);
             new UserEllipse(ellipse_id, start_point, svg_map);
+        });
+}
+
+function handleClickTextBox(text_box_id){
+    map.style("cursor", "crosshair")
+        .on("click", function(){
+            map.style("cursor", "").on("click", null);
+            let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
+            setTimeout(_ => { text_box.editStyle(); }, 350);
         });
 }
 
@@ -1482,16 +1489,12 @@ function handleClickAddArrow(){
             if(!start_point){
                 start_point = [d3.event.layerX, d3.event.layerY];
                 tmp_start_point = map.append("rect")
-                    .attr("x", start_point[0] - 2)
-                    .attr("y", start_point[1] - 2)
-                    .attr("height", 4).attr("width", 4)
+                    .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
                     .style("fill", "red");
             } else {
                 end_point = [d3.event.layerX, d3.event.layerY];
                 tmp_end_point = map.append("rect")
-                    .attr("x", end_point[0] - 2)
-                    .attr("y", end_point[1] - 2)
-                    .attr("height", 4).attr("width", 4)
+                    .attrs({x: end_point[0] - 2, y: end_point[1] - 2, height: 4, width: 4})
                     .style("fill", "red");
             }
             if(start_point && end_point){
