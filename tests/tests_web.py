@@ -103,34 +103,71 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.get(self.base_url)
         self.open_menu_section(4)
 
+        # Test the text annotation and feed it with some text :
         driver.find_element_by_id('btn_text_annot').click()
         time.sleep(0.2)
-        elem = driver.find_element_by_id("in_text_annotation_0")
-        self.assertEqual(elem.is_displayed(), True)
-        action = webdriver.ActionChains(driver)
-        action.context_click(on_element=elem)
-        action.perform()
-        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(1)
+        textarea_input = driver.find_element_by_id('annotation_content')
+        time.sleep(0.25)
+        textarea_input.clear()
+        textarea_input.send_keys('Mon annotation de texte')
+        driver.find_element_by_css_selector('.btn_ok').click()
+        time.sleep(0.5)
+        text_annot = driver.find_element_by_id('in_text_annotation_0')
+        self.assertEqual(text_annot.is_displayed(), True)
+        self.assertEqual(text_annot.text, 'Mon annotation de texte')
 
+        # Test the scale bar :
         driver.find_element_by_id('btn_scale').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
 
+        # Test the graticule :
         driver.find_element_by_id('btn_graticule').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "Graticule"):
             self.fail("Graticule won't display")
+        if not self.try_element_present(By.CSS_SELECTOR, "li.Graticule"):
+            self.fail("Graticule won't appeat in layer manager")
 
+        # Test the sphere element :
         driver.find_element_by_id('btn_sphere').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "Sphere"):
             self.fail("Sphere background won't display")
+        if not self.try_element_present(By.CSS_SELECTOR, "li.Sphere"):
+            self.fail("Sphere won't appeat in layer manager")
 
+        # Test the north arrow :
         driver.find_element_by_id('btn_north').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
+
+        svg_map = driver.find_element_by_id("svg_map")
+
+        # Test the arrow drawn by the user :
+        driver.find_element_by_id('btn_arrow').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.1)
+        # Move the cursor a bit in order to simulate the drawing of the arrow :
+        ac = webdriver.ActionChains(driver)
+        ac.move_to_element(svg_map).move_by_offset(10, 10).click().perform()
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(1)
+        if not self.try_element_present(By.ID, "arrow_0"):
+            self.fail("User drawn arrow won't display")
+
+        # Test the ellipse creation :
+        driver.find_element_by_id('btn_ellipse').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.5)
+        if not self.try_element_present(By.ID, "user_ellipse_0"):
+            self.fail("Ellipse won't display")
 
     # def test_links(self):
     #     driver = self.driver
@@ -340,10 +377,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Reload the page :
         driver.get(self.base_url)
-
+        time.sleep(0.1)
         # Close the alert asking confirmation for closing the page
         # (this is when the last state of the current project is saved)
-        self.close_alert_and_get_its_text()
+        driver.switch_to.alert.accept()
 
         # Click on the button to reload the last project :
         self.waitClickButtonSwal("button.swal2-cancel")
@@ -446,7 +483,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_css_selector(
             ".addFieldBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
-        time.sleep(0.4)
+        time.sleep(0.5)
         self.click_elem_retry(
             driver.find_element_by_id(
                 "browse_data_box").find_elements_by_css_selector(
@@ -458,12 +495,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("Pays")
         time.sleep(0.1)
 
-        # Valid with the random colors selected for each category :
-        self.click_element_with_retry(".btn_ok")
+        # Valid theses properties and click on the "render" button :
+        driver.find_element_by_id("Typo_yes").click()
+
         # Confirm the fact that there is a lot of features for this kind of representation :
         self.waitClickButtonSwal()
-
-        driver.find_element_by_id("Typo_yes").click()
 
     def test_stewart(self):
         driver = self.driver

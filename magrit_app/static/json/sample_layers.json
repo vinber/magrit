@@ -9,6 +9,7 @@
  "martinique": "/static/data_sample/martinique.geojson",
  "twincities": "/static/data_sample/twincities.csv",
  "paris_quartiers": "/static/data_sample/quartier_paris.geojson",
+ "tissot": "/static/data_sample/tissot.geojson",
  "us_states": "/static/data_sample/USA_states.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
  "world_country": "/static/data_sample/World.geojson",

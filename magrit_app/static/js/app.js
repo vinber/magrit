@@ -8833,7 +8833,7 @@ function add_layout_layers() {
     }
 
     var selec = { layout: null };
-    var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"], [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"], [i18next.t("app_page.layout_layer_box.nuts2"), "nuts2"], [i18next.t("app_page.layout_layer_box.brazil"), "brazil"], [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"], [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"]];
+    var layout_layers = [[i18next.t("app_page.layout_layer_box.nuts0"), "nuts0"], [i18next.t("app_page.layout_layer_box.nuts1"), "nuts1"], [i18next.t("app_page.layout_layer_box.nuts2"), "nuts2"], [i18next.t("app_page.layout_layer_box.brazil"), "brazil"], [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"], [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"], [i18next.t("app_page.layout_layer_box.tissot"), "tissot"]];
 
     make_confirm_dialog2("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
@@ -13732,8 +13732,8 @@ function make_style_box_indiv_symbol(symbol_node) {
     if (type_obj == 'layout') {
         var current_state = parent.classList.contains('scalable-legend');
         var b = box_content.append('p').attr('class', 'line_elem');
-        b.append('label').attrs({ for: 'checkbox_symbol_soom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
-        b.append('input').style('float', 'right').attrs({ type: 'checkbox', id: 'checkbox_symbol_soom_scale' }).on('change', function () {
+        b.append('label').attrs({ for: 'checkbox_symbol_zoom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' }).html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+        b.append('input').style('float', 'right').attrs({ type: 'checkbox', id: 'checkbox_symbol_zoom_scale' }).on('change', function () {
             var zoom_scale = svg_map.__zoom;
             if (this.checked) {
                 symbol_node.setAttribute('x', (symbol_node.x.baseVal.value - zoom_scale.x) / zoom_scale.k);
@@ -13747,7 +13747,7 @@ function make_style_box_indiv_symbol(symbol_node) {
                 parent.classList.remove('scalable-legend');
             }
         });
-        document.getElementById("checkbox_symbol_soom_scale").checked = current_options.scalable;
+        document.getElementById("checkbox_symbol_zoom_scale").checked = current_options.scalable;
     }
 };
 "use strict";
@@ -14204,7 +14204,7 @@ var boxExplore2 = {
             modal_box.close();
             container.remove();
             overlay_under_modal.hide();
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -14213,7 +14213,7 @@ var boxExplore2 = {
             modal_box.close();
             container.remove();
             overlay_under_modal.hide();
-            document.querySelector('.twbs').removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         function helper_esc_key_twbs(evt) {
             evt = evt || window.event;
@@ -14223,7 +14223,7 @@ var boxExplore2 = {
                 _onclose();
             }
         }
-        document.querySelector('.twbs').addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', helper_esc_key_twbs);
         overlay_under_modal.display();
         this.display_table(layer_name);
         return deferred.promise;

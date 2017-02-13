@@ -217,7 +217,8 @@
             "nuts0": "Nuts 0* (2013) European Country <i>(Polygons)</i>",
             "nuts1": "Nuts 1* (2013) European subdivisions <i>(Polygons)</i>",
             "nuts2": "Nuts 2* (2013) European subdivisions <i>(Polygons)</i>",
-            "brazil": "Brazilian federal states",
+            "brazil": "Brazilian federal states <i>(Polygons)</i>",
+            "tissot": "Tissot's indicatrices <i>(Polygons)</i>",
             "world_countries": "World land surface <i>(Polygons)</i>",
             "world_capitals": "Most populated cities in the world <i>(Points)</i>",
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"

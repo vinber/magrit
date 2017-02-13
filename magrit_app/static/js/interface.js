@@ -1231,6 +1231,7 @@ function add_layout_layers(){
                          [i18next.t("app_page.layout_layer_box.brazil"), "brazil"],
                          [i18next.t("app_page.layout_layer_box.world_countries"), "world_country"],
                          [i18next.t("app_page.layout_layer_box.world_capitals"), "world_cities"],
+                         [i18next.t("app_page.layout_layer_box.tissot"), "tissot"]
                          ];
 
     make_confirm_dialog2("sampleLayoutDialogBox", i18next.t("app_page.layout_layer_box.title"))
