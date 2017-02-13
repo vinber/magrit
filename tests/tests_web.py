@@ -89,7 +89,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual(menu2.text, menu_desc[current_lang][1])
 
         button_lang.click()
-        driver.find_element_by_css_selector("#menu_lang").find_element_by_xpath("//li[@data-index='1']").click()
+        driver.find_element_by_css_selector(
+            "#menu_lang").find_element_by_xpath("//li[@data-index='1']").click()
         new_lang = driver.find_element_by_css_selector("#current_app_lang").text
         self.assertNotEqual(current_lang, new_lang)
 
@@ -117,12 +118,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         text_annot = driver.find_element_by_id('in_text_annotation_0')
         self.assertEqual(text_annot.is_displayed(), True)
         self.assertEqual(text_annot.text, 'Mon annotation de texte')
+        self._verif_context_menu(text_annot, "text annotation")
 
         # Test the scale bar :
         driver.find_element_by_id('btn_scale').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("scale_bar"), "scale bar")
+
 
         # Test the graticule :
         driver.find_element_by_id('btn_graticule').click()
@@ -145,6 +150,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("north_arrow"), "north arrow")
 
         svg_map = driver.find_element_by_id("svg_map")
 
@@ -160,6 +167,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(1)
         if not self.try_element_present(By.ID, "arrow_0"):
             self.fail("User drawn arrow won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("arrow_0"), "user arrow")
+
 
         # Test the ellipse creation :
         driver.find_element_by_id('btn_ellipse').click()
@@ -168,6 +178,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.5)
         if not self.try_element_present(By.ID, "user_ellipse_0"):
             self.fail("Ellipse won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("user_ellipse_0"), "user ellipse")
 
     # def test_links(self):
     #     driver = self.driver
@@ -217,10 +229,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.open_menu_section(2)
         self.clickWaitTransition("#button_grid")
 
-        Select(driver.find_element_by_id("Gridded_field")).select_by_visible_text("POP")
+        Select(driver.find_element_by_id("Gridded_field")
+            ).select_by_visible_text("POP")
         driver.find_element_by_id("Gridded_cellsize").clear()
         driver.find_element_by_id("Gridded_cellsize").send_keys("145")
-        Select(driver.find_element_by_id("Gridded_shape")).select_by_value("Diamond")
+        Select(driver.find_element_by_id("Gridded_shape")
+            ).select_by_value("Diamond")
         driver.find_element_by_id("Gridded_yes").click()
 
         self.waitClickButtonSwal()
@@ -377,14 +391,14 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Reload the page :
         driver.get(self.base_url)
-        time.sleep(0.1)
+        time.sleep(0.2)
         # Close the alert asking confirmation for closing the page
         # (this is when the last state of the current project is saved)
         driver.switch_to.alert.accept()
 
         # Click on the button to reload the last project :
         self.waitClickButtonSwal("button.swal2-cancel")
-        time.sleep(2)
+        time.sleep(1)
 
     def test_downloads(self):
         driver = self.driver
@@ -861,6 +875,21 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         #     ".styleBox").find_elements_by_css_selector(
         #     ".btn_ok")[0].click()
         # driver.find_element_by_id("legend_button").click()
+
+    def _verif_context_menu(self, elem, info):
+        self.make_context_click(elem)
+        time.sleep(0.1)
+        if not self.try_element_present(By.CSS_SELECTOR, ".context-menu"):
+            self.fail("Context menu of {} won't display".format(info))
+        self.click_elem_retry(self.driver.find_element_by_id('svg_map'))
+
+    def make_context_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.context_click(target).perform()
+
+    def make_double_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.double_click(target).perform()
 
     def validTypefield(self):
         self.click_elem_retry(
