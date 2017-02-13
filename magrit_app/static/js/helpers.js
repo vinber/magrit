@@ -481,3 +481,19 @@ function getAvailablesFunctionnalities(layer_name){
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
     }
 }
+
+const clickLinkFromDataUrl = (url, filename) => {
+    return fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        let blobUrl = URL.createObjectURL(blob);
+        let dlAnchorElem = document.createElement('a');
+        dlAnchorElem.style.display = 'none';
+        dlAnchorElem.setAttribute("href", blobUrl);
+        dlAnchorElem.setAttribute("download", filename);
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+        URL.revokeObjectURL(blobUrl);
+    });
+}

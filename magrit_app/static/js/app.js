@@ -2043,18 +2043,12 @@ function export_compo_svg(output_name) {
 
     source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
-    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source),
-        dl_link = document.createElement("a");
-
-    dl_link.download = output_name;
-    dl_link.href = url;
-    dl_link.dataset.downloadurl = ["image/svg", dl_link.download, dl_link.href].join(':');
-    document.body.appendChild(dl_link);
-    dl_link.click();
-    dl_link.remove();
-    unpatchSvgForFonts();
-    unpatchSvgForForeignObj(dimensions_foreign_obj);
-    unpatchSvgForInkscape();
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+    clickLinkFromDataUrl(url, output_name).then(function (a) {
+        unpatchSvgForFonts();
+        unpatchSvgForForeignObj(dimensions_foreign_obj);
+        unpatchSvgForInkscape();
+    });
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
@@ -2097,23 +2091,17 @@ function _export_compo_png() {
     img.onload = function () {
         ctx.drawImage(img, 0, 0);
         try {
-            var imgUrl = targetCanvas.toDataURL(mime_type),
-                dl_link = document.createElement("a");
+            var imgUrl = targetCanvas.toDataURL(mime_type);
         } catch (err) {
             document.getElementById("overlay").style.display = "none";
             display_error_during_computation(String(err));
             return;
         }
-        dl_link.download = output_name;
-        dl_link.href = imgUrl;
-        dl_link.dataset.downloadurl = [mime_type, dl_link.download, dl_link.href].join(':');
-        document.body.appendChild(dl_link);
-        dl_link.click();
-        dl_link.remove();
-        targetCanvas.remove();
-        document.getElementById("overlay").style.display = "none";
-        unpatchSvgForFonts();
-        unpatchSvgForForeignObj(dimensions_foreign_obj);
+        clickLinkFromDataUrl(imgUrl, output_name).then(function (_) {
+            unpatchSvgForFonts();
+            unpatchSvgForForeignObj(dimensions_foreign_obj);
+            document.getElementById("overlay").style.display = "none";
+        });
     };
 }
 
@@ -2148,15 +2136,16 @@ function export_layer_geo(layer, type, projec, proj4str) {
             return;
         }
         var ext = extensions.get(type),
+            filename = [layer, ext].join('.'),
             dataStr = void 0;
-        if (ext.indexOf("json") > -1) dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);else if (ext.indexOf("kml") > -1) dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);else dataStr = "data:application/zip;base64," + data;
-
-        var dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", [layer, ext].join('.'));
-        document.body.appendChild(dlAnchorElem);
-        dlAnchorElem.click();
-        dlAnchorElem.remove();
+        if (ext.indexOf("json") > -1) {
+            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        } else if (ext.indexOf("kml") > -1) {
+            dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+        } else {
+            dataStr = "data:application/zip;base64," + data;
+        }
+        clickLinkFromDataUrl(dataStr, filename);
     }, function (error) {
         console.log(error);
     });
@@ -7254,6 +7243,22 @@ function getAvailablesFunctionnalities(layer_name) {
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
     }
 }
+
+var clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
+    return fetch(url).then(function (res) {
+        return res.blob();
+    }).then(function (blob) {
+        var blobUrl = URL.createObjectURL(blob);
+        var dlAnchorElem = document.createElement('a');
+        dlAnchorElem.style.display = 'none';
+        dlAnchorElem.setAttribute("href", blobUrl);
+        dlAnchorElem.setAttribute("download", filename);
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+        URL.revokeObjectURL(blobUrl);
+    });
+};
 "use strict";
 
 /**
@@ -12970,13 +12975,8 @@ function get_map_template() {
 // Function triggered when the user request a download of its map preferences
 function save_map_template() {
     get_map_template().then(function (json_params) {
-        var dlAnchorElem = document.createElement('a');
-        dlAnchorElem.style.display = "none";
-        dlAnchorElem.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json_params));
-        dlAnchorElem.setAttribute("download", "magrit_project.json");
-        document.body.appendChild(dlAnchorElem);
-        dlAnchorElem.click();
-        dlAnchorElem.remove();
+        var url = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
+        clickLinkFromDataUrl(url, 'magrit_project.json');
     });
 }
 

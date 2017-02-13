@@ -864,6 +864,7 @@ async def handler_exists_layer2(request):
                 output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
                 savefile(output_path, res_geojson.encode())
                 result = reproj_convert_layer_kml(output_path)
+                os.removedirs(tmp_path)
                 return web.Response(text=result.decode())
             else:
                 out_proj = check_projection(projection["name"] if "name" in projection
