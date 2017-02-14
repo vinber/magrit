@@ -529,7 +529,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                                     type = this.value;
                                     if(type === "Q6"){
                                         nb_class = 6;
-                                        txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
+                                        txt_nb_class.node().value = 6;
+                                        // txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
                                         document.getElementById("nb_class_range").value = 6;
                                     }
                                     redisplay.compute();
@@ -540,37 +541,51 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
-    var txt_nb_class = d3.select("#discretization_panel")
-                            .insert("p")
-                            .style("display", "inline")
-                            .html(i18next.t("disc_box.class", {count: +nb_class})),
-        disc_nb_class = d3.select("#discretization_panel")
-                            .insert("input")
-                            .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
-                            .attrs({id: "nb_class_range", type: "range"})
-                            .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
-                            .on("change", function(){
-                                type = discretization.node().value;
-                                var old_nb_class = nb_class;
-                                if(type === "Q6"){
-                                    this.value = 6;
-                                    return;
-                                }
-                                nb_class = +this.value;
-                                txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
-                                var ret_val = redisplay.compute();
-                                if(!ret_val){
-                                    this.value = old_nb_class;
-                                    txt_nb_class.html(i18next.t("disc_box.class", {count: +old_nb_class}));
-                                } else {
-                                    redisplay.draw();
-                                    var ctl_class = document.getElementById("centr_class");
-                                    if(ctl_class){
-                                        ctl_class.max = nb_class;
-                                        if(ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
-                                    }
-                                }
-                            });
+    var txt_nb_class = d3.select("#discretization_panel").append("input")
+        .attrs({type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1})
+        .styles({width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)"})
+        .on("change", function(){
+            let a = disc_nb_class.node();
+            a.value = this.value;
+            a.dispatchEvent(new Event('change'));
+        });
+
+    d3.select("#discretization_panel")
+      .append('span')
+      .html(i18next.t("disc_box.class_plural"));
+    // var txt_nb_class = d3.select("#discretization_panel")
+    //                         .insert("p")
+    //                         .style("display", "inline")
+    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
+
+    var disc_nb_class = d3.select("#discretization_panel")
+        .insert("input")
+        .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
+        .attrs({id: "nb_class_range", type: "range"})
+        .attrs({min: 2, max: max_nb_class, value: nb_class, step:1})
+        .on("change", function(){
+            type = discretization.node().value;
+            var old_nb_class = nb_class;
+            if(type === "Q6"){
+                this.value = 6;
+                txt_nb_class.node().value = 6;
+                return;
+            }
+            nb_class = +this.value;
+            txt_nb_class.node().value = nb_class;
+            var ret_val = redisplay.compute();
+            if(!ret_val){
+                this.value = old_nb_class;
+                txt_nb_class.node().value = +old_nb_class;
+            } else {
+                redisplay.draw();
+                var ctl_class = document.getElementById("centr_class");
+                if(ctl_class){
+                    ctl_class.max = nb_class;
+                    if(ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+                }
+            }
+        });
 
     var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
     ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
@@ -691,7 +706,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             user_break_list = document.getElementById("user_breaks_area").value;
             type = "user_defined";
             nb_class = user_break_list.split('-').length - 1;
-            txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
+            txt_nb_class.node().value = +nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
             document.getElementById("nb_class_range").value = nb_class;
             redisplay.compute();
             redisplay.draw();

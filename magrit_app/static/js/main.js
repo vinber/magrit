@@ -506,9 +506,9 @@ function setUpInterface(resume_project)
                 }
             });
 
-    select_type_export.append("option").text("Svg").attr("value", "svg");
-    select_type_export.append("option").text("Png").attr("value", "png");
-    select_type_export.append("option").text("Geo").attr("value", "geo");
+    select_type_export.append("option").text("SVG").attr("value", "svg");
+    select_type_export.append("option").text("PNG").attr("value", "png");
+    select_type_export.append("option").text("GEO").attr("value", "geo");
 
     let export_png_options = dv5b.append("p")
                                 .attr("id", "export_options_png")

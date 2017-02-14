@@ -168,7 +168,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
         if(+tmp_breaks.mins[0] > +serie.min()){
             nb_class += 1;
-            txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
         }
 
@@ -310,7 +311,8 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
                                 type = this.value;
                                 if(type === "Q6"){
                                     nb_class = 6;
-                                    txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+                                    txt_nb_class.node().value = nb_class;
+                                    // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
                                     document.getElementById("nb_class_range").value = 6;
                                 }
                                 update_breaks();
@@ -355,31 +357,45 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     }
 
 
-    var txt_nb_class = d3.select("#discretization_panel")
-                            .insert("p").style("display", "inline")
-                            .html(i18next.t("disc_box.class", {count: +nb_class})),
-        disc_nb_class = d3.select("#discretization_panel")
-                            .insert("input")
-                            .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
-                            .attrs({id: "nb_class_range", type: "range",
-                                    min: 2, max: max_nb_class, value: nb_class, step:1})
-                            .on("change", function(){
-                                type = discretization.node().value;
-                                if(type == "user_defined"){
-                                    type = "equal_interval";
-                                    discretization.node().value = "equal_interval";
-                                    }
-                                var old_nb_class = nb_class;
-                                if(type === "Q6"){
-                                    this.value = 6;
-                                    return;
-                                }
-                                nb_class = +this.value;
-                                txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
-                                update_breaks();
-                                redisplay.compute();
-                                redisplay.draw();
-                            });
+    // var txt_nb_class = d3.select("#discretization_panel")
+    //                         .insert("p").style("display", "inline")
+    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
+    var txt_nb_class = d3.select("#discretization_panel").append("input")
+        .attrs({type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1})
+        .styles({width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)"})
+        .on("change", function(){
+            let a = disc_nb_class.node();
+            a.value = this.value;
+            a.dispatchEvent(new Event('change'));
+        });
+
+    d3.select("#discretization_panel")
+      .append('span')
+      .html(i18next.t("disc_box.class_plural"));
+
+    var disc_nb_class = d3.select("#discretization_panel")
+        .insert("input")
+        .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
+        .attrs({id: "nb_class_range", type: "range",
+                min: 2, max: max_nb_class, value: nb_class, step:1})
+        .on("change", function(){
+            type = discretization.node().value;
+            if(type == "user_defined"){
+                type = "equal_interval";
+                discretization.node().value = "equal_interval";
+                }
+            var old_nb_class = nb_class;
+            if(type === "Q6"){
+                this.value = 6;
+                return;
+            }
+            nb_class = +this.value;
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+            update_breaks();
+            redisplay.compute();
+            redisplay.draw();
+        });
 
     var svg_h = h / 5 > 90 ? h / 5 : 90,
         svg_w = w - (w / 8),
