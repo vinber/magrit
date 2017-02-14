@@ -305,8 +305,10 @@ function get_map_template(){
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template(){
+    document.getElementById("overlay").style.display = "";
     get_map_template().then(function(json_params){
         let url = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
+        document.getElementById("overlay").style.display = "none";
         clickLinkFromDataUrl(url, 'magrit_project.json');
     });
 }
