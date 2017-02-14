@@ -84,7 +84,9 @@
             "warn_multiple_sheets": "Le fichier fournit contient plusieurs feuillets, seul le premier (<i>{{ sheet_name }}</i>) a été chargé.",
             "resume_last_project": "Reprendre le projet en cours ?",
             "new_project": "Nouveau projet",
-            "resume_last": "Continuer le dernier projet..."
+            "resume_last": "Continuer le dernier projet...",
+            "class": "{{count}} classe",
+            "class_plural": "{{count}} classes"
         },
         "section1": {
             "title": "Import des données",
@@ -533,8 +535,7 @@
     },
     "disc_box":{
         "title": "Options de discrétisation",
-        "class": "{{count}} classe",
-        "class_plural": "{{count}} classes",
+        "class": "classes",
         "disp_mean": "Moyenne",
         "disp_median": "Médiane",
         "disp_sd": "Écart-type",

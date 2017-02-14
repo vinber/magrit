@@ -84,7 +84,8 @@
             "warn_multiple_sheets": "The provided file contains multiple sheets, only the first one (<i>{{ sheet_name }}</i>) was used.",
             "resume_last_project": "Resume last project ?",
             "new_project": "New project",
-            "resume_last": "Resume last project"
+            "resume_last": "Resume last project",
+            "class": "{{count}} class"
         },
         "section1": {
             "title": "Add your data",
@@ -540,7 +541,7 @@
     },
     "disc_box":{
         "title": "Discretization Panel",
-        "class": "{{count}} class",
+        "class": "class",
         "disp_mean": "Mean",
         "disp_median": "Median",
         "disp_sd": "Standard deviation",

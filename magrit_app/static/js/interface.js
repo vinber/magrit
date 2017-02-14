@@ -1006,7 +1006,7 @@ function scale_to_lyr(name){
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0,0]).rotate([0,0,0]);
+    proj.scale(s).translate([0,0]);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 };
 

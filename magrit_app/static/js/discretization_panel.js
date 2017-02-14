@@ -552,7 +552,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
     d3.select("#discretization_panel")
       .append('span')
-      .html(i18next.t("disc_box.class_plural"));
+      .html(i18next.t("disc_box.class"));
     // var txt_nb_class = d3.select("#discretization_panel")
     //                         .insert("p")
     //                         .style("display", "inline")
