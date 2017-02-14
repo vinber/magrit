@@ -7,6 +7,8 @@
 	{"name": "Bonne", "projection": "d3.geoBonne().scale(400)"},
 	{"name": "Bromley", "projection": "d3.geoBromley().scale(400)"},
 	{"name": "Collignon", "projection": "d3.geoCollignon().scale(400)"},
+	{"name": "Conic Equal Area", "projection": "d3.geoConicEqualArea().scale(400)"},
+	{"name": "Conic Equidistant", "projection": "d3.geoConicEquidistant().scale(400)"},
 	{"name": "Craster Parabolic", "projection": "d3.geoCraster().scale(400)"},
 	{"name": "Eckert I", "projection": "d3.geoEckert1().scale(400).translate([300, 250])"},
 	{"name": "Eckert II", "projection": "d3.geoEckert2().scale(400).translate([300, 250])"},

@@ -416,9 +416,9 @@ function setUpInterface(resume_project) {
         }
     });
 
-    select_type_export.append("option").text("Svg").attr("value", "svg");
-    select_type_export.append("option").text("Png").attr("value", "png");
-    select_type_export.append("option").text("Geo").attr("value", "geo");
+    select_type_export.append("option").text("SVG").attr("value", "svg");
+    select_type_export.append("option").text("PNG").attr("value", "png");
+    select_type_export.append("option").text("GEO").attr("value", "geo");
 
     var export_png_options = dv5b.append("p").attr("id", "export_options_png").style("display", "none");
     export_png_options.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.format" });
@@ -2896,7 +2896,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         type = this.value;
         if (type === "Q6") {
             nb_class = 6;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: 6 }));
+            txt_nb_class.node().value = 6;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
             document.getElementById("nb_class_range").value = 6;
         }
         redisplay.compute();
@@ -2907,20 +2908,32 @@ var display_discretization = function display_discretization(layer_name, field_n
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", { count: +nb_class })),
-        disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+        var a = disc_nb_class.node();
+        a.value = this.value;
+        a.dispatchEvent(new Event('change'));
+    });
+
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class_plural"));
+    // var txt_nb_class = d3.select("#discretization_panel")
+    //                         .insert("p")
+    //                         .style("display", "inline")
+    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
+
+    var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
         type = discretization.node().value;
         var old_nb_class = nb_class;
         if (type === "Q6") {
             this.value = 6;
+            txt_nb_class.node().value = 6;
             return;
         }
         nb_class = +this.value;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+        txt_nb_class.node().value = nb_class;
         var ret_val = redisplay.compute();
         if (!ret_val) {
             this.value = old_nb_class;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: +old_nb_class }));
+            txt_nb_class.node().value = +old_nb_class;
         } else {
             redisplay.draw();
             var ctl_class = document.getElementById("centr_class");
@@ -3019,7 +3032,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         user_break_list = document.getElementById("user_breaks_area").value;
         type = "user_defined";
         nb_class = user_break_list.split('-').length - 1;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: +nb_class }));
+        txt_nb_class.node().value = +nb_class;
+        // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
         document.getElementById("nb_class_range").value = nb_class;
         redisplay.compute();
         redisplay.draw();
@@ -3437,7 +3451,8 @@ var display_discretization_links_discont = function display_discretization_links
         last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
         if (+tmp_breaks.mins[0] > +serie.min()) {
             nb_class += 1;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
         }
 
@@ -3574,7 +3589,8 @@ var display_discretization_links_discont = function display_discretization_links
         type = this.value;
         if (type === "Q6") {
             nb_class = 6;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             document.getElementById("nb_class_range").value = 6;
         }
         update_breaks();
@@ -3617,8 +3633,18 @@ var display_discretization_links_discont = function display_discretization_links
         })();
     }
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", { count: +nb_class })),
-        disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range",
+    // var txt_nb_class = d3.select("#discretization_panel")
+    //                         .insert("p").style("display", "inline")
+    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+        var a = disc_nb_class.node();
+        a.value = this.value;
+        a.dispatchEvent(new Event('change'));
+    });
+
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class_plural"));
+
+    var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range",
         min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
         type = discretization.node().value;
         if (type == "user_defined") {
@@ -3631,7 +3657,8 @@ var display_discretization_links_discont = function display_discretization_links
             return;
         }
         nb_class = +this.value;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+        txt_nb_class.node().value = nb_class;
+        // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
         update_breaks();
         redisplay.compute();
         redisplay.draw();
