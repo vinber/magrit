@@ -17,7 +17,7 @@ def save_reload(result):
     result.to_file(name)
     gdf = GeoDataFrame.from_file(name)
     res = json.loads(gdf[::-1].to_json())
-    for ext in ('shp', 'shx', 'prj', 'dbf', 'cfg'):
+    for ext in ('shp', 'shx', 'prj', 'dbf', 'cpg'):
         try:
             os.remove(name.replace('shp', ext))
         except:

@@ -1687,6 +1687,13 @@ function remove_layer_cleanup(name){
     let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
     if(a) a.remove();
 
+    // Remove the layer from the "mask" section if the "smoothed map" menu is open :
+    if(_app.current_functionnality && _app.current_functionnality.name == 'smooth'){
+        let a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+        if(a) a.remove();
+        //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+    }
+
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if(current_layers[name].targeted){
         // Updating the top of the menu (section 1) :

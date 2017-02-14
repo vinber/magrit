@@ -1434,6 +1434,13 @@ function remove_layer_cleanup(name) {
     var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
     if (a) a.remove();
 
+    // Remove the layer from the "mask" section if the "smoothed map" menu is open :
+    if (_app.current_functionnality && _app.current_functionnality.name == 'smooth') {
+        var _a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+        if (_a) _a.remove();
+        //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+    }
+
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if (current_layers[name].targeted) {
         // Updating the top of the menu (section 1) :
@@ -6938,7 +6945,7 @@ function get_other_layer_names() {
     tmp_idx = other_layers.indexOf("Graticule");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("world");
+    tmp_idx = other_layers.indexOf("World");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
@@ -12985,8 +12992,10 @@ function get_map_template() {
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template() {
+    document.getElementById("overlay").style.display = "";
     get_map_template().then(function (json_params) {
         var url = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
+        document.getElementById("overlay").style.display = "none";
         clickLinkFromDataUrl(url, 'magrit_project.json');
     });
 }

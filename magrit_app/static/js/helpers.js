@@ -174,7 +174,7 @@ function get_other_layer_names(){
     tmp_idx = other_layers.indexOf("Graticule");
     if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("world");
+    tmp_idx = other_layers.indexOf("World");
     if(tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
