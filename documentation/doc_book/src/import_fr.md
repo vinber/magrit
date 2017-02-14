@@ -24,9 +24,9 @@ Plusieurs formats sont supportés:
 - ```csv``` (contenant des colonnes x/y ou *geometry*)
 
 > **Note:**
-> La plupart des formats permettent de spécifier un système de coordonnées de référence; cette indication est ici obligatoire pour ouvrir correctement le fichier.
+> La plupart des formats permettent de spécifier un système de coordonnées de référence; cette indication est ici obligatoire pour ouvrir correctement le fichier (présence du fichier ```.prj``` pour le format ShapeFile par exemple)
 > Si aucun système de coordonnées de référence n'est spécifié, l'application considère qu'il s'agit de coordonnées géographiques.
-
+> Les spécifications des formats [KML](http://www.gdal.org/drv_kml.html) et [GeoJSON](https://tools.ietf.org/html/rfc7946#section-4) imposent l'utilisation de coordonées géographiques (*EPSG:4326 / urn:ogc:def:crs:OGC::CRS84* )
 
 
 ## Import d'un tableau de données
@@ -40,7 +40,7 @@ L'ajout d'un tableau de données peut être effectué de plusieurs manières :
 Plusieurs format sont pris en charge pour l'import des données :
 - ```csv``` (champs séparés par une virgule ou par un point virgule)
 - ```tsv``` (champs séparés par une tabulation)
-- ```xls``` et ```xlsx``` (à condition que la feuille à utiliser contiennent seulement la table de données).
+- ```xls```, ```xlsx``` et ```ods``` (à condition que la feuille à utiliser soit la première du document et contienne seulement la table de données).
 
 
 ## Jointure des données
@@ -61,11 +61,11 @@ Cette opération et appelée "jointure" (c'est également le cas dans les logici
 A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.
 
 5 types de données sont possibles :
+- *Identifiant* (champs notamment utilisés pour joindre les données)
 - *Stock*
 - *Ratio*
 - *Catégorie*
 - *Inconnu* (champs non cartographiables)
-- *Identifiant* (champs utilisés pour joindre les données)
 
 ### Stock
 Les variables quantitatives de stock expriment des quantités concrètes et leur somme ont un sens (nombre de chômeurs, population totale, par exemple).
@@ -79,6 +79,12 @@ Exemples : PIB par habitant, Indicateur de développement humain.
 ### Catégories
 Les modalités des caractères qualitatifs ne sont pas mesurables, ce sont des noms, des sigles ou des codes. On ne peut sommer des modalités qualitatives, on ne peut en calculer la moyenne.
 Exemples : Noms des départements, Type d'occupation du sol.
+
+### Identifiant
+Ce champ contient des valeurs permettant d'identifier de manière unique chacune des entités de la couche de données.  
+Ces sont ces champs qui sont utilisés pour effectuer une jointure de données.  
+Les valeurs de ces champs sont également transférées aux entitées correspondantes dans les représentations qui le permettent (symboles proportionnels, cartogrammes, cartes choroplèthes, cartes qualitatives par à-plat de couleurs ou par utilisation de pictogrammes).
+Exemple: Code INSEE de la commune, Code ISO2 d'un pays.
 
 <p style="text-align: center;">
 <img src="img/win_typ_fr.png" alt="Dialogue de typage des données"/>
