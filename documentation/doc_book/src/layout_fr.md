@@ -51,3 +51,5 @@ Les légendes peuvent aussi être modifiées avec le double-click.
 <p style="text-align: center;">
 <img src="img/contextmenu_legend.png" alt="Menu contextuel"/>
 </p>
+
+Les options **"Vers le haut"** et **"Vers le bas"** des menus contextuels des éléments d'habillage permettent de gérer leur ordre d'affichage les uns par rapport aux autres ainsi que les éventuelles superpositions (de manière similaire aux fonctionnalités **"Monter"** et **"Descendre"** applicables à des objets dans *Inkscape*).
