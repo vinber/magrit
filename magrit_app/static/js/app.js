@@ -8208,7 +8208,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
 * adding it to the map
 * @param {File} f - The input csv file
 */
-function handle_dataset(f) {
+function handle_dataset(f, target_layer_on_add) {
 
     function check_dataset() {
         var reader = new FileReader(),
@@ -8235,7 +8235,16 @@ function handle_dataset(f) {
             var field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if (field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1) {
                 if (field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1) {
-                    add_csv_geom(data, dataset_name);
+                    if (target_layer_on_add && _app.targeted_layer_added) {
+                        swal({ title: i18next.t("app_page.common.error") + "!",
+                            text: i18next.t('app_page.common.error_only_one'),
+                            customClass: 'swal2_custom',
+                            type: "error",
+                            allowEscapeKey: false,
+                            allowOutsideClick: false });
+                    } else {
+                        add_csv_geom(data, dataset_name);
+                    }
                     return;
                 }
             }

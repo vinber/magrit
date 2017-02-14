@@ -5,6 +5,7 @@ from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
 from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
+from shapely.geos import TopologicalError
 from shapely.geometry import shape, mapping, MultiPolygon
 from shapely.ops import transform
 from shapely.affinity import scale
@@ -12,11 +13,11 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 
-def _compute_centroids(geometries):
+def _compute_centroids(geometries, argmax=np.argmax):
 	res = []
 	for geom in geometries:
 		if hasattr(geom, '__len__'):
-			ix_biggest = np.argmax([g.area for g in geom])
+			ix_biggest = argmax([g.area for g in geom])
 			res.append(geom[ix_biggest].centroid)
 		else:
 			res.append(geom.centroid)
@@ -48,8 +49,7 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
             )
 
     return ''.join([
-        '''{"type":"FeatureCollection","crs":{"type":"name","properties":'''
-        '''{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
+        '''{"type":"FeatureCollection","features":[''',
         ','.join(geojson_features),
         ''']}'''
         ]).encode()
@@ -73,15 +73,13 @@ def olson_transform(geojson, scale_values):
 	"""
 	if len(geojson["features"]) != len(scale_values):
 		raise ValueError("Inconsistent number of features/values")
-	for ix, feature in enumerate(geojson["features"]):
+	for val, feature in zip(scale_values, geojson['features']):
 		geom = shape(feature["geometry"])
 		feature['properties']['ref_area'] = geom.area
-		val = scale_values[ix]
-		try:
-			# mpoly = [scale(g, xfact=val, yfact=val) for g in geom]
+		if hasattr(geom, '__len__'):
 			feature["geometry"] = mapping(
 				MultiPolygon([scale(g, xfact=val, yfact=val) for g in geom]))
-		except Exception as err:
+		else:
 			feature["geometry"] = mapping(
 				scale(geom, xfact=val, yfact=val))
 	geojson['features'].sort(key=lambda x: x['properties']['ref_area'], reverse=True)
