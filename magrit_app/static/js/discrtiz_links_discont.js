@@ -371,7 +371,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
 
     d3.select("#discretization_panel")
       .append('span')
-      .html(i18next.t("disc_box.class_plural"));
+      .html(i18next.t("disc_box.class"));
 
     var disc_nb_class = d3.select("#discretization_panel")
         .insert("input")

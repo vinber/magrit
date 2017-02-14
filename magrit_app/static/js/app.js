@@ -2914,7 +2914,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         a.dispatchEvent(new Event('change'));
     });
 
-    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class_plural"));
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
     // var txt_nb_class = d3.select("#discretization_panel")
     //                         .insert("p")
     //                         .style("display", "inline")
@@ -3642,7 +3642,7 @@ var display_discretization_links_discont = function display_discretization_links
         a.dispatchEvent(new Event('change'));
     });
 
-    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class_plural"));
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
 
     var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range",
         min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
@@ -4207,7 +4207,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -4252,7 +4252,7 @@ var fields_PropSymbolChoro = {
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
+                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
                 // console.log(section2); console.log(self.rendering_params[field_name].type);
@@ -4288,7 +4288,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4317,7 +4317,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4346,7 +4346,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4374,7 +4374,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4691,7 +4691,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -4724,7 +4724,7 @@ var fields_Choropleth = {
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
+                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
             } else {
@@ -4756,7 +4756,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4785,7 +4785,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4814,7 +4814,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4842,7 +4842,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4865,7 +4865,7 @@ var fields_Choropleth = {
                 if (confirmed) {
                     // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                    choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', { count: confirmed[0] }));
+                    choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', { count: confirmed[0] }));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
@@ -8651,7 +8651,7 @@ function scale_to_lyr(name) {
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0, 0]).rotate([0, 0, 0]);
+    proj.scale(s).translate([0, 0]);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 };
 
