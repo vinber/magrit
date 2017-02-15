@@ -2878,26 +2878,16 @@ var display_discretization = function display_discretization(layer_name, field_n
     //     [i18next.t("app_page.common.std_dev"), "std_dev"],
     [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
-    if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
+    if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-    if (serie.max() > 1 && serie.max() - serie.min() > 100) {
-        var formatCount = d3.format(".0f");
-    } else {
-        var nb_right_decimal = _get_max_nb_left_sep(values) > 2 ? 2 : serie.precision;
-        var formatCount = d3.formatLocale({
-            decimal: getDecimalSeparator(),
-            thousands: "",
-            grouping: 3,
-            currency: ["", ""]
-        }).format('.' + nb_right_decimal + 'f');
-    }
+    var precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
+    var formatCount = d3.format(precision_axis);
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").insert("select").attr("class", "params").on("change", function () {
         type = this.value;
         if (type === "Q6") {
             nb_class = 6;
             txt_nb_class.node().value = 6;
-            // txt_nb_class.html(i18next.t("disc_box.class", {count: 6}));
             document.getElementById("nb_class_range").value = 6;
         }
         redisplay.compute();
@@ -2908,17 +2898,13 @@ var display_discretization = function display_discretization(layer_name, field_n
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
-    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
         var a = disc_nb_class.node();
         a.value = this.value;
         a.dispatchEvent(new Event('change'));
     });
 
     d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
-    // var txt_nb_class = d3.select("#discretization_panel")
-    //                         .insert("p")
-    //                         .style("display", "inline")
-    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
 
     var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
         type = discretization.node().value;
@@ -3572,13 +3558,8 @@ var display_discretization_links_discont = function display_discretization_links
     if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-
-    var formatCount = d3.formatLocale({
-        decimal: getDecimalSeparator(),
-        thousands: "",
-        grouping: 3,
-        currency: ["", ""]
-    }).format('.' + serie.precision + 'f');
+    var precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
+    var formatCount = d3.format(precision_axis);
 
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").html("Type ").insert("select").attr("class", "params").on("change", function () {
         var old_type = type;
@@ -3633,10 +3614,7 @@ var display_discretization_links_discont = function display_discretization_links
         })();
     }
 
-    // var txt_nb_class = d3.select("#discretization_panel")
-    //                         .insert("p").style("display", "inline")
-    //                         .html(i18next.t("disc_box.class", {count: +nb_class}));
-    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "38px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
         var a = disc_nb_class.node();
         a.value = this.value;
         a.dispatchEvent(new Event('change'));
@@ -3692,7 +3670,7 @@ var display_discretization_links_discont = function display_discretization_links
     make_overlay_elements();
 
     // As the x axis and the mean didn't change, they can be drawn only once :
-    svg_histo.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x));
+    svg_histo.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x).tickFormat(formatCount));
 
     var box_content = newBox.append("div").attr("id", "box_content");
     box_content.append("h3").style("margin", "0").html(i18next.t("disc_box.line_size"));
@@ -7397,6 +7375,35 @@ function get_nb_left_separator(nb) {
 function getDecimalSeparator() {
     return 1.1.toLocaleString().substr(1, 1);
 }
+
+var get_precision_axis = function get_precision_axis(serie_min, serie_max, precision) {
+    var range_serie = serie_max - serie_min;
+    if (serie_max > 1 && range_serie > 100) {
+        return ".0f";
+    } else if (range_serie > 10) {
+        if (precision == 0) {
+            return ".0f";
+        }
+        return ".1f";
+    } else if (range_serie > 1) {
+        if (precision < 2) {
+            return ".1f";
+        }
+        return ".2f";
+    } else if (range_serie > 0.1) {
+        return ".3f";
+    } else if (range_serie > 0.01) {
+        return ".4f";
+    } else if (range_serie > 0.001) {
+        return ".5f";
+    } else if (range_serie > 0.0001) {
+        return ".6f";
+    } else if (range_serie > 0.00001) {
+        return ".7f";
+    } else {
+        return ".8f";
+    }
+};
 
 var PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
     var _this = this;
