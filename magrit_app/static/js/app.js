@@ -9167,6 +9167,8 @@ function accordionize() {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function handle_join() {
     var layer_name = Object.getOwnPropertyNames(user_data);
 
@@ -9176,7 +9178,9 @@ function handle_join() {
     } else if (field_join_map.length != 0) {
         make_confirm_dialog2("dialogBox", undefined, { html_content: i18next.t("app_page.join_box.ask_forget_join") }).then(function (confirmed) {
             if (confirmed) {
+                valid_join_check_display();
                 field_join_map = [];
+                remove_existing_jointure(layer_name);
                 createJoinBox(layer_name[0]);
             }
         });
@@ -9363,7 +9367,7 @@ function valid_join_on(layer_name, field1, field2) {
 // the geometry layer and the other to the external dataset, in order to choose
 // the common field to do the join.
 function createJoinBox(layer) {
-    var geom_layer_fields = Object.getOwnPropertyNames(user_data[layer][0]),
+    var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys())),
         ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
         button1 = ["<select id=button_field1>"],
         button2 = ["<select id=button_field2>"],
@@ -9395,6 +9399,21 @@ function createJoinBox(layer) {
         last_choice.field2 = this.value;
     });
 }
+
+var remove_existing_jointure = function remove_existing_jointure(layer_name) {
+    if (!user_data[layer_name] || user_data[layer_name].length < 1) return;
+    var data_layer = user_data[layer_name],
+        original_fields = current_layers[layer_name].original_fields,
+        field_difference = Object.getOwnPropertyNames(data_layer[0]).filter(function (f) {
+        return !original_fields.has(f);
+    }),
+        nb_fields = field_difference.length;
+    for (var i = 0, nb_ft = data_layer.length; i < nb_ft; i++) {
+        for (var j = 0; j < nb_fields; j++) {
+            delete data_layer[i][field_difference[j]];
+        }
+    }
+};
 "use strict";
 // TODO : refactor some functions in this file (they are really too messy)
 
