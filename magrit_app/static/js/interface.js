@@ -999,8 +999,10 @@ function scale_to_lyr(name){
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0,0]);
+    t = [0, 0];
+    proj.scale(s).translate(t);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
 };
 
 /**

@@ -123,7 +123,7 @@ function make_content_summary(serie, precision=6){
     ].join('')
 }
 
-function copy_layer(ref_layer, new_name, type_result){
+function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
     let id_new_layer = encodeId(new_name);
     let id_ref_layer = _app.layer_to_id.get(ref_layer);
     _app.layer_to_id.set(new_name, id_new_layer);
@@ -137,9 +137,19 @@ function copy_layer(ref_layer, new_name, type_result){
     result_data[new_name] = [];
     let selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
     let selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
-    for(let i = 0; i < selec_src.length; i++){
-        selec_dest[i].__data__ = selec_src[i].__data__;
-        result_data[new_name].push(selec_dest[i].__data__.properties);
+    if(!fields_to_copy){
+        for(let i = 0; i < selec_src.length; i++){
+            selec_dest[i].__data__ = selec_src[i].__data__;
+            result_data[new_name].push(selec_dest[i].__data__.properties);
+        }
+    } else {
+        for(let i = 0; i < selec_src.length; i++){
+            selec_dest[i].__data__ = {properties: {}};
+            for(let f of fields_to_copy){
+                selec_dest[i].__data__.properties[f] = selec_src[i].__data__.properties[f]
+            }
+            result_data[new_name].push(selec_dest[i].__data__.properties);
+        }
     }
     document.getElementById(id_new_layer).style.visibility = "";
     up_legends();
