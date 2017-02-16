@@ -45,14 +45,13 @@ def build_js_file(use_minified):
            'app.{}.js'.format(_id),
            '-o',
            'app.{}.min.js'.format(_id)], stderr=PIPE, stdout=PIPE)
-    if use_minified:
-        name = 'app.{}.js'.format(_id) if not use_minified else 'app.{}.min.js'.format(_id)
-        with open('../../templates/modules.html', 'r') as f:
-            lines = f.readlines()
-        ix = [ix for ix, ln in enumerate(lines) if 'src="/static/js/app.' in ln][0]
-        lines[ix] = '  \t<script  src="/static/js/name"></script>\n'.format(name)
-        with open('../../templates/modules.html', 'w') as f:
-            f.writelines(lines)
+    name = 'app.{}.js'.format(_id) if not use_minified else 'app.{}.min.js'.format(_id)
+    with open('../../templates/modules.html', 'r') as f:
+        lines = f.readlines()
+    ix = [ix for ix, ln in enumerate(lines) if 'src="/static/js/app.' in ln][0]
+    lines[ix] = '  \t<script  src="/static/js/{}"></script>\n'.format(name)
+    with open('../../templates/modules.html', 'w') as f:
+        f.writelines(lines)
     os.remove('.babelrc')
 
 if __name__ == "__main__":
