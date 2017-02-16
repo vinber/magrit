@@ -1953,65 +1953,52 @@ function handleClipPath(proj_name){
 function change_projection(proj_name) {
     var new_proj_name = proj_name.split('()')[0].split('.')[1];
 
+    let prev_rotate = proj.rotate();
     // Update global variables:
     proj = eval(proj_name);
     path = d3.geoPath().projection(proj).pointRadius(4);
-    t = proj.translate();
-    s = proj.scale();
-
-    // Reset the projection center input :
-    document.getElementById("form_projection_center").value = 0;
-    document.getElementById("proj_center_value_txt").value = 0;
 
     // Do the reprojection :
-    proj.translate([t[0], t[1]]).scale(s);
+    proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Set specifics mouse events according to the projection :
     if(new_proj_name.indexOf('Orthographic') > -1){
-        var current_params = proj.rotate(),
-            rotation_param = d3.select("#rotation_params");
+        var rotation_param = d3.select("#rotation_params");
 
         rotation_param.append("div").attr("class", "options_ortho")
                 .html(i18next.t("app_page.section5.projection_center_phi"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_phi"})
-                .attrs({value: current_params[1], min: -180, max: 180, step: 0.5})
+                .attrs({value: prev_rotate[1], min: -180, max: 180, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, this.value, null])})
 
         rotation_param.append("div").attr("class", "options_ortho")
                 .html(i18next.t("app_page.section5.projection_center_gamma"))
                 .insert("input")
                 .attrs({type: "range", id: "form_projection_gamma"})
-                .attrs({value: current_params[2], min: -90, max: 90, step: 0.5})
+                .attrs({value: prev_rotate[2], min: -90, max: 90, step: 0.5})
                 .on("input", function(){handle_proj_center_button([null, null, this.value])});
     } else {
         d3.selectAll(".options_ortho").remove();
     }
 
-    map.select("svg").on("mousedown", null)
-                    .on("mousemove", null)
-                    .on("mouseup", null);
-
-    // Reset the scale of the projection and the center of the view :
-    let layer_name = Object.getOwnPropertyNames(user_data)[0]
-                || Object.getOwnPropertyNames(result_data)[0]
-                || null;
+    let layer_name = Object.getOwnPropertyNames(user_data)[0];
     if(!layer_name){
-        let layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
+      let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
+      layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length -1].id) : undefined;
     }
     if(layer_name){
-        scale_to_lyr(layer_name);
-        center_map(layer_name);
-        zoom_without_redraw();
+      scale_to_lyr(layer_name);
+      center_map(layer_name);
+      zoom_without_redraw();
+    } else {
+      reproj_symbol_layer();
     }
-
-    // Reproject
-    reproj_symbol_layer();
 
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name);
+
 }
 
 
@@ -2416,6 +2403,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
                 unpatchSvgForFonts();
                 unpatchSvgForForeignObj(dimensions_foreign_obj);
                 document.getElementById("overlay").style.display = "none";
+                targetCanvas.remove();
             });
     }
 }

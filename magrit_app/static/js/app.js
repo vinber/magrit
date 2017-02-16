@@ -1657,52 +1657,44 @@ function handleClipPath(proj_name) {
 function change_projection(proj_name) {
     var new_proj_name = proj_name.split('()')[0].split('.')[1];
 
+    var prev_rotate = proj.rotate();
     // Update global variables:
     proj = eval(proj_name);
     path = d3.geoPath().projection(proj).pointRadius(4);
-    t = proj.translate();
-    s = proj.scale();
-
-    // Reset the projection center input :
-    document.getElementById("form_projection_center").value = 0;
-    document.getElementById("proj_center_value_txt").value = 0;
 
     // Do the reprojection :
-    proj.translate([t[0], t[1]]).scale(s);
+    proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Set specifics mouse events according to the projection :
     if (new_proj_name.indexOf('Orthographic') > -1) {
-        var current_params = proj.rotate(),
-            rotation_param = d3.select("#rotation_params");
+        var rotation_param = d3.select("#rotation_params");
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_phi")).insert("input").attrs({ type: "range", id: "form_projection_phi" }).attrs({ value: current_params[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_phi")).insert("input").attrs({ type: "range", id: "form_projection_phi" }).attrs({ value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
             handle_proj_center_button([null, this.value, null]);
         });
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_gamma")).insert("input").attrs({ type: "range", id: "form_projection_gamma" }).attrs({ value: current_params[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_gamma")).insert("input").attrs({ type: "range", id: "form_projection_gamma" }).attrs({ value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
             handle_proj_center_button([null, null, this.value]);
         });
     } else {
         d3.selectAll(".options_ortho").remove();
     }
 
-    map.select("svg").on("mousedown", null).on("mousemove", null).on("mouseup", null);
-
-    // Reset the scale of the projection and the center of the view :
-    var layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+    var layer_name = Object.getOwnPropertyNames(user_data)[0];
     if (!layer_name) {
-        var layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
+        var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
+            return f.style.visibility != "hidden";
+        });
+        layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
     }
     if (layer_name) {
         scale_to_lyr(layer_name);
         center_map(layer_name);
         zoom_without_redraw();
+    } else {
+        reproj_symbol_layer();
     }
-
-    // Reproject
-    reproj_symbol_layer();
 
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name);
@@ -2100,6 +2092,7 @@ function _export_compo_png() {
             unpatchSvgForFonts();
             unpatchSvgForForeignObj(dimensions_foreign_obj);
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
         });
     };
 }
@@ -5492,7 +5485,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
 
 function render_categorical(layer, rendering_params) {
     if (rendering_params.new_name) {
-        copy_layer(layer, rendering_params.new_name, "typo");
+        var fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "typo", fields);
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
@@ -5519,7 +5513,8 @@ function render_categorical(layer, rendering_params) {
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params) {
     if (rendering_params.new_name) {
-        copy_layer(layer, rendering_params.new_name, "choro");
+        var fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "choro", fields);
         //Assign the same key to the cloned layer so it could be used transparently on server side
         // after deletion of the reference layer if needed :
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
@@ -6891,7 +6886,7 @@ function make_content_summary(serie) {
     return [i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>", i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ", i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>", i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>", i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>", i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>", i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>", i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)].join('');
 }
 
-function copy_layer(ref_layer, new_name, type_result) {
+function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
     var id_new_layer = encodeId(new_name);
     var id_ref_layer = _app.layer_to_id.get(ref_layer);
     _app.layer_to_id.set(new_name, id_new_layer);
@@ -6905,9 +6900,41 @@ function copy_layer(ref_layer, new_name, type_result) {
     result_data[new_name] = [];
     var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
     var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
-    for (var i = 0; i < selec_src.length; i++) {
-        selec_dest[i].__data__ = selec_src[i].__data__;
-        result_data[new_name].push(selec_dest[i].__data__.properties);
+    if (!fields_to_copy) {
+        for (var i = 0; i < selec_src.length; i++) {
+            selec_dest[i].__data__ = selec_src[i].__data__;
+            result_data[new_name].push(selec_dest[i].__data__.properties);
+        }
+    } else {
+        for (var _i = 0; _i < selec_src.length; _i++) {
+            selec_dest[_i].__data__ = { properties: {} };
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = fields_to_copy[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var f = _step.value;
+
+                    selec_dest[_i].__data__.properties[f] = selec_src[_i].__data__.properties[f];
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            result_data[new_name].push(selec_dest[_i].__data__.properties);
+        }
     }
     document.getElementById(id_new_layer).style.visibility = "";
     up_legends();
@@ -8653,8 +8680,10 @@ function scale_to_lyr(name) {
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0, 0]);
+    t = [0, 0];
+    proj.scale(s).translate(t);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
 };
 
 /**

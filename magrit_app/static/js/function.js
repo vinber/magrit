@@ -1762,7 +1762,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
 function render_categorical(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name, "typo");
+        let fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "typo", fields);
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
@@ -1791,7 +1792,8 @@ function render_categorical(layer, rendering_params){
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name, "choro");
+        let fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "choro", fields);
         //Assign the same key to the cloned layer so it could be used transparently on server side
         // after deletion of the reference layer if needed :
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
