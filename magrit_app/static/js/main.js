@@ -1924,12 +1924,12 @@ function isInterrupted(proj_name){
 
 function handleClipPath(proj_name){
     proj_name = proj_name.toLowerCase();
-    if(isInterrupted(proj_name)){
-        let defs_sphere = defs.node().querySelector("#sphere"),
-            defs_clipPath = defs.node().querySelector("clipPath");
-        if(defs_sphere){ defs_sphere.remove(); }
-        if(defs_clipPath){ defs_clipPath.remove(); }
+    let defs_sphere = defs.node().querySelector("#sphere"),
+        defs_clipPath = defs.node().querySelector("clipPath");
+    if(defs_sphere){ defs_sphere.remove(); }
+    if(defs_clipPath){ defs_clipPath.remove(); }
 
+    if(isInterrupted(proj_name)){
         defs.append("path")
             .datum({type: "Sphere"})
             .attr("id", "sphere")
@@ -1945,10 +1945,6 @@ function handleClipPath(proj_name){
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
-        let defs_sphere = defs.node().querySelector("#sphere"),
-            defs_clipPath = defs.node().querySelector("clipPath");
-        if(defs_sphere){ defs_sphere.remove(); }
-        if(defs_clipPath){ defs_clipPath.remove(); }
         map.selectAll(".layer")
                 .attr("clip-path", null);
     }
@@ -2287,7 +2283,7 @@ function patchSvgForInkscape(){
     for(let i = elems.length - 1; i > -1; i--){
         if(elems[i].id == ""){
             continue;
-        } else if (Array.prototype.indexOf.call(elems[i].classList, "layer") > -1) {
+        } else if (elems[i].classList.contains("layer")) {
             elems[i].setAttribute("inkscape:label", elems[i].id);
         } else if(elems[i].id.indexOf("legend") > -1){
             let layer_name = elems[i].className.baseVal.split("lgdf_")[1];

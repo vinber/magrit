@@ -1632,16 +1632,16 @@ function isInterrupted(proj_name) {
 
 function handleClipPath(proj_name) {
     proj_name = proj_name.toLowerCase();
-    if (isInterrupted(proj_name)) {
-        var defs_sphere = defs.node().querySelector("#sphere"),
-            defs_clipPath = defs.node().querySelector("clipPath");
-        if (defs_sphere) {
-            defs_sphere.remove();
-        }
-        if (defs_clipPath) {
-            defs_clipPath.remove();
-        }
+    var defs_sphere = defs.node().querySelector("#sphere"),
+        defs_clipPath = defs.node().querySelector("clipPath");
+    if (defs_sphere) {
+        defs_sphere.remove();
+    }
+    if (defs_clipPath) {
+        defs_clipPath.remove();
+    }
 
+    if (isInterrupted(proj_name)) {
         defs.append("path").datum({ type: "Sphere" }).attr("id", "sphere").attr("d", path);
 
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
@@ -1650,14 +1650,6 @@ function handleClipPath(proj_name) {
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
-        var _defs_sphere = defs.node().querySelector("#sphere"),
-            _defs_clipPath = defs.node().querySelector("clipPath");
-        if (_defs_sphere) {
-            _defs_sphere.remove();
-        }
-        if (_defs_clipPath) {
-            _defs_clipPath.remove();
-        }
         map.selectAll(".layer").attr("clip-path", null);
     }
 }
@@ -1976,7 +1968,7 @@ function patchSvgForInkscape() {
     for (var i = elems.length - 1; i > -1; i--) {
         if (elems[i].id == "") {
             continue;
-        } else if (Array.prototype.indexOf.call(elems[i].classList, "layer") > -1) {
+        } else if (elems[i].classList.contains("layer")) {
             elems[i].setAttribute("inkscape:label", elems[i].id);
         } else if (elems[i].id.indexOf("legend") > -1) {
             var layer_name = elems[i].className.baseVal.split("lgdf_")[1];
@@ -7110,6 +7102,7 @@ function make_box_type_fields(layer_name) {
         var _onclose = function _onclose() {
             // Or use the default values if he use the X  close button
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
@@ -7126,6 +7119,7 @@ function make_box_type_fields(layer_name) {
         var _onclose2 = function _onclose2() {
             // Or use the default values if he use the X  close button
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
@@ -7173,6 +7167,7 @@ function make_box_type_fields(layer_name) {
         if (isEscape) {
             evt.stopPropagation();
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
@@ -7228,7 +7223,7 @@ function getAvailablesFunctionnalities(layer_name) {
             return d.style.filter = "invert(0%) saturate(100%)";
         });
     }
-    if (fields_categ.length === 0) {
+    if (fields_ratio.length === 0) {
         Array.prototype.forEach.call(func_ratio, function (d) {
             return d.style.filter = "grayscale(100%)";
         });
@@ -8004,14 +7999,14 @@ function prepare_drop_section() {
     Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (elem) {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             var overlay_drop = document.getElementById("overlay_drop");
             overlay_drop.style.display = "";
         });
 
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = setTimeout(function () {
@@ -8025,7 +8020,7 @@ function prepare_drop_section() {
 
         elem.addEventListener("dragleave", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) {
+            if (document.body.classList.contains("no-drop")) {
                 document.body.classList.remove("no-drop");
                 return;
             }
@@ -8041,7 +8036,7 @@ function prepare_drop_section() {
             if (timeout) {
                 clearTimeout(timeout);
             }
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1 || !e.dataTransfer.files.length) {
+            if (document.body.classList.contains("no-drop") || !e.dataTransfer.files.length) {
                 document.getElementById("overlay_drop").style.display = "none";
                 return;
             }
@@ -8099,20 +8094,20 @@ function prepare_drop_section() {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             elem.style.border = '3px dashed green';
         });
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             elem.style.border = '3px dashed green';
         });
         elem.addEventListener("dragleave", function (e) {
             e.preventDefault();
             e.stopPropagation();
             elem.style.border = '';
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) document.body.classList.remove("no-drop");
+            if (document.body.classList.contains("no-drop")) document.body.classList.remove("no-drop");
         });
         elem.addEventListener("drop", function (e) {
             e.preventDefault();
