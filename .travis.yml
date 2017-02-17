@@ -54,7 +54,6 @@ addons:
       - nodejs
       - nodejs-dev
       - node-gyp
-      - npm
       - libxslt1-dev
       - libxml2
       - libxml2-dev
