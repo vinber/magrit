@@ -635,7 +635,10 @@ var scaleBar = {
 
         let pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
-
+        if(!pt1 || !pt2){
+            this.remove();
+            return true;
+        }
         this.dist = coslaw_dist([pt1[1], pt1[0]], [pt2[1], pt2[0]]);
         let mult = this.unit == "km" ? 1
                     : this.unit == "m" ? 1000
@@ -655,18 +658,27 @@ var scaleBar = {
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
         this.under_rect.attr("width", new_size + 5);
-        this.changeText();
+        let err = this.getDist();
+        if(err){
+            this.remove();
+            return;
+        }
+        this.Scale.select("#text_limit_sup_scale").text(this.fixed_size + " " + this.unit);
         this.handle_start_end_bar();
 
     },
-    changeText: function(){
-        this.getDist();
-        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
-    },
     update: function(){
-        this.changeText();
-        if(this.fixed_size)
+        if(this.fixed_size){
+            this.getDist();
             this.resize();
+        } else {
+            let err = this.getDist();
+            if(err){
+                this.remove();
+                return;
+            }
+            this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
+        }
     },
     remove: function(){
         this.Scale.remove();
@@ -691,7 +703,7 @@ var scaleBar = {
                   self.resize(new_val);
               else {
                   self.fixed_size = false;
-                  self.changeText();
+                  self.update();
               }
             };
         make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), {widthFitContent: true})
