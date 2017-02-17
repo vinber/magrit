@@ -107,6 +107,168 @@ function setUpInterface(resume_project) {
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
+    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+
+    var rotation_param = proj_options.append("span");
+
+    rotation_param.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
+        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: "120px", margin: "0px", "vertical-align": "text-top" }).on("input", function () {
+        handle_proj_center_button([this.value, null, null]);
+        document.getElementById("proj_center_value_txt").value = +this.value;
+    });
+
+    rotation_param.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
+        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
+        "color": " white", "background-color": "#000",
+        "vertical-align": "calc(20%)" }).on("change", function () {
+        var val = +this.value,
+            old_value = +document.getElementById('form_projection_center').value;
+        if (this.value.length == 0 || val > 180 || val < -180) {
+            this.value = old_value;
+            return;
+        } else {
+            // Should remove trailing zeros (right/left) if any :
+            this.value = +this.value;
+        }
+        handle_proj_center_button([this.value, null, null]);
+        document.getElementById("form_projection_center").value = this.value;
+    });
+    rotation_param.append("span").style("vertical-align", "calc(20%)").html("°");
+
+    var proj_select = proj_options.append("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px" }).on("change", function () {
+        current_proj_name = this.value;
+        change_projection(this.value);
+    });
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var proj_name = _step.value;
+
+            proj_select.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    proj_select.node().value = "NaturalEarth";
+
+    var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+        window.localStorage.removeItem("magrit_project");
+        window.removeEventListener("beforeunload", beforeUnloadWindow);
+        location.reload();
+    });
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    });
+
+    const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
+        "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
+        var click_func = function click_func(window_name, target_url) {
+            window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.1.0" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+        swal({
+            title: i18next.t("app_page.help_box.title"),
+            html: box_content,
+            showCancelButton: true,
+            showConfirmButton: false,
+            cancelButtonText: i18next.t('app_page.common.close'),
+            animation: "slide-from-top",
+            onOpen: function onOpen() {
+                var content = document.getElementsByClassName('about_content')[0];
+                var credit_link = content.querySelector('#credit_link');
+                credit_link.style.fontWeight = "bold";
+                credit_link.style.cursor = "pointer";
+                credit_link.color = "#000";
+                credit_link.onclick = function () {
+                    window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_doc').onclick = function () {
+                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_contact').onclick = function () {
+                    window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_gh').onclick = function () {
+                    window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+            }
+        }).then(function (inputValue) {
+            null;
+        }, function (dismissValue) {
+            null;
+        });
+    });
+
+    const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
+        "font-size": "14px", "vertical-align": "super",
+        background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
+        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
+            (function () {
+                var current_lang = i18next.language;
+                var other_lang = current_lang == "en" ? "fr" : "en";
+                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_lang, "callback": change_lang }];
+                var menu = document.createElement("div");
+                menu.style.top = "40px";
+                menu.style.right = "0px";
+                menu.className = "context-menu";
+                menu.id = "menu_lang";
+                menu.style.minWidth = "30px";
+                menu.style.width = "50px";
+                menu.style.background = "#000";
+                var list_elems = document.createElement("ul");
+                menu.appendChild(list_elems);
+
+                var _loop = function _loop(i) {
+                    var item = document.createElement("li"),
+                        name = document.createElement("span");
+                    list_elems.appendChild(item);
+                    item.setAttribute("data-index", i);
+                    item.style.textAlign = "right";
+                    item.style.paddingRight = "16px";
+                    name.className = "context-menu-item-name";
+                    name.style.color = "white";
+                    name.textContent = actions[i].name;
+                    item.appendChild(name);
+                    item.onclick = function () {
+                        actions[i].callback();
+                        menu.remove();
+                    };
+                };
+
+                for (var i = 0; i < actions.length; i++) {
+                    _loop(i);
+                }
+                document.querySelector("body").appendChild(menu);
+            })();
+        }
+    });
+
     var menu = d3.select("#menu"),
         b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
@@ -161,6 +323,7 @@ function setUpInterface(resume_project) {
 
     window.layer_list = section3.append("div").append("ul").attrs({ id: "sortable", class: "layer_list" });
 
+    add_simplified_land_layer();
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
     dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
@@ -386,8 +549,6 @@ function setUpInterface(resume_project) {
         return add_layout_feature('text_annot');
     });
 
-    add_simplified_land_layer();
-
     var section5b = d3.select("#section5");
     var dv5b = section5b.append("div").attr("class", "form-item");
 
@@ -566,172 +727,6 @@ function setUpInterface(resume_project) {
         }
     });
 
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
-
-    var rotation_param = proj_options.append("span");
-
-    rotation_param.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
-        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: "120px", margin: "0px", "vertical-align": "text-top" }).on("input", function () {
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("proj_center_value_txt").value = +this.value;
-    });
-
-    rotation_param.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
-        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
-        "color": " white", "background-color": "#000",
-        "vertical-align": "calc(20%)" }).on("change", function () {
-        var val = +this.value,
-            old_value = +document.getElementById('form_projection_center').value;
-        if (this.value.length == 0 || val > 180 || val < -180) {
-            this.value = old_value;
-            return;
-        } else {
-            // Should remove trailing zeros (right/left) if any :
-            this.value = +this.value;
-        }
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("form_projection_center").value = this.value;
-    });
-    rotation_param.append("span").style("vertical-align", "calc(20%)").html("°");
-
-    var proj_select = proj_options.append("select").attr("id", "form_projection").styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none" }).on("change", function () {
-        current_proj_name = this.selectedOptions[0].textContent;
-        change_projection(this.value);
-    });
-    d3.json("/static/json/projections.json", function (json) {
-        json.forEach(function (d) {
-            available_projections.set(d.name, d.projection);
-            proj_select.append("option").text(d.name).attr("value", d.projection);
-        });
-        var last_project = window.localStorage.getItem("magrit_project");
-        if (resume_project === true && last_project) {
-            apply_user_preferences(json_params);
-        } else if (last_project && last_project.length && last_project.length > 0) {
-            swal({ title: "",
-                // text: i18next.t("app_page.common.resume_last_project"),
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                type: "question",
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: i18next.t("app_page.common.new_project"),
-                cancelButtonText: i18next.t("app_page.common.resume_last")
-            }).then(function () {
-                null;
-            }, function (dismiss) {
-                apply_user_preferences(last_project);
-            });
-        } else {
-            // If we don't want to resume from the last project, we can
-            // remove it :
-            window.localStorage.removeItem("magrit_project");
-        }
-        proj_select.node().value = "d3.geoNaturalEarth().scale(400).translate([375, 50])";
-    });
-
-    var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
-        window.localStorage.removeItem("magrit_project");
-        window.removeEventListener("beforeunload", beforeUnloadWindow);
-        location.reload();
-    });
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
-        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-    });
-
-    const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
-        "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
-        var click_func = function click_func(window_name, target_url) {
-            window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-        };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.1.0" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
-        swal({
-            title: i18next.t("app_page.help_box.title"),
-            html: box_content,
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonText: i18next.t('app_page.common.close'),
-            animation: "slide-from-top",
-            onOpen: function onOpen() {
-                var content = document.getElementsByClassName('about_content')[0];
-                var credit_link = content.querySelector('#credit_link');
-                credit_link.style.fontWeight = "bold";
-                credit_link.style.cursor = "pointer";
-                credit_link.color = "#000";
-                credit_link.onclick = function () {
-                    window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_doc').onclick = function () {
-                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_contact').onclick = function () {
-                    window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_gh').onclick = function () {
-                    window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-            }
-        }).then(function (inputValue) {
-            null;
-        }, function (dismissValue) {
-            null;
-        });
-    });
-
-    const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
-        "font-size": "14px", "vertical-align": "super",
-        background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
-            (function () {
-                var current_lang = i18next.language;
-                var other_lang = current_lang == "en" ? "fr" : "en";
-                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_lang, "callback": change_lang }];
-                var menu = document.createElement("div");
-                menu.style.top = "40px";
-                menu.style.right = "0px";
-                menu.className = "context-menu";
-                menu.id = "menu_lang";
-                menu.style.minWidth = "30px";
-                menu.style.width = "50px";
-                menu.style.background = "#000";
-                var list_elems = document.createElement("ul");
-                menu.appendChild(list_elems);
-
-                var _loop = function _loop(i) {
-                    var item = document.createElement("li"),
-                        name = document.createElement("span");
-                    list_elems.appendChild(item);
-                    item.setAttribute("data-index", i);
-                    item.style.textAlign = "right";
-                    item.style.paddingRight = "16px";
-                    name.className = "context-menu-item-name";
-                    name.style.color = "white";
-                    name.textContent = actions[i].name;
-                    item.appendChild(name);
-                    item.onclick = function () {
-                        actions[i].callback();
-                        menu.remove();
-                    };
-                };
-
-                for (var i = 0; i < actions.length; i++) {
-                    _loop(i);
-                }
-                document.querySelector("body").appendChild(menu);
-            })();
-        }
-    });
-
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
 
@@ -759,9 +754,11 @@ function setUpInterface(resume_project) {
     // setting it currently unactive until it will be requested :
     d3.select("body").append("div").attr("id", "info_features").classed("active", false).style("display", "none").html("");
 
-    prepare_drop_section();
+    //
     accordionize(".accordion");
     document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
+    prepare_drop_section();
+
     new Sortable(document.getElementById("sortable"), {
         animation: 100,
         onUpdate: function onUpdate(a) {
@@ -795,6 +792,31 @@ function setUpInterface(resume_project) {
             document.body.classList.remove("no-drop");
         }
     });
+
+    // Check if there is a project to reload in the localStorage :
+    var last_project = window.localStorage.getItem("magrit_project");
+    if (resume_project === true && last_project) {
+        apply_user_preferences(json_params);
+    } else if (last_project && last_project.length && last_project.length > 0) {
+        swal({ title: "",
+            // text: i18next.t("app_page.common.resume_last_project"),
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            type: "question",
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: i18next.t("app_page.common.new_project"),
+            cancelButtonText: i18next.t("app_page.common.resume_last")
+        }).then(function () {
+            null;
+        }, function (dismiss) {
+            apply_user_preferences(last_project);
+        });
+    } else {
+        // If we don't want to resume from the last project, we can
+        // remove it :
+        window.localStorage.removeItem("magrit_project");
+    }
 }
 
 function encodeId(s) {
@@ -947,8 +969,7 @@ var proj = d3.geoNaturalEarth().scale(1).translate([0, 0]);
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
-    current_proj_name = "Natural Earth",
-    available_projections = new Map(),
+    current_proj_name = "NaturalEarth",
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
@@ -1009,7 +1030,7 @@ var discretiz_geostats_switch = new Map([["jenks", "getJenks"], ["equal_interval
 //["std_dev", "getStdDeviation"],
 ["quantiles", "getQuantile"], ["arithmetic_progression", "getArithmeticProgression"], ["Q6", "getBreaksQ6"], ["geometric_progression", "getGeometricProgression"]]);
 
-// Reference to the availables fonts that the user could select :
+// Reference to the available fonts that the user could select :
 var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
@@ -1534,9 +1555,11 @@ function zoom_without_redraw() {
     }
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
     var zoom_params = svg_map.__zoom;
+    var zoom_k_scale = proj.scale() * zoom_params.k;
     document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
     document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(zoom_params.k * proj.scale(), 2);
+    document.getElementById("input-scale-k").value = round_value(zoom_k_scale, 2);
+    document.getElementById('form_projection').querySelector('option[value="ConicConformal"]').disabled = zoom_k_scale < 200 ? 'disabled' : '';
 };
 
 function redraw_legends_symbols(targeted_node) {
@@ -1654,12 +1677,10 @@ function handleClipPath(proj_name) {
     }
 }
 
-function change_projection(proj_name) {
-    var new_proj_name = proj_name.split('()')[0].split('.')[1];
-
+function change_projection(new_proj_name) {
     var prev_rotate = proj.rotate();
     // Update global variables:
-    proj = eval(proj_name);
+    proj = eval(available_projections.get(new_proj_name));
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Do the reprojection :
@@ -1681,6 +1702,7 @@ function change_projection(proj_name) {
         d3.selectAll(".options_ortho").remove();
     }
 
+    // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
     if (!layer_name) {
         var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
@@ -1695,7 +1717,6 @@ function change_projection(proj_name) {
     } else {
         reproj_symbol_layer();
     }
-
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name);
 }
@@ -11354,7 +11375,10 @@ var scaleBar = {
 
         var pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
-
+        if (!pt1 || !pt2) {
+            this.remove();
+            return true;
+        }
         this.dist = coslaw_dist([pt1[1], pt1[0]], [pt2[1], pt2[0]]);
         var mult = this.unit == "km" ? 1 : this.unit == "m" ? 1000 : this.unit == "mi" ? 0.621371 : 1;
         this.dist_txt = (this.dist * mult).toFixed(this.precision);
@@ -11369,16 +11393,27 @@ var scaleBar = {
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
         this.under_rect.attr("width", new_size + 5);
-        this.changeText();
+        var err = this.getDist();
+        if (err) {
+            this.remove();
+            return;
+        }
+        this.Scale.select("#text_limit_sup_scale").text(this.fixed_size + " " + this.unit);
+        console.log(this.fixed_size, this.dist_txt);
         this.handle_start_end_bar();
     },
-    changeText: function changeText() {
-        this.getDist();
-        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
-    },
     update: function update() {
-        this.changeText();
-        if (this.fixed_size) this.resize();
+        if (this.fixed_size) {
+            this.getDist();
+            this.resize();
+        } else {
+            var err = this.getDist();
+            if (err) {
+                this.remove();
+                return;
+            }
+            this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
+        }
     },
     remove: function remove() {
         this.Scale.remove();
@@ -11399,7 +11434,7 @@ var scaleBar = {
             redraw_now = function redraw_now() {
             if (new_val) self.resize(new_val);else {
                 self.fixed_size = false;
-                self.changeText();
+                self.update();
             }
         };
         make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
@@ -13271,6 +13306,9 @@ function apply_user_preferences(json_pref) {
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
+    // Projection were slightly changed in a last version :
+    map_config.projection = map_config.projection.replace(/ /g, '');
+
     // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
@@ -13282,11 +13320,7 @@ function apply_user_preferences(json_pref) {
     defs = map.append("defs");
     {
         var proj_select = document.getElementById('form_projection');
-        proj_select.value = Array.prototype.filter.call(proj_select.options, function (d) {
-            if (d.text == current_proj_name) {
-                return d;
-            }
-        })[0].value;
+        proj_select.value = current_proj_name;
     }
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
@@ -13856,6 +13890,9 @@ function make_style_box_indiv_symbol(symbol_node) {
         document.getElementById("checkbox_symbol_zoom_scale").checked = current_options.scalable;
     }
 };
+"use strict";
+
+var available_projections = new Map([["Armadillo", "d3.geoArmadillo().scale(400)"], ["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"], ["Baker", "d3.geoBaker().scale(400)"], ["Boggs", "d3.geoBoggs().scale(400)"], ["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"], ["Bonne", "d3.geoBonne().scale(400)"], ["Bromley", "d3.geoBromley().scale(400)"], ["Collignon", "d3.geoCollignon().scale(400)"], ["ConicConformal", "d3.geoConicConformal().scale(400).parallels([43, 49])"], ["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"], ["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"], ["CrasterParabolic", "d3.geoCraster().scale(400)"], ["EckertI", "d3.geoEckert1().scale(400).translate([300, 250])"], ["EckertII", "d3.geoEckert2().scale(400).translate([300, 250])"], ["EckertIII", "d3.geoEckert3().scale(525).translate([150, 125])"], ["EckertIV", "d3.geoEckert4().scale(525).translate([150, 125])"], ["EckertV", "d3.geoEckert5().scale(400)"], ["EckertVI", "d3.geoEckert6().scale(400)"], ["Eisenlohr", "d3.geoEisenlohr().scale(400)"], ["Gnomonic", "d3.geoGnomonic().scale(400)"], ["Gringorten", "d3.geoGringorten().scale(400)"], ["HEALPix", "d3.geoHealpix().scale(400)"], ["Homolosine", "d3.geoHomolosine().scale(400)"], ["InterruptedHomolosine", "d3.geoInterruptedHomolosine().scale(400)"], ["Loximuthal", "d3.geoLoximuthal().scale(400)"], ["Mercator", "d3.geoMercator().scale(375).translate([525, 350])"], ["NaturalEarth", "d3.geoNaturalEarth().scale(400).translate([375, 50])"], ["Orthographic", "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"], ["Peircequincuncial", "d3.geoPeirceQuincuncial().scale(400)"], ["Robinson", "d3.geoRobinson().scale(400)"], ["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"], ["Sinusoidal", "d3.geoSinusoidal().scale(400)"], ["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"]]);
 "use strict";
 
 /**

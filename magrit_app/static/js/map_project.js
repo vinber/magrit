@@ -503,6 +503,9 @@ function apply_user_preferences(json_pref){
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
+    // Projection were slightly changed in a last version :
+    map_config.projection = map_config.projection.replace(/ /g, '');
+
     // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
@@ -514,7 +517,7 @@ function apply_user_preferences(json_pref){
     defs = map.append("defs");
     {
       let proj_select = document.getElementById('form_projection');
-      proj_select.value = Array.prototype.filter.call(proj_select.options, function(d){ if(d.text == current_proj_name) { return d;}})[0].value;
+      proj_select.value = current_proj_name;
     }
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);

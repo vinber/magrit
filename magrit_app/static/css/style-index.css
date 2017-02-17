@@ -22,7 +22,7 @@ body, html {
 
 .intro-section {
     height: 100%;
-    padding-top: 70px;
+    padding-top: 55px;
     text-align: center;
     background: #fff;
 }
@@ -57,7 +57,7 @@ body, html {
 }
 
 /* Gradient transparent - color - transparent, from https://css-tricks.com/examples/hrs/ */
-hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); }
+hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); margin-top: 15px;}
 
 img.hover_scale {
     margin: 2px;
