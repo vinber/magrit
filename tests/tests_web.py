@@ -293,12 +293,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Change the projection for an interrupted one :
         Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("d3.geoInterruptedSinusoidal().scale(400)")
+            ).select_by_value("InterruptedSinusoidal")
         time.sleep(2)
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
-        self.assertEqual(proj_name, "Interrupted Sinusoidal")
+        self.assertEqual(proj_name, "InterruptedSinusoidal")
         # Layer have a clip-path (as this projection is interrupted) :
         clip_path_value1 = driver.execute_script(
             '''val = document.getElementById("World").getAttribute("clip-path");
@@ -311,7 +311,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Change for a non-interrupted projection :
         Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("d3.geoBaker().scale(400)")
+            ).select_by_value("Baker")
         time.sleep(2)
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
