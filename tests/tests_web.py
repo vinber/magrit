@@ -74,6 +74,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
     def tearDown(self):
         self.assertEqual([], self.verificationErrors)
+        files = os.listdir(self.tmp_folder)
+        [os.remove(self.tmp_folder + file) for file in files]
+        os.removedirs(self.tmp_folder)
         self.driver.quit()
 
     def test_languages(self):
@@ -89,7 +92,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual(menu2.text, menu_desc[current_lang][1])
 
         button_lang.click()
-        driver.find_element_by_css_selector("#menu_lang").find_element_by_xpath("//li[@data-index='1']").click()
+        driver.find_element_by_css_selector(
+            "#menu_lang").find_element_by_xpath("//li[@data-index='1']").click()
         new_lang = driver.find_element_by_css_selector("#current_app_lang").text
         self.assertNotEqual(current_lang, new_lang)
 
@@ -102,27 +106,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         self.open_menu_section(4)
-
-        # Test the text annotation and feed it with some text :
-        driver.find_element_by_id('btn_text_annot').click()
-        time.sleep(0.2)
-        driver.find_element_by_id("svg_map").click()
-        time.sleep(1)
-        textarea_input = driver.find_element_by_id('annotation_content')
-        time.sleep(0.25)
-        textarea_input.clear()
-        textarea_input.send_keys('Mon annotation de texte')
-        driver.find_element_by_css_selector('.btn_ok').click()
-        time.sleep(0.5)
-        text_annot = driver.find_element_by_id('in_text_annotation_0')
-        self.assertEqual(text_annot.is_displayed(), True)
-        self.assertEqual(text_annot.text, 'Mon annotation de texte')
-
-        # Test the scale bar :
-        driver.find_element_by_id('btn_scale').click()
-        time.sleep(0.2)
-        if not self.try_element_present(By.ID, "scale_bar"):
-            self.fail("Scale bar won't display")
 
         # Test the graticule :
         driver.find_element_by_id('btn_graticule').click()
@@ -140,11 +123,41 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.CSS_SELECTOR, "li.Sphere"):
             self.fail("Sphere won't appeat in layer manager")
 
+        # Test the text annotation and feed it with some text :
+        driver.find_element_by_id('btn_text_annot').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(1)
+        textarea_input = driver.find_element_by_id('annotation_content')
+        time.sleep(0.25)
+        textarea_input.clear()
+        textarea_input.send_keys('Mon annotation de texte')
+        driver.find_element_by_css_selector('.btn_ok').click()
+        time.sleep(0.5)
+        text_annot = driver.find_element_by_id('in_text_annotation_0')
+        self.assertEqual(text_annot.is_displayed(), True)
+        self.assertEqual(text_annot.text, 'Mon annotation de texte')
+        self._verif_context_menu(text_annot, "text annotation")
+
+        # Test the scale bar :
+        driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
+        if not self.try_element_present(By.ID, "scale_bar"):
+            self.fail("Scale bar won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("scale_bar"), "scale bar")
+        self._verif_dbl_click_open_ctx_menu(
+            driver.find_element_by_id("scale_bar"), "scale bar")
+
         # Test the north arrow :
         driver.find_element_by_id('btn_north').click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("north_arrow"), "north arrow")
+        self._verif_dbl_click_open_ctx_menu(
+            driver.find_element_by_id("north_arrow"), "north arrow")
 
         svg_map = driver.find_element_by_id("svg_map")
 
@@ -160,6 +173,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(1)
         if not self.try_element_present(By.ID, "arrow_0"):
             self.fail("User drawn arrow won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("arrow_0"), "user arrow")
 
         # Test the ellipse creation :
         driver.find_element_by_id('btn_ellipse').click()
@@ -168,6 +183,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.5)
         if not self.try_element_present(By.ID, "user_ellipse_0"):
             self.fail("Ellipse won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("user_ellipse_0"), "user ellipse")
 
     # def test_links(self):
     #     driver = self.driver
@@ -217,10 +234,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.open_menu_section(2)
         self.clickWaitTransition("#button_grid")
 
-        Select(driver.find_element_by_id("Gridded_field")).select_by_visible_text("POP")
+        Select(driver.find_element_by_id("Gridded_field")
+            ).select_by_visible_text("POP")
         driver.find_element_by_id("Gridded_cellsize").clear()
         driver.find_element_by_id("Gridded_cellsize").send_keys("145")
-        Select(driver.find_element_by_id("Gridded_shape")).select_by_value("Diamond")
+        Select(driver.find_element_by_id("Gridded_shape")
+            ).select_by_value("Diamond")
         driver.find_element_by_id("Gridded_yes").click()
 
         self.waitClickButtonSwal()
@@ -274,12 +293,12 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Change the projection for an interrupted one :
         Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("d3.geoInterruptedSinusoidal().scale(400)")
+            ).select_by_value("InterruptedSinusoidal")
         time.sleep(2)
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
-        self.assertEqual(proj_name, "Interrupted Sinusoidal")
+        self.assertEqual(proj_name, "InterruptedSinusoidal")
         # Layer have a clip-path (as this projection is interrupted) :
         clip_path_value1 = driver.execute_script(
             '''val = document.getElementById("World").getAttribute("clip-path");
@@ -292,7 +311,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Change for a non-interrupted projection :
         Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("d3.geoBaker().scale(400)")
+            ).select_by_value("Baker")
         time.sleep(2)
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
@@ -377,14 +396,14 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Reload the page :
         driver.get(self.base_url)
-        time.sleep(0.1)
+        time.sleep(0.2)
         # Close the alert asking confirmation for closing the page
         # (this is when the last state of the current project is saved)
         driver.switch_to.alert.accept()
 
         # Click on the button to reload the last project :
         self.waitClickButtonSwal("button.swal2-cancel")
-        time.sleep(2)
+        time.sleep(1)
 
     def test_downloads(self):
         driver = self.driver
@@ -413,7 +432,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertIn('nuts2-2013-data', svg_data)
         os.remove(self.tmp_folder + "export.svg")
 
-        # Open the appropriate menu:
+        # Test export to png:
         Select(driver.find_element_by_id("select_export_type")
             ).select_by_value("png")
         time.sleep(0.2)
@@ -425,7 +444,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(0.1)
         os.remove(self.tmp_folder + "export.png")
 
-        # Test export to geographic layer (from the source layer):
+        # Test export to GeoJSON (from the source layer):
         Select(driver.find_element_by_id("select_export_type")
             ).select_by_value("geo")
         time.sleep(0.2)
@@ -443,6 +462,43 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertIn("type", parsed_geojson)
         self.assertEqual(len(parsed_geojson["features"]), 323)
         os.remove(self.tmp_folder + "nuts2-2013-data.geojson")
+
+        # Test export to KML (from the source layer):
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text("nuts2-2013-data")
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value("KML")
+        driver.find_element_by_id("export_button_section5b").click()
+
+        time.sleep(2)
+        with open(self.tmp_folder + "nuts2-2013-data.kml", "r") as f:
+            raw_kml_file = f.read()
+        self.assertIn("<kml xmlns=", raw_kml_file)
+        os.remove(self.tmp_folder + "nuts2-2013-data.kml")
+
+        # Test export to GML (from the source layer):
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text("nuts2-2013-data")
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value("GML")
+        driver.find_element_by_id("export_button_section5b").click()
+
+        time.sleep(2)
+        self.assertEqual(
+            True, os.path.exists(self.tmp_folder + "nuts2-2013-data.zip"))
+        os.remove(self.tmp_folder + "nuts2-2013-data.zip")
+
+        # Test export to Shapefile (from the source layer):
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text("nuts2-2013-data")
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value("ESRI Shapefile")
+        driver.find_element_by_id("export_button_section5b").click()
+
+        time.sleep(2)
+        self.assertEqual(
+            True, os.path.exists(self.tmp_folder + "nuts2-2013-data.zip"))
+        os.remove(self.tmp_folder + "nuts2-2013-data.zip")
 
     def test_Typo(self):
         driver = self.driver
@@ -525,23 +581,71 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("stewart_span").send_keys("60")
         Select(driver.find_element_by_id("stewart_mask")
             ).select_by_visible_text("nuts2-2013-data")
+        output_name = driver.find_element_by_id("stewart_output_name")
+        output_name.clear()
+        output_name.send_keys('my_result_0')
         driver.find_element_by_id("stewart_yes").click()
         self.waitClickButtonSwal()
-        if not self.try_element_present(By.ID, "legend_root", 5):
+        # The legend is displayed :
+        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_0", 5):
             self.fail("Legend not displayed on stewart")
+        # The legend contains the correct number of class :
+        legend_elems = driver.find_element_by_class_name(
+            'lgdf_my_result_0').find_elements_by_css_selector(
+                'rect:not(#under_rect)')
+        self.assertEqual(len(legend_elems), 7)
+        self._verif_export_result('my_result_0')
 
+        # Test with an other layer, asking for 9 class and no mask :
         self.open_menu_section('2b')
-
         driver.find_element_by_id("stewart_nb_class").clear()
         driver.find_element_by_id("stewart_nb_class").send_keys("9")
         driver.find_element_by_id("stewart_span").clear()
         driver.find_element_by_id("stewart_span").send_keys("115")
         Select(driver.find_element_by_id("stewart_mask")
             ).select_by_visible_text("None")
+        output_name = driver.find_element_by_id("stewart_output_name")
+        output_name.clear()
+        output_name.send_keys('my_result_1')
         driver.find_element_by_id("stewart_yes").click()
         self.waitClickButtonSwal()
-        if not self.try_element_present(By.ID, "legend_root", 5):
+        # The legend is displayed :
+        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_1", 5):
             self.fail("Legend not displayed on stewart")
+        # The legend contains the correct number of class :
+        legend_elems = driver.find_element_by_class_name(
+            'lgdf_my_result_1').find_elements_by_css_selector(
+                'rect:not(#under_rect)')
+        self.assertEqual(len(legend_elems), 9)
+        self._verif_export_result('my_result_1')
+
+        # Test with specifing custom break value :
+        self.open_menu_section('2b')
+        # This number of class is goona be overriden by our break values :
+        driver.find_element_by_id("stewart_nb_class").clear()
+        driver.find_element_by_id("stewart_nb_class").send_keys("10")
+        driver.find_element_by_id("stewart_span").clear()
+        driver.find_element_by_id("stewart_span").send_keys("115")
+        Select(driver.find_element_by_id("stewart_mask")
+            ).select_by_visible_text("None")
+        custom_breaks = driver.find_element_by_id('stewart_breaks')
+        custom_breaks.clear()
+        custom_breaks.send_keys(
+            '''0 - 800000 - 2150000 - 4000000 - 7575000 - 13550000 - 25432798.18274938''')
+        output_name = driver.find_element_by_id("stewart_output_name")
+        output_name.clear()
+        output_name.send_keys('my_result_2')
+        driver.find_element_by_id("stewart_yes").click()
+        self.waitClickButtonSwal()
+        # The legend is displayed :
+        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_2", 5):
+            self.fail("Legend not displayed on stewart")
+        # The legend contains the correct number of class :
+        legend_elems = driver.find_element_by_class_name(
+            'lgdf_my_result_2').find_elements_by_css_selector(
+                'rect:not(#under_rect)')
+        self.assertEqual(len(legend_elems), 6)
+        self._verif_export_result('my_result_2')
 
     def test_cartogram_new_field(self):
         driver = self.driver
@@ -630,9 +734,31 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         #  ... using one of these previously computed field :
         Select(driver.find_element_by_id(
             "Anamorph_field")).select_by_visible_text("GDP")
+        driver.find_element_by_id('Anamorph_output_name').clear()
+        driver.find_element_by_id('Anamorph_output_name').send_keys('carto_doug')
         driver.find_element_by_id("Anamorph_yes").click()
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
+
+        self._verif_export_result('carto_doug')
+
+        Select(driver.find_element_by_css_selector(
+            "select.params")).select_by_visible_text("Dougenik & al. (1985)")
+
+        self.open_menu_section('2b')
+        #  Test the olson cartogram functionnality...
+        Select(driver.find_element_by_css_selector(
+            "select.params")).select_by_visible_text("Olson (2005)")
+
+        Select(driver.find_element_by_id(
+            "Anamorph_field")).select_by_visible_text("GDP")
+        driver.find_element_by_id('Anamorph_output_name').clear()
+        driver.find_element_by_id('Anamorph_output_name').send_keys('carto_olson')
+        driver.find_element_by_id("Anamorph_yes").click()
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+
+        self._verif_export_result('carto_olson')
 
     def test_new_field_choro(self):
         driver = self.driver
@@ -716,11 +842,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             self.fail("Missing features in the interface")
         driver.execute_script(
             "document.getElementById('color_Discont').value = '#da2929';")
+        driver.find_element_by_id("Discont_output_name").clear()
+        driver.find_element_by_id("Discont_output_name").send_keys('my_result_layer')
         driver.find_element_by_id("yes_Discont").click()
         time.sleep(1)  # Delay for the discontinuities to be computed
         driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root_links", 5):
             self.fail("Legend won't display")
+
+        self._verif_export_result('my_result_layer')
 
     def test_propSymbolsTypo(self):
         driver = self.driver
@@ -861,6 +991,49 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         #     ".styleBox").find_elements_by_css_selector(
         #     ".btn_ok")[0].click()
         # driver.find_element_by_id("legend_button").click()
+
+    def _verif_export_result(self, layer_name, layer_format="GeoJSON"):
+        driver = self.driver
+        self.open_menu_section(5)
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("select_export_type")
+            ).select_by_value("geo")
+        time.sleep(0.2)
+        Select(driver.find_element_by_id("layer_to_export")
+            ).select_by_visible_text(layer_name)
+        Select(driver.find_element_by_id("datatype_to_use")
+            ).select_by_value(layer_format)
+        driver.find_element_by_id("export_button_section5b").click()
+
+        time.sleep(2)
+        with open(self.tmp_folder + layer_name + ".geojson", "r") as f:
+            raw_geojson = f.read()
+        parsed_geojson = json.loads(raw_geojson)
+        self.assertIn("features", parsed_geojson)
+        self.assertIn("type", parsed_geojson)
+        os.remove(self.tmp_folder + layer_name + ".geojson")
+
+    def _verif_dbl_click_open_ctx_menu(self, elem, info):
+        self.make_double_click(elem)
+        time.sleep(0.1)
+        if not self.try_element_present(By.CSS_SELECTOR, ".context-menu"):
+            self.fail("Context menu of {} won't display on dblclick".format(info))
+        self.click_elem_retry(self.driver.find_element_by_id('svg_map'))
+
+    def _verif_context_menu(self, elem, info):
+        self.make_context_click(elem)
+        time.sleep(0.1)
+        if not self.try_element_present(By.CSS_SELECTOR, ".context-menu"):
+            self.fail("Context menu of {} won't display".format(info))
+        self.click_elem_retry(self.driver.find_element_by_id('svg_map'))
+
+    def make_context_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.context_click(target).perform()
+
+    def make_double_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.double_click(target).perform()
 
     def validTypefield(self):
         self.click_elem_retry(

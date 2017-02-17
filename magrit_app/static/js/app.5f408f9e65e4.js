@@ -107,6 +107,168 @@ function setUpInterface(resume_project) {
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
+    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+
+    var rotation_param = proj_options.append("span");
+
+    rotation_param.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
+        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: "120px", margin: "0px", "vertical-align": "text-top" }).on("input", function () {
+        handle_proj_center_button([this.value, null, null]);
+        document.getElementById("proj_center_value_txt").value = +this.value;
+    });
+
+    rotation_param.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
+        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
+        "color": " white", "background-color": "#000",
+        "vertical-align": "calc(20%)" }).on("change", function () {
+        var val = +this.value,
+            old_value = +document.getElementById('form_projection_center').value;
+        if (this.value.length == 0 || val > 180 || val < -180) {
+            this.value = old_value;
+            return;
+        } else {
+            // Should remove trailing zeros (right/left) if any :
+            this.value = +this.value;
+        }
+        handle_proj_center_button([this.value, null, null]);
+        document.getElementById("form_projection_center").value = this.value;
+    });
+    rotation_param.append("span").style("vertical-align", "calc(20%)").html("°");
+
+    var proj_select = proj_options.append("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px" }).on("change", function () {
+        current_proj_name = this.value;
+        change_projection(this.value);
+    });
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var proj_name = _step.value;
+
+            proj_select.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    proj_select.node().value = "NaturalEarth";
+
+    var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+        window.localStorage.removeItem("magrit_project");
+        window.removeEventListener("beforeunload", beforeUnloadWindow);
+        location.reload();
+    });
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    });
+
+    const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
+        "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
+        var click_func = function click_func(window_name, target_url) {
+            window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.1.0" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+        swal({
+            title: i18next.t("app_page.help_box.title"),
+            html: box_content,
+            showCancelButton: true,
+            showConfirmButton: false,
+            cancelButtonText: i18next.t('app_page.common.close'),
+            animation: "slide-from-top",
+            onOpen: function onOpen() {
+                var content = document.getElementsByClassName('about_content')[0];
+                var credit_link = content.querySelector('#credit_link');
+                credit_link.style.fontWeight = "bold";
+                credit_link.style.cursor = "pointer";
+                credit_link.color = "#000";
+                credit_link.onclick = function () {
+                    window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_doc').onclick = function () {
+                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_contact').onclick = function () {
+                    window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+                content.querySelector('.btn_gh').onclick = function () {
+                    window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+                };
+            }
+        }).then(function (inputValue) {
+            null;
+        }, function (dismissValue) {
+            null;
+        });
+    });
+
+    const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
+        "font-size": "14px", "vertical-align": "super",
+        background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
+        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
+            (function () {
+                var current_lang = i18next.language;
+                var other_lang = current_lang == "en" ? "fr" : "en";
+                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_lang, "callback": change_lang }];
+                var menu = document.createElement("div");
+                menu.style.top = "40px";
+                menu.style.right = "0px";
+                menu.className = "context-menu";
+                menu.id = "menu_lang";
+                menu.style.minWidth = "30px";
+                menu.style.width = "50px";
+                menu.style.background = "#000";
+                var list_elems = document.createElement("ul");
+                menu.appendChild(list_elems);
+
+                var _loop = function _loop(i) {
+                    var item = document.createElement("li"),
+                        name = document.createElement("span");
+                    list_elems.appendChild(item);
+                    item.setAttribute("data-index", i);
+                    item.style.textAlign = "right";
+                    item.style.paddingRight = "16px";
+                    name.className = "context-menu-item-name";
+                    name.style.color = "white";
+                    name.textContent = actions[i].name;
+                    item.appendChild(name);
+                    item.onclick = function () {
+                        actions[i].callback();
+                        menu.remove();
+                    };
+                };
+
+                for (var i = 0; i < actions.length; i++) {
+                    _loop(i);
+                }
+                document.querySelector("body").appendChild(menu);
+            })();
+        }
+    });
+
     var menu = d3.select("#menu"),
         b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
         accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
@@ -161,6 +323,7 @@ function setUpInterface(resume_project) {
 
     window.layer_list = section3.append("div").append("ul").attrs({ id: "sortable", class: "layer_list" });
 
+    add_simplified_land_layer();
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
     dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
@@ -386,8 +549,6 @@ function setUpInterface(resume_project) {
         return add_layout_feature('text_annot');
     });
 
-    add_simplified_land_layer();
-
     var section5b = d3.select("#section5");
     var dv5b = section5b.append("div").attr("class", "form-item");
 
@@ -416,9 +577,9 @@ function setUpInterface(resume_project) {
         }
     });
 
-    select_type_export.append("option").text("Svg").attr("value", "svg");
-    select_type_export.append("option").text("Png").attr("value", "png");
-    select_type_export.append("option").text("Geo").attr("value", "geo");
+    select_type_export.append("option").text("SVG").attr("value", "svg");
+    select_type_export.append("option").text("PNG").attr("value", "png");
+    select_type_export.append("option").text("GEO").attr("value", "geo");
 
     var export_png_options = dv5b.append("p").attr("id", "export_options_png").style("display", "none");
     export_png_options.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.format" });
@@ -566,172 +727,6 @@ function setUpInterface(resume_project) {
         }
     });
 
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
-
-    var rotation_param = proj_options.append("span");
-
-    rotation_param.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
-        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: "120px", margin: "0px", "vertical-align": "text-top" }).on("input", function () {
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("proj_center_value_txt").value = +this.value;
-    });
-
-    rotation_param.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
-        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
-        "color": " white", "background-color": "#000",
-        "vertical-align": "calc(20%)" }).on("change", function () {
-        var val = +this.value,
-            old_value = +document.getElementById('form_projection_center').value;
-        if (this.value.length == 0 || val > 180 || val < -180) {
-            this.value = old_value;
-            return;
-        } else {
-            // Should remove trailing zeros (right/left) if any :
-            this.value = +this.value;
-        }
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("form_projection_center").value = this.value;
-    });
-    rotation_param.append("span").style("vertical-align", "calc(20%)").html("°");
-
-    var proj_select = proj_options.append("select").attr("id", "form_projection").styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none" }).on("change", function () {
-        current_proj_name = this.selectedOptions[0].textContent;
-        change_projection(this.value);
-    });
-    d3.json("/static/json/projections.json", function (json) {
-        json.forEach(function (d) {
-            available_projections.set(d.name, d.projection);
-            proj_select.append("option").text(d.name).attr("value", d.projection);
-        });
-        var last_project = window.localStorage.getItem("magrit_project");
-        if (resume_project === true && last_project) {
-            apply_user_preferences(json_params);
-        } else if (last_project && last_project.length && last_project.length > 0) {
-            swal({ title: "",
-                // text: i18next.t("app_page.common.resume_last_project"),
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                type: "question",
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: i18next.t("app_page.common.new_project"),
-                cancelButtonText: i18next.t("app_page.common.resume_last")
-            }).then(function () {
-                null;
-            }, function (dismiss) {
-                apply_user_preferences(last_project);
-            });
-        } else {
-            // If we don't want to resume from the last project, we can
-            // remove it :
-            window.localStorage.removeItem("magrit_project");
-        }
-        proj_select.node().value = "d3.geoNaturalEarth().scale(400).translate([375, 50])";
-    });
-
-    var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
-        window.localStorage.removeItem("magrit_project");
-        window.removeEventListener("beforeunload", beforeUnloadWindow);
-        location.reload();
-    });
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>').on('click', function () {
-        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-    });
-
-    const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
-        "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
-        var click_func = function click_func(window_name, target_url) {
-            window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-        };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: "0.1.0" }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
-        swal({
-            title: i18next.t("app_page.help_box.title"),
-            html: box_content,
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonText: i18next.t('app_page.common.close'),
-            animation: "slide-from-top",
-            onOpen: function onOpen() {
-                var content = document.getElementsByClassName('about_content')[0];
-                var credit_link = content.querySelector('#credit_link');
-                credit_link.style.fontWeight = "bold";
-                credit_link.style.cursor = "pointer";
-                credit_link.color = "#000";
-                credit_link.onclick = function () {
-                    window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_doc').onclick = function () {
-                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_contact').onclick = function () {
-                    window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_gh').onclick = function () {
-                    window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-            }
-        }).then(function (inputValue) {
-            null;
-        }, function (dismissValue) {
-            null;
-        });
-    });
-
-    const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
-        "font-size": "14px", "vertical-align": "super",
-        background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
-            (function () {
-                var current_lang = i18next.language;
-                var other_lang = current_lang == "en" ? "fr" : "en";
-                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_lang, "callback": change_lang }];
-                var menu = document.createElement("div");
-                menu.style.top = "40px";
-                menu.style.right = "0px";
-                menu.className = "context-menu";
-                menu.id = "menu_lang";
-                menu.style.minWidth = "30px";
-                menu.style.width = "50px";
-                menu.style.background = "#000";
-                var list_elems = document.createElement("ul");
-                menu.appendChild(list_elems);
-
-                var _loop = function _loop(i) {
-                    var item = document.createElement("li"),
-                        name = document.createElement("span");
-                    list_elems.appendChild(item);
-                    item.setAttribute("data-index", i);
-                    item.style.textAlign = "right";
-                    item.style.paddingRight = "16px";
-                    name.className = "context-menu-item-name";
-                    name.style.color = "white";
-                    name.textContent = actions[i].name;
-                    item.appendChild(name);
-                    item.onclick = function () {
-                        actions[i].callback();
-                        menu.remove();
-                    };
-                };
-
-                for (var i = 0; i < actions.length; i++) {
-                    _loop(i);
-                }
-                document.querySelector("body").appendChild(menu);
-            })();
-        }
-    });
-
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
 
@@ -759,9 +754,11 @@ function setUpInterface(resume_project) {
     // setting it currently unactive until it will be requested :
     d3.select("body").append("div").attr("id", "info_features").classed("active", false).style("display", "none").html("");
 
-    prepare_drop_section();
+    //
     accordionize(".accordion");
     document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
+    prepare_drop_section();
+
     new Sortable(document.getElementById("sortable"), {
         animation: 100,
         onUpdate: function onUpdate(a) {
@@ -795,6 +792,31 @@ function setUpInterface(resume_project) {
             document.body.classList.remove("no-drop");
         }
     });
+
+    // Check if there is a project to reload in the localStorage :
+    var last_project = window.localStorage.getItem("magrit_project");
+    if (resume_project === true && last_project) {
+        apply_user_preferences(json_params);
+    } else if (last_project && last_project.length && last_project.length > 0) {
+        swal({ title: "",
+            // text: i18next.t("app_page.common.resume_last_project"),
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            type: "question",
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: i18next.t("app_page.common.new_project"),
+            cancelButtonText: i18next.t("app_page.common.resume_last")
+        }).then(function () {
+            null;
+        }, function (dismiss) {
+            apply_user_preferences(last_project);
+        });
+    } else {
+        // If we don't want to resume from the last project, we can
+        // remove it :
+        window.localStorage.removeItem("magrit_project");
+    }
 }
 
 function encodeId(s) {
@@ -947,8 +969,7 @@ var proj = d3.geoNaturalEarth().scale(1).translate([0, 0]);
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
-    current_proj_name = "Natural Earth",
-    available_projections = new Map(),
+    current_proj_name = "NaturalEarth",
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
@@ -1009,7 +1030,7 @@ var discretiz_geostats_switch = new Map([["jenks", "getJenks"], ["equal_interval
 //["std_dev", "getStdDeviation"],
 ["quantiles", "getQuantile"], ["arithmetic_progression", "getArithmeticProgression"], ["Q6", "getBreaksQ6"], ["geometric_progression", "getGeometricProgression"]]);
 
-// Reference to the availables fonts that the user could select :
+// Reference to the available fonts that the user could select :
 var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
@@ -1434,6 +1455,13 @@ function remove_layer_cleanup(name) {
     var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
     if (a) a.remove();
 
+    // Remove the layer from the "mask" section if the "smoothed map" menu is open :
+    if (_app.current_functionnality && _app.current_functionnality.name == 'smooth') {
+        var _a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+        if (_a) _a.remove();
+        //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+    }
+
     // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
     if (current_layers[name].targeted) {
         // Updating the top of the menu (section 1) :
@@ -1527,9 +1555,11 @@ function zoom_without_redraw() {
     }
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
     var zoom_params = svg_map.__zoom;
+    var zoom_k_scale = proj.scale() * zoom_params.k;
     document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
     document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(zoom_params.k * proj.scale(), 2);
+    document.getElementById("input-scale-k").value = round_value(zoom_k_scale, 2);
+    document.getElementById('form_projection').querySelector('option[value="ConicConformal"]').disabled = zoom_k_scale < 200 ? 'disabled' : '';
 };
 
 function redraw_legends_symbols(targeted_node) {
@@ -1625,16 +1655,16 @@ function isInterrupted(proj_name) {
 
 function handleClipPath(proj_name) {
     proj_name = proj_name.toLowerCase();
-    if (isInterrupted(proj_name)) {
-        var defs_sphere = defs.node().querySelector("#sphere"),
-            defs_clipPath = defs.node().querySelector("clipPath");
-        if (defs_sphere) {
-            defs_sphere.remove();
-        }
-        if (defs_clipPath) {
-            defs_clipPath.remove();
-        }
+    var defs_sphere = defs.node().querySelector("#sphere"),
+        defs_clipPath = defs.node().querySelector("clipPath");
+    if (defs_sphere) {
+        defs_sphere.remove();
+    }
+    if (defs_clipPath) {
+        defs_clipPath.remove();
+    }
 
+    if (isInterrupted(proj_name)) {
         defs.append("path").datum({ type: "Sphere" }).attr("id", "sphere").attr("d", path);
 
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
@@ -1643,68 +1673,50 @@ function handleClipPath(proj_name) {
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else {
-        var _defs_sphere = defs.node().querySelector("#sphere"),
-            _defs_clipPath = defs.node().querySelector("clipPath");
-        if (_defs_sphere) {
-            _defs_sphere.remove();
-        }
-        if (_defs_clipPath) {
-            _defs_clipPath.remove();
-        }
         map.selectAll(".layer").attr("clip-path", null);
     }
 }
 
-function change_projection(proj_name) {
-    var new_proj_name = proj_name.split('()')[0].split('.')[1];
-
+function change_projection(new_proj_name) {
+    var prev_rotate = proj.rotate();
     // Update global variables:
-    proj = eval(proj_name);
+    proj = eval(available_projections.get(new_proj_name));
     path = d3.geoPath().projection(proj).pointRadius(4);
-    t = proj.translate();
-    s = proj.scale();
-
-    // Reset the projection center input :
-    document.getElementById("form_projection_center").value = 0;
-    document.getElementById("proj_center_value_txt").value = 0;
 
     // Do the reprojection :
-    proj.translate([t[0], t[1]]).scale(s);
+    proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Set specifics mouse events according to the projection :
     if (new_proj_name.indexOf('Orthographic') > -1) {
-        var current_params = proj.rotate(),
-            rotation_param = d3.select("#rotation_params");
+        var rotation_param = d3.select("#rotation_params");
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_phi")).insert("input").attrs({ type: "range", id: "form_projection_phi" }).attrs({ value: current_params[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_phi")).insert("input").attrs({ type: "range", id: "form_projection_phi" }).attrs({ value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
             handle_proj_center_button([null, this.value, null]);
         });
 
-        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_gamma")).insert("input").attrs({ type: "range", id: "form_projection_gamma" }).attrs({ value: current_params[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+        rotation_param.append("div").attr("class", "options_ortho").html(i18next.t("app_page.section5.projection_center_gamma")).insert("input").attrs({ type: "range", id: "form_projection_gamma" }).attrs({ value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
             handle_proj_center_button([null, null, this.value]);
         });
     } else {
         d3.selectAll(".options_ortho").remove();
     }
 
-    map.select("svg").on("mousedown", null).on("mousemove", null).on("mouseup", null);
-
-    // Reset the scale of the projection and the center of the view :
-    var layer_name = Object.getOwnPropertyNames(user_data)[0] || Object.getOwnPropertyNames(result_data)[0] || null;
+    // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+    var layer_name = Object.getOwnPropertyNames(user_data)[0];
     if (!layer_name) {
-        var layers = document.getElementsByClassName("layer");
-        layer_name = layers.length > 0 ? _app.id_to_layer.get(layers[layers.length - 1].id) : null;
+        var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
+            return f.style.visibility != "hidden";
+        });
+        layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
     }
     if (layer_name) {
         scale_to_lyr(layer_name);
         center_map(layer_name);
         zoom_without_redraw();
+    } else {
+        reproj_symbol_layer();
     }
-
-    // Reproject
-    reproj_symbol_layer();
-
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name);
 }
@@ -1969,7 +1981,7 @@ function patchSvgForInkscape() {
     for (var i = elems.length - 1; i > -1; i--) {
         if (elems[i].id == "") {
             continue;
-        } else if (Array.prototype.indexOf.call(elems[i].classList, "layer") > -1) {
+        } else if (elems[i].classList.contains("layer")) {
             elems[i].setAttribute("inkscape:label", elems[i].id);
         } else if (elems[i].id.indexOf("legend") > -1) {
             var layer_name = elems[i].className.baseVal.split("lgdf_")[1];
@@ -2101,6 +2113,7 @@ function _export_compo_png() {
             unpatchSvgForFonts();
             unpatchSvgForForeignObj(dimensions_foreign_obj);
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
         });
     };
 }
@@ -2871,25 +2884,16 @@ var display_discretization = function display_discretization(layer_name, field_n
     //     [i18next.t("app_page.common.std_dev"), "std_dev"],
     [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
-    if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
+    if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-    if (serie.max() > 1 && serie.max() - serie.min() > 100) {
-        var formatCount = d3.format(".0f");
-    } else {
-        var nb_right_decimal = _get_max_nb_left_sep(values) > 2 ? 2 : serie.precision;
-        var formatCount = d3.formatLocale({
-            decimal: getDecimalSeparator(),
-            thousands: "",
-            grouping: 3,
-            currency: ["", ""]
-        }).format('.' + nb_right_decimal + 'f');
-    }
+    var precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
+    var formatCount = d3.format(precision_axis);
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").insert("select").attr("class", "params").on("change", function () {
         type = this.value;
         if (type === "Q6") {
             nb_class = 6;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: 6 }));
+            txt_nb_class.node().value = 6;
             document.getElementById("nb_class_range").value = 6;
         }
         redisplay.compute();
@@ -2900,20 +2904,28 @@ var display_discretization = function display_discretization(layer_name, field_n
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", { count: +nb_class })),
-        disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+        var a = disc_nb_class.node();
+        a.value = this.value;
+        a.dispatchEvent(new Event('change'));
+    });
+
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
+
+    var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
         type = discretization.node().value;
         var old_nb_class = nb_class;
         if (type === "Q6") {
             this.value = 6;
+            txt_nb_class.node().value = 6;
             return;
         }
         nb_class = +this.value;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+        txt_nb_class.node().value = nb_class;
         var ret_val = redisplay.compute();
         if (!ret_val) {
             this.value = old_nb_class;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: +old_nb_class }));
+            txt_nb_class.node().value = +old_nb_class;
         } else {
             redisplay.draw();
             var ctl_class = document.getElementById("centr_class");
@@ -3012,7 +3024,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         user_break_list = document.getElementById("user_breaks_area").value;
         type = "user_defined";
         nb_class = user_break_list.split('-').length - 1;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: +nb_class }));
+        txt_nb_class.node().value = +nb_class;
+        // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
         document.getElementById("nb_class_range").value = nb_class;
         redisplay.compute();
         redisplay.draw();
@@ -3430,7 +3443,8 @@ var display_discretization_links_discont = function display_discretization_links
         last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
         if (+tmp_breaks.mins[0] > +serie.min()) {
             nb_class += 1;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
         }
 
@@ -3550,13 +3564,8 @@ var display_discretization_links_discont = function display_discretization_links
     if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-
-    var formatCount = d3.formatLocale({
-        decimal: getDecimalSeparator(),
-        thousands: "",
-        grouping: 3,
-        currency: ["", ""]
-    }).format('.' + serie.precision + 'f');
+    var precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
+    var formatCount = d3.format(precision_axis);
 
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").html("Type ").insert("select").attr("class", "params").on("change", function () {
         var old_type = type;
@@ -3567,7 +3576,8 @@ var display_discretization_links_discont = function display_discretization_links
         type = this.value;
         if (type === "Q6") {
             nb_class = 6;
-            txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+            txt_nb_class.node().value = nb_class;
+            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
             document.getElementById("nb_class_range").value = 6;
         }
         update_breaks();
@@ -3610,8 +3620,15 @@ var display_discretization_links_discont = function display_discretization_links
         })();
     }
 
-    var txt_nb_class = d3.select("#discretization_panel").insert("p").style("display", "inline").html(i18next.t("disc_box.class", { count: +nb_class })),
-        disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range",
+    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
+        var a = disc_nb_class.node();
+        a.value = this.value;
+        a.dispatchEvent(new Event('change'));
+    });
+
+    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
+
+    var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range",
         min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
         type = discretization.node().value;
         if (type == "user_defined") {
@@ -3624,7 +3641,8 @@ var display_discretization_links_discont = function display_discretization_links
             return;
         }
         nb_class = +this.value;
-        txt_nb_class.html(i18next.t("disc_box.class", { count: nb_class }));
+        txt_nb_class.node().value = nb_class;
+        // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
         update_breaks();
         redisplay.compute();
         redisplay.draw();
@@ -3658,7 +3676,7 @@ var display_discretization_links_discont = function display_discretization_links
     make_overlay_elements();
 
     // As the x axis and the mean didn't change, they can be drawn only once :
-    svg_histo.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x));
+    svg_histo.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x).tickFormat(formatCount));
 
     var box_content = newBox.append("div").attr("id", "box_content");
     box_content.append("h3").style("margin", "0").html(i18next.t("disc_box.line_size"));
@@ -4173,7 +4191,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -4218,7 +4236,7 @@ var fields_PropSymbolChoro = {
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
+                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
                 // console.log(section2); console.log(self.rendering_params[field_name].type);
@@ -4254,7 +4272,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4283,7 +4301,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4312,7 +4330,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4340,7 +4358,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4657,7 +4675,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -4690,7 +4708,7 @@ var fields_Choropleth = {
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', { count: self.rendering_params[field_name].nb_class }));
+                choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
             } else {
@@ -4722,7 +4740,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4751,7 +4769,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4780,7 +4798,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4808,7 +4826,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', { count: nb_class }));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -4831,7 +4849,7 @@ var fields_Choropleth = {
                 if (confirmed) {
                     // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
-                    choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', { count: confirmed[0] }));
+                    choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', { count: confirmed[0] }));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
@@ -5488,7 +5506,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
 
 function render_categorical(layer, rendering_params) {
     if (rendering_params.new_name) {
-        copy_layer(layer, rendering_params.new_name, "typo");
+        var fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "typo", fields);
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
@@ -5515,7 +5534,8 @@ function render_categorical(layer, rendering_params) {
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params) {
     if (rendering_params.new_name) {
-        copy_layer(layer, rendering_params.new_name, "choro");
+        var fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "choro", fields);
         //Assign the same key to the cloned layer so it could be used transparently on server side
         // after deletion of the reference layer if needed :
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
@@ -6887,7 +6907,7 @@ function make_content_summary(serie) {
     return [i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>", i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ", i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>", i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>", i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>", i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>", i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>", i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)].join('');
 }
 
-function copy_layer(ref_layer, new_name, type_result) {
+function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
     var id_new_layer = encodeId(new_name);
     var id_ref_layer = _app.layer_to_id.get(ref_layer);
     _app.layer_to_id.set(new_name, id_new_layer);
@@ -6901,9 +6921,41 @@ function copy_layer(ref_layer, new_name, type_result) {
     result_data[new_name] = [];
     var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
     var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
-    for (var i = 0; i < selec_src.length; i++) {
-        selec_dest[i].__data__ = selec_src[i].__data__;
-        result_data[new_name].push(selec_dest[i].__data__.properties);
+    if (!fields_to_copy) {
+        for (var i = 0; i < selec_src.length; i++) {
+            selec_dest[i].__data__ = selec_src[i].__data__;
+            result_data[new_name].push(selec_dest[i].__data__.properties);
+        }
+    } else {
+        for (var _i = 0; _i < selec_src.length; _i++) {
+            selec_dest[_i].__data__ = { properties: {} };
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = fields_to_copy[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var f = _step.value;
+
+                    selec_dest[_i].__data__.properties[f] = selec_src[_i].__data__.properties[f];
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            result_data[new_name].push(selec_dest[_i].__data__.properties);
+        }
     }
     document.getElementById(id_new_layer).style.visibility = "";
     up_legends();
@@ -6938,7 +6990,7 @@ function get_other_layer_names() {
     tmp_idx = other_layers.indexOf("Graticule");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
-    tmp_idx = other_layers.indexOf("world");
+    tmp_idx = other_layers.indexOf("World");
     if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
 
     tmp_idx = other_layers.indexOf("Sphere");
@@ -7098,9 +7150,11 @@ function make_box_type_fields(layer_name) {
         var _onclose = function _onclose() {
             // Or use the default values if he use the X  close button
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose;
@@ -7113,9 +7167,11 @@ function make_box_type_fields(layer_name) {
         var _onclose2 = function _onclose2() {
             // Or use the default values if he use the X  close button
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
+            overlay_under_modal.hide();
             document.removeEventListener('keydown', helper_esc_key_twbs);
         };
         container.querySelector("#xclose").onclick = _onclose2;
@@ -7159,6 +7215,7 @@ function make_box_type_fields(layer_name) {
         if (isEscape) {
             evt.stopPropagation();
             current_layers[layer_name].fields_type = tmp.slice();
+            getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
             modal_box.close();
             container.remove();
@@ -7214,7 +7271,7 @@ function getAvailablesFunctionnalities(layer_name) {
             return d.style.filter = "invert(0%) saturate(100%)";
         });
     }
-    if (fields_categ.length === 0) {
+    if (fields_ratio.length === 0) {
         Array.prototype.forEach.call(func_ratio, function (d) {
             return d.style.filter = "grayscale(100%)";
         });
@@ -7361,6 +7418,35 @@ function get_nb_left_separator(nb) {
 function getDecimalSeparator() {
     return 1.1.toLocaleString().substr(1, 1);
 }
+
+var get_precision_axis = function get_precision_axis(serie_min, serie_max, precision) {
+    var range_serie = serie_max - serie_min;
+    if (serie_max > 1 && range_serie > 100) {
+        return ".0f";
+    } else if (range_serie > 10) {
+        if (precision == 0) {
+            return ".0f";
+        }
+        return ".1f";
+    } else if (range_serie > 1) {
+        if (precision < 2) {
+            return ".1f";
+        }
+        return ".2f";
+    } else if (range_serie > 0.1) {
+        return ".3f";
+    } else if (range_serie > 0.01) {
+        return ".4f";
+    } else if (range_serie > 0.001) {
+        return ".5f";
+    } else if (range_serie > 0.0001) {
+        return ".6f";
+    } else if (range_serie > 0.00001) {
+        return ".7f";
+    } else {
+        return ".8f";
+    }
+};
 
 var PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
     var _this = this;
@@ -7961,14 +8047,14 @@ function prepare_drop_section() {
     Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (elem) {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             var overlay_drop = document.getElementById("overlay_drop");
             overlay_drop.style.display = "";
         });
 
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = setTimeout(function () {
@@ -7982,7 +8068,7 @@ function prepare_drop_section() {
 
         elem.addEventListener("dragleave", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) {
+            if (document.body.classList.contains("no-drop")) {
                 document.body.classList.remove("no-drop");
                 return;
             }
@@ -7998,7 +8084,7 @@ function prepare_drop_section() {
             if (timeout) {
                 clearTimeout(timeout);
             }
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1 || !e.dataTransfer.files.length) {
+            if (document.body.classList.contains("no-drop") || !e.dataTransfer.files.length) {
                 document.getElementById("overlay_drop").style.display = "none";
                 return;
             }
@@ -8056,20 +8142,20 @@ function prepare_drop_section() {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             elem.style.border = '3px dashed green';
         });
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) return;
+            if (document.body.classList.contains("no-drop")) return;
             elem.style.border = '3px dashed green';
         });
         elem.addEventListener("dragleave", function (e) {
             e.preventDefault();
             e.stopPropagation();
             elem.style.border = '';
-            if (String.prototype.indexOf.call(document.body.classList, "no-drop") > -1) document.body.classList.remove("no-drop");
+            if (document.body.classList.contains("no-drop")) document.body.classList.remove("no-drop");
         });
         elem.addEventListener("drop", function (e) {
             e.preventDefault();
@@ -8206,7 +8292,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
 * adding it to the map
 * @param {File} f - The input csv file
 */
-function handle_dataset(f) {
+function handle_dataset(f, target_layer_on_add) {
 
     function check_dataset() {
         var reader = new FileReader(),
@@ -8233,7 +8319,16 @@ function handle_dataset(f) {
             var field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if (field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1) {
                 if (field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1) {
-                    add_csv_geom(data, dataset_name);
+                    if (target_layer_on_add && _app.targeted_layer_added) {
+                        swal({ title: i18next.t("app_page.common.error") + "!",
+                            text: i18next.t('app_page.common.error_only_one'),
+                            customClass: 'swal2_custom',
+                            type: "error",
+                            allowEscapeKey: false,
+                            allowOutsideClick: false });
+                    } else {
+                        add_csv_geom(data, dataset_name);
+                    }
                     return;
                 }
             }
@@ -8606,8 +8701,10 @@ function scale_to_lyr(name) {
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0, 0]).rotate([0, 0, 0]);
+    t = [0, 0];
+    proj.scale(s).translate(t);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
 };
 
 /**
@@ -9115,6 +9212,8 @@ function accordionize() {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function handle_join() {
     var layer_name = Object.getOwnPropertyNames(user_data);
 
@@ -9124,7 +9223,9 @@ function handle_join() {
     } else if (field_join_map.length != 0) {
         make_confirm_dialog2("dialogBox", undefined, { html_content: i18next.t("app_page.join_box.ask_forget_join") }).then(function (confirmed) {
             if (confirmed) {
+                valid_join_check_display();
                 field_join_map = [];
+                remove_existing_jointure(layer_name);
                 createJoinBox(layer_name[0]);
             }
         });
@@ -9311,7 +9412,7 @@ function valid_join_on(layer_name, field1, field2) {
 // the geometry layer and the other to the external dataset, in order to choose
 // the common field to do the join.
 function createJoinBox(layer) {
-    var geom_layer_fields = Object.getOwnPropertyNames(user_data[layer][0]),
+    var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys())),
         ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
         button1 = ["<select id=button_field1>"],
         button2 = ["<select id=button_field2>"],
@@ -9343,6 +9444,21 @@ function createJoinBox(layer) {
         last_choice.field2 = this.value;
     });
 }
+
+var remove_existing_jointure = function remove_existing_jointure(layer_name) {
+    if (!user_data[layer_name] || user_data[layer_name].length < 1) return;
+    var data_layer = user_data[layer_name],
+        original_fields = current_layers[layer_name].original_fields,
+        field_difference = Object.getOwnPropertyNames(data_layer[0]).filter(function (f) {
+        return !original_fields.has(f);
+    }),
+        nb_fields = field_difference.length;
+    for (var i = 0, nb_ft = data_layer.length; i < nb_ft; i++) {
+        for (var j = 0; j < nb_fields; j++) {
+            delete data_layer[i][field_difference[j]];
+        }
+    }
+};
 "use strict";
 // TODO : refactor some functions in this file (they are really too messy)
 
@@ -11259,7 +11375,10 @@ var scaleBar = {
 
         var pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
             pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
-
+        if (!pt1 || !pt2) {
+            this.remove();
+            return true;
+        }
         this.dist = coslaw_dist([pt1[1], pt1[0]], [pt2[1], pt2[0]]);
         var mult = this.unit == "km" ? 1 : this.unit == "m" ? 1000 : this.unit == "mi" ? 0.621371 : 1;
         this.dist_txt = (this.dist * mult).toFixed(this.precision);
@@ -11274,16 +11393,27 @@ var scaleBar = {
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
         this.under_rect.attr("width", new_size + 5);
-        this.changeText();
+        var err = this.getDist();
+        if (err) {
+            this.remove();
+            return;
+        }
+        this.Scale.select("#text_limit_sup_scale").text(this.fixed_size + " " + this.unit);
+        console.log(this.fixed_size, this.dist_txt);
         this.handle_start_end_bar();
     },
-    changeText: function changeText() {
-        this.getDist();
-        this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
-    },
     update: function update() {
-        this.changeText();
-        if (this.fixed_size) this.resize();
+        if (this.fixed_size) {
+            this.getDist();
+            this.resize();
+        } else {
+            var err = this.getDist();
+            if (err) {
+                this.remove();
+                return;
+            }
+            this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
+        }
     },
     remove: function remove() {
         this.Scale.remove();
@@ -11304,7 +11434,7 @@ var scaleBar = {
             redraw_now = function redraw_now() {
             if (new_val) self.resize(new_val);else {
                 self.fixed_size = false;
-                self.changeText();
+                self.update();
             }
         };
         make_confirm_dialog2("scaleBarEditBox", i18next.t("app_page.scale_bar_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
@@ -12974,8 +13104,10 @@ function get_map_template() {
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template() {
+    document.getElementById("overlay").style.display = "";
     get_map_template().then(function (json_params) {
         var url = "data:text/json;charset=utf-8," + encodeURIComponent(json_params);
+        document.getElementById("overlay").style.display = "none";
         clickLinkFromDataUrl(url, 'magrit_project.json');
     });
 }
@@ -13174,6 +13306,9 @@ function apply_user_preferences(json_pref) {
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
+    // Projection were slightly changed in a last version :
+    map_config.projection = map_config.projection.replace(/ /g, '');
+
     // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
     proj = eval(available_projections.get(current_proj_name));
@@ -13185,11 +13320,7 @@ function apply_user_preferences(json_pref) {
     defs = map.append("defs");
     {
         var proj_select = document.getElementById('form_projection');
-        proj_select.value = Array.prototype.filter.call(proj_select.options, function (d) {
-            if (d.text == current_proj_name) {
-                return d;
-            }
-        })[0].value;
+        proj_select.value = current_proj_name;
     }
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
@@ -13529,7 +13660,7 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         });
     } else {
         categories.forEach(function (v, k) {
-            cats.push({ name: k, new_name: v[2], nb_elem: v[3], img: v[0] });
+            cats.push({ name: k, new_name: v[2], nb_elem: v[3], img: "url(" + v[0] + ")" });
         });
     }
     var nb_class = cats.length;
@@ -13607,6 +13738,7 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
 
 function box_choice_symbol(sample_symbols, parent_css_selector) {
     var modal_box = make_dialog_container("box_choice_symbol", i18next.t("app_page.box_choice_symbol.title"), "dialog");
+    overlay_under_modal.display();
     var newbox = d3.select("#box_choice_symbol").select(".modal-body");
 
     newbox.append("h3").html(i18next.t("app_page.box_choice_symbol.title"));
@@ -13670,7 +13802,11 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        if (parent_css_selector) reOpenParent(parent_css_selector);
+        if (parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
     };
 
     var _onclose = function _onclose() {
@@ -13678,7 +13814,11 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        if (parent_css_selector) reOpenParent(parent_css_selector);
+        if (parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
@@ -13750,6 +13890,9 @@ function make_style_box_indiv_symbol(symbol_node) {
         document.getElementById("checkbox_symbol_zoom_scale").checked = current_options.scalable;
     }
 };
+"use strict";
+
+var available_projections = new Map([["Armadillo", "d3.geoArmadillo().scale(400)"], ["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"], ["Baker", "d3.geoBaker().scale(400)"], ["Boggs", "d3.geoBoggs().scale(400)"], ["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"], ["Bonne", "d3.geoBonne().scale(400)"], ["Bromley", "d3.geoBromley().scale(400)"], ["Collignon", "d3.geoCollignon().scale(400)"], ["ConicConformal", "d3.geoConicConformal().scale(400).parallels([43, 49])"], ["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"], ["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"], ["CrasterParabolic", "d3.geoCraster().scale(400)"], ["EckertI", "d3.geoEckert1().scale(400).translate([300, 250])"], ["EckertII", "d3.geoEckert2().scale(400).translate([300, 250])"], ["EckertIII", "d3.geoEckert3().scale(525).translate([150, 125])"], ["EckertIV", "d3.geoEckert4().scale(525).translate([150, 125])"], ["EckertV", "d3.geoEckert5().scale(400)"], ["EckertVI", "d3.geoEckert6().scale(400)"], ["Eisenlohr", "d3.geoEisenlohr().scale(400)"], ["Gnomonic", "d3.geoGnomonic().scale(400)"], ["Gringorten", "d3.geoGringorten().scale(400)"], ["HEALPix", "d3.geoHealpix().scale(400)"], ["Homolosine", "d3.geoHomolosine().scale(400)"], ["InterruptedHomolosine", "d3.geoInterruptedHomolosine().scale(400)"], ["Loximuthal", "d3.geoLoximuthal().scale(400)"], ["Mercator", "d3.geoMercator().scale(375).translate([525, 350])"], ["NaturalEarth", "d3.geoNaturalEarth().scale(400).translate([375, 50])"], ["Orthographic", "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"], ["Peircequincuncial", "d3.geoPeirceQuincuncial().scale(400)"], ["Robinson", "d3.geoRobinson().scale(400)"], ["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"], ["Sinusoidal", "d3.geoSinusoidal().scale(400)"], ["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"]]);
 "use strict";
 
 /**

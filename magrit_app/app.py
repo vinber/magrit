@@ -58,7 +58,7 @@ try:
     from helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
         check_projection, olson_transform,
-        make_geojson_links, repairCoordsPole)
+        make_geojson_links, repairCoordsPole, TopologicalError)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
@@ -73,7 +73,7 @@ except:
     from .helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
         check_projection, olson_transform,
-        make_geojson_links, repairCoordsPole)
+        make_geojson_links, repairCoordsPole, TopologicalError)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
     from .helpers.error_middleware404 import error_middleware
@@ -355,7 +355,7 @@ async def convert(request):
                 filepath2, f_nameNQ, request.app['redis_conn']))
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
-        [os.remove(file) for file in list_files]
+        [os.remove(_file) for _file in list_files]
 
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
@@ -614,6 +614,8 @@ async def carto_gridded(posted_data, user_id, app):
             'Cancelled after {:.4f}s : get_grid_layer'
             .format(user_id, time.time()-st))
         return
+    except TopologicalError:
+        return '{"Error": "TopologicalError"}'
 
     savefile(filenames['src_layer'], result_geojson.encode())
     res = await geojson_to_topojson(filenames['src_layer'], remove=True)
@@ -786,6 +788,8 @@ async def call_stewart(posted_data, user_id, app):
         return
 
     os.remove(filenames['point_layer'])
+    if filenames['mask_layer']:
+        os.remove(filenames['mask_layer'])
     savefile(filenames['point_layer'], res)
     res = await geojson_to_topojson(filenames['point_layer'], remove=True)
 
@@ -818,7 +822,8 @@ async def geo_compute(request):
             await asyncio.gather(*[request.post(), get_session(request)])
         user_id = get_user_id(session_redis, request.app['app_users'])
         func = request.app['geo_function'][function]
-        print('Python - p1 : {:.4f}'.format(time.time()-s_t))
+        request.app['logger'].info(
+            'Python - p1 : {:.4f}'.format(time.time()-s_t))
         data_response = await func(posted_data, user_id, request.app)
         return web.Response(text=data_response)
 
@@ -864,6 +869,7 @@ async def handler_exists_layer2(request):
                 output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
                 savefile(output_path, res_geojson.encode())
                 result = reproj_convert_layer_kml(output_path)
+                os.remove(output_path)
                 os.removedirs(tmp_path)
                 return web.Response(text=result.decode())
             else:
@@ -909,6 +915,7 @@ async def handler_exists_layer2(request):
 async def rawcsv_to_geo(data):
     raw_csv = StringIO(data)
     df = pd.read_csv(raw_csv)
+    df.replace(np.NaN, '', inplace=True)
     geo_col_y = [colnb for colnb, col in enumerate(df.columns)
                  if col.lower() in {"y", "latitude", "lat"}
                  ][0] + 1
@@ -929,8 +936,7 @@ async def rawcsv_to_geo(data):
             ]) for ft in df.itertuples()]
 
     return ''.join([
-        '''{"type":"FeatureCollection","crs":{"type":"name","properties":'''
-        '''{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[''',
+        '''{"type":"FeatureCollection","features":[''',
         ','.join(geojson_features),
         """]}"""
         ])
@@ -965,7 +971,11 @@ async def convert_csv_geo(request):
     file_name = posted_data.get("filename")
     data = posted_data.get("csv_file")
     hash_val = str(mmh3_hash(data))
-    f_name = '_'.join([user_id, hash_val, "NQ"])
+
+    f_name = '_'.join([user_id, hash_val])
+    f_nameQ = '_'.join([f_name, "Q"])
+    f_nameNQ = '_'.join([f_name, "NQ"])
+
     result = await request.app['redis_conn'].get(f_name)
     if result:
         request.app['logger'].info(
@@ -975,16 +985,22 @@ async def convert_csv_geo(request):
 
     res = await rawcsv_to_geo(data)
 
-    filepath = "/tmp/"+file_name+".geojson"
+    filepath = "/tmp/"+ f_name +".geojson"
     with open(filepath, 'wb') as f:
         f.write(res.encode())
-    result = await geojson_to_topojson(filepath)
+    result = await geojson_to_topojson(filepath, "-q 1e5")
+
     if len(result) == 0:
-        result = json.dumps({'Error': 'Wrong CSV input'})
-    else:
-        asyncio.ensure_future(
-            request.app['redis_conn'].set('_'.join([
-                user_id, hash_val, "NQ"]), result, pexpire=86400000))
+        return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))
+
+    result = result.replace(f_name, file_name)
+
+    asyncio.ensure_future(
+        store_non_quantized(
+            filepath, f_nameNQ, request.app['redis_conn']))
+    asyncio.ensure_future(
+        request.app['redis_conn'].set(
+            f_nameQ, result, pexpire=86400000))
 
     request.app['logger'].info(
         '{} - timing : csv -> geojson -> topojson : {:.4f}s'

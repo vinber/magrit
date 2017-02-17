@@ -298,8 +298,7 @@ function prepare_drop_section(){
         function(elem){
             elem.addEventListener("dragenter", e => {
                 e.preventDefault(); e.stopPropagation();
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                if(document.body.classList.contains("no-drop"))
                     return;
                 let overlay_drop = document.getElementById("overlay_drop");
                 overlay_drop.style.display = "";
@@ -307,8 +306,7 @@ function prepare_drop_section(){
 
             elem.addEventListener("dragover", e => {
                 e.preventDefault(); e.stopPropagation();
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                if(document.body.classList.contains("no-drop"))
                     return;
                 if(timeout){
                     clearTimeout(timeout);
@@ -323,8 +321,7 @@ function prepare_drop_section(){
 
             elem.addEventListener("dragleave", e => {
                 e.preventDefault(); e.stopPropagation();
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1){
+                if(document.body.classList.contains("no-drop")){
                     document.body.classList.remove("no-drop");
                     return;
                 }
@@ -340,8 +337,7 @@ function prepare_drop_section(){
                 if(timeout){
                     clearTimeout(timeout);
                 }
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1 || !e.dataTransfer.files.length){
+                if(document.body.classList.contains("no-drop") || !e.dataTransfer.files.length){
                     document.getElementById("overlay_drop").style.display = "none";
                     return;
                 }
@@ -408,16 +404,14 @@ function prepare_drop_section(){
             elem.addEventListener("dragenter", function(e){
                 e.preventDefault();
                 e.stopPropagation();
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                if(document.body.classList.contains("no-drop"))
                     return;
                 elem.style.border = '3px dashed green';
             });
             elem.addEventListener("dragover", function(e){
                 e.preventDefault();
                 e.stopPropagation();
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                if(document.body.classList.contains("no-drop"))
                     return;
                 elem.style.border = '3px dashed green';
             });
@@ -425,8 +419,7 @@ function prepare_drop_section(){
                 e.preventDefault();
                 e.stopPropagation();
                 elem.style.border = '';
-                if(String.prototype.indexOf.call(
-                        document.body.classList, "no-drop") > -1)
+                if(document.body.classList.contains("no-drop"))
                     document.body.classList.remove("no-drop");
             });
             elem.addEventListener("drop", function(e) {
@@ -570,7 +563,7 @@ function handle_reload_TopoJSON(text, param_add_func){
 * adding it to the map
 * @param {File} f - The input csv file
 */
-function handle_dataset(f){
+function handle_dataset(f, target_layer_on_add){
 
     function check_dataset(){
         var reader = new FileReader(),
@@ -597,7 +590,17 @@ function handle_dataset(f){
             let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
                 if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
-                    add_csv_geom(data, dataset_name);
+                    if(target_layer_on_add && _app.targeted_layer_added){
+                        swal({title: i18next.t("app_page.common.error") + "!",
+                              text: i18next.t('app_page.common.error_only_one'),
+                              customClass: 'swal2_custom',
+                              type: "error",
+                              allowEscapeKey: false,
+                              allowOutsideClick: false});
+
+                    } else {
+                        add_csv_geom(data, dataset_name);
+                    }
                     return;
                 }
             }
@@ -996,8 +999,10 @@ function scale_to_lyr(name){
         }
     });
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    proj.scale(s).translate([0,0]).rotate([0,0,0]);
+    t = [0, 0];
+    proj.scale(s).translate(t);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
 };
 
 /**

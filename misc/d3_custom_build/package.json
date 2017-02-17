@@ -1,0 +1,30 @@
+{
+  "name": "d3-custom-build",
+  "version": "0.0.1",
+  "scripts": {
+    "prepublish": "rollup -c && uglifyjs d3.custom.js -c -m -o d3.custom.min.js"
+  },
+  "devDependencies": {
+    "d3-selection": "^1.0.2",
+    "d3-selection-multi": "^1.0.0",
+    "d3-request": "latest",
+    "d3-polygon": "latest",
+    "d3-path": "latest",
+    "d3-geo": "^1.4.0",
+    "d3-geo-projection": "^1.2.0",
+    "d3-interpolate": "*",
+    "d3-format": "*",
+    "d3-zoom": "*",
+    "d3-brush": "^1.0.3",
+    "d3-transition": "*",
+    "d3-scale": "*",
+    "d3-dsv": "*",
+    "d3-axis": "*",
+    "d3-force": "*",
+    "d3-drag": "*",
+    "d3-array": "latest",
+    "rollup": "0.36",
+    "rollup-plugin-node-resolve": "2",
+    "uglify-js": "2"
+  }
+}

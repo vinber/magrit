@@ -498,7 +498,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -540,7 +540,7 @@ var fields_PropSymbolChoro = {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
-                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
                 // console.log(section2); console.log(self.rendering_params[field_name].type);
@@ -566,7 +566,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -584,7 +584,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -602,7 +602,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -619,7 +619,7 @@ var fields_PropSymbolChoro = {
                 colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
                 rendered_field: selected_field, schema: ["BuGn"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -935,7 +935,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
             uncolor_icons();
@@ -967,7 +967,7 @@ var fields_Choropleth = {
                 // ok_button.attr('disabled', null);
                 img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                 choro_mini_choice_disc.html(
-                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('disc_box.class', {count: self.rendering_params[field_name].nb_class}));
+                    i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
             } else {
@@ -988,7 +988,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -1006,7 +1006,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -1024,7 +1024,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -1041,7 +1041,7 @@ var fields_Choropleth = {
                 colorsByFeature: colors_map, renderer: 'Choropleth',
                 rendered_field: selected_field, schema: ["Reds"]
             };
-            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('disc_box.class', {count: nb_class}));
+            choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
         });
@@ -1072,7 +1072,7 @@ var fields_Choropleth = {
                     // ok_button.attr("disabled", null);
                     img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
                     choro_mini_choice_disc.html(
-                        i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('disc_box.class', {count: confirmed[0]}));
+                        i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', {count: confirmed[0]}));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
@@ -1762,7 +1762,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
 
 function render_categorical(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name, "typo");
+        let fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "typo", fields);
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
         layer = rendering_params.new_name;
     }
@@ -1791,7 +1792,8 @@ function render_categorical(layer, rendering_params){
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params){
     if(rendering_params.new_name){
-        copy_layer(layer, rendering_params.new_name, "choro");
+        let fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
+        copy_layer(layer, rendering_params.new_name, "choro", fields);
         //Assign the same key to the cloned layer so it could be used transparently on server side
         // after deletion of the reference layer if needed :
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;

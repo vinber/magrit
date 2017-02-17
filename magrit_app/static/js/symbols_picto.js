@@ -35,7 +35,7 @@ var display_box_symbol_typo = function(layer, field, categories){
         }
         categories.forEach( (v,k) => { cats.push({name: k, new_name: k, nb_elem: v[0], img: default_d_url}) });
     } else {
-        categories.forEach( (v,k) => { cats.push({name: k, new_name: v[2], nb_elem: v[3], img: v[0]}) });
+        categories.forEach( (v,k) => { cats.push({name: k, new_name: v[2], nb_elem: v[3], img: "url(" + v[0] + ")"}) });
     }
     let nb_class = cats.length;
 
@@ -136,6 +136,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         "box_choice_symbol",
         i18next.t("app_page.box_choice_symbol.title"),
         "dialog");
+    overlay_under_modal.display();
     var newbox = d3.select("#box_choice_symbol").select(".modal-body");
 
     newbox.append("h3").html(i18next.t("app_page.box_choice_symbol.title"));
@@ -213,7 +214,11 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        if(parent_css_selector) reOpenParent(parent_css_selector);
+        if(parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
     }
 
     let _onclose = () => {
@@ -221,8 +226,11 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        if(parent_css_selector) reOpenParent(parent_css_selector);
-
+        if(parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;

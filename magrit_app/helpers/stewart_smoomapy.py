@@ -17,7 +17,7 @@ def save_reload(result):
     result.to_file(name)
     gdf = GeoDataFrame.from_file(name)
     res = json.loads(gdf[::-1].to_json())
-    for ext in ('shp', 'shx', 'prj', 'dbf', 'cfg'):
+    for ext in ('shp', 'shx', 'prj', 'dbf', 'cpg'):
         try:
             os.remove(name.replace('shp', ext))
         except:
@@ -98,26 +98,10 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     if mask == None:
         # Woo silly me :
         res = save_reload(result)
-        # name = '/tmp/' + get_name(12) + '.shp'
-        # try:
-        #     os.remove(name)
-        # except: None
-        # There seems to be something wrong in the geometry creation without mask
-        # ...and the shapefile driver handle it nicely for me...
-        # result.to_file(name)
-        # gdf = GeoDataFrame.from_file(name)
-        # res = json.loads(gdf[::-1].to_json())
-        # for ext in ('shp', 'shx', 'prj', 'dbf', 'cfg'):
-        #     try:
-        #         os.remove(name.replace('shp', ext))
-        #     except:
-        #         None
     else:
         res = json.loads(result[::-1].to_json())
 
     repairCoordsPole(res)
-    with open('/tmp/result.geojson', 'wb') as f:
-        f.write(json.dumps(res).encode())
     return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]},
             pickle.dumps(StePot))
