@@ -117,39 +117,6 @@ function setUpInterface(resume_project)
 
     let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
 
-    let rotation_param = proj_options.append("span");
-
-    rotation_param.append("input")
-            .attrs({type: "range", id: "form_projection_center", value: 0.0,
-                    min: -180.0, max: 180.0, step: 0.1})
-            .styles({width: "120px", margin: "0px", "vertical-align": "text-top"})
-            .on("input", function(){
-                handle_proj_center_button([this.value, null, null]);
-                document.getElementById("proj_center_value_txt").value = +this.value;
-            });
-
-    rotation_param.append("input")
-            .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
-                    min: -180.0, max: 180.0, value: 0, step: "any"})
-            .styles({width: "38px", "margin": "0 10px",
-                     "color": " white", "background-color": "#000",
-                     "vertical-align": "calc(20%)"})
-            .on("change", function(){
-                let val = +this.value,
-                    old_value = +document.getElementById('form_projection_center').value;
-                if(this.value.length == 0 || val > 180 || val < -180){
-                    this.value = old_value;
-                    return;
-                } else { // Should remove trailing zeros (right/left) if any :
-                    this.value = +this.value;
-                }
-                handle_proj_center_button([this.value, null, null]);
-                document.getElementById("form_projection_center").value = this.value;
-            });
-    rotation_param.append("span")
-            .style("vertical-align", "calc(20%)")
-            .html("°");
-
     let proj_select = proj_options.append("select")
             .attrs({class: 'i18n', 'id': 'form_projection'})
             .styles({"align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px"})
@@ -161,6 +128,42 @@ function setUpInterface(resume_project)
         proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
     }
     proj_select.node().value = "NaturalEarth";
+
+    proj_options.append("input")
+        .attrs({type: "range", id: "form_projection_center", value: 0.0,
+                min: -180.0, max: 180.0, step: 0.1})
+        .styles({width: "120px", 'margin': "0 0 0 15px", "vertical-align": "text-top"})
+        .on("input", function(){
+            handle_proj_center_button([this.value, null, null]);
+            document.getElementById("proj_center_value_txt").value = +this.value;
+        });
+
+    proj_options.append("input")
+        .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
+                min: -180.0, max: 180.0, value: 0, step: "any"})
+        .styles({width: "38px", "margin": "0 10px",
+                 "color": " white", "background-color": "#000",
+                 "vertical-align": "calc(20%)"})
+        .on("change", function(){
+            let val = +this.value,
+                old_value = +document.getElementById('form_projection_center').value;
+            if(this.value.length == 0 || val > 180 || val < -180){
+                this.value = old_value;
+                return;
+            } else { // Should remove trailing zeros (right/left) if any :
+                this.value = +this.value;
+            }
+            handle_proj_center_button([this.value, null, null]);
+            document.getElementById("form_projection_center").value = this.value;
+        });
+    proj_options.append("span")
+        .style("vertical-align", "calc(20%)")
+        .html("°");
+
+    proj_options.append('img')
+        .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
+        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px', 'display': 'none'})
+        .on('click', createBoxCustomProjection);
 
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -374,13 +377,13 @@ function setUpInterface(resume_project)
           });
 
     make_ico_choice();
+    add_simplified_land_layer();
 
     let section3 = d3.select("#section3");
 
     window.layer_list = section3.append("div")
                              .append("ul").attrs({id: "sortable", class: "layer_list"});
 
-    add_simplified_land_layer();
     let dv3 = section3.append("div")
                     .style("padding-top", "10px").html('');
 
@@ -1220,8 +1223,8 @@ const button_result_type = new Map([
 const eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
-const sys_run_button = '<img src="/static/img/High-contrast-system-run.svg" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
-      sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.svg" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
+const sys_run_button = '<img src="/static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
+      sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.png" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
 
 // Shortcut to the name of the methods offered by geostats library:
 const discretiz_geostats_switch = new Map([
@@ -1814,7 +1817,8 @@ function zoom_without_redraw(){
     document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
     document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
     document.getElementById("input-scale-k").value = round_value(zoom_k_scale, 2);
-    document.getElementById('form_projection').querySelector('option[value="ConicConformal"]').disabled = (zoom_k_scale < 200) ? 'disabled' : '';
+    document.getElementById('form_projection')
+        .querySelector('option[value="ConicConformal"]').disabled = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
 };
 
 function redraw_legends_symbols(targeted_node){
@@ -1961,25 +1965,11 @@ function change_projection(new_proj_name) {
     proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    // Set specifics mouse events according to the projection :
-    if(new_proj_name.indexOf('Orthographic') > -1){
-        var rotation_param = d3.select("#rotation_params");
-
-        rotation_param.append("div").attr("class", "options_ortho")
-                .html(i18next.t("app_page.section5.projection_center_phi"))
-                .insert("input")
-                .attrs({type: "range", id: "form_projection_phi"})
-                .attrs({value: prev_rotate[1], min: -180, max: 180, step: 0.5})
-                .on("input", function(){handle_proj_center_button([null, this.value, null])})
-
-        rotation_param.append("div").attr("class", "options_ortho")
-                .html(i18next.t("app_page.section5.projection_center_gamma"))
-                .insert("input")
-                .attrs({type: "range", id: "form_projection_gamma"})
-                .attrs({value: prev_rotate[2], min: -90, max: 90, step: 0.5})
-                .on("input", function(){handle_proj_center_button([null, null, this.value])});
+    // Allow to use more options than only the lambda axis on specific projection :
+    if(new_proj_name == "Orthographic" || new_proj_name == "Gnomonic" || new_proj_name == "ConicConformal"){
+        document.getElementById('btn_customize_projection').style.display = "";
     } else {
-        d3.selectAll(".options_ortho").remove();
+        document.getElementById('btn_customize_projection').style.display = "none";
     }
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
@@ -2159,25 +2149,6 @@ function handle_title_properties(){
       }
   });
     return;
-}
-
-// Function to change (one of ) the three rotations axis of a d3 projection
-// and redraw all the path in respect to that
-function handle_proj_center_button(param){
-    let current_rotation = proj.rotate();
-    if(param[0]){
-        proj.rotate([param[0], current_rotation[1], current_rotation[2]]);
-        map.selectAll(".layer").selectAll("path").attr("d", path);
-    }
-    if(param[1]){
-        proj.rotate([current_rotation[0], param[1] - h/2, current_rotation[2]]);
-        map.selectAll(".layer").selectAll("path").attr("d", path);
-    }
-    if(param[2]){
-        proj.rotate([current_rotation[0], current_rotation[1], param[2] - h/2]);
-        map.selectAll(".layer").selectAll("path").attr("d", path);
-    }
-    reproj_symbol_layer();
 }
 
 /** Function triggered by the change of map/canvas size

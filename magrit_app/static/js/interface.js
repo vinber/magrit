@@ -986,18 +986,22 @@ function add_layer_topojson(text, options){
 function scale_to_lyr(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
-        var bbox_path = path.bounds(d);
-        if(bbox_layer_path === undefined){
-            bbox_layer_path = bbox_path;
-        }
-        else {
-            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-        }
-    });
+    if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
+        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    } else {
+        map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
+            var bbox_path = path.bounds(d.geometry);
+            if(bbox_layer_path === undefined){
+                bbox_layer_path = bbox_path;
+            }
+            else {
+                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+            }
+        });
+    }
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     t = [0, 0];
     proj.scale(s).translate(t);
@@ -1014,17 +1018,21 @@ function scale_to_lyr(name){
 function center_map(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
-        let bbox_path = path.bounds(d);
-        if(!bbox_layer_path)
-            bbox_layer_path = bbox_path;
-        else {
-            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-        }
-    });
+    if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
+        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    } else {
+        map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
+            let bbox_path = path.bounds(d.geometry);
+            if(!bbox_layer_path)
+                bbox_layer_path = bbox_path;
+            else {
+                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+            }
+        });
+    }
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     let _zoom = svg_map.__zoom;

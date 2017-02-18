@@ -151,6 +151,7 @@
             "projection_center_lambda": "Projection center (longitude)",
             "projection_center_phi": "Projection center (φ-axis rotation)",
             "projection_center_gamma": "Projection center (γ-axis rotation)",
+            "parallels": "Reference parallels",
             "reset": "Reset center/zooming/rotation"
         },
         "projection_name":{
