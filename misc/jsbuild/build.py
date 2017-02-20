@@ -5,6 +5,7 @@
 """
 import os
 import sys
+import csscompressor
 from uuid import uuid4
 from shutil import copy
 from subprocess import Popen, PIPE
@@ -65,6 +66,19 @@ def build_js_file(use_minified):
     os.remove('.babelrc')
     print('OK')
 
+def build_css_file():
+    with open('../../magrit_app/static/css/style.css', 'r') as f:
+        css = f.read()
+    try:
+        comp = csscompressor.compress(css)
+        with open('../../magrit_app/static/css/style.min.css', 'w') as f:
+            f.write(comp)
+    except Exception as err:
+        print('Error while compressing css files :')
+        print(err)
+
+
 if __name__ == "__main__":
     use_minified = True if len(sys.argv) > 1 and '-m' in sys.argv[1] else False
+    build_css_file()
     build_js_file(use_minified)

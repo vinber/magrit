@@ -124,39 +124,3 @@ def fetch_zip_clean(dir_path, layer_name):
         zip_stream.seek(0)
         os.removedirs(dir_path)
         return zip_stream.read(), ''.join([filename.split(".")[0], ".zip"])
-
-
-def prepare_js_css_minify():
-    from csscompressor import compress
-    from jsmin import jsmin
-    cwd = os.getcwd()
-    os.chdir("../static/js")
-    list_files = os.listdir()
-    if "app.min.js" in list_files:
-        os.remove("app.min.js")
-        list_files.remove("app.min.js")
-    if "app.js" in list_files:
-        os.remove("app.js")
-        list_files.remove("app.js")
-    data_js = ['"use strict";']
-    for file in list_files:
-        if ".js" in file and not 'webworker' in file:
-            with open(file) as f:
-                data_js.append(f.read().replace('"use strict";', ''))
-
-    concat = "".join(data_js)
-    with open("app.js", "w") as f:
-        f.write(concat)
-
-    minified = jsmin(concat, quote_chars="'\"`")
-    with open("app.min.js", "w") as f:
-        f.write(minified)
-
-    os.chdir("../css")
-    if os.path.exists("style.min.css"):
-        os.remove("style.min.css")
-    with open("style.css") as f:
-        minified_css = compress(f.read())
-    with open("style.min.css", "w") as f:
-        f.write(minified_css)
-    os.chdir(cwd)

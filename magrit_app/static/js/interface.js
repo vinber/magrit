@@ -977,49 +977,13 @@ function add_layer_topojson(text, options){
     return lyr_name_to_add;
 };
 
-/**
-* Change the projection scale and translate properties in order to fit the layer.
-* Redraw the path from all the current layers to reflect the change.
-*
-* @param {string} name - The name of layer to scale on
-*/
-function scale_to_lyr(name){
-    var symbol = current_layers[name].symbol || "path",
-        bbox_layer_path = undefined;
-    if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
-        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    } else if (name == 'Graticule') {
-        map.select("#Graticule").selectAll("path").each( (d,i) => {
-            bbox_layer_path = path.bounds(d);
-        });
-    } else {
-        map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
-            var bbox_path = path.bounds(d.geometry);
-            if(bbox_layer_path === undefined){
-                bbox_layer_path = bbox_path;
-            }
-            else {
-                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-            }
-        });
-    }
-    s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    t = [0, 0];
-    proj.scale(s).translate(t);
-    map.selectAll(".layer").selectAll("path").attr("d", path);
-    reproj_symbol_layer();
-};
 
 /**
-* Center and zoom to a layer (using zoom scale and translate properties).
-* Projection properties stay unchanged.
+*  Get the bounding box (in map/svg coordinates) of a layer using path.bounds()
 *
-* @param {string} name - The name of layer to zoom on
+*  @param {string} name - The name of layer
 */
-function center_map(name){
+function get_bbox_layer_path(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
     if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
@@ -1041,6 +1005,32 @@ function center_map(name){
             }
         });
     }
+    return bbox_layer_path;
+}
+
+/**
+* Change the projection scale and translate properties in order to fit the layer.
+* Redraw the path from all the current layers to reflect the change.
+*
+* @param {string} name - The name of layer to scale on
+*/
+function scale_to_lyr(name){
+    let bbox_layer_path = get_bbox_layer_path(name);
+    s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+    t = [0, 0];
+    proj.scale(s).translate(t);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+};
+
+/**
+* Center and zoom to a layer (using zoom scale and translate properties).
+* Projection properties stay unchanged.
+*
+* @param {string} name - The name of layer to zoom on
+*/
+function center_map(name){
+    let bbox_layer_path = get_bbox_layer_path(name);
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     let _zoom = svg_map.__zoom;

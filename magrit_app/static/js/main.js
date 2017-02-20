@@ -1966,8 +1966,8 @@ function change_projection(new_proj_name) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Allow to use more options than only the lambda axis on specific projection :
-    if(new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"
-            || new_proj_name == "ConicConformal" || new_proj_name == "AzimuthalEquidistant"){
+    if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name == "Orthographic"
+            || new_proj_name == "Gnomonic" || new_proj_name == "ConicConformal"){
         document.getElementById('btn_customize_projection').style.display = "";
     } else {
         document.getElementById('btn_customize_projection').style.display = "none";

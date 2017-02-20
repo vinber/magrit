@@ -63,15 +63,13 @@ ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.2/lib:${LD_LIBRARY_PATH}"
 
 ARG CACHEBUST=1
 
-RUN  mkdir /home/app && cd /home/app \
-		&& git clone http://github.com/mthh/magrit/ \
-        && cd magrit/ \
-        && pip3 install -U -r requirements-dev.txt \
-        && python3 setup.py install
+RUN mkdir /home/app && cd /home/app && mkdir magrit
+COPY magrit /home/app/magrit
 
-RUN cd /home/app && git clone http://github.com/mthh/smoomapy/ \
-        && cd smoomapy/ && python3 setup.py install && cd /home/app \
-        && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/magrit_app/helpers/*.so /home/app/magrit/magrit_app/helpers/
+RUN cd magrit/ \
+    && pip3 install -U -r requirements-dev.txt \
+    && python3 setup.py install
+RUN cd /home/app && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/magrit_app/helpers/*.so /home/app/magrit/magrit_app/helpers/
 
 EXPOSE 9999
 

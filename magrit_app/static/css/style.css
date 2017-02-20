@@ -764,3 +764,8 @@ img.layout_ft_ico:hover {
 .swal2_custom {
     overflow-wrap: break-word;
 }
+
+.swal2_large {
+    min-width: 380px;
+    min-height: 310px;
+}

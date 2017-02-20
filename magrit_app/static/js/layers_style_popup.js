@@ -398,6 +398,7 @@ function createStyleBoxGraticule(layer_name){
             .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
             .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
+                let next_sibling = selection_strokeW.node().nextSibling;
                 let step_val = +this.value,
                     dasharray_val = +document.getElementById("graticule_dasharray_txt").value;
                 current_layers["Graticule"].step = step_val;
@@ -410,6 +411,7 @@ function createStyleBoxGraticule(layer_name){
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
+                svg_map.insertBefore(selection_strokeW.node(), next_sibling);
                 popup.select("#graticule_step_txt").attr("value", step_val);
             });
     steps_choice.append("input")

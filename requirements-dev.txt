@@ -3,6 +3,7 @@ aiohttp_jinja2 == 0.13.0
 aiohttp_session == 0.8.0
 aioredis == 0.3.0
 cchardet == 1.1.1
+csscompressor == 0.9.4
 Cython >= 0.24
 docopt >= 0.6.2
 Fiona >= 1.7
