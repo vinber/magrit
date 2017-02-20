@@ -3,7 +3,7 @@
 # image of the app and making it accessible on port 9999
 # (but it should be splited in multiple containers).
 # Configured in order to avoid using cache when fetching the code of the
-# application and the code of smoomapy (stewart) package.
+# application.
 ####################################################################
 # Can be build like this :
 #
@@ -66,7 +66,7 @@ ARG CACHEBUST=1
 RUN mkdir /home/app && cd /home/app && mkdir magrit
 COPY magrit /home/app/magrit
 
-RUN cd magrit/ \
+RUN cd /home/app/magrit/ \
     && pip3 install -U -r requirements-dev.txt \
     && python3 setup.py install
 RUN cd /home/app && cp /usr/local/lib/python3.5/dist-packages/magrit_app-0.0.0-py3.5-linux-x86_64.egg/magrit_app/helpers/*.so /home/app/magrit/magrit_app/helpers/

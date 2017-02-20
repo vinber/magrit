@@ -7763,8 +7763,7 @@ var MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
 * to the file type
 */
 function click_button_add_layer() {
-    var res = [],
-        self = this,
+    var self = this,
         input = document.createElement('input');
 
     var target_layer_on_add = false;
@@ -7772,7 +7771,7 @@ function click_button_add_layer() {
     if (self.id == "img_data_ext" || self.id == "data_ext") {
         input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
         target_layer_on_add = true;
-    } else if (self.id === "input_geom" || self.id === "input_geom") {
+    } else if (self.id === "input_geom" || self.id === "img_in_geom") {
         input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
         target_layer_on_add = true;
     } else if (self.id == "input_layout_geom") {
@@ -7783,13 +7782,11 @@ function click_button_add_layer() {
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function (event) {
-
         var files = event.target.files;
-
         handle_upload_files(files, target_layer_on_add, self);
+        input.remove();
     };
-
-    input.dispatchEvent(new MouseEvent("click"));
+    input.click();
 }
 
 function handle_upload_files(files, target_layer_on_add, elem) {
@@ -8021,8 +8018,7 @@ function prepare_drop_section() {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();e.stopPropagation();
             if (document.body.classList.contains("no-drop")) return;
-            var overlay_drop = document.getElementById("overlay_drop");
-            overlay_drop.style.display = "";
+            document.getElementById("overlay_drop").style.display = "";
         });
 
         elem.addEventListener("dragover", function (e) {
@@ -8031,9 +8027,8 @@ function prepare_drop_section() {
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = setTimeout(function () {
-                    var overlay_drop = document.getElementById("overlay_drop");
                     e.preventDefault();e.stopPropagation();
-                    overlay_drop.style.display = "none";
+                    document.getElementById("overlay_drop").style.display = "none";
                     timeout = null;
                 }, 2500);
             }
@@ -8046,8 +8041,7 @@ function prepare_drop_section() {
                 return;
             }
             timeout = setTimeout(function () {
-                var overlay_drop = document.getElementById("overlay_drop");
-                overlay_drop.style.display = "none";
+                document.getElementById("overlay_drop").style.display = "none";
                 timeout = null;
             }, 2500);
         });
@@ -9783,7 +9777,7 @@ function createStyleBoxGraticule(layer_name) {
     var steps_choice = popup.append("p").attr("class", "line_elem");
     steps_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_steps"));
     steps_choice.append("input").attrs({ id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1 }).styles({ "vertical-align": "middle", "width": "58px", "display": "inline", "float": "right" }).on("change", function () {
-        var next_sibling = selection_strokeW.node().nextSibling;
+        var next_layer = selection_strokeW.node().nextSibling;
         var step_val = +this.value,
             dasharray_val = +document.getElementById("graticule_dasharray_txt").value;
         current_layers["Graticule"].step = step_val;
@@ -9792,7 +9786,7 @@ function createStyleBoxGraticule(layer_name) {
         zoom_without_redraw();
         selection = map.select("#Graticule").selectAll("path");
         selection_strokeW = map.select("#Graticule");
-        svg_map.insertBefore(selection_strokeW.node(), next_sibling);
+        svg_map.insertBefore(selection_strokeW.node(), next_layer);
         popup.select("#graticule_step_txt").attr("value", step_val);
     });
     steps_choice.append("input").attrs({ type: "number", value: current_params.step, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_step_txt" }).styles({ width: "30px", "margin-left": "10px", "float": "right" }).on("change", function () {

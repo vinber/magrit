@@ -65,6 +65,7 @@ def build_js_file(use_minified):
         f.writelines(lines)
     os.remove('.babelrc')
     print('OK')
+    return name
 
 def build_css_file():
     with open('../../magrit_app/static/css/style.css', 'r') as f:
@@ -79,6 +80,22 @@ def build_css_file():
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     use_minified = True if len(sys.argv) > 1 and '-m' in sys.argv[1] else False
     build_css_file()
-    build_js_file(use_minified)
+    name = build_js_file(use_minified)
+    if 'VIRTUAL_ENV' in os.environ:
+        try:
+            import magrit_app
+            installed_dir = magrit_app.__file__.replace('__init__.py', '')
+        except ImportError:
+            raise ValueError('Magrit should have been installed before building js files in the virtual environnement')
+        except Exception as err:
+            raise ValueError('Unable to locate js directory')
+        else:
+            previous_files = [i for i in os.listdir(installed_dir + 'static/js/') if 'app.' in i]
+            for f_path in previous_files:
+                os.remove(installed_dir + 'static/js/' + f_path)
+            copy(name, installed_dir + "static/js/" + name)
+            copy('../css/style.min.css', installed_dir + "static/css/style.min.css")
+            copy('../../templates/modules.html', installed_dir + "templates/modules.html")

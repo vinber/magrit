@@ -11,8 +11,7 @@ const MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
 * to the file type
 */
 function click_button_add_layer(){
-    var res = [],
-        self = this,
+    var self = this,
         input = document.createElement('input');
 
     let target_layer_on_add = false;
@@ -20,7 +19,7 @@ function click_button_add_layer(){
     if(self.id == "img_data_ext" || self.id == "data_ext"){
         input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
         target_layer_on_add = true;
-    } else if (self.id === "input_geom" || self.id === "input_geom") {
+    } else if (self.id === "input_geom" || self.id === "img_in_geom") {
         input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
         target_layer_on_add = true;
     } else if (self.id == "input_layout_geom") {
@@ -31,13 +30,11 @@ function click_button_add_layer(){
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function(event){
-
         let files = event.target.files;
-
         handle_upload_files(files, target_layer_on_add, self);
+        input.remove();
     };
-
-    input.dispatchEvent(new MouseEvent("click"))
+    input.click();
 }
 
 function handle_upload_files(files, target_layer_on_add, elem){
@@ -300,8 +297,7 @@ function prepare_drop_section(){
                 e.preventDefault(); e.stopPropagation();
                 if(document.body.classList.contains("no-drop"))
                     return;
-                let overlay_drop = document.getElementById("overlay_drop");
-                overlay_drop.style.display = "";
+                document.getElementById("overlay_drop").style.display = "";
             });
 
             elem.addEventListener("dragover", e => {
@@ -311,9 +307,8 @@ function prepare_drop_section(){
                 if(timeout){
                     clearTimeout(timeout);
                     timeout = setTimeout(function(){
-                        let overlay_drop = document.getElementById("overlay_drop");
                         e.preventDefault(); e.stopPropagation();
-                        overlay_drop.style.display = "none";
+                        document.getElementById("overlay_drop").style.display = "none";
                         timeout = null;
                     }, 2500);
                 }
@@ -326,8 +321,7 @@ function prepare_drop_section(){
                     return;
                 }
                 timeout = setTimeout(function(){
-                    let overlay_drop = document.getElementById("overlay_drop");
-                    overlay_drop.style.display = "none";
+                    document.getElementById("overlay_drop").style.display = "none";
                     timeout = null;
                 }, 2500);
             });

@@ -44,6 +44,14 @@ $ source venv/bin/activate
 (venv)$ pip install -r requirements-dev.txt
 (venv)$ python setup.py install
 ```
+
+#### Building js/css file
+##### (builded file are automatically moved in the Magrit installation directory when running from a virtual environnement) :
+```
+(venv)$ ./misc/jsbuild/build.py
+```
+
+
 #### Running the test suite :
 ##### Basic tests without web browser (same than those runned on Travis) :
 ```

@@ -398,20 +398,20 @@ function createStyleBoxGraticule(layer_name){
             .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
             .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
-                let next_sibling = selection_strokeW.node().nextSibling;
+                let next_layer = selection_strokeW.node().nextSibling;
                 let step_val = +this.value,
                     dasharray_val = +document.getElementById("graticule_dasharray_txt").value;
                 current_layers["Graticule"].step = step_val;
                 map.select("#Graticule").remove()
                 map.append("g").attrs({id: "Graticule", class: "layer"})
-                               .append("path")
-                               .datum(d3.geoGraticule().step([step_val, step_val]))
-                               .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
-                               .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
+                     .append("path")
+                     .datum(d3.geoGraticule().step([step_val, step_val]))
+                     .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
+                     .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
-                svg_map.insertBefore(selection_strokeW.node(), next_sibling);
+                svg_map.insertBefore(selection_strokeW.node(), next_layer);
                 popup.select("#graticule_step_txt").attr("value", step_val);
             });
     steps_choice.append("input")
