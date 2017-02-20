@@ -78,10 +78,26 @@ def build_css_file():
         print('Error while compressing css files :')
         print(err)
 
+def is_node_modules_present():
+    return ('node_modules' in os.listdir('../../magrit_app/static/js/'))
+
+def install_package_js():
+    print('Installing node dependencies...')
+    copy('package.json', '../../magrit_app/static/js/package.json')
+    os.chdir('../../magrit_app/static/js/')
+    p = Popen(['npm', 'install'], stdout=PIPE, stderr=PIPE)
+    r = p.communicate()
+    if len(r[1]) > 0 and not 'WARN' in r[1].decode():
+        print("Error when installing node dependencies : ", r[1])
+        sys.exit(1)
+    os.remove('package.json')
+    os.chdir('../../misc/jsbuild')
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     use_minified = True if len(sys.argv) > 1 and '-m' in sys.argv[1] else False
+    if not is_node_modules_present():
+        install_package_js()
     build_css_file()
     name = build_js_file(use_minified)
     if 'VIRTUAL_ENV' in os.environ:
@@ -89,7 +105,9 @@ if __name__ == "__main__":
             import magrit_app
             installed_dir = magrit_app.__file__.replace('__init__.py', '')
         except ImportError:
-            raise ValueError('Magrit should have been installed before building js files in the virtual environnement')
+            raise ValueError(
+                'Magrit should have been installed before '
+                'building js files in the virtual environnement')
         except Exception as err:
             raise ValueError('Unable to locate js directory')
         else:

@@ -8657,13 +8657,9 @@ function get_bbox_layer_path(name) {
         bbox_layer_path = undefined;
     if (current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")) {
         bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
-    } else if (name == 'Graticule') {
-        map.select("#Graticule").selectAll("path").each(function (d, i) {
-            bbox_layer_path = path.bounds(d);
-        });
     } else {
         map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
-            var bbox_path = path.bounds(d.geometry);
+            var bbox_path = path.bounds(d);
             if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
                 bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
                 bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
