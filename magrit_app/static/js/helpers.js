@@ -144,7 +144,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
         }
     } else {
         for(let i = 0; i < selec_src.length; i++){
-            selec_dest[i].__data__ = {properties: {}};
+            selec_dest[i].__data__ = {type: "Feature", properties: {}, geometry: cloneObj(selec_src[i].__data__.geometry)};
             for(let f of fields_to_copy){
                 selec_dest[i].__data__.properties[f] = selec_src[i].__data__.properties[f]
             }

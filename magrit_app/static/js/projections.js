@@ -2,7 +2,8 @@
 
 const available_projections = new Map([
 	["Armadillo", "d3.geoArmadillo().scale(400)"],
-	["AzimuthalEqualArea",  "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"],
+	["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().rotate([-10,-52]).scale(700)"],
+	["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700)"],
 	["Baker", "d3.geoBaker().scale(400)"],
 	["Boggs", "d3.geoBoggs().scale(400)"],
 	["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"],
@@ -35,3 +36,92 @@ const available_projections = new Map([
 	["Sinusoidal", "d3.geoSinusoidal().scale(400)"],
 	["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"]
 ]);
+
+const createBoxCustomProjection = function(){
+	let box_content = '<div class="custom_proj_content" style="font-size:0.8rem;"></div>';
+	let prev_rotate = proj.rotate(),
+			prev_parallels;
+	swal({
+			title: i18next.t("app_page.section5.title"),
+			html: box_content,
+			showCancelButton: true,
+			showConfirmButton: true,
+			cancelButtonText: i18next.t('app_page.common.close'),
+			animation: "slide-from-top",
+			onOpen: function(){
+					let content = d3.select('.custom_proj_content');
+					let lambda_section = content.append('p');
+					lambda_section.append('span')
+							.style('float', 'left')
+							.html(i18next.t('app_page.section5.projection_center_lambda'));
+					lambda_section.append('input')
+							.styles({'width': '50px', 'float': 'right'})
+							.attrs({type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50})
+							.on("input", function(){
+									handle_proj_center_button([this.value, null, null]);
+									document.getElementById('form_projection_center').value = this.value;
+									document.getElementById('proj_center_value_txt').value = this.value;
+							});
+					let phi_section = content.append('p')
+							.style('clear', 'both');
+					phi_section.append('span')
+							.style('float', 'left')
+							.html(i18next.t('app_page.section5.projection_center_phi'));
+					phi_section.append('input')
+							.styles({'width': '50px', 'float': 'right'})
+							.attrs({type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5})
+							.on("input", function(){ handle_proj_center_button([null, this.value, null]); });
+					let gamma_section = content.append('p')
+							.style('clear', 'both');
+					gamma_section.append('span')
+							.style('float', 'left')
+							.html(i18next.t('app_page.section5.projection_center_gamma'));
+					gamma_section.append('input')
+							.styles({'width': '50px', 'float': 'right'})
+							.attrs({type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5})
+							.on("input", function(){ handle_proj_center_button([null, null, this.value]); });
+
+					if(current_proj_name.indexOf('Conic') > -1){
+							prev_parallels = proj.parallels();
+							let parallels_section = content.append('p')
+									.style('text-align', 'center');
+							parallels_section.append('span')
+									.html(i18next.t('app_page.section5.parallels'));
+							let inputs = parallels_section.append('p')
+									.style('text-align', 'center');
+							inputs.append('input')
+									.style('width', '50px').style('display', 'inline')
+									.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
+									.on("input", function(){ handle_parallels_change([this.value, null]); });
+							inputs.append('input')
+									.style('width', '50px').style('display', 'inline')
+									.attrs({type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5})
+									.on("input", function(){ handle_parallels_change([null, this.value]); });
+					}
+
+			}
+	 }).then(inputValue => { console.log('a :', inputValue); },
+					 dismissValue => { console.log('b :', dismissValue); });
+};
+
+// Function to change (one of more of) the three rotations axis of a d3 projection
+// and redraw all the path (+ move symbols layers) in respect to that
+function handle_proj_center_button(param){
+    // Fetch the current rotation params :
+    let current_rotation = proj.rotate();
+    // Reuse it for the missing value passed in arguments :
+    param = param.map((val,i) => val ? val : current_rotation[i]);
+    // Do the rotation :
+    proj.rotate(param);
+    // Redraw the path and move the symbols :
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+}
+
+function handle_parallels_change(parallels){
+    let current_values = proj.parallels();
+    parallels = parallels.map((val,i) => val ? val : current_values[i]);
+    proj.parallels(parallels);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+}

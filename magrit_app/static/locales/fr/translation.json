@@ -152,10 +152,12 @@
             "projection_center_lambda": "Centre de la projection (longitude)",
             "projection_center_phi": "Centre de la projection (rotation de l'axe φ)",
             "projection_center_gamma": "Centre de la projection (rotation de l'axe γ)",
+            "parallels": "Parallèles de référence",
             "reset": "Réinitialiser la vue"
         },
         "projection_name":{
             "Armadillo": "Armadillo",
+            "AzimuthalEquidistant": "Azimuthale équidistante",
             "AzimuthalEqualArea": "Azimuthale équivalente",
             "Baker": "Baker",
             "Boggs": "Boggs",
