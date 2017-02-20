@@ -1966,7 +1966,8 @@ function change_projection(new_proj_name) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Allow to use more options than only the lambda axis on specific projection :
-    if(new_proj_name == "Orthographic" || new_proj_name == "Gnomonic" || new_proj_name == "ConicConformal"){
+    if(new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"
+            || new_proj_name == "ConicConformal" || new_proj_name == "AzimuthalEquidistant"){
         document.getElementById('btn_customize_projection').style.display = "";
     } else {
         document.getElementById('btn_customize_projection').style.display = "none";
@@ -1976,7 +1977,7 @@ function change_projection(new_proj_name) {
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     if(!layer_name){
       let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
-      layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length -1].id) : undefined;
+      layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
     if(layer_name){
       scale_to_lyr(layer_name);

@@ -157,6 +157,7 @@
         "projection_name":{
             "Armadillo": "Armadillo",
             "AzimuthalEqualArea": "Azimuthal Equal Area",
+            "AzimuthalEquidistant": "Azimuthal Equidistant",
             "Baker": "Baker",
             "Boggs": "Boggs",
             "InterruptedBoggs": "Interrupted Boggs",

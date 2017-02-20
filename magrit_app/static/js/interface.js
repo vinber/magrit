@@ -988,6 +988,10 @@ function scale_to_lyr(name){
         bbox_layer_path = undefined;
     if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
         bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    } else if (name == 'Graticule') {
+        map.select("#Graticule").selectAll("path").each( (d,i) => {
+            bbox_layer_path = path.bounds(d);
+        });
     } else {
         map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
             var bbox_path = path.bounds(d.geometry);
@@ -1020,6 +1024,10 @@ function center_map(name){
         bbox_layer_path = undefined;
     if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
         bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    } else if (name == 'Graticule') {
+        map.select("#Graticule").selectAll("path").each( (d,i) => {
+            bbox_layer_path = path.bounds(d);
+          });
     } else {
         map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
             let bbox_path = path.bounds(d.geometry);

@@ -2,7 +2,8 @@
 
 const available_projections = new Map([
 	["Armadillo", "d3.geoArmadillo().scale(400)"],
-	["AzimuthalEqualArea",  "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700).translate([240, 290])"],
+	["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().rotate([-10,-52]).scale(700)"],
+	["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700)"],
 	["Baker", "d3.geoBaker().scale(400)"],
 	["Boggs", "d3.geoBoggs().scale(400)"],
 	["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"],
