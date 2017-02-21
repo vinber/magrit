@@ -850,7 +850,7 @@ function bindTooltips() {
 function make_eye_button(state) {
     if (state == "open") {
         var eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "/static/img/b/eye_open.svg");
+        eye_open.setAttribute("src", "/static/img/b/eye_open.png");
         eye_open.setAttribute("class", "active_button i18n");
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
@@ -859,7 +859,7 @@ function make_eye_button(state) {
         return eye_open;
     } else if (state == "closed") {
         var eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "/static/img/b/eye_closed.svg");
+        eye_closed.setAttribute("src", "/static/img/b/eye_closed.png");
         eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
@@ -3937,7 +3937,7 @@ function make_discretization_icons(discr_section) {
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/others.png', 'id': 'ico_others' });
     subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px' });
-    subsection2.append('img').styles({ width: '15px', position: 'absolute', right: '5px' }).attrs({ 'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg' });
+    subsection2.append('img').styles({ width: '15px', position: 'absolute', right: '5px' }).attrs({ 'id': 'img_choice_disc', 'src': '/static/img/Red_x.png' });
 }
 
 function make_ok_button(parent, id) {
@@ -3952,7 +3952,7 @@ function make_ok_button(parent, id) {
 function insert_legend_button(layer_name) {
     var selec = d3.select("#sortable").select(['.', layer_name, ' .layer_buttons'].join('')),
         inner_html = selec.node().innerHTML,
-        const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg"',
+        const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png"',
         split_content = inner_html.split();
     selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
@@ -4169,7 +4169,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
             uncolor_icons();
             ico_quantiles.style('border', 'solid 1px green');
         };
@@ -4211,7 +4211,7 @@ var fields_PropSymbolChoro = {
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
-                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                 choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
@@ -4219,7 +4219,7 @@ var fields_PropSymbolChoro = {
             } else {
                 prepare_disc_quantiles(field_name);
                 // ok_button.attr('disabled', true);
-                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // img_valid_disc.attr('src', '/static/img/Red_x.png');
                 // choro_mini_choice_disc.html('');
             }
         });
@@ -4250,7 +4250,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_quantiles.on('click', function () {
@@ -4279,7 +4279,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_equal_interval.on('click', function () {
@@ -4308,7 +4308,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_q6.on('click', function () {
@@ -4336,7 +4336,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_disc.on("click", function () {
@@ -4653,7 +4653,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
             uncolor_icons();
             ico_quantiles.style('border', 'solid 1px green');
         };
@@ -4683,7 +4683,7 @@ var fields_Choropleth = {
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
             if (self.rendering_params[field_name] !== undefined) {
                 // ok_button.attr('disabled', null);
-                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                 choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
                 uncolor_icons();
                 color_disc_icons(self.rendering_params[field_name].type);
@@ -4718,7 +4718,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_quantiles.on('click', function () {
@@ -4747,7 +4747,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_equal_interval.on('click', function () {
@@ -4776,7 +4776,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_q6.on('click', function () {
@@ -4804,7 +4804,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         btn_class.on("click", function () {
@@ -4824,7 +4824,7 @@ var fields_Choropleth = {
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
                     // ok_button.attr("disabled", null);
-                    img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                    img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                     choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', { count: confirmed[0] }));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);

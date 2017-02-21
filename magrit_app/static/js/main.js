@@ -1014,7 +1014,7 @@ function bindTooltips(dataAttr="tooltip-title"){
 function make_eye_button(state){
     if(state == "open"){
         let eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "/static/img/b/eye_open.svg");
+        eye_open.setAttribute("src", "/static/img/b/eye_open.png");
         eye_open.setAttribute("class", "active_button i18n")
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
@@ -1023,7 +1023,7 @@ function make_eye_button(state){
         return eye_open;
     } else if (state == "closed"){
         let eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "/static/img/b/eye_closed.svg");
+        eye_closed.setAttribute("src", "/static/img/b/eye_closed.png");
         eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
