@@ -59,7 +59,7 @@ INFO:magrit.main:serving on('0.0.0.0', 9999)
 ##### Recompiling JS/css files after a change :
 ##### (note that it can take a while when called the first time as it is going to fetch a few dependencies)
 ```bash
-$ ./misc/jsbuild.build.py
+$ ./misc/jsbuild/build.py
 ```
 
 ##### Running the test suite :
