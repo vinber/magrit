@@ -1957,7 +1957,9 @@ function handleClipPath(proj_name){
 }
 
 function change_projection(new_proj_name) {
-    let prev_rotate = proj.rotate();
+    // Only keep the first argument of the rotation parameter :
+    let prev_rotate = [proj.rotate()[0], 0, 0];
+
     // Update global variables:
     proj = eval(available_projections.get(new_proj_name));
     path = d3.geoPath().projection(proj).pointRadius(4);

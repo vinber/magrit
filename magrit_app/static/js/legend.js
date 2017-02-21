@@ -547,7 +547,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("y", d => ypos + 46 + max_size - d.size)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
                 .text(d => round_value(d.value, rounding_precision));
-            last_pos = ypos + 30 + max_size + (max_size / 2);
+            last_pos = ypos + 30 + max_size;
         }
     }
 
@@ -575,11 +575,11 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("y", last_pos + 2 * space_elem)
                 .attrs({"width": space_elem, "height": space_elem})
                 .style("fill", current_layers[layer].fill_color.two[1]);
+        last_pos = last_pos + 2.5 * space_elem;
     }
-    var coef = current_layers[layer].break_val ? 3.75 : 2;
     legend_root.append("g").attr("class", "legend_feature")
             .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x:  xpos + space_elem, y: last_pos + coef * space_elem})
+            .attrs({x:  xpos + space_elem, y: last_pos + 2 * space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
             .text(note_bottom != null ? note_bottom : '');
 

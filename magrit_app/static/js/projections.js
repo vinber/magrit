@@ -101,7 +101,7 @@ const createBoxCustomProjection = function(){
 					}
 
 			}
-	 }).then(inputValue => { console.log('a :', inputValue); },
+	 }).then(inputValue => { null; },
 					 dismissValue => {
 					 			// Reset the parameters to the previous values if the user click on cancel :
 								handle_proj_center_button(prev_rotate);

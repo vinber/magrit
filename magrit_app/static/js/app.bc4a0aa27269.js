@@ -1679,7 +1679,9 @@ function handleClipPath(proj_name) {
 }
 
 function change_projection(new_proj_name) {
-    var prev_rotate = proj.rotate();
+    // Only keep the first argument of the rotation parameter :
+    var prev_rotate = [proj.rotate()[0], 0, 0];
+
     // Update global variables:
     proj = eval(available_projections.get(new_proj_name));
     path = d3.geoPath().projection(proj).pointRadius(4);
@@ -12353,7 +12355,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
             }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
                 return round_value(d.value, rounding_precision);
             });
-            last_pos = ypos + 30 + max_size + max_size / 2;
+            last_pos = ypos + 30 + max_size;
         }
     }
 
@@ -12363,9 +12365,9 @@ function createLegend_symbol(layer, field, title, subtitle) {
         bottom_colors.insert("rect").attr("id", "col1").attr("x", xpos + space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[0]);
         bottom_colors.insert("text").attr("id", "col1_txt").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('> ' + current_layers[layer].break_val);
         bottom_colors.insert("rect").attr("id", "col2").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[1]);
+        last_pos = last_pos + 2.5 * space_elem;
     }
-    var coef = current_layers[layer].break_val ? 3.75 : 2;
-    legend_root.append("g").attr("class", "legend_feature").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + coef * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+    legend_root.append("g").attr("class", "legend_feature").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
 
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
@@ -12995,6 +12997,7 @@ function get_map_template() {
             if (current_layer_prop.renderer === "PropSymbolsTypo") {
                 layer_style_i.color_map = [].concat(_toConsumableArray(current_layer_prop.color_map));
             }
+            if (current_layer_prop.break_val) layer_style_i.break_val = current_layer_prop.break_val;
         } else if (current_layer_prop.renderer == "Stewart" || current_layer_prop.renderer == "Gridded" || current_layer_prop.renderer == "Choropleth" || current_layer_prop.renderer == "Categorical" || current_layer_prop.renderer == "Carto_doug" || current_layer_prop.renderer == "OlsonCarto") {
             (function () {
                 selection = map.select("#" + layer_id).selectAll("path");
@@ -13457,7 +13460,6 @@ function apply_user_preferences(json_pref) {
                 var rendering_params = {
                     new_name: layer_name,
                     field: _layer.rendered_field,
-                    fill_color: _layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo" ? _layer.fill_color.class : _layer.fill_color.single,
                     ref_value: _layer.size[0],
                     ref_size: _layer.size[1],
                     symbol: _layer.symbol,
@@ -13465,6 +13467,10 @@ function apply_user_preferences(json_pref) {
                     ref_layer_name: _layer.ref_layer_name,
                     renderer: _layer.renderer
                 };
+                if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo") rendering_params.fill_color = _layer.fill_color.class;else if (_layer.fill_color.random) rendering_params.fill_color = "#fff";else if (_layer.fill_color.single != undefined) rendering_params.fill_color = _layer.fill_color.single;else if (_layer.fill_color.two) {
+                    rendering_params.fill_color = _layer.fill_color;
+                    rendering_params.break_val = _layer.break_val;
+                }
                 make_prop_symbols(rendering_params, geojson_pt_layer);
                 if (_layer.renderer == "PropSymbolsTypo") {
                     current_layers[layer_name].color_map = new Map(_layer.color_map);
@@ -13485,7 +13491,11 @@ function apply_user_preferences(json_pref) {
                 map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).styles({ 'stroke-width': _layer['stroke-width-const'] + "px",
                     'fill-opacity': fill_opacity,
                     'stroke-opacity': stroke_opacity });
-
+                if (_layer.fill_color.random) {
+                    map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).style('fill', function (_) {
+                        return Colors.names[Colors.random()];
+                    });
+                }
                 // ... or this is a layer of labels :
             } else if (_layer.renderer && _layer.renderer.startsWith("Label")) {
                 var _rendering_params = {
@@ -13928,7 +13938,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						}
 				}
 		}).then(function (inputValue) {
-				console.log('a :', inputValue);
+				null;
 		}, function (dismissValue) {
 				// Reset the parameters to the previous values if the user click on cancel :
 				handle_proj_center_button(prev_rotate);

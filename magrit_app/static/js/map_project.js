@@ -205,6 +205,8 @@ function get_map_template(){
             if(current_layer_prop.renderer === "PropSymbolsTypo"){
                 layer_style_i.color_map = [...current_layer_prop.color_map];
             }
+            if(current_layer_prop.break_val)
+                layer_style_i.break_val = current_layer_prop.break_val;
         } else if (current_layer_prop.renderer == "Stewart"
                     || current_layer_prop.renderer == "Gridded"
                     || current_layer_prop.renderer == "Choropleth"
@@ -671,14 +673,23 @@ function apply_user_preferences(json_pref){
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
-                  fill_color: (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")? _layer.fill_color.class : _layer.fill_color.single,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,
                   nb_features: geojson_pt_layer.features.length,
                   ref_layer_name: _layer.ref_layer_name,
-                  renderer: _layer.renderer
+                  renderer: _layer.renderer,
               };
+              if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")
+                  rendering_params.fill_color = _layer.fill_color.class
+              else if(_layer.fill_color.random)
+                  rendering_params.fill_color = "#fff";
+              else if(_layer.fill_color.single != undefined)
+                  rendering_params.fill_color = _layer.fill_color.single;
+              else if(_layer.fill_color.two){
+                  rendering_params.fill_color = _layer.fill_color;
+                  rendering_params.break_val = _layer.break_val;
+              }
               make_prop_symbols(rendering_params, geojson_pt_layer);
               if(_layer.renderer == "PropSymbolsTypo"){
                   current_layers[layer_name].color_map = new Map(_layer.color_map);
@@ -701,7 +712,11 @@ function apply_user_preferences(json_pref){
                   .styles({'stroke-width': _layer['stroke-width-const'] + "px",
                            'fill-opacity': fill_opacity,
                            'stroke-opacity': stroke_opacity});
-
+              if(_layer.fill_color.random){
+                  map.select('#' + _app.layer_to_id.get(layer_name))
+                      .selectAll(_layer.symbol)
+                      .style('fill', _ => Colors.names[Colors.random()]);
+              }
           // ... or this is a layer of labels :
           } else if (_layer.renderer && _layer.renderer.startsWith("Label")){
               let rendering_params = {
